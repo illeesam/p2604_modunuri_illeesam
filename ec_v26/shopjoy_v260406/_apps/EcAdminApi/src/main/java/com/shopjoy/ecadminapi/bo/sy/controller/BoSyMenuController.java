@@ -28,7 +28,7 @@ public class BoSyMenuController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyMenuDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<SyMenuDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -36,7 +36,7 @@ public class BoSyMenuController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyMenuDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<SyMenuDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

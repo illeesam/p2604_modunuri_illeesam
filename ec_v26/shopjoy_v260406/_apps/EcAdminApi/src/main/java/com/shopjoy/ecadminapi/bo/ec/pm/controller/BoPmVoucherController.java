@@ -28,7 +28,7 @@ public class BoPmVoucherController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<PmVoucherDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<PmVoucherDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -36,7 +36,7 @@ public class BoPmVoucherController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PmVoucherDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<PmVoucherDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

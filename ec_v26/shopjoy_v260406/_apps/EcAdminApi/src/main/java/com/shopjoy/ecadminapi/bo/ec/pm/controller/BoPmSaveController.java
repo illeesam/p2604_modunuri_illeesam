@@ -28,7 +28,7 @@ public class BoPmSaveController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<PmSaveDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<PmSaveDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -36,7 +36,7 @@ public class BoPmSaveController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PmSaveDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<PmSaveDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

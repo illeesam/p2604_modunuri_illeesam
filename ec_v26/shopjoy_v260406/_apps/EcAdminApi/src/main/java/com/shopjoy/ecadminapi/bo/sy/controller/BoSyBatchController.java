@@ -28,7 +28,7 @@ public class BoSyBatchController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyBatchDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<SyBatchDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -36,7 +36,7 @@ public class BoSyBatchController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyBatchDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<SyBatchDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

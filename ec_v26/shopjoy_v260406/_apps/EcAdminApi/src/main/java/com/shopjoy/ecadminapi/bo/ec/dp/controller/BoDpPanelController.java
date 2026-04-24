@@ -35,7 +35,7 @@ public class BoDpPanelController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<DpPanelDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<DpPanelDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -43,7 +43,7 @@ public class BoDpPanelController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<DpPanelDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<DpPanelDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

@@ -8,13 +8,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Set;
 
 /**
@@ -83,6 +86,9 @@ public class LicenseFilter extends OncePerRequestFilter {
     @Value("${app.license.enabled:true}")
     private boolean enabled;
 
+    @Autowired
+    private Environment environment;
+
     /* 검증 제외 경로 prefix */
     private static final Set<String> SKIP_PREFIXES = Set.of(
         "/api/auth/",
@@ -107,13 +113,34 @@ public class LicenseFilter extends OncePerRequestFilter {
         String buyerId     = request.getHeader("X-Buyer-Id");
 
         try {
-            LicenseUtil.verify(secret, licenseCode, buyerId);
+            LicensePayload payload = LicenseUtil.verify(secret, licenseCode, buyerId);
+            printReportIfLocal(request, payload, buyerId);
             chain.doFilter(request, response);
         } catch (LicenseException e) {
             log.warn("[LicenseFilter] 라이선스 검증 실패: {} - {} | uri={} buyerId={}",
                 e.getReason(), e.getMessage(), request.getRequestURI(), buyerId);
             sendError(response, e);
         }
+    }
+
+    /** local 프로파일 + getInitData 요청 시 라이선스 payload 리포트 출력 */
+    private void printReportIfLocal(HttpServletRequest request, LicensePayload payload, String buyerId) {
+        boolean isLocal = Arrays.asList(environment.getActiveProfiles()).contains("local");
+        if (!isLocal) return;
+
+        String uri = request.getRequestURI();
+        if (!uri.contains("getInitData")) return;
+
+        String line = "─".repeat(60);
+        log.info("\n  ┌{}\n  │ [LicenseFilter] getInitData 라이선스 리포트\n  ├{}", line, line);
+        log.info("  │  URI       : {}", uri);
+        log.info("  │  siteType  : {}", payload.getSiteType());
+        log.info("  │  siteId    : {}", payload.getSiteId());
+        log.info("  │  siteNo    : {}", payload.getSiteNo());
+        log.info("  │  buyerId   : {}  ← [필터검증] X-Buyer-Id 헤더값={}", payload.getBuyerId(), buyerId);
+        log.info("  │  expireDate: {}", payload.getExpireDate());
+        log.info("  │  서명      : ✅ OK  (HMAC-SHA256)");
+        log.info("  └{}", line);
     }
 
     private void sendError(HttpServletResponse response, LicenseException e) throws IOException {

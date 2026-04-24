@@ -15,7 +15,8 @@ window.SySiteMng = {
         const res = await window.boApi.get('/bo/sy/site/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        sites = res.data?.data?.list || [];
+        const list = res.data?.data?.list || [];
+        sites.splice(0, sites.length, ...list);
         error.value = null;
       } catch (err) {
         error.value = err.message;

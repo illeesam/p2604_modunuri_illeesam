@@ -28,7 +28,7 @@ public class BoPmGiftController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<PmGiftDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<PmGiftDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -36,7 +36,7 @@ public class BoPmGiftController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PmGiftDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<PmGiftDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

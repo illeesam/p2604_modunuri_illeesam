@@ -28,7 +28,7 @@ public class BoSyBrandController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyBrandDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<SyBrandDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -36,7 +36,7 @@ public class BoSyBrandController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyBrandDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<SyBrandDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

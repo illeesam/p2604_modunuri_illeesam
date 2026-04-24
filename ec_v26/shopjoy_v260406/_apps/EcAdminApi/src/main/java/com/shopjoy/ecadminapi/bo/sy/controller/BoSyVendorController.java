@@ -28,7 +28,7 @@ public class BoSyVendorController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyVendorDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<SyVendorDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -36,7 +36,7 @@ public class BoSyVendorController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyVendorDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<SyVendorDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

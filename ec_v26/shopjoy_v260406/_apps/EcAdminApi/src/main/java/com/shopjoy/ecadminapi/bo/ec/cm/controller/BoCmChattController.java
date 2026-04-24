@@ -36,7 +36,7 @@ public class BoCmChattController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<CmChattRoomDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<CmChattRoomDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -44,7 +44,7 @@ public class BoCmChattController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<CmChattRoomDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<CmChattRoomDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

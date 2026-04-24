@@ -28,7 +28,7 @@ public class BoSyAlarmController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyAlarmDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<SyAlarmDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -36,7 +36,7 @@ public class BoSyAlarmController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyAlarmDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<SyAlarmDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

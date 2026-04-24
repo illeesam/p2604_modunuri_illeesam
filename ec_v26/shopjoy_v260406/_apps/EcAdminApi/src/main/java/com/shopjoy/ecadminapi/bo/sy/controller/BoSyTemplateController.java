@@ -28,7 +28,7 @@ public class BoSyTemplateController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyTemplateDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<SyTemplateDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -36,7 +36,7 @@ public class BoSyTemplateController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyTemplateDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<SyTemplateDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

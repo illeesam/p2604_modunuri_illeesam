@@ -533,16 +533,25 @@ window.SiteSelectModal = {
   props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props) {
-    const { ref, computed } = Vue;
+    const { ref, computed, onMounted } = Vue;
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const kw = ref('');
-    const filtered = computed(() => props.dispDataset.sites.filter(s => {
+    const list = ref([]);
+    const loading = ref(false);
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.boApi.get('/bo/sy/site', { params: { pageSize: 10000 } });
+        list.value = res.data?.data || [];
+      } catch (e) { list.value = []; } finally { loading.value = false; }
+    });
+    const filtered = computed(() => list.value.filter(s => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
       const siteNo = String(s.siteId).padStart(2,'0');
       return s.siteNm.toLowerCase().includes(k) || s.siteCode.toLowerCase().includes(k) || s.domain.toLowerCase().includes(k) || siteNo.includes(k);
     }));
-    return { siteNm, kw, filtered };
+    return { siteNm, kw, filtered, loading };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -553,7 +562,8 @@ window.SiteSelectModal = {
     </span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="사이트번호 / 사이트코드 / 사이트명 / 도메인 검색" style="margin-bottom:12px;" />
     <div class="sel-modal-list">
-      <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
+      <div v-else-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
       <div v-for="s in filtered" :key="s.siteId" class="sel-modal-item">
         <div class="sel-modal-item-name">{{ s.siteNm }}</div>
         <span class="sel-modal-item-id">{{ s.siteCode }}</span>
@@ -571,16 +581,24 @@ window.VendorSelectModal = {
   props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props) {
-    const { ref, computed } = Vue;
+    const { ref, computed, onMounted } = Vue;
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const kw = ref('');
-    const filtered = computed(() => props.dispDataset.vendors.filter(v => {
-      if (v.vendorType !== '판매업체') return false;
+    const list = ref([]);
+    const loading = ref(false);
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.boApi.get('/bo/sy/vendor', { params: { pageSize: 10000 } });
+        list.value = res.data?.data || [];
+      } catch (e) { list.value = []; } finally { loading.value = false; }
+    });
+    const filtered = computed(() => list.value.filter(v => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
-      return v.vendorNm.toLowerCase().includes(k) || v.bizNo.includes(k);
+      return v.vendorNm.toLowerCase().includes(k) || String(v.bizNo || '').includes(k);
     }));
-    return { siteNm, kw, filtered };
+    return { siteNm, kw, filtered, loading };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -588,7 +606,8 @@ window.VendorSelectModal = {
     <div class="modal-header"><span class="modal-title">판매업체 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="업체명 / 사업자번호 검색" style="margin-bottom:12px;" />
     <div class="sel-modal-list">
-      <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
+      <div v-else-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
       <div v-for="v in filtered" :key="v.vendorId" class="sel-modal-item">
         <div class="sel-modal-item-name">{{ v.vendorNm }}</div>
         <span class="sel-modal-item-id">{{ v.vendorId }}</span>
@@ -605,8 +624,23 @@ window.BoUserSelectModal = {
   props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, computed, reactive } = Vue;
+    const { ref, computed, reactive, onMounted } = Vue;
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
+
+    const depts = ref([]);
+    const users = ref([]);
+    const loading = ref(false);
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const [deptRes, userRes] = await Promise.all([
+          window.boApi.get('/bo/sy/dept', { params: { pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/user', { params: { pageSize: 10000 } }),
+        ]);
+        depts.value = deptRes.data?.data || [];
+        users.value = userRes.data?.data || [];
+      } catch (e) { depts.value = []; users.value = []; } finally { loading.value = false; }
+    });
 
     /* ── 부서 트리 (depth 1부터 시작, root는 별도 렌더) ── */
     const selectedDeptId = ref(null);
@@ -621,58 +655,61 @@ window.BoUserSelectModal = {
     };
     const flatDeptTree = computed(() => {
       const kw = deptKw.value.trim().toLowerCase();
-      const list = kw
-        ? props.dispDataset.depts.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(kw))
-        : props.dispDataset.depts;
-      return flattenDept(buildDeptTree(list, null, 1)); /* depth 1부터 = 2레벨 */
+      const base = kw
+        ? depts.value.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(kw))
+        : depts.value;
+      return flattenDept(buildDeptTree(base, null, 1));
     });
 
-    const getDescDeptNames = (deptId) => {
-      const names = new Set();
+    const getDescDeptIds = (deptId) => {
+      const ids = new Set();
       const queue = [deptId];
       while (queue.length) {
         const id = queue.shift();
-        const d = props.dispDataset.depts.find(x => x.deptId === id);
-        if (d) { names.add(d.deptNm); props.dispDataset.depts.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId)); }
+        ids.add(id);
+        depts.value.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId));
       }
-      return names;
+      return ids;
     };
 
     /* ── 사용자 ── */
     const userKw = ref('');
     const selectedIds = reactive(new Set());
-    const totalUsers = computed(() => props.dispDataset.boUsers.length);
+    const totalUsers = computed(() => users.value.length);
 
     const filtered = computed(() => {
       const k = userKw.value.trim().toLowerCase();
-      let list = props.dispDataset.boUsers;
+      let list = users.value;
       if (selectedDeptId.value !== null) {
-        const names = getDescDeptNames(selectedDeptId.value);
-        list = list.filter(u => names.has(u.dept));
+        const ids = getDescDeptIds(selectedDeptId.value);
+        list = list.filter(u => ids.has(u.deptId));
       }
       if (k) list = list.filter(u =>
-        u.name.toLowerCase().includes(k) || u.loginId.toLowerCase().includes(k) || (u.email || '').toLowerCase().includes(k)
+        (u.userNm || u.name || '').toLowerCase().includes(k) ||
+        (u.loginId || '').toLowerCase().includes(k) ||
+        (u.userEmail || u.email || '').toLowerCase().includes(k)
       );
       return list;
     });
 
-    const isChecked = (u) => selectedIds.has(u.boUserId);
+    const isChecked = (u) => selectedIds.has(u.userId || u.boUserId);
     const toggleUser = (u) => {
-      if (selectedIds.has(u.boUserId)) selectedIds.delete(u.boUserId);
-      else selectedIds.add(u.boUserId);
+      const id = u.userId || u.boUserId;
+      if (selectedIds.has(id)) selectedIds.delete(id);
+      else selectedIds.add(id);
     };
-    const allChecked = computed(() => filtered.value.length > 0 && filtered.value.every(u => selectedIds.has(u.boUserId)));
+    const allChecked = computed(() => filtered.value.length > 0 && filtered.value.every(u => selectedIds.has(u.userId || u.boUserId)));
     const toggleAll = () => {
-      if (allChecked.value) filtered.value.forEach(u => selectedIds.delete(u.boUserId));
-      else filtered.value.forEach(u => selectedIds.add(u.boUserId));
+      if (allChecked.value) filtered.value.forEach(u => selectedIds.delete(u.userId || u.boUserId));
+      else filtered.value.forEach(u => selectedIds.add(u.userId || u.boUserId));
     };
     const selectedCount = computed(() => selectedIds.size);
     const confirm = () => {
-      const selected = props.dispDataset.boUsers.filter(u => selectedIds.has(u.boUserId));
+      const selected = users.value.filter(u => selectedIds.has(u.userId || u.boUserId));
       emit('select', selected);
     };
 
-    return { siteNm, selectedDeptId, deptKw, flatDeptTree, userKw, filtered, totalUsers, isChecked, toggleUser, allChecked, toggleAll, selectedCount, confirm };
+    return { siteNm, selectedDeptId, deptKw, flatDeptTree, userKw, filtered, totalUsers, loading, isChecked, toggleUser, allChecked, toggleAll, selectedCount, confirm };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -759,11 +796,12 @@ window.BoUserSelectModal = {
         </div>
         <!-- 카드 목록 -->
         <div style="flex:1;overflow-y:auto;">
-          <div v-if="filtered.length===0" style="text-align:center;color:#bbb;padding:52px 0;font-size:13px;">
+          <div v-if="loading" style="text-align:center;color:#bbb;padding:52px 0;font-size:13px;">로딩 중...</div>
+          <div v-else-if="filtered.length===0" style="text-align:center;color:#bbb;padding:52px 0;font-size:13px;">
             <div style="font-size:32px;margin-bottom:8px;">🔍</div>
             검색 결과가 없습니다.
           </div>
-          <div v-for="u in filtered" :key="u.boUserId"
+          <div v-for="u in filtered" :key="u.userId || u.boUserId"
             style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .1s;"
             :style="isChecked(u)?'background:#fff5f7;':'' "
             @click="toggleUser(u)">
@@ -772,20 +810,20 @@ window.BoUserSelectModal = {
             <!-- 아바타 -->
             <div style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;transition:all .1s;"
               :style="isChecked(u)?'background:#e8587a;color:#fff;':'background:#f3f4f6;color:#6b7280;'">
-              {{ u.name.charAt(0) }}
+              {{ (u.userNm || u.name || '?').charAt(0) }}
             </div>
             <!-- 텍스트 -->
             <div style="flex:1;min-width:0;">
               <div style="font-size:13px;font-weight:600;color:#1a1a2e;display:flex;align-items:baseline;gap:5px;">
-                {{ u.name }}
+                {{ u.userNm || u.name }}
                 <span style="font-size:11px;color:#9ca3af;font-weight:400;">{{ u.loginId }}</span>
               </div>
-              <div style="font-size:11px;color:#b0b7c3;margin-top:2px;">{{ u.dept || '-' }} · {{ u.role }}</div>
+              <div style="font-size:11px;color:#b0b7c3;margin-top:2px;">{{ u.deptNm || u.dept || '-' }} · {{ u.roleNm || u.role || '' }}</div>
             </div>
             <!-- 상태 뱃지 -->
             <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;flex-shrink:0;"
-              :style="u.status==='활성'?'background:#dcfce7;color:#16a34a;':'background:#f3f4f6;color:#9ca3af;'">
-              {{ u.status }}
+              :style="(u.useYn||u.status)==='Y'||(u.status)==='활성'?'background:#dcfce7;color:#16a34a;':'background:#f3f4f6;color:#9ca3af;'">
+              {{ u.useYn === 'Y' ? '활성' : u.useYn === 'N' ? '비활성' : (u.status || '') }}
             </span>
           </div>
         </div>
@@ -817,15 +855,26 @@ window.MemberSelectModal = {
   props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props) {
-    const { ref, computed } = Vue;
+    const { ref, computed, onMounted } = Vue;
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const kw = ref('');
-    const filtered = computed(() => props.dispDataset.members.filter(m => {
+    const list = ref([]);
+    const loading = ref(false);
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.boApi.get('/bo/ec/mb/member', { params: { pageSize: 10000 } });
+        list.value = res.data?.data || [];
+      } catch (e) { list.value = []; } finally { loading.value = false; }
+    });
+    const filtered = computed(() => list.value.filter(m => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
-      return m.memberNm.toLowerCase().includes(k) || m.email.toLowerCase().includes(k) || String(m.userId).includes(k);
+      return (m.memberNm || '').toLowerCase().includes(k) ||
+             (m.memberEmail || m.email || '').toLowerCase().includes(k) ||
+             String(m.memberId || m.userId || '').includes(k);
     }));
-    return { siteNm, kw, filtered };
+    return { siteNm, kw, filtered, loading };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -833,10 +882,11 @@ window.MemberSelectModal = {
     <div class="modal-header"><span class="modal-title">회원 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="이름 / 이메일 / ID 검색" style="margin-bottom:12px;" />
     <div class="sel-modal-list">
-      <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
-      <div v-for="m in filtered" :key="m.userId" class="sel-modal-item">
-        <div class="sel-modal-item-name">{{ m.memberNm }} <span style="font-size:11px;color:#888;">{{ m.email }}</span></div>
-        <span class="sel-modal-item-id">{{ m.userId }}</span>
+      <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
+      <div v-else-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-for="m in filtered" :key="m.memberId || m.userId" class="sel-modal-item">
+        <div class="sel-modal-item-name">{{ m.memberNm }} <span style="font-size:11px;color:#888;">{{ m.memberEmail || m.email }}</span></div>
+        <span class="sel-modal-item-id">{{ m.memberId || m.userId }}</span>
         <button class="sel-modal-item-btn" @click="$emit('select', m)">선택</button>
       </div>
     </div>
@@ -850,15 +900,26 @@ window.OrderSelectModal = {
   props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props) {
-    const { ref, computed } = Vue;
+    const { ref, computed, onMounted } = Vue;
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const kw = ref('');
-    const filtered = computed(() => props.dispDataset.orders.filter(o => {
+    const list = ref([]);
+    const loading = ref(false);
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.boApi.get('/bo/ec/ord/order', { params: { pageSize: 10000 } });
+        list.value = res.data?.data || [];
+      } catch (e) { list.value = []; } finally { loading.value = false; }
+    });
+    const filtered = computed(() => list.value.filter(o => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
-      return o.orderId.toLowerCase().includes(k) || o.userNm.toLowerCase().includes(k) || o.prodNm.toLowerCase().includes(k);
+      return (o.orderId || '').toLowerCase().includes(k) ||
+             (o.memberNm || o.userNm || '').toLowerCase().includes(k) ||
+             (o.prodNm || '').toLowerCase().includes(k);
     }));
-    return { siteNm, kw, filtered };
+    return { siteNm, kw, filtered, loading };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -866,10 +927,11 @@ window.OrderSelectModal = {
     <div class="modal-header"><span class="modal-title">주문 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="주문ID / 회원명 / 상품명 검색" style="margin-bottom:12px;" />
     <div class="sel-modal-list">
-      <div v-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
+      <div v-else-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
       <div v-for="o in filtered" :key="o.orderId" class="sel-modal-item">
-        <div class="sel-modal-item-name">{{ o.orderId }} <span style="font-size:11px;color:#888;">{{ o.userNm }}</span></div>
-        <span class="sel-modal-item-id" style="background:#f0fff0;color:#389e0d;">{{ o.totalPrice.toLocaleString() }}원</span>
+        <div class="sel-modal-item-name">{{ o.orderId }} <span style="font-size:11px;color:#888;">{{ o.memberNm || o.userNm }}</span></div>
+        <span class="sel-modal-item-id" style="background:#f0fff0;color:#389e0d;">{{ (o.totalAmt || o.totalPrice || 0).toLocaleString() }}원</span>
         <button class="sel-modal-item-btn" @click="$emit('select', o)">선택</button>
       </div>
     </div>
@@ -883,16 +945,25 @@ window.BbmSelectModal = {
   props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props) {
-    const { ref, computed, watch } = Vue;
+    const { ref, computed, watch, onMounted } = Vue;
     const kw       = ref('');
     const page     = ref(1);
     const pageSize = 6;
+    const list = ref([]);
+    const loading = ref(false);
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const res = await window.boApi.get('/bo/sy/bbm', { params: { pageSize: 10000 } });
+        list.value = res.data?.data || [];
+      } catch (e) { list.value = []; } finally { loading.value = false; }
+    });
 
-    const filtered = computed(() => props.dispDataset.bbms.filter(b => {
+    const filtered = computed(() => list.value.filter(b => {
       if (b.useYn === 'N') return false;
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
-      return b.bbmNm.toLowerCase().includes(k) || b.bbmCode.toLowerCase().includes(k) || b.bbmType.toLowerCase().includes(k);
+      return b.bbmNm.toLowerCase().includes(k) || b.bbmCode.toLowerCase().includes(k) || (b.bbmType || '').toLowerCase().includes(k);
     }));
 
     /* 검색어 변경 시 첫 페이지로 */
@@ -911,7 +982,7 @@ window.BbmSelectModal = {
     const typeBadge = t => ({ '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' }[t] || 'badge-gray');
     const scopeBadge = s => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[s] || 'badge-gray');
 
-    return { siteNm, kw, page, total, totalPages, pageList, pageNums, setPage, typeBadge, scopeBadge };
+    return { siteNm, kw, page, total, totalPages, pageList, pageNums, setPage, typeBadge, scopeBadge, loading };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -920,7 +991,8 @@ window.BbmSelectModal = {
     <input class="form-control" v-model="kw" placeholder="게시판명 / 코드 / 유형 검색" style="margin-bottom:10px;" />
     <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ total }}건</div>
     <div class="sel-modal-list" style="min-height:200px;">
-      <div v-if="pageList.length===0" style="text-align:center;color:#999;padding:30px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-if="loading" style="text-align:center;color:#999;padding:30px;font-size:13px;">로딩 중...</div>
+      <div v-else-if="pageList.length===0" style="text-align:center;color:#999;padding:30px;font-size:13px;">검색 결과가 없습니다.</div>
       <div v-for="b in pageList" :key="b.bbmId" class="sel-modal-item" style="gap:6px;">
         <div class="sel-modal-item-name" style="flex:1;min-width:0;">
           <span>{{ b.bbmNm }}</span>
@@ -1053,13 +1125,30 @@ window.TemplateSendModal = {
   props: ['tmpl', 'dispDataset', 'showToast', 'showConfirm'],
   emits: ['close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed, watch } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const targetType = ref('member');
     const kw = ref('');
     const selected = reactive([]);
-    const getId = (item) => targetType.value === 'member' ? item.userId : item.boUserId;
+    const getId = (item) => item.memberId || item.userId || item.boUserId;
+
+    /* ── API 데이터 ── */
+    const allDepts = ref([]);
+    const allMembers = ref([]);
+    const allBoUsers = ref([]);
+    onMounted(async () => {
+      try {
+        const [deptRes, memberRes, userRes] = await Promise.all([
+          window.boApi.get('/bo/sy/dept', { params: { pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/mb/member', { params: { pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/user', { params: { pageSize: 10000 } }),
+        ]);
+        allDepts.value = deptRes.data?.data || [];
+        allMembers.value = memberRes.data?.data || [];
+        allBoUsers.value = userRes.data?.data || [];
+      } catch (e) {}
+    });
 
     /* ── 부서 트리 (관리자 탭) ── */
     const selectedDeptId = ref(null);
@@ -1071,18 +1160,18 @@ window.TemplateSendModal = {
     const flattenDept = (nodes, result = []) => { nodes.forEach(n => { result.push(n); flattenDept(n._kids, result); }); return result; };
     const flatDeptTree = computed(() => {
       const k = deptKw.value.trim().toLowerCase();
-      const list = k ? props.dispDataset.depts.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(k)) : props.dispDataset.depts;
-      return flattenDept(buildDeptTree(list, null, 1));
+      const base = k ? allDepts.value.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(k)) : allDepts.value;
+      return flattenDept(buildDeptTree(base, null, 1));
     });
-    const getDescDeptNames = (deptId) => {
-      const names = new Set();
+    const getDescDeptIds = (deptId) => {
+      const ids = new Set();
       const queue = [deptId];
       while (queue.length) {
         const id = queue.shift();
-        const d = props.dispDataset.depts.find(x => x.deptId === id);
-        if (d) { names.add(d.deptNm); props.dispDataset.depts.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId)); }
+        ids.add(id);
+        allDepts.value.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId));
       }
-      return names;
+      return ids;
     };
 
     /* ── 등급 필터 (회원 탭) ── */
@@ -1092,19 +1181,19 @@ window.TemplateSendModal = {
     /* ── 목록 ── */
     const memberList = computed(() => {
       const k = kw.value.trim().toLowerCase();
-      let list = props.dispDataset.members || [];
-      if (selectedGrade.value) list = list.filter(m => m.grade === selectedGrade.value);
-      if (k) list = list.filter(m => m.memberNm?.toLowerCase().includes(k) || m.email?.toLowerCase().includes(k) || String(m.userId).includes(k));
+      let list = allMembers.value;
+      if (selectedGrade.value) list = list.filter(m => m.memberGrade === selectedGrade.value || m.grade === selectedGrade.value);
+      if (k) list = list.filter(m => (m.memberNm || '').toLowerCase().includes(k) || (m.memberEmail || m.email || '').toLowerCase().includes(k) || String(m.memberId || m.userId || '').includes(k));
       return list;
     });
     const userList = computed(() => {
       const k = kw.value.trim().toLowerCase();
-      let list = props.dispDataset.boUsers || [];
+      let list = allBoUsers.value;
       if (selectedDeptId.value !== null) {
-        const names = getDescDeptNames(selectedDeptId.value);
-        list = list.filter(u => names.has(u.dept));
+        const ids = getDescDeptIds(selectedDeptId.value);
+        list = list.filter(u => ids.has(u.deptId));
       }
-      if (k) list = list.filter(u => u.name?.toLowerCase().includes(k) || u.email?.toLowerCase().includes(k) || String(u.boUserId).includes(k));
+      if (k) list = list.filter(u => (u.userNm || u.name || '').toLowerCase().includes(k) || (u.userEmail || u.email || '').toLowerCase().includes(k) || String(u.userId || u.boUserId || '').includes(k));
       return list;
     });
     const list = computed(() => targetType.value === 'member' ? memberList.value : userList.value);
@@ -1336,9 +1425,16 @@ window.RoleTreeModal = {
   props: ['dispDataset', 'excludeId'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, computed } = Vue;
+    const { ref, computed, onMounted } = Vue;
     const kw = ref('');
     const hoverId = ref(null);
+    const allRoles = ref([]);
+    onMounted(async () => {
+      try {
+        const res = await window.boApi.get('/bo/sy/role', { params: { pageSize: 10000 } });
+        allRoles.value = res.data?.data || [];
+      } catch (e) { allRoles.value = []; }
+    });
 
     const buildTree = (items, parentId, depth) => {
       return items
@@ -1353,10 +1449,10 @@ window.RoleTreeModal = {
     const flatTree = computed(() => {
       const excSet = new Set();
       if (props.excludeId) {
-        const mark = (id) => { excSet.add(id); props.dispDataset.roles.filter(r => r.parentId === id).forEach(r => mark(r.roleId)); };
+        const mark = (id) => { excSet.add(id); allRoles.value.filter(r => r.parentId === id).forEach(r => mark(r.roleId)); };
         mark(props.excludeId);
       }
-      const base = props.dispDataset.roles.filter(r => !excSet.has(r.roleId) && r.useYn === 'Y');
+      const base = allRoles.value.filter(r => !excSet.has(r.roleId) && r.useYn === 'Y');
       const kwVal = kw.value.trim().toLowerCase();
       const list  = kwVal ? base.filter(r => r.roleNm.toLowerCase().includes(kwVal) || r.roleCode.toLowerCase().includes(kwVal)) : base;
       return flatten(buildTree(list, null, 0));
@@ -1422,9 +1518,16 @@ window.MenuTreeModal = {
   props: ['dispDataset', 'excludeId'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, computed } = Vue;
+    const { ref, computed, onMounted } = Vue;
     const kw = ref('');
     const hoverId = ref(null);
+    const allMenus = ref([]);
+    onMounted(async () => {
+      try {
+        const res = await window.boApi.get('/bo/sy/menu', { params: { pageSize: 10000 } });
+        allMenus.value = res.data?.data || [];
+      } catch (e) { allMenus.value = []; }
+    });
 
     const buildTree = (items, parentId, depth) => {
       return items
@@ -1443,11 +1546,11 @@ window.MenuTreeModal = {
       if (props.excludeId) {
         const markExclude = (id) => {
           excSet.add(id);
-          props.dispDataset.menus.filter(m => m.parentId === id).forEach(m => markExclude(m.menuId));
+          allMenus.value.filter(m => m.parentId === id).forEach(m => markExclude(m.menuId));
         };
         markExclude(props.excludeId);
       }
-      const base = props.dispDataset.menus.filter(m => !excSet.has(m.menuId) && m.useYn === 'Y');
+      const base = allMenus.value.filter(m => !excSet.has(m.menuId) && m.useYn === 'Y');
       const kwVal = kw.value.trim().toLowerCase();
       const list  = kwVal
         ? base.filter(m => m.menuNm.toLowerCase().includes(kwVal) || m.menuCode.toLowerCase().includes(kwVal))
@@ -1548,9 +1651,16 @@ window.DeptTreeModal = {
   props: ['dispDataset', 'excludeId'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, computed } = Vue;
+    const { ref, computed, onMounted } = Vue;
     const kw = ref('');
     const hoverId = ref(null);
+    const allDepts = ref([]);
+    onMounted(async () => {
+      try {
+        const res = await window.boApi.get('/bo/sy/dept', { params: { pageSize: 10000 } });
+        allDepts.value = res.data?.data || [];
+      } catch (e) { allDepts.value = []; }
+    });
 
     /* ── 트리 구성 ── */
     const buildTree = (items, parentId, depth) => {
@@ -1566,16 +1676,15 @@ window.DeptTreeModal = {
     };
 
     const flatTree = computed(() => {
-      /* excludeId 및 그 자손 전체를 제외 (circular 방지) */
       const excSet = new Set();
       if (props.excludeId) {
         const markExclude = (id) => {
           excSet.add(id);
-          props.dispDataset.depts.filter(d => d.parentId === id).forEach(d => markExclude(d.deptId));
+          allDepts.value.filter(d => d.parentId === id).forEach(d => markExclude(d.deptId));
         };
         markExclude(props.excludeId);
       }
-      const base = props.dispDataset.depts.filter(d => !excSet.has(d.deptId) && d.useYn === 'Y');
+      const base = allDepts.value.filter(d => !excSet.has(d.deptId) && d.useYn === 'Y');
       const kwVal = kw.value.trim().toLowerCase();
       const list  = kwVal
         ? base.filter(d => d.deptNm.toLowerCase().includes(kwVal) || d.deptCode.toLowerCase().includes(kwVal))
@@ -1685,9 +1794,16 @@ window.CategoryTreeModal = {
   props: ['dispDataset', 'excludeId'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, computed } = Vue;
+    const { ref, computed, onMounted } = Vue;
     const kw = ref('');
     const hoverId = ref(null);
+    const allCategories = ref([]);
+    onMounted(async () => {
+      try {
+        const res = await window.boApi.get('/bo/ec/pd/category', { params: { pageSize: 10000 } });
+        allCategories.value = res.data?.data || [];
+      } catch (e) { allCategories.value = []; }
+    });
 
     const buildTree = (items, parentId, depth) => {
       return items
@@ -1704,10 +1820,10 @@ window.CategoryTreeModal = {
     const flatTree = computed(() => {
       const excSet = new Set();
       if (props.excludeId) {
-        const mark = (id) => { excSet.add(id); props.dispDataset.categories.filter(c => c.parentId === id).forEach(c => mark(c.categoryId)); };
+        const mark = (id) => { excSet.add(id); allCategories.value.filter(c => c.parentId === id).forEach(c => mark(c.categoryId)); };
         mark(props.excludeId);
       }
-      const base   = props.dispDataset.categories.filter(c => !excSet.has(c.categoryId) && c.status === '활성');
+      const base   = allCategories.value.filter(c => !excSet.has(c.categoryId) && (c.useYn === 'Y' || c.status === '활성'));
       const kwVal  = kw.value.trim().toLowerCase();
       const list   = kwVal ? base.filter(c => c.categoryNm.toLowerCase().includes(kwVal)) : base;
       return flatten(buildTree(list, null, 0));

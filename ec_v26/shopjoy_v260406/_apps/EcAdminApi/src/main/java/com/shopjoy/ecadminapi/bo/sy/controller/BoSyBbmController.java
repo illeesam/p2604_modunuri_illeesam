@@ -28,7 +28,7 @@ public class BoSyBbmController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyBbmDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<SyBbmDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -36,7 +36,7 @@ public class BoSyBbmController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyBbmDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<SyBbmDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

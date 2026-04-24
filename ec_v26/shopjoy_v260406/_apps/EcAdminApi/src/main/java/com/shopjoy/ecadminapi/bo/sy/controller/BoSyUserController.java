@@ -28,7 +28,7 @@ public class BoSyUserController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyUserDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<SyUserDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -36,7 +36,7 @@ public class BoSyUserController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyUserDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<SyUserDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

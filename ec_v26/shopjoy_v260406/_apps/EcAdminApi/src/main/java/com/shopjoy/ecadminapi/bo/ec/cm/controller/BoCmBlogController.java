@@ -35,7 +35,7 @@ public class BoCmBlogController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<CmBlogDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<CmBlogDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -43,7 +43,7 @@ public class BoCmBlogController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<CmBlogDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<CmBlogDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

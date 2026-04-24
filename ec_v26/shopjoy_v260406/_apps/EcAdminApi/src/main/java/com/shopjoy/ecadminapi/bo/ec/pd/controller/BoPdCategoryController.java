@@ -35,7 +35,7 @@ public class BoPdCategoryController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdCategoryDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<PdCategoryDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -43,7 +43,7 @@ public class BoPdCategoryController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PdCategoryDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<PdCategoryDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

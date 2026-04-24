@@ -35,7 +35,7 @@ public class BoPdQnaController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdProdQnaDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<PdProdQnaDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -43,7 +43,7 @@ public class BoPdQnaController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PdProdQnaDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<PdProdQnaDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

@@ -28,7 +28,7 @@ public class BoPmCacheController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<PmCacheDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<PmCacheDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -36,7 +36,7 @@ public class BoPmCacheController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PmCacheDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<PmCacheDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

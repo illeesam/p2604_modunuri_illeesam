@@ -36,7 +36,7 @@ public class BoMbMemberController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<MbMemberDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<MbMemberDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -44,7 +44,7 @@ public class BoMbMemberController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<MbMemberDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<MbMemberDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

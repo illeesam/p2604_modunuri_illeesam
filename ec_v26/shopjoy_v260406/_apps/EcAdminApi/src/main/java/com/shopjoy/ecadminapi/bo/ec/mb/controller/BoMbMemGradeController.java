@@ -35,7 +35,7 @@ public class BoMbMemGradeController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<MbMemberGradeDto>>> list(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         List<MbMemberGradeDto> result = service.getList(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -43,7 +43,7 @@ public class BoMbMemGradeController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<MbMemberGradeDto>>> page(
             @RequestParam Map<String, Object> p) {
-        CmUtil.require(p, "siteId");
+        // CmUtil.require(p, "siteId");
         PageResult<MbMemberGradeDto> result = service.getPageData(p);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
