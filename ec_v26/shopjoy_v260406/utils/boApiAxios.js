@@ -101,12 +101,12 @@
         if (!errorDetails && err.message) errorDetails = err.message;
       } catch (_) {}
       try {
-        // URL 정리 (localhost/127로 시작하면 :port부터만 표시)
+        // URL 정리 (localhost/127로 시작하면 :port/path 형태로 표시)
         var displayUrl = cfg.url;
         if (displayUrl && (displayUrl.includes('localhost') || displayUrl.includes('127'))) {
-          var portMatch = displayUrl.match(/:(\d+)(\/|$)/);
+          var portMatch = displayUrl.match(/:(\d+)(\/.*)?$/);
           if (portMatch) {
-            displayUrl = ':' + portMatch[1] + displayUrl.substring(displayUrl.indexOf(portMatch[0]) + portMatch[0].length);
+            displayUrl = ':' + portMatch[1] + (portMatch[2] || '');
           }
         }
         global.dispatchEvent(new CustomEvent('api-validation-error', {
@@ -118,12 +118,12 @@
     if ((status === 0 || !status || status >= 500) && !cfg._notified) {
       cfg._notified = true;
       try {
-        // URL 정리 (localhost/127로 시작하면 :port부터만 표시)
+        // URL 정리 (localhost/127로 시작하면 :port/path 형태로 표시)
         var displayUrl = cfg.url;
         if (displayUrl && (displayUrl.includes('localhost') || displayUrl.includes('127'))) {
-          var portMatch = displayUrl.match(/:(\d+)(\/|$)/);
+          var portMatch = displayUrl.match(/:(\d+)(\/.*)?$/);
           if (portMatch) {
-            displayUrl = ':' + portMatch[1] + displayUrl.substring(displayUrl.indexOf(portMatch[0]) + portMatch[0].length);
+            displayUrl = ':' + portMatch[1] + (portMatch[2] || '');
           }
         }
         global.dispatchEvent(new CustomEvent('api-error', {

@@ -168,22 +168,21 @@ window.SyPathMng = {
       parentModalState.targetRow = row;
       parentModalState.bizCd = row.bizCd;
 
-      /* 3레벨까지 자동 펼치기 */
+      /* 3레벨까지 자동 펼치기 — reactive Set은 교체 대신 clear/add로 갱신 */
       const biz = row.bizCd;
       const exclude = row.pathId;
       const list = rows.filter(r => r._status !== 'D' && r.bizCd === biz && r.pathId !== exclude);
-      const expanded = new Set([null]);
+      parentModalState.expanded.clear();
+      parentModalState.expanded.add(null);
 
-      /* 깊이 계산 및 3레벨까지 펼치기 */
       const getDepth = (pathId, depth = 0) => {
         if (depth <= 2) {
-          expanded.add(pathId);
+          parentModalState.expanded.add(pathId);
           list.filter(r => r.parentPathId === pathId).forEach(r => getDepth(r.pathId, depth + 1));
         }
       };
       list.filter(r => r.parentPathId == null).forEach(r => getDepth(r.pathId, 1));
 
-      parentModalState.expanded = expanded;
       parentModalState.show = true;
     };
     const closeParentModal = () => { parentModalState.show = false; parentModalState.targetRow = null; };

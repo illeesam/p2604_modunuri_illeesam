@@ -4,26 +4,9 @@ window.SyCodeMng = {
   props: ['navigate', 'showToast', 'showConfirm'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const codes = reactive([]);
+    const codes = reactive(window.boData?.codes || []);
     const loading = ref(false);
     const error = ref(null);
-
-    // onMounted에서 API 로드
-    onMounted(async () => {
-      loading.value = true;
-      try {
-        const res = await window.boApi.get('/bo/sy/code/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        codes = res.data?.data?.list || [];
-        error.value = null;
-      } catch (err) {
-        error.value = err.message;
-        if (props.showToast) props.showToast('SyCode 로드 실패', 'error');
-      } finally {
-        loading.value = false;
-      }
-    });
 
     /* ── 트리/그룹 선택 상태 (loadGrid 보다 먼저 선언) ── */
     const selectedGrp = ref('');

@@ -18,7 +18,7 @@
             <if test="p.kw != null and p.kw != ''">
                 AND (o.order_id::TEXT ILIKE '%' || #{p.kw} || '%'
                   OR o.member_nm      ILIKE '%' || #{p.kw} || '%'
-                  OR m.member_email   ILIKE '%' || #{p.kw} || '%'
+                  OR m.login_id       ILIKE '%' || #{p.kw} || '%'
                   OR o.recv_nm        ILIKE '%' || #{p.kw} || '%'
                   OR o.recv_phone     ILIKE '%' || #{p.kw} || '%')
             </if>
@@ -31,7 +31,7 @@
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto">
         SELECT  /* base.ec.od :: OdOrder :: selectById */
               o.*
-            , m.member_email,  m.member_phone   AS member_phone_origin
+            , m.login_id AS member_email,  m.member_phone   AS member_phone_origin
             , m.grade_cd,      m.total_purchase_amt
             , s.site_nm
             , cou.coupon_nm,   cou.coupon_type_cd
@@ -64,7 +64,7 @@
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto">
         SELECT  /* base.ec.od :: OdOrder :: selectList */
               o.*
-            , m.member_email
+            , m.login_id AS member_email
             , s.site_nm
             , cou.coupon_nm
             , cd_os.code_label    AS order_status_cd_nm
@@ -103,7 +103,7 @@
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto">
         SELECT  /* base.ec.od :: OdOrder :: selectPageList */
               o.*
-            , m.member_email
+            , m.login_id AS member_email
             , s.site_nm
             , cou.coupon_nm
             , cd_os.code_label    AS order_status_cd_nm

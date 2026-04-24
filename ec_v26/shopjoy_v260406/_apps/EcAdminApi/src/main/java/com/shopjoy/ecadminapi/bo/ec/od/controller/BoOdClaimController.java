@@ -16,18 +16,18 @@ import java.util.Map;
 
 /**
  * BO 클레임 API
- * GET    /api/bo/ec/ord/claim       — 목록
- * GET    /api/bo/ec/ord/claim/page  — 페이징
- * GET    /api/bo/ec/ord/claim/{id}  — 단건
- * POST   /api/bo/ec/ord/claim       — 등록
- * PUT    /api/bo/ec/ord/claim/{id}  — 수정
- * DELETE /api/bo/ec/ord/claim/{id}  — 삭제
- * PATCH  /api/bo/ec/ord/claim/{id}/status — 상태변경
+ * GET    /api/bo/ec/od/claim       — 목록
+ * GET    /api/bo/ec/od/claim/page  — 페이징
+ * GET    /api/bo/ec/od/claim/{id}  — 단건
+ * POST   /api/bo/ec/od/claim       — 등록
+ * PUT    /api/bo/ec/od/claim/{id}  — 수정
+ * DELETE /api/bo/ec/od/claim/{id}  — 삭제
+ * PATCH  /api/bo/ec/od/claim/{id}/status — 상태변경
  *
  * 인가: BO_ONLY (관리자)
  */
 @RestController
-@RequestMapping("/api/bo/ec/ord/claim")
+@RequestMapping("/api/bo/ec/od/claim")
 @RequiredArgsConstructor
 @BoOnly
 public class BoOdClaimController {

@@ -16,18 +16,18 @@ import java.util.Map;
 
 /**
  * BO 주문 API
- * GET    /api/bo/ec/ord/order       — 목록
- * GET    /api/bo/ec/ord/order/page  — 페이징
- * GET    /api/bo/ec/ord/order/{id}  — 단건
- * POST   /api/bo/ec/ord/order       — 등록
- * PUT    /api/bo/ec/ord/order/{id}  — 수정
- * DELETE /api/bo/ec/ord/order/{id}  — 삭제
- * PATCH  /api/bo/ec/ord/order/{id}/status — 상태변경
+ * GET    /api/bo/ec/od/order       — 목록
+ * GET    /api/bo/ec/od/order/page  — 페이징
+ * GET    /api/bo/ec/od/order/{id}  — 단건
+ * POST   /api/bo/ec/od/order       — 등록
+ * PUT    /api/bo/ec/od/order/{id}  — 수정
+ * DELETE /api/bo/ec/od/order/{id}  — 삭제
+ * PATCH  /api/bo/ec/od/order/{id}/status — 상태변경
  *
  * 인가: BO_ONLY (관리자)
  */
 @RestController
-@RequestMapping("/api/bo/ec/ord/order")
+@RequestMapping("/api/bo/ec/od/order")
 @RequiredArgsConstructor
 @BoOnly
 public class BoOdOrderController {

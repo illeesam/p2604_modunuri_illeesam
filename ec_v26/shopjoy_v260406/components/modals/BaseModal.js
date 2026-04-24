@@ -60,6 +60,13 @@
   style.id = '__shopjoy_modal_enh_style__';
   style.textContent = css;
   document.head.appendChild(style);
+
+  /* ESC 키로 최상단 모달 닫기 — overlay 클릭과 동일 효과 */
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const overlay = document.querySelector('.modal-overlay');
+    if (overlay) overlay.click();
+  });
 })();
 
 /* ── 주문 상세 모달 ──────────────────────────────────

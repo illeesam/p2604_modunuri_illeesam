@@ -49,13 +49,29 @@
       { dlivId: 'DLV-2026-024', orderId: 'ORD-2026-024', userNm: '홍길동', destZipCode: '06000', destAddr: '서울시 강남구', destAddrDetail: '10층', status: '배송중', courier: 'CJ대한통운', trackingNo: '112233445566', regDate: '2026-04-04' },
     ],
 
-    // 코드 (필수)
+    // 코드 (필수) - SyCodeMng 표준 구조
     codes: [
-      { codeGrp: 'ORDER_STATUS', code: 'PENDING', codeNm: '입금대기' },
-      { codeGrp: 'ORDER_STATUS', code: 'PAID', codeNm: '결제완료' },
-      { codeGrp: 'CLAIM_TYPE', code: 'CANCEL', codeNm: '취소' },
-      { codeGrp: 'CLAIM_TYPE', code: 'RETURN', codeNm: '반품' },
-      { codeGrp: 'DISP_AREA', code: 'MAIN', codeNm: 'Main' },
+      { codeId: 1,  codeGrp: 'ORDER_STATUS', codeLabel: '입금대기',  codeValue: 'PENDING',   sortOrd: 1, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 2,  codeGrp: 'ORDER_STATUS', codeLabel: '결제완료',  codeValue: 'PAID',      sortOrd: 2, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 3,  codeGrp: 'ORDER_STATUS', codeLabel: '배송준비',  codeValue: 'PREPARING', sortOrd: 3, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 4,  codeGrp: 'ORDER_STATUS', codeLabel: '배송중',    codeValue: 'SHIPPED',   sortOrd: 4, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 5,  codeGrp: 'ORDER_STATUS', codeLabel: '배송완료',  codeValue: 'COMPLT',    sortOrd: 5, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 6,  codeGrp: 'CLAIM_TYPE',   codeLabel: '취소',      codeValue: 'CANCEL',    sortOrd: 1, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 7,  codeGrp: 'CLAIM_TYPE',   codeLabel: '반품',      codeValue: 'RETURN',    sortOrd: 2, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 8,  codeGrp: 'CLAIM_TYPE',   codeLabel: '교환',      codeValue: 'EXCHANGE',  sortOrd: 3, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 9,  codeGrp: 'CLAIM_STATUS', codeLabel: '신청',      codeValue: 'REQUESTED', sortOrd: 1, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 10, codeGrp: 'CLAIM_STATUS', codeLabel: '처리중',    codeValue: 'PROCESSING',sortOrd: 2, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 11, codeGrp: 'CLAIM_STATUS', codeLabel: '완료',      codeValue: 'COMPLT',    sortOrd: 3, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 12, codeGrp: 'DLIV_STATUS',  codeLabel: '준비중',    codeValue: 'READY',     sortOrd: 1, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 13, codeGrp: 'DLIV_STATUS',  codeLabel: '배송중',    codeValue: 'SHIPPING',  sortOrd: 2, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 14, codeGrp: 'DLIV_STATUS',  codeLabel: '배송완료',  codeValue: 'DELIVERED', sortOrd: 3, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 15, codeGrp: 'DISP_AREA',    codeLabel: '메인',      codeValue: 'MAIN',      sortOrd: 1, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 16, codeGrp: 'DISP_AREA',    codeLabel: '서브메인',  codeValue: 'SUB_MAIN',  sortOrd: 2, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 17, codeGrp: 'PAY_METHOD',   codeLabel: '무통장입금',codeValue: 'BANK',      sortOrd: 1, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 18, codeGrp: 'PAY_METHOD',   codeLabel: '카카오페이',codeValue: 'KAKAO',     sortOrd: 2, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 19, codeGrp: 'PAY_METHOD',   codeLabel: '네이버페이',codeValue: 'NAVER',     sortOrd: 3, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 20, codeGrp: 'MEMBER_GRADE', codeLabel: '일반',      codeValue: 'NORMAL',    sortOrd: 1, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
+      { codeId: 21, codeGrp: 'MEMBER_GRADE', codeLabel: 'VIP',       codeValue: 'VIP',       sortOrd: 2, useYn: 'Y', remark: '', parentCodeValue: null, regDate: '2026-01-01' },
     ],
 
     // 카테고리 (필수)
@@ -79,6 +95,29 @@
     // 전시 (필수)
     displays: [
       { displayId: 1, displayNm: 'Main Banner', status: 'ACTIVE', rows: [] },
+    ],
+
+    // 표시경로 업무코드 옵션 (bizCdCodes)
+    bizCdCodes: [
+      { codeValue: 'sy_brand',    codeLabel: '브랜드' },
+      { codeValue: 'sy_vendor',   codeLabel: '업체' },
+      { codeValue: 'sy_dept',     codeLabel: '부서' },
+      { codeValue: 'sy_menu',     codeLabel: '메뉴' },
+      { codeValue: 'sy_code_grp', codeLabel: '코드그룹' },
+      { codeValue: 'ec_category', codeLabel: '카테고리' },
+    ],
+
+    // 표시경로 (sy_path)
+    paths: [
+      { pathId: 1, bizCd: 'sy_brand',    parentPathId: null, pathLabel: '국내브랜드',    sortOrd: 1, useYn: 'Y', remark: '' },
+      { pathId: 2, bizCd: 'sy_brand',    parentPathId: 1,    pathLabel: '패션',          sortOrd: 1, useYn: 'Y', remark: '' },
+      { pathId: 3, bizCd: 'sy_brand',    parentPathId: 1,    pathLabel: '뷰티',          sortOrd: 2, useYn: 'Y', remark: '' },
+      { pathId: 4, bizCd: 'sy_brand',    parentPathId: null, pathLabel: '해외브랜드',    sortOrd: 2, useYn: 'Y', remark: '' },
+      { pathId: 5, bizCd: 'sy_vendor',   parentPathId: null, pathLabel: '의류업체',      sortOrd: 1, useYn: 'Y', remark: '' },
+      { pathId: 6, bizCd: 'sy_vendor',   parentPathId: null, pathLabel: '잡화업체',      sortOrd: 2, useYn: 'Y', remark: '' },
+      { pathId: 7, bizCd: 'sy_code_grp', parentPathId: null, pathLabel: '주문/결제',     sortOrd: 1, useYn: 'Y', remark: '' },
+      { pathId: 8, bizCd: 'sy_code_grp', parentPathId: null, pathLabel: '배송/클레임',   sortOrd: 2, useYn: 'Y', remark: '' },
+      { pathId: 9, bizCd: 'sy_code_grp', parentPathId: null, pathLabel: '전시/프로모션', sortOrd: 3, useYn: 'Y', remark: '' },
     ],
   });
 })();

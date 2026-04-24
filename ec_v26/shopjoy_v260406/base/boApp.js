@@ -1606,7 +1606,7 @@
           </div>
         </div>
         <!-- 오류 상세 더보기 아이콘 (우측, 내용이 있을 때만) -->
-        <span v-if="t.errorDetails && t.type === 'error' && t.errorDetails.includes(String.fromCharCode(10))" @click="t.expanded = !t.expanded" class="toast-expand-icon" :title="t.expanded ? '접기' : '더보기'">{{ t.expanded ? '▲' : '▼' }}</span>
+        <span v-if="t.errorDetails && t.type === 'error'" @click="t.expanded = !t.expanded" class="toast-expand-icon" :title="t.expanded ? '접기' : '더보기'">{{ t.expanded ? '▲' : '▼' }}</span>
       </div>
       <!-- 오류 상세 전체 내용 (펼쳐진 상태) -->
       <div v-if="t.expanded && t.errorDetails" class="toast-error-details">
