@@ -1,8 +1,15 @@
-/* ShopJoy - Sample02: 상품 관리 CRUD Grid (Infinity Scroll) */
+/* ShopJoy - Sample02: 상품 관리 CRUD Grid (Infinity Scroll)  (API: GET|POST|PUT|DELETE /api/base/sy/zz-sample1, cdGrp='S02_PRODUCT')
+ * ZzSample1 필드 매핑:
+ *   sample1Id → productId  |  cdNm → productNm  |  col01 → category
+ *   col02 → price  |  col03 → stock  |  useYn → status(Y=판매중/N=판매중지)  |  regDt → regDate
+ */
 window.XsSample02 = {
   name: 'XsSample02',
   setup() {
     const { ref, reactive, computed, onMounted, onUnmounted } = Vue;
+    const api = window.axiosApi || window.adminApi;
+    const API = 'api/base/sy/zz-sample1';
+    const CD_GRP = 'S02_PRODUCT';
 
     /* ── Toast ── */
     const toast = reactive({ show: false, msg: '', type: 'success' });
@@ -24,6 +31,17 @@ window.XsSample02 = {
     let   _tempId    = -1;
     const focusedIdx = ref(null);
     const EDIT_FIELDS = ['productNm', 'category', 'price', 'stock', 'status'];
+
+    const toRow = d => ({
+      productId: d.sample1Id,
+      productNm: d.cdNm  || '',
+      category:  d.col01 || '상의',
+      price:     Number(d.col02) || 0,
+      stock:     Number(d.col03) || 0,
+      status:    d.useYn === 'Y' ? '판매중' : '판매중지',
+      regDate:   d.regDt || '',
+    });
+    const toPayload = r => ({ cdGrp: CD_GRP, cdNm: r.productNm, col01: r.category, col02: String(r.price), col03: String(r.stock), useYn: r.status === '판매중지' ? 'N' : 'Y' });
 
     const makeRow = d => ({
       ...d,
@@ -59,7 +77,11 @@ window.XsSample02 = {
     };
 
     onMounted(async () => {
-      /* 샘플 데이터: 빈 상태로 시작 */
+      try {
+        const res = await api.get(API, { cdGrp: CD_GRP });
+        const list = res?.data?.data ?? res?.data ?? [];
+        allData.splice(0, allData.length, ...list.map(toRow));
+      } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       loadGrid();
       Vue.nextTick(setupObserver);
     });
@@ -127,11 +149,16 @@ window.XsSample02 = {
       for (const r of [...iRows, ...uRows]) { if (!r.productNm) { showToast('상품명은 필수 항목입니다.', 'error'); return; } }
       const parts = []; if (iRows.length) parts.push(`등록 ${iRows.length}건`); if (uRows.length) parts.push(`수정 ${uRows.length}건`); if (dRows.length) parts.push(`삭제 ${dRows.length}건`);
       if (!confirm(`${parts.join(', ')}을(를) 저장하시겠습니까?`)) return;
-      dRows.forEach(r => { const i = allData.findIndex(d => d.productId === r.productId); if (i !== -1) allData.splice(i, 1); });
-      uRows.forEach(r => { const i = allData.findIndex(d => d.productId === r.productId); if (i !== -1) EDIT_FIELDS.forEach(f => { allData[i][f] = r[f]; }); });
-      let nid = Math.max(...allData.map(d => d.productId), 0);
-      iRows.forEach(r => { allData.push({ productId: ++nid, productNm: r.productNm, category: r.category, price: r.price, stock: r.stock, status: r.status, regDate: new Date().toISOString().slice(0, 10) }); });
-      showToast(`${parts.join(', ')} 저장되었습니다.`); loadGrid();
+      try {
+        for (const r of dRows) await api.delete(`${API}/${r.productId}`);
+        for (const r of uRows) await api.put(`${API}/${r.productId}`, toPayload(r));
+        for (const r of iRows) await api.post(API, toPayload(r));
+        showToast(`${parts.join(', ')} 저장되었습니다.`);
+        const res = await api.get(API, { cdGrp: CD_GRP });
+        const list = res?.data?.data ?? res?.data ?? [];
+        allData.splice(0, allData.length, ...list.map(toRow));
+        loadGrid(); Vue.nextTick(setupObserver);
+      } catch (e) { showToast('저장 실패: ' + (e.response?.data?.message || e.message || e), 'error'); }
     };
 
     /* ── Drag ── */

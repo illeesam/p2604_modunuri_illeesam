@@ -1,3 +1,30 @@
+# ════════════════════════════════════════════════════════════════════
+# 프로파일별 실행 방법
+# ════════════════════════════════════════════════════════════════════
+#
+# ── [local] ──────────────────────────────────────────────────────
+# java -jar
+#   java -Dspring.profiles.active=local -DDB_HOST=localhost -DDB_PORT=5432 -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=postgres -jar C:\_pjt_github\p2604_modunuri_illeesam\ec_v26\shopjoy_v260406\_apps\EcAdminApi\build\libs\EcAdminApi-0.0.1-SNAPSHOT.jar
+#
+# IntelliJ VM options
+#   -Dspring.profiles.active=local -DDB_HOST=localhost -DDB_PORT=5432 -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=postgres
+#
+# ── [dev] ────────────────────────────────────────────────────────
+# java -jar
+#   java -Dspring.profiles.active=dev -DDB_HOST=illeesam.synology.me -DDB_PORT=17632 -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=(실제값) -jar C:\_pjt_github\p2604_modunuri_illeesam\ec_v26\shopjoy_v260406\_apps\EcAdminApi\build\libs\EcAdminApi-0.0.1-SNAPSHOT.jar
+#
+# IntelliJ VM options
+#   -Dspring.profiles.active=dev -DDB_HOST=illeesam.synology.me -DDB_PORT=17632 -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=(실제값)
+#
+# ── [prod] ───────────────────────────────────────────────────────
+# java -jar
+#   java -Dspring.profiles.active=prod -DDB_HOST=(서버IP또는도메인) -DDB_PORT=(포트) -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=(실제값) -DDB_PASSWORD=(실제값) -DJWT_SECRET=(실제값) -DJENKINS_BATCH_TOKEN=(실제값) -jar /app/EcAdminApi.jar
+#
+# IntelliJ VM options
+#   -Dspring.profiles.active=prod -DDB_HOST=(서버IP또는도메인) -DDB_PORT=(포트) -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=(실제값) -DDB_PASSWORD=(실제값) -DJWT_SECRET=(실제값) -DJENKINS_BATCH_TOKEN=(실제값)
+#
+# ════════════════════════════════════════════════════════════════════
+
 spring:
   profiles:
     active: dev

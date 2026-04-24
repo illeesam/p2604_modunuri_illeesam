@@ -1,8 +1,15 @@
-/* ShopJoy - Sample08: 카테고리 관리 CRUD Grid */
+/* ShopJoy - Sample08: 카테고리 관리 CRUD Grid  (API: GET|POST|PUT|DELETE /api/base/sy/zz-sample1, cdGrp='S08_CATEGORY')
+ * ZzSample1 필드 매핑:
+ *   sample1Id → categoryId  |  cdNm → categoryNm  |  col01 → parentNm
+ *   col02 → depth  |  srtordVl → sortOrd  |  useYn → useYn  |  regDt → regDate
+ */
 window.XsSample08 = {
   name: 'XsSample08',
   setup() {
     const { ref, reactive, computed, onMounted } = Vue;
+    const api = window.axiosApi || window.adminApi;
+    const API = 'api/base/sy/zz-sample1';
+    const CD_GRP = 'S08_CATEGORY';
 
     const toast = reactive({ show: false, msg: '', type: 'success' });
     let _tId = null;
@@ -17,6 +24,9 @@ window.XsSample08 = {
     let   _tempId    = -1;
     const focusedIdx = ref(null);
     const EDIT_FIELDS = ['categoryNm', 'parentNm', 'depth', 'sortOrd', 'useYn'];
+
+    const toRow = d => ({ categoryId: d.sample1Id, categoryNm: d.cdNm || '', parentNm: d.col01 || '-', depth: Number(d.col02) || 1, sortOrd: Number(d.srtordVl) || 1, useYn: d.useYn || 'Y', regDate: d.regDt || '' });
+    const toPayload = r => ({ cdGrp: CD_GRP, cdNm: r.categoryNm, col01: r.parentNm, col02: String(r.depth), srtordVl: r.sortOrd, useYn: r.useYn });
 
     const makeRow = d => ({ ...d, _row_status: 'N', _row_check: false, _orig: { categoryNm: d.categoryNm, parentNm: d.parentNm, depth: d.depth, sortOrd: d.sortOrd, useYn: d.useYn } });
 
@@ -40,7 +50,11 @@ window.XsSample08 = {
     };
 
     onMounted(async () => {
-      /* 샘플 데이터: 빈 상태로 시작 */
+      try {
+        const res = await api.get(API, { cdGrp: CD_GRP });
+        const list = res?.data?.data ?? res?.data ?? [];
+        allData.splice(0, allData.length, ...list.map(toRow));
+      } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       loadGrid();
     });
 
@@ -66,11 +80,16 @@ window.XsSample08 = {
       for (const r of [...iRows, ...uRows]) { if (!r.categoryNm) { showToast('카테고리명은 필수 항목입니다.', 'error'); return; } }
       const parts = []; if (iRows.length) parts.push(`등록 ${iRows.length}건`); if (uRows.length) parts.push(`수정 ${uRows.length}건`); if (dRows.length) parts.push(`삭제 ${dRows.length}건`);
       if (!confirm(`${parts.join(', ')}을(를) 저장하시겠습니까?`)) return;
-      dRows.forEach(r => { const i = allData.findIndex(d => d.categoryId === r.categoryId); if (i !== -1) allData.splice(i, 1); });
-      uRows.forEach(r => { const i = allData.findIndex(d => d.categoryId === r.categoryId); if (i !== -1) EDIT_FIELDS.forEach(f => { allData[i][f] = r[f]; }); });
-      let nid = Math.max(...allData.map(d => d.categoryId), 0);
-      iRows.forEach(r => { allData.push({ categoryId: ++nid, categoryNm: r.categoryNm, parentNm: r.parentNm, depth: r.depth, sortOrd: r.sortOrd, useYn: r.useYn, regDate: new Date().toISOString().slice(0, 10) }); });
-      showToast(`${parts.join(', ')} 저장되었습니다.`); loadGrid();
+      try {
+        for (const r of dRows) await api.delete(`${API}/${r.categoryId}`);
+        for (const r of uRows) await api.put(`${API}/${r.categoryId}`, toPayload(r));
+        for (const r of iRows) await api.post(API, toPayload(r));
+        showToast(`${parts.join(', ')} 저장되었습니다.`);
+        const res = await api.get(API, { cdGrp: CD_GRP });
+        const list = res?.data?.data ?? res?.data ?? [];
+        allData.splice(0, allData.length, ...list.map(toRow));
+        loadGrid();
+      } catch (e) { showToast('저장 실패: ' + (e.response?.data?.message || e.message || e), 'error'); }
     };
 
     const dragSrc = ref(null), dragMoved = ref(false);

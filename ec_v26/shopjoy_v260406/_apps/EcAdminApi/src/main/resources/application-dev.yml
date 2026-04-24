@@ -1,13 +1,3 @@
-# ════════════════════════════════════════════════════════════════════
-# [dev] 실행 방법
-#
-# 1) java -jar
-#    java -Dspring.profiles.active=dev -DDB_HOST=illeesam.synology.me -DDB_PORT=17632 -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=(실제값) -jar C:\_pjt_github\p2604_modunuri_illeesam\ec_v26\shopjoy_v260406\_apps\EcAdminApi\build\libs\EcAdminApi-0.0.1-SNAPSHOT.jar
-#
-# 2) IntelliJ VM options
-#    -Dspring.profiles.active=dev -DDB_HOST=illeesam.synology.me -DDB_PORT=17632 -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=(실제값)
-# ════════════════════════════════════════════════════════════════════
-
 spring:
   datasource:
     # DB_HOST=illeesam.synology.me | DB_PORT=17632 | DB_NAME=postgres | DB_SCHEMA=shopjoy_2604
