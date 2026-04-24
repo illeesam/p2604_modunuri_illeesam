@@ -4,51 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 실행 방법
 
-**Vue 3 CDN 유지 + Tailwind CLI 로컬 빌드** 하이브리드 구조.
-VS Code **Live Server**로 실행 (기본 포트 `127.0.0.1:5501`).
+**Vue 3 CDN 로컬 로드** 구조. VS Code **Live Server**로 실행 (기본 포트 `127.0.0.1:5501`).
 
 - **Vue/Pinia/axios/Yup/Quill** 등 런타임 라이브러리: 로컬 복사본(`assets/cdn/pkg/<pkg>/<ver>/`)에서 로드 — CDN 미사용
-- **Tailwind CSS**: 로컬 Node CLI로 빌드 → `assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css` 생성
-- **그 외 앱 코드**: 빌드 없이 원본 JS 그대로 브라우저 실행 (`<script src="pages/*.js">`)
+- **앱 코드**: 빌드 없이 원본 JS 그대로 브라우저 실행 (`<script src="pages/*.js">`)
 
-### 최초 1회 세팅
+### CDN 파일 준비 (최초 1회)
 
-```bash
-# 1) Node.js LTS 설치 (https://nodejs.org/)
-# 2) 프로젝트 루트에서:
-npm install
-
-# 3) CDN 파일 다운로드 (assets/cdn/pkg/README.md 참조)
-#    - Vue, Pinia, Quill, 우편번호 등 로컬 복사본 준비
-```
+`assets/cdn/pkg/README.md` 참조 — Vue, Pinia, Quill, 우편번호 등 로컬 복사본 준비.
 
 ### 일상 개발
 
-```bash
-# 개발 중: Tailwind watch (파일 변경 시 CSS 자동 재빌드)
-npm run dev
-
-# 동시에: VS Code Live Server로 index.html 열기
-#   → http://127.0.0.1:5501/
-```
-
-### 배포 전 1회
-
-```bash
-# Tailwind CSS 최종 빌드 (압축)
-npm run build
-# 결과물: assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css
-```
-
-### npx로 직접 실행 (package.json 스크립트 없이)
-
-```bash
-# watch 모드
-npx tailwindcss -i src/tailwind.css -o assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css --watch
-
-# 1회 빌드
-npx tailwindcss -i src/tailwind.css -o assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css --minify
-```
+VS Code Live Server로 index.html 열기 → `http://127.0.0.1:5501/`
 
 세 개의 독립 진입점:
 
@@ -71,7 +38,6 @@ npx tailwindcss -i src/tailwind.css -o assets/cdn/pkg/tailwind/3.4.19.build/tail
 | **Yup** | 1.0.0 (local shim) | `assets/cdn/pkg/yup/1.0.0.shim/yup.js` | Yup v1.x 공식 UMD 미제공 → 로컬 shim 유지. `.matches()` 미지원 |
 | **Quill** | 2.0.2 | `assets/cdn/pkg/quill/2.0.2/quill.{js,snow.css}` | 관리자·일부 사용자 리치텍스트 에디터 |
 | **Kakao 우편번호** | v2 | `assets/cdn/pkg/postcode/2/postcode.v2.js` 또는 원본 CDN | 주소 검색 (원본 CDN 유지 권장) |
-| **Tailwind CSS** | 3.4.x | `assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css` (빌드 결과물) | 유틸리티 클래스. `npm run build`로 생성 |
 | **marked** | 11.1.1 | `assets/cdn/pkg/marked/11.1.1/marked.min.js` | Markdown → HTML 파싱. DispX04Widget markdown 위젯에서 사용 |
 | **Noto Sans KR 폰트** | - | Google Fonts CDN | 자동 서브셋 제공 이점으로 CDN 유지 |
 
@@ -384,174 +350,6 @@ Order/Claim/Dliv Mng의 "변경작업 선택" 모달:
 9개 영역을 탭 구성 + 5개 뷰모드:
 주문/클레임/배송/캐쉬/문의/채팅/로그인/쿠폰/발송 각 탭 카드.
 기본 진입 시 **3열** 뷰로 시작 (`window._ecCustInfoState.viewMode = '3col'`).
-
-## Tailwind CSS 빌드 시스템
-
-### 왜 빌드가 필요한가?
-
-Tailwind는 사용된 유틸리티 클래스만 추려 CSS로 출력하는 **JIT(Just-In-Time)** 방식입니다.
-
-**빌드 CLI**: `tailwind.config.js` 의 `content` 경로를 스캔하여 프로젝트에서 **실제 사용된 클래스만** 추출 → 최소 크기 CSS 파일 생성 (수십 KB).
-**빌드 없이 Play CDN 사용 시**: 브라우저가 3MB+ JS를 받아 런타임에 CSS를 생성 → 첫 렌더 수백 ms 지연, 매 요청마다 반복. **프로덕션 사용 금지**.
-
-### 언제 다시 빌드해야 하는가?
-
-| 상황 | 재빌드 |
-|---|---|
-| HTML/JS/Vue 템플릿에 **새 Tailwind 클래스** 사용 (`class="mt-8 grid-cols-5"` 등) | ✅ 필요 |
-| `tailwind.config.js` 수정 (색상/content 경로 변경) | ✅ 필요 |
-| `src/tailwind.css` 수정 (`@layer`/`@apply` 커스텀) | ✅ 필요 |
-| 기존 클래스 재사용 (이미 tailwind.min.css 에 존재) | ❌ 불필요 |
-| JS 로직 변경, API 호출, 컴포넌트 이름 변경 | ❌ 불필요 |
-| `(front|admin)GlobalStyle*.css` 수정 | ❌ 불필요 (별도 CSS) |
-
-**운영 규칙**: 개발 중엔 `npm run dev` (watch) 켜놓기 → 자동. **배포 직전 `npm run build` 1회 필수**.
-
-### 안 하면 어떻게 되는가?
-
-- **새 클래스 무시됨**: `class="bg-sky-500"` 사용해도 CSS 규칙이 없어 스타일 미적용
-- **서버에 오래된 빌드 배포**: 개발 PC에서만 watch로 동작하고 `tailwind.min.css` 가 구 버전이면 **배포 사이트에서 스타일 깨짐**
-- **CI 빌드 생략**: 배포 파이프라인에 `npm run build` 없으면 로컬 빌드와 배포본이 어긋남
-
-### 자동화 방법
-
-**① 개발 중 watch (가장 실용적)**
-```bash
-npm run dev   # 저장 시마다 tailwind.min.css 즉시 갱신
-```
-
-**② VS Code 워크스페이스 자동 시작** — `.vscode/tasks.json`
-```json
-{
-  "version": "2.0.0",
-  "tasks": [{
-    "label": "tailwind:watch",
-    "type": "npm", "script": "dev",
-    "runOptions": { "runOn": "folderOpen" },
-    "isBackground": true,
-    "presentation": { "reveal": "silent" }
-  }]
-}
-```
-→ VS Code 폴더 열면 background로 watch 자동 실행.
-
-**③ Git pre-commit hook** — `.husky/pre-commit`
-```bash
-#!/bin/sh
-npm run build && git add assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css
-```
-
-**④ GitHub Actions CI** — `.github/workflows/tailwind.yml` 발췌
-```yaml
-- run: npm ci
-- run: npm run build
-- run: |
-    git config user.email "ci@bot" && git config user.name "CI"
-    git add assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css
-    git diff --cached --quiet || (git commit -m "chore: rebuild tailwind" && git push)
-```
-
-### 빌드 구성 파일
-
-| 파일 | 역할 | 읽는 주체 |
-|---|---|---|
-| `package.json` | `npm install`할 devDependencies + `npm run dev/build` 스크립트 정의 | npm |
-| `tailwind.config.js` | 스캔 대상(`content`), 브랜드 색상(`theme.extend.colors`) 등 설정 | Tailwind CLI (Node) |
-| `postcss.config.js` | PostCSS 플러그인 구성(Tailwind + autoprefixer) | Tailwind CLI (Node) |
-| `src/tailwind.css` | 빌드 **입력** 파일. `@tailwind base/components/utilities` 3개 지시어 | Tailwind CLI |
-| `assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css` | 빌드 **출력** 파일. `<link>`로 브라우저 로드 | 브라우저 |
-
-**중요**: `package.json` / `tailwind.config.js` / `postcss.config.js` / `src/tailwind.css`는 모두 **개발 PC의 Node.js 빌드 도구가 읽는 파일**입니다. 브라우저는 존재조차 모릅니다. 배포 시 서버에 올릴 필요 없음.
-
-### 빌드 파이프라인
-
-```
-[개발 PC · Node.js]
-  ┌─────────────────────────────────────┐
-  │  npx tailwindcss -i src/tailwind.css │
-  │       -o assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css │
-  │       --minify                       │
-  └─────────────────────────────────────┘
-       │ 1. tailwind.config.js 로드 (content 경로 확인)
-       │ 2. 해당 파일들 스캔 → 사용된 class 수집
-       │ 3. postcss.config.js 로드 → plugins 적용
-       │ 4. autoprefixer가 벤더 프리픽스 추가
-       │ 5. minify 후 tailwind.min.css 출력
-       ▼
-[브라우저]
-  ┌────────────────────────────────────┐
-  │ <link rel="stylesheet"             │
-  │       href="assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css"> │
-  └────────────────────────────────────┘
-       오직 이 한 줄만 읽음. 설정 파일들은 요청조차 안 함.
-```
-
-### 빌드 명령 요약
-
-```bash
-# 최초 1회 — Node.js 의존성 설치
-npm install
-
-# 개발 중 — watch 모드 (파일 변경 감지 → 자동 재빌드)
-npm run dev
-# 또는: npx tailwindcss -i src/tailwind.css -o assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css --watch
-
-# 배포 전 — 압축 빌드
-npm run build
-# 또는: npx tailwindcss -i src/tailwind.css -o assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css --minify
-```
-
-### HTML에 Tailwind 연결
-
-각 진입점(index.html / bo.html / disp-ui.html) `<head>`에 다음 한 줄 추가:
-
-```html
-<link rel="stylesheet" href="assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css">
-```
-
-기존 `adminGlobalStyle0N.css` / `frontGlobalStyle0N.css`와 **공존 가능**. 점진적으로 유틸리티 클래스로 이관.
-
-### 브랜드 색상 사용
-
-`tailwind.config.js`에 정의된 팔레트:
-
-```html
-<!-- 사용자 페이스 핑크 브랜드 -->
-<button class="bg-brand-pink hover:bg-brand-pink-dark text-white">저장</button>
-
-<!-- 사이트 02(민트/세이지) 톤 -->
-<div class="bg-brand-mint-light text-brand-mint-dark">...</div>
-```
-
-### 배포 체크리스트
-
-배포 전 **반드시**:
-1. `npm run build` 실행 → `assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css` 최신화
-2. 빌드 결과물 커밋 여부 결정 (배포 파이프라인에서 빌드 시에만 `.gitignore`)
-3. 서버에 `node_modules/`, `src/`, `*.config.js`, `package*.json` 업로드 **제외**
-
-### 배포 제외 대상
-
-```
-node_modules/           ← npm install로 재생성 가능
-src/                    ← Tailwind input 파일 (output만 배포)
-tailwind.config.js      ← 빌드 도구용
-postcss.config.js       ← 빌드 도구용
-package.json            ← npm 관리용
-package-lock.json       ← npm 관리용
-.gitignore              ← 형상관리용
-```
-
-### 자주 만나는 문제
-
-| 증상 | 원인 | 해결 |
-|---|---|---|
-| 클래스가 적용 안 됨 | `content` 경로 누락 | `tailwind.config.js`의 content 배열 확인 |
-| 빌드 후에도 변경 안 됨 | watch 모드 미실행 | `npm run dev` 실행 중인지 확인 |
-| `@tailwind` 지시어 오류 | src/tailwind.css 손상 | 파일 복구 또는 재생성 |
-| 배포 후 Tailwind 안 보임 | `--minify` 빌드 누락 | `npm run build` 후 CSS 업로드 |
-
----
 
 ## 로컬 설정 (`settings.json`)
 
