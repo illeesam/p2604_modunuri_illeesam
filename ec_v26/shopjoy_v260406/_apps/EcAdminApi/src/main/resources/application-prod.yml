@@ -35,8 +35,10 @@ server:
 
 jwt:
   secret: ${JWT_SECRET}
-  access-expiry: 900000
-  refresh-expiry: 604800000
+  bo-access-expiry: ${JWT_BO_ACCESS_EXPIRY:900000}      # 15분 accessToken 만료
+  fo-access-expiry: ${JWT_FO_ACCESS_EXPIRY:900000}      # 15분 accessToken 만료
+  bo-refresh-expiry: ${JWT_BO_REFRESH_EXPIRY:7200000}   # BO 관리자 refreshToken: 2시간 (Sliding)
+  fo-refresh-expiry: ${JWT_FO_REFRESH_EXPIRY:1296000000} # FO 회원 refreshToken: 15일 (Sliding)
 
 
 management:

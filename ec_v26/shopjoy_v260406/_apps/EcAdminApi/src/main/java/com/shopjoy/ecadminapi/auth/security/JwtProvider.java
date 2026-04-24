@@ -17,17 +17,20 @@ import java.util.List;
 public class JwtProvider {
 
     private final SecretKey secretKey;
-    private final long accessExpiry;
-    private final long boRefreshExpiry;   // BO 관리자: 2시간
-    private final long foRefreshExpiry;   // FO 회원: 15일
+    private final long boAccessExpiry;    // BO 관리자 accessToken: 15분
+    private final long foAccessExpiry;    // FO 회원 accessToken: 15분
+    private final long boRefreshExpiry;   // BO 관리자 refreshToken: 2시간
+    private final long foRefreshExpiry;   // FO 회원 refreshToken: 15일
 
     public JwtProvider(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.access-expiry}") long accessExpiry,
+            @Value("${jwt.bo-access-expiry}") long boAccessExpiry,
+            @Value("${jwt.fo-access-expiry}") long foAccessExpiry,
             @Value("${jwt.bo-refresh-expiry}") long boRefreshExpiry,
             @Value("${jwt.fo-refresh-expiry}") long foRefreshExpiry) {
         this.secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
-        this.accessExpiry = accessExpiry;
+        this.boAccessExpiry = boAccessExpiry;
+        this.foAccessExpiry = foAccessExpiry;
         this.boRefreshExpiry = boRefreshExpiry;
         this.foRefreshExpiry = foRefreshExpiry;
     }
@@ -39,6 +42,7 @@ public class JwtProvider {
      */
     public String createAccessToken(AccessTokenClaims claims) {
         Date now = new Date();
+        long accessExpiry = "BO".equals(claims.getUserTypeCd()) ? boAccessExpiry : foAccessExpiry;
         Date expiry = new Date(now.getTime() + accessExpiry);
 
         return Jwts.builder()
@@ -80,7 +84,8 @@ public class JwtProvider {
             .compact();
     }
 
-    public long getAccessExpiryMinutes() { return accessExpiry / 60_000; }
+    public long getBoAccessExpiryMinutes() { return boAccessExpiry / 60_000; }
+    public long getFoAccessExpiryMinutes() { return foAccessExpiry / 60_000; }
     public long getBoRefreshExpiryMinutes() { return boRefreshExpiry / 60_000; }
     public long getFoRefreshExpiryMinutes() { return foRefreshExpiry / 60_000; }
 

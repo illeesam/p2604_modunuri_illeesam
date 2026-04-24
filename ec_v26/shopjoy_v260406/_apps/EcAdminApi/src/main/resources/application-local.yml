@@ -38,10 +38,11 @@ server:
   port: 3000
 
 jwt:
-  secret: c2hvcGpveTI2MDRBZG1pbkFwaVNlY3JldEtleU11c3RCZTE2MEJpdHNNaW5pbXVt
-  access-expiry: 900000          # 15분 (BO/FO 공통)
-  bo-refresh-expiry: 7200000     # BO 관리자 refreshToken: 2시간 (Sliding)
-  fo-refresh-expiry: 1296000000  # FO 회원 refreshToken: 15일 (Sliding)
+  secret: ${JWT_SECRET:c2hvcGpveTI2MDRBZG1pbkFwaVNlY3JldEtleU11c3RCZTE2MEJpdHNNaW5pbXVt}
+  bo-access-expiry: ${JWT_BO_ACCESS_EXPIRY:900000}      # 15분 accessToken 만료
+  fo-access-expiry: ${JWT_FO_ACCESS_EXPIRY:900000}      # 15분 accessToken 만료
+  bo-refresh-expiry: ${JWT_BO_REFRESH_EXPIRY:7200000}   # BO 관리자 refreshToken: 2시간 (Sliding)
+  fo-refresh-expiry: ${JWT_FO_REFRESH_EXPIRY:1296000000} # FO 회원 refreshToken: 15일 (Sliding)
 
 
 management:
@@ -112,17 +113,27 @@ app:
 
   # ── 파일 업로드 설정 (local 프로파일) ─────────────────────────────────
   file:
-    # 스토리지 타입: LOCAL (개발/테스트용)
-    storage-type: LOCAL
-    # 로컬 저장소 경로 (프로젝트 루트 기준)
+    storage-type: ${STORAGE_TYPE:LOCAL}
     local:
       base-path: static/cdn
       upload-dir: uploads
-    # CDN 호스트 (로컬에서는 상대경로로 접근)
-    cdn-host: http://localhost:8080/static/cdn
-    # 썸네일 생성 활성화 (개발용)
+    cdn-host: ${CDN_HOST:http://localhost:8080/static/cdn}
     thumbnail-enabled: true
     thumbnail-sizes: 200x200,400x400,800x800
+
+    aws:
+      bucket-name: ${AWS_S3_BUCKET:shopjoy-files-local}
+      region: ${AWS_REGION:ap-northeast-2}
+      access-key: ${AWS_ACCESS_KEY_ID:}
+      secret-key: ${AWS_SECRET_ACCESS_KEY:}
+      cdn-url: ${AWS_CLOUDFRONT_URL:https://cdn.shopjoy.com}
+
+    ncp:
+      bucket-name: ${NCP_BUCKET:shopjoy-files-local}
+      endpoint: ${NCP_ENDPOINT:https://obs.kr-standard.ncrdev.ncloud.com}
+      access-key: ${NCP_ACCESS_KEY:}
+      secret-key: ${NCP_SECRET_KEY:}
+      cdn-url: ${NCP_CDN_URL:https://cdn-ncp.shopjoy.com}
 
 # ────────────────────────────────────────────
 # 로깅 — local 프로파일

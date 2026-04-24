@@ -181,7 +181,7 @@ public class BoAuthService {
 
         return new TokenPair(newAccessToken, null,
             LocalDateTime.now(),
-            jwtProvider.getAccessExpiryMinutes(),
+            jwtProvider.getBoAccessExpiryMinutes(),
             jwtProvider.getBoRefreshExpiryMinutes());
     }
 
@@ -265,7 +265,7 @@ public class BoAuthService {
                 .failCnt(failCnt)
                 .accessToken(accessToken)
                 .accessTokenExp(accessToken != null
-                    ? LocalDateTime.now().plusMinutes(jwtProvider.getAccessExpiryMinutes()) : null)
+                    ? LocalDateTime.now().plusMinutes(jwtProvider.getBoAccessExpiryMinutes()) : null)
                 .regBy(userId)
                 .regDate(LocalDateTime.now())
                 .build();

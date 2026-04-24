@@ -177,7 +177,7 @@ public class FoAuthService {
 
         return new TokenPair(newAccessToken, null,
             LocalDateTime.now(),
-            jwtProvider.getAccessExpiryMinutes(),
+            jwtProvider.getFoAccessExpiryMinutes(),
             jwtProvider.getFoRefreshExpiryMinutes());
     }
 
@@ -261,7 +261,7 @@ public class FoAuthService {
                 .failCnt(failCnt)
                 .accessToken(accessToken)
                 .accessTokenExp(accessToken != null
-                    ? LocalDateTime.now().plusMinutes(jwtProvider.getAccessExpiryMinutes()) : null)
+                    ? LocalDateTime.now().plusMinutes(jwtProvider.getFoAccessExpiryMinutes()) : null)
                 .regBy(memberId)
                 .regDate(LocalDateTime.now())
                 .build();
