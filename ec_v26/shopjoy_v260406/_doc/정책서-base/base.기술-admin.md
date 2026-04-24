@@ -15,7 +15,6 @@
 | Yup (shim) | 1.0.0 | `assets/cdn/pkg/yup/1.0.0.shim/yup.js` |
 | Quill | 2.0.2 | `assets/cdn/pkg/quill/2.0.2/` |
 | axios | 1.7.9 | `assets/cdn/pkg/axios/1.7.9/axios.min.js` |
-| Tailwind CSS | 3.4.x | `assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css` (빌드 결과물) |
 
 빌드 시스템 없음 — 모든 JS 파일은 브라우저에서 직접 실행.  
 `const { ref, reactive, computed } = Vue;` 방식으로 Composition API 사용.

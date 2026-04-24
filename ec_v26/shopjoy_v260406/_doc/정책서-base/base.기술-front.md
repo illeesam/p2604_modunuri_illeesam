@@ -19,7 +19,6 @@
 | Quill | 2.0.2 | `assets/cdn/pkg/quill/2.0.2/` |
 | Kakao 우편번호 | v2 | `assets/cdn/pkg/postcode/2/postcode.v2.js` |
 | marked | 11.1.1 | `assets/cdn/pkg/marked/11.1.1/marked.min.js` |
-| Tailwind CSS | 3.4.x | `assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css` |
 
 ---
 
