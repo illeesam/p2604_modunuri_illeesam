@@ -8,6 +8,8 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,8 @@ public class BoPmDiscntService {
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
     private final PmDiscntMapper mapper;
     private final PmDiscntRepository repository;
+    @PersistenceContext
+    private EntityManager em;
 
     @Transactional(readOnly = true)
     public List<PmDiscntDto> getList(Map<String, Object> p) {
@@ -58,6 +62,7 @@ public class BoPmDiscntService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
+        em.flush();
         return getById(id);
     }
 
@@ -75,6 +80,7 @@ public class BoPmDiscntService {
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
+        em.flush();
         return getById(id);
     }
 }

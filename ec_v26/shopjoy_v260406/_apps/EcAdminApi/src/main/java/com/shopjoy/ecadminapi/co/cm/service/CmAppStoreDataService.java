@@ -178,7 +178,7 @@ public class CmAppStoreDataService {
         }
 
         // BO 전용: sy_user 기반 역할 목록 (FO는 빈 리스트)
-        String rolesUserId = AuthPrincipal.BO.equals(userTypeCd) ? authUser.userId() : null;
+        String rolesUserId = AuthPrincipal.BO.equals(userTypeCd) ? authUser.authId() : null;
 
         Map<String, Object> tempAuthInfo = new java.util.HashMap<>();
         tempAuthInfo.put("authUser-authId", authUser.authId());
@@ -210,14 +210,15 @@ public class CmAppStoreDataService {
     }
 
     /**
-     * 사용자 역할 목록 조회 - sy_user_role UNION sy_vendor_user_role (조건: user_id)
-     * 반환 형식: [{ roleTypeCd, userId, roleId, roleCode, roleNm, vendorId, vendorNm }]
+     * 사용자 역할 목록 조회 - sy_user_role UNION sy_vendor_user_role (조건: authId)
+     * 반환 형식: [{ roleTypeCd, authId, roleId, roleCode, roleNm, vendorId, vendorNm }]
      */
-    private List<Map<String, Object>> buildAuthRoles(String userId) {
-        if (userId == null) return java.util.Collections.emptyList();
+    private List<Map<String, Object>> buildAuthRoles(String authId) {
+        if (authId == null) return java.util.Collections.emptyList();
 
-        // sy_role :: select list ::
+        // sy_role :: select list :: useYn=Y
         Map<String, SyRole> roleMap = syRoleRepository.findAll().stream()
+                .filter(r -> "Y".equals(r.getUseYn()))
                 .collect(Collectors.toMap(SyRole::getRoleId, r -> r, (a, b) -> a));
 
         // sy_vendor :: select list ::
@@ -229,12 +230,12 @@ public class CmAppStoreDataService {
 
         List<Map<String, Object>> result = new java.util.ArrayList<>();
 
-        // sy_user_role :: select list :: userId
-        syUserRoleRepository.findByUserId(userId).forEach(ur -> {
+        // sy_user_role :: select list :: authId
+        syUserRoleRepository.findByUserId(authId).forEach(ur -> {
             SyRole role = roleMap.get(ur.getRoleId());
             Map<String, Object> row = new java.util.LinkedHashMap<>();
             row.put("roleTypeCd", "user_role");
-            row.put("userId", ur.getUserId());
+            row.put("authId", ur.getUserId());
             row.put("roleId", ur.getRoleId());
             row.put("roleCode", role != null ? role.getRoleCode() : null);
             row.put("roleNm",   role != null ? role.getRoleNm()   : null);
@@ -243,12 +244,12 @@ public class CmAppStoreDataService {
             result.add(row);
         });
 
-        // sy_vendor_user_role :: select list :: userId
-        syVendorUserRoleRepository.findByUserId(userId).forEach(vur -> {
+        // sy_vendor_user_role :: select list :: authId
+        syVendorUserRoleRepository.findByUserId(authId).forEach(vur -> {
             SyRole role = roleMap.get(vur.getRoleId());
             Map<String, Object> row = new java.util.LinkedHashMap<>();
             row.put("roleTypeCd", "vendor_user_role");
-            row.put("userId", vur.getUserId());
+            row.put("authId", vur.getUserId());
             row.put("roleId", vur.getRoleId());
             row.put("roleCode", role != null ? role.getRoleCode() : null);
             row.put("roleNm",   role != null ? role.getRoleNm()   : null);
@@ -264,12 +265,12 @@ public class CmAppStoreDataService {
      * 관리자 정보 조회 - BO: sy_user(관리자)
      */
     private StoreUser getBoUser(AuthPrincipal authUser) {
-        if (authUser == null || authUser.userId() == null) {
+        if (authUser == null || authUser.authId() == null) {
             return StoreUser.builder().build();
         }
 
-        // sy_user :: select one :: userId
-        SyUser user = syUserRepository.findById(authUser.userId()).orElse(null);
+        // sy_user :: select one :: authId
+        SyUser user = syUserRepository.findById(authUser.authId()).orElse(null);
         if (user == null) {
             return StoreUser.builder().build();
         }
@@ -371,12 +372,12 @@ public class CmAppStoreDataService {
         Map<String, String> roleVendorMap = new java.util.HashMap<>();
 
         if (AuthPrincipal.BO.equals(userTypeCd) || AuthPrincipal.SO.equals(userTypeCd)) {
-            // sy_user_role :: select list :: userId
-            syUserRoleRepository.findByUserId(authUser.userId()).forEach(ur ->
+            // sy_user_role :: select list :: authId
+            syUserRoleRepository.findByUserId(authUser.authId()).forEach(ur ->
                 roleVendorMap.put(ur.getRoleId(), null));
 
-            // sy_vendor_user_role :: select list :: userId
-            syVendorUserRoleRepository.findByUserId(authUser.userId()).forEach(vur ->
+            // sy_vendor_user_role :: select list :: authId
+            syVendorUserRoleRepository.findByUserId(authUser.authId()).forEach(vur ->
                 roleVendorMap.put(vur.getRoleId(), vur.getVendorId()));
         } else {
             return List.of();
@@ -384,9 +385,9 @@ public class CmAppStoreDataService {
 
         return roleVendorMap.entrySet().stream()
                 .map(entry -> {
-                    // sy_role :: select one :: roleId
+                    // sy_role :: select one :: roleId, useYn=Y
                     SyRole role = syRoleRepository.findById(entry.getKey()).orElse(null);
-                    if (role == null) return null;
+                    if (role == null || !"Y".equals(role.getUseYn())) return null;
 
                     String vendorNm = null;
                     if (entry.getValue() != null) {
@@ -421,7 +422,7 @@ public class CmAppStoreDataService {
             return List.of();
         }
 
-        // sy_role_menu :: select list :: (filtered by roleId)
+        // sy_role_menu :: select list :: roleId
         List<SyRoleMenu> roleMenus = syRoleMenuRepository.findAll().stream()
                 .filter(rm -> rm.getRoleId().equals(authUser.roleId()))
                 .toList();
@@ -432,10 +433,10 @@ public class CmAppStoreDataService {
             addParentMenus(roleMenu.getMenuId(), menuIds);
         }
 
-        // sy_menu :: select one :: menuId (반복)
+        // sy_menu :: select one :: menuId, useYn=Y (반복)
         return menuIds.stream()
                 .map(menuId -> syMenuRepository.findById(menuId).orElse(null))
-                .filter(menu -> menu != null)
+                .filter(menu -> menu != null && "Y".equals(menu.getUseYn()))
                 .map(menu -> {
                     int menuLevel = getMenuLevel(menu);
                     return StoreMenu.builder()
@@ -482,8 +483,10 @@ public class CmAppStoreDataService {
     private StoreCode getCodes(AuthPrincipal authUser) {
         java.util.List<StoreCode.CodeInfo> codes = new java.util.ArrayList<>();
 
-        // sy_code :: select list ::
-        syCodeRepository.findAll().forEach(code -> {
+        // sy_code :: select list :: useYn=Y
+        syCodeRepository.findAll().stream()
+                .filter(code -> "Y".equals(code.getUseYn()))
+                .forEach(code -> {
             StoreCode.CodeInfo codeInfo = StoreCode.CodeInfo.builder()
                     .codeGrp(code.getCodeGrp())
                     .codeId(code.getCodeId())
@@ -504,9 +507,9 @@ public class CmAppStoreDataService {
      */
     private StoreProp getProps(AuthPrincipal authUser) {
         String siteId = authUser != null ? authUser.siteId() : null;
-        // sy_prop :: select list :: (filtered by siteId)
+        // sy_prop :: select list :: siteId, useYn=Y
         Map<String, StoreProp.PropInfo> propsByKey = syPropRepository.findAll().stream()
-                .filter(prop -> siteId == null || prop.getSiteId().equals(siteId))
+                .filter(prop -> "Y".equals(prop.getUseYn()) && (siteId == null || prop.getSiteId().equals(siteId)))
                 .collect(Collectors.toMap(
                         SyProp::getPropKey,
                         prop -> StoreProp.PropInfo.builder()
