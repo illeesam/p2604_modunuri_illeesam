@@ -29,9 +29,8 @@ import com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository;
 import com.shopjoy.ecadminapi.base.sy.repository.SyRoleMenuRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRoleMenu;
 import com.shopjoy.ecadminapi.base.sy.repository.SyUserRoleRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyUserRole;
-import com.shopjoy.ecadminapi.base.sy.repository.SyVendorUserRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorUser;
+import com.shopjoy.ecadminapi.base.sy.repository.SyVendorUserRoleRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorUserRole;
 import com.shopjoy.ecadminapi.base.sy.repository.SyVendorRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendor;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyProp;
@@ -81,7 +80,7 @@ public class CmAppStoreDataService {
     private final SyPropRepository syPropRepository;
     private final SyRoleMenuRepository syRoleMenuRepository;
     private final SyUserRoleRepository syUserRoleRepository;
-    private final SyVendorUserRepository syVendorUserRepository;
+    private final SyVendorUserRoleRepository syVendorUserRoleRepository;
     private final SyVendorRepository syVendorRepository;
     private final DpUiRepository dpUiRepository;
     private final DpAreaRepository dpAreaRepository;
@@ -185,7 +184,7 @@ public class CmAppStoreDataService {
         tempAuthInfo.put("authUser-siteId", authUser.siteId());
         tempAuthInfo.put("authUser-memberId", authUser.memberId());
         tempAuthInfo.put("authUser-vendorId", authUser.vendorId());
-        tempAuthInfo.put("authUser-roles", authUser.roles());
+        tempAuthInfo.put("authUser-roles", buildAuthRoles(authUser.userId()));
         tempAuthInfo.put("authUser-isStaffYn", authUser.isStaffYn());
         tempAuthInfo.put("authUser-isAdminYn", authUser.isAdminYn());
         tempAuthInfo.put("authUser-loginTime", authUser.loginTime());
@@ -204,6 +203,57 @@ public class CmAppStoreDataService {
                 .user(userInfo) // 사용자 정보
                 .tempAuthInfo(tempAuthInfo) // 사용자 정보
                 .build();
+    }
+
+    /**
+     * 사용자 역할 목록 조회 - sy_user_role UNION sy_vendor_user_role (조건: user_id)
+     * 반환 형식: [{ roleTypeCd, userId, roleId, roleCode, roleNm, vendorId, vendorNm }]
+     */
+    private List<Map<String, Object>> buildAuthRoles(String userId) {
+        if (userId == null) return java.util.Collections.emptyList();
+
+        // role 조회용 맵 (roleId → SyRole)
+        Map<String, SyRole> roleMap = syRoleRepository.findAll().stream()
+                .collect(Collectors.toMap(SyRole::getRoleId, r -> r, (a, b) -> a));
+
+        // vendor 조회용 맵 (vendorId → vendorNm)
+        Map<String, String> vendorNmMap = syVendorRepository.findAll().stream()
+                .collect(Collectors.toMap(
+                        v -> v.getVendorId(),
+                        v -> v.getVendorNm() != null ? v.getVendorNm() : "",
+                        (a, b) -> a));
+
+        List<Map<String, Object>> result = new java.util.ArrayList<>();
+
+        // 1) sy_user_role
+        syUserRoleRepository.findByUserId(userId).forEach(ur -> {
+            SyRole role = roleMap.get(ur.getRoleId());
+            Map<String, Object> row = new java.util.LinkedHashMap<>();
+            row.put("roleTypeCd", "user_role");
+            row.put("userId", ur.getUserId());
+            row.put("roleId", ur.getRoleId());
+            row.put("roleCode", role != null ? role.getRoleCode() : null);
+            row.put("roleNm",   role != null ? role.getRoleNm()   : null);
+            row.put("vendorId", null);
+            row.put("vendorNm", null);
+            result.add(row);
+        });
+
+        // 2) sy_vendor_user_role
+        syVendorUserRoleRepository.findByUserId(userId).forEach(vur -> {
+            SyRole role = roleMap.get(vur.getRoleId());
+            Map<String, Object> row = new java.util.LinkedHashMap<>();
+            row.put("roleTypeCd", "vendor_user_role");
+            row.put("userId", vur.getUserId());
+            row.put("roleId", vur.getRoleId());
+            row.put("roleCode", role != null ? role.getRoleCode() : null);
+            row.put("roleNm",   role != null ? role.getRoleNm()   : null);
+            row.put("vendorId", vur.getVendorId());
+            row.put("vendorNm", vendorNmMap.getOrDefault(vur.getVendorId(), null));
+            result.add(row);
+        });
+
+        return result;
     }
 
     /**
@@ -235,19 +285,32 @@ public class CmAppStoreDataService {
             }
         }
 
+        String vendorNm = "";
+        if (authUser.vendorId() != null) {
+            SyVendor vendor = syVendorRepository.findById(authUser.vendorId()).orElse(null);
+            if (vendor != null) {
+                vendorNm = CmUtil.nvl(vendor.getVendorNm());
+            }
+        }
+
         return StoreUser.builder()
                 .userId(user.getUserId()) // 사용자ID
+                .loginId(CmUtil.nvl(user.getLoginId())) // 로그인ID
                 .userName(CmUtil.nvl(user.getUserNm())) // 사용자명
                 .userEmail(CmUtil.nvl(user.getUserEmail())) // 이메일
                 .userHpNo(CmUtil.nvl(user.getUserPhone())) // 휴대폰
+                .siteId(CmUtil.nvl(user.getSiteId())) // 사이트ID
                 .deptId(CmUtil.nvl(user.getDeptId())) // 부서ID
                 .deptNm(deptNm) // 부서명
                 .roleId(CmUtil.nvl(user.getRoleId())) // 역할ID
                 .roleNm(roleNm) // 역할명
+                .memberGradeCd("") // 회원등급 (관리자는 해당없음)
                 .userStatusCd(CmUtil.nvl(user.getUserStatusCd(), "ACTIVE")) // 상태
+                .userTypeCd(CmUtil.nvl(authUser.userTypeCd())) // 사용자타입
                 .isAdminYn("N") // 관리자여부
-                .companyId("") // 회사ID
-                .companyNm("") // 회사명
+                .vendorId(CmUtil.nvl(authUser.vendorId())) // 업체ID
+                .vendorNm(vendorNm) // 업체명
+                .loginSnsChannelCd("") // SNS로그인채널 (관리자는 해당없음)
                 .boBookmarks("") // 즐겨찾기
                 .build();
     }
@@ -270,6 +333,7 @@ public class CmAppStoreDataService {
                 .memberEmail(member.getLoginId()) // 이메일(로그인ID)
                 .memberNm(member.getMemberNm()) // 회원명
                 .siteId(CmUtil.nvl(member.getSiteId())) // 사이트ID
+                .userTypeCd(CmUtil.nvl(authUser.userTypeCd())) // 사용자타입
                 .memberTypeCd("") // 회원유형
                 .memberHpNo(CmUtil.nvl(member.getMemberPhone())) // 휴대폰
                 .memberGrade(CmUtil.nvl(member.getGradeCd())) // 회원등급
@@ -294,19 +358,11 @@ public class CmAppStoreDataService {
         Map<String, String> roleVendorMap = new java.util.HashMap<>();
 
         if ("BO".equals(authUser.userTypeCd()) || "SO".equals(authUser.userTypeCd())) {
-            List<SyUserRole> userRoles = syUserRoleRepository.findAll().stream()
-                    .filter(ur -> ur.getUserId().equals(authUser.userId()))
-                    .toList();
-            for (SyUserRole userRole : userRoles) {
-                roleVendorMap.put(userRole.getRoleId(), null);
-            }
+            syUserRoleRepository.findByUserId(authUser.userId()).forEach(ur ->
+                roleVendorMap.put(ur.getRoleId(), null));
 
-            List<SyVendorUser> vendorUsers = syVendorUserRepository.findAll().stream()
-                    .filter(vu -> vu.getUserId().equals(authUser.userId()) && vu.getRoleId() != null)
-                    .toList();
-            for (SyVendorUser vendorUser : vendorUsers) {
-                roleVendorMap.put(vendorUser.getRoleId(), vendorUser.getVendorId());
-            }
+            syVendorUserRoleRepository.findByUserId(authUser.userId()).forEach(vur ->
+                roleVendorMap.put(vur.getRoleId(), vur.getVendorId()));
         } else {
             return List.of();
         }
