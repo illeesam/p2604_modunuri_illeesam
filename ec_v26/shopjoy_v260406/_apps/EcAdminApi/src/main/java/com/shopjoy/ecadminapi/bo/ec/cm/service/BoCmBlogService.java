@@ -71,4 +71,15 @@ public class BoCmBlogService {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
     }
+
+    @Transactional
+    public CmBlogDto toggleUse(String id, Map<String, Object> body) {
+        CmBlog entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        entity.setUseYn((String) body.get("useYn"));
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        repository.save(entity);
+        em.flush();
+        return getById(id);
+    }
 }

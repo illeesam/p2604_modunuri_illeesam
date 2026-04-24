@@ -43,6 +43,11 @@ public class BoStSettleAdjController {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
+    @PostMapping("/{id}")
+    public ResponseEntity<ApiResponse<StSettleAdjDto>> upsert(@PathVariable String id, @RequestBody StSettleAdj body) {
+        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
         service.delete(id);

@@ -61,6 +61,11 @@ public class BoCmChattController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @PostMapping("/{id}")
+    public ResponseEntity<ApiResponse<CmChattRoomDto>> upsert(@PathVariable String id, @RequestBody CmChattRoom body) {
+        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
         service.delete(id);

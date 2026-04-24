@@ -12,7 +12,7 @@ window.MbMemGradeMng = {
     onMounted(async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/ec/mb/mem-grade/page', {
+        const res = await window.boApi.get('/bo/ec/mb/member-grade/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         grades.splice(0, grades.length, ...(res.data?.data?.list || []));

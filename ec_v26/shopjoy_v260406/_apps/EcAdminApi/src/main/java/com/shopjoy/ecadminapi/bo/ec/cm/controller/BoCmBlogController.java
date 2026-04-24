@@ -60,9 +60,19 @@ public class BoCmBlogController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @PostMapping("/{id}")
+    public ResponseEntity<ApiResponse<CmBlogDto>> upsert(@PathVariable String id, @RequestBody CmBlog body) {
+        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
+    }
+
+    @PutMapping("/{id}/use")
+    public ResponseEntity<ApiResponse<CmBlogDto>> toggleUse(@PathVariable String id, @RequestBody Map<String, Object> body) {
+        return ResponseEntity.ok(ApiResponse.ok(service.toggleUse(id, body)));
     }
 }

@@ -53,6 +53,11 @@ public class BoSyCodeController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @PostMapping("/{id}")
+    public ResponseEntity<ApiResponse<SyCodeDto>> upsert(@PathVariable String id, @RequestBody SyCode body) {
+        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
         service.delete(id);

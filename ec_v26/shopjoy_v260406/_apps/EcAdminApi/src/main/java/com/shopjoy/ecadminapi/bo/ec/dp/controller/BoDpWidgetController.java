@@ -60,6 +60,11 @@ public class BoDpWidgetController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @PostMapping("/{id}")
+    public ResponseEntity<ApiResponse<DpWidgetDto>> upsert(@PathVariable String id, @RequestBody DpWidget body) {
+        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
         service.delete(id);

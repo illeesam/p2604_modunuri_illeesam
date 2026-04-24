@@ -60,6 +60,11 @@ public class BoPdProdController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @PostMapping("/{id}")
+    public ResponseEntity<ApiResponse<PdProdDto>> upsert(@PathVariable String id, @RequestBody PdProd body) {
+        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
         service.delete(id);

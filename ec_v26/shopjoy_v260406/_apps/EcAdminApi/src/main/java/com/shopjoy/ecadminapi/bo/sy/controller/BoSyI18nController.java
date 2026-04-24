@@ -57,6 +57,12 @@ public class BoSyI18nController {
         return ResponseEntity.ok(ApiResponse.ok(service.save(body)));
     }
 
+    @PostMapping("/{id}")
+    public ResponseEntity<ApiResponse<SyI18n>> upsert(@PathVariable String id, @RequestBody SyI18n body) {
+        body.setI18nId(id);
+        return ResponseEntity.ok(ApiResponse.ok(service.save(body)));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
         service.delete(id);

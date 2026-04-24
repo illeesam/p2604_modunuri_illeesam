@@ -43,6 +43,11 @@ public class BoSyBbsController {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
+    @PostMapping("/{id}")
+    public ResponseEntity<ApiResponse<SyBbsDto>> upsert(@PathVariable String id, @RequestBody SyBbs body) {
+        return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
         service.delete(id);
