@@ -685,9 +685,14 @@
       };
       // Pinia store를 localStorage 값으로 복원 (페이지 리로드 후 isLoggedIn 유지)
       try { window.useBoAuthStore?.()?.restoreFromStorage?.(); } catch(_) {}
-      const currentUser = ref(_restoreBoUser());
+      const _defaultBoUser = () => ({ userId: '', authId: '', name: '', email: '', role: '', phone: '', dept: '' });
+      const _boAuthStore = () => window.useBoAuthStore?.();
+      const currentUser = reactive(_defaultBoUser());
+      const _syncCurrentUser = () => { Object.assign(currentUser, _defaultBoUser(), _boAuthStore()?.user || {}); };
+      _syncCurrentUser();
+      watch(() => _boAuthStore()?.user, _syncCurrentUser, { deep: true });
       const activeRoleId = ref(null);
-      const isLoggedIn = computed(() => !!(currentUser.value?.userId));
+      const isLoggedIn = computed(() => !!(currentUser?.userId || currentUser?.authId));
       const currentUserRoles = reactive([]);
       const updateCurrentUserRoles = () => {
         try {
@@ -695,7 +700,7 @@
             currentUserRoles.splice(0, currentUserRoles.length);
             return;
           }
-          const user = currentUser.value || { userId: '' };
+          const user = currentUser || { userId: '' };
           const userRoles = window.boDataProvider?.getUserRolesByUserId(user.userId) || [];
           const roles = window.boDataProvider?.getRoles() || [];
           const roleMap = Object.fromEntries((roles || []).map(r => [r?.roleId, r]));
@@ -725,7 +730,7 @@
                          : (root?.roleCode === 'DLIV_ROOT')     ? 'DELIVERY' : null;
           if (wantType) {
             const typeLabel = wantType === 'SALES' ? '판매업체' : '배송업체';
-            const targetUid = uid != null ? uid : (currentUser.value?.userId || '');
+            const targetUid = uid != null ? uid : (currentUser?.userId || '');
             let names = [];
             if (targetUid != null && targetUid > 0) {
               const userBizs = (window.boData?.userBizs || []);
@@ -809,23 +814,23 @@
       const profileModal = reactive({ show: false });
       const profileForm  = reactive({ name: '', phone: '', dept: '', email: '' });
       const openProfile  = () => {
-        if (!currentUser.value || !currentUser.value.userId) return;
+        if (!currentUser || !currentUser.userId) return;
         Object.assign(profileForm, {
-          name: currentUser.value.name || '',
-          phone: currentUser.value.phone || '',
-          dept: currentUser.value.dept || '',
-          email: currentUser.value.email || ''
+          name: currentUser.name || '',
+          phone: currentUser.phone || '',
+          dept: currentUser.dept || '',
+          email: currentUser.email || ''
         });
         profileModal.show = true; userMenuShow.value = false;
       };
       const saveProfile  = () => {
         if (!profileForm.name) { showToast('이름을 입력하세요.', 'error'); return; }
-        if (!currentUser.value) {
-          currentUser.value = { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
+        if (!currentUser) {
+          Object.assign(currentUser, _defaultBoUser());
         }
-        currentUser.value.name  = profileForm.name || '';
-        currentUser.value.phone = profileForm.phone || '';
-        currentUser.value.dept  = profileForm.dept || '';
+        currentUser.name  = profileForm.name || '';
+        currentUser.phone = profileForm.phone || '';
+        currentUser.dept  = profileForm.dept || '';
         profileModal.show = false;
         showToast('프로필이 저장되었습니다.');
       };
@@ -841,13 +846,13 @@
       const savePwChange = () => {
         pwError.value = '';
         if (!pwForm.current || !pwForm.next || !pwForm.confirm) { pwError.value = '모든 항목을 입력하세요.'; return; }
-        if (!currentUser.value) {
+        if (!currentUser) {
           pwError.value = '사용자 정보가 없습니다.'; return;
         }
-        if ((currentUser.value.password || '') !== pwForm.current) { pwError.value = '현재 비밀번호가 올바르지 않습니다.'; return; }
+        if ((currentUser.password || '') !== pwForm.current) { pwError.value = '현재 비밀번호가 올바르지 않습니다.'; return; }
         if (pwForm.next.length < 6) { pwError.value = '새 비밀번호는 6자 이상이어야 합니다.'; return; }
         if (pwForm.next !== pwForm.confirm) { pwError.value = '새 비밀번호가 일치하지 않습니다.'; return; }
-        currentUser.value.password = pwForm.next || '';
+        currentUser.password = pwForm.next || '';
         pwModal.show = false;
         showToast('비밀번호가 변경되었습니다.');
       };
@@ -871,17 +876,12 @@
           if (!authStore) { loginError.value = '스토어 초기화 실패'; return; }
 
           await authStore.login(loginForm.loginId, loginForm.loginPwd, loginForm.authMethod);
-          // 로그인 완료 후 store에서 최신 user 가져오기
-          const storeUser = authStore.user;
-          currentUser.value = (storeUser && storeUser.userId)
-            ? { ...storeUser }
-            : { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
 
           openTabs.splice(0);
           loginForm.loginId = ''; loginForm.loginPwd = '';
           closeLogin();
           navigate('dashboard');
-          showToast(`${(currentUser.value?.name || '사용자')}님 환영합니다.`);
+          showToast(`${(currentUser?.name || '사용자')}님 환영합니다.`);
         } catch (err) {
           loginError.value = err?.response?.data?.message || err?.message || '로그인 실패';
         }
@@ -899,29 +899,19 @@
             configStore.reset();
           }
 
-          currentUser.value = { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
           userMenuShow.value = false;
           openTabs.splice(0);
           navigate('dashboard');
           showToast('로그아웃되었습니다.');
         } catch (e) {
           console.error('doLogout error:', e);
-          currentUser.value = { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
           userMenuShow.value = false;
         }
       };
-      /* 프로필/비번 변경 시 localStorage 갱신 */
-      const _persistBoUser = () => {
-        try {
-          if (currentUser.value) localStorage.setItem('modu-bo-user', JSON.stringify(currentUser.value));
-        } catch(_){}
-      };
-      watch(currentUser, _persistBoUser, { deep: true });
       /* 다른 탭에서 로그인/로그아웃 동기화 */
       window.addEventListener('storage', (e) => {
         if (e.key === 'modu-bo-access_token' || e.key === 'modu-bo-user') {
-          const u = _restoreBoUser();
-          currentUser.value = u;
+          window.useBoAuthStore?.()?.restoreFromStorage?.();
         }
       });
 

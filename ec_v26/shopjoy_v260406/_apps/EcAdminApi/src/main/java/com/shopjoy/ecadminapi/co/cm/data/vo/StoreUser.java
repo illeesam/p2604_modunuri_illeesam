@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StoreUser {
+    private String authId;             // 인증 식별자 (BO = sy_user.user_id)
     private String userId;
     private String loginId;           // 로그인 ID
     private String userName;

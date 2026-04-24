@@ -200,12 +200,22 @@
         } catch (_) {}
       },
 
-      // 사용자 정보 설정
+      // 사용자 정보 설정 (StoreUser → 프론트 user 형식으로 정규화)
       setUser(userData) {
         if (!userData) return;
-        this.user = userData;
+        const authId = userData.authId || userData.userId || '';
+        this.user = {
+          ...userData,
+          authId,
+          userId: authId,
+          name:   userData.name || userData.userName || userData.userNm || '',
+          email:  userData.email || userData.userEmail || '',
+          phone:  userData.phone || userData.userHpNo || userData.userPhone || '',
+          dept:   userData.dept || userData.deptNm || '',
+          role:   userData.role || userData.roleId || '',
+        };
         try {
-          localStorage.setItem('modu-bo-user', JSON.stringify(userData));
+          localStorage.setItem('modu-bo-user', JSON.stringify(this.user));
         } catch (_) {}
       },
 

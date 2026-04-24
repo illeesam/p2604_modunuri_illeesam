@@ -302,6 +302,7 @@ public class CmAppStoreDataService {
         }
 
         return StoreUser.builder()
+                .authId(user.getUserId()) // 인증 식별자 (BO = sy_user.user_id)
                 .userId(user.getUserId()) // 사용자ID
                 .loginId(CmUtil.nvl(user.getLoginId())) // 로그인ID
                 .userName(CmUtil.nvl(user.getUserNm())) // 사용자명
@@ -338,6 +339,7 @@ public class CmAppStoreDataService {
         }
 
         return StoreMember.builder()
+                .authId(member.getMemberId()) // 인증 식별자 (FO = ec_member.member_id)
                 .memberId(member.getMemberId()) // 회원ID
                 .memberEmail(member.getLoginId()) // 이메일(로그인ID)
                 .memberNm(member.getMemberNm()) // 회원명
