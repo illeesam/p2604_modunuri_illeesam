@@ -75,8 +75,7 @@ window.SyBbmMng = {
     const searchParamOrg = reactive({
       kw: '', type: '', useYn: ''
     });
-    const pager = reactive({ page: 1, size: 10 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const pager = reactive({ page: 1, size: 10, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] });
 
     const detailModal = reactive({
       show: false,
@@ -151,7 +150,7 @@ window.SyBbmMng = {
     const bbsCount = (bbmId) => bbss.value.filter(b => b.bbmId === bbmId).length;
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
-    return { bbms, uiState, codes, cfSiteNm, searchParam, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnYnBadge, fnCommentBadge, fnAttachBadge, fnContentBadge, fnScopeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, bbsCount, exportExcel,
+    return { bbms, uiState, codes, cfSiteNm, searchParam, pager, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnYnBadge, fnCommentBadge, fnAttachBadge, fnContentBadge, fnScopeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, bbsCount, exportExcel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
   },
@@ -239,7 +238,7 @@ window.SyBbmMng = {
           </div>
           <div class="pager-right">
             <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-              <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+              <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
             </select>
           </div>
         </div>

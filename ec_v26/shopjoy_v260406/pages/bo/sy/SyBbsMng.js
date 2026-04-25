@@ -96,8 +96,7 @@ window.SyBbsMng = {
       if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.page = 1;
     };
-    const pager = reactive({ page: 1, size: 10 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const pager = reactive({ page: 1, size: 10, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] });
 
     const detailModal = reactive({
       show: false,
@@ -167,7 +166,7 @@ window.SyBbsMng = {
 
 
     return { bbss, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, cfBbmOptions, bbmNm, exportExcel };
+      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, pager, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, cfBbmOptions, bbmNm, exportExcel };
   },
   template: /* html */`
 <div>
@@ -234,7 +233,7 @@ window.SyBbsMng = {
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>

@@ -81,8 +81,7 @@ window.SyBizMng = {
     });
 
     /* 페이징 */
-    const pager = reactive({ page: 1, size: 10 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const pager = reactive({ page: 1, size: 10, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] });
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfFiltered.value.length / pager.size)));
     const cfPageNums = computed(() => { const c=pager.page,l=cfTotalPages.value; const s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const setPage = n => { if(n>=1 && n<=cfTotalPages.value) pager.page = n; };
@@ -147,7 +146,7 @@ window.SyBizMng = {
 
     return { bizs, uiState, codes, selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, STATUS, BIZ_CLASS, VENDOR_TYPES,
-      cfFiltered, cfPagedRows, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange,
+      cfFiltered, cfPagedRows, pager, cfTotalPages, cfPageNums, setPage, onSizeChange,
       pathLabel, fnVendorTypeLabel, fnVendorTypeBadge, fnRoleCatLabel, fnRoleCatColor, fnStatusBadge, fnStatusLabel,
       onSearch, onReset,
       formMode, formData, openNew, openEdit, closeForm, handleSaveForm,
@@ -230,7 +229,7 @@ window.SyBizMng = {
           </div>
           <div class="pager-right">
             <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-              <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+              <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
             </select>
           </div>
         </div>

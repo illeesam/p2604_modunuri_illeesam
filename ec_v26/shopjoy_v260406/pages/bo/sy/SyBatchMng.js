@@ -98,8 +98,7 @@ window.SyBatchMng = {
     /* ── CRUD 그리드 ── */
     const gridRows = reactive([]);
     let _tempId = -1;
-        const pager = reactive({ page: 1, size: 10 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+        const pager = reactive({ page: 1, size: 10, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] });
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
     const EDIT_FIELDS = ['batchNm', 'batchCode', 'cron', 'statusCd', 'description'];
@@ -400,7 +399,7 @@ window.SyBatchMng = {
     return { batches, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, applied,
-      gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave, runNow,
       CRON_PRESETS, CRON_FIELDS, cronPicker, openCronPicker, applyCronPreset, applyCron, updateCronPreview, cfCronPresetLabel, cfCronDesc,
@@ -555,7 +554,7 @@ window.SyBatchMng = {
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>
