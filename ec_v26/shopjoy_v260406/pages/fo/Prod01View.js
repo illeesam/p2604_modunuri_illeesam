@@ -758,10 +758,10 @@ window.Prod01View = {
     </div><!-- /page-wrap top -->
 
     <!-- ══ 탭 바 (스크롤 시 헤더 아래 고정) ══ -->
-    <div v-if="tabFixed" :style="{ height: tabPlaceholderH + 'px', marginTop:'24px' }"></div>
+    <div v-if="uiState.tabFixed" :style="{ height: uiState.tabPlaceholderH + 'px', marginTop:'24px' }"></div>
     <div ref="tabBarRef"
-      :style="tabFixed ? {
-        position:'fixed', top:tabFixedTop+'px', left:tabFixedLeft+'px', width:tabFixedW+'px',
+      :style="uiState.tabFixed ? {
+        position:'fixed', top:uiState.tabFixedTop+'px', left:uiState.tabFixedLeft+'px', width:uiState.tabFixedW+'px',
         zIndex:55,
         background:'linear-gradient(to bottom, rgba(245,248,253,0.98) 0%, var(--bg-card) 100%)',
         backdropFilter:'blur(10px)',
@@ -961,30 +961,30 @@ window.Prod01View = {
 
   <!-- ══ 이미지 확대 모달 ══ -->
   <teleport to="body">
-  <div v-if="zoomOpen && product" @click="zoomOpen=false"
+  <div v-if="uiState.zoomOpen && product" @click="uiState.zoomOpen=false"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:1500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
     <!-- 닫기 -->
-    <button @click.stop="zoomOpen=false"
+    <button @click.stop="uiState.zoomOpen=false"
       style="position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.6);border:2px solid rgba(255,255,255,0.8);color:#fff;font-size:1.4rem;width:48px;height:48px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1510;">✕</button>
     <!-- 메인 확대 이미지 -->
     <div @click.stop style="position:relative;width:95vw;height:85vh;border-radius:12px;display:flex;align-items:center;justify-content:center;">
-      <img v-if="cfMockImages[selectedImg]?.src" :src="cfMockImages[selectedImg].src" :alt="product.prodNm"
+      <img v-if="cfMockImages[uiState.selectedImg]?.src" :src="cfMockImages[uiState.selectedImg].src" :alt="product.prodNm"
         style="max-width:95vw;max-height:85vh;object-fit:contain;display:block;" />
       <!-- 좌/우 화살표 -->
-      <button @click.stop="selectedImg=(selectedImg-1+cfMockImages.length)%cfMockImages.length"
+      <button @click.stop="uiState.selectedImg=(uiState.selectedImg-1+cfMockImages.length)%cfMockImages.length"
         style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
       </button>
-      <button @click.stop="selectedImg=(selectedImg+1)%cfMockImages.length"
+      <button @click.stop="uiState.selectedImg=(uiState.selectedImg+1)%cfMockImages.length"
         style="position:absolute;right:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
       </button>
     </div>
     <!-- 하단 썸네일 -->
     <div @click.stop style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:2;">
-      <div v-for="(img,i) in cfMockImages" :key="i" @click.stop="selectedImg=i"
+      <div v-for="(img,i) in cfMockImages" :key="i" @click.stop="uiState.selectedImg=i"
         :style="{ width:'56px', height:'56px', borderRadius:'8px', overflow:'hidden', cursor:'pointer',
-          border: selectedImg===i ? '2px solid #fff' : '2px solid rgba(255,255,255,0.3)' }">
+          border: uiState.selectedImg===i ? '2px solid #fff' : '2px solid rgba(255,255,255,0.3)' }">
         <img :src="img.src" style="width:100%;height:100%;object-fit:cover;" />
       </div>
     </div>

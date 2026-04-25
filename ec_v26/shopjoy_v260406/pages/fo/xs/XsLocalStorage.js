@@ -45,7 +45,7 @@ window.XsLocalStorage = {
     const cfFilteredData = computed(() => {
       const data = Array.isArray(storageData) ? storageData : [];
       if (!uiStateGlobal.filterKey) return data;
-      return data.filter(item => item.key.toLowerCase().includes(filterKey.value.toLowerCase()));
+      return data.filter(item => item.key.toLowerCase().includes(uiStateGlobal.filterKey.toLowerCase()));
     });
 
     const copyValue = (value) => {
@@ -143,7 +143,7 @@ window.XsLocalStorage = {
     loadStorageData();
 
     return {
-      storageData, cfFilteredData, uiStateGlobal,
+      storageData, cfFilteredData, uiStateGlobal, uiState,
       loadStorageData, copyValue, startEdit, saveEdit, cancelEdit, handleDelete, clearAllStorage, parseValue, startResize, codes
     };
   },
@@ -160,7 +160,7 @@ window.XsLocalStorage = {
       <div style="flex: 1;">
         <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: #333;">키 검색</label>
         <input
-          v-model="filterKey"
+          v-model="uiStateGlobal.filterKey"
           type="text"
           placeholder="키로 검색..."
           style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; background: white; color: #333; transition: all 0.2s;">
@@ -174,12 +174,12 @@ window.XsLocalStorage = {
 
   <!-- 테이블 -->
   <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
-    <div style="overflow-x: auto; position: relative; user-select: none;" :style="{ cursor: isResizing ? 'col-resize' : 'auto' }">
+    <div style="overflow-x: auto; position: relative; user-select: none;" :style="{ cursor: uiState.isResizing ? 'col-resize' : 'auto' }">
       <table style="width: 100%; border-collapse: collapse;">
         <thead>
           <tr style="background: #fafafa; border-bottom: 1px solid #e5e7eb;">
             <th style="width: 25%; text-align: left; padding: 12px 16px; font-weight: 600; font-size: 13px; color: #666;">Key</th>
-            <th :style="{ width: valueColWidth + '%', textAlign: 'left', padding: '12px 16px', fontWeight: '600', fontSize: '13px', color: '#666', position: 'relative' }">
+            <th :style="{ width: uiStateGlobal.valueColWidth + '%', textAlign: 'left', padding: '12px 16px', fontWeight: '600', fontSize: '13px', color: '#666', position: 'relative' }">
               Value
               <div
                 @mousedown="startResize"
@@ -187,17 +187,17 @@ window.XsLocalStorage = {
                 <div style="width: 1px; height: 80%; background: #ff6b9d; opacity: 0; transition: opacity 0.2s;"></div>
               </div>
             </th>
-            <th :style="{ width: (100 - 25 - valueColWidth) + '%', textAlign: 'center', padding: '12px 16px', fontWeight: '600', fontSize: '13px', color: '#666' }">작업</th>
+            <th :style="{ width: (100 - 25 - uiStateGlobal.valueColWidth) + '%', textAlign: 'center', padding: '12px 16px', fontWeight: '600', fontSize: '13px', color: '#666' }">작업</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="item in cfFilteredData" :key="item.key" style="border-bottom: 1px solid #e5e7eb; transition: all 0.2s;">
             <td style="padding: 12px 16px; word-break: break-all; font-family: 'Monaco', 'Menlo', monospace; font-size: 12px; color: #333;">{{ item.key }}</td>
             <td style="padding: 12px 16px;">
-              <template v-if="editingKey === item.key">
+              <template v-if="uiStateGlobal.editingKey === item.key">
                 <textarea
-                  :value="editingValue"
-                  @input="editingValue = $event.target.value"
+                  :value="uiStateGlobal.editingValue"
+                  @input="uiStateGlobal.editingValue = $event.target.value"
                   style="width: 100%; height: 80px; padding: 10px; border: 1.5px solid #ff6b9d; border-radius: 4px; font-family: 'Monaco', 'Menlo', monospace; font-size: 12px; resize: vertical; color: #333;">
                 </textarea>
                 <div style="display: flex; gap: 8px; margin-top: 8px;">
@@ -211,7 +211,7 @@ window.XsLocalStorage = {
             </td>
             <td style="padding: 12px 16px; text-align: center; white-space: nowrap;">
               <button @click="copyValue(item.value)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">복사</button>
-              <button v-if="editingKey !== item.key" @click="startEdit(item.key, item.value)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">수정</button>
+              <button v-if="uiStateGlobal.editingKey !== item.key" @click="startEdit(item.key, item.value)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">수정</button>
               <button @click="handleDelete(item.key)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #ffb3c1; background: #fff5f7; color: #d63384; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">삭제</button>
             </td>
           </tr>

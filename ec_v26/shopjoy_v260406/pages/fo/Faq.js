@@ -21,7 +21,7 @@ window.Faq = {
   </div>
   <div class="card" style="padding:8px clamp(14px,3vw,28px);margin-bottom:24px;">
     <div v-for="(faq, idx) in config.faqs" :key="idx" class="faq-item">
-      <button class="faq-question" @click="uiState.openFaq=(uiState.uiState.openFaq===idx?null:idx)">
+      <button class="faq-question" @click="uiState.openFaq=(uiState.openFaq===idx?null:idx)">
         <span style="flex:1;">{{ faq.q }}</span>
         <span class="chevron" :class="{open: uiState.openFaq===idx}">▼</span>
       </button>

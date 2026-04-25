@@ -29,7 +29,7 @@ window.Cart = {
     });
 
     /* ── 체크박스 ── */
-    const checkedIdxs = reactive(new Set());
+    let checkedIdxs = reactive(new Set());
 
     const isChecked = (idx) => checkedIdxs.has(idx);
 

@@ -77,7 +77,7 @@ window.Contact = {
       <div class="card" style="padding:24px;">
         <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:4px;color:var(--text-primary);">❓ 자주 묻는 질문</h3>
         <div v-for="(faq, idx) in config.faqs.slice(0,3)" :key="idx" class="faq-item">
-          <button class="faq-question" @click="uiState.openFaq=(uiState.uiState.openFaq===('c'+idx)?null:('c'+idx))">
+          <button class="faq-question" @click="uiState.openFaq=(uiState.openFaq===('c'+idx)?null:('c'+idx))">
             <span>{{ faq.q }}</span>
             <span class="chevron" :class="{open: uiState.openFaq===('c'+idx)}">▼</span>
           </button>
