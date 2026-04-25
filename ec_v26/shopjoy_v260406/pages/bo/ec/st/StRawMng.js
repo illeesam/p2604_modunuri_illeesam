@@ -36,9 +36,9 @@ window.StRawMng = {
     const orderList = reactive([]);
     const claimList = reactive([]);
     const vendorList = reactive([]);
-    const orders  = computed(() => orderList);
-    const claims  = computed(() => claimList);
-    const vendors = computed(() => vendorList);
+    const cfOrders  = computed(() => orderList);
+    const cfClaims  = computed(() => claimList);
+    const cfVendors = computed(() => vendorList);
 
     const fetchData = async () => {
       try {
@@ -59,10 +59,10 @@ window.StRawMng = {
     const BRAND_NMS   = ['어반클래식','트렌드메이커','에코웨어','럭셔리룩','심플웍스'];
     const ORDER_STATUSES = { '배송중':'SHIPPING', '배송완료':'DELIVERED', '구매확정':'CONFIRMED', '취소됨':'CANCELLED', '결제완료':'PAID', '준비중':'PREPARING' };
 
-    const rawList = computed(() => {
+    const cfRawList = computed(() => {
       const rows = [];
-      window.safeArrayUtils.safeForEach(orders, (o, idx) => {
-        const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === o.vendorId);
+      window.safeArrayUtils.safeForEach(cfOrders, (o, idx) => {
+        const v = cfVendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === o.vendorId);
         const isCancelled = o.status === '취소됨';
         const qty         = (idx % 3) + 1;
         const unitPrice   = Math.round((o.totalPrice || 50000) / qty);
@@ -145,11 +145,11 @@ window.StRawMng = {
       return rows.sort((a, b) => b.txDate.localeCompare(a.txDate));
     });
 
-    const filtered = computed(() => {
+    const cfFiltered = computed(() => {
       const kw = searchKw.value.trim().toLowerCase();
       const amtFrom = searchAmtFrom.value !== '' ? Number(searchAmtFrom.value) : null;
       const amtTo   = searchAmtTo.value   !== '' ? Number(searchAmtTo.value)   : null;
-      return window.safeArrayUtils.safeFilter(rawList, r => {
+      return window.safeArrayUtils.safeFilter(cfRawList, r => {
         if (dateStart.value        && r.txDate < dateStart.value)               return false;
         if (dateEnd.value          && r.txDate > dateEnd.value)                 return false;
         if (searchType.value       && r.sourceType !== searchType.value)        return false;
@@ -170,22 +170,22 @@ window.StRawMng = {
       });
     });
 
-    const total      = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums   = computed(() => { const c = pager.page, l = totalPages.value, s = Math.max(1, c-2), e = Math.min(l, s+4); return Array.from({length: e-s+1}, (_, i) => s+i); });
+    const cfTotal    = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums   = computed(() => { const c = pager.page, l = cfTotalPages.value, s = Math.max(1, c-2), e = Math.min(l, s+4); return Array.from({length: e-s+1}, (_, i) => s+i); });
 
-    const summary = computed(() => ({
-      totalAmt:       filtered.value.reduce((s, r) => s + r.amount, 0),
-      collectCnt:     window.safeArrayUtils.safeFilter(filtered, r => r.collectYn === 'Y').length,
-      settleAmt:      filtered.value.reduce((s, r) => s + r.settleAmt, 0),
-      feeAmt:         filtered.value.reduce((s, r) => s + r.settleFeeAmt, 0),
-      closeCnt:       window.safeArrayUtils.safeFilter(filtered, r => r.closeYn === 'Y').length,
-      erpCnt:         window.safeArrayUtils.safeFilter(filtered, r => r.erpSendYn === 'Y').length,
-      confirmCnt:     window.safeArrayUtils.safeFilter(filtered, r => r.buyConfirmYn === 'Y').length,
+    const cfSummary = computed(() => ({
+      totalAmt:       cfFiltered.value.reduce((s, r) => s + r.amount, 0),
+      collectCnt:     window.safeArrayUtils.safeFilter(cfFiltered, r => r.collectYn === 'Y').length,
+      settleAmt:      cfFiltered.value.reduce((s, r) => s + r.settleAmt, 0),
+      feeAmt:         cfFiltered.value.reduce((s, r) => s + r.settleFeeAmt, 0),
+      closeCnt:       window.safeArrayUtils.safeFilter(cfFiltered, r => r.closeYn === 'Y').length,
+      erpCnt:         window.safeArrayUtils.safeFilter(cfFiltered, r => r.erpSendYn === 'Y').length,
+      confirmCnt:     window.safeArrayUtils.safeFilter(cfFiltered, r => r.buyConfirmYn === 'Y').length,
     }));
 
-    const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const onSearch = () => { pager.page = 1; };
     const onReset  = () => {
@@ -202,9 +202,9 @@ window.StRawMng = {
     };
     const isExpanded = id => expandedRows.has(id);
 
-    const statusBadge = s => ({ '정산대상':'badge-blue', '차감':'badge-red', '취소':'badge-gray' }[s] || 'badge-gray');
+    const fnStatusBadge = s => ({ '정산대상':'badge-blue', '차감':'badge-red', '취소':'badge-gray' }[s] || 'badge-gray');
     const rawStatusLabel = cd => ({ 'COLLECTED':'수집완료', 'EXCLUDED':'제외', 'SETTLED':'정산완료', 'PENDING':'대기' }[cd] || cd);
-    const rawStatusBadge = cd => ({ 'COLLECTED':'badge-green', 'EXCLUDED':'badge-gray', 'SETTLED':'badge-blue', 'PENDING':'badge-orange' }[cd] || 'badge-gray');
+    const fnRawStatusBadge = cd => ({ 'COLLECTED':'badge-green', 'EXCLUDED':'badge-gray', 'SETTLED':'badge-blue', 'PENDING':'badge-orange' }[cd] || 'badge-gray');
     const vendorTypeLabel = cd => ({ 'SALE':'판매', 'DLIV':'배송', 'EXTERNAL':'외부' }[cd] || cd);
     const orderStatusLabel = cd => ({ 'SHIPPING':'배송중','DELIVERED':'배송완료','CONFIRMED':'구매확정','CANCELLED':'취소','PAID':'결제완료','PREPARING':'준비중','ORDERED':'주문완료' }[cd] || cd);
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
@@ -219,10 +219,10 @@ window.StRawMng = {
       searchVendorType, searchPayMethod, searchBuyConfirm,
       searchCloseYn, searchErpSend, searchPeriod, searchOrderStatus,
       searchAmtFrom, searchAmtTo,
-      pager, PAGE_SIZES, filtered, total, totalPages, pageList, pageNums, summary,
+      pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfSummary,
       setPage, onSizeChange, onSearch, onReset,
       expandedRows, toggleRow, isExpanded,
-      statusBadge, rawStatusLabel, rawStatusBadge, vendorTypeLabel, orderStatusLabel,
+      fnStatusBadge, rawStatusLabel, fnRawStatusBadge, vendorTypeLabel, orderStatusLabel,
       fmtW, fmtPct, doCollect,
     };
   },
@@ -325,41 +325,41 @@ window.StRawMng = {
   <div style="display:grid;grid-template-columns:repeat(4,1fr) repeat(3,1fr);gap:8px;margin-bottom:12px">
     <div class="card" style="text-align:center;padding:10px;background:#f0f4ff;margin-bottom:0">
       <div style="font-size:11px;color:#888">수집건수</div>
-      <div style="font-size:18px;font-weight:700;color:#3498db">{{ total.toLocaleString() }}건</div>
+      <div style="font-size:18px;font-weight:700;color:#3498db">{{ cfTotal.toLocaleString() }}건</div>
     </div>
     <div class="card" style="text-align:center;padding:10px;background:#f0fff4;margin-bottom:0">
       <div style="font-size:11px;color:#888">정산대상</div>
-      <div style="font-size:18px;font-weight:700;color:#27ae60">{{ summary.collectCnt.toLocaleString() }}건</div>
+      <div style="font-size:18px;font-weight:700;color:#27ae60">{{ cfSummary.collectCnt.toLocaleString() }}건</div>
     </div>
     <div class="card" style="text-align:center;padding:10px;background:#fff8f0;margin-bottom:0">
       <div style="font-size:11px;color:#888">구매확정</div>
-      <div style="font-size:18px;font-weight:700;color:#e67e22">{{ summary.confirmCnt.toLocaleString() }}건</div>
+      <div style="font-size:18px;font-weight:700;color:#e67e22">{{ cfSummary.confirmCnt.toLocaleString() }}건</div>
     </div>
     <div class="card" style="text-align:center;padding:10px;background:#f5f0ff;margin-bottom:0">
       <div style="font-size:11px;color:#888">마감완료</div>
-      <div style="font-size:18px;font-weight:700;color:#8e44ad">{{ summary.closeCnt.toLocaleString() }}건</div>
+      <div style="font-size:18px;font-weight:700;color:#8e44ad">{{ cfSummary.closeCnt.toLocaleString() }}건</div>
     </div>
     <div class="card" style="text-align:center;padding:10px;background:#f8f9fa;margin-bottom:0">
       <div style="font-size:11px;color:#888">수집금액 합계</div>
-      <div style="font-size:15px;font-weight:700" :style="summary.totalAmt>=0?'color:#333':'color:#e74c3c'">{{ fmtW(summary.totalAmt) }}</div>
+      <div style="font-size:15px;font-weight:700" :style="cfSummary.totalAmt>=0?'color:#333':'color:#e74c3c'">{{ fmtW(cfSummary.totalAmt) }}</div>
     </div>
     <div class="card" style="text-align:center;padding:10px;background:#fff0f0;margin-bottom:0">
       <div style="font-size:11px;color:#888">수수료 합계</div>
-      <div style="font-size:15px;font-weight:700;color:#e74c3c">{{ fmtW(summary.feeAmt) }}</div>
+      <div style="font-size:15px;font-weight:700;color:#e74c3c">{{ fmtW(cfSummary.feeAmt) }}</div>
     </div>
     <div class="card" style="text-align:center;padding:10px;background:#f0f8ff;margin-bottom:0">
       <div style="font-size:11px;color:#888">정산금액 합계</div>
-      <div style="font-size:15px;font-weight:700;color:#2980b9">{{ fmtW(summary.settleAmt) }}</div>
+      <div style="font-size:15px;font-weight:700;color:#2980b9">{{ fmtW(cfSummary.settleAmt) }}</div>
     </div>
   </div>
 
   <!-- ── 목록 카드 ── -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-count">총 {{ total.toLocaleString() }}건</span>
+      <span class="list-count">총 {{ cfTotal.toLocaleString() }}건</span>
       <div style="margin-left:auto;display:flex;gap:6px">
-        <button class="btn btn-secondary btn-sm" @click="() => { window.safeArrayUtils.safeForEach(pageList, r => { if(!isExpanded(r.rawId)) toggleRow(r.rawId); }) }">▼ 전체펼치기</button>
-        <button class="btn btn-secondary btn-sm" @click="() => { window.safeArrayUtils.safeForEach(pageList, r => { if(isExpanded(r.rawId)) toggleRow(r.rawId); }) }">▲ 전체접기</button>
+        <button class="btn btn-secondary btn-sm" @click="() => { window.safeArrayUtils.safeForEach(cfPageList, r => { if(!isExpanded(r.rawId)) toggleRow(r.rawId); }) }">▼ 전체펼치기</button>
+        <button class="btn btn-secondary btn-sm" @click="() => { window.safeArrayUtils.safeForEach(cfPageList, r => { if(isExpanded(r.rawId)) toggleRow(r.rawId); }) }">▲ 전체접기</button>
         <button class="btn btn-blue btn-sm" @click="doCollect">🔄 재수집</button>
       </div>
     </div>
@@ -383,7 +383,7 @@ window.StRawMng = {
         </tr>
       </thead>
       <tbody>
-        <template v-for="r in pageList" :key="r?.rawId">
+        <template v-for="r in cfPageList" :key="r?.rawId">
           <!-- 기본 행 -->
           <tr :style="isExpanded(r.rawId) ? 'background:#fafbff' : ''" style="cursor:pointer" @click="toggleRow(r.rawId)">
             <td style="text-align:center;color:#aaa;font-size:11px;user-select:none">
@@ -405,7 +405,7 @@ window.StRawMng = {
             <td style="text-align:right;font-weight:600" :style="r.settleTargetAmt<0?'color:#e74c3c':''">{{ fmtW(r.settleTargetAmt) }}</td>
             <td style="text-align:right;color:#e74c3c">{{ fmtW(r.settleFeeAmt) }}</td>
             <td style="text-align:right;font-weight:700" :style="r.settleAmt<0?'color:#e74c3c':'color:#2980b9'">{{ fmtW(r.settleAmt) }}</td>
-            <td><span class="badge" :class="rawStatusBadge(r.rawStatusCd)">{{ rawStatusLabel(r.rawStatusCd) }}</span></td>
+            <td><span class="badge" :class="fnRawStatusBadge(r.rawStatusCd)">{{ rawStatusLabel(r.rawStatusCd) }}</span></td>
             <td><span class="badge" :class="r.closeYn==='Y'?'badge-purple':'badge-gray'">{{ r.closeYn==='Y'?'마감':'미마감' }}</span></td>
             <td><span class="badge" :class="r.erpSendYn==='Y'?'badge-green':'badge-gray'">{{ r.erpSendYn==='Y'?'전송':'미전송' }}</span></td>
           </tr>
@@ -480,7 +480,7 @@ window.StRawMng = {
             </td>
           </tr>
         </template>
-        <tr v-if="!pageList.length"><td colspan="14" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!cfPageList.length"><td colspan="14" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">
@@ -488,9 +488,9 @@ window.StRawMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

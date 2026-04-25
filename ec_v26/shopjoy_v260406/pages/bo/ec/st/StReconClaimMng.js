@@ -28,7 +28,7 @@ window.StReconClaimMng = {
     const searchDiff = ref('');
     const pager = reactive({ page: 1, size: 10 });
 
-    const rows = computed(() => {
+    const cfRows = computed(() => {
       return window.safeArrayUtils.safeFilter(claimsList, c => {
         if (dateStart.value && c.requestDate.slice(0,10) < dateStart.value) return false;
         if (dateEnd.value   && c.requestDate.slice(0,10) > dateEnd.value)   return false;
@@ -43,26 +43,26 @@ window.StReconClaimMng = {
       }).filter(r => !searchDiff.value || r.diffStatus === searchDiff.value);
     });
 
-    const total    = computed(() => rows.value.length);
-    const totPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList = computed(() => rows.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    const pageNums = computed(() => { const c=pager.page,l=totPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
-    const summary  = computed(() => ({
-      match: window.safeArrayUtils.safeFilter(rows, r=>r.diffStatus==='일치').length,
-      over:  window.safeArrayUtils.safeFilter(rows, r=>r.diffStatus==='조정과다').length,
-      under: window.safeArrayUtils.safeFilter(rows, r=>r.diffStatus==='조정부족').length,
+    const cfTotal  = computed(() => cfRows.value.length);
+    const cfTotPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList = computed(() => cfRows.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
+    const cfPageNums = computed(() => { const c=pager.page,l=cfTotPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfSummary = computed(() => ({
+      match: window.safeArrayUtils.safeFilter(cfRows, r=>r.diffStatus==='일치').length,
+      over:  window.safeArrayUtils.safeFilter(cfRows, r=>r.diffStatus==='조정과다').length,
+      under: window.safeArrayUtils.safeFilter(cfRows, r=>r.diffStatus==='조정부족').length,
     }));
 
-    const diffBadge = s => ({ '일치':'badge-green','조정과다':'badge-red','조정부족':'badge-orange' }[s] || 'badge-gray');
-    const typeBadge = t => ({ '취소':'badge-red','반품':'badge-orange','교환':'badge-purple' }[t] || 'badge-gray');
-    const statusBadge = s => ['환불완료','취소완료','교환완료'].includes(s) ? 'badge-green' : 'badge-blue';
+    const fnDiffBadge = s => ({ '일치':'badge-green','조정과다':'badge-red','조정부족':'badge-orange' }[s] || 'badge-gray');
+    const fnTypeBadge = t => ({ '취소':'badge-red','반품':'badge-orange','교환':'badge-purple' }[t] || 'badge-gray');
+    const fnStatusBadge = s => ['환불완료','취소완료','교환완료'].includes(s) ? 'badge-green' : 'badge-blue';
     const fmtW = n => Number(n||0).toLocaleString() + '원';
     const onSearch = () => { pager.page = 1; };
     const onReset  = () => { searchDiff.value = ''; dateRange.value = '이번달'; onDateRangeChange(); pager.page = 1; };
 
-    const setPage = n => { if (n >= 1 && n <= totPages.value) pager.page = n; };
+    const setPage = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    return { descOpen, DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, searchDiff, pager, rows, total, totPages, pageList, pageNums, summary, diffBadge, typeBadge, statusBadge, fmtW, onSearch, onReset , PAGE_SIZES , setPage , onSizeChange };
+    return { descOpen, DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, searchDiff, pager, cfRows, cfTotal, cfTotPages, cfPageList, cfPageNums, cfSummary, fnDiffBadge, fnTypeBadge, fnStatusBadge, fmtW, onSearch, onReset , PAGE_SIZES , setPage , onSizeChange };
   },
   template: /* html */`
 <div>
@@ -92,25 +92,25 @@ window.StReconClaimMng = {
   </div>
   <div class="card" style="margin-top:12px">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
-      <div class="card" style="text-align:center;padding:10px;background:#f0fff4"><div style="font-size:11px;color:#888">일치</div><div style="font-size:20px;font-weight:700;color:#27ae60">{{ summary.match }}건</div></div>
-      <div class="card" style="text-align:center;padding:10px;background:#fff8f8"><div style="font-size:11px;color:#888">조정과다</div><div style="font-size:20px;font-weight:700;color:#e74c3c">{{ summary.over }}건</div></div>
-      <div class="card" style="text-align:center;padding:10px;background:#fffbf0"><div style="font-size:11px;color:#888">조정부족</div><div style="font-size:20px;font-weight:700;color:#e67e22">{{ summary.under }}건</div></div>
+      <div class="card" style="text-align:center;padding:10px;background:#f0fff4"><div style="font-size:11px;color:#888">일치</div><div style="font-size:20px;font-weight:700;color:#27ae60">{{ cfSummary.match }}건</div></div>
+      <div class="card" style="text-align:center;padding:10px;background:#fff8f8"><div style="font-size:11px;color:#888">조정과다</div><div style="font-size:20px;font-weight:700;color:#e74c3c">{{ cfSummary.over }}건</div></div>
+      <div class="card" style="text-align:center;padding:10px;background:#fffbf0"><div style="font-size:11px;color:#888">조정부족</div><div style="font-size:20px;font-weight:700;color:#e67e22">{{ cfSummary.under }}건</div></div>
     </div>
-    <div class="toolbar"><span class="list-count">총 {{ total }}건</span></div>
+    <div class="toolbar"><span class="list-count">총 {{ cfTotal }}건</span></div>
     <table class="bo-table">
       <thead><tr><th>클레임ID</th><th>요청일</th><th>유형</th><th>환불액</th><th>정산조정기준</th><th>실반영액</th><th>차이</th><th>처리상태</th><th>대사결과</th></tr></thead>
       <tbody>
-        <tr v-for="r in pageList" :key="r?.claimId">
+        <tr v-for="r in cfPageList" :key="r?.claimId">
           <td>{{ r.claimId }}</td><td>{{ r.reqDate }}</td>
-          <td><span class="badge" :class="typeBadge(r.type)">{{ r.type }}</span></td>
+          <td><span class="badge" :class="fnTypeBadge(r.type)">{{ r.type }}</span></td>
           <td>{{ r.refundAmt > 0 ? fmtW(r.refundAmt) : '-' }}</td>
           <td :style="r.settleAdj<0?'color:#e74c3c':''">{{ r.settleAdj !== 0 ? fmtW(r.settleAdj) : '-' }}</td>
           <td :style="r.reconAdj<0?'color:#e74c3c':''">{{ r.reconAdj !== 0 ? fmtW(r.reconAdj) : '-' }}</td>
           <td :style="Math.abs(r.diff)>0?'color:#e74c3c;font-weight:700':''">{{ r.diff !== 0 ? (r.diff > 0 ? '+' : '') + Number(r.diff).toLocaleString() + '원' : '-' }}</td>
-          <td><span class="badge" :class="statusBadge(r.status)">{{ r.status }}</span></td>
-          <td><span class="badge" :class="diffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td>
+          <td><span class="badge" :class="fnDiffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td>
         </tr>
-        <tr v-if="!pageList.length"><td colspan="9" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!cfPageList.length"><td colspan="9" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">
@@ -118,9 +118,9 @@ window.StReconClaimMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===totPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===totPages" @click="setPage(totPages)">»</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===cfTotPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===cfTotPages" @click="setPage(cfTotPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

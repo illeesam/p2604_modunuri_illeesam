@@ -17,8 +17,8 @@ window.StReconVendorMng = {
 
     const orderList = reactive([]);
     const vendorList = reactive([]);
-    const orders  = computed(() => orderList);
-    const vendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
+    const cfOrders  = computed(() => orderList);
+    const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
     const fetchData = async () => {
       try {
@@ -35,9 +35,9 @@ window.StReconVendorMng = {
     const searchDiff = ref('');
     const pager = reactive({ page: 1, size: 10 });
 
-    const rows = computed(() => {
-      return vendors.value.map(v => {
-        const vOrders   = window.safeArrayUtils.safeFilter(orders, o => o.vendorId === v.vendorId && o.status !== '취소됨' && (!dateStart.value || o.orderDate.slice(0,10) >= dateStart.value) && (!dateEnd.value || o.orderDate.slice(0,10) <= dateEnd.value));
+    const cfRows = computed(() => {
+      return cfVendors.value.map(v => {
+        const vOrders   = window.safeArrayUtils.safeFilter(cfOrders, o => o.vendorId === v.vendorId && o.status !== '취소됨' && (!dateStart.value || o.orderDate.slice(0,10) >= dateStart.value) && (!dateEnd.value || o.orderDate.slice(0,10) <= dateEnd.value));
         const sysAmt    = vOrders.reduce((s, o) => s + Math.round(o.totalPrice * 0.9), 0);
         const vendorAmt = sysAmt + (Math.random() > 0.8 ? (Math.random() > 0.5 ? 1000 : -1000) : 0);
         const diff      = sysAmt - Math.round(vendorAmt);
@@ -46,24 +46,24 @@ window.StReconVendorMng = {
       }).filter(r => !searchDiff.value || r.diffStatus === searchDiff.value);
     });
 
-    const total    = computed(() => rows.value.length);
-    const totPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList = computed(() => rows.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    const pageNums = computed(() => { const c=pager.page,l=totPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
-    const summary  = computed(() => ({
-      match: window.safeArrayUtils.safeFilter(rows, r=>r.diffStatus==='일치').length,
-      over:  window.safeArrayUtils.safeFilter(rows, r=>r.diffStatus==='시스템과다').length,
-      under: window.safeArrayUtils.safeFilter(rows, r=>r.diffStatus==='업체과다').length,
+    const cfTotal  = computed(() => cfRows.value.length);
+    const cfTotPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList = computed(() => cfRows.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
+    const cfPageNums = computed(() => { const c=pager.page,l=cfTotPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfSummary = computed(() => ({
+      match: window.safeArrayUtils.safeFilter(cfRows, r=>r.diffStatus==='일치').length,
+      over:  window.safeArrayUtils.safeFilter(cfRows, r=>r.diffStatus==='시스템과다').length,
+      under: window.safeArrayUtils.safeFilter(cfRows, r=>r.diffStatus==='업체과다').length,
     }));
 
-    const diffBadge = s => ({ '일치':'badge-green','시스템과다':'badge-red','업체과다':'badge-orange' }[s] || 'badge-gray');
+    const fnDiffBadge = s => ({ '일치':'badge-green','시스템과다':'badge-red','업체과다':'badge-orange' }[s] || 'badge-gray');
     const fmtW = n => Number(n||0).toLocaleString() + '원';
     const onSearch = () => { pager.page = 1; };
     const onReset  = () => { searchDiff.value = ''; dateRange.value = '이번달'; onDateRangeChange(); pager.page = 1; };
 
-    const setPage = n => { if (n >= 1 && n <= totPages.value) pager.page = n; };
+    const setPage = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    return { descOpen, DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, searchDiff, pager, rows, total, totPages, pageList, pageNums, summary, diffBadge, fmtW, onSearch, onReset , PAGE_SIZES , setPage , onSizeChange };
+    return { descOpen, DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, searchDiff, pager, cfRows, cfTotal, cfTotPages, cfPageList, cfPageNums, cfSummary, fnDiffBadge, fmtW, onSearch, onReset , PAGE_SIZES , setPage , onSizeChange };
   },
   template: /* html */`
 <div>
@@ -93,23 +93,23 @@ window.StReconVendorMng = {
   </div>
   <div class="card" style="margin-top:12px">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
-      <div class="card" style="text-align:center;padding:10px;background:#f0fff4"><div style="font-size:11px;color:#888">일치</div><div style="font-size:20px;font-weight:700;color:#27ae60">{{ summary.match }}건</div></div>
-      <div class="card" style="text-align:center;padding:10px;background:#fff8f8"><div style="font-size:11px;color:#888">시스템과다</div><div style="font-size:20px;font-weight:700;color:#e74c3c">{{ summary.over }}건</div></div>
-      <div class="card" style="text-align:center;padding:10px;background:#fffbf0"><div style="font-size:11px;color:#888">업체과다</div><div style="font-size:20px;font-weight:700;color:#e67e22">{{ summary.under }}건</div></div>
+      <div class="card" style="text-align:center;padding:10px;background:#f0fff4"><div style="font-size:11px;color:#888">일치</div><div style="font-size:20px;font-weight:700;color:#27ae60">{{ cfSummary.match }}건</div></div>
+      <div class="card" style="text-align:center;padding:10px;background:#fff8f8"><div style="font-size:11px;color:#888">시스템과다</div><div style="font-size:20px;font-weight:700;color:#e74c3c">{{ cfSummary.over }}건</div></div>
+      <div class="card" style="text-align:center;padding:10px;background:#fffbf0"><div style="font-size:11px;color:#888">업체과다</div><div style="font-size:20px;font-weight:700;color:#e67e22">{{ cfSummary.under }}건</div></div>
     </div>
-    <div class="toolbar"><span class="list-count">총 {{ total }}개 업체</span></div>
+    <div class="toolbar"><span class="list-count">총 {{ cfTotal }}개 업체</span></div>
     <table class="bo-table">
       <thead><tr><th>업체명</th><th>주문건수</th><th>시스템 정산액</th><th>업체 청구액</th><th>차이금액</th><th>대사결과</th></tr></thead>
       <tbody>
-        <tr v-for="r in pageList" :key="r?.vendorId">
+        <tr v-for="r in cfPageList" :key="r?.vendorId">
           <td><strong>{{ r.vendorNm }}</strong></td>
           <td>{{ r.orderCnt }}건</td>
           <td>{{ fmtW(r.sysAmt) }}</td>
           <td>{{ fmtW(r.vendorAmt) }}</td>
           <td :style="Math.abs(r.diff)>0?'color:#e74c3c;font-weight:700':''">{{ r.diff !== 0 ? (r.diff > 0 ? '+' : '') + Number(r.diff).toLocaleString() + '원' : '-' }}</td>
-          <td><span class="badge" :class="diffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td>
+          <td><span class="badge" :class="fnDiffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td>
         </tr>
-        <tr v-if="!pageList.length"><td colspan="6" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!cfPageList.length"><td colspan="6" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">
@@ -117,9 +117,9 @@ window.StReconVendorMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===totPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===totPages" @click="setPage(totPages)">»</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===cfTotPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===cfTotPages" @click="setPage(cfTotPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

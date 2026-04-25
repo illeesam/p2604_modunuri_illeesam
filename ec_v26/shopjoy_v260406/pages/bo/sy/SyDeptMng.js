@@ -30,14 +30,14 @@ window.SyDeptMng = {
     const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { selectedTreeId.value = id; };
-    const tree = computed(() => window.boCmUtil.buildDeptTree());
-    const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(tree.value); };
+    const cfTree = computed(() => window.boCmUtil.buildDeptTree());
+    const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     onMounted(() => {
-      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
-    const allowedTreeIds = computed(() => {
+    const cfAllowedTreeIds = computed(() => {
       if (selectedTreeId.value == null) return null;
       return window.boCmUtil.collectDescendantIds(depts, 'deptId', 'parentId', selectedTreeId.value);
     });
@@ -48,7 +48,7 @@ window.SyDeptMng = {
     const searchKw    = ref('');
     const searchType  = ref('');
     const searchUseYn = ref('');
-    const typeOptions = computed(() => [...new Set(depts.map(d => d.deptTypeCd))].sort());
+    const cfTypeOptions = computed(() => [...new Set(depts.map(d => d.deptTypeCd))].sort());
     const applied = reactive({ kw: '', type: '', useYn: '' });
 
     /* ── CRUD 그리드 ── */
@@ -62,10 +62,10 @@ window.SyDeptMng = {
     /* ── 페이징 ── */
     const pager      = reactive({ page: 1, size: 20 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const pagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
-    const totalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
-    const pageNums   = computed(() => { const c = pager.page, l = totalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setPage    = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const cfPagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
+    const cfPageNums   = computed(() => { const c = pager.page, l = cfTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
+    const setPage    = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const getRealIdx   = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
@@ -96,7 +96,7 @@ window.SyDeptMng = {
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       const filtered = depts.filter(d => {
-        if (allowedTreeIds.value && !allowedTreeIds.value.has(d.deptId)) return false;
+        if (cfAllowedTreeIds.value && !cfAllowedTreeIds.value.has(d.deptId)) return false;
         const kw = applied.kw.trim().toLowerCase();
         if (kw && !d.deptCode.toLowerCase().includes(kw) && !d.deptNm.toLowerCase().includes(kw)) return false;
         if (applied.type  && d.deptTypeCd !== applied.type)  return false;
@@ -108,7 +108,7 @@ window.SyDeptMng = {
 
     loadGrid();
 
-    const total = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
+    const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
     const onSearch = () => {
       Object.assign(applied, { kw: searchKw.value, type: searchType.value, useYn: searchUseYn.value });
@@ -184,7 +184,7 @@ window.SyDeptMng = {
       }
     };
 
-    const doSave = async () => {
+    const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I');
       const uRows = gridRows.filter(r => r._row_status === 'U');
       const dRows = gridRows.filter(r => r._row_status === 'D');
@@ -226,12 +226,12 @@ window.SyDeptMng = {
       deptTreeModal.show = false;
     };
 
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
     const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
     const depthColor  = (d) => DEPTH_COLORS[d % 5];
-    const statusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
+    const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
     const exportExcel = () => window.boCmUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
@@ -239,15 +239,15 @@ window.SyDeptMng = {
       '부서목록.csv'
     );
 
-    return { depts, loading, error, selectedTreeId, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
-      searchKw, searchType, searchUseYn, typeOptions, DEPT_TYPES, applied,
-      siteNm,
-      gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
+    return { depts, loading, error, selectedTreeId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
+      searchKw, searchType, searchUseYn, cfTypeOptions, DEPT_TYPES, applied,
+      cfSiteNm,
+      gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
-      addRow, deleteRow, cancelRow, cancelChecked, deleteRows, doSave,
+      addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       checkAll, toggleCheckAll, parentNm,
       deptTreeModal, openParentModal, onParentSelect,
-      depthBullet, depthColor, statusClass,
+      depthBullet, depthColor, fnStatusClass,
       exportExcel,
     };
   },
@@ -260,7 +260,7 @@ window.SyDeptMng = {
       <input v-model="searchKw" placeholder="부서코드 / 부서명 검색" />
       <select v-model="searchType">
         <option value="">유형 전체</option>
-        <option v-for="t in typeOptions" :key="t">{{ t }}</option>
+        <option v-for="t in cfTypeOptions" :key="t">{{ t }}</option>
       </select>
       <select v-model="searchUseYn">
         <option value="">사용여부 전체</option><option value="Y">사용</option><option value="N">미사용</option>
@@ -280,20 +280,20 @@ window.SyDeptMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedTreeId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedTreeId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
     <div>
 
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>부서목록 <span class="list-count">{{ total }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>부서목록 <span class="list-count">{{ cfTotal }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
         <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
         <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
-        <button class="btn btn-primary btn-sm" @click="doSave">저장</button>
+        <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
       </div>
     </div>
 
@@ -319,12 +319,12 @@ window.SyDeptMng = {
         <tr v-if="gridRows.length===0">
           <td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <tr v-for="(row, idx) in pagedRows" :key="row.deptId"
+        <tr v-for="(row, idx) in cfPagedRows" :key="row.deptId"
           class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
           @click="setFocused(getRealIdx(idx))">
 
           <td class="col-id-val">{{ row.deptId > 0 ? row.deptId : 'NEW' }}</td>
-          <td class="col-status-val"><span class="badge badge-xs" :class="statusClass(row._row_status)">{{ row._row_status }}</span></td>
+          <td class="col-status-val"><span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span></td>
           <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
           <td><input class="grid-input grid-mono" v-model="row.deptCode" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
 
@@ -364,7 +364,7 @@ window.SyDeptMng = {
             </select>
           </td>
           <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
+          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
           <td class="col-act-cancel-val">
             <button v-if="['U','I','D'].includes(row._row_status)"
               class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>
@@ -382,9 +382,9 @@ window.SyDeptMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

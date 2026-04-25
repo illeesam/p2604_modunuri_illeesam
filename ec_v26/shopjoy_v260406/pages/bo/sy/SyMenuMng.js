@@ -30,14 +30,14 @@ window.SyMenuMng = {
     const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { selectedTreeId.value = id; };
-    const tree = computed(() => window.boCmUtil.buildMenuTree());
-    const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(tree.value); };
+    const cfTree = computed(() => window.boCmUtil.buildMenuTree());
+    const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     onMounted(() => {
-      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
-    const allowedTreeIds = computed(() => {
+    const cfAllowedTreeIds = computed(() => {
       if (selectedTreeId.value == null) return null;
       return window.boCmUtil.collectDescendantIds(menus, 'menuId', 'parentId', selectedTreeId.value);
     });
@@ -90,7 +90,7 @@ window.SyMenuMng = {
     const loadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       const filtered = menus.filter(m => {
-        if (allowedTreeIds.value && !allowedTreeIds.value.has(m.menuId)) return false;
+        if (cfAllowedTreeIds.value && !cfAllowedTreeIds.value.has(m.menuId)) return false;
         const kw = applied.kw.trim().toLowerCase();
         if (kw && !m.menuCode.toLowerCase().includes(kw) && !m.menuNm.toLowerCase().includes(kw)) return false;
         if (applied.type  && m.menuType !== applied.type)  return false;
@@ -102,12 +102,12 @@ window.SyMenuMng = {
 
     loadGrid();
 
-    const total = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
+    const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
-    const pagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
-    const totalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
-    const pageNums   = computed(() => { const c = pager.page, l = totalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setPage    = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const cfPagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
+    const cfPageNums   = computed(() => { const c = pager.page, l = cfTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
+    const setPage    = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
     const onSearch = () => {
@@ -184,7 +184,7 @@ window.SyMenuMng = {
       }
     };
 
-    const doSave = async () => {
+    const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I');
       const uRows = gridRows.filter(r => r._row_status === 'U');
       const dRows = gridRows.filter(r => r._row_status === 'D');
@@ -226,13 +226,13 @@ window.SyMenuMng = {
       menuTreeModal.show = false;
     };
 
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
     const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
     const depthColor  = (d) => DEPTH_COLORS[d % 5];
-    const statusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
-    const typeClass   = t => ({ '페이지': 'badge-blue', '폴더': 'badge-gray', '외부링크': 'badge-green', '구분선': 'badge-orange' }[t] || 'badge-gray');
+    const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
+    const fnTypeClass   = t => ({ '페이지': 'badge-blue', '폴더': 'badge-gray', '외부링크': 'badge-green', '구분선': 'badge-orange' }[t] || 'badge-gray');
 
     const exportExcel = () => window.boCmUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
@@ -240,15 +240,15 @@ window.SyMenuMng = {
       '메뉴목록.csv'
     );
 
-    return { menus, loading, error, selectedTreeId, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
+    return { menus, loading, error, selectedTreeId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchKw, searchType, searchUseYn, MENU_TYPES, applied,
-      siteNm,
-      gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
+      cfSiteNm,
+      gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
-      addRow, deleteRow, cancelRow, cancelChecked, deleteRows, doSave,
+      addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       checkAll, toggleCheckAll, parentNm,
       menuTreeModal, openParentModal, onParentSelect,
-      depthBullet, depthColor, statusClass, typeClass,
+      depthBullet, depthColor, fnStatusClass, fnTypeClass,
       exportExcel,
     };
   },
@@ -283,19 +283,19 @@ window.SyMenuMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedTreeId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedTreeId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
     <div>
 <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>메뉴목록 <span class="list-count">{{ total }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>메뉴목록 <span class="list-count">{{ cfTotal }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
         <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
         <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
-        <button class="btn btn-primary btn-sm" @click="doSave">저장</button>
+        <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
       </div>
     </div>
 
@@ -322,12 +322,12 @@ window.SyMenuMng = {
         <tr v-if="gridRows.length===0">
           <td colspan="14" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <tr v-for="(row, idx) in pagedRows" :key="row.menuId"
+        <tr v-for="(row, idx) in cfPagedRows" :key="row.menuId"
           class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
           @click="setFocused(getRealIdx(idx))">
 
           <td class="col-id-val">{{ row.menuId > 0 ? row.menuId : 'NEW' }}</td>
-          <td class="col-status-val"><span class="badge badge-xs" :class="statusClass(row._row_status)">{{ row._row_status }}</span></td>
+          <td class="col-status-val"><span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span></td>
           <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
           <td><input class="grid-input grid-mono" v-model="row.menuCode" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
 
@@ -368,7 +368,7 @@ window.SyMenuMng = {
             </select>
           </td>
           <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
+          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
           <td class="col-act-cancel-val">
             <button v-if="['U','I','D'].includes(row._row_status)"
               class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>
@@ -386,9 +386,9 @@ window.SyMenuMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

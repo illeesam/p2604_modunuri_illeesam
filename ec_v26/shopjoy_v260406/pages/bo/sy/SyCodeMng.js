@@ -797,7 +797,7 @@ window.SyCodeMng = {
           </tr>
           <tr v-else v-for="(row, idx) in pagedTreeRows" :key="row.node.value" class="crud-row" :class="['status-'+row.node.code._row_status]" style="user-select:none;" @click="setFocused(gridRows.indexOf(row.node.code))">
             <td class="col-status-val">
-              <span class="badge badge-xs" :class="statusClass(row.node.code._row_status)">{{ row.node.code._row_status }}</span>
+              <span class="badge badge-xs" :class="fnStatusClass(row.node.code._row_status)">{{ row.node.code._row_status }}</span>
             </td>
             <td class="col-check-val">
               <input type="checkbox" v-model="row.node.code._row_check" />

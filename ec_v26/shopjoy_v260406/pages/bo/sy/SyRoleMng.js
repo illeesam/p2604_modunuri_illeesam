@@ -44,7 +44,7 @@ window.SyRoleMng = {
     const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { selectedPath.value = path; };
-    const tree = computed(() => {
+    const cfTree = computed(() => {
       const t = window.boCmUtil.buildRoleTree();
       const rolesById = Object.fromEntries((roles || []).map(r => [r.roleId, r]));
       const ROOT_MAP = { SUPER_ADMIN:['관리자','#7c3aed'], SITE_GROUP:['사이트','#2563eb'],
@@ -68,19 +68,19 @@ window.SyRoleMng = {
       return t;
     });
     /* 선택 권한 + 자손 roleId Set */
-    const allowedRoleIds = computed(() => {
+    const cfAllowedRoleIds = computed(() => {
       if (selectedPath.value == null) return null;
       return window.boCmUtil.collectDescendantIds(roles, 'roleId', 'parentId', selectedPath.value);
     });
-    const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
+    const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
-      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 
-    const siteNm  = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm  = computed(() => window.boCmUtil.getSiteNm());
     const ROLE_TYPES  = ['시스템', '업무', '기타'];
     const PERM_LEVELS = ['없음', '읽기', '쓰기', '관리', '차단'];
     const ROLE_CATS   = [['ADMIN','관리자역할'],['SITE','사이트역할'],['SALES','판매업체역할'],['DLIV','배송업체역할']];

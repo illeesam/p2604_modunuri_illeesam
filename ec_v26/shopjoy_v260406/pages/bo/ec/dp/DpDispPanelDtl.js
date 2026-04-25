@@ -392,10 +392,10 @@ window.DpDispPanelDtl = {
     const htmlSourceMode = ref(false);  // WYSIWYG ↔ 소스 토글
 
     const toggleHtmlSource = async () => {
-      if (!activeRow.value) return;
+      if (!cfActiveRow.value) return;
       if (!htmlSourceMode.value) {
         /* WYSIWYG → 소스: Quill 최신값 저장 후 소스 모드 ON */
-        if (quillContent) activeRow.value.htmlContent = quillContent.root.innerHTML;
+        if (quillContent) cfActiveRow.value.htmlContent = quillContent.root.innerHTML;
         htmlSourceMode.value = true;
       } else {
         /* 소스 → WYSIWYG: quillContent 재생성 없이 내용만 동기화 */
@@ -429,12 +429,12 @@ window.DpDispPanelDtl = {
     };
 
     const bindQuillContent = () => {
-      if (!quillContent || !activeRow.value) return;
+      if (!quillContent || !cfActiveRow.value) return;
       quillContent.off('text-change');
-      const html = activeRow.value.htmlContent || '';
+      const html = cfActiveRow.value.htmlContent || '';
       if (quillContent.root.innerHTML !== html) quillContent.root.innerHTML = html;
       quillContent.on('text-change', () => {
-        if (activeRow.value) activeRow.value.htmlContent = quillContent.root.innerHTML;
+        if (cfActiveRow.value) cfActiveRow.value.htmlContent = quillContent.root.innerHTML;
       });
     };
 
@@ -499,23 +499,23 @@ window.DpDispPanelDtl = {
     });
 
     /* 위젯 유형이 html_editor로 바뀔 때 */
-    watch(isHtmlEditor, async (val) => {
+    watch(cfIsHtmlEditor, async (val) => {
       if (!val) return;
       await nextTick();
       initQuillContent();
     });
 
     /* 행 전환 시 Quill 내용 싱크 */
-    watch(activeRowIdx, async () => {
-      if (!isHtmlEditor.value) return;
+    watch(cfActiveRowIdx, async () => {
+      if (!cfIsHtmlEditor.value) return;
       await nextTick();
       if (quillContent) bindQuillContent();
       else initQuillContent();
     });
 
-    const save = async () => {
+    const handleSave = async () => {
       if (!form.name || !form.area || !form.dispCode) { props.showToast('필수 항목을 입력해주세요. (패널코드·패널명·화면영역)', 'error'); return; }
-      const isNewPanel = isNew.value;
+      const isNewPanel = cfIsNew.value;
       const ok = await props.showConfirm(isNewPanel ? '등록' : '저장', isNewPanel ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       const payload = { ...form, rows: rows.map(r => ({ ...r })), sortOrder: Number(window.safeArrayUtils.safeGet(rows, 0).sortOrder) };
@@ -543,15 +543,15 @@ window.DpDispPanelDtl = {
     const preview = reactive({ show: false, tabLabel: '' });
     const openPreview = (tabKey, tabLabel) => { preview.tabLabel = tabLabel; preview.show = true; };
     const closePreview = () => { preview.show = false; };
-    const previewWidget = computed(() => ({
-      ...form, ...(activeRow.value ? { ...activeRow.value } : {}), status: '활성',
+    const cfPreviewWidget = computed(() => ({
+      ...form, ...(cfActiveRow.value ? { ...cfActiveRow.value } : {}), status: '활성',
     }));
 
     /* ── 패널미리보기 (카드) ── */
     const cardPreview = reactive({ show: false });
     const openCardPreview = () => { cardPreview.show = true; };
     const closeCardPreview = () => { cardPreview.show = false; };
-    const currentAreaLabel = computed(() => {
+    const cfCurrentAreaLabel = computed(() => {
       const found = (Array.isArray(codes) ? codes : []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === form.area);
       return found ? found.codeLabel : form.area;
     });
@@ -615,7 +615,7 @@ window.DpDispPanelDtl = {
     };
     const removeWidget = (idx) => {
       if (idx === 0 || rows.length <= 1) return;
-      const currentIdx = activeRowIdx.value;
+      const currentIdx = cfActiveRowIdx.value;
       rows.splice(idx, 1);
       window.safeArrayUtils.safeForEach(rows, (r, i) => { r.sortOrder = i + 1; });
       expandedSections.delete('tab' + (rows.length + 1));
@@ -625,22 +625,22 @@ window.DpDispPanelDtl = {
     };
 
     /* ── 공개 대상 멀티체크 토글 (전시항목별) ── */
-    const visibilityOptions = computed(() => window.visibilityUtil.allOptions());
+    const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
     const hasVisibility = (code) => {
-      if (!activeRow.value) return false;
-      return window.visibilityUtil.has(activeRow.value.visibilityTargets, code);
+      if (!cfActiveRow.value) return false;
+      return window.visibilityUtil.has(cfActiveRow.value.visibilityTargets, code);
     };
     const toggleVisibility = (code) => {
-      if (!activeRow.value) return;
-      const list = window.visibilityUtil.parse(activeRow.value.visibilityTargets);
+      if (!cfActiveRow.value) return;
+      const list = window.visibilityUtil.parse(cfActiveRow.value.visibilityTargets);
       const i = list.indexOf(code);
       if (i >= 0) list.splice(i, 1); else list.push(code);
       if (code === 'PUBLIC' && i < 0) {
-        activeRow.value.visibilityTargets = '^PUBLIC^';
+        cfActiveRow.value.visibilityTargets = '^PUBLIC^';
         return;
       }
       const filtered = window.safeArrayUtils.safeFilter(list, c => c !== 'PUBLIC' || code === 'PUBLIC');
-      activeRow.value.visibilityTargets = window.visibilityUtil.serialize(filtered);
+      cfActiveRow.value.visibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
     /* ── 전시 환경 멀티체크 토글 (PLAN/DEV/TEST/PROD) ── */
@@ -651,15 +651,15 @@ window.DpDispPanelDtl = {
       { code: 'PROD', label: 'PROD' },
     ];
     const hasDispEnv = (code) => {
-      if (!activeRow.value) return false;
-      return activeRow.value.dispEnv.includes('^' + code + '^');
+      if (!cfActiveRow.value) return false;
+      return cfActiveRow.value.dispEnv.includes('^' + code + '^');
     };
     const toggleDispEnv = (code) => {
-      if (!activeRow.value) return;
-      const envList = activeRow.value.dispEnv.split('^').filter(e => e && e !== 'NONE');
+      if (!cfActiveRow.value) return;
+      const envList = cfActiveRow.value.dispEnv.split('^').filter(e => e && e !== 'NONE');
       const i = envList.indexOf(code);
       if (i >= 0) envList.splice(i, 1); else envList.push(code);
-      activeRow.value.dispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
+      cfActiveRow.value.dispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
     };
 
     /* ── 패널 레벨 전시환경/공개대상 토글 ── */
@@ -696,21 +696,21 @@ window.DpDispPanelDtl = {
     const libPickOpen = ref(false);
     const libPickMode = ref('copy');
     const openLibPick = (mode) => {
-      if (!activeRow.value) return;
+      if (!cfActiveRow.value) return;
       libPickMode.value = mode; libPickOpen.value = true;
     };
     const onLibPicked = (lib) => {
       libPickOpen.value = false;
-      if (!activeRow.value) return;
+      if (!cfActiveRow.value) return;
       if (libPickMode.value === 'copy') {
-        const r = activeRow.value;
+        const r = cfActiveRow.value;
         const preserve = { widgetNm: r.widgetNm, sortOrder: r.sortOrder };
         Object.assign(r, { ...lib, ...preserve });
         props.showToast && props.showToast(`[${lib.name}] 내용을 복사했습니다.`, 'info');
       } else {
-        activeRow.value.refLibId   = lib.libId;
-        activeRow.value.refLibCode = lib.libCode || '';
-        activeRow.value.refLibName = lib.name || '';
+        cfActiveRow.value.refLibId   = lib.libId;
+        cfActiveRow.value.refLibCode = lib.libCode || '';
+        cfActiveRow.value.refLibName = lib.name || '';
         props.showToast && props.showToast(`[${lib.name}] 참조로 설정되었습니다.`, 'info');
       }
     };
@@ -718,20 +718,20 @@ window.DpDispPanelDtl = {
     return { panels, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       libPickOpen, libPickMode, openLibPick, onLibPicked,
       rowCopyOpen, onRowCopy,
-      visibilityOptions, hasVisibility, toggleVisibility,
+      cfVisibilityOptions, hasVisibility, toggleVisibility,
       dispEnvOptions, hasDispEnv, toggleDispEnv,
       hasPanelDispEnv, togglePanelDispEnv, hasPanelVisibility, togglePanelVisibility,
-      previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag, showComponentTooltip,
-      isNew, tab, form, rows, WIDGET_TYPES, AREAS, LAYOUT_TYPE_OPTS, TAB_LABELS, TAB_ROW_MAP,
+      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, showComponentTooltip,
+      cfIsNew, tab, form, rows, WIDGET_TYPES, cfAreas, LAYOUT_TYPE_OPTS, cfTabLabels, cfTabRowMap,
       MAX_WIDGETS, addWidget, removeWidget,
-      activeRowIdx, activeRow, moveRow,
-      isChart, isProduct, isImage, isText, isInfo, isPopup, isFile, isFileList,
-      isCoupon, isHtmlEditor, isEventBanner, isCacheBanner, isWidgetEmbed, isCondProduct,
-      displayRows, relatedEvent, save,
-      fileListItems, addFileItem, removeFileItem, updateFileItem,
+      cfActiveRowIdx, cfActiveRow, moveRow,
+      cfIsChart, cfIsProduct, cfIsImage, cfIsText, cfIsInfo, cfIsPopup, cfIsFile, cfIsFileList,
+      cfIsCoupon, cfIsHtmlEditor, cfIsEventBanner, cfIsCacheBanner, cfIsWidgetEmbed, cfIsCondProduct,
+      cfDisplayRows, cfRelatedEvent, handleSave,
+      cfFileListItems, addFileItem, removeFileItem, updateFileItem,
       htmlDescEl, htmlContentEl, htmlSourceMode, toggleHtmlSource,
-      preview, openPreview, closePreview, previewWidget,
-      cardPreview, openCardPreview, closeCardPreview, currentAreaLabel, wLabel,
+      preview, openPreview, closePreview, cfPreviewWidget,
+      cardPreview, openCardPreview, closeCardPreview, cfCurrentAreaLabel, wLabel,
       viewAll,
       expandedSections, toggleSection, isSectionExpanded,
       rowIsHtmlEditor, rowIsFileList, rowIsImage, rowIsText, rowIsProduct,
@@ -744,8 +744,8 @@ window.DpDispPanelDtl = {
 <div>
   <div class="page-title" style="display:flex;align-items:center;justify-content:space-between;">
     <span>
-      {{ isNew ? '전시패널 등록' : (viewMode ? '전시패널 상세' : '전시패널 수정') }}
-      <span v-if="!isNew" style="font-size:13px;color:#888;font-weight:400;margin-left:6px;">#{{ form.dispId }}</span>
+      {{ cfIsNew ? '전시패널 등록' : (viewMode ? '전시패널 상세' : '전시패널 수정') }}
+      <span v-if="!cfIsNew" style="font-size:13px;color:#888;font-weight:400;margin-left:6px;">#{{ form.dispId }}</span>
     </span>
     <div style="display:flex;align-items:center;gap:6px;">
       <button @click="viewAll = !viewAll"
@@ -755,13 +755,13 @@ window.DpDispPanelDtl = {
         <span>{{ viewAll ? '☰' : '⊞' }}</span>
         {{ viewAll ? '탭 보기' : '펼치기' }}
       </button>
-      <button v-if="!viewMode" class="btn btn-sm" :disabled="isNew"
-        :style="isNew ? 'background:#f5f5f5;border:1px solid #ddd;color:#bbb;cursor:not-allowed;' : 'background:#e3f2fd;border:1px solid #90caf9;color:#1565c0;font-weight:600;'"
-        :title="isNew ? '저장 후 전시항목을 복사할 수 있습니다.' : ''"
-        @click="!isNew && (rowCopyOpen = true)">
+      <button v-if="!viewMode" class="btn btn-sm" :disabled="cfIsNew"
+        :style="cfIsNew ? 'background:#f5f5f5;border:1px solid #ddd;color:#bbb;cursor:not-allowed;' : 'background:#e3f2fd;border:1px solid #90caf9;color:#1565c0;font-weight:600;'"
+        :title="cfIsNew ? '저장 후 전시항목을 복사할 수 있습니다.' : ''"
+        @click="!cfIsNew && (rowCopyOpen = true)">
         📄 전시항목 복사
       </button>
-      <button v-if="!viewMode" class="btn btn-primary btn-sm" @click="save" style="font-weight:700;">💾 저장</button>
+      <button v-if="!viewMode" class="btn btn-primary btn-sm" @click="handleSave" style="font-weight:700;">💾 저장</button>
     </div>
   </div>
   <div class="card">
@@ -784,7 +784,7 @@ window.DpDispPanelDtl = {
 
       <!-- 좌측 탭 메뉴 (UI 스타일) -->
       <div style="width:160px;min-width:160px;background:#f4f5f8;border-right:1px solid #e8ebef;padding:12px 8px;flex-shrink:0;">
-        <div v-for="(t, tIdx) in TAB_LABELS" :key="t?.key"
+        <div v-for="(t, tIdx) in cfTabLabels" :key="t?.key"
           @click="tab=t.key"
           :style="{
             display:'flex',alignItems:'center',justifyContent:'space-between',
@@ -798,12 +798,12 @@ window.DpDispPanelDtl = {
           <span v-if="t.key==='info'">📋 <b>패널기본정보</b></span>
           <span v-else>{{ t.label }}</span>
           <span v-if="t.key !== 'info' && tab===t.key" style="display:flex;gap:2px;">
-            <button @click.stop="moveRow(-1)" :disabled="activeRowIdx===0" title="위로"
+            <button @click.stop="moveRow(-1)" :disabled="cfActiveRowIdx===0" title="위로"
               style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 4px;line-height:1.2;color:#888;"
-              :style="activeRowIdx===0?'opacity:0.3;cursor:default;':''">▲</button>
-            <button @click.stop="moveRow(1)" :disabled="activeRowIdx===rows.length-1" title="아래로"
+              :style="cfActiveRowIdx===0?'opacity:0.3;cursor:default;':''">▲</button>
+            <button @click.stop="moveRow(1)" :disabled="cfActiveRowIdx===rows.length-1" title="아래로"
               style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 4px;line-height:1.2;color:#888;"
-              :style="activeRowIdx===rows.length-1?'opacity:0.3;cursor:default;':''">▼</button>
+              :style="cfActiveRowIdx===rows.length-1?'opacity:0.3;cursor:default;':''">▼</button>
           </span>
           <button v-if="tIdx >= 2 && tab!==t.key" @click.stop="removeWidget(tIdx-1)" title="전시항목 삭제"
             style="font-size:11px;border:none;background:none;cursor:pointer;color:#bbb;line-height:1;padding:0 2px;"
@@ -812,9 +812,9 @@ window.DpDispPanelDtl = {
         </div>
         <!-- 추가 버튼 -->
         <div v-if="rows.length < MAX_WIDGETS" style="margin-top:8px;">
-          <button @click="!isNew && addWidget()" :disabled="isNew"
-            :title="isNew ? '저장 후 전시항목을 추가할 수 있습니다.' : ''"
-            :style="isNew ? 'width:100%;padding:8px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:8px;font-size:11px;font-weight:600;cursor:not-allowed;' : 'width:100%;padding:8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;'">
+          <button @click="!cfIsNew && addWidget()" :disabled="cfIsNew"
+            :title="cfIsNew ? '저장 후 전시항목을 추가할 수 있습니다.' : ''"
+            :style="cfIsNew ? 'width:100%;padding:8px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:8px;font-size:11px;font-weight:600;cursor:not-allowed;' : 'width:100%;padding:8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;'">
             ✚ 전시항목 추가
           </button>
         </div>
@@ -869,7 +869,7 @@ window.DpDispPanelDtl = {
                 <div style="padding:8px 10px;border:1px solid #e4e4e4;border-radius:6px;background:#fafbfc;min-height:34px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
                   <span v-if="form.area" style="font-size:11px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:10px;padding:2px 10px;">
                     <code style="font-size:10px;background:transparent;">{{ form.area }}</code>
-                    &nbsp;{{ currentAreaLabel }}
+                    &nbsp;{{ cfCurrentAreaLabel }}
                   </span>
                   <span v-else style="font-size:11px;color:#bbb;">영역에 포함되지 않음</span>
                 </div>
@@ -968,7 +968,7 @@ window.DpDispPanelDtl = {
         </div>
 
         <!-- ── 1~5행 콘텐츠 ── -->
-        <div v-if="activeRow">
+        <div v-if="cfActiveRow">
 
           <!-- ■ 섹션 1: 설정 -->
           <div style="margin-bottom:14px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
@@ -976,41 +976,41 @@ window.DpDispPanelDtl = {
               <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
               설정
               <span v-if="!viewMode" style="margin-left:auto;display:flex;gap:6px;">
-                <button @click="!isNew && openLibPick('copy')" :disabled="isNew"
-                  :title="isNew ? '저장 후 사용할 수 있습니다.' : ''"
-                  :style="isNew ? 'font-size:11px;padding:4px 10px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:6px;cursor:not-allowed;font-weight:600;' : 'font-size:11px;padding:4px 10px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:6px;cursor:pointer;font-weight:600;'">📋 위젯Lib내용복사</button>
-                <button @click="!isNew && openLibPick('ref')" :disabled="isNew"
-                  :title="isNew ? '저장 후 사용할 수 있습니다.' : ''"
-                  :style="isNew ? 'font-size:11px;padding:4px 10px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:6px;cursor:not-allowed;font-weight:600;' : 'font-size:11px;padding:4px 10px;border:1px solid #ce93d8;background:#f3e5f5;color:#6a1b9a;border-radius:6px;cursor:pointer;font-weight:600;'">🔗 위젯Lib참조</button>
+                <button @click="!cfIsNew && openLibPick('copy')" :disabled="cfIsNew"
+                  :title="cfIsNew ? '저장 후 사용할 수 있습니다.' : ''"
+                  :style="cfIsNew ? 'font-size:11px;padding:4px 10px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:6px;cursor:not-allowed;font-weight:600;' : 'font-size:11px;padding:4px 10px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:6px;cursor:pointer;font-weight:600;'">📋 위젯Lib내용복사</button>
+                <button @click="!cfIsNew && openLibPick('ref')" :disabled="cfIsNew"
+                  :title="cfIsNew ? '저장 후 사용할 수 있습니다.' : ''"
+                  :style="cfIsNew ? 'font-size:11px;padding:4px 10px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:6px;cursor:not-allowed;font-weight:600;' : 'font-size:11px;padding:4px 10px;border:1px solid #ce93d8;background:#f3e5f5;color:#6a1b9a;border-radius:6px;cursor:pointer;font-weight:600;'">🔗 위젯Lib참조</button>
               </span>
             </div>
 
             <!-- 🔗 참조 정보 -->
-            <div v-if="activeRow.refLibId"
+            <div v-if="cfActiveRow.refLibId"
               style="background:linear-gradient(135deg,#f3e5f5 0%,#fff 100%);border:1px dashed #ce93d8;border-radius:10px;padding:12px 14px;margin-bottom:14px;">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                 <span style="font-size:12px;font-weight:700;color:#6a1b9a;">🔗 전시위젯Lib 참조 중</span>
-                <button v-if="!viewMode" @click="activeRow.refLibId=null; activeRow.refLibCode=''; activeRow.refLibName=''"
+                <button v-if="!viewMode" @click="cfActiveRow.refLibId=null; cfActiveRow.refLibCode=''; cfActiveRow.refLibName=''"
                   style="font-size:10px;padding:2px 8px;border:1px solid #ce93d8;background:#fff;color:#6a1b9a;border-radius:4px;cursor:pointer;">참조 해제</button>
               </div>
               <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;margin-bottom:10px;">
                 <span><b style="color:#888;">참조구분:</b>
                   <span style="background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:1px 7px;margin-left:3px;font-weight:700;">위젯Lib</span>
                 </span>
-                <span v-if="activeRow.refLibCode"><b style="color:#888;">참조항목Code:</b>
-                  <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">{{ activeRow.refLibCode }}</code>
+                <span v-if="cfActiveRow.refLibCode"><b style="color:#888;">참조항목Code:</b>
+                  <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">{{ cfActiveRow.refLibCode }}</code>
                 </span>
                 <span><b style="color:#888;">참조항목ID:</b>
-                  <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">#{{ String(activeRow.refLibId).padStart(4,'0') }}</code>
+                  <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">#{{ String(cfActiveRow.refLibId).padStart(4,'0') }}</code>
                 </span>
-                <span v-if="activeRow.refLibName"><b style="color:#888;">참조명:</b> {{ activeRow.refLibName }}</span>
+                <span v-if="cfActiveRow.refLibName"><b style="color:#888;">참조명:</b> {{ cfActiveRow.refLibName }}</span>
               </div>
               <div style="background:#fff;border:1px solid #e1bee7;border-radius:8px;padding:10px;">
                 <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:6px;letter-spacing:.3px;">▸ 참조 내용 미리보기</div>
                 <disp-x04-widget
                   :params="{ }"
                   :disp-opt="{ showBadges: true }"
-                  :widget-item="([]||[]).find(l => l.libId===activeRow.refLibId) || {}" />
+                  :widget-item="([]||[]).find(l => l.libId===cfActiveRow.refLibId) || {}" />
               </div>
             </div>
 
@@ -1018,13 +1018,13 @@ window.DpDispPanelDtl = {
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
               <div style="display:flex;align-items:center;gap:8px;">
                 <label style="font-size:12px;font-weight:600;color:#555;white-space:nowrap;">노출 순서</label>
-                <input class="form-control" type="number" v-model.number="activeRow.sortOrder" min="1" :readonly="viewMode"
+                <input class="form-control" type="number" v-model.number="cfActiveRow.sortOrder" min="1" :readonly="viewMode"
                   style="width:80px;margin:0;" />
               </div>
               <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#555;padding:5px 10px;background:#f0f0f0;border-radius:6px;cursor:pointer;">
                 <span>전시여부</span>
-                <input type="checkbox" v-model="activeRow.dispYn" :true-value="'Y'" :false-value="'N'" :disabled="viewMode" style="accent-color:#e8587a;" />
-                <span>{{ activeRow.dispYn === 'Y' ? '전시' : '숨김' }}</span>
+                <input type="checkbox" v-model="cfActiveRow.dispYn" :true-value="'Y'" :false-value="'N'" :disabled="viewMode" style="accent-color:#e8587a;" />
+                <span>{{ cfActiveRow.dispYn === 'Y' ? '전시' : '숨김' }}</span>
               </label>
               <span style="font-size:10px;color:#aaa;">(배치로 자동 관리됨)</span>
             </div>
@@ -1036,13 +1036,13 @@ window.DpDispPanelDtl = {
             <div style="display:grid;grid-template-columns:auto 1fr auto 1fr;align-items:center;gap:6px;margin-bottom:12px;background:#f9fafb;padding:10px 12px;border-radius:6px;border:1px solid #e5e7eb;">
               <span style="font-size:11px;color:#888;white-space:nowrap;">시작</span>
               <div style="display:flex;gap:6px;">
-                <input type="date" class="form-control" v-model="activeRow.dispStartDate" style="flex:1;min-width:0;margin:0;" :readonly="viewMode" />
-                <input type="time" class="form-control" v-model="activeRow.dispStartTime" style="width:100px;flex-shrink:0;margin:0;" :readonly="viewMode" />
+                <input type="date" class="form-control" v-model="cfActiveRow.dispStartDate" style="flex:1;min-width:0;margin:0;" :readonly="viewMode" />
+                <input type="time" class="form-control" v-model="cfActiveRow.dispStartTime" style="width:100px;flex-shrink:0;margin:0;" :readonly="viewMode" />
               </div>
               <span style="font-size:11px;color:#888;white-space:nowrap;padding:0 2px;">종료</span>
               <div style="display:flex;gap:6px;">
-                <input type="date" class="form-control" v-model="activeRow.dispEndDate" style="flex:1;min-width:0;margin:0;" :readonly="viewMode" />
-                <input type="time" class="form-control" v-model="activeRow.dispEndTime" style="width:100px;flex-shrink:0;margin:0;" :readonly="viewMode" />
+                <input type="date" class="form-control" v-model="cfActiveRow.dispEndDate" style="flex:1;min-width:0;margin:0;" :readonly="viewMode" />
+                <input type="time" class="form-control" v-model="cfActiveRow.dispEndTime" style="width:100px;flex-shrink:0;margin:0;" :readonly="viewMode" />
               </div>
             </div>
 
@@ -1085,7 +1085,7 @@ window.DpDispPanelDtl = {
                 {{ opt.codeLabel }}
               </label>
             </div>
-            <div v-if="!activeRow.visibilityTargets" style="font-size:11px;color:#d32f2f;margin-bottom:4px;">⚠ 선택 없음 — 아무에게도 노출되지 않습니다.</div>
+            <div v-if="!cfActiveRow.visibilityTargets" style="font-size:11px;color:#d32f2f;margin-bottom:4px;">⚠ 선택 없음 — 아무에게도 노출되지 않습니다.</div>
           </div><!-- /설정 영역 -->
 
           <!-- ■ 섹션 2: 제목 -->
@@ -1096,16 +1096,16 @@ window.DpDispPanelDtl = {
               <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
                 <span style="font-size:11px;font-weight:600;color:#888;">타이틀 표시</span>
                 <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
-                  <input type="radio" v-model="activeRow.titleYn" value="Y" :disabled="viewMode" /> 표시
+                  <input type="radio" v-model="cfActiveRow.titleYn" value="Y" :disabled="viewMode" /> 표시
                 </label>
                 <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
-                  <input type="radio" v-model="activeRow.titleYn" value="N" :disabled="viewMode" /> 미표시
+                  <input type="radio" v-model="cfActiveRow.titleYn" value="N" :disabled="viewMode" /> 미표시
                 </label>
               </span>
             </div>
-            <div v-if="activeRow.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
+            <div v-if="cfActiveRow.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
               <label style="font-size:12px;font-weight:600;color:#555;width:50px;flex-shrink:0;">타이틀</label>
-              <input v-model="activeRow.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="viewMode"
+              <input v-model="cfActiveRow.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="viewMode"
                 style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
             </div>
           </div><!-- /제목 영역 -->
@@ -1117,7 +1117,7 @@ window.DpDispPanelDtl = {
               내용
               <span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;flex-shrink:0;">
                 <span style="font-size:11px;font-weight:600;color:#888;white-space:nowrap;">위젯유형</span>
-                <select class="form-control" v-model="activeRow.widgetType" :disabled="viewMode"
+                <select class="form-control" v-model="cfActiveRow.widgetType" :disabled="viewMode"
                   style="margin:0;font-size:12px;padding:3px 8px;height:28px;border-radius:5px;min-width:160px;">
                   <option v-for="w in WIDGET_TYPES" :key="w?.value" :value="w.value">{{ w.label }}</option>
                 </select>
@@ -1128,7 +1128,7 @@ window.DpDispPanelDtl = {
             <div v-if="isHtmlEditor" style="margin-bottom:20px;">
               <div v-if="viewMode"
                 style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;">
-                <span v-if="activeRow.htmlContent" v-html="activeRow.htmlContent"></span>
+                <span v-if="cfActiveRow.htmlContent" v-html="cfActiveRow.htmlContent"></span>
                 <span v-else style="color:#bbb;">내용 없음</span>
               </div>
               <template v-else>
@@ -1140,7 +1140,7 @@ window.DpDispPanelDtl = {
                   </button>
                 </div>
                 <div v-show="!htmlSourceMode" ref="htmlContentEl"></div>
-                <textarea v-if="htmlSourceMode" v-model="activeRow.htmlContent"
+                <textarea v-if="htmlSourceMode" v-model="cfActiveRow.htmlContent"
                   style="width:100%;min-height:180px;padding:10px 12px;border:1px solid #d0d0d0;border-radius:6px;font-family:'Consolas','D2Coding',monospace;font-size:12px;line-height:1.7;color:#333;resize:vertical;box-sizing:border-box;"></textarea>
               </template>
             </div>
@@ -1211,30 +1211,30 @@ window.DpDispPanelDtl = {
                 <tr v-for="row in displayRows" :key="row?.key">
                   <td style="font-weight:500;color:#555;vertical-align:middle;">{{ row.label }}</td>
                   <td style="padding:6px 8px;">
-                    <input v-if="row.type==='input'" class="form-control" v-model="activeRow[row.key]" :placeholder="row.ph" style="margin:0;" :readonly="viewMode" />
-                    <input v-else-if="row.type==='number'" class="form-control" type="number" v-model.number="activeRow[row.key]" style="margin:0;max-width:200px;" :readonly="viewMode" />
-                    <select v-else-if="row.type==='select'" class="form-control" v-model="activeRow[row.key]" style="margin:0;max-width:200px;" :disabled="viewMode">
+                    <input v-if="row.type==='input'" class="form-control" v-model="cfActiveRow[row.key]" :placeholder="row.ph" style="margin:0;" :readonly="viewMode" />
+                    <input v-else-if="row.type==='number'" class="form-control" type="number" v-model.number="cfActiveRow[row.key]" style="margin:0;max-width:200px;" :readonly="viewMode" />
+                    <select v-else-if="row.type==='select'" class="form-control" v-model="cfActiveRow[row.key]" style="margin:0;max-width:200px;" :disabled="viewMode">
                       <option v-for="o in row.options" :key="o?.v" :value="o.v">{{ o.l }}</option>
                     </select>
-                    <textarea v-else-if="row.type==='textarea'" class="form-control" v-model="activeRow[row.key]" rows="3" style="margin:0;" :readonly="viewMode"></textarea>
-                    <textarea v-else-if="row.type==='code'" class="form-control" v-model="activeRow[row.key]" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;" :readonly="viewMode"></textarea>
+                    <textarea v-else-if="row.type==='textarea'" class="form-control" v-model="cfActiveRow[row.key]" rows="3" style="margin:0;" :readonly="viewMode"></textarea>
+                    <textarea v-else-if="row.type==='code'" class="form-control" v-model="cfActiveRow[row.key]" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;" :readonly="viewMode"></textarea>
                     <div v-else-if="row.type==='color'" style="display:flex;gap:8px;align-items:center;">
-                      <input type="color" v-model="activeRow[row.key]" style="width:40px;height:34px;border:1px solid #ddd;border-radius:4px;cursor:pointer;padding:2px;" :disabled="viewMode" />
-                      <input class="form-control" v-model="activeRow[row.key]" style="margin:0;max-width:140px;" :readonly="viewMode" />
-                      <span style="display:inline-block;width:60px;height:28px;border-radius:4px;border:1px solid #e8e8e8;" :style="{background:activeRow[row.key]}"></span>
+                      <input type="color" v-model="cfActiveRow[row.key]" style="width:40px;height:34px;border:1px solid #ddd;border-radius:4px;cursor:pointer;padding:2px;" :disabled="viewMode" />
+                      <input class="form-control" v-model="cfActiveRow[row.key]" style="margin:0;max-width:140px;" :readonly="viewMode" />
+                      <span style="display:inline-block;width:60px;height:28px;border-radius:4px;border:1px solid #e8e8e8;" :style="{background:cfActiveRow[row.key]}"></span>
                     </div>
-                    <textarea v-else-if="row.type==='code'" class="form-control" v-model="activeRow[row.key]" rows="5" style="margin:0;font-family:monospace;font-size:12px;" :placeholder="row.ph" :readonly="viewMode"></textarea>
+                    <textarea v-else-if="row.type==='code'" class="form-control" v-model="cfActiveRow[row.key]" rows="5" style="margin:0;font-family:monospace;font-size:12px;" :placeholder="row.ph" :readonly="viewMode"></textarea>
                     <div v-else-if="row.type==='event'">
                       <div style="display:flex;gap:8px;align-items:center;">
-                        <input class="form-control" v-model="activeRow.eventId" placeholder="이벤트 ID" style="margin:0;max-width:160px;" :readonly="viewMode" />
-                        <span v-if="activeRow.eventId" class="ref-link" @click="showRefModal('event', Number(activeRow.eventId))">보기</span>
+                        <input class="form-control" v-model="cfActiveRow.eventId" placeholder="이벤트 ID" style="margin:0;max-width:160px;" :readonly="viewMode" />
+                        <span v-if="cfActiveRow.eventId" class="ref-link" @click="showRefModal('event', Number(cfActiveRow.eventId))">보기</span>
                       </div>
                       <div v-if="relatedEvent" style="margin-top:6px;padding:8px 12px;background:#e6f4ff;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px;">
                         <b>{{ relatedEvent.title }}</b>
                         <span class="badge badge-green">{{ relatedEvent.status }}</span>
                         <span style="color:#888;">{{ relatedEvent.startDate }} ~ {{ relatedEvent.endDate }}</span>
                       </div>
-                      <div v-else-if="activeRow.eventId" style="margin-top:6px;font-size:12px;color:#aaa;">해당 이벤트를 찾을 수 없습니다.</div>
+                      <div v-else-if="cfActiveRow.eventId" style="margin-top:6px;font-size:12px;color:#aaa;">해당 이벤트를 찾을 수 없습니다.</div>
                     </div>
                   </td>
                 </tr>
@@ -1267,7 +1267,7 @@ window.DpDispPanelDtl = {
                 <tr>
                   <td style="font-weight:500;color:#555;vertical-align:middle;">클릭 시 동작</td>
                   <td style="padding:6px 8px;">
-                    <select class="form-control" v-model="activeRow.clickAction" style="margin:0;max-width:220px;" :disabled="viewMode">
+                    <select class="form-control" v-model="cfActiveRow.clickAction" style="margin:0;max-width:220px;" :disabled="viewMode">
                       <option value="none">없음</option>
                       <option value="navigate">페이지 이동</option>
                       <option value="event">이벤트 호출</option>
@@ -1276,14 +1276,14 @@ window.DpDispPanelDtl = {
                     </select>
                   </td>
                 </tr>
-                <tr v-if="activeRow.clickAction !== 'none'">
+                <tr v-if="cfActiveRow.clickAction !== 'none'">
                   <td style="font-weight:500;color:#555;vertical-align:middle;">대상</td>
                   <td style="padding:6px 8px;">
-                    <input class="form-control" v-model="activeRow.clickTarget" placeholder="/products, showCoupon, https://..." style="margin:0;" :readonly="viewMode" />
+                    <input class="form-control" v-model="cfActiveRow.clickTarget" placeholder="/products, showCoupon, https://..." style="margin:0;" :readonly="viewMode" />
                     <div style="margin-top:6px;font-size:12px;color:#888;">
-                      <span v-if="activeRow.clickAction==='navigate'">💡 <code>/home</code>, <code>/products</code>, <code>/detail?pid=1</code> 형식</span>
-                      <span v-if="activeRow.clickAction==='event'">💡 <code>showCoupon</code>, <code>openEvent</code> 등 이벤트명</span>
-                      <span v-if="activeRow.clickAction==='url'">💡 외부 URL (http:// 포함)</span>
+                      <span v-if="cfActiveRow.clickAction==='navigate'">💡 <code>/home</code>, <code>/products</code>, <code>/detail?pid=1</code> 형식</span>
+                      <span v-if="cfActiveRow.clickAction==='event'">💡 <code>showCoupon</code>, <code>openEvent</code> 등 이벤트명</span>
+                      <span v-if="cfActiveRow.clickAction==='url'">💡 외부 URL (http:// 포함)</span>
                     </div>
                   </td>
                 </tr>
@@ -1326,7 +1326,7 @@ window.DpDispPanelDtl = {
             </span>
           </span>
           <span style="font-size:10px;color:#aaa;margin-left:auto;">
-            {{ tab==='info' ? '전체 전시항목' : (window.safeArrayUtils.safeFind(TAB_LABELS, t=>t.key===tab)||{}).label }}
+            {{ tab==='info' ? '전체 전시항목' : (window.safeArrayUtils.safeFind(cfTabLabels, t=>t.key===tab)||{}).label }}
           </span>
         </div>
         <!-- 디바이스 모드 버튼 -->
@@ -1360,11 +1360,11 @@ window.DpDispPanelDtl = {
             />
           </template>
           <!-- 위젯1~5: 해당 위젯만 -->
-          <template v-else-if="activeRow">
+          <template v-else-if="cfActiveRow">
             <disp-x04-widget
               :params="{ }"
               :disp-opt="{ showBadges: true }"
-              :widget-item="{...activeRow, widgetNm: activeRow.widgetNm||(window.safeArrayUtils.safeFind(TAB_LABELS, t=>t.key===tab)||{}).label||'위젯', status:'활성', condition:'항상 표시'}"
+              :widget-item="{...cfActiveRow, widgetNm: cfActiveRow.widgetNm||(window.safeArrayUtils.safeFind(cfTabLabels, t=>t.key===tab)||{}).label||'위젯', status:'활성', condition:'항상 표시'}"
             />
           </template>
         </div><!-- /device frame -->

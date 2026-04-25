@@ -17,7 +17,7 @@ window.StSettleAdjMng = {
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
     const vendorList = reactive([]);
-    const vendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
+    const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
     const fetchData = async () => {
       try {
@@ -80,7 +80,7 @@ window.StSettleAdjMng = {
       Object.keys(errors).forEach(k => delete errors[k]);
       try { await schema.validate(form, { abortEarly: false }); }
       catch (err) { err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
-      const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === Number(form.vendorId));
+      const v = cfVendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === Number(form.vendorId));
       if (v) form.vendorNm = v.vendorNm;
       const ok = await props.showConfirm('저장', '정산조정을 저장하시겠습니까?');
       if (!ok) return;
