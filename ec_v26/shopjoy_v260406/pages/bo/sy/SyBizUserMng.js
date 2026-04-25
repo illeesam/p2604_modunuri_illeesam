@@ -79,9 +79,9 @@ window.SyBizUserMng = {
     onMounted(() => { loadDetail(); });
 
     const cfVendorMap = computed(() => Object.fromEntries(vendors.map(v => [v.vendorId, v])));
-    const vendorNm  = (id) => (cfVendorMap.value[id] || {}).vendorNm || '#'+id;
-    const vendorTypeCd = (id) => (cfVendorMap.value[id] || {}).vendorTypeCd || '';
-    const vendorSummary = (id) => {
+    const fnVendorNm  = (id) => (cfVendorMap.value[id] || {}).vendorNm || '#'+id;
+    const fnVendorTypeCd = (id) => (cfVendorMap.value[id] || {}).vendorTypeCd || '';
+    const fnVendorSummary = (id) => {
       const v = cfVendorMap.value[id];
       if (!v) return '';
       const vt = (VENDOR_TYPES.find(x=>x[0]===v.vendorTypeCd)||[,'?'])[1];
@@ -250,7 +250,7 @@ window.SyBizUserMng = {
     const roleTreeExpanded = reactive(new Set());
 
     const cfFormAllowedRootCode = computed(() => {
-      const vt = vendorTypeCd(formData.vendorId);
+      const vt = fnVendorTypeCd(formData.vendorId);
       return vt==='SALES'?'SITE_MGR_ROOT': vt==='DELIVERY'?'DLIV_ROOT': null;
     });
     const cfFormRoleTree = computed(() => {

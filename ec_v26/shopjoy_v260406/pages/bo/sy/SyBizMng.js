@@ -71,14 +71,14 @@ window.SyBizMng = {
     watch(selectedPath, () => pager.page = 1);
 
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : '#'+id);
-    const vendorTypeLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
+    const fnVendorTypeLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
     const fnVendorTypeBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', CS:'badge-orange', SITE:'badge-purple', PROG:'badge-red', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
     /* 업체유형 → 역할구분 매핑 */
     const ROLE_CAT_BY_VENDOR = { SALES:['판매업체역할','#16a34a'], DELIVERY:['배송업체역할','#f59e0b'], CS:['콜센터업체역할','#0891b2'], SITE:['사이트운영역할','#7c3aed'], PROG:['유지보수역할','#dc2626'], PARTNER:['사이트역할','#2563eb'], INTERNAL:['사이트역할','#2563eb'] };
-    const roleCatLabel = (cd) => (ROLE_CAT_BY_VENDOR[cd] || ['-','#9ca3af'])[0];
-    const roleCatColor = (cd) => (ROLE_CAT_BY_VENDOR[cd] || ['-','#9ca3af'])[1];
+    const fnRoleCatLabel = (cd) => (ROLE_CAT_BY_VENDOR[cd] || ['-','#9ca3af'])[0];
+    const fnRoleCatColor = (cd) => (ROLE_CAT_BY_VENDOR[cd] || ['-','#9ca3af'])[1];
     const fnStatusBadge = (s) => ({ ACTIVE:'badge-green', SUSPENDED:'badge-orange', TERMINATED:'badge-red' }[s] || 'badge-gray');
-    const statusLabel = (s) => ({ ACTIVE:'운영중', SUSPENDED:'중지', TERMINATED:'종료' }[s] || s);
+    const fnStatusLabel = (s) => ({ ACTIVE:'운영중', SUSPENDED:'중지', TERMINATED:'종료' }[s] || s);
 
     /* ── 인라인 폼 (신규/수정) ── */
     const formMode = ref('');  // '' | 'new' | 'edit'
@@ -119,7 +119,7 @@ window.SyBizMng = {
     return { bizs, loading, error, selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       kw, statusFlt, vendorTypeFlt, STATUS, BIZ_CLASS, VENDOR_TYPES,
       cfFiltered, cfPagedRows, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange,
-      pathLabel, vendorTypeLabel, fnVendorTypeBadge, roleCatLabel, roleCatColor, fnStatusBadge, statusLabel,
+      pathLabel, fnVendorTypeLabel, fnVendorTypeBadge, fnRoleCatLabel, fnRoleCatColor, fnStatusBadge, fnStatusLabel,
       formMode, formData, openNew, openEdit, closeForm, handleSaveForm,
       pathPickModal, openPathPick, closePathPick, onPathPicked,
     };
@@ -175,15 +175,15 @@ window.SyBizMng = {
             <tr v-if="!Array.isArray(cfPagedRows) || cfPagedRows.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
             <tr v-for="b in cfPagedRows" :key="b.bizId">
               <td><span style="font-family:monospace;font-size:11.5px;color:#374151;">{{ pathLabel(b.pathId) || '-' }}</span></td>
-              <td><span class="badge" :class="fnVendorTypeBadge(b.vendorTypeCd)" style="font-size:10px;">{{ vendorTypeLabel(b.vendorTypeCd) }}</span></td>
-              <td><span :style="{background:roleCatColor(b.vendorTypeCd),color:'#fff',fontSize:'10px',fontWeight:700,padding:'2px 7px',borderRadius:'9px'}">{{ roleCatLabel(b.vendorTypeCd) }}</span></td>
+              <td><span class="badge" :class="fnVendorTypeBadge(b.vendorTypeCd)" style="font-size:10px;">{{ fnVendorTypeLabel(b.vendorTypeCd) }}</span></td>
+              <td><span :style="{background:fnRoleCatColor(b.vendorTypeCd),color:'#fff',fontSize:'10px',fontWeight:700,padding:'2px 7px',borderRadius:'9px'}">{{ fnRoleCatLabel(b.vendorTypeCd) }}</span></td>
               <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;">{{ b.bizNo }}</code></td>
               <td style="font-weight:600;">{{ b.bizNm }}</td>
               <td>{{ b.ceoNm }}</td>
               <td><span class="badge badge-blue" style="font-size:10px;">{{ b.bizClassCd }}</span></td>
               <td style="font-size:11.5px;color:#666;">{{ b.bizType }} / {{ b.bizItem }}</td>
               <td style="font-size:11.5px;">{{ b.phone }}</td>
-              <td><span class="badge" :class="fnStatusBadge(b.statusCd)" style="font-size:10px;">{{ statusLabel(b.statusCd) }}</span></td>
+              <td><span class="badge" :class="fnStatusBadge(b.statusCd)" style="font-size:10px;">{{ fnStatusLabel(b.statusCd) }}</span></td>
               <td style="font-size:11px;color:#888;">{{ (b.contractDate||'').slice(0,10) }}</td>
               <td style="text-align:right;"><button class="btn btn-primary btn-xs" @click="openEdit(b)">수정</button></td>
             </tr>
@@ -226,7 +226,7 @@ window.SyBizMng = {
           </div>
           <div class="form-group"><label class="form-label">역할구분</label>
             <div class="form-control" style="background:#f9fafb;display:flex;align-items:center;">
-              <span :style="{background:roleCatColor(formData.vendorTypeCd),color:'#fff',fontSize:'11px',fontWeight:700,padding:'3px 10px',borderRadius:'10px'}">{{ roleCatLabel(formData.vendorTypeCd) }}</span>
+              <span :style="{background:fnRoleCatColor(formData.vendorTypeCd),color:'#fff',fontSize:'11px',fontWeight:700,padding:'3px 10px',borderRadius:'10px'}">{{ fnRoleCatLabel(formData.vendorTypeCd) }}</span>
               <span style="margin-left:8px;font-size:11px;color:#9ca3af;">(업체유형에 따라 자동)</span>
             </div>
           </div>

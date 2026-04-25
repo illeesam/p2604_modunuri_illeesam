@@ -142,7 +142,7 @@ window.DpDispWidgetLibPreview = {
     const { ref, reactive, computed, watch, watchEffect, onMounted } = Vue;
     const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
     const widgetLibs = reactive([]);
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const fetchData = async () => {
       try {
@@ -201,14 +201,14 @@ window.DpDispWidgetLibPreview = {
     const filterAuthGrade = ref('');
     const searchKw        = ref('');
 
-    const resetFilter = () => {
+    const onReset = () => {
       previewDate.value = today; previewTime.value = nowTime;
       filterType.value = ''; filterStatus.value = '활성';
       filterCondition.value = ''; filterAuthReq.value = ''; filterAuthGrade.value = '';
       searchKw.value = '';
     };
 
-    const filteredLibs = computed(() => {
+    const cfFilteredLibs = computed(() => {
       const kw = searchKw.value.trim().toLowerCase();
       return (Array.isArray(widgetLibs) ? widgetLibs : []).filter(lib => {
         if (filterType.value   && lib.widgetType !== filterType.value) return false;
@@ -225,7 +225,7 @@ window.DpDispWidgetLibPreview = {
     const onTreeSelect  = (lib) => { selectedLibId.value = lib.libId; };
 
     /* ── 트리 상태 ── */
-    const tree = computed(() => {
+    const cfTree = computed(() => {
       const map = {};
       const addToPath = (lib, pathStr) => {
         const parts = pathStr.split('>').map(s => s.trim()).filter(Boolean);
@@ -236,7 +236,7 @@ window.DpDispWidgetLibPreview = {
         if (!map[top][rest]) map[top][rest] = [];
         map[top][rest].push(lib);
       };
-      window.safeArrayUtils.safeForEach(filteredLibs, lib => {
+      window.safeArrayUtils.safeForEach(cfFilteredLibs, lib => {
         if (!lib.usedPaths || !lib.usedPaths.length) {
           addToPath(lib, '(미등록) > (미등록)');
         } else {
@@ -262,7 +262,7 @@ window.DpDispWidgetLibPreview = {
     const toggleAllChildren = (e, node) => {
       e.stopPropagation();
       const open = !allChildrenOpen(node);
-      window.safeArrayUtils.safeForEach(node.children, sub => {
+      window.safeArrayUtils.safeForEach(node.children, (sub) => {
         const key = node.label + '_' + sub.label;
         if (open) openNodes.add(key);
         else openNodes.delete(key);
@@ -271,13 +271,13 @@ window.DpDispWidgetLibPreview = {
     };
     watchEffect(() => {
       if (!openNodes.has('__root__')) openNodes.add('__root__');
-      const treeArr = Array.isArray(tree.value) ? tree.value : [];
+      const treeArr = Array.isArray(cfTree.value) ? cfTree.value : [];
       if (treeArr.length && openNodes.size === 1) {
         const firstNode = treeArr[0];
         if (firstNode && firstNode.label) openNodes.add(firstNode.label);
       }
     });
-    const expandAll = () => { window.safeArrayUtils.safeForEach(tree, n => openNodes.add(n.label)); openNodes.add('__root__'); };
+    const expandAll = () => { window.safeArrayUtils.safeForEach(cfTree, n => openNodes.add(n.label)); openNodes.add('__root__'); };
     const collapseAll = () => { openNodes.clear(); openNodes.add('__root__'); };
     const onItemDragStart = (e, lib) => {
       window._dragWidgetLib  = lib;
@@ -318,7 +318,7 @@ window.DpDispWidgetLibPreview = {
       mobile:  { label:'📱 모바일', width:'375px' },
     };
     /* auto-fill 반응형: 뷰포트 width 제약 + 브라우저 창 리사이즈 모두 반응 */
-    const autoGridCols = computed(() => {
+    const cfAutoGridCols = computed(() => {
       const map = {
         grid1: 'repeat(1,1fr)',
         grid2: 'repeat(auto-fill,minmax(max(calc(50% - 5px),260px),1fr))',
@@ -339,7 +339,7 @@ window.DpDispWidgetLibPreview = {
       grid3: makeInit(3),
       grid4: makeInit(4),
     });
-    const currentSlots = computed(() => tabSlots[previewGrid.value] || []);
+    const cfCurrentSlots = computed(() => tabSlots[previewGrid.value] || []);
 
     /* 마지막 행에 아이템 있으면 자동으로 행 추가 */
     const autoExpand = (tabId) => {
@@ -486,10 +486,10 @@ window.DpDispWidgetLibPreview = {
     };
 
     /* ── 배치 수 / 초기화 ── */
-    const placedCount = computed(() =>
+    const cfPlacedCount = computed(() =>
       previewGrid.value === 'dashboard'
         ? dashItems.length
-        : window.safeArrayUtils.safeFilter(currentSlots, Boolean).length
+        : window.safeArrayUtils.safeFilter(cfCurrentSlots, Boolean).length
     );
     const resetCurrent = () => {
       if (previewGrid.value === 'dashboard') {
@@ -502,24 +502,24 @@ window.DpDispWidgetLibPreview = {
     };
 
     return {
-      siteNm, today,
+      cfSiteNm, today,
       WIDGET_TYPES, CONDITION_OPTS, AUTH_GRADE_OPTS, VIEWPORT,
       wIcon, wTypeLabel,
       previewDate, previewTime,
       filterType, filterStatus, filterCondition, filterAuthReq, filterAuthGrade, searchKw,
-      resetFilter, filteredLibs,
+      onReset, cfFilteredLibs,
       selectedLibId, onTreeSelect,
-      tree, openNodes, toggleNode, isOpen, allChildrenOpen, toggleAllChildren, expandAll, collapseAll,
+      cfTree, openNodes, toggleNode, isOpen, allChildrenOpen, toggleAllChildren, expandAll, collapseAll,
       onItemDragStart, onItemDragEnd, onNodeDragStart, onNodeDragEnd,
       previewGrid, GRID_TABS,
-      viewportMode, autoGridCols, showRealContent,
-      tabSlots, currentSlots,
+      viewportMode, cfAutoGridCols, showRealContent,
+      tabSlots, cfCurrentSlots,
       dragOverIdx, onDragOver, onDragLeave, onDrop, removeSlot, setSpan, GRID_COLS,
       spanPopupIdx, toggleSpanPopup, closeSpanPopup,
       dashItems, dashCanvas, dashDragOver,
       onDashDragOver, onDashDragLeave, onDashDrop,
       removeDashItem, startItemMove, startItemResize,
-      placedCount, resetCurrent,
+      cfPlacedCount, resetCurrent,
     };
   },
   template: /* html */`
@@ -531,7 +531,7 @@ window.DpDispWidgetLibPreview = {
       <span style="font-size:13px;font-weight:400;color:#888;">표시경로 트리 &amp; 드래그하여 배치</span>
     </div>
     <span style="font-size:12px;background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:10px;padding:3px 12px;font-weight:600;">
-      🌐 {{ siteNm }}
+      🌐 {{ cfSiteNm }}
     </span>
   </div>
 

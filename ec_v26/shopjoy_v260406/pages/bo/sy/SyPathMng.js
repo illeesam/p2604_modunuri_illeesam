@@ -48,7 +48,7 @@ window.SyPathMng = {
     const selectedBiz = ref('sy_brand');
     const selectedPathId = ref(null);
 
-    const tree = computed(() => {
+    const cfTree = computed(() => {
       const list = rows.filter(r => r._status !== 'D' && r.bizCd === selectedBiz.value);
       const byParent = {};
       list.forEach(r => {
@@ -68,12 +68,12 @@ window.SyPathMng = {
     const expandAll = () => {
       expanded.clear(); expanded.add(null);
       const walk = (n) => { expanded.add(n.pathId); (n.children||[]).forEach(walk); };
-      walk(tree.value);
+      walk(cfTree.value);
     };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
 
     /* ── 그리드 (검색 + biz + 트리 선택 적용) ── */
-    const gridRows = computed(() => {
+    const cfGridRows = computed(() => {
       let arr = rows.filter(r => r._status !== 'D');
       arr = arr.filter(r => r.bizCd === selectedBiz.value);
       const k = kw.value.trim().toLowerCase();
@@ -99,12 +99,12 @@ window.SyPathMng = {
     /* ── 페이징 ── */
     const pager = reactive({ page: 1, size: 20 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const totalPages = computed(() => Math.max(1, Math.ceil(gridRows.value.length / pager.size)));
-    const pageNums = computed(() => { const c = pager.page, l = totalPages.value; const s = Math.max(1, c-2), e = Math.min(l, s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
-    const setPage = n => { if (n>=1 && n<=totalPages.value) pager.page = n; };
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.length / pager.size)));
+    const cfPageNums = computed(() => { const c = pager.page, l = cfTotalPages.value; const s = Math.max(1, c-2), e = Math.min(l, s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const setPage = n => { if (n>=1 && n<=cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    const pagedRows = computed(() => { const s = (pager.page-1)*pager.size; return gridRows.value.slice(s, s+pager.size); });
-    watch(() => gridRows.value.length, () => { if (pager.page > totalPages.value) pager.page = Math.max(1, totalPages.value); });
+    const cfPagedRows = computed(() => { const s = (pager.page-1)*pager.size; return cfGridRows.value.slice(s, s+pager.size); });
+    watch(() => cfGridRows.value.length, () => { if (pager.page > cfTotalPages.value) pager.page = Math.max(1, cfTotalPages.value); });
     watch(selectedBiz, () => { selectedPathId.value = null; pager.page = 1; });
     watch(selectedPathId, () => { pager.page = 1; });
 
@@ -137,13 +137,13 @@ window.SyPathMng = {
       const orig = _rawPaths.find(p => p.pathId === row.pathId);
       if (orig) Object.assign(row, orig, { _status: '' });
     };
-    const dirtyRows = computed(() => rows.filter(r => r._status));
-    const save = async () => {
-      if (!dirtyRows.value.length) { props.showToast('변경된 행이 없습니다.', 'warning'); return; }
-      const ok = await props.showConfirm('저장', `${dirtyRows.value.length}건 저장하시겠습니까?`);
+    const cfDirtyRows = computed(() => rows.filter(r => r._status));
+    const handleSave = async () => {
+      if (!cfDirtyRows.value.length) { props.showToast('변경된 행이 없습니다.', 'warning'); return; }
+      const ok = await props.showConfirm('저장', `${cfDirtyRows.value.length}건 저장하시겠습니까?`);
       if (!ok) return;
       const list = _rawPaths;
-      dirtyRows.value.forEach(r => {
+      cfDirtyRows.value.forEach(r => {
         if (r._status === 'I') {
           const newId = (list.reduce((m,x)=>Math.max(m,x.pathId), 0) || 0) + 1;
           const { _status, ...rest } = r;
@@ -157,10 +157,10 @@ window.SyPathMng = {
           if (idx >= 0) list.splice(idx, 1);
         }
       });
-      props.showToast(`${dirtyRows.value.length}건 저장되었습니다.`, 'success');
+      props.showToast(`${cfDirtyRows.value.length}건 저장되었습니다.`, 'success');
       reload();
     };
-    const reset = () => {
+    const onReset = () => {
       kw.value = ''; useFlt.value = ''; selectedPathId.value = null;
       reload();
     };
@@ -200,7 +200,7 @@ window.SyPathMng = {
       }
       closeParentModal();
     };
-    const parentTree = computed(() => {
+    const cfParentTree = computed(() => {
       const biz = parentModalState.bizCd;
       const exclude = parentModalState.targetRow?.pathId;
       const list = rows.filter(r => r._status !== 'D' && r.bizCd === biz && r.pathId !== exclude);
@@ -227,11 +227,11 @@ window.SyPathMng = {
 
     return {
       kw, useFlt, bizFlt, BIZ_OPTIONS, bizLabel,
-      selectedBiz, selectedPathId, tree, expanded, toggleNode, selectNode, expandAll, collapseAll,
-      gridRows, pagedRows, dirtyRows,
-      pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange,
-      onChange, addRow, delRow, cancelRow, save, reset, parentOptions,
-      parentModalState, openParentModal, closeParentModal, selectParent, parentTree, toggleParentNode, getParentLabel,
+      selectedBiz, selectedPathId, cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
+      cfGridRows, cfPagedRows, cfDirtyRows,
+      pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange,
+      onChange, addRow, delRow, cancelRow, handleSave, onReset, parentOptions,
+      parentModalState, openParentModal, closeParentModal, selectParent, cfParentTree, toggleParentNode, getParentLabel,
     };
   },
 
@@ -272,7 +272,7 @@ window.SyPathMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <path-tree-node :node="tree" :expanded="expanded" :selected="selectedPathId"
+        <path-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPathId"
           :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
@@ -283,13 +283,13 @@ window.SyPathMng = {
         <span class="list-title">
           <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
           경로 목록
-          <span class="list-count">{{ gridRows.length }}건</span>
+          <span class="list-count">{{ cfGridRows.length }}건</span>
         </span>
         <div style="display:flex;gap:6px;">
           <button class="btn btn-blue btn-sm" @click="addRow">+ 행추가</button>
-          <button class="btn btn-sm" @click="save" :disabled="dirtyRows.length===0"
-            :style="dirtyRows.length>0 ? 'background:#e8587a;color:#fff;' : ''">
-            저장 <span v-if="dirtyRows.length>0">({{ dirtyRows.length }})</span>
+          <button class="btn btn-sm" @click="handleSave" :disabled="cfDirtyRows.length===0"
+            :style="cfDirtyRows.length>0 ? 'background:#e8587a;color:#fff;' : ''">
+            저장 <span v-if="cfDirtyRows.length>0">({{ cfDirtyRows.length }})</span>
           </button>
         </div>
       </div>
@@ -308,10 +308,10 @@ window.SyPathMng = {
           </tr>
         </thead>
         <tbody>
-          <tr v-if="pagedRows.length===0">
+          <tr v-if="cfPagedRows.length===0">
             <td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
           </tr>
-          <tr v-for="r in pagedRows" :key="r.pathId" class="crud-row" :class="'status-' + (r._status || '')">
+          <tr v-for="r in cfPagedRows" :key="r.pathId" class="crud-row" :class="'status-' + (r._status || '')">
             <td class="col-status-val">
               <span v-if="r._status==='I'" class="badge badge-green badge-xs">신규</span>
               <span v-else-if="r._status==='U'" class="badge badge-orange badge-xs">수정</span>

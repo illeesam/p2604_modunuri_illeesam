@@ -24,7 +24,7 @@ window.SyCodeMng = {
     };
     const searchGrp   = ref('');
     const searchUseYn = ref('');
-    const grpOptions  = computed(() => [...new Set(codes.map(c => c.codeGrp))].sort());
+    const cfGrpOptions  = computed(() => [...new Set(codes.map(c => c.codeGrp))].sort());
     const applied     = reactive({ kw: '', grp: '', useYn: '', dateStart: '', dateEnd: '' });
 
     /* ── CRUD 그리드 데이터 ── */
@@ -124,7 +124,7 @@ window.SyCodeMng = {
     const grpExpanded = reactive(new Set(['']));
     const grpToggleNode = (path) => { if (grpExpanded.has(path)) grpExpanded.delete(path); else grpExpanded.add(path); };
     const grpSelectNode = (path) => { grpSelectedPath.value = path; };
-    const grpExpandAll = () => { const walk = (n) => { grpExpanded.add(n.path); n.children.forEach(walk); }; walk(grpTree.value); };
+    const grpExpandAll = () => { const walk = (n) => { grpExpanded.add(n.path); n.children.forEach(walk); }; walk(cfGrpTree.value); };
     const grpCollapseAll = () => { grpExpanded.clear(); grpExpanded.add(''); };
     /* _expand3_grp: 그룹 트리 3레벨 펼침 */
     const fetchData = async () => {
@@ -136,12 +136,12 @@ window.SyCodeMng = {
         updateCodeGroups();
         loadGrp();
       } catch (_) {}  finally { loading.value = false; }
-      const initSet = window.boCmUtil.collectExpandedToDepth(grpTree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(cfGrpTree.value, 2);
       grpExpanded.clear(); initSet.forEach(v => grpExpanded.add(v));
     };
     onMounted(() => { fetchData(); });
-    const grpTree = computed(() => window.boCmUtil.buildPathTree('sy_code_grp'));
-    const filteredGrpRows = computed(() => {
+    const cfGrpTree = computed(() => window.boCmUtil.buildPathTree('sy_code_grp'));
+    const cfFilteredGrpRows = computed(() => {
       const sp = grpSelectedPath.value;
       if (!sp) return grpRows;
       return grpRows.filter(r => (r.dispPath || '').startsWith(sp));
@@ -150,12 +150,12 @@ window.SyCodeMng = {
     /* 공통코드그룹 페이징 (default 5건) */
     const grpPager = reactive({ page: 1, size: 5 });
     const GRP_PAGE_SIZES = [5, 10, 20, 50, 100];
-    const grpTotalPages = computed(() => Math.max(1, Math.ceil(filteredGrpRows.value.length / grpPager.size)));
-    const grpPageNums = computed(() => { const c = grpPager.page, l = grpTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setGrpPage = n => { if (n >= 1 && n <= grpTotalPages.value) grpPager.page = n; };
+    const cfGrpTotalPages = computed(() => Math.max(1, Math.ceil(cfFilteredGrpRows.value.length / grpPager.size)));
+    const cfGrpPageNums = computed(() => { const c = grpPager.page, l = cfGrpTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
+    const setGrpPage = n => { if (n >= 1 && n <= cfGrpTotalPages.value) grpPager.page = n; };
     const onGrpSizeChange = () => { grpPager.page = 1; };
-    const grpPagedRows = computed(() => { const s = (grpPager.page - 1) * grpPager.size; return filteredGrpRows.value.slice(s, s + grpPager.size); });
-    watch(() => filteredGrpRows.value.length, () => { if (grpPager.page > grpTotalPages.value) grpPager.page = Math.max(1, grpTotalPages.value); });
+    const cfGrpPagedRows = computed(() => { const s = (grpPager.page - 1) * grpPager.size; return cfFilteredGrpRows.value.slice(s, s + grpPager.size); });
+    watch(() => cfFilteredGrpRows.value.length, () => { if (grpPager.page > cfGrpTotalPages.value) grpPager.page = Math.max(1, cfGrpTotalPages.value); });
     /* 트리 path 변경 시: 그룹 페이지 리셋 + selectedGrp 해제 + 코드목록 재조회 */
     watch(grpSelectedPath, () => { grpPager.page = 1; selectedGrp.value = ''; loadGrid(); });
     /* selectedGrp 변경 시 코드목록 재조회 */
@@ -212,14 +212,14 @@ window.SyCodeMng = {
     /* 트리 탭 페이징 */
     const treePager = reactive({ page: 1, size: 10 });
     const TREE_PAGE_SIZES = [5, 10, 20, 50, 100];
-    const treeTotalPages = computed(() => Math.max(1, Math.ceil(flatTreeRows.value.length / treePager.size)));
-    const treePageNums = computed(() => { const c = treePager.page, l = treeTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setTreePage = n => { if (n >= 1 && n <= treeTotalPages.value) treePager.page = n; };
+    const cfTreeTotalPages = computed(() => Math.max(1, Math.ceil(cfFlatTreeRows.value.length / treePager.size)));
+    const cfTreePageNums = computed(() => { const c = treePager.page, l = cfTreeTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
+    const setTreePage = n => { if (n >= 1 && n <= cfTreeTotalPages.value) treePager.page = n; };
     const onTreeSizeChange = () => { treePager.page = 1; };
-    const pagedTreeRows = computed(() => { const s = (treePager.page - 1) * treePager.size; return flatTreeRows.value.slice(s, s + treePager.size); });
+    const cfPagedTreeRows = computed(() => { const s = (treePager.page - 1) * treePager.size; return cfFlatTreeRows.value.slice(s, s + treePager.size); });
 
     /* 현재 선택된 그룹이 트리형인지 여부 */
-    const isTreeTypeGrp = computed(() => {
+    const cfIsTreeTypeGrp = computed(() => {
       if (!selectedGrp.value || !codeGroups?.length) return false;
       const grp = codeGroups.find(g => g.codeGrp === selectedGrp.value);
       return grp?.type === '트리';
@@ -240,8 +240,8 @@ window.SyCodeMng = {
     };
 
     /* 트리형 코드 그룹일 때 상위코드 목록 (트리 형식 표시용) */
-    const parentCodeOptions = computed(() => {
-      if (!isTreeTypeGrp.value) return [];
+    const cfParentCodeOptions = computed(() => {
+      if (!cfIsTreeTypeGrp.value) return [];
       const codes = gridRows.filter(r => r._row_status !== 'D');
       const byValue = new Map(codes.map(c => [c.codeValue, c]));
 
@@ -444,12 +444,12 @@ window.SyCodeMng = {
 
     /* ── 코드 트리 탭 ── */
     const activeCodeTab = ref('일반');
-    const codeTreeExpanded = reactive(new Set());
+    const cfCodeTreeExpanded = reactive(new Set());
     const codeToggleNode = (codeValue) => {
-      if (codeTreeExpanded.has(codeValue)) codeTreeExpanded.delete(codeValue);
-      else codeTreeExpanded.add(codeValue);
+      if (cfCodeTreeExpanded.has(codeValue)) cfCodeTreeExpanded.delete(codeValue);
+      else cfCodeTreeExpanded.add(codeValue);
     };
-    const codeTree = computed(() => {
+    const cfCodeTree = computed(() => {
       if (!selectedGrp.value) return { value: '__root__', label: 'Root', children: [], count: 0 };
       const visible = gridRows.filter(r => r._row_status !== 'D');
       const byValue = new Map();
@@ -477,22 +477,22 @@ window.SyCodeMng = {
     });
 
     /* 트리를 평탄화된 행 목록으로 변환 (렌더링용) */
-    const flatTreeRows = computed(() => {
+    const cfFlatTreeRows = computed(() => {
       const result = [];
       const walk = (node, depth) => {
-        result.push({ node, depth, isExpanded: codeTreeExpanded.has(node.value) });
-        if (codeTreeExpanded.has(node.value)) {
+        result.push({ node, depth, isExpanded: cfCodeTreeExpanded.has(node.value) });
+        if (cfCodeTreeExpanded.has(node.value)) {
           node.children.forEach(child => walk(child, depth + 1));
         }
       };
-      codeTree.value.children.forEach(node => walk(node, 0));
+      cfCodeTree.value.children.forEach(node => walk(node, 0));
       return result;
     });
 
     return {
       cfSiteNm,
       searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange,
-      searchKw, searchGrp, searchUseYn, grpOptions, applied,
+      searchKw, searchGrp, searchUseYn, cfGrpOptions, applied,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
@@ -501,13 +501,13 @@ window.SyCodeMng = {
       exportExcel,
       codeGroups,
       grpRows, cfGrpDirty, addGrp, handleDeleteGrp, cancelGrp, handleSaveGrp, onGrpChange,
-      grpTree, grpExpanded, grpToggleNode, grpSelectNode, grpExpandAll, grpCollapseAll, grpSelectedPath, filteredGrpRows,
-      grpPager, GRP_PAGE_SIZES, grpTotalPages, grpPageNums, setGrpPage, onGrpSizeChange, grpPagedRows,
+      cfGrpTree, grpExpanded, grpToggleNode, grpSelectNode, grpExpandAll, grpCollapseAll, grpSelectedPath, cfFilteredGrpRows,
+      grpPager, GRP_PAGE_SIZES, cfGrpTotalPages, cfGrpPageNums, setGrpPage, onGrpSizeChange, cfGrpPagedRows,
       selectedGrp, onGrpRowClick,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      activeCodeTab, codeTree, codeTreeExpanded, codeToggleNode, flatTreeRows, parentCodeOptions, isTreeTypeGrp,
+      activeCodeTab, cfCodeTree, cfCodeTreeExpanded, codeToggleNode, cfFlatTreeRows, cfParentCodeOptions, cfIsTreeTypeGrp,
       selectedCodeId, loadDetail, closeDetail, getCodeHierarchyPath,
-      treePager, TREE_PAGE_SIZES, treeTotalPages, treePageNums, setTreePage, onTreeSizeChange, pagedTreeRows,
+      treePager, TREE_PAGE_SIZES, cfTreeTotalPages, cfTreePageNums, setTreePage, onTreeSizeChange, cfPagedTreeRows,
     };
   },
   template: /* html */`
@@ -520,7 +520,7 @@ window.SyCodeMng = {
       <input v-model="searchKw" placeholder="코드그룹 / 라벨 / 코드값 검색" />
       <select v-model="searchGrp">
         <option value="">그룹 전체</option>
-        <option v-for="g in grpOptions" :key="g">{{ g }}</option>
+        <option v-for="g in cfGrpOptions" :key="g">{{ g }}</option>
       </select>
       <select v-model="searchUseYn">
         <option value="">사용여부 전체</option><option value="Y">사용</option><option value="N">미사용</option>
@@ -544,14 +544,14 @@ window.SyCodeMng = {
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;margin-bottom:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;">
-        <span class="list-title" style="font-size:13px;">📂 표시경로 <span class="list-count">{{ grpTree.count }}</span></span>
+        <span class="list-title" style="font-size:13px;">📂 표시경로 <span class="list-count">{{ cfGrpTree.count }}</span></span>
       </div>
       <div style="display:flex;gap:4px;margin-bottom:8px;">
         <button class="btn btn-sm" @click="grpExpandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
         <button class="btn btn-sm" @click="grpCollapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:50vh;overflow:auto;">
-        <prop-tree-node :node="grpTree" :expanded="grpExpanded" :selected="grpSelectedPath"
+        <prop-tree-node :node="cfGrpTree" :expanded="grpExpanded" :selected="grpSelectedPath"
           :on-toggle="grpToggleNode" :on-select="grpSelectNode" :depth="0" />
       </div>
     </div>
@@ -562,7 +562,7 @@ window.SyCodeMng = {
           <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
           공통코드그룹관리
           <span v-if="grpSelectedPath" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ grpSelectedPath }}</span>
-          <span class="list-count">{{ filteredGrpRows.filter(r=>r._row_status!=='D').length }}건</span>
+          <span class="list-count">{{ cfFilteredGrpRows.filter(r=>r._row_status!=='D').length }}건</span>
         </span>
         <div style="display:flex;gap:6px;">
           <button class="btn btn-green btn-sm" @click="addGrp">+ 행추가</button>
@@ -584,10 +584,10 @@ window.SyCodeMng = {
           </tr>
         </thead>
         <tbody>
-          <tr v-if="grpPagedRows.length===0">
+          <tr v-if="cfGrpPagedRows.length===0">
             <td colspan="8" style="text-align:center;color:#999;padding:20px;">데이터가 없습니다.</td>
           </tr>
-          <tr v-for="(g, idx) in grpPagedRows" :key="g.codeGrp + (g._tempId || '')"
+          <tr v-for="(g, idx) in cfGrpPagedRows" :key="g.codeGrp + (g._tempId || '')"
             class="crud-row"
             :class="['status-'+g._row_status, selectedGrp===g.codeGrp ? 'focused' : '']"
             style="cursor:pointer;"
@@ -637,9 +637,9 @@ window.SyCodeMng = {
         <div class="pager">
           <button :disabled="grpPager.page===1" @click="setGrpPage(1)">«</button>
           <button :disabled="grpPager.page===1" @click="setGrpPage(grpPager.page-1)">‹</button>
-          <button v-for="n in grpPageNums" :key="n" :class="{active:grpPager.page===n}" @click="setGrpPage(n)">{{ n }}</button>
-          <button :disabled="grpPager.page===grpTotalPages" @click="setGrpPage(grpPager.page+1)">›</button>
-          <button :disabled="grpPager.page===grpTotalPages" @click="setGrpPage(grpTotalPages)">»</button>
+          <button v-for="n in cfGrpPageNums" :key="n" :class="{active:grpPager.page===n}" @click="setGrpPage(n)">{{ n }}</button>
+          <button :disabled="grpPager.page===cfGrpTotalPages" @click="setGrpPage(grpPager.page+1)">›</button>
+          <button :disabled="grpPager.page===cfGrpTotalPages" @click="setGrpPage(cfGrpTotalPages)">»</button>
         </div>
         <div class="pager-right">
           <select class="size-select" v-model.number="grpPager.size" @change="onGrpSizeChange">
@@ -690,7 +690,7 @@ window.SyCodeMng = {
           <th>코드그룹</th>
           <th>코드라벨</th>
           <th>코드값</th>
-          <th v-if="isTreeTypeGrp" style="width:140px;">상위코드값</th>
+          <th v-if="cfIsTreeTypeGrp" style="width:140px;">상위코드값</th>
           <th class="col-ord">순서</th>
           <th class="col-use">사용여부</th>
           <th>비고</th>
@@ -701,7 +701,7 @@ window.SyCodeMng = {
       </thead>
       <tbody>
         <tr v-if="gridRows.length===0">
-          <td :colspan="isTreeTypeGrp ? 13 : 12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <td :colspan="cfIsTreeTypeGrp ? 13 : 12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in cfPagedRows" :key="row.codeId"
           class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
@@ -723,10 +723,10 @@ window.SyCodeMng = {
           <td><input class="grid-input" v-model="row.codeGrp"   :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
           <td><input class="grid-input" v-model="row.codeLabel"  :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
           <td><input class="grid-input grid-mono" v-model="row.codeValue" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td v-if="isTreeTypeGrp">
+          <td v-if="cfIsTreeTypeGrp">
             <select class="grid-select" v-model="row.parentCodeValue" :disabled="row._row_status==='D'" @change="onCellChange(row)">
               <option :value="null">-- 없음 --</option>
-              <option v-for="opt in parentCodeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+              <option v-for="opt in cfParentCodeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
             </select>
           </td>
           <td><input class="grid-input grid-num" type="number" v-model.number="row.sortOrd" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
@@ -792,10 +792,10 @@ window.SyCodeMng = {
           </tr>
         </thead>
         <tbody>
-          <tr v-if="codeTree.count===0">
+          <tr v-if="cfCodeTree.count===0">
             <td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
           </tr>
-          <tr v-else v-for="(row, idx) in pagedTreeRows" :key="row.node.value" class="crud-row" :class="['status-'+row.node.code._row_status]" style="user-select:none;" @click="setFocused(gridRows.indexOf(row.node.code))">
+          <tr v-else v-for="(row, idx) in cfPagedTreeRows" :key="row.node.value" class="crud-row" :class="['status-'+row.node.code._row_status]" style="user-select:none;" @click="setFocused(gridRows.indexOf(row.node.code))">
             <td class="col-status-val">
               <span class="badge badge-xs" :class="fnStatusClass(row.node.code._row_status)">{{ row.node.code._row_status }}</span>
             </td>
@@ -808,7 +808,7 @@ window.SyCodeMng = {
                 <span v-if="row.node.children.length > 0"
                   @click.stop="codeToggleNode(row.node.value)"
                   style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;color:#6b7280;font-size:12px;flex-shrink:0;">
-                  {{ codeTreeExpanded.has(row.node.value) ? '▼' : '▶' }}
+                  {{ cfCodeTreeExpanded.has(row.node.value) ? '▼' : '▶' }}
                 </span>
                 <span v-else style="width:20px;flex-shrink:0;"></span>
                 <span v-if="row.depth > 0" style="color:#bfdbfe;margin-right:2px;font-weight:300;font-size:11px;">├</span>
@@ -819,7 +819,7 @@ window.SyCodeMng = {
             <td>
               <select class="grid-select" style="font-size:12px;" v-model="row.node.code.parentCodeValue" :disabled="row.node.code._row_status==='D'" @change="onCellChange(row.node.code)">
                 <option :value="null">-- 없음 --</option>
-                <option v-for="opt in parentCodeOptions" :key="opt.value" :value="opt.value">
+                <option v-for="opt in cfParentCodeOptions" :key="opt.value" :value="opt.value">
                   {{ opt.displayLabel }}
                 </option>
               </select>
@@ -849,9 +849,9 @@ window.SyCodeMng = {
         <div class="pager">
           <button :disabled="treePager.page===1" @click="setTreePage(1)">«</button>
           <button :disabled="treePager.page===1" @click="setTreePage(treePager.page-1)">‹</button>
-          <button v-for="n in treePageNums" :key="n" :class="{active:treePager.page===n}" @click="setTreePage(n)">{{ n }}</button>
-          <button :disabled="treePager.page===treeTotalPages" @click="setTreePage(treePager.page+1)">›</button>
-          <button :disabled="treePager.page===treeTotalPages" @click="setTreePage(treeTotalPages)">»</button>
+          <button v-for="n in cfTreePageNums" :key="n" :class="{active:treePager.page===n}" @click="setTreePage(n)">{{ n }}</button>
+          <button :disabled="treePager.page===cfTreeTotalPages" @click="setTreePage(treePager.page+1)">›</button>
+          <button :disabled="treePager.page===cfTreeTotalPages" @click="setTreePage(cfTreeTotalPages)">»</button>
         </div>
         <div class="pager-right">
           <select class="size-select" v-model.number="treePager.size" @change="onTreeSizeChange">

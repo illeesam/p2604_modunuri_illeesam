@@ -37,7 +37,7 @@ window.DpDispPanelDtl = {
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
-    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const fnPathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfIsNew = computed(() => !props.editId);
     const tab = ref('info');
@@ -555,7 +555,7 @@ window.DpDispPanelDtl = {
       const found = (Array.isArray(codes) ? codes : []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === form.area);
       return found ? found.codeLabel : form.area;
     });
-    const wLabel = (t) => window.safeArrayUtils.safeFind(WIDGET_TYPES, w => w.value === t)?.label || t || '-';
+    const fnWLabel = (t) => window.safeArrayUtils.safeFind(WIDGET_TYPES, w => w.value === t)?.label || t || '-';
 
     /* ── 펼치기 / 탭 모드 토글 ── */
     const viewAll = ref(false);
@@ -715,7 +715,7 @@ window.DpDispPanelDtl = {
       }
     };
 
-    return { panels, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { panels, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
       libPickOpen, libPickMode, openLibPick, onLibPicked,
       rowCopyOpen, onRowCopy,
       cfVisibilityOptions, hasVisibility, toggleVisibility,
@@ -731,7 +731,7 @@ window.DpDispPanelDtl = {
       cfFileListItems, addFileItem, removeFileItem, updateFileItem,
       htmlDescEl, htmlContentEl, htmlSourceMode, toggleHtmlSource,
       preview, openPreview, closePreview, cfPreviewWidget,
-      cardPreview, openCardPreview, closeCardPreview, cfCurrentAreaLabel, wLabel,
+      cardPreview, openCardPreview, closeCardPreview, cfCurrentAreaLabel, fnWLabel,
       viewAll,
       expandedSections, toggleSection, isSectionExpanded,
       fnRowIsHtmlEditor, fnRowIsFileList, fnRowIsImage, fnRowIsText, fnRowIsProduct,
@@ -855,7 +855,7 @@ window.DpDispPanelDtl = {
               <div class="form-group" style="grid-column:1 / -1;">
                 <label class="form-label">표시경로 <span style="font-size:10px;color:#888;font-weight:400;margin-left:4px;">(예: FO.모바일메인)</span></label>
                 <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
-                  <span style="flex:1;">{{ pathLabel(form.pathId) || '경로 선택...' }}</span>
+                  <span style="flex:1;">{{ fnPathLabel(form.pathId) || '경로 선택...' }}</span>
                   <button type="button" @click="openPathPick('form')" title="표시경로 선택"
                     :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
                     @mouseover="$event.currentTarget.style.background='#eef2ff'"
@@ -1428,7 +1428,7 @@ window.DpDispPanelDtl = {
               <div class="form-group">
                 <label class="form-label">표시경로 <span style="font-size:10px;color:#888;font-weight:400;margin-left:4px;">(예: FO.모바일메인)</span></label>
                 <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
-                  <span style="flex:1;">{{ pathLabel(form.pathId) || '경로 선택...' }}</span>
+                  <span style="flex:1;">{{ fnPathLabel(form.pathId) || '경로 선택...' }}</span>
                   <button type="button" v-if="!viewMode" @click="openPathPick('form')" title="표시경로 선택"
                     :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
                     @mouseover="$event.currentTarget.style.background='#eef2ff'"
@@ -1697,7 +1697,7 @@ window.DpDispPanelDtl = {
           <div v-for="(r, i) in rows" :key="Math.random()"
             style="display:flex;align-items:center;gap:10px;padding:9px 14px;border:1px solid #f0f0f0;border-radius:8px;margin-bottom:6px;background:#fafafa;">
             <span style="font-size:11px;color:#bbb;font-weight:700;min-width:16px;text-align:center;">{{ i+1 }}</span>
-            <span style="font-size:13px;font-weight:600;color:#333;flex:1;">{{ wLabel(r.widgetType) }}</span>
+            <span style="font-size:13px;font-weight:600;color:#333;flex:1;">{{ fnWLabel(r.widgetType) }}</span>
             <span style="font-size:10px;background:#e8f0fe;color:#1a73e8;border-radius:8px;padding:2px 8px;">순서 {{ r.sortOrder }}</span>
             <span v-if="r.clickAction && r.clickAction !== 'none'"
               style="font-size:10px;color:#888;background:#f0f0f0;border-radius:8px;padding:2px 8px;">{{ r.clickAction }}</span>

@@ -171,15 +171,15 @@ window.SyUserLoginHist = {
     const toggleRow = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
     const isExpanded = id => expandedRows.has(id);
 
-    const resultBadge = cd => ({ 'SUCCESS':'badge-green','FAIL_PW':'badge-red','FAIL_LOCKED':'badge-orange','FAIL_NOT_FOUND':'badge-gray' }[cd] || 'badge-gray');
-    const resultLabel = cd => ({ 'SUCCESS':'성공','FAIL_PW':'비밀번호오류','FAIL_LOCKED':'계정잠금','FAIL_NOT_FOUND':'없는계정' }[cd] || cd);
-    const actionBadge = cd => ({ 'ISSUE':'badge-blue','REFRESH':'badge-green','REVOKE':'badge-red','EXPIRE':'badge-orange' }[cd] || 'badge-gray');
-    const actionLabel = cd => ({ 'ISSUE':'발급','REFRESH':'갱신','REVOKE':'폐기','EXPIRE':'만료' }[cd] || cd);
-    const typeBadge   = cd => ({ 'ACCESS':'badge-purple','REFRESH':'badge-blue' }[cd] || 'badge-gray');
+    const fnResultBadge = cd => ({ 'SUCCESS':'badge-green','FAIL_PW':'badge-red','FAIL_LOCKED':'badge-orange','FAIL_NOT_FOUND':'badge-gray' }[cd] || 'badge-gray');
+    const fnResultLabel = cd => ({ 'SUCCESS':'성공','FAIL_PW':'비밀번호오류','FAIL_LOCKED':'계정잠금','FAIL_NOT_FOUND':'없는계정' }[cd] || cd);
+    const fnActionBadge = cd => ({ 'ISSUE':'badge-blue','REFRESH':'badge-green','REVOKE':'badge-red','EXPIRE':'badge-orange' }[cd] || 'badge-gray');
+    const fnActionLabel = cd => ({ 'ISSUE':'발급','REFRESH':'갱신','REVOKE':'폐기','EXPIRE':'만료' }[cd] || cd);
+    const fnTypeBadge   = cd => ({ 'ACCESS':'badge-purple','REFRESH':'badge-blue' }[cd] || 'badge-gray');
 
     const onSearch     = () => { pager.page = 1; };
     const onReset      = () => { searchKw.value=''; searchResult.value=''; searchIp.value=''; searchTokenAction.value=''; dateRange.value='이번달'; onDateRangeChange(); pager.page=1; };
-    const setPage      = n => { if (n >= 1 && n <= totPages.value) pager.page = n; };
+    const setPage      = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const onTabChange  = tab => { activeTab.value = tab; pager.page = 1; };
 
@@ -187,9 +187,9 @@ window.SyUserLoginHist = {
       descOpen, activeTab, onTabChange,
       DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange,
       searchKw, searchResult, searchIp, searchTokenAction,
-      pager, PAGE_SIZES, filtered, total, totPages, pageList, pageNums, summary,
+      pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, cfSummary,
       expandedRows, toggleRow, isExpanded,
-      resultBadge, resultLabel, actionBadge, actionLabel, typeBadge,
+      fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge,
       onSearch, onReset, setPage, onSizeChange,
     };
   },
@@ -237,38 +237,38 @@ window.SyUserLoginHist = {
   <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:12px 0">
     <div class="card" style="text-align:center;padding:12px;background:#f0f4ff;margin-bottom:0">
       <div style="font-size:11px;color:#888">총 시도</div>
-      <div style="font-size:20px;font-weight:700;color:#3498db">{{ summary.total }}</div>
+      <div style="font-size:20px;font-weight:700;color:#3498db">{{ cfSummary.total }}</div>
     </div>
     <div class="card" style="text-align:center;padding:12px;background:#f0fff4;margin-bottom:0">
       <div style="font-size:11px;color:#888">성공</div>
-      <div style="font-size:20px;font-weight:700;color:#27ae60">{{ summary.success }}</div>
+      <div style="font-size:20px;font-weight:700;color:#27ae60">{{ cfSummary.success }}</div>
     </div>
     <div class="card" style="text-align:center;padding:12px;background:#fff8f8;margin-bottom:0">
       <div style="font-size:11px;color:#888">실패</div>
-      <div style="font-size:20px;font-weight:700;color:#e74c3c">{{ summary.fail }}</div>
+      <div style="font-size:20px;font-weight:700;color:#e74c3c">{{ cfSummary.fail }}</div>
     </div>
     <div class="card" style="text-align:center;padding:12px;background:#f0f8f0;margin-bottom:0">
       <div style="font-size:11px;color:#888">접속 인원</div>
-      <div style="font-size:20px;font-weight:700;color:#27ae60">{{ summary.uniqueUsers }}명</div>
+      <div style="font-size:20px;font-weight:700;color:#27ae60">{{ cfSummary.uniqueUsers }}명</div>
     </div>
     <div class="card" style="text-align:center;padding:12px;background:#fdf8ff;margin-bottom:0">
       <div style="font-size:11px;color:#888">토큰 이력</div>
-      <div style="font-size:20px;font-weight:700;color:#8e44ad">{{ summary.tokenTotal }}</div>
+      <div style="font-size:20px;font-weight:700;color:#8e44ad">{{ cfSummary.tokenTotal }}</div>
     </div>
     <div class="card" style="text-align:center;padding:12px;background:#fff0f0;margin-bottom:0">
       <div style="font-size:11px;color:#888">토큰 폐기</div>
-      <div style="font-size:20px;font-weight:700;color:#e74c3c">{{ summary.revoke }}</div>
+      <div style="font-size:20px;font-weight:700;color:#e74c3c">{{ cfSummary.revoke }}</div>
     </div>
   </div>
 
   <!-- 탭 + 목록 -->
   <div class="card">
     <div class="tab-nav" style="margin-bottom:16px">
-      <button class="tab-btn" :class="{active:activeTab==='log'}"   @click="onTabChange('log')">로그인 로그 <span class="tab-count" v-if="activeTab==='log'">{{ total }}</span></button>
-      <button class="tab-btn" :class="{active:activeTab==='hist'}"  @click="onTabChange('hist')">로그인 이력 <span class="tab-count" v-if="activeTab==='hist'">{{ total }}</span></button>
-      <button class="tab-btn" :class="{active:activeTab==='token'}" @click="onTabChange('token')">토큰 이력 <span class="tab-count" v-if="activeTab==='token'">{{ total }}</span></button>
+      <button class="tab-btn" :class="{active:activeTab==='log'}"   @click="onTabChange('log')">로그인 로그 <span class="tab-count" v-if="activeTab==='log'">{{ cfTotal }}</span></button>
+      <button class="tab-btn" :class="{active:activeTab==='hist'}"  @click="onTabChange('hist')">로그인 이력 <span class="tab-count" v-if="activeTab==='hist'">{{ cfTotal }}</span></button>
+      <button class="tab-btn" :class="{active:activeTab==='token'}" @click="onTabChange('token')">토큰 이력 <span class="tab-count" v-if="activeTab==='token'">{{ cfTotal }}</span></button>
     </div>
-    <div class="toolbar"><span class="list-count">총 {{ total }}건</span></div>
+    <div class="toolbar"><span class="list-count">총 {{ cfTotal }}건</span></div>
 
     <!-- ── 로그인 로그 탭 ── -->
     <div v-if="activeTab==='log'">
@@ -280,7 +280,7 @@ window.SyUserLoginHist = {
           </tr>
         </thead>
         <tbody>
-          <template v-for="r in pageList" :key="r.logId">
+          <template v-for="r in cfPageList" :key="r.logId">
             <tr style="cursor:pointer" :style="isExpanded(r.logId)?'background:#fafbff':''" @click="toggleRow(r.logId)">
               <td style="text-align:center;color:#bbb;font-size:11px;user-select:none">{{ isExpanded(r.logId)?'▲':'▼' }}</td>
               <td style="font-size:11px;color:#888;font-family:monospace">{{ r.logId }}</td>
@@ -288,7 +288,7 @@ window.SyUserLoginHist = {
               <td><div style="font-weight:600">{{ r.userNm }}</div><div style="font-size:11px;color:#aaa">{{ r.userId }}</div></td>
               <td><div style="font-size:12px">{{ r.dept }}</div><div style="font-size:11px;color:#aaa">{{ r.role }}</div></td>
               <td style="font-size:12px;color:#555;font-family:monospace">{{ r.loginId }}</td>
-              <td><span class="badge" :class="resultBadge(r.resultCd)">{{ resultLabel(r.resultCd) }}</span></td>
+              <td><span class="badge" :class="fnResultBadge(r.resultCd)">{{ fnResultLabel(r.resultCd) }}</span></td>
               <td style="text-align:center" :style="r.failCnt>0?'color:#e74c3c;font-weight:700':''">{{ r.failCnt > 0 ? r.failCnt+'회' : '-' }}</td>
               <td style="font-family:monospace;font-size:12px">{{ r.ip }}</td>
               <td><div style="font-size:12px">{{ r.browser }}</div><div style="font-size:11px;color:#aaa">{{ r.os }}</div></td>
@@ -335,7 +335,7 @@ window.SyUserLoginHist = {
               </td>
             </tr>
           </template>
-          <tr v-if="!pageList.length"><td colspan="11" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+          <tr v-if="!cfPageList.length"><td colspan="11" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
     </div>
@@ -345,16 +345,16 @@ window.SyUserLoginHist = {
       <table class="bo-table">
         <thead><tr><th>이력ID</th><th>로그인일시</th><th>사용자</th><th>부서</th><th>IP</th><th>디바이스</th><th>결과</th></tr></thead>
         <tbody>
-          <tr v-for="r in pageList" :key="r.histId">
+          <tr v-for="r in cfPageList" :key="r.histId">
             <td style="font-size:11px;color:#888;font-family:monospace">{{ r.histId }}</td>
             <td style="white-space:nowrap">{{ r.loginDate }}</td>
             <td><div style="font-weight:600">{{ r.userNm }}</div><div style="font-size:11px;color:#aaa">{{ r.userId }}</div></td>
             <td style="font-size:12px;color:#666">{{ r.dept }}</td>
             <td style="font-family:monospace;font-size:12px">{{ r.ip }}</td>
             <td style="font-size:12px;color:#666;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.device }}</td>
-            <td><span class="badge" :class="resultBadge(r.resultCd)">{{ resultLabel(r.resultCd) }}</span></td>
+            <td><span class="badge" :class="fnResultBadge(r.resultCd)">{{ fnResultLabel(r.resultCd) }}</span></td>
           </tr>
-          <tr v-if="!pageList.length"><td colspan="7" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+          <tr v-if="!cfPageList.length"><td colspan="7" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
     </div>
@@ -369,14 +369,14 @@ window.SyUserLoginHist = {
           </tr>
         </thead>
         <tbody>
-          <template v-for="r in pageList" :key="r.tokenLogId">
+          <template v-for="r in cfPageList" :key="r.tokenLogId">
             <tr style="cursor:pointer" :style="isExpanded(r.tokenLogId)?'background:#fafbff':''" @click="toggleRow(r.tokenLogId)">
               <td style="text-align:center;color:#bbb;font-size:11px;user-select:none">{{ isExpanded(r.tokenLogId)?'▲':'▼' }}</td>
               <td style="font-size:11px;color:#888;font-family:monospace">{{ r.tokenLogId }}</td>
               <td style="white-space:nowrap">{{ r.regDate }}</td>
               <td><div style="font-weight:600">{{ r.userNm }}</div><div style="font-size:11px;color:#aaa">{{ r.userId }}</div></td>
-              <td><span class="badge" :class="actionBadge(r.actionCd)">{{ actionLabel(r.actionCd) }}</span></td>
-              <td><span class="badge" :class="typeBadge(r.tokenTypeCd)" style="font-size:11px">{{ r.tokenTypeCd }}</span></td>
+              <td><span class="badge" :class="fnActionBadge(r.actionCd)">{{ fnActionLabel(r.actionCd) }}</span></td>
+              <td><span class="badge" :class="fnTypeBadge(r.tokenTypeCd)" style="font-size:11px">{{ r.tokenTypeCd }}</span></td>
               <td style="font-family:monospace;font-size:11px;color:#555;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.token }}</td>
               <td style="font-size:12px" :style="r.actionCd==='EXPIRE'||r.actionCd==='REVOKE'?'color:#e74c3c':''">{{ r.tokenExp }}</td>
               <td style="font-family:monospace;font-size:12px">{{ r.ip }}</td>
@@ -390,8 +390,8 @@ window.SyUserLoginHist = {
                     <table style="width:100%;border-collapse:collapse">
                       <tr><td style="color:#888;padding:3px 8px 3px 0;white-space:nowrap">토큰로그ID</td><td style="font-family:monospace;font-size:11px">{{ r.tokenLogId }}</td></tr>
                       <tr><td style="color:#888;padding:3px 8px 3px 0;white-space:nowrap">연결 로그인ID</td><td style="font-family:monospace;font-size:11px">{{ r.loginLogId }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 8px 3px 0;white-space:nowrap">액션</td><td><span class="badge" :class="actionBadge(r.actionCd)">{{ actionLabel(r.actionCd) }}</span></td></tr>
-                      <tr><td style="color:#888;padding:3px 8px 3px 0;white-space:nowrap">토큰유형</td><td><span class="badge" :class="typeBadge(r.tokenTypeCd)">{{ r.tokenTypeCd }}</span></td></tr>
+                      <tr><td style="color:#888;padding:3px 8px 3px 0;white-space:nowrap">액션</td><td><span class="badge" :class="fnActionBadge(r.actionCd)">{{ fnActionLabel(r.actionCd) }}</span></td></tr>
+                      <tr><td style="color:#888;padding:3px 8px 3px 0;white-space:nowrap">토큰유형</td><td><span class="badge" :class="fnTypeBadge(r.tokenTypeCd)">{{ r.tokenTypeCd }}</span></td></tr>
                       <tr><td style="color:#888;padding:3px 8px 3px 0;white-space:nowrap">만료일시</td><td :style="r.actionCd==='EXPIRE'||r.actionCd==='REVOKE'?'color:#e74c3c;font-weight:700':''">{{ r.tokenExp }}</td></tr>
                       <tr v-if="r.revokeReason"><td style="color:#888;padding:3px 8px 3px 0;white-space:nowrap">폐기사유</td><td style="color:#e74c3c;font-weight:600">{{ r.revokeReason }}</td></tr>
                       <tr><td style="color:#888;padding:3px 8px 3px 0;white-space:nowrap">IP</td><td style="font-family:monospace">{{ r.ip }}</td></tr>
@@ -409,7 +409,7 @@ window.SyUserLoginHist = {
               </td>
             </tr>
           </template>
-          <tr v-if="!pageList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+          <tr v-if="!cfPageList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
     </div>
@@ -419,9 +419,9 @@ window.SyUserLoginHist = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totPages" @click="setPage(totPages)">»</button>
+        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotPages" @click="setPage(cfTotPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
