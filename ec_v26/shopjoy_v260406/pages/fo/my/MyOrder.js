@@ -193,7 +193,6 @@ window.MyOrder = {
       myStore, orders, claimsByOrderId, cfDateFilteredOrders, onDateSearch,
       orderPager, paginate,
       flowStatusFilter, toggleFlowStatus,
-      uiState,
       openTracking, openTracking2, showOrderPayBreakdown,
       cancelOrder, confirmPurchase,
       EXCHANGE_REASONS, RETURN_REASONS,

@@ -190,13 +190,12 @@ window.Order = {
 
     return {
       cfOrderItems,
-      form, errors, clearErr, uiState, handleSubmit, openKakaoAddr,
+      form, errors, clearErr, handleSubmit, openKakaoAddr,
       parsePrice, fmt,
       cfCartTotal, cfTotalCouponDiscount, cfShippingFee, cfAppliedCash, cfFinalPrice,
       allCoupons, productCoupons, cfShippingCoupons, discountLabel, calcCouponDiscount,
       couponPopup, selectedCoupons, openCouponPopup, closeCouponPopup, applyCoupon, removeCoupon,
-      selectedShipCoupon, applyShipCoupon, removeShipCoupon,
-      cashBalance, cashInput,
+      applyShipCoupon, removeShipCoupon,
       uiState, codes };
   },
 
@@ -358,18 +357,18 @@ window.Order = {
         <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
             <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">💰 캐쉬 사용</span>
-            <span style="font-size:0.82rem;color:var(--text-muted);">잔액 <strong style="color:var(--text-primary);">{{ fmt(cashBalance) }}</strong></span>
+            <span style="font-size:0.82rem;color:var(--text-muted);">잔액 <strong style="color:var(--text-primary);">{{ fmt(uiState.cashBalance) }}</strong></span>
           </div>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input v-model="cashInput" type="number" min="0" :max="cashBalance" placeholder="사용할 캐쉬 금액"
+            <input v-model="uiState.cashInput" type="number" min="0" :max="uiState.cashBalance" placeholder="사용할 캐쉬 금액"
               style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.88rem;outline:none;">
-            <button @click="cashInput=cashBalance"
+            <button @click="uiState.cashInput=uiState.cashBalance"
               style="padding:8px 16px;border:1px solid #ffcc80;border-radius:8px;background:#fff3e0;color:#e65100;font-size:0.82rem;cursor:pointer;font-weight:600;white-space:nowrap;transition:all .15s;"
               @mouseenter="$event.currentTarget.style.background='#ffe0b2'"
               @mouseleave="$event.currentTarget.style.background='#fff3e0'">
               💰 전액사용
             </button>
-            <button @click="cashInput=0"
+            <button @click="uiState.cashInput=0"
               style="padding:8px 14px;border:1px solid #e0e0e0;border-radius:8px;background:#fafafa;color:#888;font-size:0.82rem;cursor:pointer;font-weight:500;transition:all .15s;"
               @mouseenter="$event.currentTarget.style.background='#f0f0f0';$event.currentTarget.style.color='#555'"
               @mouseleave="$event.currentTarget.style.background='#fafafa';$event.currentTarget.style.color='#888'">
@@ -393,7 +392,7 @@ window.Order = {
           <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--text-secondary);">
             <span>배송비</span>
             <span>
-              <span v-if="selectedShipCoupon" style="color:var(--blue);font-size:0.8rem;margin-right:6px;">🎟️ {{ selectedShipCoupon.name }}</span>
+              <span v-if="uiState.selectedShipCoupon" style="color:var(--blue);font-size:0.8rem;margin-right:6px;">🎟️ {{ uiState.selectedShipCoupon.name }}</span>
               <span style="color:#22c55e;">무료</span>
             </span>
           </div>
@@ -501,9 +500,9 @@ window.Order = {
               <div style="flex:1;">
                 <div class="info-label">배송비</div>
                 <div style="margin-top:6px;">
-                  <template v-if="selectedShipCoupon">
+                  <template v-if="uiState.selectedShipCoupon">
                     <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--blue-dim);">
-                      <span style="font-size:0.82rem;font-weight:700;color:var(--blue);flex:1;">🎟️ {{ selectedShipCoupon.name }}</span>
+                      <span style="font-size:0.82rem;font-weight:700;color:var(--blue);flex:1;">🎟️ {{ uiState.selectedShipCoupon.name }}</span>
                       <button @click="removeShipCoupon"
                         style="padding:5px 11px;border:1px solid #ffcdd2;border-radius:6px;background:#ffebee;color:#c62828;font-size:0.78rem;cursor:pointer;font-weight:600;transition:all .15s;"
                         @mouseenter="$event.currentTarget.style.background='#ffcdd2'"
@@ -615,7 +614,7 @@ window.Order = {
       <div style="overflow-y:auto;flex:1;padding:16px;background:#fafbfc;display:flex;flex-direction:column;gap:8px;">
         <div @click="applyShipCoupon(null)"
           style="padding:14px 16px;border-radius:10px;border:1.5px solid #e4e7ec;background:#fff;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s;"
-          :style="!selectedShipCoupon?'border-color:#9ca3af;background:#f3f4f6;':''">
+          :style="!uiState.selectedShipCoupon?'border-color:#9ca3af;background:#f3f4f6;':''">
           <div style="width:38px;height:38px;border-radius:10px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;color:#9ca3af;">🚫</div>
           <div><div style="font-size:0.9rem;font-weight:600;color:#6b7280;">쿠폰 사용 안 함</div></div>
         </div>
@@ -624,9 +623,9 @@ window.Order = {
           :style="{
             padding:'14px 16px',borderRadius:'10px',cursor:'pointer',
             display:'flex',alignItems:'center',gap:'12px',transition:'all .15s',
-            border: selectedShipCoupon?.couponId===c.couponId ? '2px solid #22c55e' : '1.5px solid #e4e7ec',
-            background: selectedShipCoupon?.couponId===c.couponId ? '#ecfdf5' : '#fff',
-            boxShadow: selectedShipCoupon?.couponId===c.couponId ? '0 2px 8px rgba(34,197,94,0.15)' : 'none',
+            border: uiState.selectedShipCoupon?.couponId===c.couponId ? '2px solid #22c55e' : '1.5px solid #e4e7ec',
+            background: uiState.selectedShipCoupon?.couponId===c.couponId ? '#ecfdf5' : '#fff',
+            boxShadow: uiState.selectedShipCoupon?.couponId===c.couponId ? '0 2px 8px rgba(34,197,94,0.15)' : 'none',
           }">
           <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#dcfce7,#bbf7d0);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">🚚</div>
           <div style="flex:1;min-width:0;">

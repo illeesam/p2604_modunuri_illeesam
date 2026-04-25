@@ -73,7 +73,7 @@ window.MyCoupon = {
     return {
       myStore, coupons, couponCode, couponPager, paginate,
       addCoupon, cfDateFilteredCoupons, onDateSearch,
-      activeTab, cfUnusedCount, cfUsedCount, onTabChange,
+      cfUnusedCount, cfUsedCount, onTabChange,
       uiState, codes };
   },
   template: /* html */ `
@@ -93,24 +93,24 @@ window.MyCoupon = {
     <button @click="onTabChange('unused')"
       :style="{
         padding:'10px 24px', background:'none', border:'none', cursor:'pointer',
-        fontSize:'0.88rem', fontWeight: activeTab==='unused' ? '700' : '500',
-        color: activeTab==='unused' ? 'var(--text-primary)' : 'var(--text-muted)',
-        borderBottom: activeTab==='unused' ? '2px solid var(--text-primary)' : '2px solid transparent',
+        fontSize:'0.88rem', fontWeight: uiState.activeTab==='unused' ? '700' : '500',
+        color: uiState.activeTab==='unused' ? 'var(--text-primary)' : 'var(--text-muted)',
+        borderBottom: uiState.activeTab==='unused' ? '2px solid var(--text-primary)' : '2px solid transparent',
         marginBottom: '-2px',
       }">미사용 <span style="font-size:0.8rem;margin-left:2px;">({{ cfUnusedCount }})</span></button>
     <button @click="onTabChange('used')"
       :style="{
         padding:'10px 24px', background:'none', border:'none', cursor:'pointer',
-        fontSize:'0.88rem', fontWeight: activeTab==='used' ? '700' : '500',
-        color: activeTab==='used' ? 'var(--text-primary)' : 'var(--text-muted)',
-        borderBottom: activeTab==='used' ? '2px solid var(--text-primary)' : '2px solid transparent',
+        fontSize:'0.88rem', fontWeight: uiState.activeTab==='used' ? '700' : '500',
+        color: uiState.activeTab==='used' ? 'var(--text-primary)' : 'var(--text-muted)',
+        borderBottom: uiState.activeTab==='used' ? '2px solid var(--text-primary)' : '2px solid transparent',
         marginBottom: '-2px',
       }">사용 <span style="font-size:0.8rem;margin-left:2px;">({{ cfUsedCount }})</span></button>
   </div>
 
   <PagerHeader :total="cfDateFilteredCoupons.length" :pager="couponPager" />
   <div v-if="!cfDateFilteredCoupons.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
-    {{ activeTab==='unused' ? '사용 가능한 쿠폰이 없습니다.' : '사용된 쿠폰이 없습니다.' }}
+    {{ uiState.activeTab==='unused' ? '사용 가능한 쿠폰이 없습니다.' : '사용된 쿠폰이 없습니다.' }}
   </div>
 
   <div v-for="c in paginate(cfDateFilteredCoupons, couponPager)" :key="c.couponId"

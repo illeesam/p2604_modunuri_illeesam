@@ -179,10 +179,7 @@ window.Prod01View = {
     let scrollEl = null;
     const getScrollEl = () => scrollEl || (scrollEl = document.querySelector('.layout-main')) || window;
 
-    const tabFixed     = ref(false);
-    const tabFixedTop  = ref(0);
-        const tabFixedW    = ref(0);
-        let tabNaturalScrollTop = 0;   // 탭바가 fixed 되기 직전의 scrollTop
+    let tabNaturalScrollTop = 0;
 
     const updateTabFixedPos = () => {
       const main = getScrollEl();
@@ -1059,20 +1056,20 @@ window.Prod01View = {
           style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">✕</button>
       </div>
       <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);aspect-ratio:1/1;margin-bottom:20px;background:var(--bg-base);">
-        <img :src="selectedReview.photoImg" style="width:100%;height:100%;object-fit:contain;" />
+        <img :src="uiState.selectedReview.photoImg" style="width:100%;height:100%;object-fit:contain;" />
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-        <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">{{ selectedReview.maskedName }}</span>
-        <span style="font-size:0.85rem;" v-html="stars(selectedReview.rating)"></span>
-        <span style="font-size:0.75rem;color:var(--text-muted);margin-left:auto;">{{ selectedReview.date }}</span>
+        <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">{{ uiState.selectedReview.maskedName }}</span>
+        <span style="font-size:0.85rem;" v-html="stars(uiState.selectedReview.rating)"></span>
+        <span style="font-size:0.75rem;color:var(--text-muted);margin-left:auto;">{{ uiState.selectedReview.date }}</span>
       </div>
       <div style="display:flex;gap:6px;margin-bottom:14px;">
-        <span style="font-size:0.74rem;color:var(--text-muted);background:var(--bg-base);padding:2px 8px;border-radius:4px;">사이즈: {{ selectedReview.sizeInfo }}</span>
-        <span style="font-size:0.74rem;color:var(--text-muted);background:var(--bg-base);padding:2px 8px;border-radius:4px;">색상: {{ selectedReview.colorInfo }}</span>
+        <span style="font-size:0.74rem;color:var(--text-muted);background:var(--bg-base);padding:2px 8px;border-radius:4px;">사이즈: {{ uiState.selectedReview.sizeInfo }}</span>
+        <span style="font-size:0.74rem;color:var(--text-muted);background:var(--bg-base);padding:2px 8px;border-radius:4px;">색상: {{ uiState.selectedReview.colorInfo }}</span>
       </div>
-      <p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.8;margin-bottom:16px;">{{ selectedReview.text }}</p>
+      <p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.8;margin-bottom:16px;">{{ uiState.selectedReview.text }}</p>
       <div style="font-size:0.78rem;color:var(--text-muted);">
-        도움이 돼요 <span style="font-weight:700;color:var(--text-secondary);">({{ selectedReview.helpful }})</span>
+        도움이 돼요 <span style="font-weight:700;color:var(--text-secondary);">({{ uiState.selectedReview.helpful }})</span>
       </div>
     </div>
 
@@ -1088,11 +1085,11 @@ window.Prod01View = {
 
   <!-- ══ 사이즈 가이드 모달 ══ -->
   <teleport to="body">
-  <div v-if="showSizeGuide" class="modal-overlay" style="z-index:1500;" @click.self="showSizeGuide=false">
+  <div v-if="uiState.showSizeGuide" class="modal-overlay" style="z-index:1500;" @click.self="uiState.showSizeGuide=false">
     <div class="modal-box" style="max-width:480px;text-align:left;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
         <span style="font-weight:800;font-size:1rem;color:var(--text-primary);">📏 사이즈 가이드</span>
-        <button @click="showSizeGuide=false" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);">✕</button>
+        <button @click="uiState.showSizeGuide=false" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);">✕</button>
       </div>
       <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
         <thead>
@@ -1113,14 +1110,14 @@ window.Prod01View = {
         </tbody>
       </table>
       <p style="margin-top:14px;font-size:0.75rem;color:var(--text-muted);">* 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.</p>
-      <button class="btn-blue" @click="showSizeGuide=false" style="width:100%;margin-top:16px;padding:10px;">확인</button>
+      <button class="btn-blue" @click="uiState.showSizeGuide=false" style="width:100%;margin-top:16px;padding:10px;">확인</button>
     </div>
   </div>
 
   </teleport>
 
   <!-- ══ 고정 하단 바 ══ -->
-  <div v-if="product && showBottomBar"
+  <div v-if="product && uiState.showBottomBar"
     style="position:fixed;bottom:0;left:0;right:0;z-index:100;padding:10px 24px;display:flex;justify-content:center;align-items:center;background:linear-gradient(to top, var(--bg-card) 0%, rgba(245,248,255,0.98) 100%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--border);box-shadow:0 -4px 18px rgba(80,100,160,0.08);">
     <div style="display:flex;align-items:center;gap:10px;max-width:760px;width:100%;">
       <div style="flex:1;min-width:0;overflow:hidden;">
@@ -1145,7 +1142,7 @@ window.Prod01View = {
 
       <!-- 헤더 -->
       <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);flex-shrink:0;">
-        <span style="font-size:0.9rem;font-weight:800;color:var(--text-primary);">{{ drawerMode==='cart' ? '🛒 장바구니 담기' : '⚡ 바로구매' }}</span>
+        <span style="font-size:0.9rem;font-weight:800;color:var(--text-primary);">{{ uiState.drawerMode==='cart' ? '🛒 장바구니 담기' : '⚡ 바로구매' }}</span>
         <button @click="uiState.quickBuyOpen=false" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--text-muted);line-height:1;padding:0;">✕</button>
       </div>
 
@@ -1156,7 +1153,7 @@ window.Prod01View = {
         <div style="margin-bottom:20px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
             <span style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">색상<span style="color:var(--blue);margin-left:2px;">*</span></span>
-            <span v-if="selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">{{ selectedColor.name }}</span>
+            <span v-if="uiState.selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">{{ uiState.selectedColor.name }}</span>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;">
             <div v-for="c in product.opt1s" :key="c.name" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;">
@@ -1165,8 +1162,8 @@ window.Prod01View = {
                   width:'30px',height:'30px',borderRadius:'50%',
                   cursor: colorStatus(c)==='ok' ? 'pointer' : 'not-allowed',
                   background:c.hex,
-                  border:selectedColor&&selectedColor.name===c.name?'3px solid var(--blue)':'2px solid rgba(0,0,0,0.12)',
-                  outline:selectedColor&&selectedColor.name===c.name?'2px solid white':'none',
+                  border:uiState.selectedColor&&uiState.selectedColor.name===c.name?'3px solid var(--blue)':'2px solid rgba(0,0,0,0.12)',
+                  outline:uiState.selectedColor&&uiState.selectedColor.name===c.name?'2px solid white':'none',
                   outlineOffset:'-4px',boxSizing:'border-box',
                   opacity: colorStatus(c)!=='ok' ? '0.4' : '1',
                 }">
@@ -1178,7 +1175,7 @@ window.Prod01View = {
               <span v-if="c.priceDelta" style="font-size:0.58rem;font-weight:700;color:var(--blue);white-space:nowrap;line-height:1;">+{{ c.priceDelta.toLocaleString('ko-KR') }}</span>
             </div>
           </div>
-          <div v-if="colorError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ colorError }}</div>
+          <div v-if="uiState.colorError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ uiState.colorError }}</div>
         </div>
 
         <!-- 사이즈 (FREE면 숨김) -->
@@ -1188,21 +1185,21 @@ window.Prod01View = {
               <span :style="{ fontSize:'0.82rem', fontWeight:'600', color: sizeError ? '#ef4444' : 'var(--text-secondary)' }">사이즈<span style="margin-left:2px;">*</span></span>
               <span v-if="sizeError" style="font-size:0.75rem;color:#ef4444;font-weight:500;">필수 선택</span>
             </div>
-            <button @click="showSizeGuide=true" style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:0.75rem;font-weight:600;padding:0;text-decoration:underline;">사이즈 안내</button>
+            <button @click="uiState.showSizeGuide=true" style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:0.75rem;font-weight:600;padding:0;text-decoration:underline;">사이즈 안내</button>
           </div>
           <div :style="{
             display:'flex', flexWrap:'wrap', gap:'6px', padding:'8px',
-            border: sizeError ? '1px solid #ef4444' : '1px solid transparent',
+            border: uiState.sizeError ? '1px solid #ef4444' : '1px solid transparent',
             borderRadius:'6px', transition:'border-color .2s',
           }">
             <button v-for="s in product.opt2s" :key="s" @click="selectSize(s)"
               :style="{
                 padding:'7px 16px',borderRadius:'6px',fontSize:'0.82rem',position:'relative',
                 cursor: sizeStatus(s)==='ok' ? 'pointer' : 'not-allowed',
-                border: selectedSize===s ? '2px solid var(--blue)' : sizeStatus(s)==='ok' ? '2px solid var(--border)' : '2px solid #e0e0e0',
-                background: selectedSize===s ? 'var(--blue-dim)' : sizeStatus(s)==='ok' ? 'var(--bg-base)' : '#f5f5f5',
-                color: selectedSize===s ? 'var(--blue)' : sizeStatus(s)==='ok' ? 'var(--text-secondary)' : '#bbb',
-                fontWeight: selectedSize===s ? '700' : '500',
+                border: uiState.selectedSize===s ? '2px solid var(--blue)' : sizeStatus(s)==='ok' ? '2px solid var(--border)' : '2px solid #e0e0e0',
+                background: uiState.selectedSize===s ? 'var(--blue-dim)' : sizeStatus(s)==='ok' ? 'var(--bg-base)' : '#f5f5f5',
+                color: uiState.selectedSize===s ? 'var(--blue)' : sizeStatus(s)==='ok' ? 'var(--text-secondary)' : '#bbb',
+                fontWeight: uiState.selectedSize===s ? '700' : '500',
                 textDecoration: sizeStatus(s)!=='ok' ? 'line-through' : 'none',
                 opacity: sizeStatus(s)!=='ok' ? '0.7' : '1',
               }">{{ s }}<span v-if="getSizeDelta(s)" style="font-size:0.62rem;font-weight:700;color:var(--blue);margin-left:2px;">(+{{ getSizeDelta(s).toLocaleString('ko-KR') }})</span>
@@ -1216,18 +1213,18 @@ window.Prod01View = {
         <div style="margin-bottom:24px;">
           <span style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:10px;">수량</span>
           <div style="display:flex;align-items:center;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;width:fit-content;">
-            <button @click="qty>1&&qty--" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">−</button>
-            <span style="min-width:44px;text-align:center;font-size:0.9rem;font-weight:700;color:var(--text-primary);">{{ qty }}</span>
-            <button @click="qty++" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">+</button>
+            <button @click="uiState.qty>1&&uiState.qty--" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">−</button>
+            <span style="min-width:44px;text-align:center;font-size:0.9rem;font-weight:700;color:var(--text-primary);">{{ uiState.qty }}</span>
+            <button @click="uiState.qty++" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">+</button>
           </div>
         </div>
 
         <!-- 선택 요약 -->
-        <div v-if="selectedColor||selectedSize"
+        <div v-if="uiState.selectedColor||uiState.selectedSize"
           style="background:var(--bg-base);border-radius:8px;padding:12px 14px;font-size:0.82rem;color:var(--text-secondary);line-height:1.9;border:1px solid var(--border);">
-          <div v-if="selectedColor"><span style="font-weight:600;color:var(--text-primary);">색상:</span> {{ selectedColor.name }}</div>
-          <div v-if="selectedSize"><span style="font-weight:600;color:var(--text-primary);">사이즈:</span> {{ selectedSize }}</div>
-          <div><span style="font-weight:600;color:var(--text-primary);">수량:</span> {{ qty }}개</div>
+          <div v-if="uiState.selectedColor"><span style="font-weight:600;color:var(--text-primary);">색상:</span> {{ uiState.selectedColor.name }}</div>
+          <div v-if="uiState.selectedSize"><span style="font-weight:600;color:var(--text-primary);">사이즈:</span> {{ uiState.selectedSize }}</div>
+          <div><span style="font-weight:600;color:var(--text-primary);">수량:</span> {{ uiState.qty }}개</div>
         </div>
       </div>
 
@@ -1237,7 +1234,7 @@ window.Prod01View = {
           <span style="font-size:0.85rem;color:var(--text-muted);">총 주문금액</span>
           <span style="font-size:1.2rem;font-weight:900;color:var(--blue);">{{ cfQuickBuyTotal }}</span>
         </div>
-        <button v-if="drawerMode==='cart'" class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="execCartFromDrawer">
+        <button v-if="uiState.drawerMode==='cart'" class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="execCartFromDrawer">
           🛒 장바구니 담기
         </button>
         <button v-else class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="execBuyNow">

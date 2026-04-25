@@ -191,7 +191,7 @@ window.EventView = {
     /* 더 많은 프로모션 (현재 이벤트 제외) */
     const cfPromoEvents = computed(() => events.filter(e => e.id !== cfEventId.value));
 
-    return { cfEvent, activeTab, setTab, cfTabProducts, cfPromoEvents , uiState, codes };
+    return { cfEvent, setTab, cfTabProducts, cfPromoEvents, uiState, codes };
   },
 
   template: /* html */ `
@@ -267,9 +267,9 @@ window.EventView = {
           :style="{
             padding:'10px 20px', background:'none', border:'none', cursor:'pointer',
             fontSize:'0.85rem',
-            fontWeight: activeTab===ti ? '700' : '500',
-            color: activeTab===ti ? 'var(--text-primary)' : 'var(--text-muted)',
-            borderBottom: activeTab===ti ? '2px solid var(--text-primary)' : '2px solid transparent',
+            fontWeight: uiState.activeTab===ti ? '700' : '500',
+            color: uiState.activeTab===ti ? 'var(--text-primary)' : 'var(--text-muted)',
+            borderBottom: uiState.activeTab===ti ? '2px solid var(--text-primary)' : '2px solid transparent',
             marginBottom: '-1px',
           }">{{ tab }}</button>
       </div>

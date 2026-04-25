@@ -6,8 +6,9 @@
 window.XsSample09 = {
   name: 'XsSample09',
   setup() {
+    const { ref, reactive, computed, onMounted, watch } = Vue;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dragSrc: null, focusedIdx: null});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dragSrc: null, focusedIdx: null, dragMoved: false, checkAll: false});
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -28,7 +29,6 @@ window.XsSample09 = {
         fnLoadCodes();
       }
     });
-    const { ref, reactive, computed, onMounted , watch } = Vue;
     const api = window.axiosApi || window.adminApi;
     const API = 'api/base/sy/zz-sample1';
     const CD_GRP = 'S09_FAQ';
@@ -105,7 +105,6 @@ window.XsSample09 = {
       } catch (e) { showToast('저장 실패: ' + (e.response?.data?.message || e.message || e), 'error'); }
     };
     
-    const uiState = reactive({ dragMoved: false, checkAll: false, dragSrc: null });
     const onDragStart = idx => { uiState.dragSrc = idx; uiState.dragMoved = false; };
     const onDragOver  = (e, idx) => { e.preventDefault(); if (uiState.dragSrc === null || uiState.dragSrc === idx) return; const m = gridRows.splice(uiState.1)[0]; gridRows.splice(idx, 0, m); uiState.dragSrc = idx; uiState.dragMoved = true; };
     const onDragEnd   = () => { if (uiState.dragMoved) showToast('정렬이 변경되었습니다.'); uiState.dragSrc = null; uiState.dragMoved = false; };
