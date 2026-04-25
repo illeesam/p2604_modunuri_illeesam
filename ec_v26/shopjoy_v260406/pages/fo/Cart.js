@@ -111,7 +111,7 @@ window.Cart = {
       checkedIdxs, isChecked, toggleCheck, cfAllChecked, cfSomeChecked, toggleAll,
       removeItem, goOrder,
       formatPrice, cfTotalPriceStr, cfSummaryItems, cfOrderCount, handleClearAll,
-    , uiState, codes };
+      uiState, codes };
   },
 
   template: /* html */ `

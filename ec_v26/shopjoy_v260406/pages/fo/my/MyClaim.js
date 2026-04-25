@@ -97,7 +97,7 @@ window.MyClaim = {
       claimStatusFilter, toggleClaimStatus,
       cfAuthUser, findProduct, openProductModal, openCustomerModal, openOrderModal,
       openTracking2, cancelClaim,
-    , uiState, codes };
+      uiState, codes };
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myClaim">

@@ -4,7 +4,7 @@ window.Location = {
   props: ['navigate', 'config'],
   setup() {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, mapProvider: 'kakao', mapSrc: ''});;
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, mapProvider: 'kakao', mapSrc: '' });
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -34,8 +34,6 @@ window.Location = {
 
     /* 지도 iframe src — 카카오 → 구글 → OSM 순 */
        // 현재 사용 중인 제공자
-    const mapSrc      = ref('');
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, mapProvider: 'kakao', mapSrc: ''});
 
     /* 제공자별 embed URL */
     const PROVIDERS = {

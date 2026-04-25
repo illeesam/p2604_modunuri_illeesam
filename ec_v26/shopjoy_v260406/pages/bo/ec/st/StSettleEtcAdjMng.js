@@ -163,26 +163,26 @@ window.StSettleEtcAdjMng = {
 
     const setPage = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    return { descOpen, DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, cfVendors, searchKw, searchType, searchStatus, pager, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, selectedId, form, errors, isNew, openNew, openEdit, closeForm, handleSave, handleDelete, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset , PAGE_SIZES , setPage , onSizeChange };
+    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, PAGE_SIZES, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
   <div class="page-title">정산기타조정</div>
   <div class="page-desc-bar">
     <span class="page-desc-summary">판촉비·위약금·보증금 등 정산조정 외 기타 항목을 별도 관리합니다.</span>
-    <button class="page-desc-toggle" @click="descOpen=!descOpen">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="descOpen" class="page-desc-detail">• 정산조정(StSettleAdjMng)에서 처리하기 어려운 비정형 항목을 등록합니다.
+    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="uiState.descOpen" class="page-desc-detail">• 정산조정(StSettleAdjMng)에서 처리하기 어려운 비정형 항목을 등록합니다.
 • 항목 유형: 판촉비 / 위약금 / 보증금 / 기타 차감 등
 • 승인 후 정산마감 집계에 포함됩니다.
 • 승인 상태: 대기 / 승인 / 반려</div>
   </div>
   <div class="card">
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
-      <select v-model="dateRange" @change="onDateRangeChange" style="min-width:110px">
+      <select v-model="uiState.dateRange" @change="handleDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
         <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
       </select>
-      <input type="date" v-model="dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="dateEnd" style="width:140px" />
+      <input type="date" v-model="uiState.dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="uiState.dateEnd" style="width:140px" />
       <select v-model="searchParam.type" style="width:120px">
         <option value="">유형 전체</option><option>위약금</option><option>인센티브</option><option>세금조정</option><option>기타</option>
       </select>
@@ -204,7 +204,7 @@ window.StSettleEtcAdjMng = {
     <table class="bo-table">
       <thead><tr><th>조정ID</th><th>조정일자</th><th>업체명</th><th>유형</th><th>조정금액</th><th>사유</th><th>승인상태</th><th>등록자</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="r in cfPageList" :key="r?.adjId" :class="{selected: selectedId===r.adjId}">
+        <tr v-for="r in cfPageList" :key="r?.adjId" :class="{selected: uiState.selectedId===r.adjId}">
           <td>{{ r.adjId }}</td><td>{{ r.adjDate }}</td><td>{{ r.vendorNm }}</td>
           <td><span class="badge" :class="fnTypeBadge(r.adjType)">{{ r.adjType }}</span></td>
           <td :style="r.adjAmt<0?'color:#e74c3c;font-weight:700':'color:#27ae60;font-weight:700'">{{ fmtW(r.adjAmt) }}</td>
@@ -235,8 +235,8 @@ window.StSettleEtcAdjMng = {
          </div>
        </div>
   </div>
-  <div v-if="selectedId" class="card" style="margin-top:12px">
-    <div style="font-weight:700;margin-bottom:16px">{{ isNew ? '기타조정 추가' : '기타조정 수정' }}</div>
+  <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
+    <div style="font-weight:700;margin-bottom:16px">{{ uiState.isNew ? '기타조정 추가' : '기타조정 수정' }}</div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">업체 <span style="color:red">*</span></label>

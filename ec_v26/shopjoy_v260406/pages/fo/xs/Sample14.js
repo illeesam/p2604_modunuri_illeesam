@@ -4,7 +4,7 @@ window.XsSample14 = {
   components: { 'category-select-modal': window.CategorySelectModal },
   setup() {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: today, activeTab: 'grid1', dragSrc: null, dragSrcList: null, dropZoneIdx: -1, spanPopupIdx: -1, popoverKey: null, popoverWidget: null, popoverArea: null, popoverPanel: null, viewportMode: 'desktop', previewTime: new Date(});;
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), activeTab: 'grid1', dragSrc: null, dragSrcList: null, dropZoneIdx: -1, spanPopupIdx: -1, popoverKey: null, popoverWidget: null, popoverArea: null, popoverPanel: null, viewportMode: 'desktop', previewTime: new Date().toTimeString().slice(0, 5) });
     const codes = reactive({});
 
     const isAppReady = computed(() => {

@@ -177,8 +177,8 @@ window.SyAttachMng = {
 
     return { attaches, uiState, codes, searchParam, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm,
       attachGrps, grpForm, cfTotal,
-      selectedGrpId, grpForm, grpEditId, uiState, selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
-      searchParam, fileForm, fileEditId, uiState, applied, cfFilteredFiles, onSearch, onReset, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
+      selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
+      fileForm, applied, cfFilteredFiles, onSearch, onReset, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
       fnFmtSize, fnStatusBadge,
     };
   },
@@ -196,8 +196,8 @@ window.SyAttachMng = {
         </div>
 
         <!-- 그룹 폼 -->
-        <div v-if="grpEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:12px;">
-          <div style="font-size:13px;font-weight:600;margin-bottom:8px;">{{ grpEditId===null ? '그룹 등록' : '그룹 수정' }}</div>
+        <div v-if="uiState.grpEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:12px;">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px;">{{ uiState.grpEditId===null ? '그룹 등록' : '그룹 수정' }}</div>
           <div class="form-group" style="margin-bottom:6px;">
             <label class="form-label" style="font-size:12px;">그룹명 <span class="req">*</span></label>
             <input class="form-control" style="font-size:12px;padding:4px 8px;" v-model="grpForm.grpNm" placeholder="그룹명" />
@@ -235,7 +235,7 @@ window.SyAttachMng = {
         <!-- 그룹 목록 -->
         <div v-for="g in attachGrps" :key="g.attachGrpId"
           style="padding:10px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer;border-radius:4px;transition:background .15s;"
-          :style="selectedGrpId===g.attachGrpId?'background:#fff0f4;border-left:3px solid #e8587a;':'' "
+          :style="uiState.selectedGrpId===g.attachGrpId?'background:#fff0f4;border-left:3px solid #e8587a;':'' "
           @click="selectGrp(g.attachGrpId)">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
@@ -262,8 +262,8 @@ window.SyAttachMng = {
       <div class="card" style="margin-bottom:0;">
         <div class="toolbar">
           <b style="font-size:14px;">첨부파일관리
-            <span v-if="selectedGrpId" style="font-size:12px;color:#e8587a;margin-left:6px;">
-              ({{ attachGrps.find(g=>g.attachGrpId===selectedGrpId)?.grpNm }})
+            <span v-if="uiState.selectedGrpId" style="font-size:12px;color:#e8587a;margin-left:6px;">
+              ({{ attachGrps.find(g=>g.attachGrpId===uiState.selectedGrpId)?.grpNm }})
             </span>
           </b>
           <div style="display:flex;gap:8px;align-items:center;">
@@ -279,8 +279,8 @@ window.SyAttachMng = {
         <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>첨부파일목록 <span class="list-count">{{ cfTotal }}건</span></span>
 
         <!-- 파일 폼 -->
-        <div v-if="fileEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:12px;">
-          <div style="font-size:13px;font-weight:600;margin-bottom:8px;">{{ fileEditId===null ? '파일 등록' : '파일 수정' }}</div>
+        <div v-if="uiState.fileEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:12px;">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px;">{{ uiState.fileEditId===null ? '파일 등록' : '파일 수정' }}</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <div class="form-group" style="flex:1;min-width:140px;margin-bottom:6px;">
               <label class="form-label" style="font-size:12px;">첨부그룹 <span class="req">*</span></label>

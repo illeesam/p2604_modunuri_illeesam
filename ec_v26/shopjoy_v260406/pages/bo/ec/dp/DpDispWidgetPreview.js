@@ -166,7 +166,7 @@ window.DpDispWidgetPreview = {
   setup(props) {
     const { reactive, computed, ref, watch, onMounted, nextTick, watchEffect } = Vue;
     const codes = reactive({ disp_widget_types: [] });
-    const uiState = reactive({ isPageCodeLoad: false });
+    const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null });
     const widgetLibs = reactive([]);
 
     // App 초기화 준비 상태
@@ -566,7 +566,7 @@ window.DpDispWidgetPreview = {
       searchParam, searchParamOrg,
       applied, onSearch, onReset,
       cfFilteredLibs,
-      selectedLibId, onTreeSelect,
+      onTreeSelect,
       cfTree, openNodes, toggleNode, isOpen, allChildrenOpen, toggleAllChildren, expandAll, collapseAll,
       onItemDragStart, onItemDragEnd, onNodeDragStart, onNodeDragEnd,
       uiState, gridState, GRID_TABS,
@@ -574,7 +574,7 @@ window.DpDispWidgetPreview = {
       tabSlots, cfCurrentSlots,
       dragState, onDragOver, onDragLeave, onDrop, removeSlot, setSpan, GRID_COLS,
       toggleSpanPopup, closeSpanPopup,
-      dashItems, dashCanvas,
+      dashItems,
       onDashDragOver, onDashDragLeave, onDashDrop,
       removeDashItem, startItemMove, startItemResize,
       cfPlacedCount, resetCurrent,
@@ -705,7 +705,7 @@ window.DpDispWidgetPreview = {
                   @dragend="onItemDragEnd"
                   @click="onTreeSelect(lib)"
                   style="display:flex;align-items:center;gap:7px;padding:5px 10px 5px 42px;cursor:grab;font-size:11px;border-radius:4px;margin:1px 4px;transition:background .15s;"
-                  :style="selectedLibId===lib.libId ? 'background:#dbeafe;color:#1d4ed8;font-weight:700;' : 'color:#374151;'">
+                  :style="uiState.selectedLibId===lib.libId ? 'background:#dbeafe;color:#1d4ed8;font-weight:700;' : 'color:#374151;'">
                   <span style="font-size:9px;color:#c4c4c4;flex-shrink:0;">⠿</span>
                   <span style="font-size:13px;flex-shrink:0;">{{ wIcon(lib.widgetType) }}</span>
                   <span style="font-size:9px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:3px;padding:0 4px;white-space:nowrap;flex-shrink:0;">{{ lib.widgetType ? lib.widgetType.replace('_',' ') : '-' }}</span>
@@ -737,7 +737,7 @@ window.DpDispWidgetPreview = {
         </div>
         <!-- 실제컨텐츠 + 뷰포트 토글 (dashboard 제외) -->
         <div v-if="gridState.previewGrid!=='dashboard'" style="display:flex;align-items:center;gap:4px;padding:6px 0 6px 12px;border-left:1px solid #e5e7eb;margin-left:8px;">
-          <button @click="gridState.showRealContent=!showRealContent"
+          <button @click="gridState.showRealContent=!gridState.showRealContent"
             style="font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;margin-right:4px;"
             :style="gridState.showRealContent?'background:#059669;color:#fff;border-color:#059669;':'background:#fff;color:#6b7280;'">
             {{ gridState.showRealContent ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
@@ -770,7 +770,7 @@ window.DpDispWidgetPreview = {
           <!-- 디바이스 프레임 표시 -->
           <div v-if="gridState.viewportMode!=='desktop'"
             style="text-align:center;margin-bottom:8px;font-size:11px;color:#9ca3af;font-weight:600;">
-            {{ viewportMode==='mobile' ? '📱 375px' : '📟 768px' }}
+            {{ gridState.viewportMode==='mobile' ? '📱 375px' : '📟 768px' }}
           </div>
           <div :style="{
             border: gridState.viewportMode!=='desktop' ? '2px solid #d1d5db' : 'none',
@@ -844,10 +844,10 @@ window.DpDispWidgetPreview = {
                         style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                         :style="(slot.colSpan||1)<=1?'opacity:.3;cursor:default;':''">−</button>
                       <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">{{ slot.colSpan||1 }}</span>
-                      <button @click="setSpan(idx,'col',+1)" :disabled="(slot.colSpan||1)>=(GRID_COLS[previewGrid]||1)"
+                      <button @click="setSpan(idx,'col',+1)" :disabled="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)"
                         style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
-                        :style="(slot.colSpan||1)>=(GRID_COLS[previewGrid]||1)?'opacity:.3;cursor:default;':''">+</button>
-                      <span style="font-size:10px;color:#9ca3af;">/ {{ GRID_COLS[previewGrid]||1 }}</span>
+                        :style="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)?'opacity:.3;cursor:default;':''">+</button>
+                      <span style="font-size:10px;color:#9ca3af;">/ {{ GRID_COLS[gridState.previewGrid]||1 }}</span>
                     </div>
                     <!-- 행(rowspan) -->
                     <div style="display:flex;align-items:center;gap:6px;">
@@ -889,12 +889,12 @@ window.DpDispWidgetPreview = {
           :style="gridState.dashDragOver ? 'border-color:#1d4ed8;background:#eff6ff;' : ''">
 
           <!-- 빈 상태 -->
-          <div v-if="!dashItems.length v-if="!dashItems.length && !dashDragOverv-if="!dashItems.length && !dashDragOver !gridState.dashDragOver"
+          <div v-if="!dashItems.length && !gridState.dashDragOver"
             style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#d1d5db;pointer-events:none;">
             <span style="font-size:48px;">🧩</span>
             <span style="font-size:13px;">왼쪽 트리에서 위젯을 드래그하여 배치하세요</span>
           </div>
-          <div v-if="gridState.dashDragOver v-if="dashDragOver && !dashItemsv-if="dashDragOver && !dashItems !dashItems.length"
+          <div v-if="gridState.dashDragOver && !dashItems.length"
             style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:14px;font-weight:700;pointer-events:none;">
             ▼ 여기에 배치
           </div>

@@ -393,17 +393,17 @@ window.SyBatchMng = {
       '배치목록.csv'
     );
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
-    watch(selectedPath, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
+    watch(() => uiState.selectedPath, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
 
 
     return { batches, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
+      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, applied,
       gridRows, cfPagedRows, cfTotal, pager, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
-      focusedIdx, setFocused, onSearch, onReset, onCellChange,
+      setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave, runNow,
       CRON_PRESETS, CRON_FIELDS, cronPicker, openCronPicker, applyCronPreset, applyCron, updateCronPreview, cfCronPresetLabel, cfCronDesc,
-      dragSrc, onDragStart, onDragOver, onDragEnd,
+      onDragStart, onDragOver, onDragEnd,
       uiState, toggleCheckAll, fnStatusBadge, fnRunBadge, fnStatusClass,
       exportExcel,
     };
@@ -449,7 +449,7 @@ window.SyBatchMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
     <div>
@@ -474,7 +474,7 @@ window.SyBatchMng = {
           <th class="col-drag"></th>
           <th class="col-id">ID</th>
           <th class="col-status">상태</th>
-          <th class="col-check"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
+          <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
           <th style="min-width:120px;">배치명</th>
           <th style="min-width:160px;">배치코드</th>
           <th style="min-width:170px;">Cron 표현식</th>
@@ -493,7 +493,7 @@ window.SyBatchMng = {
           <td colspan="16" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in cfPagedRows" :key="row.batchId"
-          class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
+          class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '']"
           draggable="true"
           @click="setFocused(getRealIdx(idx))"
           @dragstart="onDragStart(getRealIdx(idx))"

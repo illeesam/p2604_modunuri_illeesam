@@ -322,7 +322,7 @@ window.OdDlivMng = {
       }
     };
 
-    return { uiStateDetail, deliveries, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkTab, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { uiStateDetail, deliveries, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>
@@ -422,18 +422,18 @@ window.OdDlivMng = {
       </div>
       <div style="display:flex;gap:6px;padding:10px 14px 0;background:#fafafa;">
         <button v-for="t in [{id:'status',label:'배송상태'},{id:'courier',label:'택배사·운송장'},{id:'approval',label:'결재처리'},{id:'approvalReq',label:'추가결재요청'}]" :key="t?.id"
-          @click="bulkTab=t.id"
-          :style="{flex:1,padding:'8px 12px',border:'none',cursor:'pointer',fontSize:'12.5px',borderRadius:'8px 8px 0 0',fontWeight: bulkTab===t.id?800:600,background: bulkTab===t.id?'#fff':'transparent',color: bulkTab===t.id?'#e8587a':'#888',borderBottom: bulkTab===t.id?'2px solid #e8587a':'2px solid transparent'}">{{ t.label }}</button>
+          @click="uiState.bulkTab=t.id"
+          :style="{flex:1,padding:'8px 12px',border:'none',cursor:'pointer',fontSize:'12.5px',borderRadius:'8px 8px 0 0',fontWeight: uiState.bulkTab===t.id?800:600,background: uiState.bulkTab===t.id?'#fff':'transparent',color: uiState.bulkTab===t.id?'#e8587a':'#888',borderBottom: uiState.bulkTab===t.id?'2px solid #e8587a':'2px solid transparent'}">{{ t.label }}</button>
       </div>
       <div style="padding:20px 18px;">
-        <div v-if="bulkTab==='status'">
+        <div v-if="uiState.bulkTab==='status'">
           <label class="form-label">변경할 배송상태</label>
           <select class="form-control" v-model="bulkForm.status">
             <option value="">선택하세요</option>
             <option v-for="s in DLIV_STATUS_OPTIONS" :key="Math.random()" :value="s">{{ s }}</option>
           </select>
         </div>
-        <div v-if="bulkTab==='courier'">
+        <div v-if="uiState.bulkTab==='courier'">
           <div class="form-group">
             <label class="form-label">택배사</label>
             <select class="form-control" v-model="bulkForm.courier">
@@ -446,7 +446,7 @@ window.OdDlivMng = {
             <input class="form-control" v-model="bulkForm.trackingNo" placeholder="(선택한 항목 모두 동일 번호로 변경)" />
           </div>
         </div>
-        <div v-if="bulkTab==='approval'">
+        <div v-if="uiState.bulkTab==='approval'">
           <div class="form-group">
             <label class="form-label">결재처리 구분</label>
             <select class="form-control" v-model="bulkForm.apprAction">
@@ -459,7 +459,7 @@ window.OdDlivMng = {
             <textarea class="form-control" v-model="bulkForm.apprComment" rows="2" placeholder="(선택)"></textarea>
           </div>
         </div>
-        <div v-if="bulkTab==='approvalReq'">
+        <div v-if="uiState.bulkTab==='approvalReq'">
           <div class="form-group">
             <label class="form-label">추가결재자 (회원선택)</label>
             <select class="form-control" v-model="bulkForm.apprToUserId" @change="onApprToChange">

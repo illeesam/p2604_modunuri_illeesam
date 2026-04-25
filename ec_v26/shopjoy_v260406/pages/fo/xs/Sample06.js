@@ -7,7 +7,7 @@ window.XsSample06 = {
   name: 'XsSample06',
   setup() {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dragSrc: null, focusedIdx: null});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dragSrc: null, focusedIdx: null, dragMoved: false, checkAll: false });
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -36,7 +36,7 @@ window.XsSample06 = {
     let _tId = null;
     const showToast = (msg, type = 'success') => { toast.msg = msg; toast.type = type; toast.show = true; clearTimeout(_tId); _tId = setTimeout(() => { toast.show = false; }, 2500); };
     const searchParam = reactive({ kw: '', discountType: '', useYn: '' });
-    const searchParamOrg = reactive({ kw: \'\', category: \'\', status: \'\' });
+    const searchParamOrg = reactive({ kw: '', category: '', status: '' });
     const allData    = reactive([]);
     const gridRows   = reactive([]);
     let   _tempId    = -1;

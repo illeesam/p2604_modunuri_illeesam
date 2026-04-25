@@ -568,7 +568,7 @@ window.SyCodeMng = {
         <span class="list-title">
           <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
           공통코드그룹관리
-          <span v-if="grpSelectedPath" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ grpSelectedPath }}</span>
+          <span v-if="uiState.grpSelectedPath" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ uiState.grpSelectedPath }}</span>
           <span class="list-count">{{ cfFilteredGrpRows.filter(r=>r._row_status!=='D').length }}건</span>
         </span>
         <div style="display:flex;gap:6px;">
@@ -596,7 +596,7 @@ window.SyCodeMng = {
           </tr>
           <tr v-for="(g, idx) in cfGrpPagedRows" :key="g.codeGrp + (g._tempId || '')"
             class="crud-row"
-            :class="['status-'+g._row_status, selectedGrp===g.codeGrp ? 'focused' : '']"
+            :class="['status-'+g._row_status, uiState.selectedGrp===g.codeGrp ? 'focused' : '']"
             style="cursor:pointer;"
             @click="onGrpRowClick(g)">
             <td class="col-status-val"><span class="badge badge-xs" :class="fnStatusClass(g._row_status)">{{ g._row_status }}</span></td>
@@ -662,8 +662,8 @@ window.SyCodeMng = {
     <div class="toolbar">
       <span class="list-title">
         <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>코드목록
-        <span v-if="selectedGrp" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ selectedGrp }}</span>
-        <span v-else-if="grpSelectedPath" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ grpSelectedPath }}</span>
+        <span v-if="uiState.selectedGrp" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ uiState.selectedGrp }}</span>
+        <span v-else-if="uiState.grpSelectedPath" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ uiState.grpSelectedPath }}</span>
         <span class="list-count">{{ cfTotal }}건</span>
       </span>
       <div style="display:flex;gap:6px;">
@@ -677,23 +677,23 @@ window.SyCodeMng = {
 
     <!-- 일반/트리 탭 -->
     <div style="display:flex;gap:8px;padding:12px;border-bottom:1px solid #e5e7eb;background:#f9fafb;">
-      <button @click="activeCodeTab='일반'" :class="{active: activeCodeTab==='일반'}"
+      <button @click="uiState.activeCodeTab='일반'" :class="{active: uiState.activeCodeTab==='일반'}"
         style="padding:8px 16px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:#6b7280;font-weight:500;transition:all 0.2s;"
-        :style="activeCodeTab==='일반' ? {borderBottomColor:'#e8587a',color:'#e8587a'} : {}">일반</button>
-      <button @click="activeCodeTab='트리'" :disabled="!selectedGrp" :class="{active: activeCodeTab==='트리'}"
+        :style="uiState.activeCodeTab==='일반' ? {borderBottomColor:'#e8587a',color:'#e8587a'} : {}">일반</button>
+      <button @click="uiState.activeCodeTab='트리'" :disabled="!uiState.selectedGrp" :class="{active: uiState.activeCodeTab==='트리'}"
         style="padding:8px 16px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:#6b7280;font-weight:500;transition:all 0.2s;"
-        :style="activeCodeTab==='트리' ? {borderBottomColor:'#e8587a',color:'#e8587a'} : {}"
-        :disabled="!selectedGrp">트리</button>
+        :style="uiState.activeCodeTab==='트리' ? {borderBottomColor:'#e8587a',color:'#e8587a'} : {}"
+        :disabled="!uiState.selectedGrp">트리</button>
     </div>
 
     <!-- 일반 탭: 테이블 -->
-    <table v-if="activeCodeTab==='일반'" class="bo-table crud-grid">
+    <table v-if="uiState.activeCodeTab==='일반'" class="bo-table crud-grid">
       <thead>
         <tr>
           <th class="col-drag"></th>
           <th class="col-id">ID</th>
           <th class="col-status">상태</th>
-          <th class="col-check"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
+          <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
           <th>코드그룹</th>
           <th>코드라벨</th>
           <th>코드값</th>
@@ -711,7 +711,7 @@ window.SyCodeMng = {
           <td :colspan="cfIsTreeTypeGrp ? 13 : 12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in cfPagedRows" :key="row.codeId"
-          class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
+          class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '']"
           draggable="true"
           @click="setFocused(getRealIdx(idx))"
           @dblclick="handleLoadDetail(row.codeId)"
@@ -773,7 +773,7 @@ window.SyCodeMng = {
     </div>
 
     <!-- 트리 탭: 편집 가능한 테이블 형식 -->
-    <div v-if="activeCodeTab==='트리' && selectedGrp">
+    <div v-if="uiState.activeCodeTab==='트리' && uiState.selectedGrp">
       <div class="toolbar" style="background:#f9fafb;padding:12px;border-bottom:1px solid #e5e7eb;">
         <span class="list-title">트리 형식 편집</span>
         <div style="display:flex;gap:6px;">
@@ -786,7 +786,7 @@ window.SyCodeMng = {
         <thead>
           <tr>
             <th class="col-status">상태</th>
-            <th class="col-check"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
+            <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
             <th style="min-width:220px;">코드라벨</th>
             <th>코드값</th>
             <th style="width:140px;">상위코드값</th>
@@ -876,13 +876,13 @@ window.SyCodeMng = {
     @select="onPathPicked" @close="closePathPick" />
 
   <!-- 코드 상세 조회 (인라인 임베드) -->
-  <div v-if="selectedCodeId" style="margin-top:20px;padding:20px;background:#fff;border-radius:8px;border:1px solid #e5e7eb;">
+  <div v-if="uiState.selectedCodeId" style="margin-top:20px;padding:20px;background:#fff;border-radius:8px;border:1px solid #e5e7eb;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb;">
       <h3 style="margin:0;font-size:16px;font-weight:600;color:#1f2937;">코드 상세</h3>
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
     <sy-code-dtl :navigate="navigate" :show-toast="showToast"
-      :show-confirm="showConfirm" :set-api-res="() => {}" :edit-id="selectedCodeId" />
+      :show-confirm="showConfirm" :set-api-res="() => {}" :edit-id="uiState.selectedCodeId" />
   </div>
 </div>
 `,

@@ -3,7 +3,7 @@ window.XsSample07 = {
   name: 'XsSample07',
   setup() {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0});;
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0 });
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -28,7 +28,6 @@ window.XsSample07 = {
 
     /* ===== Tree (JSON 로딩) ===== */
     const treeRoot   = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0});
 
     const makeNode = n => {
       const node = reactive({

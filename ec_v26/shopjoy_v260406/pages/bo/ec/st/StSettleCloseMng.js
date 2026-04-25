@@ -109,15 +109,15 @@ window.StSettleCloseMng = {
     const fnStatusBadge = s => ({ '마감완료':'badge-green', '마감예정':'badge-blue', '마감취소':'badge-red' }[s] || 'badge-gray');
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
 
-    return { descOpen, closeList, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW };
+    return { uiState, closeList, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW };
   },
   template: /* html */`
 <div>
   <div class="page-title">정산마감</div>
   <div class="page-desc-bar">
     <span class="page-desc-summary">월별 업체 정산을 확정하는 마감 처리를 수행합니다. 마감 후 원장·조정 데이터 수정이 불가합니다.</span>
-    <button class="page-desc-toggle" @click="descOpen=!descOpen">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="descOpen" class="page-desc-detail">• 마감 처리 시 해당 월의 수집원장 + 조정 + 기타조정 금액을 최종 집계합니다.
+    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="uiState.descOpen" class="page-desc-detail">• 마감 처리 시 해당 월의 수집원장 + 조정 + 기타조정 금액을 최종 집계합니다.
 • 마감 상태: 미마감 / 마감완료 / 지급완료
 • [재오픈] 기능으로 마감을 취소하고 수정 후 재마감할 수 있습니다.
 • 자동마감 설정(StConfigMng) 시 지급일에 자동 마감됩니다.</div>

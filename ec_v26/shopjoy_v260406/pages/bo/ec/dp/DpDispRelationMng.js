@@ -133,7 +133,7 @@ window.DpDispRelationMng = {
     };
 
     return {
-      searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS,
+      searchParam, searchParamOrg, DATE_RANGE_OPTIONS,
       onSearch, onReset,
       expandedNodes, toggleNode, isNodeExpanded,
       cfTreeData, fnGetVisibilityBadges, fnGetBadgeColor, fnGetUseYnBadge,

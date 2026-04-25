@@ -4,7 +4,7 @@ window.MyOrder = {
   props: ['navigate', 'config', 'cart', 'cartCount', 'showToast', 'showConfirm', 'removeFromCart', 'updateCartQty'],
   setup(props) {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, helpTab: 'order'});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, helpTab: 'order', flowHelpOpen: false });
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -34,9 +34,6 @@ window.MyOrder = {
     const orderPager = reactive({ page: 1, size: 50 });
     const paginate = myStore.paginate;
 
-    /* ── 도움말 모달 ── */
-    const uiState = reactive({ flowHelpOpen: false });
-    
     /* ── 배송조회 ── */
     const COURIER_URLS = {
       'CJ대한통운': no => `https://trace.cjlogistics.com/next/tracking.html?wblNo=${no}`,

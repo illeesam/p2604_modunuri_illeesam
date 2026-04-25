@@ -125,8 +125,8 @@ window.SyPathMng = {
     const onSizeChange = () => { pager.page = 1; };
     const cfPagedRows = computed(() => { const s = (pager.page-1)*pager.size; return cfGridRows.value.slice(s, s+pager.size); });
     watch(() => cfGridRows.value.length, () => { if (pager.page > cfTotalPages.value) pager.page = Math.max(1, cfTotalPages.value); });
-    watch(selectedBiz, () => { uiState.selectedPathId = null; pager.page = 1; });
-    watch(selectedPathId, () => { pager.page = 1; });
+    watch(() => uiState.selectedBiz, () => { uiState.selectedPathId = null; pager.page = 1; });
+    watch(() => uiState.selectedPathId, () => { pager.page = 1; });
 
     /* ── CRUD ── */
     const onChange = (row, field, val) => {
@@ -248,7 +248,7 @@ window.SyPathMng = {
     return {
       uiState, codes,
       searchParam, BIZ_OPTIONS, bizLabel,
-      selectedBiz, selectedPathId, cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
+      cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
       cfGridRows, cfPagedRows, cfDirtyRows,
       pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange,
       onChange, addRow, delRow, cancelRow, handleSave, onReset, parentOptions,
@@ -264,7 +264,7 @@ window.SyPathMng = {
   <div class="card" style="padding:12px;margin-bottom:12px;">
     <div class="search-bar">
       <span class="search-label">업무코드 (biz_cd)</span>
-      <select class="form-control" v-model="selectedBiz" style="width:200px;">
+      <select class="form-control" v-model="uiState.selectedBiz" style="width:200px;">
         <option v-for="b in BIZ_OPTIONS" :key="b.codeValue" :value="b.codeValue">{{ b.codeLabel }} ({{ b.codeValue }})</option>
       </select>
       <input class="form-control" v-model="searchParam.kw" placeholder="라벨 / 비고 검색" style="min-width:200px;flex:1;max-width:320px;" />
@@ -286,14 +286,14 @@ window.SyPathMng = {
     <!-- 트리 -->
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;">
-        <span class="list-title" style="font-size:13px;">📂 {{ bizLabel(selectedBiz) }} 경로 트리</span>
+        <span class="list-title" style="font-size:13px;">📂 {{ bizLabel(uiState.selectedBiz) }} 경로 트리</span>
       </div>
       <div style="display:flex;gap:4px;margin-bottom:8px;">
         <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <path-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPathId"
+        <path-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPathId"
           :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>

@@ -97,15 +97,15 @@ window.StConfigMng = {
 
     const fnCycleBadge = s => ({ '월정산': 'badge-blue', '주정산': 'badge-green', '일정산': 'badge-orange' }[s] || 'badge-gray');
 
-    return { descOpen, configs, selectedId, form, errors, uiState, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge };
+    return { uiState, configs, form, errors, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge };
   },
   template: /* html */`
 <div>
   <div class="page-title">정산기준관리</div>
   <div class="page-desc-bar">
     <span class="page-desc-summary">사이트·업체 유형별 정산 수수료율, 지급 주기, 최소 정산금액 등 정산 기준을 설정합니다.</span>
-    <button class="page-desc-toggle" @click="descOpen=!descOpen">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="descOpen" class="page-desc-detail">• 정산 주기: 월정산 / 주정산 / 건별정산
+    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="uiState.descOpen" class="page-desc-detail">• 정산 주기: 월정산 / 주정산 / 건별정산
 • 수수료율(%)은 매출 기준으로 적용되며, 클레임 환불 시 차감됩니다.
 • 자동마감(autoCloseYn=Y) 설정 시 지급일에 자동으로 정산이 마감됩니다.
 • 설정 변경은 변경 이후 수집분부터 적용됩니다.</div>
@@ -119,7 +119,7 @@ window.StConfigMng = {
     <table class="bo-table">
       <thead><tr><th>사이트</th><th>업체유형</th><th>수수료율</th><th>정산주기</th><th>정산일</th><th>최소정산금</th><th>세금계산서</th><th>자동마감</th><th>사용여부</th><th>비고</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="c in configs" :key="c?.configId" :class="{selected: selectedId===c.configId}">
+        <tr v-for="c in configs" :key="c?.configId" :class="{selected: uiState.selectedId===c.configId}">
           <td>{{ c.siteNm }}</td>
           <td><strong>{{ c.vendorType }}</strong></td>
           <td><strong>{{ c.commRate }}%</strong></td>
@@ -140,8 +140,8 @@ window.StConfigMng = {
   </div>
 
   <!-- 편집 폼 -->
-  <div v-if="selectedId" class="card" style="margin-top:12px">
-    <div class="card-title" style="font-weight:700;margin-bottom:16px">{{ isNew ? '정산기준 추가' : '정산기준 수정' }}</div>
+  <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
+    <div class="card-title" style="font-weight:700;margin-bottom:16px">{{ uiState.isNew ? '정산기준 추가' : '정산기준 수정' }}</div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">업체유형 <span style="color:red">*</span></label>

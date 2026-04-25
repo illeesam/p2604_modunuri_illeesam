@@ -434,7 +434,7 @@ window.DpDispPanelMng = {
     });
 
     return { uiStateDetail, panels, uiState, fnPathLabel, displays, codes,
-      codes, cfPanelTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchParam, searchParamOrg, searchDateRange, VISIBILITY_OPTS, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
+      cfPanelTree, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchParam, searchParamOrg, VISIBILITY_OPTS, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
   },
   template: /* html */`
 <div>
@@ -490,9 +490,9 @@ window.DpDispPanelMng = {
       :style="{
         display:'flex',alignItems:'center',justifyContent:'space-between',
         padding:'7px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',
-        background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',
-        color: selectedTreeKey==='' ? '#1565c0' : '#222',
-        fontWeight:700, border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec'),
+        background: uiState.selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',
+        color: uiState.selectedTreeKey==='' ? '#1565c0' : '#222',
+        fontWeight:700, border:'1px solid '+(uiState.selectedTreeKey==='' ? '#90caf9' : '#e4e7ec'),
       }">
       <span @click.stop="toggleTree('__root__')" style="cursor:pointer;">{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
       <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ cfTotal }}</span>
@@ -503,9 +503,9 @@ window.DpDispPanelMng = {
           :style="{
             display:'flex',alignItems:'center',justifyContent:'space-between',
             padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'2px',
-            background: selectedTreeKey===node.label ? '#e3f2fd' : 'transparent',
-            color: selectedTreeKey===node.label ? '#1565c0' : '#333',
-            fontWeight: selectedTreeKey===node.label ? 700 : 500,
+            background: uiState.selectedTreeKey===node.label ? '#e3f2fd' : 'transparent',
+            color: uiState.selectedTreeKey===node.label ? '#1565c0' : '#333',
+            fontWeight: uiState.selectedTreeKey===node.label ? 700 : 500,
           }">
           <span @click.stop="toggleTree('grp_'+node.label)" style="cursor:pointer;font-size:9px;transition:transform .2s;display:inline-block;width:12px;flex-shrink:0;"
             :style="isTreeOpen('grp_'+node.label) ? 'transform:rotate(90deg);' : ''">▶</span>
@@ -519,9 +519,9 @@ window.DpDispPanelMng = {
               :style="{
                 display:'flex',alignItems:'center',justifyContent:'space-between',
                 padding:'5px 8px',borderRadius:'4px',cursor:'pointer',fontSize:'11px',marginBottom:'1px',
-                background: selectedTreeKey===(node.label+'_'+sub.label) ? '#f9fafb' : 'transparent',
-                color: selectedTreeKey===(node.label+'_'+sub.label) ? '#1565c0' : '#555',
-                fontWeight: selectedTreeKey===(node.label+'_'+sub.label) ? 600 : 400,
+                background: uiState.selectedTreeKey===(node.label+'_'+sub.label) ? '#f9fafb' : 'transparent',
+                color: uiState.selectedTreeKey===(node.label+'_'+sub.label) ? '#1565c0' : '#555',
+                fontWeight: uiState.selectedTreeKey===(node.label+'_'+sub.label) ? 600 : 400,
               }">
               <span @click.stop="toggleTree(node.label+'_'+sub.label)" style="cursor:pointer;font-size:9px;transition:transform .2s;display:inline-block;width:12px;flex-shrink:0;"
                 :style="isTreeOpen(node.label+'_'+sub.label) ? 'transform:rotate(90deg);' : ''">▶</span>
@@ -535,9 +535,9 @@ window.DpDispPanelMng = {
                 :style="{
                   display:'flex',alignItems:'center',justifyContent:'space-between',
                   padding:'5px 8px',borderRadius:'4px',cursor:'pointer',fontSize:'11px',marginBottom:'1px',
-                  background: selectedTreeKey===('panel_'+panel.panelId) ? '#fff3e0' : 'transparent',
-                  color: selectedTreeKey===('panel_'+panel.panelId) ? '#e65100' : '#555',
-                  fontWeight: selectedTreeKey===('panel_'+panel.panelId) ? 600 : 400,
+                  background: uiState.selectedTreeKey===('panel_'+panel.panelId) ? '#fff3e0' : 'transparent',
+                  color: uiState.selectedTreeKey===('panel_'+panel.panelId) ? '#e65100' : '#555',
+                  fontWeight: uiState.selectedTreeKey===('panel_'+panel.panelId) ? 600 : 400,
                 }">
                 <span style="display:flex;align-items:center;gap:4px;flex:1;min-width:0;overflow:hidden;">
                   <span style="font-size:9px;background:#fff3e0;color:#e65100;border-radius:6px;padding:1px 6px;font-weight:600;white-space:nowrap;flex-shrink:0;">(패널)</span>

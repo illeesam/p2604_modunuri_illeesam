@@ -5,7 +5,7 @@ window.PdCategoryMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const categories = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedCatId: null, focusedIdx: null});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedCatId: null, focusedIdx: null, descOpen: false});
     const codes = reactive({
       category_depths: [],
       product_statuses: [],
@@ -72,7 +72,7 @@ window.PdCategoryMng = {
         const selectNode = id => {
       uiState.selectedCatId = (uiState.selectedCatId === id) ? null : id;
     };
-    watch(selectedCatId, () => handleLoadGrid());
+    watch(() => uiState.selectedCatId, () => handleLoadGrid());
 
     /* ── 좌측 트리 빌드 (expanded 반영) ── */
     const cfCatTreeFlat = computed(() => {
@@ -160,17 +160,15 @@ window.PdCategoryMng = {
       handleLoadGrid();
     };
     return {
-      codes,
-      descOpen,
+      codes, uiState,
       expandedSet, isExpanded, toggleNode, expandAll, collapseAll, cfCatTreeFlat,
-      selectedCatId, selectNode,
+      selectNode,
       searchParam, searchParamOrg,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
-      focusedIdx, setFocused, onSearch, onReset, onCellChange,
-      addRow, addChildRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
-      checkAll, toggleCheckAll, parentNm,
+      onSearch, onReset,
+      addRow, deleteRow, cancelRow, handleSave,
+      parentNm,
       catPickerModal, cfCatPickerList, openParentModal, onParentSelect,
-      dragRowIdx, dragoverRowIdx, onRowDragStart, onRowDragOver, onRowDrop,
       fnDepthBullet, fnDepthColor, fnStatusClass,
     };
   },
@@ -180,8 +178,8 @@ window.PdCategoryMng = {
   <div class="page-title">카테고리관리</div>
   <div style="margin:-8px 0 16px;padding:10px 14px;background:#f0faf4;border-left:3px solid #3ba87a;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
     <span><strong style="color:#1a7a52">카테고리관리</strong>는 상품 분류를 위한 3단계 계층(대/중/소) 카테고리를 관리합니다.</span>
-    <button @click="descOpen=!descOpen" style="margin-left:8px;font-size:12px;color:#3ba87a;background:none;border:none;cursor:pointer;padding:0">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="descOpen" style="margin-top:6px">
+    <button @click="uiState.descOpen=!uiState.descOpen" style="margin-left:8px;font-size:12px;color:#3ba87a;background:none;border:none;cursor:pointer;padding:0">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="uiState.descOpen" style="margin-top:6px">
       ✔ 대·중·소 3단계로 카테고리 트리를 구성합니다.<br>
       ✔ 정렬순서·표시여부를 설정하고 상품과 연결합니다.<br>
       ✔ 카테고리 삭제 시 하위 카테고리와 연결 상품을 함께 확인합니다.<br>
@@ -221,7 +219,7 @@ window.PdCategoryMng = {
     <div class="card" style="padding:12px;position:sticky;top:0">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <span style="font-size:13px;font-weight:600;color:#555">📁 카테고리</span>
-        <div v-if="selectedCatId" style="font-size:11px;color:#1677ff;cursor:pointer" @click="selectedCatId=null">전체보기</div>
+        <div v-if="uiState.selectedCatId" style="font-size:11px;color:#1677ff;cursor:pointer" @click="uiState.selectedCatId=null">전체보기</div>
       </div>
       <div style="display:flex;gap:4px;margin-bottom:8px">
         <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="expandAll">▼ 전체</button>
@@ -231,10 +229,10 @@ window.PdCategoryMng = {
         <div v-for="cat in cfCatTreeFlat" :key="cat?.categoryId"
              :style="{ paddingLeft: (cat._depth * 14 + 6) + 'px', cursor:'pointer', padding:'5px 8px',
                        borderRadius:'4px', paddingLeft: (cat._depth * 14 + 6) + 'px',
-                       background: selectedCatId===cat.categoryId ? '#fce4ec' : 'transparent',
-                       color: selectedCatId===cat.categoryId ? '#e8587a' : '#333',
-                       fontWeight: selectedCatId===cat.categoryId ? 600 : 400,
-                       borderLeft: selectedCatId===cat.categoryId ? '3px solid #e8587a' : '3px solid transparent' }"
+                       background: uiState.selectedCatId===cat.categoryId ? '#fce4ec' : 'transparent',
+                       color: uiState.selectedCatId===cat.categoryId ? '#e8587a' : '#333',
+                       fontWeight: uiState.selectedCatId===cat.categoryId ? 600 : 400,
+                       borderLeft: uiState.selectedCatId===cat.categoryId ? '3px solid #e8587a' : '3px solid transparent' }"
              @click="selectNode(cat.categoryId)">
           <span v-if="cat._hasChildren"
                 style="display:inline-block;width:14px;text-align:center;font-size:9px;color:#aaa;cursor:pointer;margin-right:2px"
@@ -255,8 +253,8 @@ window.PdCategoryMng = {
       <div class="toolbar">
         <span class="list-title">
           카테고리 목록
-          <span v-if="selectedCatId" style="font-size:12px;color:#1677ff;margin-left:6px">
-            — {{ [].find(c=>c.categoryId===selectedCatId)&&[].find(c=>c.categoryId===selectedCatId).categoryNm }} 하위
+          <span v-if="uiState.selectedCatId" style="font-size:12px;color:#1677ff;margin-left:6px">
+            — {{ [].find(c=>c.categoryId===uiState.selectedCatId)&&[].find(c=>c.categoryId===uiState.selectedCatId).categoryNm }} 하위
           </span>
           <span class="list-count">{{ cfTotal }}건</span>
         </span>
@@ -298,11 +296,11 @@ window.PdCategoryMng = {
         <tbody>
           <tr v-if="!gridRows.length">
             <td colspan="11" style="text-align:center;color:#aaa;padding:30px">
-              {{ selectedCatId ? '하위 카테고리가 없습니다. [+ 행추가]로 추가하세요.' : '데이터가 없습니다.' }}
+              {{ uiState.selectedCatId ? '하위 카테고리가 없습니다. [+ 행추가]로 추가하세요.' : '데이터가 없습니다.' }}
             </td>
           </tr>
           <tr v-for="(row, idx) in cfPagedRows" :key="row?.categoryId"
-              :class="[focusedIdx===getRealIdx(idx) ? 'focused' : '', 'status-'+row._row_status]"
+              :class="[uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '', 'status-'+row._row_status]"
               draggable="true"
               @dragstart="onRowDragStart(getRealIdx(idx))"
               @dragover.prevent="onRowDragOver(getRealIdx(idx))"

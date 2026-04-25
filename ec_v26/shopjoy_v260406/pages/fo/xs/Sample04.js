@@ -3,7 +3,7 @@ window.XsSample04 = {
   name: 'XsSample04',
   setup() {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, modalType: null, modalVariant: 'info', modalData: null, nested2: false });
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -32,9 +32,6 @@ window.XsSample04 = {
     /* ── 폼 모달 ── */
     const form = reactive({ name: '', email: '', phone: '', grade: '일반' });
     const formErrors = reactive({});
-
-    /* ── UI 상태 ── */
-    const uiState = reactive({ modalType: null, modalVariant: 'info', modalData: null, nested2: false });
 
     /* ── Confirm 콜백 저장 ── */
     let _confirmCb = null;

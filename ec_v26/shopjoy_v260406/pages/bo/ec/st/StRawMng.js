@@ -4,7 +4,7 @@ window.StRawMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
+    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '', searchMoreOpen: false});
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -242,12 +242,8 @@ window.StRawMng = {
     onSearch();
   };
   return {
-      uiState, searchMoreOpen,
-      DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange,
-      searchKw, searchType, searchStatus,
-      searchVendorType, searchPayMethod, searchBuyConfirm,
-      searchCloseYn, searchErpSend, searchPeriod, searchOrderStatus,
-      searchAmtFrom, searchAmtTo,
+      uiState, handleDateRangeChange,
+      DATE_RANGE_OPTIONS, searchParam,
       pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfSummary,
       setPage, onSizeChange, onSearch, onReset,
       expandedRows, toggleRow, isExpanded,
@@ -260,8 +256,8 @@ window.StRawMng = {
   <div class="page-title">정산수집원장</div>
   <div class="page-desc-bar">
     <span class="page-desc-summary">주문·클레임·결제 데이터를 일별로 수집한 원시 정산 데이터를 조회하고 수동 수집을 실행합니다.</span>
-    <button class="page-desc-toggle" @click="descOpen=!descOpen">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="descOpen" class="page-desc-detail">• 정산 조정·마감 전 기초 데이터로, 수정 불가 원장입니다.
+    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="uiState.descOpen" class="page-desc-detail">• 정산 조정·마감 전 기초 데이터로, 수정 불가 원장입니다.
 • 수집 단위: od_order_item / od_claim_item (상품 행 단위)
 • [재수집] 버튼으로 해당 기간의 데이터를 수동 재수집할 수 있습니다.
 • 수집 상태: COLLECTED(수집완료) / EXCLUDED(제외) / SETTLED(정산완료)</div>
@@ -271,13 +267,13 @@ window.StRawMng = {
   <div class="card">
     <!-- 1행: 기간 + 기본 필터 -->
     <div class="search-bar" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">
-      <select v-model="dateRange" @change="onDateRangeChange" style="min-width:110px">
+      <select v-model="uiState.dateRange" @change="handleDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
         <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
       </select>
-      <input type="date" v-model="dateStart" style="width:140px" />
+      <input type="date" v-model="uiState.dateStart" style="width:140px" />
       <span style="line-height:32px">~</span>
-      <input type="date" v-model="dateEnd" style="width:140px" />
+      <input type="date" v-model="uiState.dateEnd" style="width:140px" />
       <select v-model="searchParam.type" style="width:100px">
         <option value="">유형 전체</option><option>주문</option><option>클레임</option>
       </select>
@@ -326,13 +322,13 @@ window.StRawMng = {
       <div class="search-actions" style="margin-left:auto">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary" @click="onReset">초기화</button>
-        <button class="btn btn-secondary btn-sm" @click="searchMoreOpen=!searchMoreOpen" style="min-width:70px">
-          {{ searchMoreOpen ? '▲ 접기' : '▼ 상세검색' }}
+        <button class="btn btn-secondary btn-sm" @click="uiState.searchMoreOpen=!uiState.searchMoreOpen" style="min-width:70px">
+          {{ uiState.searchMoreOpen ? '▲ 접기' : '▼ 상세검색' }}
         </button>
       </div>
     </div>
     <!-- 3행: 상세검색 펼치기 -->
-    <div v-if="searchMoreOpen" class="search-bar" style="flex-wrap:wrap;gap:8px;padding-top:8px;border-top:1px solid #f0f0f0">
+    <div v-if="uiState.searchMoreOpen" class="search-bar" style="flex-wrap:wrap;gap:8px;padding-top:8px;border-top:1px solid #f0f0f0">
       <select v-model="searchParam.orderStatus" style="width:120px">
         <option value="">주문상태 전체</option>
         <option value="ORDERED">주문완료</option>

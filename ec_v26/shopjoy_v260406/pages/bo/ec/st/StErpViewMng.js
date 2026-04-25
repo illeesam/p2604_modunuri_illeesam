@@ -114,26 +114,26 @@ window.StErpViewMng = {
 
     const setPage = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    return { descOpen, DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, searchKw, searchType, searchStatus, pager, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, doResend, fnStatusBadge, fnTypeBadge, fmtW, onSearch, onReset , PAGE_SIZES , setPage , onSizeChange };
+    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, doResend, fnStatusBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, PAGE_SIZES, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
   <div class="page-title">ERP 전표조회</div>
   <div class="page-desc-bar">
     <span class="page-desc-summary">생성된 ERP 전표 목록을 조회하고 전송 상태 및 처리 이력을 확인합니다.</span>
-    <button class="page-desc-toggle" @click="descOpen=!descOpen">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="descOpen" class="page-desc-detail">• 전표 유형: 정산지급 / 수수료 / 조정 / 기타
+    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="uiState.descOpen" class="page-desc-detail">• 전표 유형: 정산지급 / 수수료 / 조정 / 기타
 • 전송 상태: 미전송 / 전송완료 / 오류
 • [재전송] 버튼으로 오류 건을 ERP에 재전송할 수 있습니다.
 • 전표 대사 확인은 ERP 전표대사(StErpReconMng)에서 합니다.</div>
   </div>
   <div class="card">
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
-      <select v-model="dateRange" @change="onDateRangeChange" style="min-width:110px">
+      <select v-model="uiState.dateRange" @change="handleDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
         <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
       </select>
-      <input type="date" v-model="dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="dateEnd" style="width:140px" />
+      <input type="date" v-model="uiState.dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="uiState.dateEnd" style="width:140px" />
       <select v-model="searchParam.type" style="width:120px">
         <option value="">유형 전체</option><option>정산</option><option>수수료</option><option>반품조정</option>
       </select>

@@ -787,29 +787,28 @@ window.DpDispUiSimul = {
       panelWidgetTypes, isPanelAllChecked,
       checkedWidgetKeys, toggleWidgetCheck, checkAllWidgets, clearCheckedWidgets, cfCheckedWidgetCount, cfCheckedWidgetList,
       /* Tab2 그리드 */
-      structLayoutType, structColCount, structSlots, cfStructCurrentSlots, cfStructGridCols,
-      structViewport, STRUCT_VIEWPORT, structShowReal,
+      structSlots, cfStructCurrentSlots, cfStructGridCols,
+      STRUCT_VIEWPORT,
       applyAreaLayout,
-      structDragOverIdx, onStructDragOver, onStructDragLeave, onStructDrop,
+      onStructDragOver, onStructDragLeave, onStructDrop,
       removeStructSlot, setStructSpan, cfStructPlacedCount, resetStructGrid,
-      structSpanPopupIdx, toggleStructSpanPopup, closeStructSpanPopup,
-      structDashItems, structDashDragOver,
+      toggleStructSpanPopup, closeStructSpanPopup,
+      structDashItems,
       onStructDashDragOver, onStructDashDragLeave, onStructDashDrop,
       startStructDashMove, startStructDashResize, removeStructDashItem,
       onAreaDragStart, onPanelDragStart, onAreaDragEnd,
       /* Tab3 */
-      cfSourceLines, cfSourceText, sourceCopied, copySource,
+      cfSourceLines, cfSourceText, copySource,
       wLabel, wIcon,
       /* Ui미리보기 */
-      dispUiLayerOpen, dispUiModalOpen, dispUiAreaErr,
-      dispUiAreaDrop, cfDispUiAreaBtnLabel, dispUiToggleArea, dispUiSelectAllAreas, dispUiClearAllAreas,
+      cfDispUiAreaBtnLabel, dispUiToggleArea, dispUiSelectAllAreas, dispUiClearAllAreas,
       dispUiForm,
       dispUiViewOpts, cfDispUiParamObj,
       cfDispUiModalTabs, cfDispUiSourceText,
-      dispUiSiteModalOpen, dispUiSiteSearch, cfDispUiSiteList, selectDispUiSite,
-      dispUiMemberModalOpen, dispUiMemberSearch, cfDispUiMemberList, selectDispUiMember,
+      cfDispUiSiteList, selectDispUiSite,
+      cfDispUiMemberList, selectDispUiMember,
       openDispUiLayer, openDispUiModal, openDispUiPopup, openDispUiOther, resetDispUiForm,
-      DISP_UI_OTHER_PAGES, otherMenuOpen, closeOtherMenu, pickOtherPage,
+      DISP_UI_OTHER_PAGES, closeOtherMenu, pickOtherPage,
     };
   },
   template: /* html */`
@@ -930,7 +929,7 @@ window.DpDispUiSimul = {
       <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
         <button @click="openDispUiLayer"
           style="font-size:11px;padding:3px 10px;border-radius:10px;cursor:pointer;font-weight:600;border:1px solid #b39ddb;white-space:nowrap;transition:all .15s;"
-          :style="dispUiLayerOpen?'background:#ede7f6;color:#4a148c;':'background:#f3e5f5;color:#6a1b9a;'">
+          :style="uiState.dispUiLayerOpen?'background:#ede7f6;color:#4a148c;':'background:#f3e5f5;color:#6a1b9a;'">
           🖥 DispUi미리보기
         </button>
         <span style="font-size:12px;background:#e3f2fd;color:#1565c0;border-radius:10px;padding:2px 10px;">패널 {{ cfTotalPanels }}개 해당</span>
@@ -938,7 +937,7 @@ window.DpDispUiSimul = {
     </div>
 
     <!-- Ui미리보기 파라미터 레이어 -->
-    <div v-if="dispUiLayerOpen"
+    <div v-if="uiState.dispUiLayerOpen"
       style="margin-top:8px;background:#faf8ff;border:1px solid #b39ddb;border-radius:10px;padding:14px 18px;">
       <div style="font-size:12px;font-weight:700;color:#4a148c;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
         🖥 DispUi미리보기 조회조건
@@ -989,7 +988,7 @@ window.DpDispUiSimul = {
           style="font-size:11px;background:#fce4ec;color:#c62828;border-radius:10px;padding:2px 8px;display:flex;align-items:center;gap:4px;">
           {{ code }}<span @click="dispUiToggleArea(code)" style="cursor:pointer;font-weight:700;">×</span>
         </span>
-        <span v-if="dispUiAreaErr" style="font-size:11px;color:#e8587a;">⚠ 1개 이상 선택하세요</span>
+        <span v-if="uiState.dispUiAreaErr" style="font-size:11px;color:#e8587a;">⚠ 1개 이상 선택하세요</span>
       </div>
 
       <!-- ② 조건 행 1: 전시일시 · 상태 · 노출조건 · 인증필요 · 등급제한 -->
@@ -1023,7 +1022,7 @@ window.DpDispUiSimul = {
             {{ dispUiForm.siteNm }}
           </span>
           <span v-else style="font-size:11px;color:#bbb;">미선택</span>
-          <button @click="dispUiSiteModalOpen=true;dispUiSiteSearch=''"
+          <button @click="uiState.dispUiSiteModalOpen=true;uiState.dispUiSiteSearch=''"
             style="font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;">
             📋 선택
           </button>
@@ -1039,7 +1038,7 @@ window.DpDispUiSimul = {
             {{ dispUiForm.memberNm }}
           </span>
           <span v-else style="font-size:11px;color:#bbb;">미선택 (비로그인)</span>
-          <button @click="dispUiMemberModalOpen=true;dispUiMemberSearch=''"
+          <button @click="uiState.dispUiMemberModalOpen=true;uiState.dispUiMemberSearch=''"
             style="font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;">
             👤 선택
           </button>
@@ -1069,7 +1068,7 @@ window.DpDispUiSimul = {
 
       <!-- 실행 버튼 -->
       <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:8px;border-top:1px solid #e8e0f8;">
-        <button @click="dispUiLayerOpen=false"
+        <button @click="uiState.dispUiLayerOpen=false"
           style="font-size:12px;padding:5px 14px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#888;">
           닫기
         </button>
@@ -1091,8 +1090,8 @@ window.DpDispUiSimul = {
             🌐 기타오픈 <span style="font-size:10px;margin-left:2px;">▾</span>
           </button>
           <!-- 드롭다운 layer -->
-          <div v-if="otherMenuOpen" style="position:fixed;inset:0;z-index:4999;" @click="closeOtherMenu"></div>
-          <div v-if="otherMenuOpen" @click.stop
+          <div v-if="uiState.otherMenuOpen" style="position:fixed;inset:0;z-index:4999;" @click="closeOtherMenu"></div>
+          <div v-if="uiState.otherMenuOpen" @click.stop
             style="position:absolute;top:calc(100% + 4px);right:0;z-index:5000;background:#fff;border:1px solid #d0d7de;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.15);min-width:320px;padding:6px;max-height:400px;overflow-y:auto;">
             <div style="font-size:10px;color:#888;padding:6px 10px;border-bottom:1px solid #f0f0f0;margin-bottom:4px;">오픈할 페이지를 선택하세요</div>
             <button v-for="(u, i) in DISP_UI_OTHER_PAGES" :key="Math.random()"
@@ -1110,11 +1109,11 @@ window.DpDispUiSimul = {
 
   <!-- DispUi 모달 -->
   <disp-ui-modal
-    :show="dispUiModalOpen"
+    :show="uiState.dispUiModalOpen"
     :params="cfDispUiParamObj" :disp-opt="cfDispOpt"
     title="DispUi미리보기"
-    @close="dispUiModalOpen=false"
-    @open-popup="(scope) => { openDispUiPopup(scope || 'fo'); dispUiModalOpen=false; }"
+    @close="uiState.dispUiModalOpen=false"
+    @open-popup="(scope) => { openDispUiPopup(scope || 'fo'); uiState.dispUiModalOpen=false; }"
   />
 
   <!-- DispUi 사이트 선택 모달 -->
@@ -1129,7 +1128,7 @@ window.DpDispUiSimul = {
       </div>
       <!-- 검색 -->
       <div style="padding:10px 18px;border-bottom:1px solid #f0f0f0;">
-        <input v-model="dispUiSiteSearch" type="text" placeholder="사이트명 또는 도메인 검색..."
+        <input v-model="uiState.dispUiSiteSearch" type="text" placeholder="사이트명 또는 도메인 검색..."
           style="width:100%;font-size:12px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:7px;outline:none;" />
       </div>
       <!-- 목록 -->
@@ -1166,7 +1165,7 @@ window.DpDispUiSimul = {
       </div>
       <!-- 검색 -->
       <div style="padding:10px 18px;border-bottom:1px solid #f0f0f0;">
-        <input v-model="dispUiMemberSearch" type="text" placeholder="이름 또는 이메일 검색..."
+        <input v-model="uiState.dispUiMemberSearch" type="text" placeholder="이름 또는 이메일 검색..."
           style="width:100%;font-size:12px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:7px;outline:none;" />
       </div>
       <!-- 목록 -->
@@ -1342,50 +1341,50 @@ window.DpDispUiSimul = {
         <div style="display:flex;align-items:center;gap:6px;background:#f8f9fa;border:1px solid #e8e8e8;border-radius:8px 8px 0 0;flex-shrink:0;padding:6px 10px;flex-wrap:wrap;">
           <!-- 표시방식 토글 -->
           <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
-            <button @click="structLayoutType='grid'"
+            <button @click="uiState.structLayoutType='grid'"
               style="font-size:11px;padding:3px 10px;border:none;cursor:pointer;transition:all .15s;"
-              :style="structLayoutType==='grid' ? 'background:#1d4ed8;color:#fff;font-weight:600;' : 'background:#fff;color:#6b7280;'">
+              :style="uiState.structLayoutType==='grid' ? 'background:#1d4ed8;color:#fff;font-weight:600;' : 'background:#fff;color:#6b7280;'">
               🔲 그리드
             </button>
-            <button @click="structLayoutType='dashboard'"
+            <button @click="uiState.structLayoutType='dashboard'"
               style="font-size:11px;padding:3px 10px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
-              :style="structLayoutType==='dashboard' ? 'background:#1d4ed8;color:#fff;font-weight:600;' : 'background:#fff;color:#6b7280;'">
+              :style="uiState.structLayoutType==='dashboard' ? 'background:#1d4ed8;color:#fff;font-weight:600;' : 'background:#fff;color:#6b7280;'">
               🧩 대시보드
             </button>
           </div>
           <!-- 열수 (grid 전용) -->
-          <template v-if="structLayoutType==='grid'">
+          <template v-if="uiState.structLayoutType==='grid'">
             <div style="width:1px;height:20px;background:#e5e7eb;"></div>
             <span style="font-size:11px;color:#6b7280;font-weight:600;">열수</span>
             <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
-              <button v-for="n in [1,2,3,4]" :key="Math.random()" @click="structColCount=n; resetStructGrid()"
+              <button v-for="n in [1,2,3,4]" :key="Math.random()" @click="uiState.structColCount=n; resetStructGrid()"
                 style="font-size:11px;padding:3px 9px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
-                :style="[n===1?'border-left:none;':'', structColCount===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;']">
+                :style="[n===1?'border-left:none;':'', uiState.structColCount===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;']">
                 {{ n }}
               </button>
             </div>
-            <input type="number" v-model.number="structColCount" min="1" max="32"
+            <input type="number" v-model.number="uiState.structColCount" min="1" max="32"
               @change="resetStructGrid()"
               style="width:52px;font-size:12px;padding:3px 6px;border:1px solid #d1d5db;border-radius:6px;text-align:center;" />
             <div style="width:1px;height:20px;background:#e5e7eb;"></div>
             <!-- 실제컨텐츠 -->
-            <button @click="structShowReal=!structShowReal"
+            <button @click="uiState.structShowReal=!uiState.structShowReal"
               style="font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
-              :style="structShowReal ? 'background:#059669;color:#fff;border-color:#059669;' : 'background:#fff;color:#6b7280;'">
-              {{ structShowReal ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
+              :style="uiState.structShowReal ? 'background:#059669;color:#fff;border-color:#059669;' : 'background:#fff;color:#6b7280;'">
+              {{ uiState.structShowReal ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
             </button>
             <div style="width:1px;height:20px;background:#e5e7eb;"></div>
             <!-- 뷰포트 -->
-            <button v-for="(vp, key) in STRUCT_VIEWPORT" :key="Math.random()" @click="structViewport=key"
+            <button v-for="(vp, key) in STRUCT_VIEWPORT" :key="Math.random()" @click="uiState.structViewport=key"
               style="font-size:11px;padding:3px 7px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
-              :style="structViewport===key ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#fff;color:#6b7280;'">
+              :style="uiState.structViewport===key ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#fff;color:#6b7280;'">
               {{ vp.label }}
             </button>
           </template>
           <!-- 우측: 개수 + 초기화 -->
           <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-            <span style="font-size:12px;color:#555;font-weight:600;">{{ structLayoutType==='dashboard' ? structDashItems.length : cfStructPlacedCount }}개</span>
-            <button @click="structLayoutType==='dashboard' ? structDashItems.splice(0) : resetStructGrid()"
+            <span style="font-size:12px;color:#555;font-weight:600;">{{ uiState.structLayoutType==='dashboard' ? structDashItems.length : cfStructPlacedCount }}개</span>
+            <button @click="uiState.structLayoutType==='dashboard' ? structDashItems.splice(0) : resetStructGrid()"
               style="font-size:11px;padding:3px 8px;border:1px solid #d0d0d0;border-radius:5px;background:#fff;cursor:pointer;color:#666;">초기화</button>
           </div>
         </div>
@@ -1393,7 +1392,7 @@ window.DpDispUiSimul = {
         <div @click="closeStructSpanPopup" style="flex:1;overflow-y:auto;padding:12px;background:#f0f2f5;border:1px solid #e8e8e8;border-top:none;border-radius:0 0 8px 8px;">
 
           <!-- ── dashboard 캔버스 ── -->
-          <template v-if="structLayoutType==='dashboard'">
+          <template v-if="uiState.structLayoutType==='dashboard'">
             <div
               @dragover="onStructDashDragOver"
               @dragleave="onStructDashDragLeave"
@@ -1448,7 +1447,7 @@ window.DpDispUiSimul = {
                 structDragOverIdx===idx
                   ? 'border:2px dashed #1d4ed8;background:#eff6ff;min-height:100px;'
                   : slot
-                    ? (structShowReal ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:100px;')
+                    ? (uiState.structShowReal ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:100px;')
                     : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;',
                 slot && (slot.colSpan||1)>1 ? { gridColumn:'span '+slot.colSpan } : {},
                 slot && (slot.rowSpan||1)>1 ? { gridRow:'span '+slot.rowSpan } : {},
@@ -1512,7 +1511,7 @@ window.DpDispUiSimul = {
                   </div>
                 </div>
                 <!-- 위젯미리보기 (기존 렌더링 재사용) -->
-                <div :style="structShowReal ? 'padding:0;' : 'padding:10px;'">
+                <div :style="uiState.structShowReal ? 'padding:0;' : 'padding:10px;'">
                   <div v-if="slot.widgetType==='image_banner'"
                     style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:8px;padding:20px;text-align:center;color:#fff;">
                     <div style="font-size:26px;">🖼</div>
@@ -1602,8 +1601,8 @@ window.DpDispUiSimul = {
         </div>
         <button @click="copySource"
           style="font-size:11px;padding:4px 12px;border-radius:8px;cursor:pointer;transition:all .15s;"
-          :style="sourceCopied ? 'background:#276749;color:#9ae6b4;border:1px solid #276749;' : 'background:#2d2d4e;color:#a0aec0;border:1px solid #3a3a5c;'">
-          {{ sourceCopied ? '✓ 복사됨' : '📋 전체 복사' }}
+          :style="uiState.sourceCopied ? 'background:#276749;color:#9ae6b4;border:1px solid #276749;' : 'background:#2d2d4e;color:#a0aec0;border:1px solid #3a3a5c;'">
+          {{ uiState.sourceCopied ? '✓ 복사됨' : '📋 전체 복사' }}
         </button>
       </div>
 

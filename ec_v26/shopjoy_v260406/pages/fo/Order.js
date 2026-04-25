@@ -4,7 +4,7 @@ window.Order = {
   props: ['navigate', 'config', 'cart', 'instantOrder', 'cartIds', 'showToast', 'showAlert', 'clearCart'],
   setup(props) {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, view: 'order', resultData: null, selectedShipCoupon: null, cashBalance: 0, cashInput: 0});;
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, view: 'order', resultData: null, selectedShipCoupon: null, cashBalance: 0, cashInput: 0 });
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -31,9 +31,6 @@ window.Order = {
     const parsePrice = s => parseInt(String(s || '').replace(/[^0-9]/g, ''), 10) || 0;
     const fmt        = n => Number(n).toLocaleString('ko-KR') + '원';
 
-    /* ── 뷰 상태 ── */
-    const view       = ref('order');
-    
     /* ── 쿠폰 로드 ── */
     const allCoupons  = reactive([]);
     const handleLoadCoupons = async () => {
@@ -85,12 +82,10 @@ window.Order = {
     };
 
     /* ── 배송비 쿠폰 팝업 ── */
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, view: 'order', resultData: null, selectedShipCoupon: null, cashBalance: 0, cashInput: 0});
         const applyShipCoupon = c => { uiState.selectedShipCoupon = c; uiState.shipCouponPopup = false; };
     const removeShipCoupon = () => { uiState.selectedShipCoupon = null; };
 
     /* ── 캐쉬 ── */
-        const cashInput   = ref(0);
     const handleLoadCash = async () => {
       try {
         const res = await window.foApi.get('/fo/my/cash/info');

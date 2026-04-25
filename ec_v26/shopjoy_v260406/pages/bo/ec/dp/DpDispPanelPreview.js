@@ -553,7 +553,7 @@ window.DpDispPanelPreview = {
       searchParam, searchParamOrg,
       applied, onSearch, onReset,
       cfFilteredLibs,
-      selectedLibId, onTreeSelect,
+      onTreeSelect,
       cfTree, openNodes, toggleNode, isOpen, allChildrenOpen, toggleAllChildren, expandAll, collapseAll,
       onItemDragStart, onItemDragEnd, onNodeDragStart, onNodeDragEnd,
       uiState, gridState, GRID_TABS,
@@ -692,7 +692,7 @@ window.DpDispPanelPreview = {
                   @dragend="onItemDragEnd"
                   @click="onTreeSelect(lib)"
                   style="display:flex;align-items:center;gap:7px;padding:5px 10px 5px 42px;cursor:grab;font-size:11px;border-radius:4px;margin:1px 4px;transition:background .15s;"
-                  :style="selectedLibId===lib.libId ? 'background:#dbeafe;color:#1d4ed8;font-weight:700;' : 'color:#374151;'">
+                  :style="uiState.selectedLibId===lib.libId ? 'background:#dbeafe;color:#1d4ed8;font-weight:700;' : 'color:#374151;'">
                   <span style="font-size:9px;color:#c4c4c4;flex-shrink:0;">⠿</span>
                   <span style="font-size:9px;background:#fff3e0;color:#e65100;border-radius:4px;padding:1px 6px;font-weight:600;flex-shrink:0;white-space:nowrap;">(패널)</span>
                   <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ lib.name }}</span>

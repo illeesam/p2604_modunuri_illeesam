@@ -125,7 +125,7 @@ window.SyPostman = {
 
     const flattenTree = (nodes, depth = 0) => {
       const result = [];
-      const kw = treeSearch.value.toLowerCase();
+      const kw = uiState.treeSearch.toLowerCase();
       for (const n of nodes) {
         if (n.type === 'app' && !appFilter[n.appId]) continue;
         if (kw && n.type === 'req' && !n.label.toLowerCase().includes(kw) && !n.url.toLowerCase().includes(kw)) continue;
@@ -517,14 +517,14 @@ window.SyPostman = {
 
     return {
       uiState,
-      cfFlatTree, treeSearch, toggleNode, selectApiNode, appFilter, APP_META,
-      openTabs, activeTabId, cfActiveTab, closeTab, closeAllTabs,
+      cfFlatTree, toggleNode, selectApiNode, appFilter, APP_META,
+      openTabs, cfActiveTab, closeTab, closeAllTabs,
       hostUrl, token, defHeaders, lsItems, refreshLs,
       toasts, closeToast,
-      doSend, history, histSelIdx, histModal, histModalTab, editReq, histResJson, histResStatus, histResTime, histResTs, histResProgress, selectHistory, closeHistModal, resendHist,
+      doSend, history, histSelIdx, histModal, editReq, histResJson, histResStatus, histResTime, histResTs, selectHistory, closeHistModal, resendHist,
       cfResGridCols, cfResGridRows,
       addRow, removeRow, methodStyle, statusStyle, methodDot, quickRun,
-      autoPopupTabId, autoPopupPos, POPUP_ROWS, SECS, MINS, HOURS,
+      autoPopupPos, POPUP_ROWS, SECS, MINS, HOURS,
       openAutoPopup, closeAutoPopup, selectAuto, countdown,
     };
   },
@@ -548,7 +548,7 @@ window.SyPostman = {
           <input type="checkbox" v-model="appFilter[key]" style="display:none;" />{{ meta.label }}
         </label>
       </div>
-      <input v-model="treeSearch" placeholder="🔍 이름 / URL 검색"
+      <input v-model="uiState.treeSearch" placeholder="🔍 이름 / URL 검색"
         style="width:100%;box-sizing:border-box;font-size:11px;padding:4px 7px;border:1px solid #ddd;border-radius:4px;outline:none;background:#fff;" />
     </div>
     <div style="flex:1;overflow-y:auto;padding:4px 0;">
@@ -596,13 +596,13 @@ window.SyPostman = {
     </div>
     <div style="flex:1;overflow-y:auto;">
       <div v-for="tab in openTabs" :key="tab.tabId"
-        @click="activeTabId=tab.tabId"
+        @click="uiState.activeTabId=tab.tabId"
         style="position:relative;padding:6px 6px 6px 6px;cursor:pointer;border-bottom:1px solid #e8e9ec;transition:background .1s;"
-        :style="activeTabId===tab.tabId
+        :style="uiState.activeTabId===tab.tabId
           ? 'background:#fff;border-left:3px solid #e8587a;'
           : 'background:transparent;border-left:3px solid transparent;'"
-        @mouseenter="e=>{ e.currentTarget.querySelectorAll('.tab-btn').forEach(b=>b.style.opacity='1'); if(activeTabId!==tab.tabId) e.currentTarget.style.background='#eaebee'; }"
-        @mouseleave="e=>{ e.currentTarget.querySelectorAll('.tab-btn').forEach(b=>b.style.opacity='0'); if(activeTabId!==tab.tabId) e.currentTarget.style.background=''; }">
+        @mouseenter="e=>{ e.currentTarget.querySelectorAll('.tab-btn').forEach(b=>b.style.opacity='1'); if(uiState.activeTabId!==tab.tabId) e.currentTarget.style.background='#eaebee'; }"
+        @mouseleave="e=>{ e.currentTarget.querySelectorAll('.tab-btn').forEach(b=>b.style.opacity='0'); if(uiState.activeTabId!==tab.tabId) e.currentTarget.style.background=''; }">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
           <span style="font-size:8px;padding:1px 4px;border-radius:2px;font-weight:700;flex-shrink:0;" :style="methodStyle(tab.method)">{{ tab.method }}</span>
           <div style="display:flex;align-items:center;gap:1px;">
@@ -630,11 +630,11 @@ window.SyPostman = {
   </div>
 
   <!-- ━━━ 자동실행 주기 선택 팝업 ━━━ -->
-  <template v-if="autoPopupTabId">
+  <template v-if="uiState.autoPopupTabId">
     <div @click="closeAutoPopup" style="position:fixed;inset:0;z-index:8000;"></div>
     <div style="position:fixed;z-index:8001;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.18);min-width:230px;overflow:hidden;"
       :style="'top:'+autoPopupPos.top+'px;left:'+autoPopupPos.left+'px;'">
-      <div @click="selectAuto(openTabs.find(t=>t.tabId===autoPopupTabId), 0, '')"
+      <div @click="selectAuto(openTabs.find(t=>t.tabId===uiState.autoPopupTabId),0, '')"
         style="padding:8px 14px;font-size:11px;font-weight:700;color:#555;border-bottom:1px solid #eee;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background .1s;"
         @mouseenter="e=>e.currentTarget.style.background='#f5f5f5'"
         @mouseleave="e=>e.currentTarget.style.background=''">
@@ -653,7 +653,7 @@ window.SyPostman = {
           <tbody>
             <tr v-for="(row,ri) in POPUP_ROWS" :key="ri">
               <td style="padding:1px 4px;text-align:center;">
-                <button v-if="row.s!=null" @click="selectAuto(openTabs.find(t=>t.tabId===autoPopupTabId), row.s*1000, row.s+'초')"
+                <button v-if="row.s!=null" @click="selectAuto(openTabs.find(t=>t.tabId===uiState.autoPopupTabId),row.s*1000, row.s+'초')"
                   style="width:100%;padding:3px 4px;font-size:11px;border:1px solid #e0e0e0;border-radius:4px;cursor:pointer;transition:all .1s;background:#f9f9f9;"
                   :style="openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs===row.s*1000?'background:#e8f4fd;border-color:#1a73e8;color:#1a73e8;font-weight:700;':''"
                   @mouseenter="e=>{ if(openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs!==row.s*1000) e.currentTarget.style.background='#eef2ff'; }"
@@ -662,7 +662,7 @@ window.SyPostman = {
                 </button>
               </td>
               <td style="padding:1px 4px;text-align:center;">
-                <button v-if="row.m!=null" @click="selectAuto(openTabs.find(t=>t.tabId===autoPopupTabId), row.m*60000, row.m+'분')"
+                <button v-if="row.m!=null" @click="selectAuto(openTabs.find(t=>t.tabId===uiState.autoPopupTabId),row.m*60000, row.m+'분')"
                   style="width:100%;padding:3px 4px;font-size:11px;border:1px solid #e0e0e0;border-radius:4px;cursor:pointer;transition:all .1s;background:#f9f9f9;"
                   :style="openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs===row.m*60000?'background:#e8f4fd;border-color:#1a73e8;color:#1a73e8;font-weight:700;':''"
                   @mouseenter="e=>{ if(openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs!==row.m*60000) e.currentTarget.style.background='#eef2ff'; }"
@@ -671,7 +671,7 @@ window.SyPostman = {
                 </button>
               </td>
               <td style="padding:1px 4px;text-align:center;">
-                <button v-if="row.h!=null" @click="selectAuto(openTabs.find(t=>t.tabId===autoPopupTabId), row.h*3600000, row.h+'시간')"
+                <button v-if="row.h!=null" @click="selectAuto(openTabs.find(t=>t.tabId===uiState.autoPopupTabId),row.h*3600000, row.h+'시간')"
                   style="width:100%;padding:3px 4px;font-size:11px;border:1px solid #e0e0e0;border-radius:4px;cursor:pointer;transition:all .1s;background:#f9f9f9;"
                   :style="openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs===row.h*3600000?'background:#e8f4fd;border-color:#1a73e8;color:#1a73e8;font-weight:700;':''"
                   @mouseenter="e=>{ if(openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs!==row.h*3600000) e.currentTarget.style.background='#eef2ff'; }"
@@ -998,7 +998,7 @@ window.SyPostman = {
                 <span style="font-size:10px;font-weight:800;color:#e8587a;text-transform:uppercase;letter-spacing:.05em;">응답</span>
                 <span style="flex:1;"></span>
                 <template v-if="uiState.histResSending">
-                  <span style="font-size:10px;color:#1a73e8;font-weight:600;">전송 중… {{ histResProgress }}%</span>
+                  <span style="font-size:10px;color:#1a73e8;font-weight:600;">전송 중… {{ uiState.histResProgress }}%</span>
                 </template>
                 <template v-else-if="histResStatus">
                   <span style="font-size:12px;font-weight:800;" :style="histResStatus<300?'color:#166534;':histResStatus<400?'color:#92400e;':'color:#991b1b;'">{{ histResStatus }}</span>
@@ -1014,7 +1014,7 @@ window.SyPostman = {
               </div>
               <div style="height:6px;background:#f0f0f0;border-radius:0;margin:0 -14px;overflow:hidden;">
                 <div style="height:100%;transition:width .08s linear;"
-                  :style="uiState.histResSending ? 'background:#e8587a;width:'+histResProgress+'%;' : (histResStatus ? 'background:#22c55e;width:100%;' : 'width:0;')"
+                  :style="uiState.histResSending ? 'background:#e8587a;width:'+uiState.histResProgress+'%;' : (histResStatus ? 'background:#22c55e;width:100%;' : 'width:0;')"
                 ></div>
               </div>
             </div>

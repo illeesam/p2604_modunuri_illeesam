@@ -5,7 +5,7 @@ window.DispUi04 = {
   name: 'DispUi04',
   components: { DispX01Ui: window.DispX01Ui },
   setup() {
-
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
@@ -27,7 +27,6 @@ window.DispUi04 = {
         fnLoadCodes();
       }
     });
-    const { computed , watch } = Vue;
 
     const dispDataset = window.dispDataset || { displays: [], codes: [] };
     const qs = new URLSearchParams(location.search);

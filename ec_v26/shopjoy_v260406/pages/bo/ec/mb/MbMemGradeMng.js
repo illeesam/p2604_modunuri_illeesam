@@ -157,7 +157,7 @@ window.MbMemGradeMng = {
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     return { grades, uiState, codes, searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, onSearch, onReset,
-             gridRows, addRow, onCellChange, handleDeleteRow, handleSaveAll, focusedIdx, fnYnBadge, PAGE_SIZES, onSizeChange };
+             gridRows, addRow, onCellChange, handleDeleteRow, handleSaveAll, fnYnBadge, PAGE_SIZES, onSizeChange };
   },
   template: `
 <div>
@@ -196,7 +196,7 @@ window.MbMemGradeMng = {
           <th style="width:60px;text-align:center">삭제</th>
         </tr></thead>
         <tbody>
-          <tr v-for="(row,idx) in gridRows" :key="row?.gradeId" :class="{'table-row-new':row._row_status==='N','table-row-mod':row._row_status==='U'}" @click="focusedIdx=idx">
+          <tr v-for="(row,idx) in gridRows" :key="row?.gradeId" :class="{'table-row-new':row._row_status==='N','table-row-mod':row._row_status==='U'}" @click="uiState.focusedIdx=idx">
             <td>
               <select v-if="row._row_status" class="form-control" v-model="row.gradeCd" @change="onCellChange(idx)">
                 <option value="">선택</option>

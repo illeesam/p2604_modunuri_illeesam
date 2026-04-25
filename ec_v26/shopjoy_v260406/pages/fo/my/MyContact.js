@@ -49,7 +49,7 @@ window.MyContact = {
     return {
       myStore, inquiries, expandedInquiry,
       inquiryPager, paginate, cancelInquiry, cfDateFilteredInquiries, onDateSearch,
-    , uiState, codes };
+      uiState, codes };
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myContact">

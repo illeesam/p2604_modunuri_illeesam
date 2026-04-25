@@ -533,7 +533,7 @@ window.DpDispUiPreview = {
       wIcon, wTypeLabel,
       searchParam,
       applied, onSearch, onReset, cfFilteredLibs,
-      selectedLibId, onTreeSelect,
+      onTreeSelect,
       cfTree, openNodes, toggleNode, isOpen, allChildrenOpen, toggleAllChildren, expandAll, collapseAll,
       onItemDragStart, onItemDragEnd, onNodeDragStart, onNodeDragEnd,
       previewGrid, GRID_TABS,
@@ -672,7 +672,7 @@ window.DpDispUiPreview = {
                   @dragend="onItemDragEnd"
                   @click="onTreeSelect(lib)"
                   style="display:flex;align-items:center;gap:7px;padding:5px 10px 5px 42px;cursor:grab;font-size:11px;border-radius:4px;margin:1px 4px;transition:background .15s;"
-                  :style="selectedLibId===lib.libId ? 'background:#dbeafe;color:#1d4ed8;font-weight:700;' : 'color:#374151;'">
+                  :style="uiState.selectedLibId===lib.libId ? 'background:#dbeafe;color:#1d4ed8;font-weight:700;' : 'color:#374151;'">
                   <span style="font-size:9px;color:#c4c4c4;flex-shrink:0;">⠿</span>
                   <span style="font-size:13px;flex-shrink:0;">{{ wIcon(lib.widgetType) }}</span>
                   <span style="font-size:9px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:3px;padding:0 4px;white-space:nowrap;flex-shrink:0;">{{ lib.widgetType ? lib.widgetType.replace('_',' ') : '-' }}</span>

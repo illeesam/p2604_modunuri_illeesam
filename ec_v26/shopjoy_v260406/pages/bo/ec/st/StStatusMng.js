@@ -278,14 +278,14 @@ window.StStatusMng = {
     };
 
     return {
-      activeTab, TABS,
-      DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange,
-      /* vendor */ vendorSearchKw, vendorPager, cfVendorRows, cfVendorTotal, cfVendorPages, cfVendorPageList, cfVendorSummary,
-      /* order  */ orderSearchKw, orderSearchStatus, orderPager, cfOrderRows, cfOrderTotal, cfOrderPages, cfOrderPageList, cfOrderSummary,
-      /* claim  */ claimSearchType, claimSearchStatus, claimPager, cfClaimRows, cfClaimTotal, cfClaimPages, cfClaimPageList, cfClaimSummary,
-      /* promo  */ promoSearchKw, promoSearchType, promoPager, cfPromoRows, cfPromoTotal, cfPromoPages, cfPromoPageList, cfPromoSummary,
-      /* settle */ settleSearchMonth, settlePager, cfSettleRows, cfSettleTotal, cfSettlePages, cfSettlePageList, cfSettleSummary,
-      uiState, fmt, fmtW, fnStatusBadge, fnTypeBadge, onSearch, onReset, pageNums, exportTab, COMM_RATE,
+      uiState, TABS,
+      DATE_RANGE_OPTIONS, onDateRangeChange,
+      /* vendor */ vendorPager, cfVendorRows, cfVendorTotal, cfVendorPages, cfVendorPageList, cfVendorSummary,
+      /* order  */ orderPager, cfOrderRows, cfOrderTotal, cfOrderPages, cfOrderPageList, cfOrderSummary,
+      /* claim  */ claimPager, cfClaimRows, cfClaimTotal, cfClaimPages, cfClaimPageList, cfClaimSummary,
+      /* promo  */ promoPager, cfPromoRows, cfPromoTotal, cfPromoPages, cfPromoPageList, cfPromoSummary,
+      /* settle */ settlePager, cfSettleRows, cfSettleTotal, cfSettlePages, cfSettlePageList, cfSettleSummary,
+      fmt, fmtW, fnStatusBadge, fnTypeBadge, onSearch, onReset, pageNums, exportTab, COMM_RATE,
       PAGE_SIZES,
       setVendorPage, onVendorSizeChange,
       setOrderPage, onOrderSizeChange,
@@ -299,8 +299,8 @@ window.StStatusMng = {
   <div class="page-title">정산현황</div>
   <div class="page-desc-bar">
     <span class="page-desc-summary">업체별·기간별 정산 진행 현황을 집계 탭으로 조회합니다. 수집~지급 전 단계 금액과 건수를 확인할 수 있습니다.</span>
-    <button class="page-desc-toggle" @click="descOpen=!descOpen">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="descOpen" class="page-desc-detail">• 탭 구성: 업체별 / 주문별 / 클레임별 / 프로모션별 / 정산집계
+    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="uiState.descOpen" class="page-desc-detail">• 탭 구성: 업체별 / 주문별 / 클레임별 / 프로모션별 / 정산집계
 • 업체별 탭: 매출·환불·순매출·수수료·정산예정액 집계
 • 정산집계 탭: 마감 기준 월별 최종 정산액 목록
 • CSV 내보내기를 지원합니다.</div>
@@ -309,13 +309,13 @@ window.StStatusMng = {
   <!-- 공통 날짜 필터 -->
   <div class="card" style="margin-bottom:12px">
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
-      <select v-model="dateRange" @change="onDateRangeChange" style="min-width:110px">
+      <select v-model="uiState.dateRange" @change="onDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
         <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
       </select>
-      <input type="date" v-model="dateStart" style="width:140px" />
+      <input type="date" v-model="uiState.dateStart" style="width:140px" />
       <span style="line-height:32px">~</span>
-      <input type="date" v-model="dateEnd"   style="width:140px" />
+      <input type="date" v-model="uiState.dateEnd"   style="width:140px" />
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary" @click="onReset">초기화</button>
@@ -327,12 +327,12 @@ window.StStatusMng = {
   <!-- 탭 -->
   <div class="tab-bar-row" style="margin-bottom:0">
     <div class="tab-nav">
-      <button v-for="t in TABS" :key="t?.id" class="tab-btn" :class="{active: activeTab===t.id}" @click="activeTab=t.id">{{ t.label }}</button>
+      <button v-for="t in TABS" :key="t?.id" class="tab-btn" :class="{active: uiState.activeTab===t.id}" @click="uiState.activeTab=t.id">{{ t.label }}</button>
     </div>
   </div>
 
   <!-- ══ 1. 업체별현황 ══ -->
-  <div v-if="activeTab==='vendor'" class="card" style="border-radius:0 8px 8px 8px">
+  <div v-if="uiState.activeTab==='vendor'" class="card" style="border-radius:0 8px 8px 8px">
     <!-- 요약 카드 -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:12px 8px;background:#f8f9fa">
@@ -354,7 +354,7 @@ window.StStatusMng = {
     </div>
     <!-- 검색 -->
     <div class="search-bar" style="margin-bottom:12px">
-      <input v-model="vendorSearchKw" placeholder="업체명 검색" style="width:200px" @keyup.enter="() => onSearch?.()" />
+      <input v-model="uiState.vendorSearchKw" placeholder="업체명 검색" style="width:200px" @keyup.enter="() => onSearch?.()" />
     </div>
     <!-- 테이블 -->
     <div class="toolbar"><span class="list-count">총 {{ cfVendorTotal }}개 업체</span></div>
@@ -393,7 +393,7 @@ window.StStatusMng = {
   </div>
 
   <!-- ══ 2. 주문별현황 ══ -->
-  <div v-if="activeTab==='order'" class="card" style="border-radius:0 8px 8px 8px">
+  <div v-if="uiState.activeTab==='order'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:12px 8px;background:#f8f9fa">
         <div style="font-size:11px;color:#888;margin-bottom:4px">유효 주문수</div>
@@ -413,8 +413,8 @@ window.StStatusMng = {
       </div>
     </div>
     <div class="search-bar" style="margin-bottom:12px">
-      <input v-model="orderSearchKw" placeholder="주문ID / 고객명 / 상품명" style="width:220px" @keyup.enter="() => onSearch?.()" />
-      <select v-model="orderSearchStatus" style="width:130px">
+      <input v-model="uiState.orderSearchKw" placeholder="주문ID / 고객명 / 상품명" style="width:220px" @keyup.enter="() => onSearch?.()" />
+      <select v-model="uiState.orderSearchStatus" style="width:130px">
         <option value="">상태 전체</option>
         <option>주문완료</option><option>결제완료</option><option>배송준비중</option>
         <option>배송중</option><option>배송완료</option><option>완료</option><option>취소됨</option>
@@ -458,7 +458,7 @@ window.StStatusMng = {
   </div>
 
   <!-- ══ 3. 클레임별현황 ══ -->
-  <div v-if="activeTab==='claim'" class="card" style="border-radius:0 8px 8px 8px">
+  <div v-if="uiState.activeTab==='claim'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:12px 8px;background:#f8f9fa">
         <div style="font-size:11px;color:#888;margin-bottom:4px">클레임 건수</div>
@@ -479,10 +479,10 @@ window.StStatusMng = {
       </div>
     </div>
     <div class="search-bar" style="margin-bottom:12px">
-      <select v-model="claimSearchType" style="width:120px">
+      <select v-model="uiState.claimSearchType" style="width:120px">
         <option value="">유형 전체</option><option>취소</option><option>반품</option><option>교환</option>
       </select>
-      <select v-model="claimSearchStatus" style="width:140px">
+      <select v-model="uiState.claimSearchStatus" style="width:140px">
         <option value="">상태 전체</option>
         <option>취소요청</option><option>취소처리중</option><option>취소완료</option>
         <option>반품요청</option><option>수거예정</option><option>수거중</option><option>수거완료</option><option>환불처리중</option><option>환불완료</option>
@@ -528,7 +528,7 @@ window.StStatusMng = {
   </div>
 
   <!-- ══ 4. 프로모션별현황 ══ -->
-  <div v-if="activeTab==='promo'" class="card" style="border-radius:0 8px 8px 8px">
+  <div v-if="uiState.activeTab==='promo'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:12px 8px;background:#f8f9fa">
         <div style="font-size:11px;color:#888;margin-bottom:4px">프로모션 수</div>
@@ -544,12 +544,12 @@ window.StStatusMng = {
       </div>
     </div>
     <div class="search-bar" style="margin-bottom:12px">
-      <select v-model="promoSearchType" style="width:110px">
+      <select v-model="uiState.promoSearchType" style="width:110px">
         <option value="">유형 전체</option>
         <option>쿠폰</option>
         <option>캐쉬</option>
       </select>
-      <input v-model="promoSearchKw" placeholder="프로모션명 검색" style="width:180px" @keyup.enter="() => onSearch?.()" />
+      <input v-model="uiState.promoSearchKw" placeholder="프로모션명 검색" style="width:180px" @keyup.enter="() => onSearch?.()" />
     </div>
     <div class="toolbar"><span class="list-count">총 {{ cfPromoTotal }}개</span></div>
     <table class="bo-table">
@@ -588,7 +588,7 @@ window.StStatusMng = {
   </div>
 
   <!-- ══ 5. 정산별현황 ══ -->
-  <div v-if="activeTab==='settle'" class="card" style="border-radius:0 8px 8px 8px">
+  <div v-if="uiState.activeTab==='settle'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:12px 8px;background:#f8f9fa">
         <div style="font-size:11px;color:#888;margin-bottom:4px">총 매출</div>
@@ -608,7 +608,7 @@ window.StStatusMng = {
       </div>
     </div>
     <div class="search-bar" style="margin-bottom:12px">
-      <input v-model="settleSearchMonth" placeholder="월 검색 (예: 2026-04)" style="width:180px" @keyup.enter="() => onSearch?.()" />
+      <input v-model="uiState.settleSearchMonth" placeholder="월 검색 (예: 2026-04)" style="width:180px" @keyup.enter="() => onSearch?.()" />
     </div>
     <div class="toolbar"><span class="list-count">총 {{ cfSettleTotal }}개월</span></div>
     <table class="bo-table">

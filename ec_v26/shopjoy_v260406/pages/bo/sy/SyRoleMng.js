@@ -5,7 +5,11 @@ window.SyRoleMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const roles = reactive([]);
-    
+    const menus = reactive([]);
+    const roleMenus = reactive([]);
+    const roleUsers = reactive([]);
+    const boUsers = reactive([]);
+
     /* ===== UI State ===== */
     const uiState = reactive({
       checkAll: false,
@@ -197,7 +201,7 @@ window.SyRoleMng = {
 
     const makeRow = (r) => {
       const cat = Array.isArray(r.roleCat) ? [...r.roleCat] : [];
-      return { roles, loading, uiState, ...r, _depth: r._depth || 0, _row_status: 'N', _row_check: false,
+      return { ...r, _depth: r._depth || 0, _row_status: 'N', _row_check: false,
         restrictPerm: r.restrictPerm || '없음',
         roleCat: cat,
         _orig: { roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId,
@@ -334,8 +338,8 @@ window.SyRoleMng = {
       dRows.forEach(r => {
         const i = roles.findIndex(x => x.roleId === r.roleId);
         if (i !== -1) roles.splice(i, 1);
-        roleMenus.value = roleMenus.value.filter(x => x.roleId !== r.roleId);
-        roleUsers.value = roleUsers.value.filter(x => x.roleId !== r.roleId);
+        const rmIdxs = roleMenus.map((x,i)=>x.roleId===r.roleId?i:-1).filter(i=>i>=0).reverse(); rmIdxs.forEach(i=>roleMenus.splice(i,1));
+        const ruIdxs = roleUsers.map((x,i)=>x.roleId===r.roleId?i:-1).filter(i=>i>=0).reverse(); ruIdxs.forEach(i=>roleUsers.splice(i,1));
       });
       uRows.forEach(r => { const i = roles.findIndex(x => x.roleId === r.roleId); if (i !== -1) Object.assign(roles[i], { roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', roleCat: [...(r.roleCat || [])], remark: r.remark }); });
       let nextId = Math.max(...roles.map(r => r.roleId), 0);
@@ -376,41 +380,41 @@ window.SyRoleMng = {
       return result;
     };
     const cfMenuTree = computed(() => {
-      const kw = menuSearchKw.value.trim().toLowerCase();
-      const all = menus.value;
+      const kw = (uiState.menuSearchKw || '').trim().toLowerCase();
+      const all = menus || [];
       const list = kw ? all.filter(m => m.menuNm.toLowerCase().includes(kw) || m.menuCode.toLowerCase().includes(kw)) : all;
       return flatMenuTree(buildMenuTree(list, null, 0));
     });
 
     const cfRoleMenuIds = computed(() => {
       if (!uiState.selectedRoleId) return new Set();
-      return new Set(roleMenus.value.filter(x => x.roleId === uiState.selectedRoleId).map(x => x.menuId));
+      return new Set(roleMenus.filter(x => x.roleId === uiState.selectedRoleId).map(x => x.menuId));
     });
 
     const getMenuPerm = (menuId) => {
       if (!uiState.selectedRoleId) return '없음';
-      const entry = roleMenus.value.find(x => x.roleId === uiState.selectedRoleId && x.menuId === menuId);
+      const entry = roleMenus.find(x => x.roleId === uiState.selectedRoleId && x.menuId === menuId);
       return entry ? (entry.permLevel || '읽기') : '없음';
     };
     const setMenuPerm = (menuId, level) => {
       if (!uiState.selectedRoleId) return;
-      const idx = roleMenus.value.findIndex(x => x.roleId === uiState.selectedRoleId && x.menuId === menuId);
+      const idx = roleMenus.findIndex(x => x.roleId === uiState.selectedRoleId && x.menuId === menuId);
       if (level === '없음') {
-        if (idx !== -1) roleMenus.value.splice(idx, 1);
+        if (idx !== -1) roleMenus.splice(idx, 1);
       } else {
-        if (idx !== -1) roleMenus.value[idx].permLevel = level;
-        else roleMenus.value.push({ roleId: uiState.selectedRoleId, menuId, permLevel: level });
+        if (idx !== -1) roleMenus[idx].permLevel = level;
+        else roleMenus.push({ roleId: uiState.selectedRoleId, menuId, permLevel: level });
       }
     };
     const setAllMenuPerm = (level) => {
       if (!uiState.selectedRoleId) return;
       if (level === '없음') {
-        roleMenus.value = roleMenus.value.filter(x => x.roleId !== uiState.selectedRoleId);
+        const idxs = roleMenus.map((x,i)=>x.roleId===uiState.selectedRoleId?i:-1).filter(i=>i>=0).reverse(); idxs.forEach(i=>roleMenus.splice(i,1));
       } else {
         cfMenuTree.value.forEach(m => {
-          const idx = roleMenus.value.findIndex(x => x.roleId === uiState.selectedRoleId && x.menuId === m.menuId);
-          if (idx !== -1) roleMenus.value[idx].permLevel = level;
-          else roleMenus.value.push({ roleId: uiState.selectedRoleId, menuId: m.menuId, permLevel: level });
+          const idx = roleMenus.findIndex(x => x.roleId === uiState.selectedRoleId && x.menuId === m.menuId);
+          if (idx !== -1) roleMenus[idx].permLevel = level;
+          else roleMenus.push({ roleId: uiState.selectedRoleId, menuId: m.menuId, permLevel: level });
         });
       }
     };
@@ -424,25 +428,25 @@ window.SyRoleMng = {
     /* ── 하단: 대상사용자 (모달 선택) ── */
     const cfRoleUsersList = computed(() => {
       if (!uiState.selectedRoleId) return [];
-      return roleUsers.value
+      return roleUsers
         .filter(x => x.roleId === uiState.selectedRoleId)
-        .map(x => boUsers.value.find(u => u.boUserId === x.boUserId))
+        .map(x => boUsers.find(u => u.boUserId === x.boUserId))
         .filter(Boolean);
     });
 
     const onUserSelect = (users) => {
       if (!uiState.selectedRoleId) return;
       users.forEach(u => {
-        const already = roleUsers.value.some(x => x.roleId === uiState.selectedRoleId && x.boUserId === u.boUserId);
-        if (!already) roleUsers.value.push({ roleId: uiState.selectedRoleId, boUserId: u.boUserId });
+        const already = roleUsers.some(x => x.roleId === uiState.selectedRoleId && x.boUserId === u.boUserId);
+        if (!already) roleUsers.push({ roleId: uiState.selectedRoleId, boUserId: u.boUserId });
       });
       uiState.userSelectOpen = false;
     };
 
     const removeUser = (boUserId) => {
       if (!uiState.selectedRoleId) return;
-      const idx = roleUsers.value.findIndex(x => x.roleId === uiState.selectedRoleId && x.boUserId === boUserId);
-      if (idx !== -1) roleUsers.value.splice(idx, 1);
+      const idx = roleUsers.findIndex(x => x.roleId === uiState.selectedRoleId && x.boUserId === boUserId);
+      if (idx !== -1) roleUsers.splice(idx, 1);
     };
 
     const cfSelectedRoleNm = computed(() => {
@@ -457,23 +461,23 @@ window.SyRoleMng = {
       '역할목록.csv'
     );
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
-    watch(selectedPath, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
+    watch(() => uiState.selectedPath, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
     watch(() => searchParam.treeCatFilter, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
 
 
     return {
       uiState, codes,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
+      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       cfSiteNm, ROLE_TYPES, PERM_LEVELS, ROLE_CATS, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, fnPermColor, depthBullet, depthColor, fnStatusClass,
       searchParam, searchParamOrg, onSearch, onReset,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
-      focusedIdx, setFocused, onCellChange,
+      setFocused, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       toggleCheckAll, parentNm,
       roleTreeModal, openParentModal, onParentSelect,
-      selectedRoleId, cfSelectedRoleNm,
-      menuSearchKw, cfMenuTree, getMenuPerm, setMenuPerm, setAllMenuPerm, isMenuChecked, toggleAllMenus, cfMenuAllChecked,
+      cfSelectedRoleNm,
+      cfMenuTree, getMenuPerm, setMenuPerm, setAllMenuPerm, isMenuChecked, toggleAllMenus, cfMenuAllChecked,
       cfRoleUsersList, onUserSelect, removeUser,
       exportExcel,
     };
@@ -516,7 +520,7 @@ window.SyRoleMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
     <div>
@@ -556,7 +560,7 @@ window.SyRoleMng = {
           <td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in cfPagedRows" :key="row.roleId"
-          class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
+          class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '']"
           @click="setFocused(getRealIdx(idx))">
           <td class="col-id-val">{{ row.roleId > 0 ? row.roleId : 'NEW' }}</td>
           <td class="col-status-val"><span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span></td>
@@ -644,7 +648,7 @@ window.SyRoleMng = {
             <span v-if="cfSelectedRoleNm" style="font-size:12px;color:#e8587a;">— {{ cfSelectedRoleNm }}</span>
             <span v-else style="font-size:12px;color:#bbb;">역할을 선택하면 메뉴를 배분할 수 있습니다</span>
           </div>
-          <div v-if="selectedRoleId" style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
+          <div v-if="uiState.selectedRoleId" style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
             <label style="font-size:12px;color:#555;cursor:pointer;display:flex;align-items:center;gap:4px;margin-right:4px;white-space:nowrap;">
               <input type="checkbox" :checked="cfMenuAllChecked" @change="e => toggleAllMenus(e.target.checked)" />
               전체선택
@@ -657,13 +661,13 @@ window.SyRoleMng = {
         </div>
 
         <!-- 메뉴 검색 -->
-        <div v-if="selectedRoleId" style="padding:8px 0 6px;">
-          <input class="form-control" v-model="menuSearchKw" placeholder="메뉴명 또는 메뉴코드 검색"
+        <div v-if="uiState.selectedRoleId" style="padding:8px 0 6px;">
+          <input class="form-control" v-model="uiState.menuSearchKw" placeholder="메뉴명 또는 메뉴코드 검색"
             style="font-size:12px;padding:5px 10px;" />
         </div>
 
         <!-- 메뉴 트리 목록 -->
-        <div v-if="selectedRoleId" style="max-height:340px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px;">
+        <div v-if="uiState.selectedRoleId" style="max-height:340px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px;">
           <div v-if="!cfMenuTree.length" style="text-align:center;color:#bbb;padding:20px;font-size:13px;">메뉴가 없습니다.</div>
           <div v-for="m in cfMenuTree" :key="m.menuId"
             style="display:flex;align-items:center;padding:6px 10px;border-bottom:1px solid #f8f8f8;transition:background .1s;"
@@ -702,12 +706,12 @@ window.SyRoleMng = {
             <span v-if="cfSelectedRoleNm" style="font-size:12px;color:#e8587a;margin-left:8px;">— {{ cfSelectedRoleNm }}</span>
             <span v-else style="font-size:12px;color:#bbb;margin-left:8px;">역할을 선택하면 사용자를 추가할 수 있습니다</span>
           </div>
-          <button v-if="selectedRoleId" class="btn btn-primary btn-sm"
+          <button v-if="uiState.selectedRoleId" class="btn btn-primary btn-sm"
             @click="uiState.userSelectOpen=true">+ 사용자 추가</button>
         </div>
 
         <!-- 선택된 사용자 목록 -->
-        <div v-if="selectedRoleId">
+        <div v-if="uiState.selectedRoleId">
           <div v-if="!cfRoleUsersList.length"
             style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;border:1px dashed #e0e0e0;border-radius:6px;">
             추가된 사용자가 없습니다.<br>

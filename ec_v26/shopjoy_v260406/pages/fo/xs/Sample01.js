@@ -7,7 +7,7 @@ window.XsSample01 = {
   name: 'XsSample01',
   setup() {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, focusedIdx: null});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, focusedIdx: null, dragMoved: false, checkAll: false, dragSrc: null });
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -173,7 +173,6 @@ window.XsSample01 = {
     };
 
     /* ── Drag & UI State ── */
-    const uiState = reactive({ dragMoved: false, checkAll: false, dragSrc: null });
     const onDragStart = idx => { uiState.dragSrc = idx; uiState.dragMoved = false; };
     const onDragOver  = (e, idx) => { e.preventDefault(); if (uiState.dragSrc === null || uiState.dragSrc === idx) return; const m = gridRows.splice(uiState.dragSrc, 1)[0]; gridRows.splice(idx, 0, m); uiState.dragSrc = idx; uiState.dragMoved = true; };
     const onDragEnd   = () => { if (uiState.dragMoved) showToast('정렬이 변경되었습니다.'); uiState.dragSrc = null; uiState.dragMoved = false; };

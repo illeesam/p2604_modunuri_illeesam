@@ -353,7 +353,7 @@ window.PdSetMng = {
 
     return {
       uiState,
-      searchNm, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList,
+      searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList,
       onSearch, onReset, getProdNm, getProd, getBrandNm,
       getCategoryNm, getCategoryDepth,
       dtlCategories, cfCatPickerList,

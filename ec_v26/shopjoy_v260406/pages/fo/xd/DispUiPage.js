@@ -5,7 +5,7 @@ window.DispUiPage = {
   name: 'DispUiPage',
   components: {  DispX01Ui: window.DispX01Ui },
   setup() {
-
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
@@ -27,7 +27,6 @@ window.DispUiPage = {
         fnLoadCodes();
       }
     });
-    const { computed , watch } = Vue;
 
     /* ── URL 파라미터 파싱 ── */
     const qs = new URLSearchParams(location.search);

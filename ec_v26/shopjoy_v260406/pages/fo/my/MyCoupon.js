@@ -74,7 +74,7 @@ window.MyCoupon = {
       myStore, coupons, couponCode, couponPager, paginate,
       addCoupon, cfDateFilteredCoupons, onDateSearch,
       activeTab, cfUnusedCount, cfUsedCount, onTabChange,
-    , uiState, codes };
+      uiState, codes };
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myCoupon">

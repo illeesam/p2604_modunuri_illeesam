@@ -301,16 +301,16 @@ window.SyBrandMng = {
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
     });
-    watch(selectedPath, () => handleLoadGrid());
+    watch(() => uiState.selectedPath, () => handleLoadGrid());
 
     return { brands, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange,
       gridRows, cfPagedRows, cfTotal, pager, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
-      focusedIdx, setFocused, onSearch, onReset, onCellChange, cfIsLocalMode,
+      setFocused, onSearch, onReset, onCellChange, cfIsLocalMode,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
-      dragSrc, onDragStart, onDragOver, onDragEnd,
+      onDragStart, onDragOver, onDragEnd,
       uiState, toggleCheckAll, fnStatusClass, exportExcel,
-      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
+      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
     };
   },
   template: /* html */`
@@ -352,7 +352,7 @@ window.SyBrandMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPath"
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath"
           :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
@@ -363,7 +363,7 @@ window.SyBrandMng = {
       <span class="list-title">
         <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
         브랜드목록
-        <span v-if="selectedPath" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ selectedPath }}</span>
+        <span v-if="uiState.selectedPath" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ uiState.selectedPath }}</span>
         <span class="list-count">{{ cfTotal }}건</span>
       </span>
       <div style="display:flex;gap:6px;">
@@ -381,7 +381,7 @@ window.SyBrandMng = {
           <th class="col-drag"></th>
           <th class="col-id" :title="cfIsLocalMode ? 'ID' : ''">ID</th>
           <th class="col-status" :title="cfIsLocalMode ? '상태' : ''">상태</th>
-          <th class="col-check" :title="cfIsLocalMode ? '체크' : ''"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
+          <th class="col-check" :title="cfIsLocalMode ? '체크' : ''"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
           <th style="min-width:140px;" :title="cfIsLocalMode ? '표시경로' : ''"​>표시경로 <span style="font-size:10px;color:#aaa;font-weight:400;">(예: aa.bb.cc)</span></th>
           <th style="min-width:110px;" :title="cfIsLocalMode ? '브랜드코드' : ''">브랜드코드</th>
           <th style="min-width:130px;" :title="cfIsLocalMode ? '브랜드명' : ''">브랜드명</th>
@@ -398,7 +398,7 @@ window.SyBrandMng = {
           <td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in cfPagedRows" :key="row.brandId"
-          class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
+          class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '']"
           draggable="true"
           @click="setFocused(getRealIdx(idx))"
           @dragstart="onDragStart(getRealIdx(idx))"

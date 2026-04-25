@@ -177,8 +177,8 @@ window.SyUserLoginHist = {
     const onTabChange  = tab => { uiState.activeTab = tab; pager.page = 1; };
 
     return {
-      uiState, activeTab, onTabChange,
-      DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange,
+      uiState, onTabChange,
+      DATE_RANGE_OPTIONS, onDateRangeChange,
       pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, cfSummary,
       expandedRows, toggleRow, isExpanded,
       fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge,
@@ -190,8 +190,8 @@ window.SyUserLoginHist = {
   <div class="page-title">사용자로그인이력</div>
   <div class="page-desc-bar">
     <span class="page-desc-summary">관리자 사용자의 로그인 시도 이력, 로그인 로그, 토큰 생애주기(발급·갱신·폐기·만료)를 조회합니다.</span>
-    <button class="page-desc-toggle" @click="descOpen=!descOpen">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="descOpen" class="page-desc-detail">• 로그인 로그: syh_user_login_log — OS/브라우저/발급토큰 해시 포함
+    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="uiState.descOpen" class="page-desc-detail">• 로그인 로그: syh_user_login_log — OS/브라우저/발급토큰 해시 포함
 • 로그인 이력: syh_user_login_hist — 로그인 시도 간략 이력
 • 토큰 이력: syh_user_token_log — 토큰 액션 (ISSUE발급 / REFRESH갱신 / REVOKE폐기 / EXPIRE만료)
 • 토큰은 SHA-256 해시값 저장. 실제 토큰 원문 복원 불가
@@ -201,11 +201,11 @@ window.SyUserLoginHist = {
   <!-- 검색 -->
   <div class="card">
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
-      <select v-model="dateRange" @change="onDateRangeChange" style="min-width:110px">
+      <select v-model="uiState.dateRange" @change="onDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
         <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
       </select>
-      <input type="date" v-model="dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="dateEnd" style="width:140px" />
+      <input type="date" v-model="uiState.dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="uiState.dateEnd" style="width:140px" />
       <select v-model="uiState.searchResult" style="width:130px">
         <option value="">로그인결과 전체</option>
         <option value="SUCCESS">성공</option><option value="FAIL_PW">비밀번호오류</option>
@@ -256,14 +256,14 @@ window.SyUserLoginHist = {
   <!-- 탭 + 목록 -->
   <div class="card">
     <div class="tab-nav" style="margin-bottom:16px">
-      <button class="tab-btn" :class="{active:activeTab==='log'}"   @click="onTabChange('log')">로그인 로그 <span class="tab-count" v-if="activeTab==='log'">{{ cfTotal }}</span></button>
-      <button class="tab-btn" :class="{active:activeTab==='hist'}"  @click="onTabChange('hist')">로그인 이력 <span class="tab-count" v-if="activeTab==='hist'">{{ cfTotal }}</span></button>
-      <button class="tab-btn" :class="{active:activeTab==='token'}" @click="onTabChange('token')">토큰 이력 <span class="tab-count" v-if="activeTab==='token'">{{ cfTotal }}</span></button>
+      <button class="tab-btn" :class="{active:uiState.activeTab==='log'}"   @click="onTabChange('log')">로그인 로그 <span class="tab-count" v-if="uiState.activeTab==='log'">{{ cfTotal }}</span></button>
+      <button class="tab-btn" :class="{active:uiState.activeTab==='hist'}"  @click="onTabChange('hist')">로그인 이력 <span class="tab-count" v-if="uiState.activeTab==='hist'">{{ cfTotal }}</span></button>
+      <button class="tab-btn" :class="{active:uiState.activeTab==='token'}" @click="onTabChange('token')">토큰 이력 <span class="tab-count" v-if="uiState.activeTab==='token'">{{ cfTotal }}</span></button>
     </div>
     <div class="toolbar"><span class="list-count">총 {{ cfTotal }}건</span></div>
 
     <!-- ── 로그인 로그 탭 ── -->
-    <div v-if="activeTab==='log'">
+    <div v-if="uiState.activeTab==='log'">
       <table class="bo-table">
         <thead>
           <tr>
@@ -333,7 +333,7 @@ window.SyUserLoginHist = {
     </div>
 
     <!-- ── 로그인 이력 탭 ── -->
-    <div v-if="activeTab==='hist'">
+    <div v-if="uiState.activeTab==='hist'">
       <table class="bo-table">
         <thead><tr><th>이력ID</th><th>로그인일시</th><th>사용자</th><th>부서</th><th>IP</th><th>디바이스</th><th>결과</th></tr></thead>
         <tbody>
@@ -352,7 +352,7 @@ window.SyUserLoginHist = {
     </div>
 
     <!-- ── 토큰 이력 탭 ── -->
-    <div v-if="activeTab==='token'">
+    <div v-if="uiState.activeTab==='token'">
       <table class="bo-table">
         <thead>
           <tr>

@@ -175,7 +175,7 @@ window.OdClaimMng = {
       else window.safeArrayUtils.safeForEach(cfPageList, c => s.add(c.claimId));
       checked = s;
     };
-    const claimStatusCodes = (codes)
+    const claimStatusCodes = (codes.claim_statuses || [])
       .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
       .sort((a, b) => a.sortOrd - b.sortOrd);
     const claimStatusForType = type => claimStatusCodes
@@ -337,7 +337,7 @@ window.OdClaimMng = {
       }
     };
 
-    return { uiStateDetail, claims, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkTab, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { uiStateDetail, claims, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>
@@ -443,11 +443,11 @@ window.OdClaimMng = {
       </div>
       <div style="display:flex;gap:6px;padding:10px 14px 0;background:#fafafa;">
         <button v-for="t in [{id:'status',label:'클레임상태'},{id:'type',label:'클레임유형'},{id:'approval',label:'결재처리'},{id:'approvalReq',label:'추가결재요청'}]" :key="t?.id"
-          @click="bulkTab=t.id"
-          :style="{flex:1,padding:'8px 12px',border:'none',cursor:'pointer',fontSize:'12.5px',borderRadius:'8px 8px 0 0',fontWeight: bulkTab===t.id?800:600,background: bulkTab===t.id?'#fff':'transparent',color: bulkTab===t.id?'#e8587a':'#888',borderBottom: bulkTab===t.id?'2px solid #e8587a':'2px solid transparent'}">{{ t.label }}</button>
+          @click="uiState.bulkTab=t.id"
+          :style="{flex:1,padding:'8px 12px',border:'none',cursor:'pointer',fontSize:'12.5px',borderRadius:'8px 8px 0 0',fontWeight: uiState.bulkTab===t.id?800:600,background: uiState.bulkTab===t.id?'#fff':'transparent',color: uiState.bulkTab===t.id?'#e8587a':'#888',borderBottom: uiState.bulkTab===t.id?'2px solid #e8587a':'2px solid transparent'}">{{ t.label }}</button>
       </div>
       <div style="padding:20px 18px;">
-        <div v-if="bulkTab==='status'">
+        <div v-if="uiState.bulkTab==='status'">
           <div v-for="t in CLAIM_TYPE_OPTIONS" :key="Math.random()" class="form-group" :style="{opacity: cfCheckedByType[t].length ? 1 : 0.4}">
             <label class="form-label">
               <span :style="{display:'inline-block',fontSize:'10px',padding:'2px 8px',borderRadius:'10px',color:'#fff',fontWeight:700,marginRight:'6px',background: t==='취소'?'#ef4444':t==='반품'?'#FFBB00':'#3b82f6'}">{{ t }}</span>
@@ -460,14 +460,14 @@ window.OdClaimMng = {
             </select>
           </div>
         </div>
-        <div v-if="bulkTab==='type'">
+        <div v-if="uiState.bulkTab==='type'">
           <label class="form-label">변경할 클레임유형</label>
           <select class="form-control" v-model="bulkForm.type">
             <option value="">선택하세요</option>
             <option v-for="t in CLAIM_TYPE_OPTIONS" :key="Math.random()" :value="t">{{ t }}</option>
           </select>
         </div>
-        <div v-if="bulkTab==='approval'">
+        <div v-if="uiState.bulkTab==='approval'">
           <div class="form-group">
             <label class="form-label">결재처리 구분</label>
             <select class="form-control" v-model="bulkForm.apprAction">
@@ -480,7 +480,7 @@ window.OdClaimMng = {
             <textarea class="form-control" v-model="bulkForm.apprComment" rows="2" placeholder="(선택)"></textarea>
           </div>
         </div>
-        <div v-if="bulkTab==='approvalReq'">
+        <div v-if="uiState.bulkTab==='approvalReq'">
           <div class="form-group">
             <label class="form-label">추가결재자 (회원선택)</label>
             <select class="form-control" v-model="bulkForm.apprToUserId" @change="onApprToChange">

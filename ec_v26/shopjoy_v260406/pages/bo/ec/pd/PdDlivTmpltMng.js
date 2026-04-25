@@ -5,7 +5,7 @@ window.PdDlivTmpltMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const dlivTmplts = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null, descOpen: false});
     const codes = reactive({
       dliv_template_types: [],
     });
@@ -30,6 +30,17 @@ window.PdDlivTmpltMng = {
       if (newVal) {
         fnLoadCodes();
       }
+    });
+
+    const searchParam = reactive({
+      kw: '',
+      method: '',
+      use: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '',
+      method: '',
+      use: ''
     });
 
     const handleFetchData = async () => {
@@ -136,20 +147,9 @@ window.PdDlivTmpltMng = {
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
     const fnMethodBadge = v => ({ COURIER:'badge-blue', DIRECT:'badge-orange', PICKUP:'badge-green' }[v] || 'badge-gray');
 
-  const searchParam = reactive({
-    kw: '',
-    method: '',
-    use: ''
-  });
-  const searchParamOrg = reactive({
-    kw: '',
-    method: '',
-    use: ''
-  });
-
-    return { descOpen,
-             searchKw, searchMethod, searchUse, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
-             selectedId, form, uiState, openDetail, openNew, closeDetail, handleSave, handleDelete,
+    return { uiState, searchParam, searchParamOrg,
+             pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
+             form, openDetail, openNew, closeDetail, handleSave, handleDelete,
              fnYnBadge, fnMethodBadge, DLIV_METHODS, DLIV_PAY_TYPES, COURIERS, METHOD_LABELS, PAY_LABELS , PAGE_SIZES , onSizeChange };
   },
   template: `
@@ -157,8 +157,8 @@ window.PdDlivTmpltMng = {
   <div class="page-title">배송템플릿관리</div>
   <div style="margin:-8px 0 16px;padding:10px 14px;background:#f0faf4;border-left:3px solid #3ba87a;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
     <span><strong style="color:#1a7a52">배송템플릿</strong>은 상품에 공통 적용할 배송비 조건을 미리 정의해두는 설정입니다.</span>
-    <button @click="descOpen=!descOpen" style="margin-left:8px;font-size:12px;color:#3ba87a;background:none;border:none;cursor:pointer;padding:0">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="descOpen" style="margin-top:6px">
+    <button @click="uiState.descOpen=!uiState.descOpen" style="margin-left:8px;font-size:12px;color:#3ba87a;background:none;border:none;cursor:pointer;padding:0">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="uiState.descOpen" style="margin-top:6px">
       ✔ 무료·고정·조건부(금액/수량) 배송비 방식을 선택하고 <strong>상품 등록 시 템플릿을 연결</strong>해 재사용합니다.<br>
       ✔ 도서·산간 지역 추가 배송비, <strong>반품지 주소</strong>를 함께 관리합니다.<br>
       ✔ 업체(벤더)별로 독립 설정이 가능하며, 여러 상품이 동일 템플릿을 공유할 수 있습니다.<br>
@@ -199,7 +199,7 @@ window.PdDlivTmpltMng = {
           <th style="width:60px;text-align:center">사용</th>
         </tr></thead>
         <tbody>
-          <tr v-for="row in cfPageList" :key="row?.dlivTmpltId" :class="{active:selectedId===row.dlivTmpltId}" @click="openDetail(row)" style="cursor:pointer">
+          <tr v-for="row in cfPageList" :key="row?.dlivTmpltId" :class="{active:uiState.selectedId===row.dlivTmpltId}" @click="openDetail(row)" style="cursor:pointer">
             <td><span class="title-link">{{ row.dlivTmpltNm }}</span></td>
             <td><span :class="['badge',fnMethodBadge(row.dlivMethodCd)]">{{ row.dlivMethodCd }}</span></td>
             <td><span class="badge badge-gray">{{ row.dlivPayTypeCd }}</span></td>
@@ -229,12 +229,12 @@ window.PdDlivTmpltMng = {
        </div>
     </div>
     <!-- 상세 폼 -->
-    <div class="card" v-if="selectedId">
+    <div class="card" v-if="uiState.selectedId">
       <div class="toolbar">
-        <span class="list-title">{{ isNew ? '신규 등록' : '상세 / 수정' }}</span>
+        <span class="list-title">{{ uiState.isNew ? '신규 등록' : '상세 / 수정' }}</span>
         <div style="margin-left:auto;display:flex;gap:6px;">
           <button class="btn btn-blue btn-sm" @click="handleSave">저장</button>
-          <button v-if="!isNew" class="btn btn-danger btn-sm" @click="handleDelete">삭제</button>
+          <button v-if="!uiState.isNew" class="btn btn-danger btn-sm" @click="handleDelete">삭제</button>
           <button class="btn btn-secondary btn-sm" @click="closeDetail">닫기</button>
         </div>
       </div>

@@ -219,7 +219,7 @@ window.SyPropMng = {
       uiState, codes,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchParam, TYPES, cfTree, expanded, toggleNode, expandAll, collapseAll,
-      selectedPath, selectNode, cfGridRows, cfPagedRows, cfDirtyRows,
+      selectNode, cfGridRows, cfPagedRows, cfDirtyRows,
       pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange,
       onChange, addRow, delRow, cancelRow, handleSave, onReset, exportCsv,
     };
@@ -260,7 +260,7 @@ window.SyPropMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPath"
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath"
           :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
@@ -269,7 +269,7 @@ window.SyPropMng = {
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:10px;">
         <div class="list-title">
-          <span v-if="selectedPath" style="color:#e8587a;font-family:monospace;">{{ selectedPath }}</span>
+          <span v-if="uiState.selectedPath" style="color:#e8587a;font-family:monospace;">{{ uiState.selectedPath }}</span>
           <span v-else>전체</span>
           <span class="list-count">{{ cfGridRows.length }}건</span>
         </div>

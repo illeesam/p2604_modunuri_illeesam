@@ -1,14 +1,4 @@
-/* ShopJoy Admin - 전시위젯 목록 (UI용
-  const searchParam = reactive({
-    kw: '',
-    type: '',
-    status: ''
-  });
-  const searchParamOrg = reactive({
-    kw: '',
-    type: '',
-    status: ''
-  }); 배치 위젯) */
+/* ShopJoy Admin - 전시위젯 목록 (UI용 배치 위젯) */
 window.DpDispWidgetMng = {
   name: 'DpDispWidgetMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
@@ -61,6 +51,9 @@ window.DpDispWidgetMng = {
         uiState.loading = false;
       }
     };
+    const searchParam = reactive({ kw: '', type: '', status: '' });
+    const searchParamOrg = reactive({ kw: '', type: '', status: '' });
+
     onMounted(() => { handleFetchData();
     Object.assign(searchParamOrg, searchParam); });
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
@@ -106,16 +99,11 @@ window.DpDispWidgetMng = {
 
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    return { widgets, uiState, pathLabel,
-      codes, wTypeLabel, wIcon, handleDelete,
-      searchKw, searchType, searchStatus, pager, PAGE_SIZES,
-      cfFiltered, cfTotalCount, cfPageList, cfTotalPages, cfPageNumbers,
-      cfTree, openNodes, toggleNode, isOpen, selectedTreeKey, selectTree, expandAll, collapseAll,
-      onSearch, onReset,
-      selectedId, openMode, cfDetailEditId, cfDetailKey,
+    return { widgets, widgetLibs, uiState, pathLabel,
+      codes, wTypeLabel, wIcon,
+      searchParam, searchParamOrg, pager, PAGE_SIZES,
+      applied, onSearch, onReset,
       cfSiteNm,
-      handleLoadDetail, openNew, closeDetail, inlineNavigate,
-      contentSummary, fnStatusCls,
       setPage, onSizeChange,
     };
   },

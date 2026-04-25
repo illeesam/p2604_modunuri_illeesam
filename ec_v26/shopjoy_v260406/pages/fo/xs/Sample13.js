@@ -4,7 +4,7 @@ window.XsSample13 = {
   components: { 'category-select-modal': window.CategorySelectModal },
   setup() {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: today, copiedPanel: null, previewTime: new Date(});;
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), copiedPanel: null, previewTime: new Date().toTimeString().slice(0, 5) });
     const codes = reactive({});
 
     const isAppReady = computed(() => {

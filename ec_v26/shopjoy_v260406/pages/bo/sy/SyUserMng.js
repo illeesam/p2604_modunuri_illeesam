@@ -106,7 +106,7 @@ window.SyUserMng = {
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
-    const cfFiltered = computed(() => boUsers.value.filter(u => {
+    const cfFiltered = computed(() => uiState.boUsers.filter(u => {
       if (cfAllowedDeptNms.value && !cfAllowedDeptNms.value.has(u.dept)) return false;
       const kw = searchParam.kw.trim().toLowerCase();
       if (kw && !u.name.toLowerCase().includes(kw) && !u.loginId.toLowerCase().includes(kw) && !u.email.toLowerCase().includes(kw)) return false;
@@ -142,8 +142,8 @@ window.SyUserMng = {
       if (u.role === '슈퍼관리자') { props.showToast('슈퍼관리자는 삭제할 수 없습니다.', 'error'); return; }
       const ok = await props.showConfirm('삭제', `[${u.name}] 사용자를 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = boUsers.value.findIndex(x => x.boUserId === u.boUserId);
-      if (idx !== -1) boUsers.value.splice(idx, 1);
+      const idx = uiState.boUsers.findIndex(x => x.boUserId === u.boUserId);
+      if (idx !== -1) uiState.boUsers.splice(idx, 1);
       if (uiStateDetail.selectedId === u.boUserId) uiStateDetail.selectedId = null;
       try {
         const res = await window.boApi.delete(`/bo/sy/user/${u.boUserId}`);
@@ -159,7 +159,7 @@ window.SyUserMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'boUserId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'권한',key:'role'},{label:'부서',key:'dept'},{label:'상태',key:'statusCd'},{label:'최종로그인',key:'lastLogin'}], '사용자목록.csv');
 
-    return { uiStateDetail, users, uiState, codes, selectedDeptId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, users, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -190,7 +190,7 @@ window.SyUserMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedDeptId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedDeptId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
     <div>
@@ -208,10 +208,10 @@ window.SyUserMng = {
       </tr></thead>
       <tbody>
         <tr v-if="cfPageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="u in cfPageList" :key="u.boUserId" :style="selectedId===u.boUserId?'background:#fff8f9;':''">
+        <tr v-for="u in cfPageList" :key="u.boUserId" :style="uiStateDetail.selectedId===u.boUserId?'background:#fff8f9;':''">
           <td>{{ u.boUserId }}</td>
           <td><code style="font-size:12px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ u.loginId }}</code></td>
-          <td><span class="title-link" @click="handleLoadDetail(u.boUserId)" :style="selectedId===u.boUserId?'color:#e8587a;font-weight:700;':''">{{ u.name }}<span v-if="selectedId===u.boUserId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="handleLoadDetail(u.boUserId)" :style="uiStateDetail.selectedId===u.boUserId?'color:#e8587a;font-weight:700;':''">{{ u.name }}<span v-if="uiStateDetail.selectedId===u.boUserId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td style="font-size:12px;">{{ u.email }}</td>
           <td>{{ u.phone }}</td>
           <td><span class="badge" :class="fnRoleBadge(u.role)">{{ u.role }}</span></td>
@@ -242,7 +242,7 @@ window.SyUserMng = {
       </div>
     </div>
   </div>
-  <div v-if="selectedId" style="margin-top:4px;">
+  <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>

@@ -409,7 +409,7 @@ window.PdBundleMng = {
 
     return {
       codes, uiState, bundles, bundleList,
-      searchNm, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList,
+      searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList,
       onSearch, onReset, rateSum, fnRateSumBadge, getProdNm, getProdPrice,
       getCategoryNm, getCategoryDepth, getBrandNm,
       categories, products, brands, categoryProds,

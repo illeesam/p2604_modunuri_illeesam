@@ -15,7 +15,7 @@ window.SyMenuMng = {
         const res = await window.boApi.get('/bo/sy/menu/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        menus = res.data?.data?.list || [];
+        menus.splice(0, menus.length, ...(res.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -25,6 +25,18 @@ window.SyMenuMng = {
         uiState.loading = false;
       }
     };
+    /* ── 검색 ── */
+    const searchParam = reactive({
+      kw: '',
+      type: '',
+      useYn: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '',
+      type: '',
+      useYn: ''
+    });
+
     /* 좌측 메뉴 트리 */
         const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
@@ -67,20 +79,9 @@ window.SyMenuMng = {
       if (uiState.selectedTreeId == null) return null;
       return window.boCmUtil.collectDescendantIds(menus, 'menuId', 'parentId', uiState.selectedTreeId);
     });
-    watch(selectedTreeId, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
+    watch(() => uiState.selectedTreeId, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
 
 
-    /* ── 검색 ── */
-    const searchParam = reactive({
-      kw: '',
-      type: '',
-      useYn: ''
-    });
-    const searchParamOrg = reactive({
-      kw: '',
-      type: '',
-      useYn: ''
-    });
     const MENU_TYPES   = ['페이지', '폴더', '외부링크', '구분선'];
 
     /* ── CRUD 그리드 ── */
@@ -268,13 +269,13 @@ window.SyMenuMng = {
       '메뉴목록.csv'
     );
 
-    return { menus, uiState, codes, selectedTreeId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
+    return { menus, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, searchParamOrg, MENU_TYPES,
       cfSiteNm,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
-      focusedIdx, setFocused, onSearch, onReset, onCellChange,
+      setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
-      uiState, toggleCheckAll, parentNm,
+      toggleCheckAll, parentNm,
       menuTreeModal, openParentModal, onParentSelect,
       depthBullet, depthColor, fnStatusClass, fnTypeClass,
       exportExcel,
@@ -311,7 +312,7 @@ window.SyMenuMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedTreeId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedTreeId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
     <div>
@@ -332,7 +333,7 @@ window.SyMenuMng = {
         <tr>
           <th class="col-id">ID</th>
           <th class="col-status">상태</th>
-          <th class="col-check"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
+          <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
           <th style="width:110px;">메뉴코드</th>
           <th style="min-width:180px;">메뉴명</th>
           <th style="min-width:140px;">상위메뉴</th>
@@ -351,7 +352,7 @@ window.SyMenuMng = {
           <td colspan="14" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in cfPagedRows" :key="row.menuId"
-          class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
+          class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '']"
           @click="setFocused(getRealIdx(idx))">
 
           <td class="col-id-val">{{ row.menuId > 0 ? row.menuId : 'NEW' }}</td>

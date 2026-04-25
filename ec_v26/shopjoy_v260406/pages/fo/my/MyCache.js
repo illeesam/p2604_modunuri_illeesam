@@ -62,7 +62,7 @@ window.MyCache = {
     return {
       myStore, cashBalance, cashHistory, chargeAmount,
       cashPager, paginate, addCash, openOrderModal, cfDateFilteredHistory, onDateSearch,
-    , uiState, codes };
+      uiState, codes };
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myCache">

@@ -22,7 +22,7 @@ window.ZdLocalStorage = {
 
     const filteredData = computed(() => {
       if (!uiState.filterKey) return storageData;
-      return storageData.filter(item => item.key.toLowerCase().includes(filterKey.value.toLowerCase()));
+      return storageData.filter(item => item.key.toLowerCase().includes(uiState.filterKey.toLowerCase()));
     });
 
     const copyValue = (value) => {
@@ -120,7 +120,7 @@ window.ZdLocalStorage = {
     loadStorageData();
 
     return {
-      storageData, filterKey, filteredData, editingKey, editingValue, valueColWidth, uiState,
+      storageData, uiState, filteredData,
       loadStorageData, copyValue, startEdit, saveEdit, cancelEdit, deleteItem, clearAllStorage, parseValue, startResize
     };
   },
@@ -132,7 +132,7 @@ window.ZdLocalStorage = {
       <div style="flex: 1;">
         <label style="display: block; margin-bottom: 8px; font-weight: 600;">키 검색</label>
         <input 
-          v-model="filterKey"
+          v-model="uiState.filterKey"
           type="text"
           placeholder="키로 검색..."
           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
@@ -148,7 +148,7 @@ window.ZdLocalStorage = {
         <thead>
           <tr>
             <th style="width: 25%; text-align: left;">Key</th>
-            <th :style="{ width: valueColWidth + '%', textAlign: 'left', position: 'relative' }">
+            <th :style="{ width: uiState.valueColWidth + '%', textAlign: 'left', position: 'relative' }">
               Value
               <div
                 @mousedown="startResize"
@@ -156,17 +156,17 @@ window.ZdLocalStorage = {
                 <div style="width: 1px; height: 80%; background: #0066cc; opacity: 0; transition: opacity 0.2s;"></div>
               </div>
             </th>
-            <th :style="{ width: (100 - 25 - valueColWidth) + '%', textAlign: 'center' }">작업</th>
+            <th :style="{ width: (100 - 25 - uiState.valueColWidth) + '%', textAlign: 'center' }">작업</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="item in filteredData" :key="item.key" style="border-bottom: 1px solid #eee;">
             <td style="padding: 12px; word-break: break-all;">{{ item.key }}</td>
             <td style="padding: 12px;">
-              <template v-if="editingKey === item.key">
+              <template v-if="uiState.editingKey === item.key">
                 <textarea
-                  :value="editingValue"
-                  @input="editingValue = $event.target.value"
+                  :value="uiState.editingValue"
+                  @input="uiState.editingValue = $event.target.value"
                   style="width: 100%; height: 80px; padding: 8px; border: 1px solid #0066cc; border-radius: 4px; font-family: monospace; font-size: 12px; resize: vertical;">
                 </textarea>
                 <div style="display: flex; gap: 6px; margin-top: 8px;">
@@ -180,7 +180,7 @@ window.ZdLocalStorage = {
             </td>
             <td style="padding: 12px; text-align: center; white-space: nowrap;">
               <button @click="copyValue(item.value)" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">복사</button>
-              <button v-if="editingKey !== item.key" @click="startEdit(item.key, item.value)" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">수정</button>
+              <button v-if="uiState.editingKey !== item.key" @click="startEdit(item.key, item.value)" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">수정</button>
               <button @click="deleteItem(item.key)" class="btn btn-danger" style="padding: 4px 8px; font-size: 11px;">삭제</button>
             </td>
           </tr>
