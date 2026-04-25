@@ -25,7 +25,6 @@ window.SyCodeDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({
@@ -40,6 +39,7 @@ window.SyCodeDtl = {
     });
 
     onMounted(() => {
+      handleFetchData();
       if (!cfIsNew.value) {
         const c = codes.find(x => x.codeId === props.editId);
         if (c) Object.assign(form, { ...c });

@@ -25,7 +25,6 @@ window.DpDispAreaDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleLoadData(); });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, target: null });
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
@@ -76,7 +75,7 @@ window.DpDispAreaDtl = {
     });
 
     /* ── 로드 ── */
-    const initForm = async () => {
+    const handleInitForm = async () => {
       if (!cfIsNew.value) {
         const a = (codes || []).find(c => c.codeId === props.editId && c.codeGrp === 'DISP_AREA');
         if (a) {
@@ -107,7 +106,7 @@ window.DpDispAreaDtl = {
       await nextTick();
       initQuillDesc();
     };
-    onMounted(() => { initForm(); });
+    onMounted(() => { handleLoadData(); handleInitForm(); });
 
     /* ── 연결된 패널 ── */
     const cfRelatedPanels = computed(() =>

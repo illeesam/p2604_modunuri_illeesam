@@ -25,7 +25,6 @@ window.PmCacheDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._pmCacheDtlState.tab || 'info');
     watch(tab, v => { window._pmCacheDtlState.tab = v; });
@@ -45,6 +44,7 @@ window.PmCacheDtl = {
     });
 
     onMounted(() => {
+      handleFetchData();
       if (!cfIsNew.value) {
         const c = cacheList.window.safeArrayUtils.safeFind(value, x => x.cacheId === props.editId);
         if (c) Object.assign(form, { ...c });

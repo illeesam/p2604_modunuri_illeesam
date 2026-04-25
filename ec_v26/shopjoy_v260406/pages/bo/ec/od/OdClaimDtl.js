@@ -29,7 +29,6 @@ window.OdClaimDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleLoadData(); });
     const cfIsNew = computed(() => !props.editId);
 
     // 주문 조회 헬퍼 함수
@@ -61,6 +60,7 @@ window.OdClaimDtl = {
     const cfStatusOptions   = computed(() => cfClaimSteps.value);
 
     onMounted(() => {
+      handleLoadData();
       if (!cfIsNew.value) {
         const c = getClaim.value(props.editId);
         if (c) {
@@ -68,6 +68,7 @@ window.OdClaimDtl = {
           if (!form.claimId) form.claimId = props.editId;
         }
       }
+      handleInitForm();
     });
 
     const handleSave = async () => {
@@ -122,10 +123,9 @@ window.OdClaimDtl = {
         return { claims, loading, error, ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
       });
     };
-    const initForm = async () => {
+    const handleInitForm = async () => {
       claimItems.splice(0, claimItems.length, ...sampleClaimItems());
     };
-    onMounted(() => { initForm(); });
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
     const CLAIM_TYPE_COLOR = { '취소':'#ef4444', '반품':'#FFBB00', '교환':'#3b82f6' };

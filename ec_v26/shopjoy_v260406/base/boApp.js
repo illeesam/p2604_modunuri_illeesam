@@ -178,11 +178,6 @@
   const app = createApp({
     setup() {
       /* ── App Init Data Store 초기화 ── */
-      onMounted(() => {
-        setTimeout(() => {
-          window.useBoAppInitStore?.()?.sfRestoreFromStorage?.();
-        }, 0);
-      });
 
       /* ── 페이지 & 라우팅 ── */
       const page   = ref('dashboard');
@@ -626,45 +621,9 @@
       };
 
       /* boApi 인터셉터로 로그 수집 */
-      onMounted(() => {
-        _loadApiLogsFromStorage();
-        setTimeout(() => {
-          if (window.boApi && window.boApi.raw) {
-            const inst = window.boApi.raw;
-            const startTime = {};
-            const reqData = {};
-            const reqHeaders = {};
-            inst.interceptors.request.use((cfg) => {
-              const key = cfg.url + cfg.method;
-              startTime[key] = Date.now();
-              reqData[key] = cfg.data || cfg.params || null;
-              reqHeaders[key] = cfg.headers || {};
-              return cfg;
-            });
-            inst.interceptors.response.use(
-              (res) => {
-                const key = res.config.url + res.config.method;
-                const duration = Date.now() - (startTime[key] || 0);
-                addApiLog(res.config.method.toUpperCase(), res.config.url, res.status, duration, false, reqData[key], res.data, reqHeaders[key]);
-                delete startTime[key]; delete reqData[key]; delete reqHeaders[key];
-                return res;
-              },
-              (err) => {
-                const cfg = err.config || {};
-                const key = cfg.url + cfg.method;
-                const duration = Date.now() - (startTime[key] || 0);
-                addApiLog(cfg.method.toUpperCase(), cfg.url, err.response?.status || 0, duration, true, reqData[key], err.response?.data, reqHeaders[key]);
-                delete startTime[key]; delete reqData[key]; delete reqHeaders[key];
-                return Promise.reject(err);
-              }
-            );
-          }
-        }, 100);
-      });
 
       /* ── 반응형: 화면 크기에 따라 사이드바 자동 열기/닫기 ── */
       const checkWidth = () => { leftMenuOpen.value = window.innerWidth >= 920; };
-      onMounted(() => { checkWidth(); window.addEventListener('resize', checkWidth); });
       onBeforeUnmount(() => window.removeEventListener('resize', checkWidth));
 
       /* ── 탭바 좌우 스크롤 ── */
@@ -790,7 +749,44 @@
           testAccounts.value = res.data?.data?.list || [];
         } catch (_) {}
       };
-      onMounted(() => { handleFetchTestAccounts(); });
+      onMounted(() => {
+        setTimeout(() => { window.useBoAppInitStore?.()?.sfRestoreFromStorage?.(); }, 0);
+        _loadApiLogsFromStorage();
+        setTimeout(() => {
+          if (window.boApi && window.boApi.raw) {
+            const inst = window.boApi.raw;
+            const startTime = {};
+            const reqData = {};
+            const reqHeaders = {};
+            inst.interceptors.request.use((cfg) => {
+              const key = cfg.url + cfg.method;
+              startTime[key] = Date.now();
+              reqData[key] = cfg.data || cfg.params || null;
+              reqHeaders[key] = cfg.headers || {};
+              return cfg;
+            });
+            inst.interceptors.response.use(
+              (res) => {
+                const key = res.config.url + res.config.method;
+                const duration = Date.now() - (startTime[key] || 0);
+                addApiLog(res.config.method.toUpperCase(), res.config.url, res.status, duration, false, reqData[key], res.data, reqHeaders[key]);
+                delete startTime[key]; delete reqData[key]; delete reqHeaders[key];
+                return res;
+              },
+              (err) => {
+                const cfg = err.config || {};
+                const key = cfg.url + cfg.method;
+                const duration = Date.now() - (startTime[key] || 0);
+                addApiLog(cfg.method.toUpperCase(), cfg.url, err.response?.status || 0, duration, true, reqData[key], err.response?.data, reqHeaders[key]);
+                delete startTime[key]; delete reqData[key]; delete reqHeaders[key];
+                return Promise.reject(err);
+              }
+            );
+          }
+        }, 100);
+        checkWidth(); window.addEventListener('resize', checkWidth);
+        handleFetchTestAccounts();
+      });
       watch(currentAuthUser, (u) => {
         try {
           if (u && u.userId) {

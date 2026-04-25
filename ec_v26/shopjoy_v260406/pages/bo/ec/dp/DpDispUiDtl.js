@@ -25,7 +25,6 @@ window.DpDispUiDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleLoadData(); });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, target: null });
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
@@ -64,7 +63,7 @@ window.DpDispUiDtl = {
       codeLabel: yup.string().required('UI명을 입력해주세요.'),
     });
 
-    const initForm = async () => {
+    const handleInitForm = async () => {
       if (!cfIsNew.value) {
         const u = (codes || []).find(c => c.codeId === props.editId && c.codeGrp === 'DISP_UI');
         if (u) {
@@ -89,7 +88,7 @@ window.DpDispUiDtl = {
       await nextTick();
       initQuillDesc();
     };
-    onMounted(() => { initForm(); });
+    onMounted(() => { handleLoadData(); handleInitForm(); });
 
     const cfRelatedAreas = computed(() =>
       (codes || [])

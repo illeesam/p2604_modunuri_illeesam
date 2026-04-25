@@ -25,7 +25,6 @@ window.SyBbsDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
@@ -79,6 +78,7 @@ window.SyBbsDtl = {
 
     /* ── 초기화 ── */
     onMounted(() => {
+      handleFetchData();
       if (!cfIsNew.value) {
         const b = bbss.find(x => x.bbsId === props.editId);
         if (b) {

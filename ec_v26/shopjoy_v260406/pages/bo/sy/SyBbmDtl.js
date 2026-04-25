@@ -25,7 +25,6 @@ window.SyBbmDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({
@@ -49,6 +48,7 @@ window.SyBbmDtl = {
     });
 
     onMounted(() => {
+      handleFetchData();
       if (!cfIsNew.value) {
         const b = bbms.find(x => x.bbmId === props.editId);
         if (b) Object.assign(form, { ...b });

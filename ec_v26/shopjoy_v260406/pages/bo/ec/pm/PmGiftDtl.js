@@ -28,7 +28,6 @@ window.PmGiftDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._pmGiftDtlState.tab || 'info');
     watch(tab, v => { window._pmGiftDtlState.tab = v; });
@@ -56,6 +55,7 @@ window.PmGiftDtl = {
     });
 
     onMounted(() => {
+      handleFetchData();
       if (!cfIsNew.value) {
         const g = (giftList).find(x => x.giftId === props.editId);
         if (g) Object.assign(form, g);

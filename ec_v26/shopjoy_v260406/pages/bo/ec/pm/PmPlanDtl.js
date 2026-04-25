@@ -28,7 +28,6 @@ window.PmPlanDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._ecPlanDtlState.tab || 'info');
     watch(tab, v => { window._ecPlanDtlState.tab = v; });
@@ -128,6 +127,7 @@ window.PmPlanDtl = {
     };
 
     onMounted(() => {
+      handleFetchData();
       if (!cfIsNew.value) {
         const p = (plans).find(x => x.planId === props.editId);
         if (p) {

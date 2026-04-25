@@ -24,7 +24,6 @@ window.PdCategoryDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
       categoryId: null, parentId: null, categoryNm: '', depth: 1, sortOrd: 1, status: '활성', description: '', imgUrl: '',
@@ -36,6 +35,7 @@ window.PdCategoryDtl = {
     });
 
     onMounted(() => {
+      handleFetchData();
       if (!cfIsNew.value) {
         const c = categories.window.safeArrayUtils.safeFind(value, x => x.categoryId === props.editId);
         if (c) Object.assign(form, { ...c });

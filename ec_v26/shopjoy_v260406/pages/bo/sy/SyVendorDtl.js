@@ -25,7 +25,6 @@ window.SyVendorDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleLoadData(); });
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
@@ -45,7 +44,7 @@ window.SyVendorDtl = {
       bizNo: yup.string().required('사업자등록번호를 입력해주세요.'),
     });
 
-    const initForm = async () => {
+    const handleInitForm = async () => {
       if (!cfIsNew.value) {
         const v = vendors.find(x => x.vendorId === props.editId);
         if (v) Object.assign(form, { ...v });
@@ -61,7 +60,10 @@ window.SyVendorDtl = {
         _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
       }
     };
-    onMounted(() => { initForm(); });
+    onMounted(() => {
+      handleLoadData();
+      handleInitForm();
+    });
 
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 

@@ -31,7 +31,6 @@ window.DpDispPanelDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleLoadData(); });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, target: null });
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
@@ -446,7 +445,7 @@ window.DpDispPanelDtl = {
       bindQuillContent();
     };
 
-    const initForm = async () => {
+    const handleInitForm = async () => {
       await nextTick();
       /* 기존 데이터 로드 */
       if (!cfIsNew.value) {
@@ -486,7 +485,7 @@ window.DpDispPanelDtl = {
       /* Quill 초기화 (기본정보 탭이 기본) */
       initQuillDesc();
     };
-    onMounted(() => { initForm(); });
+    onMounted(() => { handleLoadData(); handleInitForm(); });
 
     /* 탭 전환 시 Quill 초기화/싱크 */
     watch(tab, async (newTab) => {

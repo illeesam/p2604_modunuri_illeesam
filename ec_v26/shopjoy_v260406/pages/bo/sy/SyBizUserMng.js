@@ -30,8 +30,6 @@ window.SyBizUserMng = {
         console.warn('[SyBizUserMng] role/menu load failed', err);
       }
     };
-    onMounted(() => { handleLoadData(); });
-
     const ROOT_BADGE_MAP = {
       SUPER_ADMIN:['관리자','#7c3aed'], SITE_GROUP:['사이트','#2563eb'],
       SITE_MGR_ROOT:['판매업체','#16a34a'], DLIV_ROOT:['배송업체','#f59e0b'],
@@ -61,8 +59,6 @@ window.SyBizUserMng = {
     const selectNode = (id) => { selectedPath.value = id; };
     const expandAll = () => { expanded.add(null); roles.forEach(r => expanded.add(r.roleCode)); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
-    onMounted(() => { expandAll(); });
-
     /* ── 업체 목록 (상단 검색/선택) ── */
     const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['CS','콜센터업체'],['SITE','사이트운영업체'],['PROG','유지보수업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
     const BIZ_STATUS  = [['ACTIVE','운영중'],['SUSPENDED','중지'],['TERMINATED','종료']];
@@ -76,7 +72,11 @@ window.SyBizUserMng = {
         vendors.splice(0, vendors.length, ...list);
       } catch(e) { console.warn('[SyBizUserMng] vendor load failed', e); }
     };
-    onMounted(() => { handleLoadDetail(); });
+    onMounted(() => {
+      handleLoadData();
+      expandAll();
+      handleLoadDetail();
+    });
 
     const cfVendorMap = computed(() => Object.fromEntries(vendors.map(v => [v.vendorId, v])));
     const fnVendorNm  = (id) => (cfVendorMap.value[id] || {}).vendorNm || '#'+id;

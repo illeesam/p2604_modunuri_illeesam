@@ -25,7 +25,6 @@ window.SySiteMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -50,6 +49,7 @@ window.SySiteMng = {
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
+      handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });

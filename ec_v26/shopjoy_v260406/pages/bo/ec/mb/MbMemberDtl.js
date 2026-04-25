@@ -24,7 +24,6 @@ window.MbMemberDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleLoadData(); });
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
       userId: null,
@@ -41,7 +40,7 @@ window.MbMemberDtl = {
       memberNm:  yup.string().required('이름을 입력해주세요.'),
     });
 
-    const initForm = async () => {
+    const handleInitForm = async () => {
       if (!cfIsNew.value) {
         const m = getMember.value(props.editId);
         if (m) Object.assign(form, { ...m });
@@ -57,7 +56,7 @@ window.MbMemberDtl = {
         _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
       }
     };
-    onMounted(() => { initForm(); });
+    onMounted(() => { handleLoadData(); handleInitForm(); });
 
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 

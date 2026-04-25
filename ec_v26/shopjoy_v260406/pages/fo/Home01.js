@@ -264,19 +264,6 @@ window.Home01 = {
        카테고리 max-width:820px  / minmax(240px) → 최대 3열, 좁아지면 2→1열
        상품     max-width:1080px / minmax(220px) → 최대 4열, 좁아지면 3→2→1열
        블로그   max-width:1080px / minmax(300px) → 최대 3열, 좁아지면 2→1열  */
-    onMounted(() => {
-      if (!document.getElementById('home-grid-styles')) {
-        const s = document.createElement('style');
-        s.id = 'home-grid-styles';
-        s.textContent = `
-          .home-cat-grid  { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
-          .home-prod-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
-          .home-sale-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
-          .home-blog-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
-        `;
-        document.head.appendChild(s);
-      }
-    });
 
     /* ── 홈 상품 8개 ── */
     const cfAllHomeProducts = computed(() => {
@@ -294,7 +281,20 @@ window.Home01 = {
     let bannerTimer = null;
     const startBannerTimer = () => { bannerTimer = setInterval(() => { bannerIdx.value = (bannerIdx.value + 1) % banners.length; }, 20000); };
     const setBanner = (i) => { bannerIdx.value = i; clearInterval(bannerTimer); startBannerTimer(); };
-    onMounted(startBannerTimer);
+    onMounted(() => {
+      if (!document.getElementById('home-grid-styles')) {
+        const s = document.createElement('style');
+        s.id = 'home-grid-styles';
+        s.textContent = `
+          .home-cat-grid  { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
+          .home-prod-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
+          .home-sale-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
+          .home-blog-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
+        `;
+        document.head.appendChild(s);
+      }
+      startBannerTimer();
+    });
     onBeforeUnmount(() => clearInterval(bannerTimer));
 
     return { fnCategoryLabel, fnCatEmoji, cfNewProducts, cfBestProducts, cfAllHomeProducts, cfSaleProducts, quickViewProduct, cartModalMode, bannerIdx, banners, setBanner };

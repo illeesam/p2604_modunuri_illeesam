@@ -25,7 +25,6 @@ window.PdProdHist = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     const botTab = ref(window._ecProdHistState.tab || 'orders');
     watch(botTab, v => { window._ecProdHistState.tab = v; });
     const viewMode2 = ref(window._ecProdHistState.viewMode || 'tab');
@@ -38,6 +37,7 @@ window.PdProdHist = {
     const priceHistory  = reactive([]);
 
     onMounted(() => {
+      handleFetchData();
       const p = getProduct.value(props.prodId);
       if (p) {
         stockHistory.splice(0, stockHistory.length,

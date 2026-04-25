@@ -25,7 +25,6 @@ window.SyTemplateDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleLoadData(); });
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const TEMPLATE_TYPES = ['메일템플릿', '문자템플릿', 'MMS템플릿', 'kakao톡템플릿', 'kakao알림톡템플릿', '시스템알림', '회원알림'];
@@ -68,14 +67,17 @@ window.SyTemplateDtl = {
       else destroyQuill();
     }, { flush: 'post' });
 
-    const initForm = async () => {
+    const handleInitForm = async () => {
       if (!cfIsNew.value) {
         const t = templates.find(x => x.templateId === props.editId);
         if (t) Object.assign(form, { sampleParams: '{}', ...t });
       }
       if (cfUseHtmlEditor.value && !props.viewMode) { await nextTick(); initQuill(); }
     };
-    onMounted(() => { initForm(); });
+    onMounted(() => {
+      handleLoadData();
+      handleInitForm();
+    });
 
     onBeforeUnmount(() => destroyQuill());
 

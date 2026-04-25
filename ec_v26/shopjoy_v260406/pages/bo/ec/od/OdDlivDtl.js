@@ -31,7 +31,6 @@ window.OdDlivDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleLoadData(); });
     const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._odDlivDtlState.tab || 'info');
     watch(tab, v => { window._odDlivDtlState.tab = v; });
@@ -53,7 +52,7 @@ window.OdDlivDtl = {
       orderId: yup.string().required('주문ID를 입력해주세요.'),
     });
 
-    const initForm = async () => {
+    const handleInitForm = async () => {
       if (!cfIsNew.value) {
         const d = window.safeArrayUtils.safeFind(deliveries, x => x.dlivId === props.editId);
         if (d) {
@@ -74,8 +73,6 @@ window.OdDlivDtl = {
         _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
       }
     };
-    onMounted(() => { initForm(); });
-
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
     const cfRelatedOrder  = computed(() => window.safeArrayUtils.safeFind(orders, o => o.orderId === form.orderId) || null);
@@ -142,7 +139,7 @@ window.OdDlivDtl = {
     const initItems = async () => {
       dlivItems.splice(0, dlivItems.length, ...sampleDlivItems());
     };
-    onMounted(() => { initItems(); });
+    onMounted(() => { handleLoadData(); handleInitForm(); initItems(); });
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
     const trackingUrl = (courier, no) => {

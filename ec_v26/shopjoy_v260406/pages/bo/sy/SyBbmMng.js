@@ -24,7 +24,6 @@ window.SyBbmMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     /* 표시경로 트리/픽커 (sy_path biz_cd=sy_bbm) */
     const selectedPath = ref(null);
     const expanded = reactive(new Set([null]));
@@ -35,6 +34,7 @@ window.SyBbmMng = {
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
+      handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });

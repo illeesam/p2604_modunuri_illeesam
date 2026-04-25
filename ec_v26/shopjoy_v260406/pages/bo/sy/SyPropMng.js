@@ -45,8 +45,6 @@ window.SyPropMng = {
         if (props.showToast) props.showToast('SyProp 로드 실패', 'error');
       }
     };
-    onMounted(() => { handleFetchData(); });
-
     /* ── 사이트 필터 (공통필터 사이트와 동기화) ── */
     const cfSiteId = computed(() => window.boCommonFilter?.siteId || null);
     const cfFilteredBySite = computed(() => {
@@ -70,6 +68,7 @@ window.SyPropMng = {
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
+      handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });

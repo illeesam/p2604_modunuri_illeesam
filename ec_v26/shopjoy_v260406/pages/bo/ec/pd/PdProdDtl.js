@@ -33,7 +33,6 @@ window.PdProdDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleLoadData(); });
     const cfIsNew = computed(() => !props.editId);
     const topTab = ref(window._pdProdDtlState.tab || 'info');
     watch(topTab, v => { window._pdProdDtlState.tab = v; });
@@ -383,7 +382,7 @@ window.PdProdDtl = {
     const openMdModal  = () => { mdSearch.value = ''; mdModalOpen.value = true; };
     const selectMdUser = (u) => { form.mdUserId = u.boUserId; mdModalOpen.value = false; };
 
-    const initForm = async () => {
+    const handleInitForm = async () => {
       if (cfIsNew.value) {
         // 신규 등록: 기본값 본인 (목업에서는 첫 번째 활성 사용자)
         form.mdUserId = cfMdUserList.window.safeArrayUtils.safeGet(value, 0)?.boUserId || '';
@@ -481,7 +480,7 @@ window.PdProdDtl = {
       document.addEventListener('mousemove', _divMoveH);
       document.addEventListener('mouseup', _divUpH);
     };
-    onMounted(() => { initForm(); });
+    onMounted(() => { handleLoadData(); handleInitForm(); });
     onBeforeUnmount(() => {
       if (_divMoveH) document.removeEventListener('mousemove', _divMoveH);
       if (_divUpH)   document.removeEventListener('mouseup',  _divUpH);

@@ -31,7 +31,6 @@ window.OdOrderHist = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     const botTab = ref(window._ecOrderHistState.tab || 'products');
     watch(botTab, v => { window._ecOrderHistState.tab = v; });
     const viewMode2 = ref('tab');
@@ -40,6 +39,7 @@ window.OdOrderHist = {
 
     const orderItems = reactive([]);
     onMounted(() => {
+      handleFetchData();
       const o = window.safeArrayUtils.safeFind(orders, x => x.orderId === props.orderId);
       if (o) {
         orderItems.splice(0, orderItems.length,

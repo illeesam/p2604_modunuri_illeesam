@@ -26,7 +26,6 @@ window.PmVoucherDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._pmVoucherDtlState.tab || 'info');
     watch(tab, v => { window._pmVoucherDtlState.tab = v; });
@@ -55,6 +54,7 @@ window.PmVoucherDtl = {
     });
 
     onMounted(() => {
+      handleFetchData();
       if (!cfIsNew.value) {
         const v = (voucherList || []).find(x => x.voucherId === props.editId);
         if (v) Object.assign(form, { ...v });

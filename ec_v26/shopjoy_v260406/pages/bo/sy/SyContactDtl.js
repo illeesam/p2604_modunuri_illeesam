@@ -26,7 +26,6 @@ window.SyContactDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleLoadData(); });
     const cfIsNew = computed(() => !props.editId);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const tab = ref(window._syContactDtlState.tab || 'content');
@@ -51,7 +50,7 @@ window.SyContactDtl = {
       content: yup.string().required('문의 내용을 입력해주세요.'),
     });
 
-    const initForm = async () => {
+    const handleInitForm = async () => {
       if (!isNew.value) {
         const c = contacts.find(x => x.inquiryId === props.editId);
         if (c) Object.assign(form, { ...c });
@@ -79,7 +78,10 @@ window.SyContactDtl = {
         _qAnswer.on('text-change', () => { form.answer = _qAnswer.root.innerHTML; });
       }
     };
-    onMounted(() => { initForm(); });
+    onMounted(() => {
+      handleLoadData();
+      handleInitForm();
+    });
 
     onBeforeUnmount(() => {
       if (_qContent) { form.content = _qContent.root.innerHTML; _qContent = null; }

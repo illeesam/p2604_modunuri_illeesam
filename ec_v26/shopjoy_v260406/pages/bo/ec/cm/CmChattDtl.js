@@ -25,7 +25,6 @@ window.CmChattDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._cmChattDtlState.tab || 'chat');
     watch(tab, v => { window._cmChattDtlState.tab = v; });
@@ -67,6 +66,7 @@ window.CmChattDtl = {
     };
 
     onMounted(() => {
+      handleFetchData();
       if (!cfIsNew.value) {
         chat.value = chats.window.safeArrayUtils.safeFind(value, c => c.chatId === props.editId) || null;
         if (chat.value) chat.value.unread = 0;

@@ -35,7 +35,6 @@ window.OdOrderDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleLoadData(); });
     const cfIsNew = computed(() => !props.editId);
 
     const ORDER_STEPS = ['입금대기', '결제완료', '상품준비중', '배송중', '배송완료', '구매확정'];
@@ -61,7 +60,7 @@ window.OdOrderDtl = {
       userId: yup.string().required('회원ID를 입력해주세요.'),
     });
 
-    const initForm = async () => {
+    const handleInitForm = async () => {
       if (!cfIsNew.value) {
         const o = getOrder.value(props.editId);
         if (o) {
@@ -89,8 +88,6 @@ window.OdOrderDtl = {
         _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
       }
     };
-    onMounted(() => { initForm(); });
-
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
     const cfCurrentStepIdx = computed(() => {
@@ -156,7 +153,7 @@ window.OdOrderDtl = {
     const initItems = async () => {
       orderItems.splice(0, orderItems.length, ...sampleOrderItems());
     };
-    onMounted(() => { initItems(); });
+    onMounted(() => { handleLoadData(); handleInitForm(); initItems(); });
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
     /* 판매업체 */

@@ -24,7 +24,6 @@ window.CmNoticeDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
       noticeId: null, title: '', noticeType: '일반', isFixed: false,
@@ -39,6 +38,7 @@ window.CmNoticeDtl = {
     let quill = null;
 
     onMounted(() => {
+      handleFetchData();
       if (!cfIsNew.value) {
         const n = notices.window.safeArrayUtils.safeFind(value, x => x.noticeId === props.editId);
         if (n) Object.assign(form, { ...n });

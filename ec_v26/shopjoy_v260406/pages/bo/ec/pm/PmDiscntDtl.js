@@ -28,7 +28,6 @@ window.PmDiscntDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._pmDiscntDtlState.tab || 'info');
     watch(tab, v => { window._pmDiscntDtlState.tab = v; });
@@ -56,6 +55,7 @@ window.PmDiscntDtl = {
     });
 
     onMounted(() => {
+      handleFetchData();
       if (!cfIsNew.value) {
         const d = (discntList).find(x => x.discntId === props.editId);
         if (d) Object.assign(form, d);

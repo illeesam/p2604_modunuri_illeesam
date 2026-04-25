@@ -28,7 +28,6 @@ window.PmEventDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._ecEventDtlState.tab || 'info');
     watch(tab, v => { window._ecEventDtlState.tab = v; });
@@ -100,6 +99,7 @@ window.PmEventDtl = {
     };
 
     onMounted(() => {
+      handleFetchData();
       if (!cfIsNew.value) {
         const e = events.window.safeArrayUtils.safeFind(value, x => x.eventId === props.editId);
         if (e) {

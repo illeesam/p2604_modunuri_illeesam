@@ -26,7 +26,6 @@ window.PmSaveDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._pmSaveDtlState.tab || 'info');
     watch(tab, v => { window._pmSaveDtlState.tab = v; });
@@ -54,6 +53,7 @@ window.PmSaveDtl = {
     });
 
     onMounted(() => {
+      handleFetchData();
       if (!cfIsNew.value) {
         const s = (saveList || []).find(x => x.saveId === props.editId);
         if (s) Object.assign(form, s);

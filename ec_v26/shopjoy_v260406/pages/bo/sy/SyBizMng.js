@@ -23,8 +23,6 @@ window.SyBizMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
-
     /* 좌측 표시경로 트리 */
     const selectedPath = ref(null);
     const expanded = reactive(new Set([null]));
@@ -34,6 +32,7 @@ window.SyBizMng = {
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     onMounted(() => {
+      handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });

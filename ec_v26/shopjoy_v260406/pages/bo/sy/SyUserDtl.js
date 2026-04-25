@@ -25,7 +25,6 @@ window.SyUserDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
@@ -45,6 +44,7 @@ window.SyUserDtl = {
     });
 
     onMounted(() => {
+      handleFetchData();
       if (!cfIsNew.value) {
         const u = boUsers.value.find(x => x.boUserId === props.editId);
         if (u) Object.assign(form, { ...u, password: '' });

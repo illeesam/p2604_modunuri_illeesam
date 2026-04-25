@@ -25,7 +25,6 @@ window.PmCouponDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleLoadData(); });
     const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._pmCouponDtlState.tab || 'info');
     watch(tab, v => { window._pmCouponDtlState.tab = v; });
@@ -64,7 +63,7 @@ window.PmCouponDtl = {
       endDate: yup.string().required('만료일을 입력해주세요.'),
     });
 
-    const initForm = async () => {
+    const handleInitForm = async () => {
       if (!cfIsNew.value) {
         const c = getCoupon.value(props.editId);
         if (c) Object.assign(form, { ...c });
@@ -82,7 +81,7 @@ window.PmCouponDtl = {
         _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
       }
     };
-    onMounted(() => { initForm(); });
+    onMounted(() => { handleLoadData(); handleInitForm(); });
 
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 

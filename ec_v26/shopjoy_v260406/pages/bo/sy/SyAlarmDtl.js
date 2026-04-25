@@ -25,7 +25,6 @@ window.SyAlarmDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({
@@ -40,6 +39,7 @@ window.SyAlarmDtl = {
     });
 
     onMounted(() => {
+      handleFetchData();
       if (!cfIsNew.value) {
         const a = alarms.find(x => x.alarmId === props.editId);
         if (a) Object.assign(form, { ...a });
