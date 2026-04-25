@@ -18,6 +18,7 @@
 | `base.인증-authId.md` | 통합 인증 식별자(authId) 설계 정책 (BO=user_id, FO=member_id) |
 | `base.backend-EcAdminApi.md` | Spring Boot EcAdminApi 백엔드 구조 및 패키지 기준 |
 | `base.설정값암호화.md` | 설정값 암호화 정책 |
+| `base.DDL작성규칙.md` | PostgreSQL DDL 파일 구조, ID 생성, 컬럼명 표준, 인덱스 패턴 |
 
 ## 관련 구현
 - `base/config.js` — SITE_CONFIG, FRONT_SITE_NO 전역 설정
