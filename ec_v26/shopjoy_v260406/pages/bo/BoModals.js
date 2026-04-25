@@ -4,32 +4,35 @@ window.BoRefModal = {
   props: ['state'],
   emits: ['close'],
   setup(props, { emit }) {
-    const { computed } = Vue;
+    const { ref, watch } = Vue;
 
     const close = () => emit('close');
     const s = props.state;
 
     /* ── 각 타입별 데이터 ── */
-    const memberData = computed(() => {
-      if (s.type !== 'member' || !s.id) return null;
-      return window.boDataProvider?.getMemberById?.(s.id) || null;
-    });
-    const productData = computed(() => {
-      if (s.type !== 'product' || !s.id) return null;
-      return window.boDataProvider?.getProductById?.(s.id) || null;
-    });
-    const orderData = computed(() => {
-      if (s.type !== 'order' || !s.id) return null;
-      return window.boDataProvider?.getOrderById?.(s.id) || null;
-    });
-    const claimData = computed(() => {
-      if (s.type !== 'claim' || !s.id) return null;
-      return window.boDataProvider?.getClaimById?.(s.id) || null;
-    });
-    const couponData = computed(() => {
-      if (s.type !== 'coupon' || !s.id) return null;
-      return window.boDataProvider?.getCouponById?.(s.id) || null;
-    });
+    const memberData  = ref(null);
+    const productData = ref(null);
+    const orderData   = ref(null);
+    const claimData   = ref(null);
+    const couponData  = ref(null);
+
+    const API_MAP = {
+      member:  (id) => window.boApi.get(`/bo/ec/mb/member/${id}`),
+      product: (id) => window.boApi.get(`/bo/ec/pd/prod/${id}`),
+      order:   (id) => window.boApi.get(`/bo/ec/od/order/${id}`),
+      claim:   (id) => window.boApi.get(`/bo/ec/od/claim/${id}`),
+      coupon:  (id) => window.boApi.get(`/bo/ec/pm/coupon/${id}`),
+    };
+    const DATA_REF_MAP = { member: memberData, product: productData, order: orderData, claim: claimData, coupon: couponData };
+
+    watch(() => [s.type, s.id], async ([type, id]) => {
+      Object.values(DATA_REF_MAP).forEach(r => { r.value = null; });
+      if (!type || !id || !API_MAP[type]) return;
+      try {
+        const res = await API_MAP[type](id);
+        DATA_REF_MAP[type].value = res.data?.data || null;
+      } catch (_) {}
+    }, { immediate: true });
 
     const badgeCls = (status) => {
       const map = {

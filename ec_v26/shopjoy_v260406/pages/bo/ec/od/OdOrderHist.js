@@ -8,25 +8,30 @@ window.OdOrderHist = {
     const orders = reactive([]);
     const loading = ref(false);
     const error = ref(null);
-    const claims = reactive((window.boData?.claims || []));
-    const deliveries = reactive((window.boData?.deliveries || []));
+    const claims = reactive([]);
+    const deliveries = reactive([]);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/ec/od/order/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        orders.splice(0, orders.length, ...(res.data?.data?.list || []));
+        const [resO, resC, resD] = await Promise.all([
+          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/od/dliv/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        orders.splice(0, orders.length, ...(resO.data?.data?.list || []));
+        claims.splice(0, claims.length, ...(resC.data?.data?.list || []));
+        deliveries.splice(0, deliveries.length, ...(resD.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;
-        if (props.showToast) props.showToast('OdOrder 로드 실패', 'error');
+        if (props.showToast) props.showToast('OdOrderHist 로드 실패', 'error');
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const botTab = ref(window._ecOrderHistState.tab || 'products');
     watch(botTab, v => { window._ecOrderHistState.tab = v; });
     const viewMode2 = ref('tab');
@@ -43,18 +48,18 @@ window.OdOrderHist = {
       }
     });
 
-    const relatedDliv   = computed(() => window.safeArrayUtils.safeFind(deliveries || [], d => d.orderId === props.orderId) || null);
-    const relatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims || [], c => c.orderId === props.orderId));
-    const dlivHistory   = computed(() => {
-      if (!relatedDliv.value) return [];
+    const cfRelatedDliv   = computed(() => window.safeArrayUtils.safeFind(deliveries || [], d => d.orderId === props.orderId) || null);
+    const cfRelatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims || [], c => c.orderId === props.orderId));
+    const cfDlivHistory   = computed(() => {
+      if (!cfRelatedDliv.value) return [];
       const o = window.safeArrayUtils.safeFind(orders, x => x.orderId === props.orderId);
       return [
         { date: o && o.orderDate ? o.orderDate.slice(0, 10) : '-', status: '상품준비중', location: '물류센터', memo: '상품 포장 완료' },
-        { date: relatedDliv.value.shipDate || '-', status: '배송중', location: relatedDliv.value.courierCd || '-', memo: '출고 완료' },
+        { date: cfRelatedDliv.value.shipDate || '-', status: '배송중', location: cfRelatedDliv.value.courierCd || '-', memo: '출고 완료' },
       ].filter(h => h.date !== '-');
     });
 
-    return { orders, loading, error, botTab, orderItems, relatedDliv, relatedClaims, dlivHistory, viewMode2, showTab, claims, deliveries };
+    return { orders, loading, error, botTab, orderItems, cfRelatedDliv, cfRelatedClaims, cfDlivHistory, viewMode2, showTab, claims, deliveries };
   },
   template: /* html */`
 <div>
@@ -62,8 +67,8 @@ window.OdOrderHist = {
   <div class="tab-bar-row">
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:botTab==='products'}" :disabled="viewMode2!=='tab'" @click="botTab='products'">📦 구성 상품 <span class="tab-count">{{ orderItems.length }}</span></button>
-      <button class="tab-btn" :class="{active:botTab==='dliv'}"     :disabled="viewMode2!=='tab'" @click="botTab='dliv'">🚚 배송 이력 <span class="tab-count">{{ relatedDliv ? 1 : 0 }}</span></button>
-      <button class="tab-btn" :class="{active:botTab==='claims'}"   :disabled="viewMode2!=='tab'" @click="botTab='claims'">↩ 연관 클레임 <span class="tab-count">{{ relatedClaims.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='dliv'}"     :disabled="viewMode2!=='tab'" @click="botTab='dliv'">🚚 배송 이력 <span class="tab-count">{{ cfRelatedDliv ? 1 : 0 }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='claims'}"   :disabled="viewMode2!=='tab'" @click="botTab='claims'">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></button>
     </div>
     </div>
   <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
@@ -91,20 +96,20 @@ window.OdOrderHist = {
 
   <!-- 배송 이력 -->
   <div class="card" v-show="showTab('dliv')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🚚 배송 이력 <span class="tab-count">{{ relatedDliv ? 1 : 0 }}</span></div>
-    <template v-if="relatedDliv">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🚚 배송 이력 <span class="tab-count">{{ cfRelatedDliv ? 1 : 0 }}</span></div>
+    <template v-if="cfRelatedDliv">
       <div style="margin-bottom:14px;padding:12px 16px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;display:flex;justify-content:space-between;align-items:center;">
         <div style="font-size:13px;">
-          <span style="color:#888;">수령인</span> <b>{{ relatedDliv.receiver }}</b>
-          &nbsp;·&nbsp;<span style="color:#888;">택배사</span> <b>{{ relatedDliv.courier }}</b>
-          &nbsp;·&nbsp;<span style="color:#888;">운송장</span> <b>{{ relatedDliv.trackingNo || '-' }}</b>
+          <span style="color:#888;">수령인</span> <b>{{ cfRelatedDliv.receiver }}</b>
+          &nbsp;·&nbsp;<span style="color:#888;">택배사</span> <b>{{ cfRelatedDliv.courier }}</b>
+          &nbsp;·&nbsp;<span style="color:#888;">운송장</span> <b>{{ cfRelatedDliv.trackingNo || '-' }}</b>
         </div>
-        <button class="btn btn-blue btn-sm" @click="navigate('odDlivDtl',{id:relatedDliv.dlivId})">배송 수정</button>
+        <button class="btn btn-blue btn-sm" @click="navigate('odDlivDtl',{id:cfRelatedDliv.dlivId})">배송 수정</button>
       </div>
-      <table class="bo-table" v-if="dlivHistory.length">
+      <table class="bo-table" v-if="cfDlivHistory.length">
         <thead><tr><th>일시</th><th>상태</th><th>위치</th><th>메모</th></tr></thead>
         <tbody>
-          <tr v-for="(h, i) in dlivHistory" :key="Math.random()">
+          <tr v-for="(h, i) in cfDlivHistory" :key="Math.random()">
             <td>{{ h.date }}</td>
             <td><span class="badge badge-blue">{{ h.status }}</span></td>
             <td>{{ h.location }}</td>
@@ -119,11 +124,11 @@ window.OdOrderHist = {
 
   <!-- 연관 클레임 -->
   <div class="card" v-show="showTab('claims')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ relatedClaims.length }}</span></div>
-    <table class="bo-table" v-if="relatedClaims.length">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></div>
+    <table class="bo-table" v-if="cfRelatedClaims.length">
       <thead><tr><th>클레임ID</th><th>회원</th><th>유형</th><th>상태</th><th>사유</th><th>신청일</th><th>관리</th></tr></thead>
       <tbody>
-        <tr v-for="c in relatedClaims" :key="c?.claimId">
+        <tr v-for="c in cfRelatedClaims" :key="c?.claimId">
           <td><span class="ref-link" @click="showRefModal('claim', c.claimId)">{{ c.claimId }}</span></td>
           <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
           <td>{{ c.type }}</td>

@@ -7,7 +7,7 @@ window.DispUi02 = {
   setup() {
     const { computed } = Vue;
 
-    const dispDataset = window.boData || window.dispDataset || { displays: [], codes: [] };
+    const dispDataset = window.dispDataset || { displays: [], codes: [] };
     const qs = new URLSearchParams(location.search);
     const params = {
       areas: ['SIDEBAR_TOP', 'SIDEBAR_MID', 'SIDEBAR_BOT'],

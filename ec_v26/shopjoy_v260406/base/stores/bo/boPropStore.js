@@ -5,65 +5,65 @@
 window.useBoPropStore = Pinia.defineStore('boProp', {
   state: () => {
     return {
-      props: {},
-      isLoading: false,
+      svProps: {},
+      svIsLoading: false,
     };
   },
 
   getters: {
-    isEmpty: (s) => Object.keys(s.props).length === 0,
-    getProp: (s) => (key) => s.props[key], // 속성값 조회
-    getAllKeys: (s) => Object.keys(s.props), // 모든 속성키 목록
+    svIsEmpty: (s) => Object.keys(s.svProps).length === 0,
+    svGetProp: (s) => (key) => s.svProps[key], // 속성값 조회
+    svGetAllKeys: (s) => Object.keys(s.svProps), // 모든 속성키 목록
   },
 
   actions: {
     /**
      * 시스템 속성 설정 (전체 교체)
      */
-    setProps(propsData) {
-      this.props = propsData || {};
+    sfSetProps(propsData) {
+      this.svProps = propsData || {};
     },
 
     /**
      * 속성 추가/업데이트
      */
-    setProp(key, value) {
+    sfSetProp(key, value) {
       if (key !== undefined) {
-        this.props[key] = value;
+        this.svProps[key] = value;
       }
     },
 
     /**
      * 여러 속성 일괄 추가/업데이트
      */
-    setMultiProps(propsObj) {
+    sfSetMultiProps(propsObj) {
       if (propsObj && typeof propsObj === 'object') {
-        Object.assign(this.props, propsObj);
+        Object.assign(this.svProps, propsObj);
       }
     },
 
     /**
      * 속성 삭제
      */
-    removeProp(key) {
-      if (key && this.props[key] !== undefined) {
-        delete this.props[key];
+    sfRemoveProp(key) {
+      if (key && this.svProps[key] !== undefined) {
+        delete this.svProps[key];
       }
     },
 
     /**
      * 속성 존재 여부 확인
      */
-    hasProp(key) {
-      return key !== undefined && this.props[key] !== undefined;
+    sfHasProp(key) {
+      return key !== undefined && this.svProps[key] !== undefined;
     },
 
     /**
      * 초기화 (로그아웃 시)
      */
-    clear() {
-      this.props = {};
-      this.isLoading = false;
+    sfClear() {
+      this.svProps = {};
+      this.svIsLoading = false;
     },
   },
 });
@@ -72,16 +72,16 @@ window.useBoPropStore = Pinia.defineStore('boProp', {
 window.getBoPropStore = () => {
   try {
     return window.useBoPropStore?.() || {
-      props: {},
-      isEmpty: true,
-      isLoading: false,
+      svProps: {},
+      svIsEmpty: true,
+      svIsLoading: false,
     };
   } catch (e) {
     console.error('[getBoPropStore] error:', e);
     return {
-      props: {},
-      isEmpty: true,
-      isLoading: false,
+      svProps: {},
+      svIsEmpty: true,
+      svIsLoading: false,
     };
   }
 };

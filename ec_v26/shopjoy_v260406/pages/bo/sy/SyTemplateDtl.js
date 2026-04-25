@@ -10,7 +10,7 @@ window.SyTemplateDtl = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const loadData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/template/page', {
@@ -24,7 +24,8 @@ window.SyTemplateDtl = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { loadData(); });
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const TEMPLATE_TYPES = ['메일템플릿', '문자템플릿', 'MMS템플릿', 'kakao톡템플릿', 'kakao알림톡템플릿', '시스템알림', '회원알림'];
@@ -67,13 +68,14 @@ window.SyTemplateDtl = {
       else destroyQuill();
     }, { flush: 'post' });
 
-    onMounted(async () => {
+    const initForm = async () => {
       if (!isNew.value) {
         const t = templates.find(x => x.templateId === props.editId);
         if (t) Object.assign(form, { sampleParams: '{}', ...t });
       }
       if (useHtmlEditor.value && !props.viewMode) { await nextTick(); initQuill(); }
-    });
+    };
+    onMounted(() => { initForm(); });
 
     onBeforeUnmount(() => destroyQuill());
 

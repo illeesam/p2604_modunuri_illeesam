@@ -4,9 +4,9 @@ window.PdCategoryProdMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const categories = reactive(window.boDataProvider?.getCategories?.() || []);
-    const products = reactive(window.boDataProvider?.getProducts?.() || []);
-    const categoryProds = reactive((window.boData?.categoryProds) || []);
+    const categories = reactive([]);
+    const products = reactive([]);
+    const categoryProds = reactive([]);
 
     /* ── 뷰모드 영속화 ── */
     if (!window._ecCategoryProdState) window._ecCategoryProdState = { viewMode: 'tab' };
@@ -53,10 +53,19 @@ window.PdCategoryProdMng = {
     const expandedSet = reactive(new Set());
 
     /* depth 1 노드 기본 펼침 (2레벨 노출) */
-    onMounted(() => {
+    const fetchData = async () => {
+      try {
+        const [catsRes, prodsRes] = await Promise.all([
+          window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        categories.splice(0, categories.length, ...(catsRes.data?.data?.list || []));
+        products.splice(0, products.length, ...(prodsRes.data?.data?.list || []));
+      } catch (_) {}
       expandedSet.clear();
-      (categories || []).filter(c => c.depth === 1).forEach(c => expandedSet.add(c.categoryId));
-    });
+      categories.filter(c => c.depth === 1).forEach(c => expandedSet.add(c.categoryId));
+    };
+    onMounted(() => { fetchData(); });
     const isExpanded  = id => expandedSet.has(id);
     const toggleNode  = id => {
       if (expandedSet.has(id)) expandedSet.delete(id); else expandedSet.add(id);
@@ -292,7 +301,7 @@ window.PdCategoryProdMng = {
       <input class="form-control" v-model="searchProdNm" @keyup.enter="() => onSearch?.()"
              placeholder="상품명 검색" style="max-width:280px">
       <div class="search-actions">
-        <button class="btn btn-primary btn-sm" @click="onSearch">검색</button>
+        <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>

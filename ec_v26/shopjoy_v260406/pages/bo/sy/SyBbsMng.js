@@ -10,7 +10,7 @@ window.SyBbsMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const resBbs = await window.boApi.get('/bo/sy/bbs/page', {
@@ -30,7 +30,8 @@ window.SyBbsMng = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -149,7 +150,7 @@ window.SyBbsMng = {
       <input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" />
       <select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>

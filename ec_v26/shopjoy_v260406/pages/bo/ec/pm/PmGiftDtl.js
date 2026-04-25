@@ -5,19 +5,21 @@ window.PmGiftDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const giftList = ref((window.boData?.gifts || []));
+    const giftList = ref([]);
     const gifts = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/gift/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        gifts.splice(0, gifts.length, ...(res.data?.data?.list || []));
+        const list = res.data?.data?.list || [];
+        gifts.splice(0, gifts.length, ...list);
+        giftList.value = list;
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -25,7 +27,8 @@ window.PmGiftDtl = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const isNew = computed(() => !props.editId);
     const tab = ref(window._pmGiftDtlState.tab || 'info');
     watch(tab, v => { window._pmGiftDtlState.tab = v; });

@@ -35,7 +35,7 @@
   /* ── store → state 동기화 ── */
   const _sync = () => {
     if (_store) {
-      state.user = _store.authUser ? { ...(_store.authUser) } : null;
+      state.user = _store.svAuthUser ? { ...(_store.svAuthUser) } : null;
       console.log('[foAuth._sync] state.user updated:', state.user);
     }
   };
@@ -46,8 +46,8 @@
 
     /* 초기 사용자 정보 로드 (서버 검증 전 임시 표시) */
     if (_initUser && _initToken) {
-      _store.authUser = _initUser;
-      _store.accessToken = _initToken;
+      _store.svAuthUser = _initUser;
+      _store.svAccessToken = _initToken;
       console.log('[foAuth.init] restored authUser from localStorage:', _initUser);
     }
 
@@ -59,16 +59,16 @@
       (async () => {
         try {
           const initStore = window.useFoAppInitStore?.();
-          if (initStore) await initStore.fetchFoAppInitData();
+          if (initStore) await initStore.sfFetchFoAppInitData();
           _sync();
           console.log('[foAuth.init] init data loaded OK');
         } catch (e) {
           if (e?.response?.status === 401) {
             console.warn('[foAuth.init] token invalid (401), clearing session');
-            _store.clearSession();
+            _store.sfClearSession();
             _sync();
           } else {
-            console.warn('[foAuth.init] fetchFoAppInitData error:', e?.response?.status || e.message);
+            console.warn('[foAuth.init] sfFetchFoAppInitData error:', e?.response?.status || e.message);
           }
         }
       })();
@@ -76,14 +76,14 @@
 
     /* 1초마다 localStorage 폴링 → DevTools에서 토큰 삭제 시 즉시 로그아웃 */
     setInterval(() => {
-      _store.syncFromStorage();
+      _store.sfSyncFromStorage();
       _sync();
     }, 1000);
 
     /* 다른 탭에서 localStorage 변경 시 즉시 동기화 */
     window.addEventListener('storage', e => {
       if (e.key === 'modu-fo-accessToken' || e.key === 'modu-fo-authUser') {
-        _store.syncFromStorage();
+        _store.sfSyncFromStorage();
         _sync();
       }
     });
@@ -116,7 +116,7 @@
         const token = d.accessToken;
         console.log('[foAuth.login] user object:', user);
         console.log('[foAuth.login] token:', token);
-        _store.setSession(user, token);
+        _store.sfSetSession(user, token);
         _sync();
         console.log('[foAuth.login] state.user after sync:', state.user);
 
@@ -125,7 +125,7 @@
           const userRes = await window.foApi.post('/co/cm/fo-app-store/getUser', '');
           if (userRes?.data?.data?.member) {
             const authStore = window.useFoAuthStore?.();
-            authStore?.setAuthUser(userRes.data.data.member);
+            authStore?.sfSetAuthUser(userRes.data.data.member);
             console.log('[foAuth.login] user info updated from getUser');
           }
         } catch (e) {
@@ -150,7 +150,7 @@
     };
     const user = demos[provider];
     if (!user) return { ok: false };
-    _store.setSession(user, _mkToken());
+    _store.sfSetSession(user, _mkToken());
     _sync();
     return { ok: true };
   };
@@ -177,7 +177,7 @@
           siteId: d.siteId || '',
         };
         const token = d.accessToken;
-        _store.setSession(user, token);
+        _store.sfSetSession(user, token);
         _sync();
         return { ok: true };
       }
@@ -190,7 +190,7 @@
 
   /* ── 로그아웃 ── */
   const logout = () => {
-    _store.clearSession();
+    _store.sfClearSession();
     _sync();
   };
 

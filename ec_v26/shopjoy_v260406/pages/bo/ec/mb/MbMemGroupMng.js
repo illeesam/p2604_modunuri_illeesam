@@ -9,7 +9,7 @@ window.MbMemGroupMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/mb/member-group/page', {
@@ -23,14 +23,15 @@ window.MbMemGroupMng = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchKw  = ref('');
     const searchUse = ref('');
     const applied   = reactive({ kw: '', use: '' });
     const pager     = reactive({ page: 1, size: 20 });
 
-    const filtered = computed(() => {
+    const cfFiltered = computed(() => {
       const kw = applied.kw.toLowerCase();
       if (!Array.isArray(groups)) return [];
       return groups.filter(g => {
@@ -39,15 +40,15 @@ window.MbMemGroupMng = {
         return true;
       });
     });
-    const total      = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums   = computed(() => { const c=pager.page,l=totalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfTotal      = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const gridRows   = reactive([]);
     let   _tempId    = -1;
 
-    const loadGrid = () => { gridRows.splice(0, gridRows.length, ...pageList.value.map(g => ({ ...g, _row_status: null }))); };
+    const loadGrid = () => { gridRows.splice(0, gridRows.length, ...cfPageList.value.map(g => ({ ...g, _row_status: null }))); };
     watch([() => pager.page, applied], loadGrid, { immediate: true });
 
     const addRow       = () => { gridRows.unshift({ groupId: 'G' + (_tempId--), siteId: 1, groupNm: '', groupMemo: '', memberCnt: 0, useYn: 'Y', _row_status: 'N' }); };
@@ -113,7 +114,7 @@ window.MbMemGroupMng = {
         <label class="search-label">사용여부</label>
         <select class="form-control" v-model="searchUse"><option value="">전체</option><option value="Y">Y</option><option value="N">N</option></select>
         <div class="search-actions">
-          <button class="btn btn-primary btn-sm" @click="onSearch">검색</button>
+          <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
           <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
         </div>
       </div>

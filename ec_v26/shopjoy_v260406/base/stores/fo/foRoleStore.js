@@ -4,39 +4,39 @@
 window.useFoRoleStore = Pinia.defineStore('foRole', {
   state: () => {
     return {
-      roles: [],
+      svRoles: [],
     };
   },
 
   actions: {
-    setRoles(rolesData) {
+    sfSetRoles(rolesData) {
       if (rolesData) {
-        this.roles = rolesData;
+        this.svRoles = rolesData;
       }
     },
 
-    addRole(role) {
+    sfAddRole(role) {
       if (role) {
-        this.roles.push(role);
+        this.svRoles.push(role);
       }
     },
 
-    updateRole(roleId, role) {
-      const idx = this.roles.findIndex(r => r.id === roleId);
+    sfUpdateRole(roleId, role) {
+      const idx = this.svRoles.findIndex(r => r.id === roleId);
       if (idx >= 0) {
-        this.roles[idx] = { ...this.roles[idx], ...role };
+        this.svRoles[idx] = { ...this.svRoles[idx], ...role };
       }
     },
 
-    removeRole(roleId) {
-      const idx = this.roles.findIndex(r => r.id === roleId);
+    sfRemoveRole(roleId) {
+      const idx = this.svRoles.findIndex(r => r.id === roleId);
       if (idx >= 0) {
-        this.roles.splice(idx, 1);
+        this.svRoles.splice(idx, 1);
       }
     },
 
-    clear() {
-      this.roles = [];
+    sfClear() {
+      this.svRoles = [];
     },
   },
 });

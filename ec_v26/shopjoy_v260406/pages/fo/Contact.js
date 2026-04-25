@@ -48,7 +48,7 @@ window.Contact = {
         <label class="form-label">문의 유형</label>
         <select v-model="form.inquiryType" class="form-input">
           <option value="">선택해주세요 (선택사항)</option>
-          <option v-for="c in inquiryCodes" :key="c.codeId" :value="c.codeValue">{{ c.codeLabel }}</option>
+          <option v-for="c in cfInquiryCodes" :key="c.codeId" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div style="margin-bottom:14px;">
@@ -62,7 +62,7 @@ window.Contact = {
           파일 업로드 기능은 별도로 구현 예정입니다.
         </div>
       </div>
-      <button class="btn-blue" @click="submitForm" style="width:100%;padding:13px;">문의 접수하기</button>
+      <button class="btn-blue" @click="handleSubmit" style="width:100%;padding:13px;">문의 접수하기</button>
     </div>
 
     <!-- 연락처 + 미니 FAQ -->
@@ -92,7 +92,7 @@ window.Contact = {
   setup(props) {
     const { reactive, ref, computed } = Vue;
 
-    const inquiryCodes = computed(() =>
+    const cfInquiryCodes = computed(() =>
       window.foCmUtil.codesByGroup(props.config || {}, 'shopjoy_contact_inquiry')
     );
 
@@ -111,7 +111,7 @@ window.Contact = {
       return ok;
     };
 
-    const submitForm = async () => {
+    const handleSubmit = async () => {
       if (!validate()) return;
       if (window.foApi) {
         await window.foApi.post('/fo/inquiry/create', {
@@ -128,6 +128,6 @@ window.Contact = {
       Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
     };
 
-    return { form, errors, openFaq, clearErr, submitForm, inquiryCodes };
+    return { form, errors, openFaq, clearErr, handleSubmit, cfInquiryCodes };
   }
 };

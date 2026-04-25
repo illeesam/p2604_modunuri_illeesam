@@ -5,19 +5,21 @@ window.SyUserMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const users = reactive([]);
-    const depts = reactive((window.boData?.depts || []));
-    const boUsers = ref((window.boData?.boUsers || []));
+    const depts = reactive([]);
+    const boUsers = ref([]);
     const loading = ref(false);
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/sy/user/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        users = res.data?.data?.list || [];
+        const [resUsers, resDepts] = await Promise.all([
+          window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/dept/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        boUsers.value = resUsers.data?.data?.list || [];
+        depts.splice(0, depts.length, ...(resDepts.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -25,7 +27,8 @@ window.SyUserMng = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     /* 좌측 부서 트리 */
     const selectedDeptId = ref(null);
     const expanded = reactive(new Set([null]));
@@ -156,7 +159,7 @@ window.SyUserMng = {
       </select>
       <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>

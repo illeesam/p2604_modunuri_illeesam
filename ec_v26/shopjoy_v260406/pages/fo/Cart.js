@@ -18,15 +18,15 @@ window.Cart = {
       checkedIdxs = s;
     };
 
-    const allChecked = computed(() =>
+    const cfAllChecked = computed(() =>
       props.cart.length > 0 && checkedIdxs.size === props.cart.length
     );
-    const someChecked = computed(() =>
+    const cfSomeChecked = computed(() =>
       checkedIdxs.size > 0 && checkedIdxs.size < props.cart.length
     );
 
     const toggleAll = () => {
-      if (allChecked.value) checkedIdxs = new Set();
+      if (cfAllChecked.value) checkedIdxs = new Set();
       else checkedIdxs = new Set(props.cart.map((_, i) => i));
     };
 
@@ -62,21 +62,21 @@ window.Cart = {
     }
 
     /* 요약 패널: 체크된 항목(없으면 전체) 기준 */
-    const summaryItems = computed(() =>
+    const cfSummaryItems = computed(() =>
       checkedIdxs.size > 0
         ? [...checkedIdxs].sort().map(i => props.cart[i])
         : (props.cart || [])
     );
 
-    const totalPrice = computed(() =>
-      summaryItems.value.reduce((s, item) => s + parsePrice(item.product.price) * item.qty, 0)
+    const cfTotalPrice = computed(() =>
+      cfSummaryItems.value.reduce((s, item) => s + parsePrice(item.product.price) * item.qty, 0)
     );
 
-    const totalPriceStr = computed(() =>
-      totalPrice.value ? totalPrice.value.toLocaleString('ko-KR') + '원' : '-'
+    const cfTotalPriceStr = computed(() =>
+      cfTotalPrice.value ? cfTotalPrice.value.toLocaleString('ko-KR') + '원' : '-'
     );
 
-    const orderCount = computed(() =>
+    const cfOrderCount = computed(() =>
       checkedIdxs.size > 0 ? checkedIdxs.size : props.cart.length
     );
 
@@ -86,9 +86,9 @@ window.Cart = {
     };
 
     return {
-      checkedIdxs, isChecked, toggleCheck, allChecked, someChecked, toggleAll,
+      checkedIdxs, isChecked, toggleCheck, cfAllChecked, cfSomeChecked, toggleAll,
       removeItem, goOrder,
-      formatPrice, totalPriceStr, summaryItems, orderCount, handleClearAll,
+      formatPrice, cfTotalPriceStr, cfSummaryItems, cfOrderCount, handleClearAll,
     };
   },
 
@@ -126,7 +126,7 @@ window.Cart = {
           <!-- 전체 선택/삭제 헤더 -->
           <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
             <label style="display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;">
-              <input type="checkbox" :checked="allChecked" :indeterminate.prop="someChecked"
+              <input type="checkbox" :checked="cfAllChecked" :indeterminate.prop="cfSomeChecked"
                 @change="toggleAll"
                 style="width:17px;height:17px;cursor:pointer;accent-color:var(--blue);" />
               <span style="font-weight:700;font-size:0.9rem;color:var(--text-primary);">
@@ -208,7 +208,7 @@ window.Cart = {
           </div>
 
           <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;font-size:0.875rem;">
-            <div v-for="(item, idx) in summaryItems" :key="idx"
+            <div v-for="(item, idx) in cfSummaryItems" :key="idx"
               style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
               <span style="color:var(--text-secondary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
                 {{ item.product.prodNm }} ({{ item.color.name }}/{{ item.size }}) × {{ item.qty }}
@@ -220,7 +220,7 @@ window.Cart = {
           <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:18px;">
             <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.875rem;">
               <span style="color:var(--text-secondary);">상품금액</span>
-              <span style="font-weight:600;">{{ totalPriceStr }}</span>
+              <span style="font-weight:600;">{{ cfTotalPriceStr }}</span>
             </div>
             <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.875rem;">
               <span style="color:var(--text-secondary);">배송비</span>
@@ -228,12 +228,12 @@ window.Cart = {
             </div>
             <div style="display:flex;justify-content:space-between;font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-top:10px;">
               <span>총 결제금액</span>
-              <span style="color:var(--blue);">{{ totalPriceStr }}</span>
+              <span style="color:var(--blue);">{{ cfTotalPriceStr }}</span>
             </div>
           </div>
 
           <button class="btn-blue" @click="goOrder" style="width:100%;padding:14px;font-size:0.95rem;">
-            주문하기 ({{ orderCount }}개)
+            주문하기 ({{ cfOrderCount }}개)
           </button>
           <p style="text-align:center;font-size:0.75rem;color:var(--text-muted);margin-top:10px;">계좌이체로 안전하게 결제</p>
         </div>

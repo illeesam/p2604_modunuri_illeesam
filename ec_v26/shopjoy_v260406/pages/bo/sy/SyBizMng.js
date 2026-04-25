@@ -8,25 +8,22 @@ window.SyBizMng = {
     const loading = ref(false);
     const error = ref(null);
 
-    // adminData 참조
-    const ad = window.boData || { bizs: [] };
-
-    // onMounted에서 API 로드 (필요시)
-    onMounted(async () => {
-      // Currently using adminData directly, API loading commented out
-      // loading.value = true;
-      // try {
-      //   const res = await window.boApi.get('/bo/sy/biz/page', {
-      //     params: { pageNo: 1, pageSize: 10000 }
-      //   });
-      //   window.safeArrayUtils.updateArray(bizs, res.data?.data?.list || []);
-      // } catch (err) {
-      //   error.value = err.message;
-      //   if (props.showToast) props.showToast('SyBiz 로드 실패', 'error');
-      // } finally {
-      //   loading.value = false;
-      // }
-    });
+    // onMounted에서 API 로드
+    const fetchData = async () => {
+      loading.value = true;
+      try {
+        const res = await window.boApi.get('/bo/sy/biz/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        bizs.splice(0, bizs.length, ...(res.data?.data?.list || []));
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyBiz 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    };
+    onMounted(() => { fetchData(); });
 
     /* 좌측 표시경로 트리 */
     const selectedPath = ref(null);
@@ -51,7 +48,7 @@ window.SyBizMng = {
     const BIZ_CLASS = ['법인','개인','면세','간이','공공'];
 
     const filtered = computed(() => {
-      const items = ad.bizs || [];
+      const items = bizs || [];
       if (!Array.isArray(items)) return [];
       return items.filter(b => {
         const k = kw.value.trim().toLowerCase();
@@ -103,14 +100,12 @@ window.SyBizMng = {
         return;
       }
       if (formMode.value === 'new') {
-        if (!Array.isArray(ad.bizs)) ad.bizs = [];
-        const newId = (ad.bizs.reduce((m,x) => Math.max(m, x.bizId || 0), 0) || 0) + 1;
-        ad.bizs.push({ ...formData, bizId: newId });
+        const newId = (bizs.reduce((m,x) => Math.max(m, x.bizId || 0), 0) || 0) + 1;
+        bizs.push({ ...formData, bizId: newId });
         if (window.boToast) window.boToast('신규 업체가 등록되었습니다.', 'success');
       } else {
-        if (!Array.isArray(ad.bizs)) return;
-        const idx = ad.bizs.findIndex(b => b.bizId === formData.bizId);
-        if (idx >= 0) ad.bizs[idx] = { ...formData };
+        const idx = bizs.findIndex(b => b.bizId === formData.bizId);
+        if (idx >= 0) bizs[idx] = { ...formData };
         if (window.boToast) window.boToast('수정 완료', 'success');
       }
       closeForm();
@@ -145,7 +140,7 @@ window.SyBizMng = {
         <option v-for="s in STATUS" :key="s[0]" :value="s[0]">{{ s[1] }}</option>
       </select>
       <div class="search-actions">
-        <button class="btn btn-primary" @click="pager.page=1">검색</button>
+        <button class="btn btn-primary" @click="pager.page=1">조회</button>
         <button class="btn btn-secondary btn-sm" @click="kw='';vendorTypeFlt='';statusFlt='';pager.page=1">초기화</button>
       </div>
     </div>

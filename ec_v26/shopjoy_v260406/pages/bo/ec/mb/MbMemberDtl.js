@@ -9,7 +9,7 @@ window.MbMemberDtl = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const loadData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/mb/member/page', {
@@ -23,8 +23,9 @@ window.MbMemberDtl = {
       } finally {
         loading.value = false;
       }
-    });
-    const isNew = computed(() => props.editId === null || props.editId === undefined);
+    };
+    onMounted(() => { loadData(); });
+    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
       userId: null,
       email: '', memberNm: '', phone: '', gradeCd: '일반', statusCd: '활성',
@@ -40,8 +41,8 @@ window.MbMemberDtl = {
       memberNm:  yup.string().required('이름을 입력해주세요.'),
     });
 
-    onMounted(async () => {
-      if (!isNew.value) {
+    const initForm = async () => {
+      if (!cfIsNew.value) {
         const m = getMember.value(props.editId);
         if (m) Object.assign(form, { ...m });
       }
@@ -55,20 +56,21 @@ window.MbMemberDtl = {
         if (form.memo) _qMemo.root.innerHTML = form.memo;
         _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
       }
-    });
+    };
+    onMounted(() => { initForm(); });
 
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
-        err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; });
+        err.inner.forEach(e => { errors[e.path] = e.message; });
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const isNewMember = isNew.value;
+      const isNewMember = cfIsNew.value;
       const ok = await props.showConfirm(isNewMember ? '등록' : '저장', isNewMember ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNewMember) {
@@ -92,11 +94,11 @@ window.MbMemberDtl = {
       }
     };
 
-    return { members, loading, error, isNew, form, errors, save, memoEl };
+    return { members, loading, error, cfIsNew, form, errors, handleSave, memoEl };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '회원 등록' : (viewMode ? '회원 상세' : '회원 수정') }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.userId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '회원 등록' : (viewMode ? '회원 상세' : '회원 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.userId }}</span></div>
   <div class="card">
     <!-- 기본정보 폼 -->
     <div class="form-row">
@@ -146,14 +148,14 @@ window.MbMemberDtl = {
         <button class="btn btn-secondary" @click="navigate('mbMemberMng')">닫기</button>
       </template>
       <template v-else>
-        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('mbMemberMng')">취소</button>
       </template>
     </div>
   </div>
 
   <!-- 연관 이력 -->
-  <div v-if="!isNew" style="margin-top:20px;">
+  <div v-if="!cfIsNew" style="margin-top:20px;">
     <mb-member-hist
       :navigate="navigate" :show-ref-modal="showRefModal"
       :member-id="editId"

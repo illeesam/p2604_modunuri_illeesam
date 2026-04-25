@@ -5,27 +5,27 @@
 window.useBoCodeStore = Pinia.defineStore('boCode', {
   state: () => {
     return {
-      codes: [], // 배열: [{ codeGrp, codeId, codeNm, codeVal, ... }, ...]
-      isLoading: false,
+      svCodes: [], // 배열: [{ codeGrp, codeId, codeNm, codeVal, ... }, ...]
+      svIsLoading: false,
     };
   },
 
   getters: {
-    isEmpty: (s) => !Array.isArray(s.codes) || s.codes.length === 0,
+    svIsEmpty: (s) => !Array.isArray(s.svCodes) || s.svCodes.length === 0,
     // 코드 그룹별 조회
-    getCodesByGroup: (s) => (grpVal) => {
-      if (!Array.isArray(s.codes)) return [];
-      return s.codes.filter(c => c.codeGrp === grpVal);
+    svGetCodesByGroup: (s) => (grpVal) => {
+      if (!Array.isArray(s.svCodes)) return [];
+      return s.svCodes.filter(c => c.codeGrp === grpVal);
     },
     // 특정 코드 값 조회
-    getCodeByVal: (s) => (grpVal, codeVal) => {
-      if (!Array.isArray(s.codes)) return null;
-      return s.codes.find(c => c.codeGrp === grpVal && c.codeVal === codeVal);
+    svGetCodeByVal: (s) => (grpVal, codeVal) => {
+      if (!Array.isArray(s.svCodes)) return null;
+      return s.svCodes.find(c => c.codeGrp === grpVal && c.codeVal === codeVal);
     },
     // 특정 코드명 조회
-    getCodeNmByVal: (s) => (grpVal, codeVal) => {
-      if (!Array.isArray(s.codes)) return codeVal;
-      const code = s.codes.find(c => c.codeGrp === grpVal && c.codeVal === codeVal);
+    svGetCodeNmByVal: (s) => (grpVal, codeVal) => {
+      if (!Array.isArray(s.svCodes)) return codeVal;
+      const code = s.svCodes.find(c => c.codeGrp === grpVal && c.codeVal === codeVal);
       return code?.codeNm || codeVal;
     },
   },
@@ -34,19 +34,19 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
     /**
      * 공통 코드 설정 (전체 교체, 그리드 형식)
      */
-    setCodes(codesData) {
+    sfSetCodes(codesData) {
       if (codesData) {
-        this.codes = Array.isArray(codesData) ? codesData : [];
+        this.svCodes = Array.isArray(codesData) ? codesData : [];
       }
     },
 
     /**
      * 코드 항목 추가
      */
-    addCode(code) {
+    sfAddCode(code) {
       if (code) {
-        if (!this.codes.find(c => c.codeId === code.codeId)) {
-          this.codes.push(code);
+        if (!this.svCodes.find(c => c.codeId === code.codeId)) {
+          this.svCodes.push(code);
         }
       }
     },
@@ -54,11 +54,11 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
     /**
      * 코드 항목 업데이트
      */
-    updateCode(codeId, codeData) {
+    sfUpdateCode(codeId, codeData) {
       if (codeId) {
-        const idx = this.codes.findIndex(c => c.codeId === codeId);
+        const idx = this.svCodes.findIndex(c => c.codeId === codeId);
         if (idx !== -1) {
-          this.codes[idx] = { ...this.codes[idx], ...codeData };
+          this.svCodes[idx] = { ...this.svCodes[idx], ...codeData };
         }
       }
     },
@@ -66,11 +66,11 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
     /**
      * 코드 항목 삭제
      */
-    removeCode(codeId) {
+    sfRemoveCode(codeId) {
       if (codeId) {
-        const idx = this.codes.findIndex(c => c.codeId === codeId);
+        const idx = this.svCodes.findIndex(c => c.codeId === codeId);
         if (idx !== -1) {
-          this.codes.splice(idx, 1);
+          this.svCodes.splice(idx, 1);
         }
       }
     },
@@ -78,9 +78,9 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
     /**
      * 초기화 (로그아웃 시)
      */
-    clear() {
-      this.codes = [];
-      this.isLoading = false;
+    sfClear() {
+      this.svCodes = [];
+      this.svIsLoading = false;
     },
   },
 });
@@ -89,16 +89,16 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
 window.getBoCodeStore = () => {
   try {
     return window.useBoCodeStore?.() || {
-      codes: [],
-      isEmpty: true,
-      isLoading: false,
+      svCodes: [],
+      svIsEmpty: true,
+      svIsLoading: false,
     };
   } catch (e) {
     console.error('[getBoCodeStore] error:', e);
     return {
-      codes: [],
-      isEmpty: true,
-      isLoading: false,
+      svCodes: [],
+      svIsEmpty: true,
+      svIsLoading: false,
     };
   }
 };

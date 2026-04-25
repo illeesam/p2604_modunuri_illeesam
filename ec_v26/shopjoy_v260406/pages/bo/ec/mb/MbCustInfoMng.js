@@ -70,18 +70,24 @@
     const custInfos = reactive([]);
     const loading = ref(false);
     const error = ref(null);
-    const loginHistory = reactive((window.boData?.loginHistory || []));
-    const couponUsage = reactive((window.boData?.couponUsage || []));
-    const sendHistory = reactive((window.boData?.sendHistory || []));
+    const loginHistory = reactive([]);
+    const couponUsage = reactive([]);
+    const sendHistory = reactive([]);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/ec/mb/cust-info/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        custInfos.splice(0, custInfos.length, ...(res.data?.data?.list || []));
+        const [resCust, resLogin, resCoupon, resSend] = await Promise.all([
+          window.boApi.get('/bo/ec/mb/cust-info/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/user/login-hist/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/pm/coupon-usage/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/alarm/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        custInfos.splice(0, custInfos.length, ...(resCust.data?.data?.list || []));
+        loginHistory.splice(0, loginHistory.length, ...(resLogin.data?.data?.list || []));
+        couponUsage.splice(0, couponUsage.length, ...(resCoupon.data?.data?.list || []));
+        sendHistory.splice(0, sendHistory.length, ...(resSend.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -89,7 +95,8 @@
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
       /* ── 검색 상태 ── */
       const searchMode   = ref('member');
       const searchInput  = ref('');

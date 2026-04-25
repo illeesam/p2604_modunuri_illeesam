@@ -67,7 +67,7 @@ window.Event = {
       },
     ]);
 
-    const filteredEvents = computed(() => {
+    const cfFilteredEvents = computed(() => {
       let list = events.filter(e =>
         activeTab.value === 'ongoing' ? e.status === 'ongoing' : e.status === 'ended'
       );
@@ -77,10 +77,10 @@ window.Event = {
       return list;
     });
 
-    const ongoingCount = computed(() => events.filter(e => e.status === 'ongoing').length);
-    const endedCount   = computed(() => events.filter(e => e.status === 'ended').length);
+    const cfOngoingCount = computed(() => events.filter(e => e.status === 'ongoing').length);
+    const cfEndedCount   = computed(() => events.filter(e => e.status === 'ended').length);
 
-    return { activeTab, sortBy, filteredEvents, ongoingCount, endedCount };
+    return { activeTab, sortBy, cfFilteredEvents, cfOngoingCount, cfEndedCount };
   },
   template: /* html */ `
 <div class="page-wrap">
@@ -111,7 +111,7 @@ window.Event = {
           color: activeTab==='ongoing' ? 'var(--text-primary)' : 'var(--text-muted)',
           borderBottom: activeTab==='ongoing' ? '2px solid var(--text-primary)' : '2px solid transparent',
           marginBottom: '-1px',
-        }">진행중 ({{ ongoingCount }})</button>
+        }">진행중 ({{ cfOngoingCount }})</button>
       <button @click="activeTab='ended'"
         :style="{
           padding:'12px 24px', background:'none', border:'none', cursor:'pointer',
@@ -143,7 +143,7 @@ window.Event = {
 
   <!-- 이벤트 그리드 -->
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;">
-    <div v-for="ev in filteredEvents" :key="ev.id"
+    <div v-for="ev in cfFilteredEvents" :key="ev.id"
       style="background:var(--bg-card);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;"
       @click="navigate('eventView', { eventId: ev.id })"
       @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 6px 20px rgba(0,0,0,0.1)'"
@@ -185,7 +185,7 @@ window.Event = {
   </div>
 
   <!-- 빈 상태 -->
-  <div v-if="filteredEvents.length === 0" style="text-align:center;padding:clamp(32px,6vw,60px) 0;color:var(--text-muted);">
+  <div v-if="cfFilteredEvents.length === 0" style="text-align:center;padding:clamp(32px,6vw,60px) 0;color:var(--text-muted);">
     <div style="font-size:2rem;margin-bottom:12px;">📭</div>
     <div style="font-size:0.95rem;">{{ activeTab === 'ongoing' ? '진행 중인 이벤트가 없습니다.' : '종료된 이벤트가 없습니다.' }}</div>
   </div>

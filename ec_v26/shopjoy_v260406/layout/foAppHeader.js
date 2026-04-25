@@ -39,8 +39,8 @@ window.foAppHeader = {
         /* Pinia store 에도 반영 */
         try {
           const store = window.useFoAuthStore(Pinia.getActivePinia());
-          store.authUser = { ...u };
-          localStorage.setItem('modu-fo-authUser', JSON.stringify(store.authUser));
+          store.svAuthUser = { ...u };
+          localStorage.setItem('modu-fo-authUser', JSON.stringify(store.svAuthUser));
         } catch (e) {}
       }
       profileOpen.value = false;

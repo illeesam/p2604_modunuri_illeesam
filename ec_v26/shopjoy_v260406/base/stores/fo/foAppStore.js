@@ -5,68 +5,68 @@
 window.useFoAppStore = Pinia.defineStore('foApp', {
   state: () => {
     return {
-      foSiteNo: '01',
-      appVersion: '2.6.0',
-      lastUpdateDate: '',
-      active: '-',
+      svFoSiteNo: '01',
+      svAppVersion: '2.6.0',
+      svLastUpdateDate: '',
+      svActive: '-',
     };
   },
 
   getters: {
-    getAppVersion: (s) => s.appVersion,
-    getFoSiteNo: (s) => s.foSiteNo,
-    getLastUpdateDate: (s) => s.lastUpdateDate,
-    getActive: (s) => s.active,
+    svGetAppVersion: (s) => s.svAppVersion,
+    svGetFoSiteNo: (s) => s.svFoSiteNo,
+    svGetLastUpdateDate: (s) => s.svLastUpdateDate,
+    svGetActive: (s) => s.svActive,
   },
 
   actions: {
     /**
      * 앱 정보 설정
      */
-    setApp(appData) {
+    sfSetApp(appData) {
       if (appData) {
-        this.foSiteNo = appData.foSiteNo || '01';
-        this.appVersion = appData.appVersion || '2.6.0';
-        this.lastUpdateDate = appData.lastUpdateDate || '';
-        this.active = appData.active || '-';
+        this.svFoSiteNo = appData.foSiteNo || '01';
+        this.svAppVersion = appData.appVersion || '2.6.0';
+        this.svLastUpdateDate = appData.lastUpdateDate || '';
+        this.svActive = appData.active || '-';
       }
     },
 
     /**
      * 앱 버전 업데이트
      */
-    setAppVersion(version) {
+    sfSetAppVersion(version) {
       if (version) {
-        this.appVersion = version;
+        this.svAppVersion = version;
       }
     },
 
     /**
      * FO 사이트 번호 업데이트
      */
-    setFoSiteNo(siteNo) {
+    sfSetFoSiteNo(siteNo) {
       if (siteNo) {
-        this.foSiteNo = siteNo;
+        this.svFoSiteNo = siteNo;
       }
     },
 
     /**
      * 마지막 업데이트 날짜 업데이트
      */
-    setLastUpdateDate(date) {
+    sfSetLastUpdateDate(date) {
       if (date) {
-        this.lastUpdateDate = date;
+        this.svLastUpdateDate = date;
       }
     },
 
     /**
      * 초기화 (로그아웃 시)
      */
-    clear() {
-      this.foSiteNo = '01';
-      this.appVersion = '2.6.0';
-      this.lastUpdateDate = '';
-      this.active = '-';
+    sfClear() {
+      this.svFoSiteNo = '01';
+      this.svAppVersion = '2.6.0';
+      this.svLastUpdateDate = '';
+      this.svActive = '-';
     },
   },
 });

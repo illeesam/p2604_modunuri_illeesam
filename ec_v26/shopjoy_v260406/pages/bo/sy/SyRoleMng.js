@@ -8,25 +8,23 @@ window.SyRoleMng = {
     const loading = ref(false);
     const error = ref(null);
 
-    // adminData 참조
-    const ad = window.boData || { roles: [] };
-
-    // onMounted에서 API 로드 (currently using adminData)
-    onMounted(async () => {
-      // loading.value = true;
-      // try {
-      //   const res = await window.boApi.get('/bo/sy/role/page', {
-      //     params: { pageNo: 1, pageSize: 10000 }
-      //   });
-      //   window.safeArrayUtils.updateArray(roles, res.data?.data?.list || []);
-      //   error.value = null;
-      // } catch (err) {
-      //   error.value = err.message;
-      //   if (props.showToast) props.showToast('SyRole 로드 실패', 'error');
-      // } finally {
-      //   loading.value = false;
-      // }
-    });
+    // onMounted에서 API 로드
+    const fetchData = async () => {
+      loading.value = true;
+      try {
+        const res = await window.boApi.get('/bo/sy/role/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        roles.splice(0, roles.length, ...(res.data?.data?.list || []));
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyRole 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    };
+    onMounted(() => { fetchData(); });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -463,7 +461,7 @@ window.SyRoleMng = {
         <option value="">사용여부 전체</option><option value="Y">사용</option><option value="N">미사용</option>
       </select>
       <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>

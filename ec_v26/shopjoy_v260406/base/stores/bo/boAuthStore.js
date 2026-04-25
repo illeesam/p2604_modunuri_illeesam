@@ -35,23 +35,23 @@
 
   window.useBoAuthStore = defineStore('boAuth', {
     state: () => ({
-      authUser: _defaultAuthUser(),
-      accessToken: '',
-      refreshToken: '',
-      accessExpiresIn: 0,
-      refreshExpiresIn: 0,
-      tempAuthInfo: null,
+      svAuthUser: _defaultAuthUser(),
+      svAccessToken: '',
+      svRefreshToken: '',
+      svAccessExpiresIn: 0,
+      svRefreshExpiresIn: 0,
+      svTempAuthInfo: null,
     }),
 
     getters: {
-      isLoggedIn: (state) => !!(state.authUser?.authId) && !!state.accessToken,
-      currentUser: (state) => state.authUser || _defaultAuthUser(),
-      authHeader: (state) => (state.accessToken ? { Authorization: `Bearer ${state.accessToken}` } : {}),
+      svIsLoggedIn: (state) => !!(state.svAuthUser?.authId) && !!state.svAccessToken,
+      svCurrentUser: (state) => state.svAuthUser || _defaultAuthUser(),
+      svAuthHeader: (state) => (state.svAccessToken ? { Authorization: `Bearer ${state.svAccessToken}` } : {}),
     },
 
     actions: {
       // 로그인
-      async login(loginId, loginPwd, authMethod = '메인') {
+      async sfLogin(loginId, loginPwd, authMethod = '메인') {
         try {
           const loginPwdHash = window.CryptoJS ? CryptoJS.SHA256(loginPwd).toString() : loginPwd;
           const res = await window.boApi.post('/auth/bo/auth/login', {
@@ -63,15 +63,15 @@
           const loginData = res.data?.data || {};
 
           if (loginData.accessToken) {
-            this.accessToken = loginData.accessToken;
+            this.svAccessToken = loginData.accessToken;
           }
           if (loginData.refreshToken) {
-            this.refreshToken = loginData.refreshToken;
+            this.svRefreshToken = loginData.refreshToken;
           }
 
           // authId: BO = sy_user.user_id (backend LoginRes.authId)
           const authId = loginData.authId || loginData.userId || '';
-          this.authUser = {
+          this.svAuthUser = {
             authId,
             userId: authId,       // BO 전용
             memberId: null,       // FO 전용: BO는 null
@@ -85,16 +85,16 @@
             roleId: loginData.roleId || '',
           };
 
-          this.accessExpiresIn = loginData.accessExpiresIn || 3600;
-          this.refreshExpiresIn = loginData.refreshExpiresIn || 604800;
+          this.svAccessExpiresIn = loginData.accessExpiresIn || 3600;
+          this.svRefreshExpiresIn = loginData.refreshExpiresIn || 604800;
 
 
           try {
-            if (this.accessToken) localStorage.setItem('modu-bo-accessToken', this.accessToken);
-            if (this.refreshToken) localStorage.setItem('modu-bo-refreshToken', this.refreshToken);
-            if (this.authUser) localStorage.setItem('modu-bo-authUser', JSON.stringify(this.authUser));
-            if (this.accessExpiresIn) localStorage.setItem('modu-bo-accessExpiresIn', this.accessExpiresIn.toString());
-            if (this.refreshExpiresIn) localStorage.setItem('modu-bo-refreshExpiresIn', this.refreshExpiresIn.toString());
+            if (this.svAccessToken) localStorage.setItem('modu-bo-accessToken', this.svAccessToken);
+            if (this.svRefreshToken) localStorage.setItem('modu-bo-refreshToken', this.svRefreshToken);
+            if (this.svAuthUser) localStorage.setItem('modu-bo-authUser', JSON.stringify(this.svAuthUser));
+            if (this.svAccessExpiresIn) localStorage.setItem('modu-bo-accessExpiresIn', this.svAccessExpiresIn.toString());
+            if (this.svRefreshExpiresIn) localStorage.setItem('modu-bo-refreshExpiresIn', this.svRefreshExpiresIn.toString());
           } catch (_) {}
 
           /* 로그인 후 초기 데이터 조회 */
@@ -103,74 +103,74 @@
             if (initRes?.data?.data) {
               const data = initRes.data.data;
 
-              if (data.syAuth) this.setAuth(data.syAuth);
-              if (data.syUser) this.setAuthUser(data.syUser);
+              if (data.syAuth) this.sfSetAuth(data.syAuth);
+              if (data.syUser) this.sfSetAuthUser(data.syUser);
 
               const roleStore = window.useBoRoleStore?.();
-              if (data.syRoles) roleStore?.setRoles(data.syRoles);
+              if (data.syRoles) roleStore?.sfSetRoles(data.syRoles);
 
               const menuStore = window.useBoMenuStore?.();
-              if (data.syMenus) menuStore?.setMenus(data.syMenus);
+              if (data.syMenus) menuStore?.sfSetMenus(data.syMenus);
 
               const codeStore = window.useBoCodeStore?.();
-              if (data.syCodes?.codes) codeStore?.setCodes(data.syCodes.codes);
+              if (data.syCodes?.codes) codeStore?.sfSetCodes(data.syCodes.codes);
 
               const propStore = window.useBoPropStore?.();
-              if (data.syProps) propStore?.setProps(data.syProps);
+              if (data.syProps) propStore?.sfSetProps(data.syProps);
 
               const appStore = window.useBoAppStore?.();
-              if (data.syApp) appStore?.setApp(data.syApp);
+              if (data.syApp) appStore?.sfSetApp(data.syApp);
 
             }
           } catch (e) {
-            console.warn('[boAuthStore.login] getInitData failed:', e);
+            console.warn('[boAuthStore.sfLogin] getInitData failed:', e);
           }
 
-          return this.authUser || {};
+          return this.svAuthUser || {};
         } catch (err) {
-          this.reset();
+          this.sfReset();
           throw err;
         }
       },
 
       // 토큰 갱신
-      async refreshAccessToken() {
-        if (!this.refreshToken) { this.reset(); return false; }
+      async sfRefreshAccessToken() {
+        if (!this.svRefreshToken) { this.sfReset(); return false; }
         try {
           const res = await window.boApi.post('/auth/bo/auth/refresh', {
-            refreshToken: this.refreshToken,
+            refreshToken: this.svRefreshToken,
           });
-          this.accessToken = res.data?.accessToken || '';
-          this.refreshToken = res.data?.refreshToken || '';
-          this.accessExpiresIn = res.data?.accessExpiresIn || 0;
-          this.refreshExpiresIn = res.data?.refreshExpiresIn || 0;
+          this.svAccessToken = res.data?.accessToken || '';
+          this.svRefreshToken = res.data?.refreshToken || '';
+          this.svAccessExpiresIn = res.data?.accessExpiresIn || 0;
+          this.svRefreshExpiresIn = res.data?.refreshExpiresIn || 0;
           try {
-            if (this.accessToken) localStorage.setItem('modu-bo-accessToken', this.accessToken);
-            if (this.refreshToken) localStorage.setItem('modu-bo-refreshToken', this.refreshToken);
+            if (this.svAccessToken) localStorage.setItem('modu-bo-accessToken', this.svAccessToken);
+            if (this.svRefreshToken) localStorage.setItem('modu-bo-refreshToken', this.svRefreshToken);
           } catch (_) {}
           return true;
         } catch (err) {
-          this.reset();
+          this.sfReset();
           return false;
         }
       },
 
       // 로그아웃
-      async logout() {
-        if (this.refreshToken) {
+      async sfLogout() {
+        if (this.svRefreshToken) {
           try {
-            await window.boApi.post('/auth/bo/auth/logout', { refreshToken: this.refreshToken });
+            await window.boApi.post('/auth/bo/auth/logout', { refreshToken: this.svRefreshToken });
           } catch (_) {}
         }
-        this.reset();
+        this.sfReset();
       },
 
       // 초기화
-      reset() {
-        this.authUser = _defaultAuthUser();
-        this.accessToken = '';
-        this.refreshToken = '';
-        this.tempAuthInfo = null;
+      sfReset() {
+        this.svAuthUser = _defaultAuthUser();
+        this.svAccessToken = '';
+        this.svRefreshToken = '';
+        this.svTempAuthInfo = null;
         try {
           localStorage.removeItem('modu-bo-accessToken');
           localStorage.removeItem('modu-bo-refreshToken');
@@ -180,30 +180,30 @@
       },
 
       // 인증 정보 설정 (토큰 + 사용자 정보)
-      setAuth(authData) {
+      sfSetAuth(authData) {
         if (!authData) return;
-        if (authData.accessToken) this.accessToken = authData.accessToken;
-        if (authData.refreshToken) this.refreshToken = authData.refreshToken;
-        if (authData.accessExpiresIn) this.accessExpiresIn = authData.accessExpiresIn;
-        if (authData.refreshExpiresIn) this.refreshExpiresIn = authData.refreshExpiresIn;
-        if (authData.authUser) this.authUser = authData.authUser;
-        else if (authData.user) this.setAuthUser(authData.user); // StoreAuth.user 필드 호환
-        if (authData.tempAuthInfo !== undefined) this.tempAuthInfo = authData.tempAuthInfo;
+        if (authData.accessToken) this.svAccessToken = authData.accessToken;
+        if (authData.refreshToken) this.svRefreshToken = authData.refreshToken;
+        if (authData.accessExpiresIn) this.svAccessExpiresIn = authData.accessExpiresIn;
+        if (authData.refreshExpiresIn) this.svRefreshExpiresIn = authData.refreshExpiresIn;
+        if (authData.authUser) this.svAuthUser = authData.authUser;
+        else if (authData.user) this.sfSetAuthUser(authData.user); // StoreAuth.user 필드 호환
+        if (authData.tempAuthInfo !== undefined) this.svTempAuthInfo = authData.tempAuthInfo;
         try {
-          if (this.accessToken) localStorage.setItem('modu-bo-accessToken', this.accessToken);
-          if (this.refreshToken) localStorage.setItem('modu-bo-refreshToken', this.refreshToken);
-          if (this.authUser) localStorage.setItem('modu-bo-authUser', JSON.stringify(this.authUser));
-          if (this.accessExpiresIn) localStorage.setItem('modu-bo-accessExpiresIn', this.accessExpiresIn.toString());
-          if (this.refreshExpiresIn) localStorage.setItem('modu-bo-refreshExpiresIn', this.refreshExpiresIn.toString());
-          if (this.tempAuthInfo) localStorage.setItem('modu-bo-tempAuthInfo', JSON.stringify(this.tempAuthInfo));
+          if (this.svAccessToken) localStorage.setItem('modu-bo-accessToken', this.svAccessToken);
+          if (this.svRefreshToken) localStorage.setItem('modu-bo-refreshToken', this.svRefreshToken);
+          if (this.svAuthUser) localStorage.setItem('modu-bo-authUser', JSON.stringify(this.svAuthUser));
+          if (this.svAccessExpiresIn) localStorage.setItem('modu-bo-accessExpiresIn', this.svAccessExpiresIn.toString());
+          if (this.svRefreshExpiresIn) localStorage.setItem('modu-bo-refreshExpiresIn', this.svRefreshExpiresIn.toString());
+          if (this.svTempAuthInfo) localStorage.setItem('modu-bo-tempAuthInfo', JSON.stringify(this.svTempAuthInfo));
         } catch (_) {}
       },
 
       // 사용자 정보 설정 (StoreUser → 프론트 authUser 형식으로 정규화)
-      setAuthUser(authUserData) {
+      sfSetAuthUser(authUserData) {
         if (!authUserData) return;
         const authId = authUserData.authId || authUserData.userId || '';
-        this.authUser = {
+        this.svAuthUser = {
           ...authUserData,
           authId,
           userId: authId,
@@ -214,12 +214,12 @@
           role:   authUserData.role || authUserData.roleId || '',
         };
         try {
-          localStorage.setItem('modu-bo-authUser', JSON.stringify(this.authUser));
+          localStorage.setItem('modu-bo-authUser', JSON.stringify(this.svAuthUser));
         } catch (_) {}
       },
 
       // localStorage에서 복원
-      restoreFromStorage() {
+      sfRestoreFromStorage() {
         try {
           // 구 key 마이그레이션: modu-bo-user → modu-bo-authUser
           const _oldUser = localStorage.getItem('modu-bo-user');
@@ -236,11 +236,11 @@
           const refreshExpiresIn = localStorage.getItem('modu-bo-refreshExpiresIn');
 
           if (accessToken && authUserJson) {
-            this.accessToken = accessToken;
-            this.refreshToken = refreshToken || '';
-            this.authUser = Object.assign(_defaultAuthUser(), JSON.parse(authUserJson) || {});
-            this.accessExpiresIn = accessExpiresIn ? parseInt(accessExpiresIn) : 0;
-            this.refreshExpiresIn = refreshExpiresIn ? parseInt(refreshExpiresIn) : 0;
+            this.svAccessToken = accessToken;
+            this.svRefreshToken = refreshToken || '';
+            this.svAuthUser = Object.assign(_defaultAuthUser(), JSON.parse(authUserJson) || {});
+            this.svAccessExpiresIn = accessExpiresIn ? parseInt(accessExpiresIn) : 0;
+            this.svRefreshExpiresIn = refreshExpiresIn ? parseInt(refreshExpiresIn) : 0;
             return true;
           }
         } catch (_) {}
@@ -248,30 +248,30 @@
       },
 
       // FO syncFromStorage와 동일: 토큰 없으면 리셋, 있으면 복원
-      syncFromStorage() {
+      sfSyncFromStorage() {
         try {
           const token        = localStorage.getItem('modu-bo-accessToken');
           const refreshToken = localStorage.getItem('modu-bo-refreshToken');
           const authUserJson = localStorage.getItem('modu-bo-authUser');
           if (token) {
-            this.accessToken = token;
-            if (refreshToken) this.refreshToken = refreshToken;
-            if (authUserJson) this.authUser = Object.assign(_defaultAuthUser(), JSON.parse(authUserJson) || {});
-            else this.authUser = _defaultAuthUser();
+            this.svAccessToken = token;
+            if (refreshToken) this.svRefreshToken = refreshToken;
+            if (authUserJson) this.svAuthUser = Object.assign(_defaultAuthUser(), JSON.parse(authUserJson) || {});
+            else this.svAuthUser = _defaultAuthUser();
           } else {
-            this.accessToken = '';
-            this.refreshToken = '';
-            this.authUser = _defaultAuthUser();
+            this.svAccessToken = '';
+            this.svRefreshToken = '';
+            this.svAuthUser = _defaultAuthUser();
           }
           return !!token;
         } catch (e) {
-          console.error('[boAuthStore] syncFromStorage error:', e);
+          console.error('[boAuthStore] sfSyncFromStorage error:', e);
           return false;
         }
       },
 
       // clear (ZdStore에서 호출)
-      clear() { this.reset(); },
+      sfClear() { this.sfReset(); },
     },
   });
 
@@ -280,7 +280,7 @@
     window.addEventListener('storage', (e) => {
       if (e.key === 'modu-bo-accessToken' || e.key === 'modu-bo-authUser' || e.key === 'modu-bo-refreshToken') {
         const store = window.useBoAuthStore?.();
-        if (store) store.syncFromStorage();
+        if (store) store.sfSyncFromStorage();
       }
     });
   }
@@ -289,16 +289,16 @@
   window.getBoAuthStore = () => {
     try {
       return window.useBoAuthStore?.() || {
-        authUser: _defaultAuthUser(), accessToken: '', refreshToken: '',
-        isLoggedIn: false, accessExpiresIn: 0, refreshExpiresIn: 0,
-        currentUser: _defaultAuthUser(), authHeader: {},
+        svAuthUser: _defaultAuthUser(), svAccessToken: '', svRefreshToken: '',
+        svIsLoggedIn: false, svAccessExpiresIn: 0, svRefreshExpiresIn: 0,
+        svCurrentUser: _defaultAuthUser(), svAuthHeader: {},
       };
     } catch (e) {
       console.error('getBoAuthStore error:', e);
       return {
-        authUser: _defaultAuthUser(), accessToken: '', refreshToken: '',
-        accessExpiresIn: 0, refreshExpiresIn: 0, isLoggedIn: false,
-        currentUser: _defaultAuthUser(), authHeader: {},
+        svAuthUser: _defaultAuthUser(), svAccessToken: '', svRefreshToken: '',
+        svAccessExpiresIn: 0, svRefreshExpiresIn: 0, svIsLoggedIn: false,
+        svCurrentUser: _defaultAuthUser(), svAuthHeader: {},
       };
     }
   };
@@ -306,27 +306,27 @@
   window.getBoAuthUser = () => {
     try {
       const store = window.useBoAuthStore?.();
-      return (store?.authUser?.authId) ? store.authUser : _defaultAuthUser();
+      return (store?.svAuthUser?.authId) ? store.svAuthUser : _defaultAuthUser();
     } catch (e) { return _defaultAuthUser(); }
   };
 
   window.getBoAuthToken = () => {
-    try { return window.useBoAuthStore?.()?.accessToken || ''; }
+    try { return window.useBoAuthStore?.()?.svAccessToken || ''; }
     catch (e) { return ''; }
   };
 
   window.isBoAuthLoggedIn = () => {
     try {
       const store = window.useBoAuthStore?.();
-      return !!(store?.authUser?.authId && store?.accessToken);
+      return !!(store?.svAuthUser?.authId && store?.svAccessToken);
     } catch (e) { return false; }
   };
 
   window.isBoLogin = () => {
     try {
       const store = window.useBoAuthStore?.();
-      if (!store?.authUser) return false;
-      return !!(store.authUser.authId && store.accessToken);
+      if (!store?.svAuthUser) return false;
+      return !!(store.svAuthUser.authId && store.svAccessToken);
     } catch (e) { return false; }
   };
 })();

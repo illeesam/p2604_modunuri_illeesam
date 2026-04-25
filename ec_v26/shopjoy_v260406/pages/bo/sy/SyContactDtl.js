@@ -11,7 +11,7 @@ window.SyContactDtl = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const loadData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/contact/page', {
@@ -25,7 +25,8 @@ window.SyContactDtl = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { loadData(); });
     const isNew = computed(() => !props.editId);
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
     const tab = ref(window._syContactDtlState.tab || 'content');
@@ -50,7 +51,7 @@ window.SyContactDtl = {
       content: yup.string().required('문의 내용을 입력해주세요.'),
     });
 
-    onMounted(async () => {
+    const initForm = async () => {
       if (!isNew.value) {
         const c = contacts.find(x => x.inquiryId === props.editId);
         if (c) Object.assign(form, { ...c });
@@ -77,7 +78,8 @@ window.SyContactDtl = {
         if (form.answer) _qAnswer.root.innerHTML = form.answer;
         _qAnswer.on('text-change', () => { form.answer = _qAnswer.root.innerHTML; });
       }
-    });
+    };
+    onMounted(() => { initForm(); });
 
     onBeforeUnmount(() => {
       if (_qContent) { form.content = _qContent.root.innerHTML; _qContent = null; }

@@ -4,16 +4,21 @@ window.PdCategoryMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const categories = reactive(window.boDataProvider?.getCategories?.() || []);
+    const categories = reactive([]);
 
     /* ── 트리 expanded 상태 (ref+Set 재할당으로 반응성 보장) ── */
     const expandedSet = reactive(new Set());
 
     /* depth 1 노드 기본 펼침 (2레벨 노출) */
-    onMounted(() => {
+    const fetchData = async () => {
+      try {
+        const res = await window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 } });
+        categories.splice(0, categories.length, ...(res.data?.data?.list || []));
+      } catch (_) {}
       expandedSet.clear();
-      (categories || []).filter(c => c.depth === 1).forEach(c => expandedSet.add(c.categoryId));
-    });
+      categories.filter(c => c.depth === 1).forEach(c => expandedSet.add(c.categoryId));
+    };
+    onMounted(() => { fetchData(); });
     const isExpanded  = id => expandedSet.has(id);
     const toggleNode  = id => {
       if (expandedSet.has(id)) expandedSet.delete(id); else expandedSet.add(id);
@@ -336,7 +341,7 @@ window.PdCategoryMng = {
         <option>비활성</option>
       </select>
       <div class="search-actions">
-        <button class="btn btn-primary btn-sm" @click="onSearch">검색</button>
+        <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>

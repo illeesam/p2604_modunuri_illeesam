@@ -3,7 +3,7 @@ window.StReconVendorMng = {
   name: 'StReconVendorMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const descOpen = ref(false);
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
@@ -15,10 +15,23 @@ window.StReconVendorMng = {
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
-    const orderList = reactive((window.boData?.orders || []));
-    const vendorList = reactive((window.boData?.vendors || []));
+    const orderList = reactive([]);
+    const vendorList = reactive([]);
     const orders  = computed(() => orderList);
     const vendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
+
+    const fetchData = async () => {
+      try {
+        const [resO, resV] = await Promise.all([
+          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        orderList.splice(0, orderList.length, ...(resO.data?.data?.list || []));
+        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
+      } catch (_) {}
+    };
+    onMounted(() => { fetchData(); });
+
     const searchDiff = ref('');
     const pager = reactive({ page: 1, size: 10 });
 

@@ -3,7 +3,7 @@ window.StReconPayMng = {
   name: 'StReconPayMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const descOpen = ref(false);
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
@@ -15,8 +15,17 @@ window.StReconPayMng = {
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
-    const orderList = reactive((window.boData?.orders || []));
+    const orderList = reactive([]);
     const orders = computed(() => orderList);
+
+    const fetchData = async () => {
+      try {
+        const res = await window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } });
+        orderList.splice(0, orderList.length, ...(res.data?.data?.list || []));
+      } catch (_) {}
+    };
+    onMounted(() => { fetchData(); });
+
     const searchDiff = ref('');
     const pager = reactive({ page: 1, size: 10 });
 

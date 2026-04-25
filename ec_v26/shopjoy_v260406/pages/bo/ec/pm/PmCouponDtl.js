@@ -10,7 +10,7 @@ window.PmCouponDtl = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const loadData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/coupon/page', {
@@ -24,7 +24,8 @@ window.PmCouponDtl = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { loadData(); });
     const isNew = computed(() => !props.editId);
     const tab = ref(window._pmCouponDtlState.tab || 'info');
     watch(tab, v => { window._pmCouponDtlState.tab = v; });
@@ -63,7 +64,7 @@ window.PmCouponDtl = {
       endDate: yup.string().required('만료일을 입력해주세요.'),
     });
 
-    onMounted(async () => {
+    const initForm = async () => {
       if (!isNew.value) {
         const c = getCoupon.value(props.editId);
         if (c) Object.assign(form, { ...c });
@@ -80,7 +81,8 @@ window.PmCouponDtl = {
         if (form.memo) _qMemo.root.innerHTML = form.memo;
         _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
       }
-    });
+    };
+    onMounted(() => { initForm(); });
 
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 

@@ -9,7 +9,7 @@ window.MbMemGradeMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/mb/member-grade/page', {
@@ -23,7 +23,8 @@ window.MbMemGradeMng = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const GRADE_CODES = ['BASIC','SILVER','GOLD','VIP','VVIP','PLATINUM'];
 
@@ -32,7 +33,7 @@ window.MbMemGradeMng = {
     const applied   = reactive({ kw: '', use: '' });
     const pager     = reactive({ page: 1, size: 20 });
 
-    const filtered = computed(() => {
+    const cfFiltered = computed(() => {
       const kw = applied.kw.toLowerCase();
       if (!Array.isArray(grades)) return [];
       return grades.filter(g => {
@@ -41,10 +42,10 @@ window.MbMemGradeMng = {
         return true;
       });
     });
-    const total      = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums   = computed(() => { const c=pager.page,l=totalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfTotal      = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const gridRows   = reactive([]);
     let   _tempId    = -1;
@@ -52,7 +53,7 @@ window.MbMemGradeMng = {
     const FIELDS     = ['gradeCd','gradeNm','gradeRank','minPurchaseAmt','saveRate','useYn'];
 
     const loadGrid = () => {
-      gridRows.splice(0, gridRows.length, ...pageList.value.map(g => ({ ...g, _row_status: null })));
+      gridRows.splice(0, gridRows.length, ...cfPageList.value.map(g => ({ ...g, _row_status: null })));
     };
     watch([() => pager.page, () => pager.size, applied], loadGrid, { immediate: true });
 
@@ -106,12 +107,12 @@ window.MbMemGradeMng = {
     };
     const onSearch = () => { Object.assign(applied, { kw: searchKw.value, use: searchUse.value }); pager.page = 1; };
     const onReset  = () => { searchKw.value = ''; searchUse.value = ''; Object.assign(applied, { kw: '', use: '' }); pager.page = 1; };
-    const setPage  = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    const ynBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
+    const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { grades, loading, error, searchKw, searchUse, pager, pageNums, totalPages, setPage, total, onSearch, onReset,
-             gridRows, addRow, onCellChange, deleteRow, saveAll, focusedIdx, ynBadge, GRADE_CODES , PAGE_SIZES , onSizeChange };
+    return { grades, loading, error, searchKw, searchUse, pager, cfPageNums, cfTotalPages, setPage, cfTotal, onSearch, onReset,
+             gridRows, addRow, onCellChange, deleteRow, saveAll, focusedIdx, fnYnBadge, GRADE_CODES , PAGE_SIZES , onSizeChange };
   },
   template: `
 <div>
@@ -125,7 +126,7 @@ window.MbMemGradeMng = {
           <option value="">전체</option><option value="Y">Y</option><option value="N">N</option>
         </select>
         <div class="search-actions">
-          <button class="btn btn-primary btn-sm" @click="onSearch">검색</button>
+          <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
           <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
         </div>
       </div>
@@ -133,7 +134,7 @@ window.MbMemGradeMng = {
     <div class="card">
       <div class="toolbar">
         <span class="list-title">회원등급 목록</span>
-        <span class="list-count">총 {{ total }}건</span>
+        <span class="list-count">총 {{ cfTotal }}건</span>
         <div style="margin-left:auto;display:flex;gap:6px;">
           <button class="btn btn-primary btn-sm" @click="addRow">+ 행추가</button>
           <button class="btn btn-blue btn-sm" @click="saveAll">저장</button>
@@ -164,7 +165,7 @@ window.MbMemGradeMng = {
             <td style="text-align:right"><input v-if="row._row_status" class="form-control" style="text-align:right" type="number" step="0.01" v-model.number="row.saveRate" @input="onCellChange(idx)"><span v-else>{{ row.saveRate }}%</span></td>
             <td style="text-align:center">
               <select v-if="row._row_status" class="form-control" v-model="row.useYn" @change="onCellChange(idx)"><option value="Y">Y</option><option value="N">N</option></select>
-              <span v-else :class="['badge',ynBadge(row.useYn)]">{{ row.useYn }}</span>
+              <span v-else :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span>
             </td>
             <td style="text-align:center"><button class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button></td>
           </tr>
@@ -176,9 +177,9 @@ window.MbMemGradeMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

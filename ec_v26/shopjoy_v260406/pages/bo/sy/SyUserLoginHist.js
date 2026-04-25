@@ -3,7 +3,7 @@ window.SyUserLoginHist = {
   name: 'SyUserLoginHist',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const descOpen = ref(false);
     const activeTab = ref('log'); // 'log' | 'hist' | 'token'
@@ -23,8 +23,16 @@ window.SyUserLoginHist = {
     const searchTokenAction = ref('');
     const pager = reactive({ page: 1, size: 20 });
 
-    const boUserList = reactive((window.boData?.boUsers || []));
+    const boUserList = reactive([]);
     const boUsers = computed(() => boUserList);
+
+    const fetchData = async () => {
+      try {
+        const res = await window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 10000 } });
+        boUserList.splice(0, boUserList.length, ...(res.data?.data?.list || []));
+      } catch (_) {}
+    };
+    onMounted(() => { fetchData(); });
 
     const OS_LIST      = ['Windows 11','Windows 10','macOS 14','macOS 13','iOS 17'];
     const BROWSER_LIST = ['Chrome 123','Edge 122','Safari 17','Firefox 124','Chrome 122'];

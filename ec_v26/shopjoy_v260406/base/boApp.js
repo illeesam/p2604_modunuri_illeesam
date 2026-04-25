@@ -180,7 +180,7 @@
       /* ── App Init Data Store 초기화 ── */
       onMounted(() => {
         setTimeout(() => {
-          window.useBoAppInitStore?.()?.restoreFromStorage?.();
+          window.useBoAppInitStore?.()?.sfRestoreFromStorage?.();
         }, 0);
       });
 
@@ -410,6 +410,7 @@
       let _toastId  = 0;
       const TOAST_DURATION = 3500;
       const showToast = (msg, type = 'success', duration = TOAST_DURATION, errorDetails = '') => {
+        if (type === 'error') duration = 0;
         const id = ++_toastId;
         let msgTitle = msg;
         let msgDetail = '';
@@ -421,7 +422,7 @@
           msgTitle = parts.slice(1).join('\n'); // 나머지 메시지
         }
 
-        toasts.push({ id, msgTitle, msgDetail, msg, type, persistent: duration === 0, errorDetails, expanded: false });
+        toasts.push({ id, msgTitle, msgDetail, msg, type, persistent: duration === 0, errorDetails, expanded: type === 'error' && toastShowDetail.value });
         if (duration !== 0) {
           setTimeout(() => {
             const idx = toasts.findIndex(t => t.id === id);
@@ -436,6 +437,13 @@
         if (idx !== -1) toasts.splice(idx, 1);
       };
       const closeAllToasts = () => { toasts.splice(0, toasts.length); };
+      const TOAST_DETAIL_KEY = 'modu-bo-toast-isShowDetail';
+      const toastShowDetail = ref(localStorage.getItem(TOAST_DETAIL_KEY) !== 'false');
+      const toggleToastDetail = () => {
+        toastShowDetail.value = !toastShowDetail.value;
+        localStorage.setItem(TOAST_DETAIL_KEY, toastShowDetail.value);
+        toasts.forEach(t => { t.expanded = toastShowDetail.value; });
+      };
 
       /* ── API 응답 패널 ── */
       const apiResPanel = reactive({ show: false, res: null });
@@ -682,7 +690,7 @@
       const _boAuthStore = window.useBoAuthStore?.();
       const _syncCurrentAuthUser = () => {
         try {
-          const u = _boAuthStore?.authUser;
+          const u = _boAuthStore?.svAuthUser;
           if (u && u.authId) Object.assign(currentAuthUser, u);
           else Object.assign(currentAuthUser, _defaultBoAuthUser());
         } catch(e) {}
@@ -691,22 +699,22 @@
       // 초기 복원 — 토큰 없으면 reset, 있으면 syncFromStorage (FO foAuth.init() 동일 패턴)
       try {
         const _initToken = localStorage.getItem('modu-bo-accessToken');
-        if (!_initToken) _boAuthStore?.reset?.();
-        else _boAuthStore?.syncFromStorage?.();
+        if (!_initToken) _boAuthStore?.sfReset?.();
+        else _boAuthStore?.sfSyncFromStorage?.();
       } catch(_) {}
       _syncCurrentAuthUser();
 
       // F5 새로고침 시 토큰 유효성 검증 (FO: foAuth.init() 내 fetchFoAppInitData())
       (async () => {
         const store = _boAuthStore;
-        if (store?.accessToken) {
+        if (store?.svAccessToken) {
           try {
-            await window.useBoAppInitStore?.()?.fetchBoAppInitData?.();
+            await window.useBoAppInitStore?.()?.sfFetchBoAppInitData?.();
             _syncCurrentAuthUser();
           } catch (e) {
             if (e?.response?.status === 401) {
               console.warn('[boApp] token invalid (401), reset session');
-              store.reset();
+              store.sfReset();
               _syncCurrentAuthUser();
             } else {
               console.warn('[boApp] fetchBoAppInitData error:', e?.response?.status || e.message);
@@ -717,19 +725,26 @@
       const activeRoleId = ref(null);
       const isLoggedIn = computed(() => !!(currentAuthUser?.authId));
       const currentAuthUserRoles = reactive([]);
-      const updateCurrentUserRoles = () => {
+      const updateCurrentUserRoles = async () => {
         try {
-          if (!window.boDataProvider) {
-            currentAuthUserRoles.splice(0, currentAuthUserRoles.length);
-            return;
+          let roles = window.getBoRoleStore?.()?.svRoles || [];
+          if (!roles.length) {
+            try {
+              const res = await window.boApi.get('/bo/sy/role/page', { params: { pageNo: 1, pageSize: 10000 } });
+              roles = res.data?.data?.list || [];
+            } catch (_) {}
           }
           const user = currentAuthUser || { userId: '' };
-          const userRoles = window.boDataProvider?.getUserRolesByUserId(user.userId) || [];
-          const roles = window.boDataProvider?.getRoles() || [];
+          let userRoles = [];
+          if (user.userId) {
+            try {
+              const res = await window.boApi.get(`/bo/sy/user/${user.userId}/roles`);
+              userRoles = res.data?.data || [];
+            } catch (_) {}
+          }
           const roleMap = Object.fromEntries((roles || []).map(r => [r?.roleId, r]));
           const result = (userRoles || []).map(ur => roleMap[ur?.roleId]).filter(Boolean);
-          const finalResult = result && result.length ? result : [];
-          currentAuthUserRoles.splice(0, currentAuthUserRoles.length, ...finalResult);
+          currentAuthUserRoles.splice(0, currentAuthUserRoles.length, ...(result.length ? result : []));
         } catch (e) {
           console.error('currentAuthUserRoles error:', e);
           currentAuthUserRoles.splice(0, currentAuthUserRoles.length);
@@ -739,8 +754,8 @@
       watch(currentAuthUser, updateCurrentUserRoles);
       const rolePath = (r, uid) => {
         try {
-          if (!r || !window.boDataProvider) return '';
-          const roles = window.boDataProvider?.getRoles() || [];
+          if (!r) return '';
+          const roles = window.getBoRoleStore?.()?.svRoles || [];
           const m = Object.fromEntries((roles || []).map(x => [x?.roleId, x]));
           const seg = []; let cur = r; let root = r;
           while (cur) {
@@ -748,24 +763,7 @@
             root = cur;
             cur = (cur?.parentId && m[cur.parentId]) ? m[cur.parentId] : null;
           }
-          const path = seg.join(' > ');
-          const wantType = (root?.roleCode === 'SITE_MGR_ROOT') ? 'SALES'
-                         : (root?.roleCode === 'DLIV_ROOT')     ? 'DELIVERY' : null;
-          if (wantType) {
-            const typeLabel = wantType === 'SALES' ? '판매업체' : '배송업체';
-            const targetUid = uid != null ? uid : (currentAuthUser?.userId || '');
-            let names = [];
-            if (targetUid != null && targetUid > 0) {
-              const userBizs = (window.boData?.userBizs || []);
-              const bizs = (window.boData?.bizs || []);
-              const bus = (userBizs || []).filter(b => b?.boUserId === targetUid);
-              const bm = Object.fromEntries((bizs || []).map(b => [b?.bizId, b]));
-              names = (bus || []).map(bu => bm[bu?.bizId]).filter(b => b && b?.vendorTypeCd === wantType).map(b => b?.bizNm || '');
-            }
-            const nameStr = (names && names.length) ? names.join(', ') : '(소속없음)';
-            return '[' + typeLabel + '] ' + nameStr + ' :: ' + path;
-          }
-          return path;
+          return seg.join(' > ');
         } catch (e) {
           console.error('rolePath error:', e);
           return '';
@@ -774,10 +772,9 @@
       const onRoleChange = () => { location.reload(); };
       const rolesOfUser = (uid) => {
         try {
-          if (!window.boDataProvider) return [];
-          const userRoles = window.boDataProvider?.getBoUserRolesByUserId(uid) || [];
-          const roles = window.boDataProvider?.getRoles() || [];
+          const roles = window.getBoRoleStore?.()?.svRoles || [];
           const m = Object.fromEntries((roles || []).map(r => [r?.roleId, r]));
+          const userRoles = (currentAuthUserRoles || []).filter(ur => ur?.userId === uid || !uid);
           const result = (userRoles || []).map(ur => m[ur?.roleId]).filter(Boolean);
           return result || [];
         } catch (e) {
@@ -785,32 +782,13 @@
           return [];
         }
       };
-      const bizInfoOfUser = (uid) => {
+      const bizInfoOfUser = () => '';
+      const testAccounts = ref([]);
+      onMounted(async () => {
         try {
-          if (!window.boDataProvider) return '';
-          const boUsers = window.boDataProvider?.getBoUsers() || [];
-          const bizs = (window.boData?.bizs || []);
-          const bus = (boUsers || []).filter(b => b?.boUserId === uid);
-          const bm = Object.fromEntries((bizs || []).map(b => [b?.bizId, b]));
-          const typeLabel = { SALES:'판매업체', DELIVERY:'배송업체', PARTNER:'제휴사', INTERNAL:'내부법인' };
-          return (bus || []).map(bu => {
-            const b = bm[bu?.bizId];
-            if (!b) return '';
-            return '[' + (typeLabel[b?.vendorTypeCd] || b?.vendorTypeCd) + '] ' + b?.bizNm;
-          }).filter(Boolean).join(' / ');
-        } catch (e) {
-          console.error('bizInfoOfUser error:', e);
-          return '';
-        }
-      };
-      const testAccounts = computed(() => {
-        try {
-          if (!window.boDataProvider) return [];
-          return window.boDataProvider?.getBoUsers?.() || [];
-        } catch (e) {
-          console.error('testAccounts error:', e);
-          return [];
-        }
+          const res = await window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 } });
+          testAccounts.value = res.data?.data?.list || [];
+        } catch (_) {}
       });
       watch(currentAuthUser, (u) => {
         try {
@@ -897,7 +875,7 @@
         try {
           if (!_boAuthStore) { loginError.value = '스토어 초기화 실패'; return; }
 
-          await _boAuthStore.login(loginForm.loginId, loginForm.loginPwd, loginForm.authMethod);
+          await _boAuthStore.sfLogin(loginForm.loginId, loginForm.loginPwd, loginForm.authMethod);
           _syncCurrentAuthUser();
 
           openTabs.splice(0);
@@ -916,10 +894,10 @@
           const configStore = window.useBoConfigStore?.();
 
           if (authStore) {
-            await authStore.logout();
+            await authStore.sfLogout();
           }
           if (configStore) {
-            configStore.reset();
+            configStore.sfReset();
           }
 
           userMenuShow.value = false;
@@ -934,13 +912,13 @@
       /* 다른 탭 로그인/로그아웃 동기화 */
       window.addEventListener('storage', (e) => {
         if (e.key === 'modu-bo-accessToken' || e.key === 'modu-bo-authUser') {
-          _boAuthStore?.syncFromStorage?.();
+          _boAuthStore?.sfSyncFromStorage?.();
           _syncCurrentAuthUser();
         }
       });
       /* 같은 탭 DevTools 변경 감지 — FO의 syncFromStorage + _sync() 패턴 동일 적용 */
       setInterval(() => {
-        _boAuthStore?.syncFromStorage?.();
+        _boAuthStore?.sfSyncFromStorage?.();
         _syncCurrentAuthUser();
       }, 1000);
 
@@ -1038,7 +1016,7 @@
         ctxClose, ctxCloseLeft, ctxCloseRight, ctxCloseOthers, ctxCloseAll, ctxNewWindow, ctxRefresh,
         openNewWindow, openTabsWithGroup,
         activeTop, leftMenuOpen, setTopMenu,
-        toasts, showToast, closeToast, closeAllToasts,
+        toasts, showToast, closeToast, closeAllToasts, toastShowDetail, toggleToastDetail,
         confirmState, showConfirm, closeConfirm,
         refModal, showRefModal, closeRefModal,
         rightPanelOpen, commonFilter, selectModal, openSelectModal, closeSelectModal, onSelectItem, clearFilter,
@@ -1594,27 +1572,25 @@
 
   <!-- Toast 누적 스택 -->
   <div class="toast-container">
-    <div v-if="toasts.length > 1" class="toast-close-all" @click="closeAllToasts" title="전체 닫기">
-      <span>✕ 전체 닫기 ({{ toasts.length }})</span>
+    <div v-if="toasts.length > 1" class="toast-close-all">
+      <span class="toast-close-all-btn" @click="closeAllToasts">✕ 전체닫기 ({{ toasts.length }})</span>
+      <span class="toast-close-all-sep">|</span>
+      <span class="toast-close-all-btn" @click="toggleToastDetail">{{ toastShowDetail ? '▲ 전체접기' : '▼ 전체펼치기' }}</span>
     </div>
     <div v-for="t in toasts" :key="t.id"
       class="toast-item" :class="['toast-'+t.type, { 'toast-expanded': t.expanded }]">
-      <span class="toast-close-x" @click.stop="closeToast(t.id)">✕</span>
-      <div class="toast-msg-wrapper">
-        <div class="toast-msg">
-          <div class="toast-msg-title">{{ t.msgTitle || t.msg }}</div>
-          <div v-if="t.msgDetail" class="toast-msg-detail">{{ t.msgDetail }}</div>
-          <!-- 오류 상세 첫 줄 항상 표시 -->
-          <div v-if="t.errorDetails && t.type === 'error'" class="toast-error-preview">
-            <pre class="toast-error-preview-content">{{ t.errorDetails.split(String.fromCharCode(10))[0] }}</pre>
-          </div>
-        </div>
-        <!-- 오류 상세 더보기 아이콘 (우측, 내용이 있을 때만) -->
-        <span v-if="t.errorDetails && t.type === 'error'" @click="t.expanded = !t.expanded" class="toast-expand-icon" :title="t.expanded ? '접기' : '더보기'">{{ t.expanded ? '▲' : '▼' }}</span>
+      <!-- 헤더 행: 제목 + ▼/▲ + ✕ -->
+      <div class="toast-header-row">
+        <div class="toast-msg-title">{{ (t.msgTitle || t.msg).split(String.fromCharCode(10))[0] }}</div>
+        <span v-if="t.type === 'error'" class="toast-expand-icon"
+          @click.stop="t.expanded = !t.expanded" :title="t.expanded ? '접기' : '더보기'">{{ t.expanded ? '▲' : '▼' }}</span>
+        <span class="toast-close-x" @click.stop="closeToast(t.id)">✕</span>
       </div>
-      <!-- 오류 상세 전체 내용 (펼쳐진 상태) -->
-      <div v-if="t.expanded && t.errorDetails" class="toast-error-details">
-        <pre class="toast-error-content">{{ t.errorDetails }}</pre>
+      <!-- 서브 정보: URL/status 줄 -->
+      <div v-if="t.msgDetail" class="toast-msg-detail">{{ t.msgDetail }}</div>
+      <!-- 펼쳐진 상세 내용 -->
+      <div v-if="t.expanded" class="toast-error-details">
+        <pre class="toast-error-content">{{ t.errorDetails || (t.msgTitle || t.msg) }}</pre>
       </div>
       <div v-if="!t.persistent" class="toast-progress"></div>
     </div>

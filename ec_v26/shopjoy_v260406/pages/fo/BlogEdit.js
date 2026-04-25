@@ -5,7 +5,7 @@ window.BlogEdit = {
   setup(props) {
     const { ref, computed, reactive, onMounted } = Vue;
 
-    const isEdit = computed(() => !!props.editId);
+    const cfIsEdit = computed(() => !!props.editId);
     const form = reactive({
       title: '',
       category: 'fashion',
@@ -23,7 +23,7 @@ window.BlogEdit = {
 
     /* 수정 모드: 기존 데이터 로드 */
     onMounted(() => {
-      if (isEdit.value) {
+      if (cfIsEdit.value) {
         // 목업: editId에 따른 데이터 로드
         Object.assign(form, {
           title: '2026 봄 트렌드 컬러 가이드',
@@ -35,10 +35,10 @@ window.BlogEdit = {
       }
     });
 
-    const save = () => {
+    const handleSave = () => {
       if (!form.title.trim()) { props.showToast?.('제목을 입력해주세요.', 'error'); return; }
       if (!form.body.trim()) { props.showToast?.('본문을 입력해주세요.', 'error'); return; }
-      props.showToast?.(isEdit.value ? '수정되었습니다.' : '등록되었습니다.', 'success');
+      props.showToast?.(cfIsEdit.value ? '수정되었습니다.' : '등록되었습니다.', 'success');
       props.navigate('blog');
     };
 
@@ -51,7 +51,7 @@ window.BlogEdit = {
     };
     const removeImage = (id) => { const idx = images.findIndex(img => img.id === id); if (idx !== -1) images.splice(idx, 1); };
 
-    return { isEdit, form, categories, images, save, cancel, addImage, removeImage };
+    return { cfIsEdit, form, categories, images, handleSave, cancel, addImage, removeImage };
   },
   template: /* html */ `
 <div class="page-wrap" style="max-width:760px;">
@@ -62,7 +62,7 @@ window.BlogEdit = {
       style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.825rem;margin-bottom:16px;padding:0;">
       ← 블로그 목록으로
     </button>
-    <h1 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);">{{ isEdit ? '글 수정' : '새 글 작성' }}</h1>
+    <h1 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);">{{ cfIsEdit ? '글 수정' : '새 글 작성' }}</h1>
   </div>
 
   <!-- 폼 -->
@@ -124,7 +124,7 @@ window.BlogEdit = {
     <!-- 버튼 -->
     <div style="display:flex;gap:10px;justify-content:flex-end;">
       <button class="btn-outline" @click="cancel" style="padding:11px 28px;font-size:0.88rem;">취소</button>
-      <button class="btn-blue" @click="save" style="padding:11px 28px;font-size:0.88rem;">{{ isEdit ? '수정' : '등록' }}</button>
+      <button class="btn-blue" @click="handleSave" style="padding:11px 28px;font-size:0.88rem;">{{ cfIsEdit ? '수정' : '등록' }}</button>
     </div>
   </div>
 

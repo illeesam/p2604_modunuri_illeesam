@@ -66,13 +66,13 @@ window.Prod03List = {
     const selCats       = reactive(new Set());
 
     /* ── 필터 옵션 (로드된 상품 기반) ── */
-    const allColors = computed(() => {
+    const cfAllColors = computed(() => {
       const map = new Map();
       allProducts.forEach(p => (p.opt1s || []).forEach(c => { if (!map.has(c.name)) map.set(c.name, c); }));
       return [...map.values()];
     });
     const sizeOrder = ['FREE','XS','S','M','L','XL','XXL','XXXL'];
-    const allSizes = computed(() => {
+    const cfAllSizes = computed(() => {
       const seen = new Set();
       allProducts.forEach(p => (p.opt2s || []).forEach(s => seen.add(s)));
       return [...seen].sort((a, b) => {
@@ -82,15 +82,15 @@ window.Prod03List = {
         return ai - bi;
       });
     });
-    const allCats = computed(() => (props.config && props.config.categorys) || []);
+    const cfAllCats = computed(() => (props.config && props.config.categorys) || []);
 
     /* ── 할인율 / 포맷 ── */
-    const discountRate = p => p.originalPrice
+    const fnDiscountRate = p => p.originalPrice
       ? Math.round((1 - p.priceNum / p.originalPrice) * 100) : 0;
-    const fmtPrice = n => n ? n.toLocaleString() + '원' : '';
-    const categoryLabel = p => {
+    const fnFmtPrice = n => n ? n.toLocaleString() + '원' : '';
+    const fnCategoryLabel = p => {
       if (!p) return '';
-      const row = allCats.value.find(c => c.categoryId === p.categoryId);
+      const row = cfAllCats.value.find(c => c.categoryId === p.categoryId);
       return row ? row.categoryNm : p.categoryId;
     };
 
@@ -99,7 +99,7 @@ window.Prod03List = {
     const toggleSize  = sz   => { if (selSizes.has(sz)) selSizes.delete(sz); else selSizes.add(sz); };
     const toggleCat   = id   => { if (selCats.has(id)) selCats.delete(id); else selCats.add(id); };
 
-    const hasFilter = computed(() =>
+    const cfHasFilter = computed(() =>
       searchText.value || priceMin.value || priceMax.value ||
       selColors.size > 0 || selSizes.size > 0 || selCats.size > 0
     );
@@ -109,7 +109,7 @@ window.Prod03List = {
     };
 
     /* ── 필터링 ── */
-    const filteredProducts = computed(() => {
+    const cfFilteredProducts = computed(() => {
       let list = allProducts;
       const q = searchText.value.trim().toLowerCase();
       if (q) list = list.filter(p => (p.prodNm || '').toLowerCase().includes(q) ||
@@ -126,13 +126,13 @@ window.Prod03List = {
     /* ── PC 페이지네이션 ── */
     const PAGE_SIZE   = 12;
     const currentPage = ref(1);
-    const totalPages  = computed(() => Math.max(1, Math.ceil(filteredProducts.value.length / PAGE_SIZE)));
-    const pagedProducts = computed(() => {
+    const cfTotalPages  = computed(() => Math.max(1, Math.ceil(cfFilteredProducts.value.length / PAGE_SIZE)));
+    const cfPagedProducts = computed(() => {
       const s = (currentPage.value - 1) * PAGE_SIZE;
-      return filteredProducts.value.slice(s, s + PAGE_SIZE);
+      return cfFilteredProducts.value.slice(s, s + PAGE_SIZE);
     });
-    const pageNums = computed(() => {
-      const t = totalPages.value;
+    const cfPageNums = computed(() => {
+      const t = cfTotalPages.value;
       const c = currentPage.value;
       if (t <= 7) return Array.from({ length: t }, (_, i) => i + 1);
       const set = new Set([1, t, c-2, c-1, c, c+1, c+2].filter(n => n >= 1 && n <= t));
@@ -147,8 +147,8 @@ window.Prod03List = {
 
     /* ── 모바일 무한스크롤 ── */
     const mobileCount   = ref(PAGE_SIZE);
-    const mobileProducts = computed(() => filteredProducts.value.slice(0, mobileCount.value));
-    const hasMore       = computed(() => mobileCount.value < filteredProducts.value.length);
+    const cfMobileProducts = computed(() => cfFilteredProducts.value.slice(0, mobileCount.value));
+    const cfHasMore       = computed(() => mobileCount.value < cfFilteredProducts.value.length);
 
     /* ── 모바일 판별 ── */
     const isMobile = ref(window.innerWidth < 768);
@@ -168,8 +168,8 @@ window.Prod03List = {
       const el = document.getElementById('sj-sentinel');
       if (!el || !('IntersectionObserver' in window)) return;
       observer = new IntersectionObserver(entries => {
-        if (entries[0].isIntersecting && hasMore.value && isMobile.value) {
-          mobileCount.value = Math.min(filteredProducts.value.length, mobileCount.value + PAGE_SIZE);
+        if (entries[0].isIntersecting && cfHasMore.value && isMobile.value) {
+          mobileCount.value = Math.min(cfFilteredProducts.value.length, mobileCount.value + PAGE_SIZE);
         }
       }, { rootMargin: '300px' });
       observer.observe(el);
@@ -185,14 +185,14 @@ window.Prod03List = {
     });
 
     return {
-      loading, allProducts, filteredProducts,
+      loading, allProducts, cfFilteredProducts,
       searchText, filterOpen, priceMin, priceMax,
       selColors, selSizes, selCats,
-      allColors, allSizes, allCats,
-      toggleColor, toggleSize, toggleCat, hasFilter, clearFilters,
-      discountRate, fmtPrice, categoryLabel,
-      currentPage, totalPages, pagedProducts, pageNums, PAGE_SIZE,
-      mobileCount, mobileProducts, hasMore,
+      cfAllColors, cfAllSizes, cfAllCats,
+      toggleColor, toggleSize, toggleCat, cfHasFilter, clearFilters,
+      fnDiscountRate, fnFmtPrice, fnCategoryLabel,
+      currentPage, cfTotalPages, cfPagedProducts, cfPageNums, PAGE_SIZE,
+      mobileCount, cfMobileProducts, cfHasMore,
       isMobile,
     };
   },
@@ -231,7 +231,7 @@ window.Prod03List = {
         : 'background:var(--bg-card);color:var(--text-secondary);border:2px solid var(--border);'">
       전체
     </button>
-    <button v-for="cat in allCats" :key="cat.categoryId"
+    <button v-for="cat in cfAllCats" :key="cat.categoryId"
       @click="toggleCat(cat.categoryId)"
       style="padding:7px 18px;border-radius:24px;cursor:pointer;font-size:0.85rem;font-weight:700;transition:all 0.18s;"
       :style="selCats.has(cat.categoryId)
@@ -254,10 +254,10 @@ window.Prod03List = {
     </div>
     <button @click="filterOpen=!filterOpen"
       style="display:flex;align-items:center;gap:6px;padding:10px 16px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg-card);cursor:pointer;font-size:0.85rem;font-weight:600;white-space:nowrap;transition:all 0.2s;"
-      :style="filterOpen?'border-color:var(--blue);color:var(--blue);':hasFilter?'border-color:#f97316;color:#f97316;':'color:var(--text-muted);'">
+      :style="filterOpen?'border-color:var(--blue);color:var(--blue);':cfHasFilter?'border-color:#f97316;color:#f97316;':'color:var(--text-muted);'">
       <span>⚙️</span>
       <span>{{ filterOpen ? '필터 닫기' : '필터' }}</span>
-      <span v-if="hasFilter && !filterOpen"
+      <span v-if="cfHasFilter && !filterOpen"
         style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;background:#f97316;color:#fff;border-radius:9px;font-size:0.7rem;font-weight:700;">
         {{ (selColors.size+selSizes.size+selCats.size+(priceMin?1:0)+(priceMax?1:0)) }}
       </span>
@@ -302,7 +302,7 @@ window.Prod03List = {
     <div style="margin-bottom:16px;">
       <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.05em;">🎨 색상 <span style="font-weight:400;font-size:0.72rem;">(복수선택)</span></div>
       <div style="display:flex;flex-wrap:wrap;gap:8px;">
-        <button v-for="c in allColors" :key="c.name"
+        <button v-for="c in cfAllColors" :key="c.name"
           @click="toggleColor(c.name)"
           :title="c.name"
           style="display:flex;align-items:center;gap:5px;padding:4px 10px 4px 6px;border-radius:20px;cursor:pointer;font-size:0.75rem;font-weight:600;transition:all 0.15s;"
@@ -319,7 +319,7 @@ window.Prod03List = {
     <div style="margin-bottom:12px;">
       <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.05em;">📏 사이즈 <span style="font-weight:400;font-size:0.72rem;">(복수선택)</span></div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;">
-        <button v-for="sz in allSizes" :key="sz"
+        <button v-for="sz in cfAllSizes" :key="sz"
           @click="toggleSize(sz)"
           style="padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.82rem;font-weight:700;transition:all 0.15s;"
           :style="selSizes.has(sz)
@@ -332,7 +332,7 @@ window.Prod03List = {
 
     <!-- 필터 초기화 -->
     <div style="display:flex;justify-content:flex-end;">
-      <button v-if="hasFilter" @click="clearFilters"
+      <button v-if="cfHasFilter" @click="clearFilters"
         style="padding:6px 16px;border:1.5px solid #ef4444;border-radius:8px;background:transparent;color:#ef4444;cursor:pointer;font-size:0.8rem;font-weight:600;transition:all 0.15s;">
         ✕ 필터 초기화
       </button>
@@ -342,8 +342,8 @@ window.Prod03List = {
   <!-- 결과 요약 -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
     <div style="font-size:0.85rem;color:var(--text-secondary);">
-      총 <strong style="color:var(--text-primary);">{{ filteredProducts.length }}</strong>개 상품
-      <span v-if="hasFilter" style="color:#f97316;font-size:0.78rem;margin-left:6px;">(필터 적용중)</span>
+      총 <strong style="color:var(--text-primary);">{{ cfFilteredProducts.length }}</strong>개 상품
+      <span v-if="cfHasFilter" style="color:#f97316;font-size:0.78rem;margin-left:6px;">(필터 적용중)</span>
     </div>
   </div>
 
@@ -365,7 +365,7 @@ window.Prod03List = {
 
   <!-- ── 상품 그리드 ── -->
   <div v-else class="grid-3">
-    <div v-for="p in (isMobile ? mobileProducts : pagedProducts)" :key="p.productId"
+    <div v-for="p in (isMobile ? cfMobileProducts : cfPagedProducts)" :key="p.productId"
       class="product-card" style="cursor:pointer;" @click="selectProduct(p)">
 
       <!-- 썸네일 -->
@@ -396,7 +396,7 @@ window.Prod03List = {
         <!-- 상품명 + 카테고리 -->
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:6px;">
           <span style="font-weight:700;color:var(--text-primary);font-size:0.92rem;flex:1;line-height:1.4;">{{ p.prodNm }}</span>
-          <span class="badge badge-cat" style="flex-shrink:0;margin-top:2px;">{{ categoryLabel(p) }}</span>
+          <span class="badge badge-cat" style="flex-shrink:0;margin-top:2px;">{{ fnCategoryLabel(p) }}</span>
         </div>
 
         <!-- 설명 -->
@@ -431,23 +431,23 @@ window.Prod03List = {
   </div>
 
   <!-- 결과 없음 -->
-  <div v-if="!loading && filteredProducts.length===0"
+  <div v-if="!loading && cfFilteredProducts.length===0"
     style="text-align:center;padding:60px 0;color:var(--text-muted);">
     <div style="font-size:3rem;margin-bottom:12px;">🔍</div>
     <div style="font-size:1rem;font-weight:600;">해당 조건의 상품이 없습니다.</div>
-    <button v-if="hasFilter" @click="clearFilters"
+    <button v-if="cfHasFilter" @click="clearFilters"
       style="margin-top:16px;padding:8px 20px;border:1.5px solid var(--blue);border-radius:8px;background:transparent;color:var(--blue);cursor:pointer;font-size:0.85rem;font-weight:600;">
       필터 초기화
     </button>
   </div>
 
   <!-- ── PC 페이지네이션 ── -->
-  <div v-if="!loading && !isMobile && totalPages > 1"
+  <div v-if="!loading && !isMobile && cfTotalPages > 1"
     style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:32px;flex-wrap:wrap;">
     <button @click="currentPage=Math.max(1,currentPage-1)" :disabled="currentPage===1"
       style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.85rem;"
       :style="currentPage===1?'opacity:0.4;cursor:not-allowed;':''">‹</button>
-    <template v-for="n in pageNums" :key="n">
+    <template v-for="n in cfPageNums" :key="n">
       <span v-if="n==='…'" style="padding:8px 4px;color:var(--text-muted);font-size:0.85rem;">…</span>
       <button v-else @click="currentPage=n;$el.scrollIntoView({behavior:'smooth',block:'start'})"
         style="min-width:38px;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;transition:all 0.15s;"
@@ -457,15 +457,15 @@ window.Prod03List = {
         {{ n }}
       </button>
     </template>
-    <button @click="currentPage=Math.min(totalPages,currentPage+1)" :disabled="currentPage===totalPages"
+    <button @click="currentPage=Math.min(cfTotalPages,currentPage+1)" :disabled="currentPage===cfTotalPages"
       style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.85rem;"
-      :style="currentPage===totalPages?'opacity:0.4;cursor:not-allowed;':''">›</button>
-    <span style="font-size:0.78rem;color:var(--text-muted);margin-left:8px;">{{ currentPage }} / {{ totalPages }}</span>
+      :style="currentPage===cfTotalPages?'opacity:0.4;cursor:not-allowed;':''">›</button>
+    <span style="font-size:0.78rem;color:var(--text-muted);margin-left:8px;">{{ currentPage }} / {{ cfTotalPages }}</span>
   </div>
 
   <!-- ── 모바일 무한스크롤 센티넬 ── -->
   <div v-if="!loading && isMobile" id="sj-sentinel" style="height:1px;"></div>
-  <div v-if="!loading && isMobile && hasMore"
+  <div v-if="!loading && isMobile && cfHasMore"
     style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.85rem;">
     스크롤하면 더 불러옵니다…
   </div>

@@ -10,7 +10,7 @@ window.SyVendorDtl = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const loadData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/vendor/page', {
@@ -24,7 +24,8 @@ window.SyVendorDtl = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { loadData(); });
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
 
@@ -44,7 +45,7 @@ window.SyVendorDtl = {
       bizNo: yup.string().required('사업자등록번호를 입력해주세요.'),
     });
 
-    onMounted(async () => {
+    const initForm = async () => {
       if (!isNew.value) {
         const v = vendors.find(x => x.vendorId === props.editId);
         if (v) Object.assign(form, { ...v });
@@ -59,7 +60,8 @@ window.SyVendorDtl = {
         if (form.memo) _qMemo.root.innerHTML = form.memo;
         _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
       }
-    });
+    };
+    onMounted(() => { initForm(); });
 
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 

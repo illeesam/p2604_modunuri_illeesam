@@ -6,13 +6,13 @@ window.DpDispUiMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const codes = reactive((window.boData?.codes || []));
+    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
     const displays = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/dp/ui/page', {
@@ -26,7 +26,8 @@ window.DpDispUiMng = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
@@ -225,7 +226,7 @@ window.DpDispUiMng = {
         <option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option>
       </select>
       <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>

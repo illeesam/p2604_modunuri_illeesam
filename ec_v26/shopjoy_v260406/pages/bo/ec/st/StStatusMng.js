@@ -3,7 +3,7 @@ window.StStatusMng = {
   name: 'StStatusMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const descOpen = ref(false);
 
@@ -33,11 +33,29 @@ window.StStatusMng = {
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
     /* ── 원본 데이터 ── */
-    const orderList = reactive((window.boData?.orders || []));
-    const claimList = reactive((window.boData?.claims || []));
-    const vendorList = reactive((window.boData?.vendors || []));
-    const couponList = reactive((window.boData?.coupons || []));
-    const cacheDataList = reactive((window.boData?.caches || []));
+    const orderList = reactive([]);
+    const claimList = reactive([]);
+    const vendorList = reactive([]);
+    const couponList = reactive([]);
+    const cacheDataList = reactive([]);
+
+    const fetchData = async () => {
+      try {
+        const [resO, resC, resV, resCp, resCa] = await Promise.all([
+          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/pm/coupon/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/pm/cache/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        orderList.splice(0, orderList.length, ...(resO.data?.data?.list || []));
+        claimList.splice(0, claimList.length, ...(resC.data?.data?.list || []));
+        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
+        couponList.splice(0, couponList.length, ...(resCp.data?.data?.list || []));
+        cacheDataList.splice(0, cacheDataList.length, ...(resCa.data?.data?.list || []));
+      } catch (_) {}
+    };
+    onMounted(() => { fetchData(); });
     const orders   = computed(() => orderList);
     const claims   = computed(() => claimList);
     const vendors  = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));

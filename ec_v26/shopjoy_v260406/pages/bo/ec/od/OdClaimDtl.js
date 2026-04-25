@@ -8,11 +8,11 @@ window.OdClaimDtl = {
     const claims = reactive([]);
     const orders = reactive([]);
     const loading = ref(false);
-    const codes = reactive((window.boData?.codes || []));
+    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const loadData = async () => {
       loading.value = true;
       try {
         const [claimsRes, ordersRes] = await Promise.all([
@@ -28,8 +28,9 @@ window.OdClaimDtl = {
       } finally {
         loading.value = false;
       }
-    });
-    const isNew = computed(() => !props.editId);
+    };
+    onMounted(() => { loadData(); });
+    const cfIsNew = computed(() => !props.editId);
 
     // 주문 조회 헬퍼 함수
     const getOrder = (orderId) => orders.value?.find(o => o.orderId === orderId);
@@ -51,16 +52,16 @@ window.OdClaimDtl = {
       .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
       .sort((a, b) => a.sortOrd - b.sortOrd);
     const TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
-    const CLAIM_STEPS = computed(() => _claimStatusCodes
+    const cfClaimSteps = computed(() => _claimStatusCodes
       .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + (TYPE_CD[form.type] || form.type) + '^'))
       .map(c => c.codeLabel)
       .filter(l => !['거부','철회'].includes(l)));
 
-    const currentStepIdx = computed(() => CLAIM_STEPS.value.indexOf(form.statusCd));
-    const statusOptions   = computed(() => CLAIM_STEPS.value);
+    const cfCurrentStepIdx = computed(() => cfClaimSteps.value.indexOf(form.statusCd));
+    const cfStatusOptions   = computed(() => cfClaimSteps.value);
 
     onMounted(() => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const c = getClaim.value(props.editId);
         if (c) {
           Object.assign(form, { ...c });
@@ -69,16 +70,16 @@ window.OdClaimDtl = {
       }
     });
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
-        err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; });
+        err.inner.forEach(e => { errors[e.path] = e.message; });
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const isNewClaim = isNew.value;
+      const isNewClaim = cfIsNew.value;
       const ok = await props.showConfirm(isNewClaim ? '등록' : '저장', isNewClaim ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNewClaim) {
@@ -121,9 +122,10 @@ window.OdClaimDtl = {
         return { claims, loading, error, ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
       });
     };
-    onMounted(async () => {
+    const initForm = async () => {
       claimItems.splice(0, claimItems.length, ...sampleClaimItems());
-    });
+    };
+    onMounted(() => { initForm(); });
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
     const CLAIM_TYPE_COLOR = { '취소':'#ef4444', '반품':'#FFBB00', '교환':'#3b82f6' };
@@ -131,9 +133,9 @@ window.OdClaimDtl = {
     const expandedItems = reactive(new Set());
     const toggleExpand = (i) => { const s = new Set(expandedItems); if (s.has(i)) s.delete(i); else s.add(i); expandedItems = s; };
     const isExpanded = (i) => expandedItems.has(i);
-    const allExpanded = computed(() => claimItems.length > 0 && window.safeArrayUtils.safeEvery(claimItems, (_,i) => expandedItems.has(i)));
+    const cfAllExpanded = computed(() => claimItems.length > 0 && window.safeArrayUtils.safeEvery(claimItems, (_,i) => expandedItems.has(i)));
     const toggleExpandAll = () => {
-      if (allExpanded.value) expandedItems = new Set();
+      if (cfAllExpanded.value) expandedItems = new Set();
       else expandedItems = new Set(claimItems.map((_,i) => i));
     };
     watch(claimItems, (list) => { expandedItems = new Set(list.map((_,i) => i)); });
@@ -163,12 +165,12 @@ window.OdClaimDtl = {
       if (!url) { props.showToast && props.showToast('운송장 정보가 없습니다.', 'error'); return; }
       window.open(url, 'dlivTrack', 'width=900,height=760,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes');
     };
-    const paymentList = computed(() => form.refundAmount || form.claimId ? [{
+    const cfPaymentList = computed(() => form.refundAmount || form.claimId ? [{
       method: form.refundMethodCd || '-', status: form.statusCd || '-',
       amount: form.refundAmount || 0, payDate: form.requestDate || '-',
       account: form.refundAccount || '-', apprNo: form.apprNo || '-',
     }] : []);
-    const statusHistList = computed(() => {
+    const cfStatusHistList = computed(() => {
       if (!form.claimId) return [];
       const d = String(form.requestDate || '').slice(0,10) || '-';
       return [
@@ -177,27 +179,27 @@ window.OdClaimDtl = {
         { date: d+' 15:00', user:'bo',  from:'처리중',      to: form.statusCd,  memo:'상태 갱신' },
       ];
     });
-    const editHistList = computed(() => form.claimId ? [
+    const cfEditHistList = computed(() => form.claimId ? [
       { date: String(form.requestDate||'').slice(0,10)+' 10:00', user:'bo', field:'사유',      before:'-', after: form.reasonCd || '-' },
       { date: String(form.requestDate||'').slice(0,10)+' 12:20', user:'bo', field:'환불금액',  before:'0', after: (form.refundAmount||0).toLocaleString() },
     ] : []);
-    const tabs = computed(() => [
+    const cfTabs = computed(() => [
       { id:'info',     label:'상세정보',      icon:'📋' },
       { id:'items',    label:'클레임항목',    icon:'↩', count: claimItems.length },
-      { id:'payment',  label:'결제정보',      icon:'💳', count: paymentList.value.length },
-      { id:'hist',     label:'상태변경이력',  icon:'🕒', count: statusHistList.value.length },
-      { id:'editHist', label:'정보수정이력',  icon:'📝', count: editHistList.value.length },
+      { id:'payment',  label:'결제정보',      icon:'💳', count: cfPaymentList.value.length },
+      { id:'hist',     label:'상태변경이력',  icon:'🕒', count: cfStatusHistList.value.length },
+      { id:'editHist', label:'정보수정이력',  icon:'📝', count: cfEditHistList.value.length },
     ]);
-    return { isNew, form, errors, statusOptions, CLAIM_STEPS, currentStepIdx, save, activeTab, claimItems, fmt, CLAIM_TYPE_COLOR, tabs, editHistList, paymentList, statusHistList, openTracking, expandedItems, toggleExpand, isExpanded, getExchangedItem, allExpanded, toggleExpandAll, viewMode2, showTab, orders, getOrder };
+    return { cfIsNew, form, errors, cfStatusOptions, cfClaimSteps, cfCurrentStepIdx, handleSave, activeTab, claimItems, fmt, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, viewMode2, showTab, orders, getOrder };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '클레임 등록' : (viewMode ? '클레임 상세' : '클레임 수정') }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.claimId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '클레임 등록' : (viewMode ? '클레임 상세' : '클레임 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.claimId }}</span></div>
 
   <!-- 탭 -->
-  <div v-if="!isNew" style="display:flex;gap:8px;margin-bottom:14px;align-items:stretch;">
+  <div v-if="!cfIsNew" style="display:flex;gap:8px;margin-bottom:14px;align-items:stretch;">
     <div style="flex:1;display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
-      <button v-for="t in tabs" :key="t?.id"
+      <button v-for="t in cfTabs" :key="t?.id"
         @click="activeTab=t.id"
         :disabled="viewMode2!=='tab'"
         :style="{
@@ -236,11 +238,11 @@ window.OdClaimDtl = {
   </div>
   <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
-  <div v-if="isNew || showTab('info')" class="card">
+  <div v-if="cfIsNew || showTab('info')" class="card">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
 
     <!-- 클레임 진행 상태 흐름 -->
-    <div v-if="!isNew" style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
+    <div v-if="!cfIsNew" style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
         <span :style="{
           fontSize:'11px',padding:'3px 10px',borderRadius:'10px',color:'#fff',fontWeight:800,
@@ -251,18 +253,18 @@ window.OdClaimDtl = {
         <span v-if="form.reason" style="font-size:11px;color:#888;margin-left:auto;">사유: {{ form.reason }}</span>
       </div>
       <div style="display:flex;align-items:flex-start;overflow-x:auto;">
-        <template v-for="(step, idx) in CLAIM_STEPS" :key="step">
+        <template v-for="(step, idx) in cfClaimSteps" :key="step">
           <div style="display:flex;flex-direction:column;align-items:center;min-width:80px;flex:1;">
             <div :style="{
-              width: idx === currentStepIdx ? '14px' : '10px',
-              height: idx === currentStepIdx ? '14px' : '10px',
+              width: idx === cfCurrentStepIdx ? '14px' : '10px',
+              height: idx === cfCurrentStepIdx ? '14px' : '10px',
               borderRadius:'50%', marginBottom:'6px', flexShrink:0, transition:'all .15s',
-              boxShadow: idx === currentStepIdx ? '0 0 0 3px '+(CLAIM_TYPE_COLOR[form.type]||'#9ca3af')+'40' : 'none',
-              background: idx <= currentStepIdx ? (CLAIM_TYPE_COLOR[form.type]||'#9ca3af') : '#bbb',
+              boxShadow: idx === cfCurrentStepIdx ? '0 0 0 3px '+(CLAIM_TYPE_COLOR[form.type]||'#9ca3af')+'40' : 'none',
+              background: idx <= cfCurrentStepIdx ? (CLAIM_TYPE_COLOR[form.type]||'#9ca3af') : '#bbb',
             }"></div>
             <div :style="{
-              fontSize:'11.5px', fontWeight: idx === currentStepIdx ? 800 : 600,
-              color: idx === currentStepIdx ? (CLAIM_TYPE_COLOR[form.type]||'#9ca3af') : (idx < currentStepIdx ? '#444' : '#bbb'),
+              fontSize:'11.5px', fontWeight: idx === cfCurrentStepIdx ? 800 : 600,
+              color: idx === cfCurrentStepIdx ? (CLAIM_TYPE_COLOR[form.type]||'#9ca3af') : (idx < cfCurrentStepIdx ? '#444' : '#bbb'),
               whiteSpace:'nowrap', textAlign:'center',
             }">{{ step }}</div>
             <span v-if="step==='수거중' && form.trackingNo"
@@ -278,9 +280,9 @@ window.OdClaimDtl = {
               {{ (form.exchangeCourier||'').replace('대한통운','').replace('택배','') || 'CJ' }}발송 🔍
             </span>
           </div>
-          <div v-if="idx < CLAIM_STEPS.length - 1"
+          <div v-if="idx < cfClaimSteps.length - 1"
             :style="{flex:'1', height:'2px', minWidth:'12px', marginTop:'6px',
-              background: idx < currentStepIdx ? (CLAIM_TYPE_COLOR[form.type]||'#9ca3af') : '#bbb'}"></div>
+              background: idx < cfCurrentStepIdx ? (CLAIM_TYPE_COLOR[form.type]||'#9ca3af') : '#bbb'}"></div>
         </template>
       </div>
     </div>
@@ -289,7 +291,7 @@ window.OdClaimDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">클레임ID <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.claimId" placeholder="CLM-2026-XXX" :readonly="!isNew || viewMode" :class="errors.claimId ? 'is-invalid' : ''" />
+        <input class="form-control" v-model="form.claimId" placeholder="CLM-2026-XXX" :readonly="!cfIsNew || viewMode" :class="errors.claimId ? 'is-invalid' : ''" />
         <span v-if="errors.claimId" class="field-error">{{ errors.claimId }}</span>
       </div>
       <div class="form-group">
@@ -324,7 +326,7 @@ window.OdClaimDtl = {
       <div class="form-group">
         <label class="form-label">처리 상태</label>
         <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
-          <option v-for="s in statusOptions" :key="Math.random()">{{ s }}</option>
+          <option v-for="s in cfStatusOptions" :key="Math.random()">{{ s }}</option>
         </select>
       </div>
     </div>
@@ -352,7 +354,7 @@ window.OdClaimDtl = {
         <button class="btn btn-secondary" @click="navigate('odClaimMng')">닫기</button>
       </template>
       <template v-else>
-        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('odClaimMng')">취소</button>
       </template>
     </div>
@@ -360,11 +362,11 @@ window.OdClaimDtl = {
   </div>
 
   <!-- 클레임항목목록 탭 -->
-  <div v-if="!isNew && showTab('items')" class="card" style="padding:20px;">
+  <div v-if="!cfIsNew && showTab('items')" class="card" style="padding:20px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">↩ 클레임항목 <span class="tab-count">{{ claimItems.length }}</span></div>
     <div v-if="form.type==='교환'" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
       <button class="btn btn-secondary btn-sm" @click="toggleExpandAll">
-        {{ allExpanded ? '▲ 교환품 모두접기' : '▼ 교환품 모두펼치기' }}
+        {{ cfAllExpanded ? '▲ 교환품 모두접기' : '▼ 교환품 모두펼치기' }}
       </button>
     </div>
     <table class="bo-table" v-if="claimItems.length">
@@ -454,16 +456,16 @@ window.OdClaimDtl = {
   </div>
 
   <!-- 결제정보 탭 -->
-  <div v-if="!isNew && showTab('payment')" class="card" style="padding:20px;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ paymentList.length }}</span></div>
-    <table class="bo-table" v-if="paymentList.length">
+  <div v-if="!cfIsNew && showTab('payment')" class="card" style="padding:20px;">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ cfPaymentList.length }}</span></div>
+    <table class="bo-table" v-if="cfPaymentList.length">
       <thead><tr>
         <th style="width:40px;text-align:center;">No.</th>
         <th>환불수단</th><th>환불상태</th><th style="text-align:right;">환불금액</th>
         <th>처리일시</th><th>계좌/카드</th><th>승인번호</th>
       </tr></thead>
       <tbody>
-        <tr v-for="(p,i) in paymentList" :key="Math.random()">
+        <tr v-for="(p,i) in cfPaymentList" :key="Math.random()">
           <td style="text-align:center;color:#aaa;">{{ i+1 }}</td>
           <td>{{ p.method }}</td>
           <td><span class="badge badge-orange">{{ p.status }}</span></td>
@@ -478,20 +480,20 @@ window.OdClaimDtl = {
   </div>
 
   <!-- 상태변경이력 탭 -->
-  <div v-if="!isNew && showTab('hist')" class="card">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">🕒 상태변경이력 <span class="tab-count">{{ statusHistList.length }}</span></div>
+  <div v-if="!cfIsNew && showTab('hist')" class="card">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">🕒 상태변경이력 <span class="tab-count">{{ cfStatusHistList.length }}</span></div>
     <od-claim-hist :claim-id="form.claimId" :navigate="navigate" :show-ref-modal="showRefModal" :show-toast="showToast" />
   </div>
 
   <!-- 정보수정이력 탭 -->
-  <div v-if="!isNew && showTab('editHist')" class="card" style="padding:20px;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ editHistList.length }}</span></div>
-    <table class="bo-table" v-if="editHistList.length">
+  <div v-if="!cfIsNew && showTab('editHist')" class="card" style="padding:20px;">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ cfEditHistList.length }}</span></div>
+    <table class="bo-table" v-if="cfEditHistList.length">
       <thead><tr>
         <th style="width:140px;">수정일시</th><th style="width:100px;">수정자</th><th style="width:120px;">항목</th><th>변경 전</th><th>변경 후</th>
       </tr></thead>
       <tbody>
-        <tr v-for="(h,i) in editHistList" :key="Math.random()">
+        <tr v-for="(h,i) in cfEditHistList" :key="Math.random()">
           <td>{{ h.date }}</td><td>{{ h.user }}</td><td>{{ h.field }}</td>
           <td style="color:#888;">{{ h.before }}</td>
           <td style="color:#e8587a;font-weight:600;">{{ h.after }}</td>

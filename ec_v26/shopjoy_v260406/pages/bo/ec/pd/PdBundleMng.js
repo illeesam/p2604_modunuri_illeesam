@@ -4,22 +4,25 @@ window.PdBundleMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const categories = reactive(window.boDataProvider?.getCategories?.() || []);
-    const products = reactive(window.boDataProvider?.getProducts?.() || []);
-    const brands = reactive(window.boDataProvider?.getBrands?.() || []);
-    const categoryProds = reactive((window.boData?.categoryProds) || []);
+    const categories = reactive([]);
+    const products = reactive([]);
+    const brands = reactive([]);
     const bundles = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pd/bundle/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        bundles.splice(0, bundles.length, ...(res.data?.data?.list || []));
+        const [bundlesRes, prodsRes, catsRes] = await Promise.all([
+          window.boApi.get('/bo/ec/pd/bundle/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        bundles.splice(0, bundles.length, ...(bundlesRes.data?.data?.list || []));
+        products.splice(0, products.length, ...(prodsRes.data?.data?.list || []));
+        categories.splice(0, categories.length, ...(catsRes.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -27,7 +30,8 @@ window.PdBundleMng = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     /* ── 검색 ── */
@@ -398,7 +402,7 @@ window.PdBundleMng = {
       <input class="form-control" v-model="searchNm" @keyup.enter="() => onSearch?.()"
              placeholder="묶음상품명 검색" style="max-width:320px">
       <div class="search-actions">
-        <button class="btn btn-primary btn-sm" @click="onSearch">검색</button>
+        <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>

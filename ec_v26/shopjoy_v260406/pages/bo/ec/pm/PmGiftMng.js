@@ -5,18 +5,20 @@ window.PmGiftMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const gifts = reactive([]);
-    const giftList = ref((window.boData?.gifts || []));
+    const giftList = ref([]);
     const loading = ref(false);
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/gift/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        gifts.splice(0, gifts.length, ...(res.data?.data?.list || []));
+        const list = res.data?.data?.list || [];
+        gifts.splice(0, gifts.length, ...list);
+        giftList.value = list;
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -24,7 +26,8 @@ window.PmGiftMng = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
@@ -125,7 +128,7 @@ window.PmGiftMng = {
       <select v-model="searchStatus"><option value="">상태 전체</option><option>활성</option><option>비활성</option><option>종료</option><option>품절</option></select>
       <span class="search-label">시작일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>

@@ -9,7 +9,7 @@ window.DpDispWidgetLibMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', {
@@ -23,7 +23,8 @@ window.DpDispWidgetLibMng = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
@@ -268,7 +269,7 @@ window.DpDispWidgetLibMng = {
           <option value="비활성">비활성</option>
         </select>
       </div>
-      <button @click="doSearch" class="btn btn-primary" style="height:36px;padding:0 20px;">검색</button>
+      <button @click="doSearch" class="btn btn-primary" style="height:36px;padding:0 20px;">조회</button>
       <button @click="doReset"  class="btn btn-outline" style="height:36px;padding:0 16px;">초기화</button>
       <button @click="openNew"  class="btn btn-primary" style="height:36px;padding:0 18px;margin-left:auto;">+ 신규등록</button>
     </div>

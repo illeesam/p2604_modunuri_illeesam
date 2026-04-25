@@ -5,28 +5,29 @@ window.SyAttachMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const attaches = reactive([]);
+    const attachGrps = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
-    // adminData 참조
-    const ad = window.boData || { attaches: [], attachGrps: [] };
-
-    // onMounted에서 API 로드 (필요시)
-    onMounted(async () => {
-      // Currently using adminData directly
-      // loading.value = true;
-      // try {
-      //   const res = await window.boApi.get('/bo/sy/attach/page', {
-      //     params: { pageNo: 1, pageSize: 10000 }
-      //   });
-      //   window.safeArrayUtils.updateArray(attaches, res.data?.data?.list || []);
-      // } catch (err) {
-      //   error.value = err.message;
-      //   if (props.showToast) props.showToast('SyAttach 로드 실패', 'error');
-      // } finally {
-      //   loading.value = false;
-      // }
-    });
+    // onMounted에서 API 로드
+    const fetchData = async () => {
+      loading.value = true;
+      try {
+        const [attachRes, grpRes] = await Promise.all([
+          window.boApi.get('/bo/sy/attach/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/attach-grp/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        attaches.splice(0, attaches.length, ...(attachRes.data?.data?.list || []));
+        attachGrps.splice(0, attachGrps.length, ...(grpRes.data?.data?.list || []));
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyAttach 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    };
+    onMounted(() => { fetchData(); });
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
@@ -44,8 +45,6 @@ window.SyAttachMng = {
 
     /* ── 첨부그룹 ── */
     const selectedGrpId = ref(null);
-    // Reference attachGrps from ad
-    const attachGrps = ad.attachGrps || [];
     const grpForm = reactive({ grpNm: '', grpCode: '', description: '', maxCount: 10, maxSizeMb: 5, allowExt: 'jpg,png', status: '활성' });
     const grpEditId = ref(null);
     const grpEditMode = ref(false);
@@ -155,8 +154,10 @@ window.SyAttachMng = {
     };
     const statusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
 
+    const total = computed(() => filteredFiles.value.length);
+
     return { attaches, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm,
-      attachGrps, grpForm,
+      attachGrps, grpForm, total,
       selectedGrpId, grpForm, grpEditId, grpEditMode, selectGrp, openGrpNew, openGrpEdit, saveGrp, deleteGrp,
       searchKw, fileForm, fileEditId, fileEditMode, applied, filteredFiles, onSearch, onReset, openFileNew, openFileEdit, saveFile, deleteFile,
       fmtSize, statusBadge,
@@ -213,7 +214,7 @@ window.SyAttachMng = {
         </div>
 
         <!-- 그룹 목록 -->
-        <div v-for="g in []" :key="g.attachGrpId"
+        <div v-for="g in attachGrps" :key="g.attachGrpId"
           style="padding:10px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer;border-radius:4px;transition:background .15s;"
           :style="selectedGrpId===g.attachGrpId?'background:#fff0f4;border-left:3px solid #e8587a;':'' "
           @click="selectGrp(g.attachGrpId)">
@@ -233,7 +234,7 @@ window.SyAttachMng = {
             <span style="font-size:11px;color:#2563eb;margin-left:8px;font-weight:500;">{{ siteNm }}</span>
           </div>
         </div>
-        <div v-if="![].length" style="text-align:center;color:#999;padding:20px;font-size:13px;">그룹이 없습니다.</div>
+        <div v-if="!attachGrps.length" style="text-align:center;color:#999;padding:20px;font-size:13px;">그룹이 없습니다.</div>
       </div>
     </div>
 
@@ -243,14 +244,14 @@ window.SyAttachMng = {
         <div class="toolbar">
           <b style="font-size:14px;">첨부파일관리
             <span v-if="selectedGrpId" style="font-size:12px;color:#e8587a;margin-left:6px;">
-              ({{ [].find(g=>g.attachGrpId===selectedGrpId)?.grpNm }})
+              ({{ attachGrps.find(g=>g.attachGrpId===selectedGrpId)?.grpNm }})
             </span>
           </b>
           <div style="display:flex;gap:8px;align-items:center;">
             <input v-model="searchKw" placeholder="파일명 / RefID 검색" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:160px;" />
             <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" /><select v-model="searchDateRange" @change="onDateRangeChange" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
             <div class="search-actions">
-              <button class="btn btn-primary btn-sm" @click="onSearch">검색</button>
+              <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
               <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
             </div>
             <button class="btn btn-primary btn-sm" @click="openFileNew">+ 신규</button>
@@ -266,7 +267,7 @@ window.SyAttachMng = {
               <label class="form-label" style="font-size:12px;">첨부그룹 <span class="req">*</span></label>
               <select class="form-control" style="font-size:12px;padding:4px 8px;" v-model.number="fileForm.attachGrpId">
                 <option :value="null">그룹 선택</option>
-                <option v-for="g in []" :key="g.attachGrpId" :value="g.attachGrpId">{{ g.grpNm }}</option>
+                <option v-for="g in attachGrps" :key="g.attachGrpId" :value="g.attachGrpId">{{ g.grpNm }}</option>
               </select>
             </div>
             <div class="form-group" style="flex:2;min-width:200px;margin-bottom:6px;">

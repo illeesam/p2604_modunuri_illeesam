@@ -6,18 +6,18 @@ window.PmVoucherDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const vouchers = reactive([]);
-    const voucherList = reactive((window.boData?.vouchers || []));
+    const voucherList = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pm/voucher/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        vouchers.splice(0, vouchers.length, ...(res.data?.data?.list || []));
+        const res = await window.boApi.get('/bo/ec/pm/voucher/page', { params: { pageNo: 1, pageSize: 10000 } });
+        const list = res.data?.data?.list || [];
+        vouchers.splice(0, vouchers.length, ...list);
+        voucherList.splice(0, voucherList.length, ...list);
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -25,7 +25,8 @@ window.PmVoucherDtl = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const isNew = computed(() => !props.editId);
     const tab = ref(window._pmVoucherDtlState.tab || 'info');
     watch(tab, v => { window._pmVoucherDtlState.tab = v; });

@@ -10,7 +10,7 @@ window.OdOrderMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const [ordersRes, membersRes] = await Promise.all([
@@ -26,7 +26,8 @@ window.OdOrderMng = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
@@ -34,7 +35,7 @@ window.OdOrderMng = {
       if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -51,13 +52,13 @@ window.OdOrderMng = {
       if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
+    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
     const applied = reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => window.safeArrayUtils.safeFilter(orders, o => {
+    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(orders, o => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !o.orderId.toLowerCase().includes(kw) && !o.userNm.toLowerCase().includes(kw) && !o.prodNm.toLowerCase().includes(kw)) return false;
       if (applied.status && o.status !== applied.status) return false;
@@ -66,21 +67,21 @@ window.OdOrderMng = {
       if (applied.dateEnd && _d > applied.dateEnd) return false;
       return true;
     }));
-    const total = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums = computed(() => {
-      const cur = pager.page, last = totalPages.value;
+    const cfTotal = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums = computed(() => {
+      const cur = pager.page, last = cfTotalPages.value;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
 
-    const statusBadge = s => ({
+    const fnStatusBadge = s => ({
       '입금대기': 'badge-orange', '결제완료': 'badge-blue', '상품준비중': 'badge-orange',
       '배송중': 'badge-blue', '배송완료': 'badge-green', '구매확정': 'badge-gray',
       '취소': 'badge-red', '자동취소': 'badge-red',
     }[s] || 'badge-gray');
-    const payStatusBadge = s => ({
+    const fnPayStatusBadge = s => ({
       '미결제':'badge-gray','부분결제':'badge-orange','결제완료':'badge-green',
       '결제실패':'badge-red','환불중':'badge-orange','부분환불':'badge-orange','환불완료':'badge-purple',
     }[s] || 'badge-gray');
@@ -100,10 +101,10 @@ window.OdOrderMng = {
       Object.assign(applied, { kw: '', status: '', dateStart: '', dateEnd: '' });
       pager.page = 1;
     };
-    const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
-    const doDelete = async (o) => {
+    const handleDelete = async (o) => {
       const ok = await props.showConfirm('삭제', `[${o.orderId}]를 삭제하시겠습니까?`);
       if (!ok) return;
       if (!Array.isArray(orders)) return;
@@ -121,12 +122,12 @@ window.OdOrderMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userNm'},{label:'상태',key:'statusCd'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethodCd'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userNm'},{label:'상태',key:'statusCd'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethodCd'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
 
     /* 클레임 조회 */
     const claimByOrder = (orderId) =>
       (Array.isArray(claims) ? claims : []).find(c => c.orderId === orderId);
-    const claimTypeColor = (t) => ({ '취소':'#ef4444', '반품':'#FFBB00', '교환':'#3b82f6' }[t] || '#9ca3af');
+    const fnClaimTypeColor = (t) => ({ '취소':'#ef4444', '반품':'#FFBB00', '교환':'#3b82f6' }[t] || '#9ca3af');
     const getItemCount = (o) => {
       const m = (o.prodNm || '').match(/외\s*(\d+)/);
       return m ? parseInt(m[1]) + 1 : 1;
@@ -140,11 +141,11 @@ window.OdOrderMng = {
       checked = s;
     };
     const isChecked = (id) => checked.has(id);
-    const allChecked = computed(() => pageList.value.length > 0 && window.safeArrayUtils.safeEvery(pageList, o => checked.has(o.orderId)));
+    const cfAllChecked = computed(() => cfPageList.value.length > 0 && window.safeArrayUtils.safeEvery(cfPageList, o => checked.has(o.orderId)));
     const toggleCheckAll = () => {
       const s = new Set(checked);
-      if (allChecked.value) window.safeArrayUtils.safeForEach(pageList, o => s.delete(o.orderId));
-      else window.safeArrayUtils.safeForEach(pageList, o => s.add(o.orderId));
+      if (cfAllChecked.value) window.safeArrayUtils.safeForEach(cfPageList, o => s.delete(o.orderId));
+      else window.safeArrayUtils.safeForEach(cfPageList, o => s.add(o.orderId));
       checked = s;
     };
     const ORDER_STATUS_OPTIONS = ['입금대기','결제완료','상품준비중','배송중','배송완료','구매확정','취소','자동취소'];
@@ -176,7 +177,7 @@ window.OdOrderMng = {
         bulkForm.reqTargetNm = d ? d.dlivId : ('배송('+first.orderId+')');
       } else bulkForm.reqTargetNm = first.orderId || '';
     };
-    const buildTmplMsg = computed(() => (bulkForm.tmplMsg || '')
+    const cfBuildTmplMsg = computed(() => (bulkForm.tmplMsg || '')
       .replace('{target}', bulkForm.reqTarget || '-')
       .replace('{targetNm}', bulkForm.reqTargetNm || '-')
       .replace('{amount}', Number(bulkForm.reqAmount||0).toLocaleString())
@@ -192,7 +193,7 @@ window.OdOrderMng = {
       onReqTargetChange();
       bulkOpen.value = true;
     };
-    const bulkPreview = computed(() => {
+    const cfBulkPreview = computed(() => {
       if (!bulkOpen.value) return '';
       const ids = Array.from(checked);
       const selected = window.safeArrayUtils.safeFilter(orders, o => ids.includes(o.orderId));
@@ -237,7 +238,7 @@ window.OdOrderMng = {
       checked = new Set();
       bulkOpen.value = false;
       try {
-        const res = await window.boApi.put(cfg.path, { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
+        const res = await window.boApi.put(cfg.path, { ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(`${ids.length}건 처리되었습니다.`, 'success');
       } catch (err) {
@@ -247,7 +248,7 @@ window.OdOrderMng = {
       }
     };
 
-    return { orders, members, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, payStatusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel, claimByOrder, claimTypeColor, getItemCount, checked, toggleCheck, isChecked, allChecked, toggleCheckAll, ORDER_STATUS_OPTIONS, PAY_METHOD_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, openBulk, saveBulk, bulkPreview, onApprToChange, onReqTargetChange, buildTmplMsg };
+    return { orders, members, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, ORDER_STATUS_OPTIONS, PAY_METHOD_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>
@@ -262,14 +263,14 @@ window.OdOrderMng = {
       </select>
       <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>주문목록 <span class="list-count">{{ total }}건</span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>주문목록 <span class="list-count">{{ cfTotal }}건</span>
         <span v-if="checked.size" style="margin-left:10px;font-size:12px;color:#1565c0;font-weight:700;">선택 {{ checked.size }}건</span>
       </span>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -280,12 +281,12 @@ window.OdOrderMng = {
     </div>
     <table class="bo-table">
       <thead><tr>
-        <th style="width:36px;text-align:center;"><input type="checkbox" :checked="allChecked" @change="toggleCheckAll" /></th>
+        <th style="width:36px;text-align:center;"><input type="checkbox" :checked="cfAllChecked" @change="toggleCheckAll" /></th>
         <th>주문ID</th><th>회원</th><th>주문일시</th><th>상품</th><th>결제금액</th><th>결제수단</th><th>결제상태</th><th>주문상태</th><th>클레임상태</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="o in pageList" :key="o?.orderId"
+        <tr v-if="cfPageList.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="o in cfPageList" :key="o?.orderId"
           :style="(selectedId===o.orderId?'background:#fff8f9;':'') + (isChecked(o.orderId)?'background:#eef6fd;':'')">
           <td style="text-align:center;"><input type="checkbox" :checked="isChecked(o.orderId)" @change="toggleCheck(o.orderId)" /></td>
           <td><span class="title-link" @click="loadDetail(o.orderId)" :style="selectedId===o.orderId?'color:#e8587a;font-weight:700;':''">{{ o.orderId }}<span v-if="selectedId===o.orderId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
@@ -304,16 +305,16 @@ window.OdOrderMng = {
             }">{{ o.payMethod || '-' }}</span>
           </td>
           <td>
-            <span class="badge" :class="payStatusBadge(o.payStatus || (o.status==='취소'||o.status==='자동취소'?'환불완료':o.status==='입금대기'?'미결제':'결제완료'))">
+            <span class="badge" :class="fnPayStatusBadge(o.payStatus || (o.status==='취소'||o.status==='자동취소'?'환불완료':o.status==='입금대기'?'미결제':'결제완료'))">
               {{ o.payStatus || (o.status==='취소'||o.status==='자동취소'?'환불완료':o.status==='입금대기'?'미결제':'결제완료') }}
             </span>
           </td>
-          <td><span class="badge" :class="statusBadge(o.status)">{{ o.status }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(o.status)">{{ o.status }}</span></td>
           <td>
             <span v-if="claimByOrder(o.orderId)" style="display:inline-flex;align-items:center;gap:3px;">
               <span :style="{
                 fontSize:'10px',padding:'1px 6px',borderRadius:'8px',color:'#fff',fontWeight:700,
-                background: claimTypeColor(claimByOrder(o.orderId).type)
+                background: fnClaimTypeColor(claimByOrder(o.orderId).type)
               }">{{ claimByOrder(o.orderId).type }}</span>
               <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">
                 {{ claimByOrder(o.orderId).status }}
@@ -321,10 +322,10 @@ window.OdOrderMng = {
             </span>
             <span v-else style="font-size:11px;color:#ccc;">-</span>
           </td>
-          <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
+          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(o.orderId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="doDelete(o)">삭제</button>
+            <button class="btn btn-danger btn-sm" @click="handleDelete(o)">삭제</button>
           </div></td>
         </tr>
       </tbody>
@@ -334,9 +335,9 @@ window.OdOrderMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -357,7 +358,7 @@ window.OdOrderMng = {
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
-      :edit-id="detailEditId"
+      :edit-id="cfDetailEditId"
     />
   </div>
 
@@ -442,13 +443,13 @@ window.OdOrderMng = {
           <div class="form-group">
             <label class="form-label">전송 템플릿 <span style="font-size:10px;color:#888;">(치환: {target} {targetNm} {amount} {reason})</span></label>
             <textarea class="form-control" v-model="bulkForm.tmplMsg" rows="4" style="font-family:monospace;font-size:11.5px;"></textarea>
-            <div style="margin-top:6px;padding:8px 10px;background:#f6f8fa;border-radius:6px;font-family:monospace;font-size:11.5px;white-space:pre-wrap;color:#333;border:1px dashed #d0d7de;">{{ buildTmplMsg }}</div>
+            <div style="margin-top:6px;padding:8px 10px;background:#f6f8fa;border-radius:6px;font-family:monospace;font-size:11.5px;white-space:pre-wrap;color:#333;border:1px dashed #d0d7de;">{{ cfBuildTmplMsg }}</div>
           </div>
         </div>
       </div>
       <div style="padding:10px 18px 14px;border-top:1px solid #eee;background:#fafafa;">
         <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:6px;">📋 작업내용</div>
-        <textarea readonly :value="bulkPreview || '탭에서 변경값을 선택하면 작업내용이 자동으로 표시됩니다.'"
+        <textarea readonly :value="cfBulkPreview || '탭에서 변경값을 선택하면 작업내용이 자동으로 표시됩니다.'"
           style="width:100%;min-height:120px;max-height:200px;font-family:monospace;font-size:11.5px;padding:8px;border:1px solid #ddd;border-radius:6px;background:#fff;resize:vertical;"></textarea>
       </div>
       <div style="padding:12px 18px;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:6px;background:#fff;">

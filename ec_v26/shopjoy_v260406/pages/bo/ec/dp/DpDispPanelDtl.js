@@ -7,18 +7,22 @@ window.DpDispPanelDtl = {
     const panels = reactive([]);
     const loading = ref(false);
     const error = ref(null);
-    const codes = reactive((window.boData?.codes || []));
-    const displays = reactive((window.boData?.displays || []));
-    const events = reactive((window.boData?.events || []));
+    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
+    const displays = reactive([]);
+    const events = reactive([]);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const loadData = async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/ec/dp/panel/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        panels.splice(0, panels.length, ...(res.data?.data?.list || []));
+        const [panelsRes, displaysRes, eventsRes] = await Promise.all([
+          window.boApi.get('/bo/ec/dp/panel/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/pm/event/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        panels.splice(0, panels.length, ...(panelsRes.data?.data?.list || []));
+        displays.splice(0, displays.length, ...(displaysRes.data?.data?.list || []));
+        events.splice(0, events.length, ...(eventsRes.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -26,7 +30,8 @@ window.DpDispPanelDtl = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { loadData(); });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, target: null });
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
@@ -441,7 +446,7 @@ window.DpDispPanelDtl = {
       bindQuillContent();
     };
 
-    onMounted(async () => {
+    const initForm = async () => {
       await nextTick();
       /* 기존 데이터 로드 */
       if (!isNew.value) {
@@ -480,7 +485,8 @@ window.DpDispPanelDtl = {
       }
       /* Quill 초기화 (기본정보 탭이 기본) */
       initQuillDesc();
-    });
+    };
+    onMounted(() => { initForm(); });
 
     /* 탭 전환 시 Quill 초기화/싱크 */
     watch(tab, async (newTab) => {

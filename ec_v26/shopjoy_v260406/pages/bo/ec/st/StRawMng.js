@@ -3,7 +3,7 @@ window.StRawMng = {
   name: 'StRawMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const descOpen = ref(false);
 
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
@@ -33,12 +33,26 @@ window.StRawMng = {
     const pager    = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
-    const orderList = reactive((window.boData?.orders || []));
-    const claimList = reactive((window.boData?.claims || []));
-    const vendorList = reactive((window.boData?.vendors || []));
+    const orderList = reactive([]);
+    const claimList = reactive([]);
+    const vendorList = reactive([]);
     const orders  = computed(() => orderList);
     const claims  = computed(() => claimList);
     const vendors = computed(() => vendorList);
+
+    const fetchData = async () => {
+      try {
+        const [resO, resC, resV] = await Promise.all([
+          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        orderList.splice(0, orderList.length, ...(resO.data?.data?.list || []));
+        claimList.splice(0, claimList.length, ...(resC.data?.data?.list || []));
+        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
+      } catch (_) {}
+    };
+    onMounted(() => { fetchData(); });
 
     const PAY_METHODS = ['무통장입금','가상계좌','토스페이','카카오페이','네이버페이','핸드폰결제'];
     const PROD_NMS    = ['스탠다드 코튼 티셔츠','슬림 데님 팬츠','캐주얼 후드집업','오버핏 맨투맨','베이직 니트','린넨 셔츠','데일리 스니커즈','크로스백 미니','울 코트','레더 벨트'];

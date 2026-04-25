@@ -8,25 +8,23 @@ window.SyAlarmMng = {
     const loading = ref(false);
     const error = ref(null);
 
-    // adminData 참조
-    const ad = window.boData || { alarms: [] };
-
-    // onMounted에서 API 로드 (currently using adminData)
-    onMounted(async () => {
-      // loading.value = true;
-      // try {
-      //   const res = await window.boApi.get('/bo/sy/alarm/page', {
-      //     params: { pageNo: 1, pageSize: 10000 }
-      //   });
-      //   window.safeArrayUtils.updateArray(alarms, res.data?.data?.list || []);
-      //   error.value = null;
-      // } catch (err) {
-      //   error.value = err.message;
-      //   if (props.showToast) props.showToast('SyAlarm 로드 실패', 'error');
-      // } finally {
-      //   loading.value = false;
-      // }
-    });
+    // onMounted에서 API 로드
+    const fetchData = async () => {
+      loading.value = true;
+      try {
+        const res = await window.boApi.get('/bo/sy/alarm/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        alarms.splice(0, alarms.length, ...(res.data?.data?.list || []));
+        error.value = null;
+      } catch (err) {
+        error.value = err.message;
+        if (props.showToast) props.showToast('SyAlarm 로드 실패', 'error');
+      } finally {
+        loading.value = false;
+      }
+    };
+    onMounted(() => { fetchData(); });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -82,7 +80,7 @@ window.SyAlarmMng = {
 
     const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
     const filtered = computed(() => {
-      const items = ad.alarms || [];
+      const items = alarms || [];
       if (!Array.isArray(items)) return [];
       return items.filter(a => {
         const kw = applied.kw.trim().toLowerCase();
@@ -145,7 +143,7 @@ window.SyAlarmMng = {
       <input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" />
       <select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>

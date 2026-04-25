@@ -10,7 +10,7 @@ window.OdDlivMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const [delivRes, membersRes] = await Promise.all([
@@ -26,7 +26,8 @@ window.OdDlivMng = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
@@ -34,7 +35,7 @@ window.OdDlivMng = {
       if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -54,14 +55,14 @@ window.OdDlivMng = {
       props.navigate(pg, opts);
     };
 
-    const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
+    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
     const applied = reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
 
     /* 목록 */
-    const filtered = computed(() => window.safeArrayUtils.safeFilter(deliveries, d => {
+    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(deliveries, d => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !d.dlivId.toLowerCase().includes(kw) && !d.orderId.toLowerCase().includes(kw)
             && !d.userNm.toLowerCase().includes(kw) && !d.receiver.toLowerCase().includes(kw)) return false;
@@ -71,16 +72,16 @@ window.OdDlivMng = {
       if (applied.dateEnd && _d > applied.dateEnd) return false;
       return true;
     }));
-    const total = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums = computed(() => {
-      const cur = pager.page, last = totalPages.value;
+    const cfTotal = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums = computed(() => {
+      const cur = pager.page, last = cfTotalPages.value;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
 
-    const statusBadge = s => ({
+    const fnStatusBadge = s => ({
       '준비중': 'badge-orange', '출고완료': 'badge-blue', '배송중': 'badge-blue',
       '배송완료': 'badge-green', '배송실패': 'badge-red',
     }[s] || 'badge-gray');
@@ -101,10 +102,10 @@ window.OdDlivMng = {
       Object.assign(applied, { kw: '', status: '', dateStart: '', dateEnd: '' });
       pager.page = 1;
     };
-    const setPage  = n  => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage  = n  => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
-    const doDelete = async (d) => {
+    const handleDelete = async (d) => {
       const ok = await props.showConfirm('삭제', `[${d.dlivId}]를 삭제하시겠습니까?`);
       if (!ok) return;
       if (!Array.isArray(deliveries)) return;
@@ -122,17 +123,17 @@ window.OdDlivMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'배송ID',key:'deliveryId'},{label:'주문ID',key:'orderId'},{label:'수령인',key:'receiverName'},{label:'연락처',key:'receiverPhone'},{label:'주소',key:'address'},{label:'택배사',key:'courierCd'},{label:'운송장',key:'trackingNo'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '배송목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'배송ID',key:'deliveryId'},{label:'주문ID',key:'orderId'},{label:'수령인',key:'receiverName'},{label:'연락처',key:'receiverPhone'},{label:'주소',key:'address'},{label:'택배사',key:'courierCd'},{label:'운송장',key:'trackingNo'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '배송목록.csv');
 
     /* 일괄선택 */
     const checked = reactive(new Set());
     const toggleCheck = (id) => { const s = new Set(checked); if (s.has(id)) s.delete(id); else s.add(id); checked = s; };
     const isChecked = (id) => checked.has(id);
-    const allChecked = computed(() => pageList.value.length > 0 && window.safeArrayUtils.safeEvery(pageList, d => checked.has(d.dlivId)));
+    const cfAllChecked = computed(() => cfPageList.value.length > 0 && window.safeArrayUtils.safeEvery(cfPageList, d => checked.has(d.dlivId)));
     const toggleCheckAll = () => {
       const s = new Set(checked);
-      if (allChecked.value) window.safeArrayUtils.safeForEach(pageList, d => s.delete(d.dlivId));
-      else window.safeArrayUtils.safeForEach(pageList, d => s.add(d.dlivId));
+      if (cfAllChecked.value) window.safeArrayUtils.safeForEach(cfPageList, d => s.delete(d.dlivId));
+      else window.safeArrayUtils.safeForEach(cfPageList, d => s.add(d.dlivId));
       checked = s;
     };
     const DLIV_STATUS_OPTIONS = ['준비중','출고완료','배송중','배송완료','배송실패'];
@@ -163,7 +164,7 @@ window.OdDlivMng = {
         bulkForm.reqTargetNm = o ? (o.prodNm || '') : '';
       } else bulkForm.reqTargetNm = first.dlivId || '';
     };
-    const buildTmplMsg = computed(() => (bulkForm.tmplMsg || '')
+    const cfBuildTmplMsg = computed(() => (bulkForm.tmplMsg || '')
       .replace('{target}', bulkForm.reqTarget || '-')
       .replace('{targetNm}', bulkForm.reqTargetNm || '-')
       .replace('{amount}', Number(bulkForm.reqAmount||0).toLocaleString())
@@ -179,7 +180,7 @@ window.OdDlivMng = {
       onReqTargetChange();
       bulkOpen.value = true;
     };
-    const bulkPreview = computed(() => {
+    const cfBulkPreview = computed(() => {
       if (!bulkOpen.value) return '';
       const ids = Array.from(checked);
       const selected = window.safeArrayUtils.safeFilter(deliveries, d => ids.includes(d.dlivId));
@@ -269,7 +270,7 @@ window.OdDlivMng = {
         } });
         checked = new Set(); bulkOpen.value = false;
         try {
-          const res = await window.boApi.put('/bo/ec/od/dliv/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
+          const res = await window.boApi.put('/bo/ec/od/dliv/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 요청되었습니다.`, 'success');
         } catch (err) {
@@ -280,7 +281,7 @@ window.OdDlivMng = {
       }
     };
 
-    return { deliveries, members, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel, checked, toggleCheck, isChecked, allChecked, toggleCheckAll, DLIV_STATUS_OPTIONS, COURIER_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, openBulk, saveBulk, bulkPreview, onApprToChange, onReqTargetChange, buildTmplMsg };
+    return { deliveries, members, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, DLIV_STATUS_OPTIONS, COURIER_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>
@@ -293,14 +294,14 @@ window.OdDlivMng = {
       </select>
       <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>배송목록 <span class="list-count">{{ total }}건</span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>배송목록 <span class="list-count">{{ cfTotal }}건</span>
         <span v-if="checked.size" style="margin-left:10px;font-size:12px;color:#1565c0;font-weight:700;">선택 {{ checked.size }}건</span>
       </span>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -311,12 +312,12 @@ window.OdDlivMng = {
     </div>
     <table class="bo-table">
       <thead><tr>
-        <th style="width:36px;text-align:center;"><input type="checkbox" :checked="allChecked" @change="toggleCheckAll" /></th>
+        <th style="width:36px;text-align:center;"><input type="checkbox" :checked="cfAllChecked" @change="toggleCheckAll" /></th>
         <th>배송ID</th><th>주문ID</th><th>회원</th><th>수령인</th><th>택배사</th><th>운송장번호</th><th>배송지</th><th>상태</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="d in pageList" :key="d?.dlivId"
+        <tr v-if="cfPageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="d in cfPageList" :key="d?.dlivId"
           :style="(selectedId===d.dlivId?'background:#fff8f9;':'') + (isChecked(d.dlivId)?'background:#eef6fd;':'')">
           <td style="text-align:center;"><input type="checkbox" :checked="isChecked(d.dlivId)" @change="toggleCheck(d.dlivId)" /></td>
           <td>
@@ -330,11 +331,11 @@ window.OdDlivMng = {
           <td>{{ d.courier }}</td>
           <td>{{ d.trackingNo || '-' }}</td>
           <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ d.address }}</td>
-          <td><span class="badge" :class="statusBadge(d.status)">{{ d.status }}</span></td>
-          <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
+          <td><span class="badge" :class="fnStatusBadge(d.status)">{{ d.status }}</span></td>
+          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(d.dlivId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="doDelete(d)">삭제</button>
+            <button class="btn btn-danger btn-sm" @click="handleDelete(d)">삭제</button>
           </div></td>
         </tr>
       </tbody>
@@ -344,9 +345,9 @@ window.OdDlivMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -367,7 +368,7 @@ window.OdDlivMng = {
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
-      :edit-id="detailEditId"
+      :edit-id="cfDetailEditId"
     />
   </div>
 
@@ -458,13 +459,13 @@ window.OdDlivMng = {
           <div class="form-group">
             <label class="form-label">전송 템플릿 <span style="font-size:10px;color:#888;">(치환: {target} {targetNm} {amount} {reason})</span></label>
             <textarea class="form-control" v-model="bulkForm.tmplMsg" rows="4" style="font-family:monospace;font-size:11.5px;"></textarea>
-            <div style="margin-top:6px;padding:8px 10px;background:#f6f8fa;border-radius:6px;font-family:monospace;font-size:11.5px;white-space:pre-wrap;color:#333;border:1px dashed #d0d7de;">{{ buildTmplMsg }}</div>
+            <div style="margin-top:6px;padding:8px 10px;background:#f6f8fa;border-radius:6px;font-family:monospace;font-size:11.5px;white-space:pre-wrap;color:#333;border:1px dashed #d0d7de;">{{ cfBuildTmplMsg }}</div>
           </div>
         </div>
       </div>
       <div style="padding:10px 18px 14px;border-top:1px solid #eee;background:#fafafa;">
         <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:6px;">📋 작업내용</div>
-        <textarea readonly :value="bulkPreview || '탭에서 변경값을 선택하면 작업내용이 자동으로 표시됩니다.'"
+        <textarea readonly :value="cfBulkPreview || '탭에서 변경값을 선택하면 작업내용이 자동으로 표시됩니다.'"
           style="width:100%;min-height:120px;max-height:200px;font-family:monospace;font-size:11.5px;padding:8px;border:1px solid #ddd;border-radius:6px;background:#fff;resize:vertical;"></textarea>
       </div>
       <div style="padding:12px 18px;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:6px;background:#fff;">

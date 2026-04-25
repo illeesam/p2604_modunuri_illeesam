@@ -4,13 +4,13 @@ window.DpDispUiDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const codes = reactive((window.boData?.codes || []));
+    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
     const displays = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const loadData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/dp/ui/page', {
@@ -24,7 +24,8 @@ window.DpDispUiDtl = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { loadData(); });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, target: null });
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
@@ -63,7 +64,7 @@ window.DpDispUiDtl = {
       codeLabel: yup.string().required('UI명을 입력해주세요.'),
     });
 
-    onMounted(async () => {
+    const initForm = async () => {
       if (!isNew.value) {
         const u = (codes || []).find(c => c.codeId === props.editId && c.codeGrp === 'DISP_UI');
         if (u) {
@@ -87,7 +88,8 @@ window.DpDispUiDtl = {
       }
       await nextTick();
       initQuillDesc();
-    });
+    };
+    onMounted(() => { initForm(); });
 
     const relatedAreas = computed(() =>
       (codes || [])

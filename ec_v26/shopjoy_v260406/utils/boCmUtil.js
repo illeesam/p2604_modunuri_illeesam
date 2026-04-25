@@ -12,10 +12,7 @@
     orderId:  null,   // ec_order.orderId
   });
 
-  /* 기본값: 첫 번째 사이트(ShopJoy)로 초기화 */
-  if (window.boData && window.boData.sites && window.boData.sites.length) {
-    window.boCommonFilter.siteId = window.boData.sites[0]?.siteId ?? null;
-  }
+  /* 기본값: 첫 번째 사이트는 로그인 후 boAppInitStore에서 설정 */
 
   /* ── 등록기간 옵션 ── */
   const DATE_RANGE_OPTIONS = [
@@ -114,12 +111,12 @@
     },
     /* 라벨 조회용 */
     label(code) {
-      const c = (window.boData?.codes || [])
+      const c = (window.getBoCodeStore?.()?.svCodes || [])
         .find(x => x.codeGrp === 'VISIBILITY_TARGET' && x.codeValue === code);
       return c?.codeLabel || code;
     },
     allOptions() {
-      return (window.boData?.codes || [])
+      return (window.getBoCodeStore?.()?.svCodes || [])
         .filter(x => x.codeGrp === 'VISIBILITY_TARGET' && x.useYn === 'Y')
         .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
     },
@@ -127,7 +124,8 @@
 
   window.boCmUtil.getSiteNm = function() {
     if (!window.boCommonFilter.siteId) return 'ShopJoy';
-    const site = window.boData?.sites?.find(s => s.siteId === window.boCommonFilter.siteId);
+    const sites = window._boCmSites || [];
+    const site = sites.find(s => s.siteId === window.boCommonFilter.siteId);
     return site?.siteNm || 'ShopJoy';
   };
 
@@ -154,7 +152,7 @@
      sy_path 기반 트리 헬퍼 (공통)
   ────────────────────────────────────────────── */
   window.boCmUtil.buildPathTree = function (bizCd) {
-    const list = (window.boData.paths || [])
+    const list = (window._boCmPaths || [])
       .filter(p => p.bizCd === bizCd && p.useYn !== 'N');
     const byParent = {};
     list.forEach(p => {
@@ -181,7 +179,7 @@
   window.boCmUtil.getPathDescendants = function (bizCd, pathId) {
     if (pathId == null) return null;
     const set = new Set([pathId]);
-    const list = (window.boData.paths || []).filter(p => p.bizCd === bizCd);
+    const list = (window._boCmPaths || []).filter(p => p.bizCd === bizCd);
     let added = true;
     while (added) {
       added = false;
@@ -217,13 +215,16 @@
     return root;
   };
   window.boCmUtil.buildDeptTree = function () {
-    return window.boCmUtil.buildGenericTree(window.boData.depts, 'deptId', 'parentId', 'deptNm', 'sortOrd');
+    const depts = window.useBoDeptStore?.()?.depts || window._boCmDepts || [];
+    return window.boCmUtil.buildGenericTree(depts, 'deptId', 'parentId', 'deptNm', 'sortOrd');
   };
   window.boCmUtil.buildMenuTree = function () {
-    return window.boCmUtil.buildGenericTree(window.boData.menus, 'menuId', 'parentId', 'menuNm', 'sortOrd');
+    const menus = window.useBoMenuStore?.()?.svMenus || window._boCmMenus || [];
+    return window.boCmUtil.buildGenericTree(menus, 'menuId', 'parentId', 'menuNm', 'sortOrd');
   };
   window.boCmUtil.buildRoleTree = function () {
-    return window.boCmUtil.buildGenericTree(window.boData.roles, 'roleId', 'parentId', 'roleNm', 'sortOrd');
+    const roles = window.getBoRoleStore?.()?.svRoles || [];
+    return window.boCmUtil.buildGenericTree(roles, 'roleId', 'parentId', 'roleNm', 'sortOrd');
   };
   /* 일반 트리 후손 ID Set */
   window.boCmUtil.collectDescendantIds = function (items, idKey, parentKey, rootId) {
@@ -252,7 +253,7 @@
 
   window.boCmUtil.getPathLabel = function (pathId) {
     if (pathId == null) return '';
-    const list = window.boData.paths || [];
+    const list = window._boCmPaths || [];
     const byId = Object.fromEntries(list.map(p => [p.pathId, p]));
     const labels = [];
     let cur = byId[pathId];

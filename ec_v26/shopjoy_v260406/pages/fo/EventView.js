@@ -140,16 +140,16 @@ window.EventView = {
       },
     ];
 
-    const eventId  = computed(() => Number(props.editId) || 1);
-    const event    = computed(() => events.find(e => e.id === eventId.value) || events[0]);
+    const cfEventId  = computed(() => Number(props.editId) || 1);
+    const cfEvent    = computed(() => events.find(e => e.id === cfEventId.value) || events[0]);
     const activeTab = ref(0);
 
     /* 탭 변경 시 0으로 리셋 */
     const setTab = (i) => { activeTab.value = i; };
 
     /* 현재 탭 상품 ID 목록 → 이미지/이름 생성 */
-    const tabProducts = computed(() => {
-      const set = event.value.productSets[activeTab.value] || [];
+    const cfTabProducts = computed(() => {
+      const set = cfEvent.value.productSets[activeTab.value] || [];
       return set.map(id => ({
         id,
         name: `ShopJoy 2026 S/S No.${id}`,
@@ -168,9 +168,9 @@ window.EventView = {
     });
 
     /* 더 많은 프로모션 (현재 이벤트 제외) */
-    const promoEvents = computed(() => events.filter(e => e.id !== eventId.value));
+    const cfPromoEvents = computed(() => events.filter(e => e.id !== cfEventId.value));
 
-    return { event, activeTab, setTab, tabProducts, promoEvents };
+    return { cfEvent, activeTab, setTab, cfTabProducts, cfPromoEvents };
   },
 
   template: /* html */ `
@@ -178,7 +178,7 @@ window.EventView = {
 
   <!-- ① 히어로 배너 -->
   <div :style="{
-    background: event.heroBg,
+    background: cfEvent.heroBg,
     minHeight: '400px',
     display:'flex', flexDirection:'column',
     alignItems:'center', justifyContent:'center',
@@ -191,20 +191,20 @@ window.EventView = {
 
     <div style="position:relative;z-index:1;max-width:700px;">
       <div style="display:inline-block;padding:4px 16px;border-radius:20px;border:1px solid currentColor;font-size:0.72rem;font-weight:700;letter-spacing:2px;margin-bottom:20px;opacity:0.8;"
-        :style="{ color: event.heroTextColor }">
-        {{ event.heroEyebrow }}
+        :style="{ color: cfEvent.heroTextColor }">
+        {{ cfEvent.heroEyebrow }}
       </div>
       <h1 style="font-size:2.6rem;font-weight:900;line-height:1.25;margin-bottom:18px;letter-spacing:-0.5px;"
-        :style="{ color: event.heroTextColor }">
-        {{ event.title }}
+        :style="{ color: cfEvent.heroTextColor }">
+        {{ cfEvent.title }}
       </h1>
       <p style="font-size:0.95rem;line-height:1.7;opacity:0.8;margin-bottom:24px;"
-        :style="{ color: event.heroTextColor }">
-        {{ event.heroSub }}
+        :style="{ color: cfEvent.heroTextColor }">
+        {{ cfEvent.heroSub }}
       </p>
       <div style="font-size:0.82rem;font-weight:600;opacity:0.65;"
-        :style="{ color: event.heroTextColor }">
-        {{ event.startDate }} ~ {{ event.endDate }}
+        :style="{ color: cfEvent.heroTextColor }">
+        {{ cfEvent.startDate }} ~ {{ cfEvent.endDate }}
       </div>
     </div>
   </div>
@@ -223,10 +223,10 @@ window.EventView = {
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:clamp(20px,4vw,36px) clamp(16px,3vw,32px);margin-bottom:36px;text-align:center;">
       <div style="font-size:0.72rem;font-weight:700;color:var(--blue);letter-spacing:2px;margin-bottom:10px;">SHOPJOY BENEFIT</div>
       <h2 style="font-size:1.4rem;font-weight:900;color:var(--text-primary);margin-bottom:6px;">이벤트 혜택</h2>
-      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:28px;">{{ event.heroSub }}</p>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:28px;">{{ cfEvent.heroSub }}</p>
 
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
-        <div v-for="(b, bi) in event.benefits" :key="bi"
+        <div v-for="(b, bi) in cfEvent.benefits" :key="bi"
           style="border:1px solid var(--border);border-radius:12px;padding:24px 16px;">
           <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:10px;">{{ b.label }}</div>
           <div style="font-size:1.45rem;font-weight:900;color:var(--text-primary);margin-bottom:16px;">{{ b.value }}</div>
@@ -241,7 +241,7 @@ window.EventView = {
 
       <!-- 탭 -->
       <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:24px;">
-        <button v-for="(tab, ti) in event.tabs" :key="ti"
+        <button v-for="(tab, ti) in cfEvent.tabs" :key="ti"
           @click="setTab(ti)"
           :style="{
             padding:'10px 20px', background:'none', border:'none', cursor:'pointer',
@@ -255,7 +255,7 @@ window.EventView = {
 
       <!-- 상품 그리드 -->
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:20px;">
-        <div v-for="p in tabProducts" :key="p.id"
+        <div v-for="p in cfTabProducts" :key="p.id"
           style="cursor:pointer;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;overflow:hidden;transition:transform .15s,box-shadow .15s;"
           @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 6px 18px rgba(0,0,0,0.09)'"
           @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow=''">
@@ -282,7 +282,7 @@ window.EventView = {
     <div style="margin-bottom:36px;">
       <h2 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:18px;">더 많은 프로모션 보기</h2>
       <div style="display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;">
-        <div v-for="ev in promoEvents" :key="ev.id"
+        <div v-for="ev in cfPromoEvents" :key="ev.id"
           @click="navigate('eventView', { eventId: ev.id })"
           style="flex:0 0 260px;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid var(--border);transition:transform .15s,box-shadow .15s;"
           @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 6px 16px rgba(0,0,0,0.1)'"
@@ -311,7 +311,7 @@ window.EventView = {
     <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:12px;padding:clamp(16px,3vw,24px) clamp(16px,3vw,28px);margin-bottom:32px;">
       <h3 style="font-size:0.85rem;font-weight:700;color:var(--text-secondary);margin-bottom:14px;">유의사항</h3>
       <ul style="list-style:none;padding:0;margin:0;">
-        <li v-for="(line, li) in event.notice" :key="li"
+        <li v-for="(line, li) in cfEvent.notice" :key="li"
           style="font-size:0.8rem;color:var(--text-muted);line-height:1.9;padding-left:14px;position:relative;">
           <span style="position:absolute;left:0;">·</span>{{ line }}
         </li>

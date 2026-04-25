@@ -10,7 +10,7 @@ window.CmChattDtl = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/cm/chatt/page', {
@@ -24,7 +24,8 @@ window.CmChattDtl = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const isNew = computed(() => !props.editId);
     const tab = ref(window._cmChattDtlState.tab || 'chat');
     watch(tab, v => { window._cmChattDtlState.tab = v; });

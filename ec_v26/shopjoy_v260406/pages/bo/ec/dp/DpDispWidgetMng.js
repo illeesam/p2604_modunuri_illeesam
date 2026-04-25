@@ -4,19 +4,21 @@ window.DpDispWidgetMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const widgetLibs = reactive((window.boData?.widgetLibs || []));
+    const widgetLibs = reactive([]);
     const widgets = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/ec/dp/widget/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
+        const [res, resLibs] = await Promise.all([
+          window.boApi.get('/bo/ec/dp/widget/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
         widgets.splice(0, widgets.length, ...(res.data?.data?.list || []));
+        widgetLibs.splice(0, widgetLibs.length, ...(resLibs.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -24,7 +26,8 @@ window.DpDispWidgetMng = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
@@ -270,7 +273,7 @@ window.DpDispWidgetMng = {
           <option value="비활성">비활성</option>
         </select>
       </div>
-      <button @click="doSearch" class="btn btn-primary" style="height:36px;padding:0 20px;">검색</button>
+      <button @click="doSearch" class="btn btn-primary" style="height:36px;padding:0 20px;">조회</button>
       <button @click="doReset"  class="btn btn-outline" style="height:36px;padding:0 16px;">초기화</button>
       <button @click="openNew"  class="btn btn-primary" style="height:36px;padding:0 18px;margin-left:auto;">+ 신규등록</button>
     </div>

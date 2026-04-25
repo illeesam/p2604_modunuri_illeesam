@@ -5,19 +5,21 @@ window.PmPlanDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const products = reactive(window.boDataProvider?.getProducts?.() || []);
+    const products = reactive([]);
     const plans = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pm/plan/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        plans.splice(0, plans.length, ...(res.data?.data?.list || []));
+        const [plansRes, prodsRes] = await Promise.all([
+          window.boApi.get('/bo/ec/pm/plan/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        plans.splice(0, plans.length, ...(plansRes.data?.data?.list || []));
+        products.splice(0, products.length, ...(prodsRes.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -25,7 +27,8 @@ window.PmPlanDtl = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const isNew = computed(() => !props.editId);
     const tab = ref(window._ecPlanDtlState.tab || 'info');
     watch(tab, v => { window._ecPlanDtlState.tab = v; });

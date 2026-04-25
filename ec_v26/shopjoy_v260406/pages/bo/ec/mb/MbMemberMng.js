@@ -9,7 +9,7 @@ window.MbMemberMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/mb/member/page', {
@@ -23,7 +23,8 @@ window.MbMemberMng = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
@@ -31,7 +32,7 @@ window.MbMemberMng = {
       if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchGrade = ref('');
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
@@ -49,13 +50,13 @@ window.MbMemberMng = {
       if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
+    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
     const applied = reactive({ kw: '', grade: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => {
+    const cfFiltered = computed(() => {
       if (!Array.isArray(members) || members.length === 0) return [];
       return window.safeArrayUtils.safeFilter(members, m => {
         if (!m) return false;
@@ -69,17 +70,17 @@ window.MbMemberMng = {
         return true;
       });
     });
-    const total = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums = computed(() => {
-      const cur = pager.page, last = totalPages.value;
+    const cfTotal = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums = computed(() => {
+      const cur = pager.page, last = cfTotalPages.value;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
 
-    const gradeBadge = g => ({ 'VIP': 'badge-purple', '우수': 'badge-blue', '일반': 'badge-gray' }[g] || 'badge-gray');
-    const statusBadge = s => ({ '활성': 'badge-green', '정지': 'badge-red' }[s] || 'badge-gray');
+    const fnGradeBadge = g => ({ 'VIP': 'badge-purple', '우수': 'badge-blue', '일반': 'badge-gray' }[g] || 'badge-gray');
+    const fnStatusBadge = s => ({ '활성': 'badge-green', '정지': 'badge-red' }[s] || 'badge-gray');
     const onSearch = () => {
       Object.assign(applied, {
         kw: searchKw.value,
@@ -98,10 +99,10 @@ window.MbMemberMng = {
       Object.assign(applied, { kw: '', grade: '', status: '', dateStart: '', dateEnd: '' });
       pager.page = 1;
     };
-    const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
-    const doDelete = async (m) => {
+    const handleDelete = async (m) => {
       const ok = await props.showConfirm('삭제', `[${m.memberNm}] 회원을 삭제하시겠습니까?`);
       if (!ok) return;
       try {
@@ -118,10 +119,10 @@ window.MbMemberMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'ID',key:'userId'},{label:'이름',key:'memberNm'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'등급',key:'gradeCd'},{label:'상태',key:'statusCd'},{label:'가입일',key:'joinDate'},{label:'주문수',key:'orderCount'},{label:'총구매액',key:'totalPurchase'}], '회원목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'userId'},{label:'이름',key:'memberNm'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'등급',key:'gradeCd'},{label:'상태',key:'statusCd'},{label:'가입일',key:'joinDate'},{label:'주문수',key:'orderCount'},{label:'총구매액',key:'totalPurchase'}], '회원목록.csv');
 
     const descOpen = ref(false);
-    return { members, loading, error, descOpen, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchGrade, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, onSearch, onReset, setPage, onSizeChange, gradeBadge, statusBadge, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { members, loading, error, descOpen, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchGrade, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnGradeBadge, fnStatusBadge, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -133,14 +134,14 @@ window.MbMemberMng = {
       <select v-model="searchStatus"><option value="">상태 전체</option><option>활성</option><option>정지</option></select>
       <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>회원목록 <span class="list-count">{{ total }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>회원목록 <span class="list-count">{{ cfTotal }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -151,21 +152,21 @@ window.MbMemberMng = {
         <th>ID</th><th>이름</th><th>이메일</th><th>연락처</th><th>등급</th><th>상태</th><th>가입일</th><th>주문수</th><th>총구매액</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="m in pageList" :key="m?.userId" :style="selectedId===m.userId?'background:#fff8f9;':''">
+        <tr v-if="cfPageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="m in cfPageList" :key="m?.userId" :style="selectedId===m.userId?'background:#fff8f9;':''">
           <td>{{ m.userId }}</td>
           <td><span class="title-link" @click="loadView(m.userId)" :style="selectedId===m.userId?'color:#e8587a;font-weight:700;':''">{{ m.memberNm }}<span v-if="selectedId===m.userId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td>{{ m.email }}</td>
           <td>{{ m.phone }}</td>
-          <td><span class="badge" :class="gradeBadge(m.gradeCd)">{{ m.gradeCd }}</span></td>
-          <td><span class="badge" :class="statusBadge(m.statusCd)">{{ m.statusCd }}</span></td>
+          <td><span class="badge" :class="fnGradeBadge(m.gradeCd)">{{ m.gradeCd }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(m.statusCd)">{{ m.statusCd }}</span></td>
           <td>{{ m.joinDate }}</td>
           <td>{{ m.orderCount }}건</td>
           <td>{{ m.totalPurchase.toLocaleString() }}원</td>
-          <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
+          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(m.userId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="doDelete(m)">삭제</button>
+            <button class="btn btn-danger btn-sm" @click="handleDelete(m)">삭제</button>
           </div></td>
         </tr>
       </tbody>
@@ -175,9 +176,9 @@ window.MbMemberMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -193,14 +194,14 @@ window.MbMemberMng = {
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
     <mb-member-dtl
-      :key="detailKey"
+      :key="cfDetailKey"
       :navigate="inlineNavigate"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
-      :edit-id="detailEditId"
-      :view-mode="isViewMode"
+      :edit-id="cfDetailEditId"
+      :view-mode="cfIsViewMode"
     />
   </div>
 </div>

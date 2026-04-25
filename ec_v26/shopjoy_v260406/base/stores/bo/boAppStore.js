@@ -4,67 +4,67 @@
  */
 window.useBoAppStore = Pinia.defineStore('boApp', {
   state: () => ({
-    boSiteNo: '01',
-    appVersion: '2.6.0',
-    lastUpdateDate: '',
-    active: '-',
+    svBoSiteNo: '01',
+    svAppVersion: '2.6.0',
+    svLastUpdateDate: '',
+    svActive: '-',
   }),
 
   getters: {
-    getAppVersion: (s) => s.appVersion, // 앱 버전
-    getBoSiteNo: (s) => s.boSiteNo, // BO 사이트 번호
-    getLastUpdateDate: (s) => s.lastUpdateDate, // 마지막 업데이트 날짜
-    getActive: (s) => s.active, // 활성 환경 (local/dev/prod)
+    svGetAppVersion: (s) => s.svAppVersion, // 앱 버전
+    svGetBoSiteNo: (s) => s.svBoSiteNo, // BO 사이트 번호
+    svGetLastUpdateDate: (s) => s.svLastUpdateDate, // 마지막 업데이트 날짜
+    svGetActive: (s) => s.svActive, // 활성 환경 (local/dev/prod)
   },
 
   actions: {
     /**
      * 앱 정보 설정
      */
-    setApp(appData) {
+    sfSetApp(appData) {
       if (appData) {
-        this.boSiteNo = appData.boSiteNo || '01';
-        this.appVersion = appData.appVersion || '2.6.0';
-        this.lastUpdateDate = appData.lastUpdateDate || '';
-        this.active = appData.active || '-';
+        this.svBoSiteNo = appData.boSiteNo || '01';
+        this.svAppVersion = appData.appVersion || '2.6.0';
+        this.svLastUpdateDate = appData.lastUpdateDate || '';
+        this.svActive = appData.active || '-';
       }
     },
 
     /**
      * 앱 버전 업데이트
      */
-    setAppVersion(version) {
+    sfSetAppVersion(version) {
       if (version) {
-        this.appVersion = version;
+        this.svAppVersion = version;
       }
     },
 
     /**
      * BO 사이트 번호 업데이트
      */
-    setBoSiteNo(siteNo) {
+    sfSetBoSiteNo(siteNo) {
       if (siteNo) {
-        this.boSiteNo = siteNo;
+        this.svBoSiteNo = siteNo;
       }
     },
 
     /**
      * 마지막 업데이트 날짜 업데이트
      */
-    setLastUpdateDate(date) {
+    sfSetLastUpdateDate(date) {
       if (date) {
-        this.lastUpdateDate = date;
+        this.svLastUpdateDate = date;
       }
     },
 
     /**
      * 초기화 (로그아웃 시)
      */
-    clear() {
-      this.boSiteNo = '01';
-      this.appVersion = '2.6.0';
-      this.lastUpdateDate = '';
-      this.active = '-';
+    sfClear() {
+      this.svBoSiteNo = '01';
+      this.svAppVersion = '2.6.0';
+      this.svLastUpdateDate = '';
+      this.svActive = '-';
     },
   },
 });
@@ -73,18 +73,18 @@ window.useBoAppStore = Pinia.defineStore('boApp', {
 window.getBoAppStore = () => {
   try {
     return window.useBoAppStore?.() || {
-      boSiteNo: '01',
-      appVersion: '2.6.0',
-      lastUpdateDate: '',
-      active: '-',
+      svBoSiteNo: '01',
+      svAppVersion: '2.6.0',
+      svLastUpdateDate: '',
+      svActive: '-',
     };
   } catch (e) {
     console.error('[getBoAppStore] error:', e);
     return {
-      boSiteNo: '01',
-      appVersion: '2.6.0',
-      lastUpdateDate: '',
-      active: '-',
+      svBoSiteNo: '01',
+      svAppVersion: '2.6.0',
+      svLastUpdateDate: '',
+      svActive: '-',
     };
   }
 };

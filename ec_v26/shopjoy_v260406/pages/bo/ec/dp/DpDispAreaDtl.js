@@ -4,13 +4,13 @@ window.DpDispAreaDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
-    const codes = reactive((window.boData?.codes || []));
+    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
     const areas = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const loadData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/dp/area/page', {
@@ -24,7 +24,8 @@ window.DpDispAreaDtl = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { loadData(); });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, target: null });
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
@@ -75,7 +76,7 @@ window.DpDispAreaDtl = {
     });
 
     /* ── 로드 ── */
-    onMounted(async () => {
+    const initForm = async () => {
       if (!isNew.value) {
         const a = (codes || []).find(c => c.codeId === props.editId && c.codeGrp === 'DISP_AREA');
         if (a) {
@@ -105,7 +106,8 @@ window.DpDispAreaDtl = {
       }
       await nextTick();
       initQuillDesc();
-    });
+    };
+    onMounted(() => { initForm(); });
 
     /* ── 연결된 패널 ── */
     const relatedPanels = computed(() =>

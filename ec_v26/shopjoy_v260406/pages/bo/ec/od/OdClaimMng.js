@@ -8,10 +8,10 @@ window.OdClaimMng = {
     const members = reactive([]);
     const loading = ref(false);
     const error = ref(null);
-    const codes = reactive((window.boData?.codes || []));
+    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const [claimsRes, membersRes] = await Promise.all([
@@ -27,7 +27,8 @@ window.OdClaimMng = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
@@ -35,7 +36,7 @@ window.OdClaimMng = {
       if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchType = ref('');
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
@@ -53,13 +54,13 @@ window.OdClaimMng = {
       if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
+    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
     const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => window.safeArrayUtils.safeFilter(claims, c => {
+    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(claims, c => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !c.claimId.toLowerCase().includes(kw) && !c.userNm.toLowerCase().includes(kw) && !c.prodNm.toLowerCase().includes(kw)) return false;
       if (applied.type && c.type !== applied.type) return false;
@@ -69,17 +70,17 @@ window.OdClaimMng = {
       if (applied.dateEnd && _d > applied.dateEnd) return false;
       return true;
     }));
-    const total = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums = computed(() => {
-      const cur = pager.page, last = totalPages.value;
+    const cfTotal = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums = computed(() => {
+      const cur = pager.page, last = cfTotalPages.value;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
 
-    const typeBadge = t => ({ '취소': 'badge-gray', '반품': 'badge-orange', '교환': 'badge-blue' }[t] || 'badge-gray');
-    const statusBadge = s => ({
+    const fnTypeBadge = t => ({ '취소': 'badge-gray', '반품': 'badge-orange', '교환': 'badge-blue' }[t] || 'badge-gray');
+    const fnStatusBadge = s => ({
       '신청': 'badge-orange', '승인': 'badge-blue', '수거중': 'badge-blue',
       '처리중': 'badge-purple', '환불대기': 'badge-orange',
       '완료': 'badge-green', '거부': 'badge-red', '철회': 'badge-gray',
@@ -102,10 +103,10 @@ window.OdClaimMng = {
       Object.assign(applied, { kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
       pager.page = 1;
     };
-    const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
-    const doDelete = async (c) => {
+    const handleDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.claimId}]를 삭제하시겠습니까?`);
       if (!ok) return;
       if (!Array.isArray(claims)) return;
@@ -123,17 +124,17 @@ window.OdClaimMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'클레임ID',key:'claimId'},{label:'회원명',key:'userNm'},{label:'주문ID',key:'orderId'},{label:'유형',key:'type'},{label:'상태',key:'statusCd'},{label:'상품명',key:'prodNm'},{label:'사유',key:'reasonCd'},{label:'요청일',key:'requestDate'}], '클레임목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'클레임ID',key:'claimId'},{label:'회원명',key:'userNm'},{label:'주문ID',key:'orderId'},{label:'유형',key:'type'},{label:'상태',key:'statusCd'},{label:'상품명',key:'prodNm'},{label:'사유',key:'reasonCd'},{label:'요청일',key:'requestDate'}], '클레임목록.csv');
 
     /* 일괄선택 */
     const checked = reactive(new Set());
     const toggleCheck = (id) => { const s = new Set(checked); if (s.has(id)) s.delete(id); else s.add(id); checked = s; };
     const isChecked = (id) => checked.has(id);
-    const allChecked = computed(() => pageList.value.length > 0 && window.safeArrayUtils.safeEvery(pageList, c => checked.has(c.claimId)));
+    const cfAllChecked = computed(() => cfPageList.value.length > 0 && window.safeArrayUtils.safeEvery(cfPageList, c => checked.has(c.claimId)));
     const toggleCheckAll = () => {
       const s = new Set(checked);
-      if (allChecked.value) window.safeArrayUtils.safeForEach(pageList, c => s.delete(c.claimId));
-      else window.safeArrayUtils.safeForEach(pageList, c => s.add(c.claimId));
+      if (cfAllChecked.value) window.safeArrayUtils.safeForEach(cfPageList, c => s.delete(c.claimId));
+      else window.safeArrayUtils.safeForEach(cfPageList, c => s.add(c.claimId));
       checked = s;
     };
     const claimStatusCodes = (codes)
@@ -169,14 +170,14 @@ window.OdClaimMng = {
       else if (bulkForm.reqTarget === '배송') bulkForm.reqTargetNm = first.dlivId || (first.orderId ? '배송('+first.orderId+')' : '');
       else bulkForm.reqTargetNm = first.claimId || '';
     };
-    const buildTmplMsg = computed(() => {
+    const cfBuildTmplMsg = computed(() => {
       return (bulkForm.tmplMsg || '')
         .replace('{target}', bulkForm.reqTarget || '-')
         .replace('{targetNm}', bulkForm.reqTargetNm || '-')
         .replace('{amount}', Number(bulkForm.reqAmount||0).toLocaleString())
         .replace('{reason}', bulkForm.reqReason || '-');
     });
-    const checkedByType = computed(() => {
+    const cfCheckedByType = computed(() => {
       const r = { '취소':[], '반품':[], '교환':[] };
       window.safeArrayUtils.safeForEach(claims, c => { if (checked.has(c.claimId) && r[c.type]) r[c.type].push(c.claimId); });
       return r;
@@ -192,7 +193,7 @@ window.OdClaimMng = {
       onReqTargetChange();
       bulkOpen.value = true;
     };
-    const bulkPreview = computed(() => {
+    const cfBulkPreview = computed(() => {
       if (!bulkOpen.value) return '';
       const ids = Array.from(checked);
       const selected = window.safeArrayUtils.safeFilter(claims, c => ids.includes(c.claimId));
@@ -218,8 +219,8 @@ window.OdClaimMng = {
       if (!checked.size) { props.showToast('항목을 선택하세요.', 'error'); bulkOpen.value = false; return; }
       if (bulkTab.value === 'status') {
         const changes = CLAIM_TYPE_OPTIONS
-          .filter(t => bulkForm.statusByType[t] && checkedByType.value[t].length)
-          .map(t => ({ type: t, status: bulkForm.statusByType[t], ids: checkedByType.value[t] }));
+          .filter(t => bulkForm.statusByType[t] && cfCheckedByType.value[t].length)
+          .map(t => ({ type: t, status: bulkForm.statusByType[t], ids: cfCheckedByType.value[t] }));
         if (!changes.length) { props.showToast('변경할 상태를 선택하세요.', 'error'); return; }
         const totalCnt = changes.reduce((s,c)=>s+c.ids.length,0);
         const msg = changes.map(c => `[${c.type}] ${c.ids.length}건 → ${c.status}`).join('\n');
@@ -285,7 +286,7 @@ window.OdClaimMng = {
         } });
         checked = new Set(); bulkOpen.value = false;
         try {
-          const res = await window.boApi.put('/bo/ec/od/claim/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: buildTmplMsg.value });
+          const res = await window.boApi.put('/bo/ec/od/claim/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 요청되었습니다.`, 'success');
         } catch (err) {
@@ -296,7 +297,7 @@ window.OdClaimMng = {
       }
     };
 
-    return { claims, members, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel, checked, toggleCheck, isChecked, allChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, checkedByType, openBulk, saveBulk, bulkPreview, onApprToChange, onReqTargetChange, buildTmplMsg };
+    return { claims, members, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>
@@ -312,14 +313,14 @@ window.OdClaimMng = {
       </select>
       <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>클레임목록 <span class="list-count">{{ total }}건</span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>클레임목록 <span class="list-count">{{ cfTotal }}건</span>
         <span v-if="checked.size" style="margin-left:10px;font-size:12px;color:#1565c0;font-weight:700;">선택 {{ checked.size }}건</span>
       </span>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -330,12 +331,12 @@ window.OdClaimMng = {
     </div>
     <table class="bo-table">
       <thead><tr>
-        <th style="width:36px;text-align:center;"><input type="checkbox" :checked="allChecked" @change="toggleCheckAll" /></th>
+        <th style="width:36px;text-align:center;"><input type="checkbox" :checked="cfAllChecked" @change="toggleCheckAll" /></th>
         <th>클레임ID</th><th>회원</th><th>주문ID</th><th>상품</th><th>사유</th><th>클레임상태</th><th>신청일</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="c in pageList" :key="c?.claimId"
+        <tr v-if="cfPageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="c in cfPageList" :key="c?.claimId"
           :style="(selectedId===c.claimId?'background:#fff8f9;':'') + (isChecked(c.claimId)?'background:#eef6fd;':'')">
           <td style="text-align:center;"><input type="checkbox" :checked="isChecked(c.claimId)" @change="toggleCheck(c.claimId)" /></td>
           <td><span class="title-link" @click="loadDetail(c.claimId)" :style="selectedId===c.claimId?'color:#e8587a;font-weight:700;':''">{{ c.claimId }}<span v-if="selectedId===c.claimId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
@@ -353,10 +354,10 @@ window.OdClaimMng = {
             </span>
           </td>
           <td>{{ c.requestDate.slice(0,10) }}</td>
-          <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
+          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(c.claimId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="doDelete(c)">삭제</button>
+            <button class="btn btn-danger btn-sm" @click="handleDelete(c)">삭제</button>
           </div></td>
         </tr>
       </tbody>
@@ -366,9 +367,9 @@ window.OdClaimMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -389,7 +390,7 @@ window.OdClaimMng = {
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
-      :edit-id="detailEditId"
+      :edit-id="cfDetailEditId"
     />
   </div>
 
@@ -407,14 +408,14 @@ window.OdClaimMng = {
       </div>
       <div style="padding:20px 18px;">
         <div v-if="bulkTab==='status'">
-          <div v-for="t in CLAIM_TYPE_OPTIONS" :key="Math.random()" class="form-group" :style="{opacity: checkedByType[t].length ? 1 : 0.4}">
+          <div v-for="t in CLAIM_TYPE_OPTIONS" :key="Math.random()" class="form-group" :style="{opacity: cfCheckedByType[t].length ? 1 : 0.4}">
             <label class="form-label">
               <span :style="{display:'inline-block',fontSize:'10px',padding:'2px 8px',borderRadius:'10px',color:'#fff',fontWeight:700,marginRight:'6px',background: t==='취소'?'#ef4444':t==='반품'?'#FFBB00':'#3b82f6'}">{{ t }}</span>
               상태
-              <span style="font-size:11px;color:#1565c0;margin-left:4px;">(대상 {{ checkedByType[t].length }}건)</span>
+              <span style="font-size:11px;color:#1565c0;margin-left:4px;">(대상 {{ cfCheckedByType[t].length }}건)</span>
             </label>
-            <select class="form-control" v-model="bulkForm.statusByType[t]" :disabled="!checkedByType[t].length">
-              <option value="">{{ checkedByType[t].length ? '선택하세요 (미선택시 변경안함)' : '선택된 항목 없음' }}</option>
+            <select class="form-control" v-model="bulkForm.statusByType[t]" :disabled="!cfCheckedByType[t].length">
+              <option value="">{{ cfCheckedByType[t].length ? '선택하세요 (미선택시 변경안함)' : '선택된 항목 없음' }}</option>
               <option v-for="s in CLAIM_STATUS_BY_TYPE[t]" :key="Math.random()" :value="s">{{ s }}</option>
             </select>
           </div>
@@ -480,13 +481,13 @@ window.OdClaimMng = {
           <div class="form-group">
             <label class="form-label">전송 템플릿 <span style="font-size:10px;color:#888;">(치환: {target} {targetNm} {amount} {reason})</span></label>
             <textarea class="form-control" v-model="bulkForm.tmplMsg" rows="4" style="font-family:monospace;font-size:11.5px;"></textarea>
-            <div style="margin-top:6px;padding:8px 10px;background:#f6f8fa;border-radius:6px;font-family:monospace;font-size:11.5px;white-space:pre-wrap;color:#333;border:1px dashed #d0d7de;">{{ buildTmplMsg }}</div>
+            <div style="margin-top:6px;padding:8px 10px;background:#f6f8fa;border-radius:6px;font-family:monospace;font-size:11.5px;white-space:pre-wrap;color:#333;border:1px dashed #d0d7de;">{{ cfBuildTmplMsg }}</div>
           </div>
         </div>
       </div>
       <div style="padding:10px 18px 14px;border-top:1px solid #eee;background:#fafafa;">
         <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:6px;">📋 작업내용</div>
-        <textarea readonly :value="bulkPreview || '탭에서 변경값을 선택하면 작업내용이 자동으로 표시됩니다.'"
+        <textarea readonly :value="cfBulkPreview || '탭에서 변경값을 선택하면 작업내용이 자동으로 표시됩니다.'"
           style="width:100%;min-height:120px;max-height:200px;font-family:monospace;font-size:11.5px;padding:8px;border:1px solid #ddd;border-radius:6px;background:#fff;resize:vertical;"></textarea>
       </div>
       <div style="padding:12px 18px;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:6px;background:#fff;">

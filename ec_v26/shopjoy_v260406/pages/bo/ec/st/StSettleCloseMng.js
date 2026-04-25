@@ -3,12 +3,26 @@ window.StSettleCloseMng = {
   name: 'StSettleCloseMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const descOpen = ref(false);
 
-    const orders  = reactive((window.boData?.orders || []));
-    const claims  = reactive((window.boData?.claims || []));
-    const vendorList = reactive((window.boData?.vendors || []));
+    const orders  = reactive([]);
+    const claims  = reactive([]);
+    const vendorList = reactive([]);
+
+    const fetchData = async () => {
+      try {
+        const [resO, resC, resV] = await Promise.all([
+          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        orders.splice(0, orders.length, ...(resO.data?.data?.list || []));
+        claims.splice(0, claims.length, ...(resC.data?.data?.list || []));
+        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
+      } catch (_) {}
+    };
+    onMounted(() => { fetchData(); });
     const vendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
     const closeList = reactive([

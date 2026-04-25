@@ -7,7 +7,7 @@ window.DispUi04 = {
   setup() {
     const { computed } = Vue;
 
-    const dispDataset = window.boData || window.dispDataset || { displays: [], codes: [] };
+    const dispDataset = window.dispDataset || { displays: [], codes: [] };
     const qs = new URLSearchParams(location.search);
     const params = {
       areas: ['MY_PAGE', 'FOOTER'],

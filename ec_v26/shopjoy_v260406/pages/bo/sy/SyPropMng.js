@@ -18,8 +18,6 @@ window.SyPropMng = {
     };
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const ad = window.boData || { props: [] };
-
     /* ── 검색 ── */
     const kw       = ref('');
     const useFlt   = ref('');
@@ -28,14 +26,26 @@ window.SyPropMng = {
 
     /* ── 데이터 (작업 상태 포함) ── */
     const rows = reactive([]);
+    const _rawProps = reactive([]); // 원본 데이터 (cancelRow 복원용)
     const _newId = ref(-1);
     const reload = () => {
-      const props = ad.props || [];
-      if (Array.isArray(props)) {
-        rows.splice(0, rows.length, ...props.map(p => ({ ...p, _status: '' })));
+      rows.splice(0, rows.length, ..._rawProps.map(p => ({ ...p, _status: '' })));
+    };
+
+    // onMounted에서 API 로드
+    const fetchData = async () => {
+      try {
+        const res = await window.boApi.get('/bo/sy/prop/page', {
+          params: { pageNo: 1, pageSize: 10000 }
+        });
+        const list = res.data?.data?.list || [];
+        _rawProps.splice(0, _rawProps.length, ...list);
+        reload();
+      } catch (err) {
+        if (props.showToast) props.showToast('SyProp 로드 실패', 'error');
       }
     };
-    reload();
+    onMounted(() => { fetchData(); });
 
     /* ── 사이트 필터 (공통필터 사이트와 동기화) ── */
     const siteId = computed(() => window.boCommonFilter?.siteId || null);
@@ -128,7 +138,7 @@ window.SyPropMng = {
         const idx = rows.findIndex(r => r.propId === row.propId); if (idx !== -1) rows.splice(idx, 1);
       } else {
         // 원본으로 복원 (간단 구현: reload 권장)
-        const orig = (ad.props || []).find(p => p.propId === row.propId);
+        const orig = _rawProps.find(p => p.propId === row.propId);
         if (orig) Object.assign(row, orig, { _status: '' });
       }
     };
@@ -143,8 +153,8 @@ window.SyPropMng = {
       }
       const ok = await props.showConfirm('저장', `${dirtyRows.value.length}건의 변경사항을 저장하시겠습니까?`);
       if (!ok) return;
-      // 실제 API 대신 로컬 반영
-      const list = ad.props || [];
+      // 로컬 원본 데이터 반영
+      const list = _rawProps;
       dirtyRows.value.forEach(r => {
         if (r._status === 'I') {
           const newId = (list.reduce((m,x) => Math.max(m, x.propId), 0) || 0) + 1;
@@ -213,8 +223,9 @@ window.SyPropMng = {
         <option value="N">미사용</option>
       </select>
       <div class="search-actions">
-        <button class="btn btn-primary btn-sm" @click="exportCsv">📥 엑셀</button>
-        <button class="btn btn-sm" @click="reset">🔄 초기화</button>
+        <button class="btn btn-primary btn-sm" @click="fetchData">조회</button>
+        <button class="btn btn-secondary btn-sm" @click="reset">초기화</button>
+        <button class="btn btn-sm" @click="exportCsv">📥 엑셀</button>
       </div>
     </div>
   </div>

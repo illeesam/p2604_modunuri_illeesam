@@ -329,7 +329,23 @@ const setViewMode = (m) => { viewMode.value = m;  dtlState.viewMode = m; };
 
 ---
 
+## 13. 함수·변수 네이밍 규칙
+
+| 접두어 | 적용 대상 | 예시 |
+|---|---|---|
+| `on` | 이벤트 바인딩 함수 (`@click` 직결) | `onSearch`, `onReset`, `onSave`, `onDelete` |
+| `handle` | 이벤트 처리 로직 함수 | `handleSave`, `handleDelete`, `handleStatusChange` |
+| `fn` | 독립 유틸 함수 (순수 함수) | `fnStatusBadge`, `fnFormatDate`, `fnPayBadge` |
+| `cf` | `computed(() => ...)` 속성 | `cfFiltered`, `cfTotal`, `cfPageList`, `cfSiteNm`, `cfIsNew` |
+| `sf` | Pinia store actions | `sfSetAuth`, `sfLogin`, `sfFetchInit` |
+| `sv` | Pinia store state/getters | `svAuthUser`, `svCodes`, `svIsLoggedIn` |
+
+상세 규칙: `_doc/정책서-sy/sy.54.네이밍규칙.md`
+
+---
+
 ## 관련 정책
 - `base.UX-admin.md` — 관리자 UX 레이아웃·패턴
 - `sy.51.프로그램설계정책.md` — 초기값·데이터 정렬·상세화면 ID 표시
 - `sy.52.ddl단어사전규칙.md` — DDL 컬럼명 표준
+- `sy.54.네이밍규칙.md` — 함수·변수 접두어 네이밍 규칙

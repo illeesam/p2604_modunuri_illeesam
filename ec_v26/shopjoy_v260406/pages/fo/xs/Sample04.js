@@ -106,7 +106,7 @@ window.XsSample04 = {
     }
 
     /* ── BaseModal 데모 상태 ── */
-    const boData   = window.boData || { sites: [], vendors: [], members: [], orders: [], bbms: [], boUsers: [], depts: [], roles: [], menus: [], categories: [] };
+    const boData = { sites: [], vendors: [], members: [], orders: [], bbms: [], boUsers: [], depts: [], roles: [], menus: [], categories: [] };
     const bModal      = reactive({ type: null });
     const openBModal  = (type) => { bModal.type = type; };
     const closeBModal = () => { bModal.type = null; };
@@ -155,7 +155,7 @@ window.XsSample04 = {
     ];
 
     /*/* ② FO 전용 (1종)
-         window.boData.categories 직접 참조, 사용자 카테고리 필터용 */
+         window._foCats||[] 직접 참조, 사용자 카테고리 필터용 */
     const CATALOG2_FO = [
       { id: 'catSelect', icon: '🏷', name: '카테고리 멀티선택', desc: 'CategorySelectModal — 트리+멀티체크', color: '#7e22ce' },
     ];
@@ -281,7 +281,7 @@ window.XsSample04 = {
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
         <span style="font-size:11px;font-weight:800;background:#16a34a;color:#fff;padding:2px 10px;border-radius:20px;">FO 전용</span>
         <span style="font-size:11px;color:#16a34a;font-weight:600;">1종</span>
-        <span style="font-size:11px;color:#86efac;">— window.boData.categories 직접 참조, 사용자 카테고리 필터</span>
+        <span style="font-size:11px;color:#86efac;">— window._foCats||[] 직접 참조, 사용자 카테고리 필터</span>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
         <div v-for="item in CATALOG2_FO" :key="item.id"

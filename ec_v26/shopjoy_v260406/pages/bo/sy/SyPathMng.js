@@ -4,8 +4,7 @@ window.SyPathMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
 
   setup(props) {
-    const { ref, reactive, computed, watch } = Vue;
-    const ad = window.boData || { bizCdCodes: [], paths: [] };
+    const { ref, reactive, computed, watch, onMounted } = Vue;
 
     /* ── 검색 상태 ── */
     const kw       = ref('');
@@ -14,27 +13,36 @@ window.SyPathMng = {
 
     /* ── biz_cd 옵션 (공통코드 등록 항목) ── */
     const BIZ_OPTIONS = reactive([]);
-    (() => {
-      const opts = ad.bizCdCodes || [];
-      if (Array.isArray(opts)) {
-        BIZ_OPTIONS.splice(0, BIZ_OPTIONS.length, ...opts);
-      }
-    })();
     const bizLabel = (cd) => {
-      const opts = BIZ_OPTIONS || [];
-      return (Array.isArray(opts) && opts.find(b => b.codeValue === cd) || {}).codeLabel || cd;
+      return (BIZ_OPTIONS.find(b => b.codeValue === cd) || {}).codeLabel || cd;
     };
 
     /* ── 데이터 로드 ── */
     const rows = reactive([]);
+    const _rawPaths = reactive([]); // 원본 데이터 (cancelRow/save용)
     let _newId = -1;
     const reload = () => {
-      const paths = ad.paths || [];
-      if (Array.isArray(paths)) {
-        rows.splice(0, rows.length, ...paths.map(p => ({ ...p, _status: '' })));
+      rows.splice(0, rows.length, ..._rawPaths.map(p => ({ ...p, _status: '' })));
+    };
+
+    // onMounted에서 API 로드
+    const fetchData = async () => {
+      try {
+        const [pathRes, codeRes] = await Promise.all([
+          window.boApi.get('/bo/sy/path/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/code/page', { params: { pageNo: 1, pageSize: 10000, codeGrp: 'BIZ_CD' } }),
+        ]);
+        const pathList = pathRes.data?.data?.list || [];
+        const codeList = codeRes.data?.data?.list || [];
+        _rawPaths.splice(0, _rawPaths.length, ...pathList);
+        BIZ_OPTIONS.splice(0, BIZ_OPTIONS.length, ...codeList);
+        reload();
+      } catch (err) {
+        console.warn('[SyPathMng] data load failed', err);
+        if (props.showToast) props.showToast('표시경로 데이터 로드 실패', 'error');
       }
     };
-    reload();
+    onMounted(() => { fetchData(); });
 
     /* ── 트리 (선택된 biz_cd로 빌드) ── */
     const selectedBiz = ref('sy_brand');
@@ -126,7 +134,7 @@ window.SyPathMng = {
     };
     const cancelRow = (row) => {
       if (row._status === 'I') { const idx = rows.findIndex(r => r.pathId === row.pathId); if (idx !== -1) rows.splice(idx, 1); return; }
-      const orig = (ad.paths || []).find(p => p.pathId === row.pathId);
+      const orig = _rawPaths.find(p => p.pathId === row.pathId);
       if (orig) Object.assign(row, orig, { _status: '' });
     };
     const dirtyRows = computed(() => rows.filter(r => r._status));
@@ -134,7 +142,7 @@ window.SyPathMng = {
       if (!dirtyRows.value.length) { props.showToast('변경된 행이 없습니다.', 'warning'); return; }
       const ok = await props.showConfirm('저장', `${dirtyRows.value.length}건 저장하시겠습니까?`);
       if (!ok) return;
-      const list = ad.paths || (ad.paths = []);
+      const list = _rawPaths;
       dirtyRows.value.forEach(r => {
         if (r._status === 'I') {
           const newId = (list.reduce((m,x)=>Math.max(m,x.pathId), 0) || 0) + 1;
@@ -245,7 +253,8 @@ window.SyPathMng = {
         <option value="N">미사용</option>
       </select>
       <div class="search-actions">
-        <button class="btn btn-primary btn-sm" @click="reset">🔄 초기화</button>
+        <button class="btn btn-primary btn-sm" @click="fetchData">조회</button>
+        <button class="btn btn-secondary btn-sm" @click="reset">초기화</button>
       </div>
     </div>
   </div>

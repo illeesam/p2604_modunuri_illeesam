@@ -31,7 +31,7 @@ window.Order = {
       );
     };
     /* 배송비쿠폰: shipping 타입만 */
-    const shippingCoupons = computed(() =>
+    const cfShippingCoupons = computed(() =>
       allCoupons.filter(c => c.discountType === 'shipping')
     );
 
@@ -80,7 +80,7 @@ window.Order = {
     };
 
     /* ── 주문 대상: 바로구매 > 선택장바구니(cartIds) > 전체장바구니 ── */
-    const orderItems = computed(() => {
+    const cfOrderItems = computed(() => {
       if (props.instantOrder) return [props.instantOrder];
       const cart = props.cart || [];
       if (props.cartIds?.length) return cart.filter(i => props.cartIds.includes(i.cartId));
@@ -88,21 +88,21 @@ window.Order = {
     });
 
     /* ── 금액 계산 ── */
-    const cartTotal = computed(() =>
-      orderItems.value.reduce((s, i) => s + parsePrice(i.product.price) * i.qty, 0)
+    const cfCartTotal = computed(() =>
+      cfOrderItems.value.reduce((s, i) => s + parsePrice(i.product.price) * i.qty, 0)
     );
-    const totalCouponDiscount = computed(() =>
-      orderItems.value.reduce((s, item, idx) =>
+    const cfTotalCouponDiscount = computed(() =>
+      cfOrderItems.value.reduce((s, item, idx) =>
         s + calcCouponDiscount(selectedCoupons[idx], item), 0)
     );
     /* 배송비: 기본 0원, 배송비 쿠폰은 표시용 */
-    const shippingFee = computed(() => 0);
-    const appliedCash = computed(() => {
+    const cfShippingFee = computed(() => 0);
+    const cfAppliedCash = computed(() => {
       const v = parseInt(String(cashInput.value).replace(/[^0-9]/g, ''), 10) || 0;
-      return Math.min(v, cashBalance.value, Math.max(0, cartTotal.value - totalCouponDiscount.value));
+      return Math.min(v, cashBalance.value, Math.max(0, cfCartTotal.value - cfTotalCouponDiscount.value));
     });
-    const finalPrice = computed(() =>
-      Math.max(0, cartTotal.value - totalCouponDiscount.value - appliedCash.value)
+    const cfFinalPrice = computed(() =>
+      Math.max(0, cfCartTotal.value - cfTotalCouponDiscount.value - cfAppliedCash.value)
     );
 
     /* ── 주문자 폼 + 카카오 주소 ── */
@@ -143,7 +143,7 @@ window.Order = {
 
     /* ── 주문 제출 ── */
     const submitting = ref(false);
-    const submitOrder = async () => {
+    const handleSubmit = async () => {
       if (!validate()) return;
       submitting.value = true;
       try {
@@ -152,7 +152,7 @@ window.Order = {
           orderId,
           orderDate: new Date().toISOString().slice(0, 10),
           form: { ...form },
-          items: orderItems.value.map((i, idx) => ({
+          items: cfOrderItems.value.map((i, idx) => ({
             productId:   i.product.productId,
             prodNm: i.product.prodNm,
             image:       i.product.image,
@@ -162,26 +162,26 @@ window.Order = {
             discount: calcCouponDiscount(selectedCoupons[idx], i),
           })),
           shippingCoupon:     selectedShipCoupon.value?.name || null,
-          cartTotal:          cartTotal.value,
-          couponDiscount:     totalCouponDiscount.value,
-          cashUsed:           appliedCash.value,
-          finalPrice:         finalPrice.value,
+          cartTotal:          cfCartTotal.value,
+          couponDiscount:     cfTotalCouponDiscount.value,
+          cashUsed:           cfAppliedCash.value,
+          finalPrice:         cfFinalPrice.value,
         };
         if (window.foApi) await window.foApi.post('/fo/order/create', payload).catch(() => {});
         resultData.value = payload;
         view.value = 'result';
         if (!props.instantOrder) props.clearCart(); // 바로구매는 장바구니 건드리지 않음
-        cashBalance.value = Math.max(0, cashBalance.value - appliedCash.value);
+        cashBalance.value = Math.max(0, cashBalance.value - cfAppliedCash.value);
       } finally { submitting.value = false; }
     };
 
     return {
       view, resultData,
-      orderItems,
-      form, errors, clearErr, submitting, submitOrder, openKakaoAddr,
+      cfOrderItems,
+      form, errors, clearErr, submitting, handleSubmit, openKakaoAddr,
       parsePrice, fmt,
-      cartTotal, totalCouponDiscount, shippingFee, appliedCash, finalPrice,
-      allCoupons, productCoupons, shippingCoupons, discountLabel, calcCouponDiscount,
+      cfCartTotal, cfTotalCouponDiscount, cfShippingFee, cfAppliedCash, cfFinalPrice,
+      allCoupons, productCoupons, cfShippingCoupons, discountLabel, calcCouponDiscount,
       couponPopup, selectedCoupons, openCouponPopup, closeCouponPopup, applyCoupon, removeCoupon,
       shipCouponPopup, selectedShipCoupon, applyShipCoupon, removeShipCoupon,
       cashBalance, cashInput,
@@ -279,7 +279,7 @@ window.Order = {
       </div>
     </div>
 
-    <div v-if="orderItems.length===0" style="text-align:center;padding:80px 20px;">
+    <div v-if="cfOrderItems.length===0" style="text-align:center;padding:80px 20px;">
       <div style="font-size:4rem;margin-bottom:20px;">📦</div>
       <p style="color:var(--text-muted);font-size:1rem;margin-bottom:24px;">주문할 상품이 없어요.</p>
       <button class="btn-blue" @click="navigate('prodList')" style="padding:12px 28px;">상품 보러가기</button>
@@ -288,11 +288,11 @@ window.Order = {
     <template v-else>
       <!-- ── 주문 상품 + 쿠폰 ── -->
       <div class="card" style="padding:20px;margin-bottom:20px;">
-        <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">🛍️ 주문 상품 ({{ orderItems.length }})</h2>
+        <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">🛍️ 주문 상품 ({{ cfOrderItems.length }})</h2>
         <div style="display:flex;flex-direction:column;gap:14px;">
-          <div v-for="(item, idx) in orderItems" :key="idx"
+          <div v-for="(item, idx) in cfOrderItems" :key="idx"
             style="padding-bottom:14px;"
-            :style="idx<orderItems.length-1?'border-bottom:1px solid var(--border);':''">
+            :style="idx<cfOrderItems.length-1?'border-bottom:1px solid var(--border);':''">
             <!-- 상품 행 -->
             <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">
               <div style="width:52px;height:52px;border-radius:10px;flex-shrink:0;overflow:hidden;background:var(--bg-base);">
@@ -364,19 +364,19 @@ window.Order = {
               ↻ 초기화
             </button>
           </div>
-          <div v-if="appliedCash>0" style="margin-top:6px;font-size:0.82rem;color:#f97316;">{{ fmt(appliedCash) }} 캐쉬 사용 예정</div>
+          <div v-if="cfAppliedCash>0" style="margin-top:6px;font-size:0.82rem;color:#f97316;">{{ fmt(cfAppliedCash) }} 캐쉬 사용 예정</div>
         </div>
 
         <!-- ── 최종 금액 ── -->
         <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px;display:flex;flex-direction:column;gap:6px;">
           <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--text-secondary);">
-            <span>상품금액</span><span>{{ fmt(cartTotal) }}</span>
+            <span>상품금액</span><span>{{ fmt(cfCartTotal) }}</span>
           </div>
-          <div v-if="totalCouponDiscount>0" style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--blue);">
-            <span>쿠폰 할인</span><span>-{{ fmt(totalCouponDiscount) }}</span>
+          <div v-if="cfTotalCouponDiscount>0" style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--blue);">
+            <span>쿠폰 할인</span><span>-{{ fmt(cfTotalCouponDiscount) }}</span>
           </div>
-          <div v-if="appliedCash>0" style="display:flex;justify-content:space-between;font-size:0.85rem;color:#f97316;">
-            <span>캐쉬 사용</span><span>-{{ fmt(appliedCash) }}</span>
+          <div v-if="cfAppliedCash>0" style="display:flex;justify-content:space-between;font-size:0.85rem;color:#f97316;">
+            <span>캐쉬 사용</span><span>-{{ fmt(cfAppliedCash) }}</span>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--text-secondary);">
             <span>배송비</span>
@@ -387,7 +387,7 @@ window.Order = {
           </div>
           <div style="display:flex;justify-content:space-between;font-size:1.05rem;font-weight:800;padding-top:8px;border-top:2px solid var(--border);margin-top:2px;">
             <span style="color:var(--text-primary);">최종 결제금액</span>
-            <span style="color:var(--blue);">{{ fmt(finalPrice) }}</span>
+            <span style="color:var(--blue);">{{ fmt(cfFinalPrice) }}</span>
           </div>
         </div>
       </div>
@@ -445,7 +445,7 @@ window.Order = {
               <option value="연락 후 배송해주세요">연락 후 배송해주세요</option>
             </select>
           </div>
-          <button @click="submitOrder" :disabled="submitting"
+          <button @click="handleSubmit" :disabled="submitting"
             :style="{
               width:'100%',padding:'14px',border:'none',borderRadius:'10px',fontSize:'0.95rem',fontWeight:700,
               cursor: submitting ? 'wait' : 'pointer',
@@ -476,7 +476,7 @@ window.Order = {
             </div>
             <div class="info-row"><span class="info-icon">3️⃣</span>
               <div><div class="info-label">입금 금액</div>
-                <div class="info-val" style="color:var(--blue);font-weight:700;margin-top:4px;">{{ fmt(finalPrice) }}</div>
+                <div class="info-val" style="color:var(--blue);font-weight:700;margin-top:4px;">{{ fmt(cfFinalPrice) }}</div>
               </div>
             </div>
             <div class="info-row"><span class="info-icon">4️⃣</span>
@@ -506,7 +506,7 @@ window.Order = {
                   <template v-else>
                     <div style="display:flex;align-items:center;gap:8px;">
                       <span style="font-size:0.85rem;color:#22c55e;font-weight:700;">무료</span>
-                      <button v-if="shippingCoupons.length" @click="shipCouponPopup=true"
+                      <button v-if="cfShippingCoupons.length" @click="shipCouponPopup=true"
                         style="padding:6px 12px;border:1px solid #ce93d8;border-radius:8px;background:#f3e5f5;color:#6a1b9a;font-size:0.78rem;cursor:pointer;font-weight:600;transition:all .15s;"
                         @mouseenter="$event.currentTarget.style.background='#e1bee7'"
                         @mouseleave="$event.currentTarget.style.background='#f3e5f5'">
@@ -558,7 +558,7 @@ window.Order = {
           <div style="flex:1;"><div style="font-size:0.9rem;font-weight:600;color:#6b7280;">쿠폰 사용 안 함</div></div>
         </div>
         <template v-if="couponPopup.targetIdx!==null">
-          <div v-for="c in productCoupons(orderItems[couponPopup.targetIdx])" :key="c.couponId"
+          <div v-for="c in productCoupons(cfOrderItems[couponPopup.targetIdx])" :key="c.couponId"
             @click="applyCoupon(c)"
             :style="{
               padding:'14px 16px',borderRadius:'10px',cursor:'pointer',
@@ -581,7 +581,7 @@ window.Order = {
             </div>
             <div style="font-size:1rem;font-weight:800;color:#e8587a;flex-shrink:0;background:#fff5f7;border:1px solid #fbcfe8;border-radius:8px;padding:4px 10px;">{{ discountLabel(c) }}</div>
           </div>
-          <div v-if="!productCoupons(orderItems[couponPopup.targetIdx]).length"
+          <div v-if="!productCoupons(cfOrderItems[couponPopup.targetIdx]).length"
             style="text-align:center;padding:40px 20px;color:#9ca3af;font-size:0.88rem;background:#fff;border-radius:10px;border:1px dashed #e4e7ec;">
             🪙 이 상품에 적용 가능한 쿠폰이 없습니다.
           </div>
@@ -607,7 +607,7 @@ window.Order = {
           <div style="width:38px;height:38px;border-radius:10px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;color:#9ca3af;">🚫</div>
           <div><div style="font-size:0.9rem;font-weight:600;color:#6b7280;">쿠폰 사용 안 함</div></div>
         </div>
-        <div v-for="c in shippingCoupons" :key="c.couponId"
+        <div v-for="c in cfShippingCoupons" :key="c.couponId"
           @click="applyShipCoupon(c)"
           :style="{
             padding:'14px 16px',borderRadius:'10px',cursor:'pointer',
@@ -623,7 +623,7 @@ window.Order = {
           </div>
           <div style="font-size:0.9rem;font-weight:800;color:#16a34a;flex-shrink:0;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;padding:4px 10px;">무료배송</div>
         </div>
-        <div v-if="!shippingCoupons.length" style="text-align:center;padding:40px 20px;color:#9ca3af;font-size:0.88rem;background:#fff;border-radius:10px;border:1px dashed #e4e7ec;">
+        <div v-if="!cfShippingCoupons.length" style="text-align:center;padding:40px 20px;color:#9ca3af;font-size:0.88rem;background:#fff;border-radius:10px;border:1px dashed #e4e7ec;">
           🪙 보유한 배송비 쿠폰이 없습니다.
         </div>
       </div>

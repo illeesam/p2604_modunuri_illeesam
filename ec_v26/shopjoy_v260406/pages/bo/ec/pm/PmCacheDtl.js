@@ -10,7 +10,7 @@ window.PmCacheDtl = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/cache/page', {
@@ -24,7 +24,8 @@ window.PmCacheDtl = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const isNew = computed(() => !props.editId);
     const tab = ref(window._pmCacheDtlState.tab || 'info');
     watch(tab, v => { window._pmCacheDtlState.tab = v; });

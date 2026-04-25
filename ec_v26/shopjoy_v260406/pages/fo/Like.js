@@ -5,12 +5,12 @@ window.Like = {
   setup(props) {
     const { computed } = Vue;
 
-    const likedProducts = computed(() => {
+    const cfLikedProducts = computed(() => {
       const likeSet = props.likes || new Set();
       return (props.products || []).filter(p => likeSet.has(p.productId));
     });
 
-    return { likedProducts };
+    return { cfLikedProducts };
   },
   template: /* html */ `
 <div class="page-wrap">
@@ -31,8 +31,8 @@ window.Like = {
   </div>
 
   <!-- 상품 목록 -->
-  <div v-if="likedProducts.length" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));gap:20px;">
-    <div v-for="p in likedProducts" :key="p.productId"
+  <div v-if="cfLikedProducts.length" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));gap:20px;">
+    <div v-for="p in cfLikedProducts" :key="p.productId"
       style="background:var(--bg-card);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;transition:box-shadow .2s;"
       @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'"
       @mouseleave="$event.currentTarget.style.boxShadow=''">

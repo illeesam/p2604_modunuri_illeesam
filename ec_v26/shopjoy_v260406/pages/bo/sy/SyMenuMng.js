@@ -9,7 +9,7 @@ window.SyMenuMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/menu/page', {
@@ -23,7 +23,8 @@ window.SyMenuMng = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     /* 좌측 메뉴 트리 */
     const selectedTreeId = ref(null);
     const expanded = reactive(new Set([null]));
@@ -267,7 +268,7 @@ window.SyMenuMng = {
         <option value="">사용여부 전체</option><option value="Y">사용</option><option value="N">미사용</option>
       </select>
       <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>

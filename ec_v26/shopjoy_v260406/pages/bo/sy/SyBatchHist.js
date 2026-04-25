@@ -5,18 +5,20 @@ window.SyBatchHist = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const batches = reactive([]);
-    const batchLogs = reactive((window.boData?.batchLogs || []));
+    const batchLogs = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/sy/batch/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        batches = res.data?.data?.list || [];
+        const [resBatch, resLogs] = await Promise.all([
+          window.boApi.get('/bo/sy/batch/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/batch/log/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        batches.splice(0, batches.length, ...(resBatch.data?.data?.list || []));
+        batchLogs.splice(0, batchLogs.length, ...(resLogs.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -24,7 +26,8 @@ window.SyBatchHist = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
 
     const searchBatchId = ref('');
     const searchStatus  = ref('');

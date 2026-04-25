@@ -7,17 +7,19 @@ window.DpDispPanelMng = {
     const panels = reactive([]);
     const loading = ref(false);
     const error = ref(null);
-    const displays = reactive((window.boData?.displays || []));
-    const codes = reactive((window.boData?.codes || []));
+    const displays = reactive([]);
+    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/ec/dp/panel/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        panels.splice(0, panels.length, ...(res.data?.data?.list || []));
+        const [panelsRes, displaysRes] = await Promise.all([
+          window.boApi.get('/bo/ec/dp/panel/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        panels.splice(0, panels.length, ...(panelsRes.data?.data?.list || []));
+        displays.splice(0, displays.length, ...(displaysRes.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -25,7 +27,8 @@ window.DpDispPanelMng = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const searchKw = ref('');
@@ -413,7 +416,7 @@ window.DpDispPanelMng = {
       <select v-model="searchStatus"><option value="">상태 전체</option><option>활성</option><option>비활성</option></select>
       <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>

@@ -4,41 +4,41 @@
 window.useFoPropStore = Pinia.defineStore('foProp', {
   state: () => {
     return {
-      props: {},
+      svProps: {},
     };
   },
 
   actions: {
-    setProps(propsData) {
+    sfSetProps(propsData) {
       if (propsData) {
-        this.props = propsData;
+        this.svProps = propsData;
       }
     },
 
-    setProp(key, value) {
+    sfSetProp(key, value) {
       if (key) {
-        this.props[key] = value;
+        this.svProps[key] = value;
       }
     },
 
-    setMultiProps(propsData) {
+    sfSetMultiProps(propsData) {
       if (propsData) {
-        Object.assign(this.props, propsData);
+        Object.assign(this.svProps, propsData);
       }
     },
 
-    removeProp(key) {
+    sfRemoveProp(key) {
       if (key) {
-        delete this.props[key];
+        delete this.svProps[key];
       }
     },
 
-    hasProp(key) {
-      return key in this.props;
+    sfHasProp(key) {
+      return key in this.svProps;
     },
 
-    clear() {
-      this.props = {};
+    sfClear() {
+      this.svProps = {};
     },
   },
 });

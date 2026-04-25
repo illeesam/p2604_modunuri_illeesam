@@ -5,58 +5,58 @@
 window.useBoRoleStore = Pinia.defineStore('boRole', {
   state: () => {
     return {
-      roles: [],
-      isLoading: false,
+      svRoles: [],
+      svIsLoading: false,
     };
   },
 
   getters: {
-    isEmpty: (s) => !Array.isArray(s.roles) || s.roles.length === 0,
+    svIsEmpty: (s) => !Array.isArray(s.svRoles) || s.svRoles.length === 0,
   },
 
   actions: {
     /**
      * 역할 정보 설정
      */
-    setRoles(rolesData) {
-      this.roles = rolesData || [];
+    sfSetRoles(rolesData) {
+      this.svRoles = rolesData || [];
     },
 
     /**
      * 역할 추가
      */
-    addRole(role) {
-      if (role && !this.roles.find(r => r.id === role.id)) {
-        this.roles.push(role);
+    sfAddRole(role) {
+      if (role && !this.svRoles.find(r => r.id === role.id)) {
+        this.svRoles.push(role);
       }
     },
 
     /**
      * 역할 업데이트
      */
-    updateRole(roleId, roleData) {
-      const idx = this.roles.findIndex(r => r.id === roleId);
+    sfUpdateRole(roleId, roleData) {
+      const idx = this.svRoles.findIndex(r => r.id === roleId);
       if (idx !== -1) {
-        this.roles[idx] = { ...this.roles[idx], ...roleData };
+        this.svRoles[idx] = { ...this.svRoles[idx], ...roleData };
       }
     },
 
     /**
      * 역할 삭제
      */
-    removeRole(roleId) {
-      const idx = this.roles.findIndex(r => r.id === roleId);
+    sfRemoveRole(roleId) {
+      const idx = this.svRoles.findIndex(r => r.id === roleId);
       if (idx !== -1) {
-        this.roles.splice(idx, 1);
+        this.svRoles.splice(idx, 1);
       }
     },
 
     /**
      * 초기화 (로그아웃 시)
      */
-    clear() {
-      this.roles = [];
-      this.isLoading = false;
+    sfClear() {
+      this.svRoles = [];
+      this.svIsLoading = false;
     },
   },
 });
@@ -65,16 +65,16 @@ window.useBoRoleStore = Pinia.defineStore('boRole', {
 window.getBoRoleStore = () => {
   try {
     return window.useBoRoleStore?.() || {
-      roles: [],
-      isEmpty: true,
-      isLoading: false,
+      svRoles: [],
+      svIsEmpty: true,
+      svIsLoading: false,
     };
   } catch (e) {
     console.error('[getBoRoleStore] error:', e);
     return {
-      roles: [],
-      isEmpty: true,
-      isLoading: false,
+      svRoles: [],
+      svIsEmpty: true,
+      svIsLoading: false,
     };
   }
 };

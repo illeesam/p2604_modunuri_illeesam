@@ -9,7 +9,7 @@ window.CmBlogMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/cm/blog/page', {
@@ -23,7 +23,8 @@ window.CmBlogMng = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchKw     = ref('');
     const searchUse    = ref('');
@@ -136,7 +137,7 @@ window.CmBlogMng = {
         <label class="search-label">공지여부</label>
         <select class="form-control" v-model="searchNotice"><option value="">전체</option><option value="Y">공지</option><option value="N">일반</option></select>
         <div class="search-actions">
-          <button class="btn btn-primary btn-sm" @click="onSearch">검색</button>
+          <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
           <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
         </div>
       </div>

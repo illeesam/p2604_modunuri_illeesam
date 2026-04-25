@@ -3,16 +3,28 @@ window.StErpGenMng = {
   name: 'StErpGenMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const descOpen = ref(false);
 
     const targetMon = ref(new Date().toISOString().slice(0, 7));
     const slipType  = ref('정산');
 
-    const orderList = reactive((window.boData?.orders || []));
-    const vendorList = reactive((window.boData?.vendors || []));
+    const orderList = reactive([]);
+    const vendorList = reactive([]);
     const orders  = computed(() => orderList);
     const vendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
+
+    const fetchData = async () => {
+      try {
+        const [resO, resV] = await Promise.all([
+          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        orderList.splice(0, orderList.length, ...(resO.data?.data?.list || []));
+        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
+      } catch (_) {}
+    };
+    onMounted(() => { fetchData(); });
 
     const previewRows = computed(() => {
       return vendors.value.map(v => {

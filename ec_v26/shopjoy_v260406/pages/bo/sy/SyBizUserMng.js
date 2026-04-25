@@ -11,7 +11,26 @@ window.SyBizUserMng = {
     /* ── 역할 트리 (좌측 패널) ── */
     const selectedPath = ref(null);
     const expanded = reactive(new Set([null]));
-    const ad = window.boData || { roles: [], menus: [], roleMenus: [] };
+    const roles = reactive([]);
+    const menus = reactive([]);
+    const roleMenus = reactive([]);
+
+    // onMounted에서 역할/메뉴/역할메뉴 API 로드
+    const loadData = async () => {
+      try {
+        const [roleRes, menuRes, roleMenuRes] = await Promise.all([
+          window.boApi.get('/bo/sy/role/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/menu/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/role-menu/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        roles.splice(0, roles.length, ...(roleRes.data?.data?.list || []));
+        menus.splice(0, menus.length, ...(menuRes.data?.data?.list || []));
+        roleMenus.splice(0, roleMenus.length, ...(roleMenuRes.data?.data?.list || []));
+      } catch (err) {
+        console.warn('[SyBizUserMng] role/menu load failed', err);
+      }
+    };
+    onMounted(() => { loadData(); });
 
     const ROOT_BADGE_MAP = {
       SUPER_ADMIN:['관리자','#7c3aed'], SITE_GROUP:['사이트','#2563eb'],
@@ -19,7 +38,6 @@ window.SyBizUserMng = {
       CS_ROOT:['콜센터업체','#0891b2'], SITE_OP_ROOT:['사이트운영업체','#7c3aed'], PROG_ROOT:['유지보수업체','#dc2626']
     };
     const tree = computed(() => {
-      const roles = ad.roles || [];
       const rolesById = Object.fromEntries(roles.map(r => [r.roleId, r]));
       const badgeOf = (role) => {
         let cur = role;
@@ -41,7 +59,7 @@ window.SyBizUserMng = {
     });
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { selectedPath.value = id; };
-    const expandAll = () => { expanded.add(null); (ad.roles || []).forEach(r => expanded.add(r.roleCode)); };
+    const expandAll = () => { expanded.add(null); roles.forEach(r => expanded.add(r.roleCode)); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     onMounted(() => { expandAll(); });
 
@@ -51,13 +69,14 @@ window.SyBizUserMng = {
     const STATUS      = [['ACTIVE','재직'],['LEFT','퇴직'],['SUSPENDED','중지']];
 
     const vendors = reactive([]);
-    onMounted(async () => {
+    const loadDetail = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/vendor/page', { params: { pageNo:1, pageSize:10000 } });
         const list = res.data?.data?.list || [];
         vendors.splice(0, vendors.length, ...list);
       } catch(e) { console.warn('[SyBizUserMng] vendor load failed', e); }
-    });
+    };
+    onMounted(() => { loadDetail(); });
 
     const vendorMap = computed(() => Object.fromEntries(vendors.map(v => [v.vendorId, v])));
     const vendorNm  = (id) => (vendorMap.value[id] || {}).vendorNm || '#'+id;
@@ -122,7 +141,6 @@ window.SyBizUserMng = {
     /* pathRoleCodes: 선택된 역할 코드 하위 descendants */
     const pathRoleCodes = computed(() => {
       if (selectedPath.value == null) return null;
-      const roles = ad.roles || [];
       const root = roles.find(r => r.roleCode === selectedPath.value);
       if (!root) return new Set([selectedPath.value]);
       const ids = new Set([root.roleId]);
@@ -236,7 +254,6 @@ window.SyBizUserMng = {
       return vt==='SALES'?'SITE_MGR_ROOT': vt==='DELIVERY'?'DLIV_ROOT': null;
     });
     const formRoleTree = computed(() => {
-      const roles = ad.roles || [];
       const allowedRootCode = formAllowedRootCode.value;
       const buildBranch = (pid, allowed) => roles
         .filter(r => r.parentId === pid)
@@ -254,7 +271,7 @@ window.SyBizUserMng = {
     const openRoleModal = () => {
       roleModalTemp.value = null;
       roleTreeExpanded.clear();
-      const root = (ad.roles||[]).find(r=>r.roleCode===formAllowedRootCode.value);
+      const root = roles.find(r=>r.roleCode===formAllowedRootCode.value);
       if (root) roleTreeExpanded.add(root.roleId);
       roleModalOpen.value = true;
     };
@@ -263,7 +280,6 @@ window.SyBizUserMng = {
     const pickRoleInModal = (n) => { if (!n.allowed) return; roleModalTemp.value = n.roleCode; };
 
     const roleNmByCode = (code) => {
-      const roles = ad.roles || [];
       const m = Object.fromEntries(roles.map(x=>[x.roleId,x]));
       let cur = roles.find(x=>x.roleCode===code);
       if (!cur) return code;
@@ -271,7 +287,7 @@ window.SyBizUserMng = {
       while (cur) { seg.unshift(cur.roleNm); cur = cur.parentId ? m[cur.parentId] : null; }
       return seg.join(' > ');
     };
-    const roleIdByCode = (code) => (ad.roles||[]).find(r=>r.roleCode===code)?.roleId || null;
+    const roleIdByCode = (code) => roles.find(r=>r.roleCode===code)?.roleId || null;
 
     const confirmRoleModal = async () => {
       if (!roleModalTemp.value) return;
@@ -317,12 +333,11 @@ window.SyBizUserMng = {
     };
     const selectedModalRole = computed(() => {
       if (!roleModalTemp.value) return null;
-      return (ad.roles||[]).find(r=>r.roleCode===roleModalTemp.value) || null;
+      return roles.find(r=>r.roleCode===roleModalTemp.value) || null;
     });
     const modalMenuList = computed(() => {
       const role = selectedModalRole.value;
-      const menus = ad.menus || [];
-      const rm = role ? (ad.roleMenus||[]).filter(x=>x.roleId===role.roleId) : [];
+      const rm = role ? roleMenus.filter(x=>x.roleId===role.roleId) : [];
       const permBy = Object.fromEntries(rm.map(x=>[x.menuId, x.permLevel]));
       const fallback = role ? (ROLE_DEFAULT_PERM[role.roleCode]||'없음') : '없음';
       const buildMenu = (pid, depth) => menus

@@ -6,21 +6,25 @@ window.PdProdDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const products = reactive([]);
-    const boUsers = reactive((window.boData?.boUsers || []));
-    const categories = reactive((window.boData?.categories || []));
-    const categoryProds = reactive((window.boData?.categoryProds || []));
-    const codes = reactive((window.boData?.codes || []));
+    const boUsers = reactive([]);
+    const categories = reactive([]);
+    const categoryProds = reactive([]);
+    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
     const loading = ref(false);
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const loadData = async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pd/prod/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        products.splice(0, products.length, ...(res.data?.data?.list || []));
+        const [prodsRes, usersRes, catsRes] = await Promise.all([
+          window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 } }),
+          window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 1000 } }),
+        ]);
+        products.splice(0, products.length, ...(prodsRes.data?.data?.list || []));
+        boUsers.splice(0, boUsers.length, ...(usersRes.data?.data?.list || []));
+        categories.splice(0, categories.length, ...(catsRes.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -28,7 +32,8 @@ window.PdProdDtl = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { loadData(); });
     const isNew = computed(() => !props.editId);
     const topTab = ref(window._pdProdDtlState.tab || 'info');
     watch(topTab, v => { window._pdProdDtlState.tab = v; });
@@ -378,7 +383,7 @@ window.PdProdDtl = {
     const openMdModal  = () => { mdSearch.value = ''; mdModalOpen.value = true; };
     const selectMdUser = (u) => { form.mdUserId = u.boUserId; mdModalOpen.value = false; };
 
-    onMounted(async () => {
+    const initForm = async () => {
       if (isNew.value) {
         // 신규 등록: 기본값 본인 (목업에서는 첫 번째 활성 사용자)
         form.mdUserId = mdUserList.window.safeArrayUtils.safeGet(value, 0)?.boUserId || '';
@@ -475,7 +480,8 @@ window.PdProdDtl = {
       _divUpH = () => { isDraggingDivider.value = false; };
       document.addEventListener('mousemove', _divMoveH);
       document.addEventListener('mouseup', _divUpH);
-    });
+    };
+    onMounted(() => { initForm(); });
     onBeforeUnmount(() => {
       if (_divMoveH) document.removeEventListener('mousemove', _divMoveH);
       if (_divUpH)   document.removeEventListener('mouseup',  _divUpH);

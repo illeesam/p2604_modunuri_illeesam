@@ -8,8 +8,8 @@ window.OdClaimHist = {
     const botTab = ref(window._odClaimHistState.tab || 'items');
     watch(botTab, v => { window._odClaimHistState.tab = v; });
     const viewMode2 = ref('tab');
-    const codes = reactive((window.boData?.codes || []));
-    
+    const cfCodes = Vue.computed(() => window.getBoCodeStore().svCodes);
+
     const showTab = (id) => viewMode2.value !== 'tab' || botTab.value === id;
 
     /* 클레임 항목 */
@@ -21,16 +21,15 @@ window.OdClaimHist = {
 
     /* 클레임 유형별 단계 — parentCodeValues 기반 동적 파생 */
     const claimType = ref('취소');
-    const _claimStatusCodes = (codes)
-      .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
-      .sort((a, b) => a.sortOrd - b.sortOrd);
     const TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
-    const CLAIM_STEPS = computed(() => _claimStatusCodes
+    const cfClaimSteps = computed(() => cfCodes.value
+      .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
+      .sort((a, b) => a.sortOrd - b.sortOrd)
       .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + (TYPE_CD[claimType.value] || claimType.value) + '^'))
       .map(c => c.codeLabel)
       .filter(l => !['거부','철회'].includes(l)));
     const claimStatus = ref('');
-    const statusOptions = computed(() => CLAIM_STEPS.value);
+    const cfStatusOptions = computed(() => cfClaimSteps.value);
 
     const relatedOrder = ref(null);
     const relatedDliv  = ref(null);
@@ -80,7 +79,7 @@ window.OdClaimHist = {
       props.showToast('저장되었습니다.');
     };
 
-    return { botTab, claimItems, addClaimItem, removeClaimItem, processForm, saveProcess, statusOptions, relatedOrder, relatedDliv, viewMode2, showTab };
+    return { botTab, claimItems, addClaimItem, removeClaimItem, processForm, saveProcess, cfStatusOptions, relatedOrder, relatedDliv, viewMode2, showTab };
   },
   template: /* html */`
 <div>
@@ -150,7 +149,7 @@ window.OdClaimHist = {
             </td>
             <td style="border:1px solid #e0e0e0;padding:4px 6px;background:#fff5fb;">
               <select class="form-control" v-model="item.afStatus" style="font-size:12px;background:transparent;border-color:#ffadd2;">
-                <option v-for="s in statusOptions" :key="Math.random()">{{ s }}</option>
+                <option v-for="s in cfStatusOptions" :key="Math.random()">{{ s }}</option>
               </select>
             </td>
             <td style="border:1px solid #e0e0e0;padding:4px 6px;background:#fff5fb;">

@@ -79,7 +79,7 @@ window.Prod03View = {
       });
     };
 
-    const mockImages = computed(() => {
+    const cfMockImages = computed(() => {
       const p = props.product;
       if (!p) return [];
       const opt1s = p.opt1s || [];
@@ -102,7 +102,7 @@ window.Prod03View = {
       '기대보다 훨씬 마음에 들어요. 실제 착용해보니 사진보다 더 예쁜 것 같아요.',
     ];
 
-    const mockReviews = computed(() => {
+    const cfMockReviews = computed(() => {
       const p = props.product;
       if (!p) return [];
       const pid    = p.productId || 1;
@@ -129,27 +129,27 @@ window.Prod03View = {
       });
     });
 
-    const reviewsWithPhoto = computed(() => mockReviews.value.filter(r => r.hasPhoto));
+    const cfReviewsWithPhoto = computed(() => cfMockReviews.value.filter(r => r.hasPhoto));
 
-    const filteredReviews = computed(() => {
-      const list = [...mockReviews.value];
+    const cfFilteredReviews = computed(() => {
+      const list = [...cfMockReviews.value];
       if (reviewFilter.value === '별점높은순') return list.sort((a, b) => b.rating - a.rating);
       if (reviewFilter.value === '별점낮은순') return list.sort((a, b) => a.rating - b.rating);
       if (reviewFilter.value === '도움순')     return list.sort((a, b) => b.helpful - a.helpful);
       return list;
     });
 
-    const avgRating = computed(() => {
-      const r = mockReviews.value;
+    const cfAvgRating = computed(() => {
+      const r = cfMockReviews.value;
       return r.length ? (r.reduce((s, x) => s + x.rating, 0) / r.length).toFixed(1) : '0.0';
     });
 
-    const ratingDist = computed(() =>
+    const cfRatingDist = computed(() =>
       [5, 4, 3, 2, 1].map(star => ({
         star,
-        count: mockReviews.value.filter(x => x.rating === star).length,
-        pct:   mockReviews.value.length
-          ? Math.round(mockReviews.value.filter(x => x.rating === star).length / mockReviews.value.length * 100)
+        count: cfMockReviews.value.filter(x => x.rating === star).length,
+        pct:   cfMockReviews.value.length
+          ? Math.round(cfMockReviews.value.filter(x => x.rating === star).length / cfMockReviews.value.length * 100)
           : 0,
       }))
     );

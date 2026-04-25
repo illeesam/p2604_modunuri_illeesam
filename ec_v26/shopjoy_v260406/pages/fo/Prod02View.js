@@ -79,7 +79,7 @@ window.Prod02View = {
       });
     };
 
-    const mockImages = computed(() => {
+    const cfMockImages = computed(() => {
       const p = props.product;
       if (!p) return [];
       const opt1s = p.opt1s || [];
@@ -102,7 +102,7 @@ window.Prod02View = {
       '기대보다 훨씬 마음에 들어요. 실제 착용해보니 사진보다 더 예쁜 것 같아요.',
     ];
 
-    const mockReviews = computed(() => {
+    const cfMockReviews = computed(() => {
       const p = props.product;
       if (!p) return [];
       const pid    = p.productId || 1;
@@ -129,27 +129,27 @@ window.Prod02View = {
       });
     });
 
-    const reviewsWithPhoto = computed(() => mockReviews.value.filter(r => r.hasPhoto));
+    const cfReviewsWithPhoto = computed(() => cfMockReviews.value.filter(r => r.hasPhoto));
 
-    const filteredReviews = computed(() => {
-      const list = [...mockReviews.value];
+    const cfFilteredReviews = computed(() => {
+      const list = [...cfMockReviews.value];
       if (reviewFilter.value === '별점높은순') return list.sort((a, b) => b.rating - a.rating);
       if (reviewFilter.value === '별점낮은순') return list.sort((a, b) => a.rating - b.rating);
       if (reviewFilter.value === '도움순')     return list.sort((a, b) => b.helpful - a.helpful);
       return list;
     });
 
-    const avgRating = computed(() => {
-      const r = mockReviews.value;
+    const cfAvgRating = computed(() => {
+      const r = cfMockReviews.value;
       return r.length ? (r.reduce((s, x) => s + x.rating, 0) / r.length).toFixed(1) : '0.0';
     });
 
-    const ratingDist = computed(() =>
+    const cfRatingDist = computed(() =>
       [5, 4, 3, 2, 1].map(star => ({
         star,
-        count: mockReviews.value.filter(x => x.rating === star).length,
-        pct:   mockReviews.value.length
-          ? Math.round(mockReviews.value.filter(x => x.rating === star).length / mockReviews.value.length * 100)
+        count: cfMockReviews.value.filter(x => x.rating === star).length,
+        pct:   cfMockReviews.value.length
+          ? Math.round(cfMockReviews.value.filter(x => x.rating === star).length / cfMockReviews.value.length * 100)
           : 0,
       }))
     );
@@ -305,13 +305,13 @@ window.Prod02View = {
     });
 
     /* ── 카테고리 라벨 ── */
-    const categoryLabel = p => {
+    const fnCategoryLabel = p => {
       if (!p) return '';
       return (props.config?.categorys || []).find(c => c.categoryId === p.categoryId)?.categoryNm || p.categoryId || '';
     };
 
     /* ── 옵션 재고 상태 (목업: 색상 + 사이즈) ── */
-    const colorStockMap = computed(() => {
+    const cfColorStockMap = computed(() => {
       const p = props.product;
       if (!p) return {};
       const opt1s = p.opt1s || [];
@@ -325,9 +325,9 @@ window.Prod02View = {
       });
       return map;
     });
-    const colorStatus = (c) => colorStockMap.value[c?.name] || 'ok';
+    const colorStatus = (c) => cfColorStockMap.value[c?.name] || 'ok';
 
-    const sizeStockMap = computed(() => {
+    const cfSizeStockMap = computed(() => {
       const p = props.product;
       if (!p) return {};
       const sizes = p.opt2s || [];
@@ -341,10 +341,10 @@ window.Prod02View = {
       });
       return map;
     });
-    const sizeStatus = (s) => sizeStockMap.value[s] || 'ok';
+    const sizeStatus = (s) => cfSizeStockMap.value[s] || 'ok';
 
     /* ── 옵션별 가격 ── */
-    const basePrice = computed(() => {
+    const cfBasePrice = computed(() => {
       const numStr = String(props.product?.price || '').replace(/[^0-9]/g, '');
       return Number(numStr) || 0;
     });
@@ -353,20 +353,20 @@ window.Prod02View = {
     const getSizeDelta = (sizeName) => (props.product?.opt2Prices || {})[sizeName] || 0;
 
     /* 선택된 색상+사이즈의 최종 단가 */
-    const selectedUnitPrice = computed(() => {
+    const cfSelectedUnitPrice = computed(() => {
       const colorDelta = selectedColor.value?.priceDelta || 0;
       const sizeDelta  = getSizeDelta(selectedSize.value);
-      return basePrice.value + colorDelta + sizeDelta;
+      return cfBasePrice.value + colorDelta + sizeDelta;
     });
 
     /* 모든 옵션 조합의 최소~최대 가격 범위 */
-    const priceRange = computed(() => {
+    const cfPriceRange = computed(() => {
       const p = props.product;
-      if (!p || !basePrice.value) return null;
+      if (!p || !cfBasePrice.value) return null;
       const colorDeltas = (p.opt1s || []).map(c => c.priceDelta || 0);
       const sizeDeltas  = Object.values(p.opt2Prices || {}).concat([0]);
       const prices = [];
-      colorDeltas.forEach(cd => sizeDeltas.forEach(sd => prices.push(basePrice.value + cd + sd)));
+      colorDeltas.forEach(cd => sizeDeltas.forEach(sd => prices.push(cfBasePrice.value + cd + sd)));
       const min = Math.min(...prices);
       const max = Math.max(...prices);
       return min === max ? null : { min, max };
@@ -376,9 +376,9 @@ window.Prod02View = {
        - 색상+사이즈 모두 선택 → 정확한 가격
        - 색상만 선택          → 색상가격 (사이즈 delta 존재 시 범위)
        - 미선택               → 전체 범위 또는 기본가 */
-    const displayPrice = computed(() => {
+    const cfDisplayPrice = computed(() => {
       const p = props.product;
-      if (!p || !basePrice.value) return p?.price || '';
+      if (!p || !cfBasePrice.value) return p?.price || '';
 
       const colorDelta = selectedColor.value?.priceDelta || 0;
       const sizeDelta  = getSizeDelta(selectedSize.value);
@@ -386,12 +386,12 @@ window.Prod02View = {
 
       /* 색상+사이즈 모두 선택 */
       if (selectedColor.value && selectedSize.value) {
-        return (basePrice.value + colorDelta + sizeDelta).toLocaleString('ko-KR') + '원';
+        return (cfBasePrice.value + colorDelta + sizeDelta).toLocaleString('ko-KR') + '원';
       }
 
       /* 색상만 선택 */
       if (selectedColor.value) {
-        const colorPrice = basePrice.value + colorDelta;
+        const colorPrice = cfBasePrice.value + colorDelta;
         if (hasSizeDelta) {
           const maxSD = Math.max(...Object.values(p.opt2Prices));
           return colorPrice.toLocaleString('ko-KR') + '원 ~ ' + (colorPrice + maxSD).toLocaleString('ko-KR') + '원';
@@ -400,17 +400,17 @@ window.Prod02View = {
       }
 
       /* 미선택: 전체 범위 표시 */
-      if (priceRange.value) {
-        return priceRange.value.min.toLocaleString('ko-KR') + '원 ~ ' + priceRange.value.max.toLocaleString('ko-KR') + '원';
+      if (cfPriceRange.value) {
+        return cfPriceRange.value.min.toLocaleString('ko-KR') + '원 ~ ' + cfPriceRange.value.max.toLocaleString('ko-KR') + '원';
       }
       return p.price;
     });
 
     /* 바로구매 총 금액 */
-    const quickBuyTotal = computed(() => {
+    const cfQuickBuyTotal = computed(() => {
       if (!props.product) return '';
-      if (!selectedUnitPrice.value) return props.product.price;
-      const total = selectedUnitPrice.value * qty.value;
+      if (!cfSelectedUnitPrice.value) return props.product.price;
+      const total = cfSelectedUnitPrice.value * qty.value;
       return total.toLocaleString('ko-KR') + '원';
     });
 
@@ -490,35 +490,35 @@ window.Prod02View = {
 
     /* ── 포토 리뷰 좌/우 이동 ── */
     const photoNavPrev = () => {
-      const list = reviewsWithPhoto.value;
+      const list = cfReviewsWithPhoto.value;
       if (!list.length) return;
       const idx = list.findIndex(r => r.id === selectedReview.value?.id);
       selectedReview.value = list[(idx - 1 + list.length) % list.length];
     };
     const photoNavNext = () => {
-      const list = reviewsWithPhoto.value;
+      const list = cfReviewsWithPhoto.value;
       if (!list.length) return;
       const idx = list.findIndex(r => r.id === selectedReview.value?.id);
       selectedReview.value = list[(idx + 1) % list.length];
     };
-    const photoNavIdx = computed(() => {
-      const list = reviewsWithPhoto.value;
+    const cfPhotoNavIdx = computed(() => {
+      const list = cfReviewsWithPhoto.value;
       return list.findIndex(r => r.id === selectedReview.value?.id);
     });
-    const photoGridPageCount = computed(() =>
-      Math.max(1, Math.ceil(reviewsWithPhoto.value.length / photoGridPageSize))
+    const cfPhotoGridPageCount = computed(() =>
+      Math.max(1, Math.ceil(cfReviewsWithPhoto.value.length / photoGridPageSize))
     );
-    const photoGridItems = computed(() => {
+    const cfPhotoGridItems = computed(() => {
       const start = (photoGridPage.value - 1) * photoGridPageSize;
-      return reviewsWithPhoto.value.slice(start, start + photoGridPageSize);
+      return cfReviewsWithPhoto.value.slice(start, start + photoGridPageSize);
     });
     const photoGridPrev = () => {
       photoGridPage.value = photoGridPage.value > 1
         ? photoGridPage.value - 1
-        : photoGridPageCount.value;
+        : cfPhotoGridPageCount.value;
     };
     const photoGridNext = () => {
-      photoGridPage.value = photoGridPage.value < photoGridPageCount.value
+      photoGridPage.value = photoGridPage.value < cfPhotoGridPageCount.value
         ? photoGridPage.value + 1
         : 1;
     };
@@ -528,14 +528,14 @@ window.Prod02View = {
       selectedColor, selectedSize, qty, colorError, sizeError, showSizeGuide,
       TABS, activeTab, tabBarRef, detailSecRef, sizeSecRef, reviewSecRef, styleSecRef,
       reviewFilter, photoPopupOpen, selectedReview,
-      photoNavPrev, photoNavNext, photoNavIdx,
-      photoGridPage, photoGridPageCount, photoGridItems, photoGridPrev, photoGridNext,
+      photoNavPrev, photoNavNext, cfPhotoNavIdx,
+      photoGridPage, cfPhotoGridPageCount, cfPhotoGridItems, photoGridPrev, photoGridNext,
       photoFromGrid, openPhotoFromGrid, openPhotoFromList, closePhotoDetail,
       sizeGuideRows, styleItems,
-      mockImages, mockReviews, reviewsWithPhoto, filteredReviews, avgRating, ratingDist,
+      cfMockImages, cfMockReviews, cfReviewsWithPhoto, cfFilteredReviews, cfAvgRating, cfRatingDist,
       tabFixed, tabFixedTop, tabFixedLeft, tabFixedW, tabPlaceholderH,
-      quickBuyOpen, drawerMode, quickBuyTotal, displayPrice, getSizeDelta,
-      scrollToTab, categoryLabel, stars, colorStatus, sizeStatus,
+      quickBuyOpen, drawerMode, cfQuickBuyTotal, cfDisplayPrice, getSizeDelta,
+      scrollToTab, fnCategoryLabel, stars, colorStatus, sizeStatus,
       buyBtnRef, showBottomBar,
       selectColor, selectSize, handleAddToCart, handleBuyNow, openQuickBuy, openCartDrawer, execBuyNow, execCartFromDrawer,
     };
@@ -584,7 +584,7 @@ window.Prod02View = {
             @mouseleave="$event.currentTarget.querySelector('.img-nav').style.opacity='0'">
             <div style="border-radius:12px;border:1px solid var(--border);overflow:hidden;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;position:relative;background:var(--bg-base);cursor:pointer;"
               @click="zoomOpen=true">
-              <img v-if="mockImages[selectedImg]?.src" :src="mockImages[selectedImg].src" :alt="product.prodNm"
+              <img v-if="cfMockImages[selectedImg]?.src" :src="cfMockImages[selectedImg].src" :alt="product.prodNm"
                 style="width:100%;height:100%;object-fit:cover;" />
               <div v-if="product.badge" style="position:absolute;top:14px;left:14px;">
                 <span v-if="product.badge==='NEW'"
@@ -603,11 +603,11 @@ window.Prod02View = {
             </button>
             <!-- 좌/우 화살표 -->
             <div class="img-nav" style="opacity:0;transition:opacity .2s;">
-              <button @click="selectedImg=(selectedImg-1+mockImages.length)%mockImages.length"
+              <button @click="selectedImg=(selectedImg-1+cfMockImages.length)%cfMockImages.length"
                 style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
               </button>
-              <button @click="selectedImg=(selectedImg+1)%mockImages.length"
+              <button @click="selectedImg=(selectedImg+1)%cfMockImages.length"
                 style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
               </button>
@@ -616,7 +616,7 @@ window.Prod02View = {
 
           <!-- 썸네일 가로 목록 (하단) -->
           <div style="display:flex;flex-direction:row;gap:8px;overflow-x:auto;scrollbar-width:none;">
-            <div v-for="(img,i) in mockImages" :key="i"
+            <div v-for="(img,i) in cfMockImages" :key="i"
               @click="selectedImg=i"
               :style="{
                 width:'72px',height:'72px',borderRadius:'8px',overflow:'hidden',
@@ -638,18 +638,18 @@ window.Prod02View = {
             <!-- 상품명 + 카테고리 -->
             <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
               <h1 style="font-size:1.25rem;font-weight:800;color:var(--text-primary);flex:1;min-width:0;line-height:1.3;">{{ product.prodNm }}</h1>
-              <span style="font-size:0.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--blue-dim);color:var(--blue);flex-shrink:0;white-space:nowrap;">{{ categoryLabel(product) }}</span>
+              <span style="font-size:0.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--blue-dim);color:var(--blue);flex-shrink:0;white-space:nowrap;">{{ fnCategoryLabel(product) }}</span>
             </div>
 
             <!-- 별점 미리보기 -->
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;">
-              <span style="font-size:0.82rem;" v-html="stars(avgRating)"></span>
-              <span style="font-size:0.8rem;font-weight:700;color:var(--text-primary);">{{ avgRating }}</span>
-              <span style="font-size:0.78rem;color:var(--text-muted);">({{ mockReviews.length }})</span>
+              <span style="font-size:0.82rem;" v-html="stars(cfAvgRating)"></span>
+              <span style="font-size:0.8rem;font-weight:700;color:var(--text-primary);">{{ cfAvgRating }}</span>
+              <span style="font-size:0.78rem;color:var(--text-muted);">({{ cfMockReviews.length }})</span>
             </div>
 
             <!-- 가격 -->
-            <div style="font-size:1.7rem;font-weight:900;color:var(--blue);margin-bottom:24px;">{{ displayPrice }}</div>
+            <div style="font-size:1.7rem;font-weight:900;color:var(--blue);margin-bottom:24px;">{{ cfDisplayPrice }}</div>
 
             <!-- 색상 선택 -->
             <div style="margin-bottom:20px;">
@@ -866,18 +866,18 @@ window.Prod02View = {
       <div ref="reviewSecRef" style="padding-top:40px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">
           <span style="font-size:1rem;font-weight:800;color:var(--text-primary);">상품평</span>
-          <span style="font-size:0.85rem;color:var(--text-muted);font-weight:400;">{{ mockReviews.length }}</span>
+          <span style="font-size:0.85rem;color:var(--text-muted);font-weight:400;">{{ cfMockReviews.length }}</span>
         </div>
 
         <!-- 평점 요약 -->
         <div class="card" style="padding:24px;margin-bottom:14px;display:flex;gap:32px;align-items:center;flex-wrap:wrap;">
           <div style="text-align:center;flex-shrink:0;min-width:90px;">
-            <div style="font-size:3.2rem;font-weight:900;color:var(--text-primary);line-height:1;">{{ avgRating }}</div>
-            <div style="font-size:1rem;margin:6px 0;" v-html="stars(avgRating)"></div>
-            <div style="font-size:0.76rem;color:var(--text-muted);">{{ mockReviews.length }}개 리뷰</div>
+            <div style="font-size:3.2rem;font-weight:900;color:var(--text-primary);line-height:1;">{{ cfAvgRating }}</div>
+            <div style="font-size:1rem;margin:6px 0;" v-html="stars(cfAvgRating)"></div>
+            <div style="font-size:0.76rem;color:var(--text-muted);">{{ cfMockReviews.length }}개 리뷰</div>
           </div>
           <div style="flex:1;min-width:180px;">
-            <div v-for="d in ratingDist" :key="d.star" style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+            <div v-for="d in cfRatingDist" :key="d.star" style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
               <span style="font-size:0.76rem;color:var(--text-muted);width:28px;text-align:right;flex-shrink:0;">{{ d.star }}<span style="color:#f59e0b;">★</span></span>
               <div style="flex:1;height:7px;background:var(--bg-base);border-radius:4px;overflow:hidden;">
                 <div :style="{width:d.pct+'%',height:'100%',background:'#f59e0b',borderRadius:'4px'}"></div>
@@ -888,10 +888,10 @@ window.Prod02View = {
         </div>
 
         <!-- 포토 리뷰 목록 -->
-        <div v-if="reviewsWithPhoto.length" class="card" style="padding:20px;margin-bottom:14px;">
+        <div v-if="cfReviewsWithPhoto.length" class="card" style="padding:20px;margin-bottom:14px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
             <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">
-              포토&동영상 상품평 <span style="color:var(--blue);">{{ reviewsWithPhoto.length }}</span>
+              포토&동영상 상품평 <span style="color:var(--blue);">{{ cfReviewsWithPhoto.length }}</span>
             </span>
             <button @click="photoPopupOpen=true"
               style="background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:0.78rem;color:var(--text-secondary);display:flex;align-items:center;gap:4px;">
@@ -899,7 +899,7 @@ window.Prod02View = {
             </button>
           </div>
           <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;">
-            <div v-for="r in reviewsWithPhoto" :key="r.id"
+            <div v-for="r in cfReviewsWithPhoto" :key="r.id"
               @click="openPhotoFromList(r)"
               style="width:80px;height:80px;flex-shrink:0;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);transition:opacity .15s;"
               @mouseenter="$event.currentTarget.style.opacity='.75'"
@@ -924,7 +924,7 @@ window.Prod02View = {
 
         <!-- 리뷰 목록 -->
         <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-          <div v-for="(r,i) in filteredReviews" :key="r.id"
+          <div v-for="(r,i) in cfFilteredReviews" :key="r.id"
             :style="{padding:'20px',borderTop:i===0?'none':'1px solid var(--border)',background:'var(--bg-card)'}">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;flex-wrap:wrap;">
               <span style="font-size:0.85rem;font-weight:700;color:var(--text-primary);">{{ r.maskedName }}</span>
@@ -977,21 +977,21 @@ window.Prod02View = {
       style="position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.6);border:2px solid rgba(255,255,255,0.8);color:#fff;font-size:1.4rem;width:48px;height:48px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1510;">✕</button>
     <!-- 메인 확대 이미지 -->
     <div @click.stop style="position:relative;width:95vw;height:85vh;border-radius:12px;display:flex;align-items:center;justify-content:center;">
-      <img v-if="mockImages[selectedImg]?.src" :src="mockImages[selectedImg].src" :alt="product.prodNm"
+      <img v-if="cfMockImages[selectedImg]?.src" :src="cfMockImages[selectedImg].src" :alt="product.prodNm"
         style="max-width:95vw;max-height:85vh;object-fit:contain;display:block;" />
       <!-- 좌/우 화살표 -->
-      <button @click.stop="selectedImg=(selectedImg-1+mockImages.length)%mockImages.length"
+      <button @click.stop="selectedImg=(selectedImg-1+cfMockImages.length)%cfMockImages.length"
         style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
       </button>
-      <button @click.stop="selectedImg=(selectedImg+1)%mockImages.length"
+      <button @click.stop="selectedImg=(selectedImg+1)%cfMockImages.length"
         style="position:absolute;right:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
       </button>
     </div>
     <!-- 하단 썸네일 -->
     <div @click.stop style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:2;">
-      <div v-for="(img,i) in mockImages" :key="i" @click.stop="selectedImg=i"
+      <div v-for="(img,i) in cfMockImages" :key="i" @click.stop="selectedImg=i"
         :style="{ width:'56px', height:'56px', borderRadius:'8px', overflow:'hidden', cursor:'pointer',
           border: selectedImg===i ? '2px solid #fff' : '2px solid rgba(255,255,255,0.3)' }">
         <img :src="img.src" style="width:100%;height:100%;object-fit:cover;" />
@@ -1006,17 +1006,17 @@ window.Prod02View = {
   <div v-if="photoPopupOpen && product" @click.self="photoPopupOpen=false"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1500;display:flex;align-items:center;justify-content:center;padding:20px;">
     <!-- 좌 화살표 -->
-    <button v-if="photoGridPageCount > 1" @click="photoGridPrev"
+    <button v-if="cfPhotoGridPageCount > 1" @click="photoGridPrev"
       style="position:fixed;left:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1502;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
     </button>
     <div @click.stop style="background:var(--bg-card);border-radius:16px;width:100%;max-width:720px;max-height:85vh;overflow-y:auto;padding:24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <span style="font-size:0.95rem;font-weight:800;color:var(--text-primary);">포토&동영상 상품평 {{ reviewsWithPhoto.length }}</span>
+        <span style="font-size:0.95rem;font-weight:800;color:var(--text-primary);">포토&동영상 상품평 {{ cfReviewsWithPhoto.length }}</span>
         <button @click="photoPopupOpen=false" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">✕</button>
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
-        <div v-for="r in photoGridItems" :key="r.id"
+        <div v-for="r in cfPhotoGridItems" :key="r.id"
           @click="openPhotoFromGrid(r)"
           style="aspect-ratio:1;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);transition:opacity .15s;"
           @mouseenter="$event.currentTarget.style.opacity='.75'"
@@ -1025,15 +1025,15 @@ window.Prod02View = {
         </div>
       </div>
       <!-- 페이지네이션 -->
-      <div v-if="photoGridPageCount > 1" style="display:flex;justify-content:center;align-items:center;gap:6px;margin-top:20px;">
-        <button v-for="p in photoGridPageCount" :key="p" @click="photoGridPage=p"
+      <div v-if="cfPhotoGridPageCount > 1" style="display:flex;justify-content:center;align-items:center;gap:6px;margin-top:20px;">
+        <button v-for="p in cfPhotoGridPageCount" :key="p" @click="photoGridPage=p"
           :style="{ width:'32px', height:'32px', borderRadius:'6px', border:'1px solid var(--border)', background: photoGridPage===p ? 'var(--text-primary)' : 'var(--bg-card)', color: photoGridPage===p ? '#fff' : 'var(--text-secondary)', cursor:'pointer', fontSize:'0.85rem', fontWeight: photoGridPage===p ? 700 : 400 }">
           {{ p }}
         </button>
       </div>
     </div>
     <!-- 우 화살표 -->
-    <button v-if="photoGridPageCount > 1" @click="photoGridNext"
+    <button v-if="cfPhotoGridPageCount > 1" @click="photoGridNext"
       style="position:fixed;right:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1502;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
     </button>
@@ -1058,7 +1058,7 @@ window.Prod02View = {
         <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">
           포토&동영상 상품평
           <span style="font-size:0.75rem;color:var(--text-muted);font-weight:400;margin-left:6px;">
-            {{ photoNavIdx + 1 }} / {{ reviewsWithPhoto.length }}
+            {{ cfPhotoNavIdx + 1 }} / {{ cfReviewsWithPhoto.length }}
           </span>
         </span>
         <button @click="closePhotoDetail"
@@ -1131,7 +1131,7 @@ window.Prod02View = {
     <div style="display:flex;align-items:center;gap:10px;max-width:760px;width:100%;">
       <div style="flex:1;min-width:0;overflow:hidden;">
         <div style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ product.prodNm }}</div>
-        <div style="font-size:1.05rem;font-weight:900;color:var(--blue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ displayPrice }}</div>
+        <div style="font-size:1.05rem;font-weight:900;color:var(--blue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ cfDisplayPrice }}</div>
       </div>
       <div style="display:flex;gap:4px;flex-shrink:0;">
         <button class="btn-outline" style="padding:10px 16px;font-size:0.88rem;white-space:nowrap;" @click="openCartDrawer">담기</button>
@@ -1241,7 +1241,7 @@ window.Prod02View = {
       <div style="flex-shrink:0;padding:16px 20px;border-top:1px solid var(--border);">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
           <span style="font-size:0.85rem;color:var(--text-muted);">총 주문금액</span>
-          <span style="font-size:1.2rem;font-weight:900;color:var(--blue);">{{ quickBuyTotal }}</span>
+          <span style="font-size:1.2rem;font-weight:900;color:var(--blue);">{{ cfQuickBuyTotal }}</span>
         </div>
         <button v-if="drawerMode==='cart'" class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="execCartFromDrawer">
           🛒 장바구니 담기

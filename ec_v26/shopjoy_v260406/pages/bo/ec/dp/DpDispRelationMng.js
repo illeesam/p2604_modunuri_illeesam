@@ -3,14 +3,24 @@ window.DpDispRelationMng = {
   name: 'DpDispRelationMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed } = Vue;
-    const codes = reactive((window.boData?.codes || []));
-    const displays = reactive((window.boData?.displays || []));
+    const { ref, reactive, computed, onMounted } = Vue;
+    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
+    const displays = reactive([]);
+
+    const fetchData = async () => {
+      try {
+        const res = await window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 } });
+        displays.splice(0, displays.length, ...(res.data?.data?.list || []));
+      } catch (_) {}
+    };
+    onMounted(() => { fetchData(); });
 
     /* 검색 */
     const searchDateStart = ref('');
     const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
+    const onSearch = () => { fetchData(); };
+    const onReset = () => { searchDateStart.value = ''; searchDateEnd.value = ''; fetchData(); };
 
     /* 트리 상태 */
     const expandedNodes = reactive(new Set());
@@ -22,11 +32,12 @@ window.DpDispRelationMng = {
 
     /* 트리 데이터 구성 */
     const treeData = computed(() => {
-      const uiCodes = (Array.isArray(codes) ? codes : [])
+      const codesArr = codes.value || [];
+      const uiCodes = codesArr
         .filter(c => c.codeGrp === 'DISP_UI')
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
 
-      const areaCodes = (Array.isArray(codes) ? codes : [])
+      const areaCodes = codesArr
         .filter(c => c.codeGrp === 'DISP_AREA')
         .reduce((map, a) => {
           map[a.codeValue] = a;
@@ -102,6 +113,7 @@ window.DpDispRelationMng = {
 
     return {
       searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS,
+      onSearch, onReset,
       expandedNodes, toggleNode, isNodeExpanded,
       treeData, getVisibilityBadges, getBadgeColor, getUseYnBadge,
     };
@@ -118,8 +130,8 @@ window.DpDispRelationMng = {
       <span class="date-range-sep">~</span>
       <input type="date" v-model="searchDateEnd" class="date-range-input" />
       <div class="search-actions">
-        <button class="btn btn-primary" @click="">검색</button>
-        <button class="btn btn-secondary btn-sm" @click="">초기화</button>
+        <button class="btn btn-primary" @click="onSearch">조회</button>
+        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>
   </div>

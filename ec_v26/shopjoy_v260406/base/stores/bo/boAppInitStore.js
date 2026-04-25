@@ -7,16 +7,16 @@
 window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
   state: () => {
     return {
-      isLoading: false,
-      lastFetchTime: null,
-      error: null,
+      svIsLoading: false,
+      svLastFetchTime: null,
+      svError: null,
     };
   },
 
   getters: {
-    isInitialized: (s) => {
+    svIsInitialized: (s) => {
       const authStore = window.useBoAuthStore?.();
-      return !!(authStore && authStore.authUser && authStore.authUser.authId);
+      return !!(authStore && authStore.svAuthUser && authStore.svAuthUser.authId);
     },
   },
 
@@ -26,11 +26,11 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
      * @param {string} names - 조회할 항목 ('^' 구분자, 예: "auth^user^role^menu^code^props^app")
      *                        빈 값이면 모든 항목 조회
      */
-    async fetchBoAppInitData(names = '') {
-      if (this.isLoading) return;
+    async sfFetchBoAppInitData(names = '') {
+      if (this.svIsLoading) return;
 
-      this.isLoading = true;
-      this.error = null;
+      this.svIsLoading = true;
+      this.svError = null;
 
       try {
         const res = await window.boApi.get(`/co/cm/bo-app-store/getInitData?names=${encodeURIComponent(names || '')}`);
@@ -44,35 +44,56 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
           try {
             if (data.syAuth) {
               const authStore = window.useBoAuthStore?.();
-              authStore?.setAuth(data.syAuth);
+              authStore?.sfSetAuth(data.syAuth);
             }
 
             if (data.syRoles) {
               const roleStore = window.useBoRoleStore?.();
-              roleStore?.setRoles(data.syRoles);
+              roleStore?.sfSetRoles(data.syRoles);
             }
 
             if (data.syMenus) {
               const menuStore = window.useBoMenuStore?.();
-              menuStore?.setMenus(data.syMenus);
+              menuStore?.sfSetMenus(data.syMenus);
             }
 
             if (data.syCodes) {
               const codeStore = window.useBoCodeStore?.();
-              codeStore?.setCodes(data.syCodes?.codes);
+              codeStore?.sfSetCodes(data.syCodes?.codes);
             }
 
             if (data.syProps) {
               const propStore = window.useBoPropStore?.();
-              propStore?.setProps(data.syProps);
+              propStore?.sfSetProps(data.syProps);
             }
 
             if (data.syApp) {
               const appStore = window.useBoAppStore?.();
-              appStore?.setApp(data.syApp);
+              appStore?.sfSetApp(data.syApp);
             }
 
-            this.lastFetchTime = new Date().getTime();
+            if (data.syPaths) {
+              window._boCmPaths = data.syPaths?.paths || data.syPaths || [];
+            }
+
+            if (data.syMenus) {
+              const menuStore = window.useBoMenuStore?.();
+              menuStore?.sfSetMenus(data.syMenus);
+              window._boCmMenus = data.syMenus?.menus || data.syMenus || [];
+            }
+
+            if (data.syDepts) {
+              window._boCmDepts = data.syDepts?.depts || data.syDepts || [];
+            }
+
+            if (data.sySites) {
+              window._boCmSites = data.sySites?.sites || data.sySites || [];
+              if (window._boCmSites.length && window.boCommonFilter) {
+                window.boCommonFilter.siteId = window._boCmSites[0]?.siteId ?? null;
+              }
+            }
+
+            this.svLastFetchTime = new Date().getTime();
             console.log('[boAppInitStore] All data stored successfully');
           } catch (storeErr) {
             console.error('[boAppInitStore] Store operation error:', storeErr);
@@ -82,25 +103,25 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
           console.warn('[boAppInitStore] No data in response:', res);
         }
       } catch (err) {
-        console.error('[boAppInitStore] fetchBoAppInitData error:', err);
-        this.error = err.message || 'Failed to fetch init data';
+        console.error('[boAppInitStore] sfFetchBoAppInitData error:', err);
+        this.svError = err.message || 'Failed to fetch init data';
         throw err;
       } finally {
-        this.isLoading = false;
+        this.svIsLoading = false;
       }
     },
 
     /**
      * 특정 항목만 조회
      */
-    async fetchBoAppInitDataPartial(names) {
-      return this.fetchBoAppInitData(names);
+    async sfFetchBoAppInitDataPartial(names) {
+      return this.sfFetchBoAppInitData(names);
     },
 
     /**
      * 전체 초기화 (로그아웃 시)
      */
-    clearAll() {
+    sfClearAll() {
       const authStore = window.useBoAuthStore?.();
       const roleStore = window.useBoRoleStore?.();
       const menuStore = window.useBoMenuStore?.();
@@ -108,24 +129,24 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
       const propStore = window.useBoPropStore?.();
       const appStore = window.useBoAppStore?.();
 
-      authStore?.clear();
-      roleStore?.clear();
-      menuStore?.clear();
-      codeStore?.clear();
-      propStore?.clear();
-      appStore?.clear();
+      authStore?.sfClear();
+      roleStore?.sfClear();
+      menuStore?.sfClear();
+      codeStore?.sfClear();
+      propStore?.sfClear();
+      appStore?.sfClear();
 
-      this.lastFetchTime = null;
-      this.error = null;
-      this.isLoading = false;
+      this.svLastFetchTime = null;
+      this.svError = null;
+      this.svIsLoading = false;
     },
 
     /**
      * localStorage에서 복원
      */
-    restoreFromStorage() {
+    sfRestoreFromStorage() {
       const authStore = window.useBoAuthStore?.();
-      return authStore?.restoreFromStorage() || false;
+      return authStore?.sfRestoreFromStorage() || false;
     },
   },
 });
@@ -134,18 +155,18 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
 window.getBoAppInitStore = () => {
   try {
     return window.useBoAppInitStore?.() || {
-      isLoading: false,
-      lastFetchTime: null,
-      error: null,
-      isInitialized: false,
+      svIsLoading: false,
+      svLastFetchTime: null,
+      svError: null,
+      svIsInitialized: false,
     };
   } catch (e) {
     console.error('[getBoAppInitStore] error:', e);
     return {
-      isLoading: false,
-      lastFetchTime: null,
-      error: null,
-      isInitialized: false,
+      svIsLoading: false,
+      svLastFetchTime: null,
+      svError: null,
+      svIsInitialized: false,
     };
   }
 };

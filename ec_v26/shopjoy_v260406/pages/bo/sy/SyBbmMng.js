@@ -9,7 +9,7 @@ window.SyBbmMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/bbm/page', {
@@ -23,7 +23,8 @@ window.SyBbmMng = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     /* 표시경로 트리/픽커 (sy_path biz_cd=sy_bbm) */
     const selectedPath = ref(null);
     const expanded = reactive(new Set([null]));
@@ -123,7 +124,7 @@ window.SyBbmMng = {
       <select v-model="searchType"><option value="">유형 전체</option><option>일반</option><option>공지</option><option>갤러리</option><option>FAQ</option><option>QnA</option></select>
       <select v-model="searchUseYn"><option value="">사용여부 전체</option><option value="Y">사용</option><option value="N">미사용</option></select>
       <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>

@@ -12,7 +12,7 @@ window.DpDispWidgetLibDtl = {
     const closePathPick = () => { pathPickModal.show = false; };
     const onPathPicked = (pathId) => { form.pathId = pathId; };
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
-    const widgetLibs = reactive((window.boData?.widgetLibs || []));
+    const widgetLibs = reactive([]);
     const isNew = computed(() => !props.editId);
 
     const WIDGET_TYPES = [
@@ -106,7 +106,11 @@ window.DpDispWidgetLibDtl = {
     const errors = reactive({});
 
     /* ── 기존 데이터 로드 ── */
-    onMounted(async () => {
+    const fetchData = async () => {
+      try {
+        const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 } });
+        widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.list || []));
+      } catch (_) {}
       if (!isNew.value) {
         const src = (Array.isArray(widgetLibs) ? widgetLibs : []).find(d => d.libId == props.editId);
         if (src) Object.assign(form, src);
@@ -120,7 +124,8 @@ window.DpDispWidgetLibDtl = {
         await nextTick();
         initQuill();
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
 
     /* ── 위젯 유형별 표시 여부 ── */
     const isImage       = computed(() => form.widgetType === 'image_banner');

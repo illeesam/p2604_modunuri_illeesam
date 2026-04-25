@@ -4,20 +4,24 @@ window.PdRestockNotiMng = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const products = reactive(window.boDataProvider?.getProducts?.() || []);
-    const members = reactive(window.boDataProvider?.getMembers?.() || []);
+    const products = reactive([]);
+    const members = reactive([]);
     const restockNotis = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pd/restock-noti/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        restockNotis.splice(0, restockNotis.length, ...(res.data?.data?.list || []));
+        const [notiRes, prodsRes, membersRes] = await Promise.all([
+          window.boApi.get('/bo/ec/pd/restock-noti/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        restockNotis.splice(0, restockNotis.length, ...(notiRes.data?.data?.list || []));
+        products.splice(0, products.length, ...(prodsRes.data?.data?.list || []));
+        members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -25,7 +29,8 @@ window.PdRestockNotiMng = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchProd = ref('');
     const searchNoti = ref('');
@@ -91,7 +96,7 @@ window.PdRestockNotiMng = {
           <option value="">전체</option><option value="N">미발송</option><option value="Y">발송완료</option>
         </select>
         <div class="search-actions">
-          <button class="btn btn-primary btn-sm" @click="onSearch">검색</button>
+          <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
           <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
         </div>
       </div>

@@ -447,6 +447,25 @@ public List<XxxDto> getMyXxx(Map<String, Object> p) {
 
 ---
 
+## 함수·변수 네이밍 규칙
+
+Vue 3 Composition API 코드에서 역할을 이름만으로 즉시 파악할 수 있도록 **접두어 규칙**을 적용한다.
+
+| 접두어 | 적용 대상 | 예시 |
+|---|---|---|
+| `on` | 이벤트 바인딩 함수 (`@click` 직결) | `onSearch`, `onReset`, `onSave`, `onDelete`, `onSizeChange` |
+| `handle` | 이벤트 처리 로직 함수 | `handleSave`, `handleDelete`, `handleStatusChange` |
+| `fn` | 독립 유틸 함수 (순수 함수) | `fnStatusBadge`, `fnFormatDate`, `fnPayBadge` |
+| `cf` | `computed(() => ...)` 속성 | `cfFiltered`, `cfTotal`, `cfPageList`, `cfSiteNm`, `cfIsNew` |
+| `sf` | Pinia store actions | `sfSetAuth`, `sfLogin`, `sfFetchInit` |
+| `sv` | Pinia store state/getters | `svAuthUser`, `svCodes`, `svIsLoggedIn` |
+
+**금지 패턴**: `save()`, `doSave()`, `del()`, `doDelete()` → 반드시 `handleSave()`, `handleDelete()` 사용  
+**예외**: Vue 라이프사이클(`onMounted` 등), 상수(`PAGE_SIZES`), 이미 `on*` 으로 명명된 함수  
+**상세 규칙**: `_doc/정책서-sy/sy.54.네이밍규칙.md` 참조
+
+---
+
 ## 작업 지침
 
 1. **새 관리자 페이지 추가 3단계 누락 금지**: `bo.html` script 태그 + `AdminApp.js` PAGE_COMP_MAP + `app.component()`

@@ -6,8 +6,6 @@ const _WP_DispUiPreview = {
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
     const { ref, reactive, computed, watchEffect } = Vue;
-    const codes = reactive((window.boData?.codes || []));
-    const widgetLibs = reactive((window.boData?.widgetLibs || []));
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
     const chartBars = computed(() => {
       const w = props.lib;
@@ -142,9 +140,17 @@ window.DpDispUiPreview = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, watchEffect, onMounted } = Vue;
-    const codes = reactive((window.boData?.codes || []));
-    const widgetLibs = reactive((window.boData?.widgetLibs || []));
+    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
+    const widgetLibs = reactive([]);
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
+
+    const fetchData = async () => {
+      try {
+        const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 } });
+        widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.list || []));
+      } catch (_) {}
+    };
+    onMounted(() => { fetchData(); });
 
     const today   = new Date().toISOString().slice(0, 10);
     const nowTime = new Date().toTimeString().slice(0, 5);

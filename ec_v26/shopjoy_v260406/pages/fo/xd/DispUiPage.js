@@ -24,7 +24,7 @@ window.DispUiPage = {
       userGrade:    qs.get('userGrade')    || (window.foAuth?.userGrade ?? ''),
     };
 
-    const dispDataset = window.boData || window.dispDataset || { displays: [], codes: [] };
+    const dispDataset = window.dispDataset || { displays: [], codes: [] };
 
     /* ── UI 렌더링 옵션 ── */
     const dispOpt = {

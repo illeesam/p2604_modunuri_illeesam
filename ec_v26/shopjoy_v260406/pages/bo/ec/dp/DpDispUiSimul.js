@@ -3,12 +3,26 @@ window.DpDispUiSimul = {
   name: 'DpDispUiSimul',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, watch } = Vue;
-    const codes = reactive((window.boData?.codes || []));
-    const displays = reactive((window.boData?.displays || []));
-    const sites = reactive((window.boData?.sites || []));
-    const members = reactive((window.boData?.members || []));
+    const { ref, reactive, computed, watch, onMounted } = Vue;
+    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
+    const displays = reactive([]);
+    const sites = reactive([]);
+    const members = reactive([]);
     const siteNm = computed(() => window.boCmUtil.getSiteNm());
+
+    const fetchData = async () => {
+      try {
+        const [dpRes, sitesRes, membersRes] = await Promise.all([
+          window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/site/page', { params: { pageNo: 1, pageSize: 1000 } }),
+          window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        displays.splice(0, displays.length, ...(dpRes.data?.data?.list || []));
+        sites.splice(0, sites.length, ...(sitesRes.data?.data?.list || []));
+        members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
+      } catch (_) {}
+    };
+    onMounted(() => { fetchData(); });
 
     /* ── 오늘 날짜 ── */
     const today = new Date().toISOString().slice(0, 10);

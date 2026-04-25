@@ -6,21 +6,27 @@ window.OdOrderDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const orders = reactive([]);
-    const vendors = reactive((window.boData?.vendors || []));
-    const deliveries = reactive((window.boData?.deliveries || []));
-    const claims = reactive((window.boData?.claims || []));
-    const codes = reactive((window.boData?.codes || []));
+    const vendors = reactive([]);
+    const deliveries = reactive([]);
+    const claims = reactive([]);
+    const cfCodes = Vue.computed(() => window.getBoCodeStore().svCodes);
     const loading = ref(false);
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const loadData = async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/ec/od/order/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        orders.splice(0, orders.length, ...(res.data?.data?.list || []));
+        const [ordersRes, vendorsRes, deliveriesRes, claimsRes] = await Promise.all([
+          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/od/dliv/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        orders.splice(0, orders.length, ...(ordersRes.data?.data?.list || []));
+        vendors.splice(0, vendors.length, ...(vendorsRes.data?.data?.list || []));
+        deliveries.splice(0, deliveries.length, ...(deliveriesRes.data?.data?.list || []));
+        claims.splice(0, claims.length, ...(claimsRes.data?.data?.list || []));
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -28,8 +34,9 @@ window.OdOrderDtl = {
       } finally {
         loading.value = false;
       }
-    });
-    const isNew = computed(() => !props.editId);
+    };
+    onMounted(() => { loadData(); });
+    const cfIsNew = computed(() => !props.editId);
 
     const ORDER_STEPS = ['입금대기', '결제완료', '상품준비중', '배송중', '배송완료', '구매확정'];
 
@@ -40,7 +47,7 @@ window.OdOrderDtl = {
       memo: '',
     });
     const PAY_STATUS_OPTIONS = ['미결제','부분결제','결제완료','결제실패','환불중','부분환불','환불완료'];
-    const payStatusBadge = (s) => ({
+    const fnPayStatusBadge = (s) => ({
       '미결제':'badge-gray','부분결제':'badge-orange','결제완료':'badge-green',
       '결제실패':'badge-red','환불중':'badge-orange','부분환불':'badge-orange','환불완료':'badge-purple',
     }[s] || 'badge-gray');
@@ -54,8 +61,8 @@ window.OdOrderDtl = {
       userId: yup.string().required('회원ID를 입력해주세요.'),
     });
 
-    onMounted(async () => {
-      if (!isNew.value) {
+    const initForm = async () => {
+      if (!cfIsNew.value) {
         const o = getOrder.value(props.editId);
         if (o) {
           Object.assign(form, { ...o });
@@ -81,27 +88,28 @@ window.OdOrderDtl = {
         if (form.memo) _qMemo.root.innerHTML = form.memo;
         _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
       }
-    });
+    };
+    onMounted(() => { initForm(); });
 
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
-    const currentStepIdx = computed(() => {
+    const cfCurrentStepIdx = computed(() => {
       const idx = ORDER_STEPS.indexOf(form.statusCd);
       return idx !== -1 ? idx : -1;
     });
 
-    const isCanceled = computed(() => form.statusCd === '취소됨');
+    const cfIsCanceled = computed(() => form.statusCd === '취소됨');
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
-        err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; });
+        err.inner.forEach(e => { errors[e.path] = e.message; });
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const isNewOrder = isNew.value;
+      const isNewOrder = cfIsNew.value;
       const ok = await props.showConfirm(isNewOrder ? '등록' : '저장', isNewOrder ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNewOrder) {
@@ -145,27 +153,28 @@ window.OdOrderDtl = {
         return { orders, loading, error, ...d, salePrice: sale, discInfo: discLabels[i], discAmount: disc, price: paid };
       }).filter(Boolean);
     };
-    onMounted(async () => {
+    const initItems = async () => {
       orderItems.splice(0, orderItems.length, ...sampleOrderItems());
-    });
+    };
+    onMounted(() => { initItems(); });
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
     /* 판매업체 */
-    const relatedVendor = computed(() => {
+    const cfRelatedVendor = computed(() => {
       const o = (orders).find(x => x.orderId === props.editId);
       if (!o || !o.vendorId) return null;
       return (vendors).find(v => v.vendorId === o.vendorId) || null;
     });
 
     /* 배송 정보 (이 주문의 택배사 등) */
-    const relatedDelivery = computed(() =>
+    const cfRelatedDelivery = computed(() =>
       (deliveries).find(d => d.orderId === props.editId)
     );
     /* 클레임 정보 (이 주문에 연결된 클레임) */
-    const relatedClaim = computed(() =>
+    const cfRelatedClaim = computed(() =>
       (claims).find(c => c.orderId === props.editId)
     );
-    const _claimStatusCodes = (codes)
+    const _claimStatusCodes = (cfCodes)
       .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
       .sort((a, b) => a.sortOrd - b.sortOrd);
     const _TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
@@ -191,13 +200,13 @@ window.OdOrderDtl = {
       window.open(url, 'dlivTrack', 'width=900,height=760,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes');
     };
 
-    const paymentList = computed(() => form.totalPrice ? [{
+    const cfPaymentList = computed(() => form.totalPrice ? [{
       payMethod: form.payMethodCd || form.payMethod || '-',
       payStatus: form.payStatusCd || '-',
       amount: form.totalPrice, payDate: form.payDate || form.orderDate || '-',
       apprNo: form.apprNo || '-', issuer: form.payIssuer || '-',
     }] : []);
-    const statusHistList = computed(() => {
+    const cfStatusHistList = computed(() => {
       if (!form.orderId) return [];
       const d = String(form.orderDate || '').slice(0,10) || '-';
       const rows = [
@@ -215,14 +224,14 @@ window.OdOrderDtl = {
     const expandedItems = reactive(new Set());
     const toggleExpand = (i) => { const s = new Set(expandedItems); if (s.has(i)) s.delete(i); else s.add(i); expandedItems = s; };
     const isExpanded = (i) => expandedItems.has(i);
-    const allExpanded = computed(() => orderItems.length > 0 && window.safeArrayUtils.safeEvery(orderItems, (_,i) => expandedItems.has(i)));
+    const cfAllExpanded = computed(() => orderItems.length > 0 && window.safeArrayUtils.safeEvery(orderItems, (_,i) => expandedItems.has(i)));
     const toggleExpandAll = () => {
-      if (allExpanded.value) expandedItems = new Set();
+      if (cfAllExpanded.value) expandedItems = new Set();
       else expandedItems = new Set(orderItems.map((_,i) => i));
     };
     watch(orderItems, (list) => { expandedItems = new Set(list.map((_,i) => i)); });
     const getExchangedItem = (it) => {
-      if (!relatedClaim.value || relatedClaim.value.type !== '교환') return null;
+      if (!cfRelatedClaim.value || cfRelatedClaim.value.type !== '교환') return null;
       const swapColor = { '블랙':'네이비','네이비':'차콜','화이트':'아이보리' };
       return {
         prodNm: it.prodNm + ' (교환품)',
@@ -230,31 +239,31 @@ window.OdOrderDtl = {
         size: it.size,
         qty: it.qty,
         price: it.price,
-        courier: relatedClaim.value.exchangeCourier,
-        trackingNo: relatedClaim.value.exchangeTrackingNo,
+        courier: cfRelatedClaim.value.exchangeCourier,
+        trackingNo: cfRelatedClaim.value.exchangeTrackingNo,
       };
     };
-    const editHistList = computed(() => form.orderId ? [
+    const cfEditHistList = computed(() => form.orderId ? [
       { date: String(form.orderDate||'').slice(0,10)+' 11:02', user:'bo', field:'수령인 연락처', before:'010-0000-0000', after: form.phone || '010-1234-5678' },
       { date: String(form.orderDate||'').slice(0,10)+' 13:45', user:'bo', field:'메모',          before:'-',              after:'(수정됨)' },
     ] : []);
-    const tabs = computed(() => [
+    const cfTabs = computed(() => [
       { id:'info',     label:'상세정보',      icon:'📋' },
       { id:'items',    label:'주문항목',      icon:'📦', count: orderItems.length },
-      { id:'payment',  label:'결제정보',      icon:'💳', count: paymentList.value.length },
-      { id:'hist',     label:'상태변경이력',  icon:'🕒', count: statusHistList.value.length },
-      { id:'editHist', label:'정보수정이력',  icon:'📝', count: editHistList.value.length },
+      { id:'payment',  label:'결제정보',      icon:'💳', count: cfPaymentList.value.length },
+      { id:'hist',     label:'상태변경이력',  icon:'🕒', count: cfStatusHistList.value.length },
+      { id:'editHist', label:'정보수정이력',  icon:'📝', count: cfEditHistList.value.length },
     ]);
-    return { isNew, form, errors, save, ORDER_STEPS, currentStepIdx, isCanceled, memoEl, activeTab, orderItems, fmt, relatedClaim, relatedDelivery, relatedVendor, CLAIM_FLOWS, CLAIM_TYPE_COLOR, tabs, editHistList, paymentList, statusHistList, openTracking, PAY_STATUS_OPTIONS, payStatusBadge, viewMode2, showTab, expandedItems, toggleExpand, isExpanded, getExchangedItem, allExpanded, toggleExpandAll };
+    return { cfIsNew, form, errors, handleSave, ORDER_STEPS, cfCurrentStepIdx, cfIsCanceled, memoEl, activeTab, orderItems, fmt, cfRelatedClaim, cfRelatedDelivery, cfRelatedVendor, CLAIM_FLOWS, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, PAY_STATUS_OPTIONS, fnPayStatusBadge, viewMode2, showTab, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '주문 등록' : (viewMode ? '주문 상세' : '주문 수정') }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.orderId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '주문 등록' : (viewMode ? '주문 상세' : '주문 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.orderId }}</span></div>
 
   <!-- 탭 -->
-  <div v-if="!isNew" style="display:flex;gap:8px;margin-bottom:14px;align-items:stretch;">
+  <div v-if="!cfIsNew" style="display:flex;gap:8px;margin-bottom:14px;align-items:stretch;">
     <div style="flex:1;display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
-      <button v-for="t in tabs" :key="t?.id"
+      <button v-for="t in cfTabs" :key="t?.id"
         @click="activeTab=t.id"
         :disabled="viewMode2!=='tab'"
         :style="{
@@ -293,94 +302,94 @@ window.OdOrderDtl = {
   </div>
   <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
-  <div v-if="isNew || showTab('info')" class="card">
+  <div v-if="cfIsNew || showTab('info')" class="card">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
 
     <!-- 주문 진행 상태 흐름 -->
-    <div v-if="!isNew" style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
+    <div v-if="!cfIsNew" style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
         <span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:10px;color:#fff;background:#16a34a;">주문</span>
         <span style="font-size:13px;font-weight:700;color:#222;">{{ form.orderId }}</span>
         <span v-if="form.orderDate" style="font-size:11px;color:#888;">{{ form.orderDate }}</span>
       </div>
-      <div v-if="isCanceled" style="text-align:center;padding:8px 0;">
+      <div v-if="cfIsCanceled" style="text-align:center;padding:8px 0;">
         <span style="font-size:14px;font-weight:700;color:#cf1322;letter-spacing:1px;">⊘ 취소됨</span>
       </div>
       <div v-else style="display:flex;align-items:flex-start;overflow-x:auto;">
         <template v-for="(step, idx) in ORDER_STEPS" :key="step">
           <div style="display:flex;flex-direction:column;align-items:center;min-width:80px;flex:1;">
             <div :style="{
-              width: idx === currentStepIdx ? '14px' : '10px',
-              height: idx === currentStepIdx ? '14px' : '10px',
+              width: idx === cfCurrentStepIdx ? '14px' : '10px',
+              height: idx === cfCurrentStepIdx ? '14px' : '10px',
               borderRadius:'50%', marginBottom:'6px', flexShrink:0, transition:'all .15s',
-              boxShadow: idx === currentStepIdx ? '0 0 0 3px rgba(74,222,128,0.3)' : 'none',
-              background: idx <= currentStepIdx ? '#4ade80' : '#bbb',
+              boxShadow: idx === cfCurrentStepIdx ? '0 0 0 3px rgba(74,222,128,0.3)' : 'none',
+              background: idx <= cfCurrentStepIdx ? '#4ade80' : '#bbb',
             }"></div>
             <div :style="{
-              fontSize:'11.5px', fontWeight: idx === currentStepIdx ? 800 : 600,
-              color: idx === currentStepIdx ? '#16a34a' : (idx < currentStepIdx ? '#444' : '#bbb'),
+              fontSize:'11.5px', fontWeight: idx === cfCurrentStepIdx ? 800 : 600,
+              color: idx === cfCurrentStepIdx ? '#16a34a' : (idx < cfCurrentStepIdx ? '#444' : '#bbb'),
               whiteSpace:'nowrap',
             }">{{ step==='완료' ? '구매확정' : step }}</div>
-            <span v-if="step==='배송완료' && relatedDelivery && relatedDelivery.trackingNo"
-              @click="openTracking(relatedDelivery.courier, relatedDelivery.trackingNo)"
+            <span v-if="step==='배송완료' && cfRelatedDelivery && cfRelatedDelivery.trackingNo"
+              @click="openTracking(cfRelatedDelivery.courier, cfRelatedDelivery.trackingNo)"
               title="배송조회 창 열기"
               style="margin-top:4px;padding:1px 7px;border:1px solid #86efac;background:#dcfce7;color:#15803d;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
-              {{ (relatedDelivery.courier||'').replace('대한통운','').replace('택배','') || 'CJ' }}배송 🔍
+              {{ (cfRelatedDelivery.courier||'').replace('대한통운','').replace('택배','') || 'CJ' }}배송 🔍
             </span>
           </div>
           <div v-if="idx < ORDER_STEPS.length - 1"
             :style="{flex:'1', height:'2px', minWidth:'12px', marginTop:'6px',
-              background: idx < currentStepIdx ? '#4ade80' : '#bbb'}"></div>
+              background: idx < cfCurrentStepIdx ? '#4ade80' : '#bbb'}"></div>
         </template>
       </div>
     </div>
 
     <!-- 클레임 진행 흐름 (있을 때만) -->
-    <div v-if="!isNew && relatedClaim" style="margin-bottom:20px;padding:16px;border-radius:10px;border:1px dashed #e8e8e8;"
+    <div v-if="!cfIsNew && cfRelatedClaim" style="margin-bottom:20px;padding:16px;border-radius:10px;border:1px dashed #e8e8e8;"
       :style="{
-        background: 'linear-gradient(135deg,'+CLAIM_TYPE_COLOR[relatedClaim.type]+'15 0%,#fff 70%)',
+        background: 'linear-gradient(135deg,'+CLAIM_TYPE_COLOR[cfRelatedClaim.type]+'15 0%,#fff 70%)',
       }">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
         <span :style="{
           fontSize:'11px',padding:'3px 10px',borderRadius:'10px',color:'#fff',fontWeight:800,
-          background: CLAIM_TYPE_COLOR[relatedClaim.type],
-        }">↩ {{ relatedClaim.type }}</span>
-        <span style="font-size:13px;font-weight:700;color:#222;">{{ relatedClaim.claimId }}</span>
-        <span style="font-size:11px;color:#888;">신청일: {{ relatedClaim.requestDate }}</span>
-        <span v-if="relatedClaim.reason" style="font-size:11px;color:#888;margin-left:auto;">사유: {{ relatedClaim.reason }}</span>
+          background: CLAIM_TYPE_COLOR[cfRelatedClaim.type],
+        }">↩ {{ cfRelatedClaim.type }}</span>
+        <span style="font-size:13px;font-weight:700;color:#222;">{{ cfRelatedClaim.claimId }}</span>
+        <span style="font-size:11px;color:#888;">신청일: {{ cfRelatedClaim.requestDate }}</span>
+        <span v-if="cfRelatedClaim.reason" style="font-size:11px;color:#888;margin-left:auto;">사유: {{ cfRelatedClaim.reason }}</span>
       </div>
       <div style="display:flex;align-items:flex-start;overflow-x:auto;">
-        <template v-for="(step, idx) in CLAIM_FLOWS[relatedClaim.type]" :key="step">
+        <template v-for="(step, idx) in CLAIM_FLOWS[cfRelatedClaim.type]" :key="step">
           <div style="display:flex;flex-direction:column;align-items:center;min-width:64px;flex:1;">
             <div :style="{
-              width: relatedClaim.status===step ? '14px' : '10px',
-              height: relatedClaim.status===step ? '14px' : '10px',
+              width: cfRelatedClaim.status===step ? '14px' : '10px',
+              height: cfRelatedClaim.status===step ? '14px' : '10px',
               borderRadius:'50%', marginBottom:'6px',
-              boxShadow: relatedClaim.status===step ? '0 0 0 3px '+CLAIM_TYPE_COLOR[relatedClaim.type]+'40' : 'none',
-              background: CLAIM_FLOWS[relatedClaim.type].indexOf(relatedClaim.status) >= idx ? CLAIM_TYPE_COLOR[relatedClaim.type] : '#bbb',
+              boxShadow: cfRelatedClaim.status===step ? '0 0 0 3px '+CLAIM_TYPE_COLOR[cfRelatedClaim.type]+'40' : 'none',
+              background: CLAIM_FLOWS[cfRelatedClaim.type].indexOf(cfRelatedClaim.status) >= idx ? CLAIM_TYPE_COLOR[cfRelatedClaim.type] : '#bbb',
             }"></div>
             <div :style="{
-              fontSize:'10.5px', fontWeight: relatedClaim.status===step ? 800 : 500,
-              color: relatedClaim.status===step ? CLAIM_TYPE_COLOR[relatedClaim.type] : (CLAIM_FLOWS[relatedClaim.type].indexOf(relatedClaim.status) > idx ? '#444' : '#bbb'),
+              fontSize:'10.5px', fontWeight: cfRelatedClaim.status===step ? 800 : 500,
+              color: cfRelatedClaim.status===step ? CLAIM_TYPE_COLOR[cfRelatedClaim.type] : (CLAIM_FLOWS[cfRelatedClaim.type].indexOf(cfRelatedClaim.status) > idx ? '#444' : '#bbb'),
               whiteSpace:'nowrap',
             }">{{ step }}</div>
-            <span v-if="step==='수거중' && relatedClaim.trackingNo"
-              @click="openTracking(relatedClaim.courier, relatedClaim.trackingNo)"
+            <span v-if="step==='수거중' && cfRelatedClaim.trackingNo"
+              @click="openTracking(cfRelatedClaim.courier, cfRelatedClaim.trackingNo)"
               title="수거 배송조회"
               style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
-              {{ (relatedClaim.courier||'').replace('대한통운','').replace('택배','') || 'CJ' }}수거 🔍
+              {{ (cfRelatedClaim.courier||'').replace('대한통운','').replace('택배','') || 'CJ' }}수거 🔍
             </span>
-            <span v-if="step==='완료' && relatedClaim.exchangeTrackingNo"
-              @click="openTracking(relatedClaim.exchangeCourier, relatedClaim.exchangeTrackingNo)"
+            <span v-if="step==='완료' && cfRelatedClaim.exchangeTrackingNo"
+              @click="openTracking(cfRelatedClaim.exchangeCourier, cfRelatedClaim.exchangeTrackingNo)"
               title="발송 배송조회"
               style="margin-top:4px;padding:1px 7px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
-              {{ (relatedClaim.exchangeCourier||'').replace('대한통운','').replace('택배','') || 'CJ' }}발송 🔍
+              {{ (cfRelatedClaim.exchangeCourier||'').replace('대한통운','').replace('택배','') || 'CJ' }}발송 🔍
             </span>
           </div>
-          <div v-if="idx < CLAIM_FLOWS[relatedClaim.type].length - 1"
+          <div v-if="idx < CLAIM_FLOWS[cfRelatedClaim.type].length - 1"
             :style="{
               flex:1, height:'2px', minWidth:'8px', marginTop:'6px',
-              background: CLAIM_FLOWS[relatedClaim.type].indexOf(relatedClaim.status) > idx ? CLAIM_TYPE_COLOR[relatedClaim.type] : '#bbb',
+              background: CLAIM_FLOWS[cfRelatedClaim.type].indexOf(cfRelatedClaim.status) > idx ? CLAIM_TYPE_COLOR[cfRelatedClaim.type] : '#bbb',
             }"></div>
         </template>
       </div>
@@ -418,10 +427,10 @@ window.OdOrderDtl = {
     </div>
     <div class="form-group">
       <label class="form-label">판매업체</label>
-      <div v-if="relatedVendor" style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:13px;font-weight:700;color:#222;">{{ relatedVendor.vendorNm }}</span>
-        <span style="font-size:11px;color:#888;">| {{ relatedVendor.ceo }} | {{ relatedVendor.phone }}</span>
-        <span class="ref-link" @click="showRefModal('vendor', relatedVendor.vendorId)">보기</span>
+      <div v-if="cfRelatedVendor" style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13px;font-weight:700;color:#222;">{{ cfRelatedVendor.vendorNm }}</span>
+        <span style="font-size:11px;color:#888;">| {{ cfRelatedVendor.ceo }} | {{ cfRelatedVendor.phone }}</span>
+        <span class="ref-link" @click="showRefModal('vendor', cfRelatedVendor.vendorId)">보기</span>
       </div>
       <div v-else style="font-size:12px;color:#bbb;">-</div>
     </div>
@@ -469,7 +478,7 @@ window.OdOrderDtl = {
         <button class="btn btn-secondary" @click="navigate('odOrderMng')">닫기</button>
       </template>
       <template v-else>
-        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('odOrderMng')">취소</button>
       </template>
     </div>
@@ -477,11 +486,11 @@ window.OdOrderDtl = {
   </div>
 
   <!-- 주문항목목록 탭 -->
-  <div v-if="!isNew && showTab('items')" class="card" style="padding:20px;">
+  <div v-if="!cfIsNew && showTab('items')" class="card" style="padding:20px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📦 주문항목 <span class="tab-count">{{ orderItems.length }}</span></div>
-    <div v-if="relatedClaim && relatedClaim.type==='교환'" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+    <div v-if="cfRelatedClaim && cfRelatedClaim.type==='교환'" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
       <button class="btn btn-secondary btn-sm" @click="toggleExpandAll">
-        {{ allExpanded ? '▲ 교환품 모두접기' : '▼ 교환품 모두펼치기' }}
+        {{ cfAllExpanded ? '▲ 교환품 모두접기' : '▼ 교환품 모두펼치기' }}
       </button>
     </div>
     <table class="bo-table" v-if="orderItems.length">
@@ -503,7 +512,7 @@ window.OdOrderDtl = {
         <template v-for="(it,i) in orderItems" :key="Math.random()">
         <tr>
           <td style="text-align:center;color:#aaa;">
-            <span v-if="relatedClaim && relatedClaim.type==='교환'" @click="toggleExpand(i)" style="cursor:pointer;font-size:11px;color:#3b82f6;font-weight:800;user-select:none;" :title="isExpanded(i)?'교환품 숨기기':'교환품 보기'">
+            <span v-if="cfRelatedClaim && cfRelatedClaim.type==='교환'" @click="toggleExpand(i)" style="cursor:pointer;font-size:11px;color:#3b82f6;font-weight:800;user-select:none;" :title="isExpanded(i)?'교환품 숨기기':'교환품 보기'">
               {{ isExpanded(i) ? '▼' : '▶' }}
             </span>
             {{ i+1 }}
@@ -518,25 +527,25 @@ window.OdOrderDtl = {
           <td style="text-align:right;font-weight:700;color:#1a1a1a;">{{ fmt(it.price) }}</td>
           <td style="text-align:center;"><span style="font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;">{{ form.statusCd || form.status || '-' }}</span></td>
           <td style="text-align:center;">
-            <span v-if="relatedClaim" style="display:inline-flex;align-items:center;gap:3px;">
-              <span :style="{fontSize:'10px',padding:'1px 6px',borderRadius:'8px',color:'#fff',fontWeight:700,background: CLAIM_TYPE_COLOR[relatedClaim.type]||'#9ca3af'}">{{ relatedClaim.type }}</span>
-              <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">{{ relatedClaim.status }}</span>
+            <span v-if="cfRelatedClaim" style="display:inline-flex;align-items:center;gap:3px;">
+              <span :style="{fontSize:'10px',padding:'1px 6px',borderRadius:'8px',color:'#fff',fontWeight:700,background: CLAIM_TYPE_COLOR[cfRelatedClaim.type]||'#9ca3af'}">{{ cfRelatedClaim.type }}</span>
+              <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#f3f4f6;color:#374151;font-weight:600;border:1px solid #e5e7eb;">{{ cfRelatedClaim.status }}</span>
             </span>
             <span v-else style="color:#ccc;">-</span>
           </td>
           <td>
-            <div v-if="relatedClaim && relatedClaim.type==='교환'" style="display:flex;flex-direction:column;gap:2px;font-size:10.5px;">
-              <span v-if="relatedClaim.exchangeCourier" @click="openTracking(relatedClaim.exchangeCourier, relatedClaim.exchangeTrackingNo)" style="cursor:pointer;padding:1px 6px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-weight:700;">
-                {{ relatedClaim.exchangeCourier }} · {{ relatedClaim.exchangeTrackingNo || '-' }} 🔍
+            <div v-if="cfRelatedClaim && cfRelatedClaim.type==='교환'" style="display:flex;flex-direction:column;gap:2px;font-size:10.5px;">
+              <span v-if="cfRelatedClaim.exchangeCourier" @click="openTracking(cfRelatedClaim.exchangeCourier, cfRelatedClaim.exchangeTrackingNo)" style="cursor:pointer;padding:1px 6px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-weight:700;">
+                {{ cfRelatedClaim.exchangeCourier }} · {{ cfRelatedClaim.exchangeTrackingNo || '-' }} 🔍
               </span>
-              <span v-if="relatedClaim.courier" @click="openTracking(relatedClaim.courier, relatedClaim.trackingNo)" style="cursor:pointer;padding:1px 6px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-weight:700;">
-                수거 {{ relatedClaim.courier }} · {{ relatedClaim.trackingNo || '-' }} 🔍
+              <span v-if="cfRelatedClaim.courier" @click="openTracking(cfRelatedClaim.courier, cfRelatedClaim.trackingNo)" style="cursor:pointer;padding:1px 6px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-weight:700;">
+                수거 {{ cfRelatedClaim.courier }} · {{ cfRelatedClaim.trackingNo || '-' }} 🔍
               </span>
             </div>
             <span v-else style="color:#ccc;">-</span>
           </td>
         </tr>
-        <tr v-if="isExpanded(i) && relatedClaim && relatedClaim.type==='교환'" style="background:#f0f7ff;">
+        <tr v-if="isExpanded(i) && cfRelatedClaim && cfRelatedClaim.type==='교환'" style="background:#f0f7ff;">
           <td colspan="12" style="padding:10px 14px;">
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
               <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#3b82f6;color:#fff;font-weight:800;">↔ 교환품</span>
@@ -567,19 +576,19 @@ window.OdOrderDtl = {
   </div>
 
   <!-- 결제정보 탭 -->
-  <div v-if="!isNew && showTab('payment')" class="card" style="padding:20px;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ paymentList.length }}</span></div>
-    <table class="bo-table" v-if="paymentList.length">
+  <div v-if="!cfIsNew && showTab('payment')" class="card" style="padding:20px;">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ cfPaymentList.length }}</span></div>
+    <table class="bo-table" v-if="cfPaymentList.length">
       <thead><tr>
         <th style="width:40px;text-align:center;">No.</th>
         <th>결제수단</th><th>결제상태</th><th style="text-align:right;">결제금액</th>
         <th>결제일시</th><th>승인번호</th><th>카드사/계좌</th>
       </tr></thead>
       <tbody>
-        <tr v-for="(p,i) in paymentList" :key="Math.random()">
+        <tr v-for="(p,i) in cfPaymentList" :key="Math.random()">
           <td style="text-align:center;color:#aaa;">{{ i+1 }}</td>
           <td>{{ p.payMethod }}</td>
-          <td><span class="badge" :class="payStatusBadge(p.payStatus)">{{ p.payStatus }}</span></td>
+          <td><span class="badge" :class="fnPayStatusBadge(p.payStatus)">{{ p.payStatus }}</span></td>
           <td style="text-align:right;font-weight:700;">{{ fmt(p.amount) }}</td>
           <td>{{ p.payDate }}</td>
           <td>{{ p.apprNo }}</td>
@@ -591,20 +600,20 @@ window.OdOrderDtl = {
   </div>
 
   <!-- 상태변경이력 탭 -->
-  <div v-if="!isNew && showTab('hist')" class="card">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">🕒 상태변경이력 <span class="tab-count">{{ statusHistList.length }}</span></div>
+  <div v-if="!cfIsNew && showTab('hist')" class="card">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">🕒 상태변경이력 <span class="tab-count">{{ cfStatusHistList.length }}</span></div>
     <od-order-hist :order-id="form.orderId" :navigate="navigate" :show-ref-modal="showRefModal" :show-toast="showToast" />
   </div>
 
   <!-- 정보수정이력 탭 -->
-  <div v-if="!isNew && showTab('editHist')" class="card" style="padding:20px;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ editHistList.length }}</span></div>
-    <table class="bo-table" v-if="editHistList.length">
+  <div v-if="!cfIsNew && showTab('editHist')" class="card" style="padding:20px;">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ cfEditHistList.length }}</span></div>
+    <table class="bo-table" v-if="cfEditHistList.length">
       <thead><tr>
         <th style="width:140px;">수정일시</th><th style="width:100px;">수정자</th><th style="width:120px;">항목</th><th>변경 전</th><th>변경 후</th>
       </tr></thead>
       <tbody>
-        <tr v-for="(h,i) in editHistList" :key="Math.random()">
+        <tr v-for="(h,i) in cfEditHistList" :key="Math.random()">
           <td>{{ h.date }}</td><td>{{ h.user }}</td><td>{{ h.field }}</td>
           <td style="color:#888;">{{ h.before }}</td>
           <td style="color:#e8587a;font-weight:600;">{{ h.after }}</td>

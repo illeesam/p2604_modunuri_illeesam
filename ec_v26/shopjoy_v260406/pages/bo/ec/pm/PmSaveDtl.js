@@ -6,18 +6,18 @@ window.PmSaveDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const saves = reactive([]);
-    const saveList = reactive((window.boData?.saves || []));
+    const saveList = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pm/save/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        saves.splice(0, saves.length, ...(res.data?.data?.list || []));
+        const res = await window.boApi.get('/bo/ec/pm/save/page', { params: { pageNo: 1, pageSize: 10000 } });
+        const list = res.data?.data?.list || [];
+        saves.splice(0, saves.length, ...list);
+        saveList.splice(0, saveList.length, ...list);
         error.value = null;
       } catch (err) {
         error.value = err.message;
@@ -25,7 +25,8 @@ window.PmSaveDtl = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const isNew = computed(() => !props.editId);
     const tab = ref(window._pmSaveDtlState.tab || 'info');
     watch(tab, v => { window._pmSaveDtlState.tab = v; });

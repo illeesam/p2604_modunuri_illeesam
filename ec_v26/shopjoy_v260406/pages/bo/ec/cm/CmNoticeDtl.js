@@ -9,7 +9,7 @@ window.CmNoticeDtl = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/cm/notice/page', {
@@ -23,7 +23,8 @@ window.CmNoticeDtl = {
       } finally {
         loading.value = false;
       }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const isNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
       noticeId: null, title: '', noticeType: '일반', isFixed: false,

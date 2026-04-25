@@ -37,7 +37,7 @@ window.Blog = {
         thumb: 'assets/cdn/prod/img/blog/blog-6.jpg', tags: ['아우터', '추천', '봄패션'], viewCount: 1890, commentCount: 9 },
     ]);
 
-    const filteredPosts = computed(() => {
+    const cfFilteredPosts = computed(() => {
       let list = posts;
       if (selectedCat.value !== 'all') list = list.filter(p => p.category === selectedCat.value);
       const q = searchText.value.trim().toLowerCase();
@@ -55,9 +55,9 @@ window.Blog = {
     ];
     const postBg = (id) => thumbBgs[(id - 1) % thumbBgs.length];
 
-    const latestPosts = computed(() => [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4));
+    const cfLatestPosts = computed(() => [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4));
 
-    return { searchText, selectedCat, categories, filteredPosts, latestPosts, postBg };
+    return { searchText, selectedCat, categories, cfFilteredPosts, cfLatestPosts, postBg };
   },
   template: /* html */ `
 <div class="page-wrap">
@@ -111,7 +111,7 @@ window.Blog = {
       <!-- 최신 글 -->
       <div>
         <h3 style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid var(--border);">Latest Posts</h3>
-        <div v-for="p in latestPosts" :key="p.id" @click="navigate('blogView', { editId: p.id })"
+        <div v-for="p in cfLatestPosts" :key="p.id" @click="navigate('blogView', { editId: p.id })"
           style="display:flex;gap:10px;margin-bottom:14px;cursor:pointer;padding:6px 0;"
           @mouseenter="$event.currentTarget.style.opacity='0.7'"
           @mouseleave="$event.currentTarget.style.opacity='1'">
@@ -128,7 +128,7 @@ window.Blog = {
 
     <!-- 포스트 목록 -->
     <div>
-      <div v-for="post in filteredPosts" :key="post.id"
+      <div v-for="post in cfFilteredPosts" :key="post.id"
         class="card" style="display:flex;flex-wrap:wrap;gap:clamp(12px,2vw,24px);padding:0;margin-bottom:clamp(12px,2vw,24px);overflow:hidden;cursor:pointer;transition:box-shadow .2s;"
         @click="navigate('blogView', { editId: post.id })"
         @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)'"
@@ -158,7 +158,7 @@ window.Blog = {
       </div>
 
       <!-- 빈 상태 -->
-      <div v-if="filteredPosts.length === 0" style="text-align:center;padding:60px 0;color:var(--text-muted);">
+      <div v-if="cfFilteredPosts.length === 0" style="text-align:center;padding:60px 0;color:var(--text-muted);">
         <div style="font-size:2rem;margin-bottom:12px;">📝</div>
         <div style="font-size:0.95rem;">검색 결과가 없습니다.</div>
       </div>

@@ -4,7 +4,7 @@ window.SyCodeMng = {
   props: ['navigate', 'showToast', 'showConfirm'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const codes = reactive(window.boData?.codes || []);
+    const codes = reactive([]);
     const loading = ref(false);
     const error = ref(null);
 
@@ -127,10 +127,19 @@ window.SyCodeMng = {
     const grpExpandAll = () => { const walk = (n) => { grpExpanded.add(n.path); n.children.forEach(walk); }; walk(grpTree.value); };
     const grpCollapseAll = () => { grpExpanded.clear(); grpExpanded.add(''); };
     /* _expand3_grp: 그룹 트리 3레벨 펼침 */
-    onMounted(() => {
+    const fetchData = async () => {
+      try {
+        loading.value = true;
+        const res = await window.boApi.get('/bo/sy/code/page', { params: { pageNo: 1, pageSize: 100000 } });
+        const list = res.data?.data?.list || [];
+        codes.splice(0, codes.length, ...list);
+        updateCodeGroups();
+        loadGrp();
+      } catch (_) {}  finally { loading.value = false; }
       const initSet = window.boCmUtil.collectExpandedToDepth(grpTree.value, 2);
       grpExpanded.clear(); initSet.forEach(v => grpExpanded.add(v));
-    });
+    };
+    onMounted(() => { fetchData(); });
     const grpTree = computed(() => window.boCmUtil.buildPathTree('sy_code_grp'));
     const filteredGrpRows = computed(() => {
       const sp = grpSelectedPath.value;
@@ -525,7 +534,7 @@ window.SyCodeMng = {
         <option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
       <div class="search-actions">
-        <button class="btn btn-primary" @click="onSearch">검색</button>
+        <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>

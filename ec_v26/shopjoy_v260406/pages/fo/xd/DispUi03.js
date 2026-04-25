@@ -7,7 +7,7 @@ window.DispUi03 = {
   setup() {
     const { computed } = Vue;
 
-    const dispDataset = window.boData || window.dispDataset || { displays: [], codes: [] };
+    const dispDataset = window.dispDataset || { displays: [], codes: [] };
     const qs = new URLSearchParams(location.search);
     const params = {
       areas: ['PRODUCT_TOP', 'PRODUCT_BTM'],

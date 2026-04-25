@@ -3,7 +3,7 @@ window.StSettleAdjMng = {
   name: 'StSettleAdjMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const descOpen = ref(false);
 
@@ -16,8 +16,16 @@ window.StSettleAdjMng = {
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
-    const vendorList = reactive((window.boData?.vendors || []));
+    const vendorList = reactive([]);
     const vendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
+
+    const fetchData = async () => {
+      try {
+        const res = await window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } });
+        vendorList.splice(0, vendorList.length, ...(res.data?.data?.list || []));
+      } catch (_) {}
+    };
+    onMounted(() => { fetchData(); });
 
     const adjList = reactive([
       { adjId: 'ADJ-2026-001', adjDate: '2026-04-10', vendorId: 1, vendorNm: '패션스타일 주식회사', adjType: '수수료조정', adjAmt: -5000,  reason: '4월 프로모션 참여 수수료 감면', aprvStatus: '승인', regUserNm: '이관리자' },

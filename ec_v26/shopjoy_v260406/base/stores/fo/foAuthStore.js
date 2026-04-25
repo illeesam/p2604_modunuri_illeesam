@@ -28,143 +28,143 @@
   window.useFoAuthStore = Pinia.defineStore('foAuth', {
     state: () => {
       return {
-        authUser: _defaultAuthUser(),
-        accessToken: '',
-        refreshToken: '',
-        accessExpiresIn: 0,
-        refreshExpiresIn: 0,
-        tempAuthInfo: null,
+        svAuthUser: _defaultAuthUser(),
+        svAccessToken: '',
+        svRefreshToken: '',
+        svAccessExpiresIn: 0,
+        svRefreshExpiresIn: 0,
+        svTempAuthInfo: null,
       };
     },
 
     getters: {
-      isLoggedIn: (s) => !!(s.authUser?.authId) && !!s.accessToken,
-      isTokenValid: (s) => !!(s.accessToken),
+      svIsLoggedIn: (s) => !!(s.svAuthUser?.authId) && !!s.svAccessToken,
+      svIsTokenValid: (s) => !!(s.svAccessToken),
     },
 
     actions: {
-      setAuth(authData) {
+      sfSetAuth(authData) {
         if (!authData) return;
-        if (authData.accessToken) this.accessToken = authData.accessToken;
-        if (authData.refreshToken) this.refreshToken = authData.refreshToken;
-        if (authData.accessExpiresIn) this.accessExpiresIn = authData.accessExpiresIn;
-        if (authData.refreshExpiresIn) this.refreshExpiresIn = authData.refreshExpiresIn;
-        if (authData.authUser) this.authUser = authData.authUser;
-        else if (authData.user) this.setAuthUser(authData.user); // StoreAuth.user 필드 호환
-        if (authData.tempAuthInfo !== undefined) this.tempAuthInfo = authData.tempAuthInfo;
+        if (authData.accessToken) this.svAccessToken = authData.accessToken;
+        if (authData.refreshToken) this.svRefreshToken = authData.refreshToken;
+        if (authData.accessExpiresIn) this.svAccessExpiresIn = authData.accessExpiresIn;
+        if (authData.refreshExpiresIn) this.svRefreshExpiresIn = authData.refreshExpiresIn;
+        if (authData.authUser) this.svAuthUser = authData.authUser;
+        else if (authData.user) this.sfSetAuthUser(authData.user); // StoreAuth.user 필드 호환
+        if (authData.tempAuthInfo !== undefined) this.svTempAuthInfo = authData.tempAuthInfo;
         try {
-          if (this.accessToken) localStorage.setItem('modu-fo-accessToken', this.accessToken);
-          if (this.refreshToken) localStorage.setItem('modu-fo-refreshToken', this.refreshToken);
-          if (this.authUser) localStorage.setItem('modu-fo-authUser', JSON.stringify(this.authUser));
-          if (this.tempAuthInfo) localStorage.setItem('modu-fo-tempAuthInfo', JSON.stringify(this.tempAuthInfo));
+          if (this.svAccessToken) localStorage.setItem('modu-fo-accessToken', this.svAccessToken);
+          if (this.svRefreshToken) localStorage.setItem('modu-fo-refreshToken', this.svRefreshToken);
+          if (this.svAuthUser) localStorage.setItem('modu-fo-authUser', JSON.stringify(this.svAuthUser));
+          if (this.svTempAuthInfo) localStorage.setItem('modu-fo-tempAuthInfo', JSON.stringify(this.svTempAuthInfo));
         } catch (e) {
-          console.error('[foAuthStore] setAuth localStorage error:', e);
+          console.error('[foAuthStore] sfSetAuth localStorage error:', e);
         }
       },
 
-      updateAuth(authData) {
+      sfUpdateAuth(authData) {
         if (!authData) return;
-        this.accessToken = authData.accessToken || this.accessToken;
-        this.refreshToken = authData.refreshToken || this.refreshToken;
-        this.accessExpiresIn = authData.accessExpiresIn || this.accessExpiresIn;
-        this.refreshExpiresIn = authData.refreshExpiresIn || this.refreshExpiresIn;
+        this.svAccessToken = authData.accessToken || this.svAccessToken;
+        this.svRefreshToken = authData.refreshToken || this.svRefreshToken;
+        this.svAccessExpiresIn = authData.accessExpiresIn || this.svAccessExpiresIn;
+        this.svRefreshExpiresIn = authData.refreshExpiresIn || this.svRefreshExpiresIn;
         try {
-          if (this.accessToken) localStorage.setItem('modu-fo-accessToken', this.accessToken);
-          if (this.refreshToken) localStorage.setItem('modu-fo-refreshToken', this.refreshToken);
+          if (this.svAccessToken) localStorage.setItem('modu-fo-accessToken', this.svAccessToken);
+          if (this.svRefreshToken) localStorage.setItem('modu-fo-refreshToken', this.svRefreshToken);
         } catch (e) {
-          console.error('[foAuthStore] updateAuth localStorage error:', e);
+          console.error('[foAuthStore] sfUpdateAuth localStorage error:', e);
         }
       },
 
-      setAuthUser(authUserData) {
+      sfSetAuthUser(authUserData) {
         if (!authUserData) return;
-        this.authUser = authUserData;
+        this.svAuthUser = authUserData;
         try {
           localStorage.setItem('modu-fo-authUser', JSON.stringify(authUserData));
         } catch (e) {
-          console.error('[foAuthStore] setAuthUser localStorage error:', e);
+          console.error('[foAuthStore] sfSetAuthUser localStorage error:', e);
         }
       },
 
-      setSession(authUser, accessToken) {
-        this.authUser = authUser || _defaultAuthUser();
-        this.accessToken = accessToken || '';
+      sfSetSession(authUser, accessToken) {
+        this.svAuthUser = authUser || _defaultAuthUser();
+        this.svAccessToken = accessToken || '';
         try {
-          if (this.accessToken) localStorage.setItem('modu-fo-accessToken', this.accessToken);
+          if (this.svAccessToken) localStorage.setItem('modu-fo-accessToken', this.svAccessToken);
           if (authUser) localStorage.setItem('modu-fo-authUser', JSON.stringify(authUser));
         } catch (e) {
-          console.error('[foAuthStore] setSession localStorage error:', e);
+          console.error('[foAuthStore] sfSetSession localStorage error:', e);
         }
       },
 
-      clearSession() {
-        this.authUser = _defaultAuthUser();
-        this.accessToken = '';
-        this.refreshToken = '';
-        this.accessExpiresIn = 0;
-        this.refreshExpiresIn = 0;
-        this.tempAuthInfo = null;
+      sfClearSession() {
+        this.svAuthUser = _defaultAuthUser();
+        this.svAccessToken = '';
+        this.svRefreshToken = '';
+        this.svAccessExpiresIn = 0;
+        this.svRefreshExpiresIn = 0;
+        this.svTempAuthInfo = null;
         try {
           localStorage.removeItem('modu-fo-accessToken');
           localStorage.removeItem('modu-fo-refreshToken');
           localStorage.removeItem('modu-fo-authUser');
           localStorage.removeItem('modu-fo-tempAuthInfo');
         } catch (e) {
-          console.error('[foAuthStore] clearSession localStorage error:', e);
+          console.error('[foAuthStore] sfClearSession localStorage error:', e);
         }
       },
 
-      clear() {
-        this.authUser = _defaultAuthUser();
-        this.accessToken = '';
-        this.refreshToken = '';
-        this.accessExpiresIn = 0;
-        this.refreshExpiresIn = 0;
-        this.tempAuthInfo = null;
+      sfClear() {
+        this.svAuthUser = _defaultAuthUser();
+        this.svAccessToken = '';
+        this.svRefreshToken = '';
+        this.svAccessExpiresIn = 0;
+        this.svRefreshExpiresIn = 0;
+        this.svTempAuthInfo = null;
         try {
           localStorage.removeItem('modu-fo-accessToken');
           localStorage.removeItem('modu-fo-refreshToken');
           localStorage.removeItem('modu-fo-tempAuthInfo');
         } catch (e) {
-          console.error('[foAuthStore] clear localStorage error:', e);
+          console.error('[foAuthStore] sfClear localStorage error:', e);
         }
       },
 
-      syncFromStorage() {
+      sfSyncFromStorage() {
         try {
           const token        = localStorage.getItem('modu-fo-accessToken');
           const refreshToken = localStorage.getItem('modu-fo-refreshToken');
           const authUserJson = localStorage.getItem('modu-fo-authUser');
           if (token) {
-            this.accessToken = token;
-            if (refreshToken) this.refreshToken = refreshToken;
-            if (authUserJson) this.authUser = Object.assign(_defaultAuthUser(), JSON.parse(authUserJson) || {});
-            else this.authUser = _defaultAuthUser();
+            this.svAccessToken = token;
+            if (refreshToken) this.svRefreshToken = refreshToken;
+            if (authUserJson) this.svAuthUser = Object.assign(_defaultAuthUser(), JSON.parse(authUserJson) || {});
+            else this.svAuthUser = _defaultAuthUser();
           } else {
-            this.accessToken = '';
-            this.refreshToken = '';
-            this.authUser = _defaultAuthUser();
+            this.svAccessToken = '';
+            this.svRefreshToken = '';
+            this.svAuthUser = _defaultAuthUser();
           }
           return !!token;
         } catch (e) {
-          console.error('[foAuthStore] syncFromStorage error:', e);
+          console.error('[foAuthStore] sfSyncFromStorage error:', e);
           return false;
         }
       },
 
-      restoreFromStorage() {
+      sfRestoreFromStorage() {
         try {
           const token         = localStorage.getItem('modu-fo-accessToken');
           const refreshToken  = localStorage.getItem('modu-fo-refreshToken');
           const authUserJson  = localStorage.getItem('modu-fo-authUser');
           if (token) {
-            this.accessToken = token;
-            if (refreshToken) this.refreshToken = refreshToken;
-            if (authUserJson) this.authUser = Object.assign(_defaultAuthUser(), JSON.parse(authUserJson) || {});
+            this.svAccessToken = token;
+            if (refreshToken) this.svRefreshToken = refreshToken;
+            if (authUserJson) this.svAuthUser = Object.assign(_defaultAuthUser(), JSON.parse(authUserJson) || {});
           }
           return !!(token && refreshToken);
         } catch (e) {
-          console.error('[foAuthStore] restoreFromStorage error:', e);
+          console.error('[foAuthStore] sfRestoreFromStorage error:', e);
           return false;
         }
       },
@@ -173,21 +173,21 @@
 
   // 함수형 유틸리티
   window.getFoAuthStore = () => {
-    try { return window.useFoAuthStore?.() || { authUser: _defaultAuthUser(), accessToken: '', isLoggedIn: false }; }
-    catch (e) { return { authUser: _defaultAuthUser(), accessToken: '', isLoggedIn: false }; }
+    try { return window.useFoAuthStore?.() || { svAuthUser: _defaultAuthUser(), svAccessToken: '', svIsLoggedIn: false }; }
+    catch (e) { return { svAuthUser: _defaultAuthUser(), svAccessToken: '', svIsLoggedIn: false }; }
   };
 
   window.getFoAuthUser = () => {
     try {
       const store = window.useFoAuthStore?.();
-      return (store?.authUser?.authId) ? store.authUser : _defaultAuthUser();
+      return (store?.svAuthUser?.authId) ? store.svAuthUser : _defaultAuthUser();
     } catch (e) { return _defaultAuthUser(); }
   };
 
   window.isFoLogin = () => {
     try {
       const store = window.useFoAuthStore?.();
-      return !!(store?.authUser?.authId && store?.accessToken);
+      return !!(store?.svAuthUser?.authId && store?.svAccessToken);
     } catch (e) { return false; }
   };
 

@@ -298,8 +298,24 @@ disp-fo-ui.html
 
 ---
 
+## 함수·변수 네이밍 규칙
+
+| 접두어 | 적용 대상 | 예시 |
+|---|---|---|
+| `on` | 이벤트 바인딩 함수 (`@click` 직결) | `onSearch`, `onReset`, `onSave`, `onDelete` |
+| `handle` | 이벤트 처리 로직 함수 | `handleSave`, `handleDelete`, `handleSubmit` |
+| `fn` | 독립 유틸 함수 (순수 함수) | `fnStatusBadge`, `fnFormatDate`, `fnCalcTotal` |
+| `cf` | `computed(() => ...)` 속성 | `cfFiltered`, `cfTotal`, `cfPageList`, `cfIsLoggedIn` |
+| `sf` | Pinia store actions | `sfSetAuth`, `sfLogin`, `sfFetchInit` |
+| `sv` | Pinia store state/getters | `svAuthUser`, `svCodes`, `svIsLoggedIn` |
+
+상세 규칙: `_doc/정책서-sy/sy.54.네이밍규칙.md`
+
+---
+
 ## 관련 정책
 - `base.UX-front.md` — 사용자 UX 레이아웃·흐름
 - `ec.mb.*` — 회원·인증 정책
 - `ec.od.*` — 주문·결제 정책
+- `sy.54.네이밍규칙.md` — 함수·변수 접두어 네이밍 규칙
 - `ec.dp.*` — 전시 위젯·패널 정책

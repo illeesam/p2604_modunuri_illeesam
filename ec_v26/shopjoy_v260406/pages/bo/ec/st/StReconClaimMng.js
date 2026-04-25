@@ -3,7 +3,7 @@ window.StReconClaimMng = {
   name: 'StReconClaimMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const descOpen = ref(false);
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
@@ -15,7 +15,16 @@ window.StReconClaimMng = {
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
-    const claimsList = reactive((window.boData?.claims || []));
+    const claimsList = reactive([]);
+
+    const fetchData = async () => {
+      try {
+        const res = await window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } });
+        claimsList.splice(0, claimsList.length, ...(res.data?.data?.list || []));
+      } catch (_) {}
+    };
+    onMounted(() => { fetchData(); });
+
     const searchDiff = ref('');
     const pager = reactive({ page: 1, size: 10 });
 

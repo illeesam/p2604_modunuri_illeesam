@@ -545,13 +545,14 @@ window.SiteSelectModal = {
     const kw = ref('');
     const list = ref([]);
     const loading = ref(false);
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/site', { params: { pageSize: 10000 } });
         list.value = res.data?.data || [];
       } catch (e) { list.value = []; } finally { loading.value = false; }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const filtered = computed(() => list.value.filter(s => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
@@ -593,13 +594,14 @@ window.VendorSelectModal = {
     const kw = ref('');
     const list = ref([]);
     const loading = ref(false);
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/vendor', { params: { pageSize: 10000 } });
         list.value = res.data?.data || [];
       } catch (e) { list.value = []; } finally { loading.value = false; }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const filtered = computed(() => list.value.filter(v => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
@@ -637,7 +639,7 @@ window.BoUserSelectModal = {
     const depts = ref([]);
     const users = ref([]);
     const loading = ref(false);
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const [deptRes, userRes] = await Promise.all([
@@ -647,7 +649,8 @@ window.BoUserSelectModal = {
         depts.value = deptRes.data?.data || [];
         users.value = userRes.data?.data || [];
       } catch (e) { depts.value = []; users.value = []; } finally { loading.value = false; }
-    });
+    };
+    onMounted(() => { fetchData(); });
 
     /* ── 부서 트리 (depth 1부터 시작, root는 별도 렌더) ── */
     const selectedDeptId = ref(null);
@@ -867,13 +870,14 @@ window.MemberSelectModal = {
     const kw = ref('');
     const list = ref([]);
     const loading = ref(false);
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/mb/member', { params: { pageSize: 10000 } });
         list.value = res.data?.data || [];
       } catch (e) { list.value = []; } finally { loading.value = false; }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const filtered = computed(() => list.value.filter(m => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
@@ -912,13 +916,14 @@ window.OrderSelectModal = {
     const kw = ref('');
     const list = ref([]);
     const loading = ref(false);
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/ord/order', { params: { pageSize: 10000 } });
         list.value = res.data?.data || [];
       } catch (e) { list.value = []; } finally { loading.value = false; }
-    });
+    };
+    onMounted(() => { fetchData(); });
     const filtered = computed(() => list.value.filter(o => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
@@ -958,13 +963,14 @@ window.BbmSelectModal = {
     const pageSize = 6;
     const list = ref([]);
     const loading = ref(false);
-    onMounted(async () => {
+    const fetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/bbm', { params: { pageSize: 10000 } });
         list.value = res.data?.data || [];
       } catch (e) { list.value = []; } finally { loading.value = false; }
-    });
+    };
+    onMounted(() => { fetchData(); });
 
     const filtered = computed(() => list.value.filter(b => {
       if (b.useYn === 'N') return false;
@@ -1144,7 +1150,7 @@ window.TemplateSendModal = {
     const allDepts = ref([]);
     const allMembers = ref([]);
     const allBoUsers = ref([]);
-    onMounted(async () => {
+    const fetchData = async () => {
       try {
         const [deptRes, memberRes, userRes] = await Promise.all([
           window.boApi.get('/bo/sy/dept', { params: { pageSize: 10000 } }),
@@ -1155,7 +1161,8 @@ window.TemplateSendModal = {
         allMembers.value = memberRes.data?.data || [];
         allBoUsers.value = userRes.data?.data || [];
       } catch (e) {}
-    });
+    };
+    onMounted(() => { fetchData(); });
 
     /* ── 부서 트리 (관리자 탭) ── */
     const selectedDeptId = ref(null);
@@ -1436,12 +1443,13 @@ window.RoleTreeModal = {
     const kw = ref('');
     const hoverId = ref(null);
     const allRoles = ref([]);
-    onMounted(async () => {
+    const fetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/role', { params: { pageSize: 10000 } });
         allRoles.value = res.data?.data || [];
       } catch (e) { allRoles.value = []; }
-    });
+    };
+    onMounted(() => { fetchData(); });
 
     const buildTree = (items, parentId, depth) => {
       return items
@@ -1529,12 +1537,13 @@ window.MenuTreeModal = {
     const kw = ref('');
     const hoverId = ref(null);
     const allMenus = ref([]);
-    onMounted(async () => {
+    const fetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/menu', { params: { pageSize: 10000 } });
         allMenus.value = res.data?.data || [];
       } catch (e) { allMenus.value = []; }
-    });
+    };
+    onMounted(() => { fetchData(); });
 
     const buildTree = (items, parentId, depth) => {
       return items
@@ -1662,12 +1671,13 @@ window.DeptTreeModal = {
     const kw = ref('');
     const hoverId = ref(null);
     const allDepts = ref([]);
-    onMounted(async () => {
+    const fetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/dept', { params: { pageSize: 10000 } });
         allDepts.value = res.data?.data || [];
       } catch (e) { allDepts.value = []; }
-    });
+    };
+    onMounted(() => { fetchData(); });
 
     /* ── 트리 구성 ── */
     const buildTree = (items, parentId, depth) => {
@@ -1805,12 +1815,13 @@ window.CategoryTreeModal = {
     const kw = ref('');
     const hoverId = ref(null);
     const allCategories = ref([]);
-    onMounted(async () => {
+    const fetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/ec/pd/category', { params: { pageSize: 10000 } });
         allCategories.value = res.data?.data || [];
       } catch (e) { allCategories.value = []; }
-    });
+    };
+    onMounted(() => { fetchData(); });
 
     const buildTree = (items, parentId, depth) => {
       return items
@@ -3071,7 +3082,6 @@ window.PathPickModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const ad = window.boData;
     const tree = computed(() => window.boCmUtil.buildPathTree(props.bizCd));
     const expanded = reactive(new Set([null]));
     const toggle = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
@@ -3101,7 +3111,8 @@ window.PathPickModal = {
         else alert('새 경로명을 입력해주세요.');
         return;
       }
-      const list = ad.paths || (ad.paths = []);
+      window._boCmPaths = window._boCmPaths || [];
+      const list = window._boCmPaths;
       /* 동일 부모 + 동일 라벨 중복 체크 */
       const dup = list.find(p => p.bizCd === props.bizCd && p.parentPathId === addParent.value && p.pathLabel === txt);
       if (dup) {
@@ -3125,7 +3136,7 @@ window.PathPickModal = {
     const saveEdit = () => {
       const id = editingId.value;
       if (id != null && editLabel.value.trim()) {
-        const item = (ad.paths || []).find(p => p.pathId === id);
+        const item = (window._boCmPaths || []).find(p => p.pathId === id);
         if (item) item.pathLabel = editLabel.value.trim();
       }
       editingId.value = null;
@@ -3143,8 +3154,8 @@ window.PathPickModal = {
         ? await window.boConfirm('표시경로 삭제', '이 경로를 삭제하시겠습니까?', { details: node.pathLabel })
         : window.confirm('이 경로를 삭제하시겠습니까?\n\n' + node.pathLabel);
       if (!ok) return;
-      const idx = (ad.paths || []).findIndex(p => p.pathId === node.pathId);
-      if (idx >= 0) ad.paths.splice(idx, 1);
+      const idx = (window._boCmPaths || []).findIndex(p => p.pathId === node.pathId);
+      if (idx >= 0) window._boCmPaths.splice(idx, 1);
       if (selectedId.value === node.pathId) selectedId.value = null;
       if (addParent.value === node.pathId) addParent.value = null;
     };
@@ -3320,9 +3331,18 @@ window.BizPickModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const ad = window.boData;
     const kw = ref('');
     const typeFlt = ref('');
+    const bizs = reactive([]);
+    const fetchData = async () => {
+      try {
+        const res = await window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } });
+        bizs.splice(0, bizs.length, ...(res.data?.data?.list || []));
+      } catch (_) {}
+    };
+    const onSearch = () => { fetchData(); };
+    const onReset = () => { kw.value = ''; typeFlt.value = ''; fetchData(); };
+    Vue.onMounted(() => { fetchData(); });
     const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
     const vtLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
     const vtBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
@@ -3339,7 +3359,7 @@ window.BizPickModal = {
     });
     const allowedPathIds = computed(() => selectedPathId.value == null ? null : window.boCmUtil.getPathDescendants('sy_biz', selectedPathId.value));
 
-    const filtered = computed(() => (ad.bizs || []).filter(b => {
+    const filtered = computed(() => bizs.filter(b => {
       const k = kw.value.trim().toLowerCase();
       if (k && !(b.bizNo||'').includes(k) && !(b.bizNm||'').toLowerCase().includes(k) && !(b.ceoNm||'').toLowerCase().includes(k)) return false;
       if (typeFlt.value && b.vendorTypeCd !== typeFlt.value) return false;
@@ -3348,7 +3368,7 @@ window.BizPickModal = {
     }));
     const pickAndClose = (b) => { emit('select', b); emit('close'); };
     return { kw, typeFlt, VENDOR_TYPES, vtLabel, vtBadge, filtered, pickAndClose,
-             selectedPathId, expanded, tree, toggleNode, selectNode };
+             selectedPathId, expanded, tree, toggleNode, selectNode, onSearch, onReset };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -3363,11 +3383,13 @@ window.BizPickModal = {
         <span style="color:#9ca3af;cursor:pointer;font-size:20px;" @click="$emit('close')">✕</span>
       </div>
       <div style="display:flex;gap:6px;margin-top:12px;">
-        <input class="form-control" v-model="kw" placeholder="사업자번호 / 상호 / 대표자 검색" style="flex:1;height:32px;font-size:12px;" />
+        <input class="form-control" v-model="kw" placeholder="사업자번호 / 상호 / 대표자 검색" style="flex:1;height:32px;font-size:12px;" @keyup.enter="onSearch" />
         <select class="form-control" v-model="typeFlt" style="width:140px;height:32px;font-size:12px;">
           <option value="">업체유형 전체</option>
           <option v-for="v in VENDOR_TYPES" :key="v[0]" :value="v[0]">{{ v[1] }}</option>
         </select>
+        <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
+        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>
     <div style="background:#fafbfc;display:grid;grid-template-columns:200px 1fr;max-height:50vh;">
@@ -3411,18 +3433,27 @@ window.SimpleUserPickModal = {
   props: ['title', 'excludeIds'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, computed } = Vue;
-    const ad = window.boData;
+    const { ref, reactive, computed } = Vue;
     const kw = ref('');
+    const boUsers = reactive([]);
+    const fetchData = async () => {
+      try {
+        const res = await window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 } });
+        boUsers.splice(0, boUsers.length, ...(res.data?.data?.list || []));
+      } catch (_) {}
+    };
+    const onSearch = () => { fetchData(); };
+    const onReset = () => { kw.value = ''; fetchData(); };
+    Vue.onMounted(() => { fetchData(); });
     const excl = computed(() => new Set(props.excludeIds || []));
-    const filtered = computed(() => (ad.boUsers || []).filter(u => {
+    const filtered = computed(() => boUsers.filter(u => {
       if (excl.value.has(u.boUserId)) return false;
       const k = kw.value.trim().toLowerCase();
       if (k && !(u.name||'').toLowerCase().includes(k) && !(u.loginId||'').toLowerCase().includes(k) && !(u.email||'').toLowerCase().includes(k)) return false;
       return true;
     }));
     const pick = (u) => { emit('select', u); emit('close'); };
-    return { kw, filtered, pick };
+    return { kw, filtered, pick, onSearch, onReset };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -3436,7 +3467,11 @@ window.SimpleUserPickModal = {
         </div>
         <span style="color:#9ca3af;cursor:pointer;font-size:20px;" @click="$emit('close')">✕</span>
       </div>
-      <input class="form-control" v-model="kw" placeholder="이름 / 로그인ID / 이메일 검색" style="margin-top:12px;height:32px;font-size:12px;" />
+      <div style="display:flex;gap:6px;margin-top:12px;">
+        <input class="form-control" v-model="kw" placeholder="이름 / 로그인ID / 이메일 검색" style="flex:1;height:32px;font-size:12px;" @keyup.enter="onSearch" />
+        <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
+        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
+      </div>
     </div>
     <div style="background:#fafbfc;max-height:50vh;overflow:auto;">
       <table class="bo-table" style="background:#fff;">

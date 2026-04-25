@@ -15,7 +15,7 @@
     onMounted(() => {
       setTimeout(() => {
         // fetchFoAppInitData는 foAuth.js init()에서 토큰 유무에 따라 호출
-        window.useFoAppInitStore?.()?.restoreFromStorage?.();
+        window.useFoAppInitStore?.()?.sfRestoreFromStorage?.();
       }, 0);
     });
     /* ── Theme ── */

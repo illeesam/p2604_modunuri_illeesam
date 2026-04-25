@@ -38,19 +38,19 @@ window.BlogView = {
       },
     ];
 
-    const postId = computed(() => Number(props.editId) || 1);
-    const post   = computed(() => {
-      const found = posts.find(p => p.id === postId.value);
+    const cfPostId = computed(() => Number(props.editId) || 1);
+    const cfPost   = computed(() => {
+      const found = posts.find(p => p.id === cfPostId.value);
       return found || (posts.length > 0 ? posts[0] : { id: 0, title: '', category: '', author: '', date: '', readTime: '', tags: [], viewCount: 0, img: '', imgMid: '', body: '', comments: [] });
     });
 
     /* 본문 단락 분리 */
-    const bodyParagraphs = computed(() => (post.value.body || '').split('\n\n').filter(Boolean));
+    const cfBodyParagraphs = computed(() => (cfPost.value.body || '').split('\n\n').filter(Boolean));
 
     /* 댓글 */
     const commentText   = ref('');
     const localComments = reactive([]);
-    const allComments   = computed(() => [...(post.value.comments || []), ...localComments]);
+    const cfAllComments   = computed(() => [...(cfPost.value.comments || []), ...localComments]);
     const addComment    = () => {
       const t = commentText.value.trim();
       if (!t) return;
@@ -60,7 +60,7 @@ window.BlogView = {
 
     /* 사이드바 */
     const searchText  = ref('');
-    const latestPosts = computed(() => posts.filter(p => p.id !== postId.value).slice(0, 3));
+    const cfLatestPosts = computed(() => posts.filter(p => p.id !== cfPostId.value).slice(0, 3));
     const categories  = [
       { name: 'Fashion', count: 12 },
       { name: 'Trend',   count: 8 },
@@ -68,15 +68,15 @@ window.BlogView = {
       { name: 'Style Guide', count: 9 },
     ];
     const archives = ['2026년 4월 (3)', '2026년 3월 (5)', '2026년 2월 (4)', '2026년 1월 (6)'];
-    const recentComments = computed(() =>
+    const cfRecentComments = computed(() =>
       posts.flatMap(p => (p.comments || []).map(c => ({ ...c, postTitle: p.title, postId: p.id }))).slice(0, 3)
     );
 
     /* 관련 글 */
-    const relatedPosts = computed(() => posts.filter(p => p.id !== postId.value).slice(0, 3));
+    const cfRelatedPosts = computed(() => posts.filter(p => p.id !== cfPostId.value).slice(0, 3));
 
-    return { post, bodyParagraphs, commentText, allComments, addComment,
-             searchText, latestPosts, categories, archives, recentComments, relatedPosts };
+    return { cfPost, cfBodyParagraphs, commentText, cfAllComments, addComment,
+             searchText, cfLatestPosts, categories, archives, cfRecentComments, cfRelatedPosts };
   },
   template: /* html */ `
 <div class="page-wrap" style="max-width:1100px;">
@@ -94,36 +94,36 @@ window.BlogView = {
 
       <!-- 카테고리 + 메타 -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:0.75rem;">
-        <span style="background:var(--blue);color:#fff;padding:2px 10px;border-radius:2px;font-weight:600;">{{ post.category }}</span>
-        <span style="color:var(--text-muted);">By <strong style="color:var(--text-secondary);">{{ post.author }}</strong></span>
+        <span style="background:var(--blue);color:#fff;padding:2px 10px;border-radius:2px;font-weight:600;">{{ cfPost.category }}</span>
+        <span style="color:var(--text-muted);">By <strong style="color:var(--text-secondary);">{{ cfPost.author }}</strong></span>
         <span style="color:var(--text-muted);">·</span>
-        <span style="color:var(--text-muted);">{{ post.date }}</span>
+        <span style="color:var(--text-muted);">{{ cfPost.date }}</span>
         <span style="color:var(--text-muted);">·</span>
-        <span style="color:var(--text-muted);">{{ post.readTime }} 읽기</span>
+        <span style="color:var(--text-muted);">{{ cfPost.readTime }} 읽기</span>
       </div>
 
       <!-- 제목 -->
-      <h1 style="font-size:1.8rem;font-weight:900;color:var(--text-primary);line-height:1.35;margin-bottom:24px;">{{ post.title }}</h1>
+      <h1 style="font-size:1.8rem;font-weight:900;color:var(--text-primary);line-height:1.35;margin-bottom:24px;">{{ cfPost.title }}</h1>
 
       <!-- 히어로 이미지 -->
       <div style="width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:4px;margin-bottom:28px;background:var(--bg-base);">
-        <img :src="post.img" :alt="post.title" style="width:100%;height:100%;object-fit:cover;"
+        <img :src="cfPost.img" :alt="cfPost.title" style="width:100%;height:100%;object-fit:cover;"
           @error="$event.target.style.display='none'" />
       </div>
 
       <!-- 본문 첫 단락 -->
-      <div v-if="bodyParagraphs[0]"
+      <div v-if="cfBodyParagraphs[0]"
         style="font-size:0.92rem;color:var(--text-secondary);line-height:1.95;margin-bottom:24px;"
-        v-html="bodyParagraphs[0]"></div>
+        v-html="cfBodyParagraphs[0]"></div>
 
       <!-- 중간 이미지 -->
       <div style="width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:4px;margin-bottom:24px;background:var(--bg-base);">
-        <img :src="post.imgMid" :alt="post.title" style="width:100%;height:100%;object-fit:cover;"
+        <img :src="cfPost.imgMid" :alt="cfPost.title" style="width:100%;height:100%;object-fit:cover;"
           @error="$event.target.style.display='none'" />
       </div>
 
       <!-- 나머지 본문 단락 -->
-      <div v-for="(para, i) in bodyParagraphs.slice(1)" :key="i"
+      <div v-for="(para, i) in cfBodyParagraphs.slice(1)" :key="i"
         style="font-size:0.92rem;color:var(--text-secondary);line-height:1.95;margin-bottom:20px;"
         v-html="para"></div>
 
@@ -131,7 +131,7 @@ window.BlogView = {
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:20px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:36px;">
         <div style="display:flex;flex-wrap:wrap;gap:6px;">
           <span style="font-size:0.78rem;font-weight:600;color:var(--text-muted);margin-right:4px;">Tags:</span>
-          <span v-for="tag in post.tags" :key="tag"
+          <span v-for="tag in cfPost.tags" :key="tag"
             style="padding:3px 12px;background:var(--bg-base);border:1px solid var(--border);border-radius:2px;font-size:0.75rem;color:var(--text-secondary);cursor:pointer;">#{{ tag }}</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
@@ -154,10 +154,10 @@ window.BlogView = {
       <!-- 댓글 -->
       <div style="margin-bottom:40px;">
         <h3 style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid var(--blue);">
-          댓글 <span style="color:var(--blue);">({{ allComments.length }})</span>
+          댓글 <span style="color:var(--blue);">({{ cfAllComments.length }})</span>
         </h3>
 
-        <div v-for="c in allComments" :key="c.id" style="padding:16px 0;border-bottom:1px solid var(--border);">
+        <div v-for="c in cfAllComments" :key="c.id" style="padding:16px 0;border-bottom:1px solid var(--border);">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
             <div style="width:36px;height:36px;border-radius:50%;background:var(--blue-dim);display:flex;align-items:center;justify-content:center;font-size:0.82rem;font-weight:700;color:var(--blue);flex-shrink:0;">{{ c.author[0] }}</div>
             <div>
@@ -211,7 +211,7 @@ window.BlogView = {
       <div>
         <h4 style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--blue);">Latest Posts</h4>
         <div style="display:flex;flex-direction:column;gap:14px;">
-          <div v-for="lp in latestPosts" :key="lp.id"
+          <div v-for="lp in cfLatestPosts" :key="lp.id"
             style="display:flex;gap:12px;cursor:pointer;"
             @click="navigate('blogView', { editId: lp.id })">
             <div style="width:64px;height:64px;border-radius:4px;overflow:hidden;flex-shrink:0;background:var(--bg-base);">
@@ -230,7 +230,7 @@ window.BlogView = {
       <div>
         <h4 style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--blue);">Recent Comments</h4>
         <div style="display:flex;flex-direction:column;gap:12px;">
-          <div v-for="c in recentComments" :key="c.id" style="display:flex;gap:10px;align-items:flex-start;">
+          <div v-for="c in cfRecentComments" :key="c.id" style="display:flex;gap:10px;align-items:flex-start;">
             <div style="width:28px;height:28px;border-radius:50%;background:var(--blue-dim);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--blue);flex-shrink:0;">{{ c.author[0] }}</div>
             <div>
               <div style="font-size:0.78rem;color:var(--text-secondary);line-height:1.5;">{{ c.text.slice(0,40) }}{{ c.text.length>40?'…':'' }}</div>
@@ -255,10 +255,10 @@ window.BlogView = {
   </div>
 
   <!-- ══ 하단: You Might Also Like ══ -->
-  <div v-if="relatedPosts.length" style="margin-top:64px;padding-top:40px;border-top:1px solid var(--border);">
+  <div v-if="cfRelatedPosts.length" style="margin-top:64px;padding-top:40px;border-top:1px solid var(--border);">
     <h2 style="font-size:1.3rem;font-weight:800;color:var(--text-primary);margin-bottom:28px;text-align:center;">You Might Also Like</h2>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:clamp(14px,2vw,28px);">
-      <div v-for="rp in relatedPosts" :key="rp.id"
+      <div v-for="rp in cfRelatedPosts" :key="rp.id"
         style="cursor:pointer;transition:transform .25s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-4px)'"
         @mouseleave="$event.currentTarget.style.transform=''"
