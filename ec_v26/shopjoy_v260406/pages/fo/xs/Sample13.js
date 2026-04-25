@@ -32,7 +32,6 @@ window.XsSample13 = {
     const selectedAreas = reactive(new Set());
     const copiedPanel   = ref(null);
     const selectedCatIds = reactive(new Set());
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: today, copiedPanel: null});
     const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
     const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
     const cfCatBtnLabel = computed(() => {

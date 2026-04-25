@@ -68,7 +68,16 @@
     const { reactive, ref, computed, watch, onMounted } = Vue;
 
     const custInfos = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, customer: null});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, customer: null, searchMode: 'member', searchInput: '' });
+
+    /* adminData 참조 */
+    const members    = (props.adminData?.members    || window.adminData?.members    || []);
+    const orders     = (props.adminData?.orders     || window.adminData?.orders     || []);
+    const claims     = (props.adminData?.claims     || window.adminData?.claims     || []);
+    const deliveries = (props.adminData?.deliveries || window.adminData?.deliveries || []);
+    const cacheList  = (props.adminData?.cacheList  || window.adminData?.cacheList  || []);
+    const contacts   = (props.adminData?.contacts   || window.adminData?.contacts   || []);
+    const chats      = (props.adminData?.chats      || window.adminData?.chats      || []);
     const codes = reactive({
       member_statuses: [],
       member_grades: [],
@@ -135,6 +144,16 @@
       const cfDateFrom = computed(() => calcFrom(searchParam.period, searchParam.customFrom));
       const cfDateTo   = computed(() => searchParam.period === 'custom' ? searchParam.customTo : today());
 
+      /* ── 탭 / 뷰모드 (영속화) ── */
+      const histTab  = Vue.ref(window._mbCustInfoState.tab      || 'orders');
+      const viewMode2 = Vue.ref(window._mbCustInfoState.viewMode || '3col');
+      watch(histTab,   v => { window._mbCustInfoState.tab      = v; });
+      watch(viewMode2, v => { window._mbCustInfoState.viewMode = v; });
+      const showTab = (id) => viewMode2.value !== 'tab' || histTab.value === id;
+
+      /* ── 고객 초기화 ── */
+      const clearCustomer = () => { uiState.customer = null; uiState.searchInput = ''; };
+
       /* period 변경 시 custom 초기값 세팅 */
       watch(() => searchParam.period, v => {
         if (v === 'custom') {
@@ -153,45 +172,45 @@
       /* ── 파생 데이터 (computed) ── */
       const cfCustOrders = computed(() =>
         !uiState.customer ? [] : filtered(
-          window.safeArrayUtils.safeFilter(orders, o => o.userId === customer.value.userId), 'orderDate')
+          window.safeArrayUtils.safeFilter(orders, o => o.userId === uiState.customer.userId), 'orderDate')
       );
       const cfCustClaims = computed(() =>
         !uiState.customer ? [] : filtered(
-          window.safeArrayUtils.safeFilter(claims, c => c.userId === customer.value.userId), 'requestDate')
+          window.safeArrayUtils.safeFilter(claims, c => c.userId === uiState.customer.userId), 'requestDate')
       );
       const cfCustDeliveries = computed(() =>
         !uiState.customer ? [] : filtered(
-          window.safeArrayUtils.safeFilter(deliveries, d => d.userId === customer.value.userId), 'regDate')
+          window.safeArrayUtils.safeFilter(deliveries, d => d.userId === uiState.customer.userId), 'regDate')
       );
       const cfCustCache = computed(() =>
         !uiState.customer ? [] : filtered(
-          window.safeArrayUtils.safeFilter(cacheList, c => c.userId === customer.value.userId), 'date')
+          window.safeArrayUtils.safeFilter(cacheList, c => c.userId === uiState.customer.userId), 'date')
       );
       const cfCustContacts = computed(() =>
         !uiState.customer ? [] : filtered(
-          window.safeArrayUtils.safeFilter(contacts, c => c.userId === customer.value.userId), 'date')
+          window.safeArrayUtils.safeFilter(contacts, c => c.userId === uiState.customer.userId), 'date')
       );
       const cfCustChats = computed(() =>
         !uiState.customer ? [] : filtered(
-          window.safeArrayUtils.safeFilter(chats, c => c.userId === customer.value.userId), 'date')
+          window.safeArrayUtils.safeFilter(chats, c => c.userId === uiState.customer.userId), 'date')
       );
       const cfCustLoginHist = computed(() =>
         !uiState.customer ? [] : filtered(
-          (loginHistory || []).filter(l => l.userId === customer.value.userId), 'loginDate')
+          (loginHistory || []).filter(l => l.userId === uiState.customer.userId), 'loginDate')
       );
       const cfCustCouponUsage = computed(() =>
         !uiState.customer ? [] : filtered(
-          (couponUsage || []).filter(u => u.userId === customer.value.userId), 'usedDate')
+          (couponUsage || []).filter(u => u.userId === uiState.customer.userId), 'usedDate')
       );
       const cfCustSendHist = computed(() =>
         !uiState.customer ? [] : filtered(
-          (sendHistory || []).filter(s => s.userId === customer.value.userId), 'sendDate')
+          (sendHistory || []).filter(s => s.userId === uiState.customer.userId), 'sendDate')
       );
 
       /* 캐쉬 잔액 = 전체(필터 미적용) 마지막 레코드 */
       const cfCustCacheBalance = computed(() => {
         if (!uiState.customer) return 0;
-        const all = window.safeArrayUtils.safeFilter(cacheList, c => c.userId === customer.value.userId);
+        const all = window.safeArrayUtils.safeFilter(cacheList, c => c.userId === uiState.customer.userId);
         if (!all.length) return 0;
         return all.slice().sort((a, b) => a.cacheId - b.cacheId).at(-1)?.balance ?? 0;
       });
@@ -199,7 +218,7 @@
       /* ── 고객선택 모달 ── */
       const openMemberModal = () => {
         memberModal.keyword = '';
-        memberModal.list = [...members.value];
+        memberModal.list = [...members];
         memberModal.show = true;
       };
       const searchMemberModal = () => {
@@ -207,29 +226,26 @@
         memberModal.list = kw
           ? window.safeArrayUtils.safeFilter(members, m =>
               m.memberNm.includes(kw) || m.email.toLowerCase().includes(kw) || (m.phone || '').includes(kw))
-          : [...members.value];
+          : [...members];
       };
       const selectMember = (m) => {
         uiState.customer = m;
         memberModal.show = false;
-        searchInput.value = '';
+        uiState.searchInput = '';
       };
 
       /* ── 검색 실행 ── */
       const onSearch = async () => {
-    try {
-      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await window.boApi.get('/bo/ec/resource/page', { params });
-      // TODO: Update items array based on response
-      pager.page = 1;
-    } catch (err) {
-      console.error('[catch-info]', err);
-      if (props.showToast) props.showToast('조회 실패', 'error');
-    }
-  };
-  return { custInfos, uiState, searchMode, searchInput, SEARCH_MODES, memberModal,
+        try {
+          const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+          await window.boApi.get('/bo/ec/resource/page', { params });
+        } catch (err) {
+          console.error('[catch-info]', err);
+          if (props.showToast) props.showToast('조회 실패', 'error');
+        }
+      };
+  return { custInfos, uiState, SEARCH_MODES, memberModal,
         searchParam, searchParamOrg, PERIOD_OPTS, cfDateFrom, cfDateTo,
-        customer,
         cfCustOrders, cfCustClaims, cfCustDeliveries, cfCustCache, cfCustCacheBalance,
         cfCustContacts, cfCustChats, cfCustLoginHist, cfCustCouponUsage, cfCustSendHist,
         openMemberModal, searchMemberModal, selectMember,
@@ -250,8 +266,8 @@
     <!-- 모드 세그먼트 -->
     <div style="display:flex;background:#f0f2f5;border-radius:8px;padding:3px;gap:2px;flex-shrink:0;">
       <button v-for="m in SEARCH_MODES" :key="m?.id"
-        @click="searchMode=m.id;searchInput=''"
-        :style="searchMode===m.id
+        @click="uiState.searchMode=m.id;uiState.searchInput=''"
+        :style="uiState.searchMode===m.id
           ? 'background:#1976d2;color:#fff;border:none;border-radius:6px;padding:6px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;'
           : 'background:transparent;color:#666;border:none;border-radius:6px;padding:6px 16px;font-size:13px;cursor:pointer;transition:all .15s;'">
         {{ m.label }}
@@ -259,7 +275,7 @@
     </div>
 
     <!-- 고객 선택 -->
-    <template v-if="searchMode==='member'">
+    <template v-if="uiState.searchMode==='member'">
       <button @click="openMemberModal"
         style="display:flex;align-items:center;gap:6px;background:#fff;border:1.5px solid #1976d2;color:#1976d2;border-radius:8px;padding:7px 18px;font-size:13px;font-weight:600;cursor:pointer;">
         🔍 고객 선택
@@ -270,8 +286,8 @@
     <!-- 번호 입력 -->
     <template v-else>
       <div style="display:flex;align-items:center;gap:0;background:#f8f9fa;border:1.5px solid #ddd;border-radius:8px;overflow:hidden;flex:1;max-width:360px;">
-        <input type="text" v-model="searchParam.input"
-          :placeholder="searchMode==='order'?'주문번호  ex) ORD-2026-025':'클레임번호  ex) CLM-2026-013'"
+        <input type="text" v-model="uiState.searchInput"
+          :placeholder="uiState.searchMode==='order'?'주문번호  ex) ORD-2026-025':'클레임번호  ex) CLM-2026-013'"
           style="border:none;background:transparent;padding:8px 14px;font-size:13px;outline:none;flex:1;min-width:0;"
           @keyup.enter="() => onSearch?.()" />
         <button @click="onSearch"

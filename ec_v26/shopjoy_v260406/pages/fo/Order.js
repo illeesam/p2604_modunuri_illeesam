@@ -199,7 +199,7 @@ window.Order = {
       couponPopup, selectedCoupons, openCouponPopup, closeCouponPopup, applyCoupon, removeCoupon,
       selectedShipCoupon, applyShipCoupon, removeShipCoupon,
       cashBalance, cashInput,
-    , uiState, codes };
+      uiState, codes };
   },
 
   template: /* html */ `

@@ -301,7 +301,7 @@ window.DpDispWidgetPreview = {
         if (!lib.usedPaths || !lib.usedPaths.length) {
           addToPath(lib, '(미등록) > (미등록)');
         } else {
-          lib.uwindow.safeArrayUtils.safeForEach(sedPaths, p => addToPath(lib, p));
+          window.safeArrayUtils.safeForEach(lib.usedPaths, p => addToPath(lib, p));
         }
       });
       return Object.keys(map).sort().map(top => ({
@@ -319,11 +319,11 @@ window.DpDispWidgetPreview = {
     };
     const isOpen = (key) => openNodes.has(key);
     const allChildrenOpen = (node) =>
-      node.cwindow.safeArrayUtils.safeEvery(hildren, sub => openNodes.has(node.label + '_' + sub.label));
+      node.children.every(sub => openNodes.has(node.label + '_' + sub.label));
     const toggleAllChildren = (e, node) => {
       e.stopPropagation();
       const open = !allChildrenOpen(node);
-      node.cwindow.safeArrayUtils.safeForEach(hildren, sub => {
+      node.children.forEach(sub => {
         const key = node.label + '_' + sub.label;
         if (open) openNodes.add(key);
         else openNodes.delete(key);
@@ -333,10 +333,10 @@ window.DpDispWidgetPreview = {
     watchEffect(() => {
       if (!openNodes.has('__root__')) openNodes.add('__root__');
       if (cfTree.value.length && openNodes.size === 1) {
-        openNodes.add(cfTree.window.safeArrayUtils.safeGet(value, 0).label);
+        openNodes.add(cfTree.value[0].label);
       }
     });
-    const expandAll = () => { window.safeArrayUtils.safeForEach(cfTree, n => openNodes.add(n.label)); openNodes.add('__root__'); };
+    const expandAll = () => { cfTree.value.forEach(n => openNodes.add(n.label)); openNodes.add('__root__'); };
     const collapseAll = () => { openNodes.clear(); openNodes.add('__root__'); };
     const onItemDragStart = (e, lib) => {
       window._dragWidgetLib  = lib;

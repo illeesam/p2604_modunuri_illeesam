@@ -203,7 +203,7 @@ window.XsSample04 = {
       boData, bModal, openBModal, closeBModal, bShowToast, bShowConfirm,
       demoOrder, demoProduct, demoUser, demoTmpl, demoSampleParams, catSelIds,
       CATALOG2_COMMON, CATALOG2_FO, CATALOG2_BO,
-    , uiState, codes };
+      uiState, codes };
   },
 
   template: /* html */`

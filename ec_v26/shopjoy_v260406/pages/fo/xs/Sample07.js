@@ -553,7 +553,7 @@ window.XsSample07 = {
       // 자동실행
       autoPopupTabId, autoPopupPos, POPUP_ROWS, SECS, MINS, HOURS,
       openAutoPopup, closeAutoPopup, selectAuto, countdown,
-    , uiState, codes };
+      uiState, codes };
   },
 
   template: /* html */`

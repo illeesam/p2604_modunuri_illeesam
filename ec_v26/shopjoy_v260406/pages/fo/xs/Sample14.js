@@ -33,7 +33,6 @@ window.XsSample14 = {
     const checkedPanels  = reactive(new Set());
     const checkedWidgets = reactive(new Set()); // key: dispId_wi
     const selectedCatIds = reactive(new Set());
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: today, activeTab: 'grid1', dragSrc: null, dragSrcList: null, dropZoneIdx: -1, spanPopupIdx: -1, popoverKey: null, popoverWidget: null, popoverArea: null, popoverPanel: null, viewportMode: 'desktop'});
     const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
     const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
     const cfCatBtnLabel = computed(() => {
@@ -392,7 +391,6 @@ window.XsSample14 = {
       return null;
     });
     /* 실제 컨텐츠 보기 토글 */
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: today, activeTab: 'grid1', dragSrc: null, dragSrcList: null, dropZoneIdx: -1, spanPopupIdx: -1, popoverKey: null, popoverWidget: null, popoverArea: null, popoverPanel: null, viewportMode: 'desktop'});
     /* 초기화 */
     initExpand();
     return {

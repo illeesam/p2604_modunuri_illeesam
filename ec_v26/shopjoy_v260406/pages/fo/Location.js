@@ -95,7 +95,7 @@ window.Location = {
       mapProvider, mapSrc, uiState, onMapError,
       kakaoLink, naverLink, googleLink,
       ADDR,
-    , uiState, codes };
+      uiState, codes };
   },
 
   template: /* html */ `

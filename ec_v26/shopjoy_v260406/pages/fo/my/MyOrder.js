@@ -203,7 +203,7 @@ window.MyOrder = {
       openClaimModal, submitClaimModal,
       cfAuthUser, findProduct, openProductModal, openCustomerModal,
       reviews, reviewModal, openReviewModal, submitReview, getReview, onReviewFileChange, removeReviewFile,
-    , uiState, codes };
+      uiState, codes };
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myOrder">

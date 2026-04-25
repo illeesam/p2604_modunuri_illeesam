@@ -4,7 +4,7 @@ window.XsSample12 = {
   components: { 'category-select-modal': window.CategorySelectModal },
   setup() {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), previewTime: new Date().toTimeString().slice(0, 5) });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), previewTime: new Date().toTimeString().slice(0, 5), showAreaDrop: false, showCatModal: false });
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -28,7 +28,6 @@ window.XsSample12 = {
     const { ref, reactive, computed , watch } = Vue;
     const today = new Date().toISOString().slice(0, 10);
         const previewTime = ref(new Date().toTimeString().slice(0, 5));
-    const uiState = reactive({ showAreaDrop: false, showCatModal: false });
     const selectedAreas = reactive(new Set());
     const expandedAreas = reactive(new Set());
     const checkedPanels  = reactive(new Set());

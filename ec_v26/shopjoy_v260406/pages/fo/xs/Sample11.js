@@ -4,7 +4,7 @@ window.XsSample11 = {
   components: { 'category-select-modal': window.CategorySelectModal },
   setup() {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), viewMode: 'card', showDesc: true, previewTime: new Date().toTimeString().slice(0, 5) });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), viewMode: 'card', showDesc: true, previewTime: new Date().toTimeString().slice(0, 5), showAreaDrop: false, showCatModal: false });
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -30,7 +30,6 @@ window.XsSample11 = {
         const previewTime = ref(new Date().toTimeString().slice(0, 5));
     const viewMode    = ref('card');   // 'list' | 'card' | 'expand'
     const showDesc    = ref(true);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: today, viewMode: 'card', showDesc: true});
     const selectedAreas = reactive(new Set());
     /* 카테고리 선택 */
     const selectedCatIds = reactive(new Set());

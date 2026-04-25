@@ -209,7 +209,7 @@ window.XsSample02 = {
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
       onDragStart, onDragOver, onDragEnd,
       uiState, toggleCheckAll, fnStatusBadge, rowBg,
-    , uiState, codes };
+      codes };
   },
   template: /* html */`
 <div style="padding:clamp(12px,3vw,24px);">
