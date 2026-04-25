@@ -151,7 +151,7 @@ window.SyBbmMng = {
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
     return { bbms, uiState, codes, cfSiteNm, searchParam, pager, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnYnBadge, fnCommentBadge, fnAttachBadge, fnContentBadge, fnScopeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, bbsCount, exportExcel,
-      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
+      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
   },
   template: /* html */`
@@ -178,7 +178,7 @@ window.SyBbmMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPath"
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath"
           :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>

@@ -343,7 +343,7 @@
     <div class="tab-nav" style="margin-bottom:0;flex:1;flex-wrap:wrap;">
       <button v-for="t in TABS" :key="t.key" class="tab-btn"
         :class="{active: uiState.activeTab===t.key && uiState.viewMode==='tab'}"
-        :disabled="viewMode=!=='tab'"
+        :disabled="uiState.viewMode!=='tab'"
         @click="uiState.viewMode==='tab' && (activeTab=t.key)"
         :style="uiState.viewMode!=='tab' ? 'opacity:0.4;cursor:not-allowed;' : ''">
         <span style="margin-right:4px;">{{ t.icon }}</span>{{ t.label }}

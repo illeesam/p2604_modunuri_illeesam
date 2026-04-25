@@ -87,7 +87,7 @@ window.SyBizMng = {
     const setPage = n => { if(n>=1 && n<=cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const cfPagedRows = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    watch(selectedPath, () => pager.page = 1);
+    watch(() => uiState.selectedPath, () => pager.page = 1);
 
     const onSearch = () => { pager.page = 1; };
     const onReset = () => {
@@ -144,12 +144,12 @@ window.SyBizMng = {
     const closePathPick = () => { pathPickModal.show = false; };
     const onPathPicked = (pathId) => { formData.pathId = pathId; };
 
-    return { bizs, uiState, codes, selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
+    return { bizs, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, STATUS, BIZ_CLASS, VENDOR_TYPES,
       cfFiltered, cfPagedRows, pager, cfTotalPages, cfPageNums, setPage, onSizeChange,
       pathLabel, fnVendorTypeLabel, fnVendorTypeBadge, fnRoleCatLabel, fnRoleCatColor, fnStatusBadge, fnStatusLabel,
       onSearch, onReset,
-      formMode, formData, openNew, openEdit, closeForm, handleSaveForm,
+      formData, openNew, openEdit, closeForm, handleSaveForm,
       pathPickModal, openPathPick, closePathPick, onPathPicked,
     };
   },
@@ -183,7 +183,7 @@ window.SyBizMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
 
@@ -236,11 +236,11 @@ window.SyBizMng = {
       </div>
 
       <!-- 인라인 신규/수정 폼 -->
-      <div v-if="formMode" class="card" style="margin-top:16px;border:2px solid #e8587a;">
+      <div v-if="uiState.formMode" class="card" style="margin-top:16px;border:2px solid #e8587a;">
         <div class="toolbar">
           <span class="list-title">
-            <span style="color:#e8587a;">{{ formMode==='new' ? '+ 신규 업체' : '✏ 업체 수정' }}</span>
-            <span v-if="formMode==='edit'" style="margin-left:8px;font-size:11px;color:#888;">#{{ formData.bizId }}</span>
+            <span style="color:#e8587a;">{{ uiState.formMode==='new' ? '+ 신규 업체' : '✏ 업체 수정' }}</span>
+            <span v-if="uiState.formMode==='edit'" style="margin-left:8px;font-size:11px;color:#888;">#{{ formData.bizId }}</span>
           </span>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-secondary btn-sm" @click="closeForm">취소</button>

@@ -162,7 +162,7 @@ window.ZdStore = {
     });
 
     return {
-      storeList, selectedStore, storeInfo, selectStore, copyToClipboard, clearStore, openStores, viewMode, closeTab, editedStoreInfo, saveStore, loadAllStoreData, refreshStoreData
+      uiState, storeList, selectStore, copyToClipboard, clearStore, openStores, closeTab, editedStoreInfo, saveStore, loadAllStoreData, refreshStoreData
     };
   },
   template: `
@@ -176,7 +176,7 @@ window.ZdStore = {
   <div style="background: white; border-bottom: 2px solid #e5e7eb; padding: 0 16px; display: flex; align-items: center; justify-content: space-between;">
     <div class="tab-nav" style="display: flex; gap: 4px; overflow-x: auto; flex: 1; border-bottom: 1px solid #e5e7eb;">
       <div v-for="store in storeList" :key="store.name"
-        :class="['tab-btn', {active: selectedStore === store.name}]"
+        :class="['tab-btn', {active: uiState.selectedStore === store.name}]"
         @click="selectStore(store.name)"
         style="padding: 12px 16px; background: transparent; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-size: 13px; font-weight: 500; white-space: nowrap; transition: all 0.15s;">
         {{ store.label }}
@@ -186,33 +186,33 @@ window.ZdStore = {
     <!-- 뷰모드 버튼 (탭바 우측) -->
     <div class="tab-view-modes" style="display: flex; gap: 2px; padding-left: 16px;">
       <button
-        :class="{active: viewMode === 'tab'}"
-        @click="viewMode = 'tab'"
+        :class="{active: uiState.viewMode === 'tab'}"
+        @click="uiState.viewMode = 'tab'"
         title="탭 뷰"
         style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">📑</button>
       <button
-        :class="{active: viewMode === 'col1'}"
-        @click="viewMode = 'col1'"
+        :class="{active: uiState.viewMode === 'col1'}"
+        @click="uiState.viewMode = 'col1'"
         title="1열 보기"
         style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">1</button>
       <button
-        :class="{active: viewMode === 'col2'}"
-        @click="viewMode = 'col2'"
+        :class="{active: uiState.viewMode === 'col2'}"
+        @click="uiState.viewMode = 'col2'"
         title="2열 보기"
         style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">2</button>
       <button
-        :class="{active: viewMode === 'col3'}"
-        @click="viewMode = 'col3'"
+        :class="{active: uiState.viewMode === 'col3'}"
+        @click="uiState.viewMode = 'col3'"
         title="3열 보기"
         style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">3</button>
       <button
-        :class="{active: viewMode === 'col4'}"
-        @click="viewMode = 'col4'"
+        :class="{active: uiState.viewMode === 'col4'}"
+        @click="uiState.viewMode = 'col4'"
         title="4열 보기"
         style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">4</button>
       <button
-        :class="{active: viewMode === 'col5'}"
-        @click="viewMode = 'col5'"
+        :class="{active: uiState.viewMode === 'col5'}"
+        @click="uiState.viewMode = 'col5'"
         title="5열 보기"
         style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">5</button>
     </div>
@@ -223,10 +223,10 @@ window.ZdStore = {
     style="display: grid; gap: 4px; padding: 0; auto-flow: row;">
 
     <div v-for="store in storeList" :key="store.name"
-      v-show="viewMode === 'tab' ? selectedStore === store.name : true"
+      v-show="uiState.viewMode === 'tab' ? uiState.selectedStore === store.name : true"
       class="card" style="display: flex; flex-direction: column; height: 100%; padding: 8px;">
 
-      <div v-if="viewMode !== 'tab'" class="dtl-tab-card-title" style="margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #e5e7eb; font-weight: 600; font-size: 12px;">{{ store.label }}</div>
+      <div v-if="uiState.viewMode !== 'tab'" class="dtl-tab-card-title" style="margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #e5e7eb; font-weight: 600; font-size: 12px;">{{ store.label }}</div>
 
       <div style="flex: 1; margin-bottom: 8px;">
         <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 11px;">Store State (JSON)</label>
@@ -238,9 +238,9 @@ window.ZdStore = {
       </div>
 
       <div style="display: flex; gap: 4px; justify-content: flex-end; padding-top: 6px; border-top: 1px solid #e5e7eb;">
-        <button @click="selectedStore = store.name; clearStore()" style="padding: 6px 12px; font-size: 11px; background: #ef4444; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">지우기</button>
+        <button @click="uiState.selectedStore = store.name; clearStore()" style="padding: 6px 12px; font-size: 11px; background: #ef4444; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">지우기</button>
         <button v-if="store.api" @click="refreshStoreData(store.name)" style="padding: 6px 12px; font-size: 11px; background: #3b82f6; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">조회</button>
-        <button @click="selectedStore = store.name; saveStore()" style="padding: 6px 12px; font-size: 11px; background: linear-gradient(135deg, #ff6b9d, #c44569); border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">저장</button>
+        <button @click="uiState.selectedStore = store.name; saveStore()" style="padding: 6px 12px; font-size: 11px; background: linear-gradient(135deg, #ff6b9d, #c44569); border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">저장</button>
       </div>
     </div>
   </div>

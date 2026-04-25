@@ -115,7 +115,7 @@ window.SyBizUserMng = {
                   const applied = reactive({ vendorId: null });
 
     const cfVendorList = computed(() => vendors.filter(v => {
-      const kw = bizKw.value.trim().toLowerCase();
+      const kw = (uiState.bizKw || '').trim().toLowerCase();
       if (kw && !(v.vendorNm||'').toLowerCase().includes(kw) && !(v.bizNo||'').includes(kw)) return false;
       if (uiState.bizVendorFlt && v.vendorTypeCd !== uiState.bizVendorFlt) return false;
       return true;
@@ -146,6 +146,7 @@ window.SyBizUserMng = {
     const onReset = () => {
       uiState.bizKw = '';
       uiState.bizVendorFlt = '';
+      uiState.bizStatusFlt = '';
       bizPager.page = 1;
     };
 
@@ -375,14 +376,14 @@ window.SyBizUserMng = {
       vendorUsers, cfVendorMap, fnVendorNm, fnVendorTypeCd, fnVendorSummary,
       vendors, cfVendorList, bizPager, cfBizTotalPages, cfBizPageNums, cfBizPagedRows, setBizPage,
       onSearch, onReset,
-      searchVendorId, bizKw, bizVendorFlt, bizStatusFlt, BIZ_STATUS, applied,
+      BIZ_STATUS, applied,
       pickVendorRow, fnVendorStatusBadge, fnVendorStatusLabel, fnVendorTypeBadge, fnVendorTypeLabel,
-      uiState, onVendorPicked, VENDOR_TYPES,
-      treeRoleCat, cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
+      onVendorPicked, VENDOR_TYPES,
+      cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
       STATUS, fnStatusBadge, fnStatusLabel,
       cfFiltered, cfPagedRows, pager, cfTotalPages, cfPageNums, setPage, onSizeChange,
-      formMode, formData, openNew, openEdit, closeForm, handleSaveForm, handleDeleteRow,
-      userRoles, uiState, roleModalTemp, roleTreeExpanded,
+      formData, openNew, openEdit, closeForm, handleSaveForm, handleDeleteRow,
+      userRoles, roleTreeExpanded,
       openRoleModal, closeRoleModal, confirmRoleModal, handleDeleteRole,
       toggleRoleNode, pickRoleInModal, cfFormRoleTree, cfFormAllowedRootCode,
       roleNmByCode, cfSelectedModalRole, cfModalMenuList, fnPermBadgeColor,
@@ -404,13 +405,13 @@ window.SyBizUserMng = {
   <div class="card">
     <div class="search-bar">
       <span class="search-label">업체</span>
-      <div :style="{display:'flex',alignItems:'center',gap:'8px',flex:1,maxWidth:'480px',padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',background:'#f5f5f7',color:searchVendorId!=null?'#374151':'#9ca3af',fontWeight:searchVendorId!=null?600:400,fontSize:'12px'}">
-        <span style="flex:1;">{{ searchVendorId != null ? fnVendorSummary(searchVendorId) : '업체 선택...' }}</span>
-        <button type="button" @click="vendorPickOpen=true" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}">🔍</button>
-        <button v-if="searchVendorId!=null" type="button" @click="searchVendorId=null;applied.vendorId=null;vendorUsers.splice(0)" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #fca5a5',borderRadius:'50%',fontSize:'11px',color:'#dc2626',padding:'0',fontWeight:700}">✕</button>
+      <div :style="{display:'flex',alignItems:'center',gap:'8px',flex:1,maxWidth:'480px',padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',background:'#f5f5f7',color:uiState.searchVendorId!=null?'#374151':'#9ca3af',fontWeight:uiState.searchVendorId!=null?600:400,fontSize:'12px'}">
+        <span style="flex:1;">{{ uiState.searchVendorId != null ? fnVendorSummary(uiState.searchVendorId) : '업체 선택...' }}</span>
+        <button type="button" @click="uiState.vendorPickOpen=true" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}">🔍</button>
+        <button v-if="uiState.searchVendorId!=null" type="button" @click="uiState.searchVendorId=null;applied.vendorId=null;vendorUsers.splice(0)" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #fca5a5',borderRadius:'50%',fontSize:'11px',color:'#dc2626',padding:'0',fontWeight:700}">✕</button>
       </div>
-      <input v-model="bizKw" placeholder="업체명 / 사업자번호 검색" style="margin-left:12px;min-width:200px;" />
-      <select class="form-control" v-model="bizVendorFlt" style="width:140px;">
+      <input v-model="uiState.bizKw" placeholder="업체명 / 사업자번호 검색" style="margin-left:12px;min-width:200px;" />
+      <select class="form-control" v-model="uiState.bizVendorFlt" style="width:140px;">
         <option value="">업체유형 전체</option>
         <option v-for="v in VENDOR_TYPES" :key="v[0]" :value="v[0]">{{ v[1] }}</option>
       </select>
@@ -468,7 +469,7 @@ window.SyBizUserMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:40vh;overflow:auto;">
-        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
 
@@ -483,8 +484,8 @@ window.SyBizUserMng = {
             <th>업체</th><th>이름</th><th>직위</th><th>부서</th><th>휴대전화</th><th>이메일</th><th>상태</th><th>대표담당자</th><th style="text-align:right;">관리</th>
           </tr></thead>
           <tbody>
-            <tr v-if="cfPagedRows.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">{{ searchVendorId == null ? '업체를 선택해주세요.' : '데이터가 없습니다.' }}</td></tr>
-            <tr v-for="u in cfPagedRows" :key="u.vendorUserId" :style="formMode&&formData.vendorUserId===u.vendorUserId?'background:#fff8f9;':''">
+            <tr v-if="cfPagedRows.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">{{ uiState.searchVendorId == null ? '업체를 선택해주세요.' : '데이터가 없습니다.' }}</td></tr>
+            <tr v-for="u in cfPagedRows" :key="u.vendorUserId" :style="uiState.formMode&&formData.vendorUserId===u.vendorUserId?'background:#fff8f9;':''">
               <td style="font-weight:600;color:#2563eb;font-size:12px;">{{ fnVendorNm(u.vendorId) }}</td>
               <td>{{ u.memberNm }}</td>
               <td style="font-size:11.5px;">{{ u.positionCd }}</td>
@@ -518,11 +519,11 @@ window.SyBizUserMng = {
       </div>
 
       <!-- 인라인 폼 -->
-      <div v-if="formMode" class="card" style="margin-top:16px;border:2px solid #e8587a;">
+      <div v-if="uiState.formMode" class="card" style="margin-top:16px;border:2px solid #e8587a;">
         <div class="toolbar">
           <span class="list-title">
-            <span style="color:#e8587a;">{{ formMode==='new' ? '+ 신규 업체사용자' : '✏ 업체사용자 수정' }}</span>
-            <span v-if="formMode==='edit'" style="margin-left:8px;font-size:11px;color:#888;">#{{ formData.vendorUserId }}</span>
+            <span style="color:#e8587a;">{{ uiState.formMode==='new' ? '+ 신규 업체사용자' : '✏ 업체사용자 수정' }}</span>
+            <span v-if="uiState.formMode==='edit'" style="margin-left:8px;font-size:11px;color:#888;">#{{ formData.vendorUserId }}</span>
           </span>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             <button class="btn btn-blue btn-sm" @click="sendJoinMail">✉ 회원가입메일</button>
@@ -583,12 +584,12 @@ window.SyBizUserMng = {
         </div>
 
         <!-- 역할 목록 (수정 모드에서만) -->
-        <div v-if="formMode==='edit'" style="padding:0 16px 16px;">
+        <div v-if="uiState.formMode==='edit'" style="padding:0 16px 16px;">
           <div class="toolbar" style="margin-bottom:8px;">
             <span class="list-title" style="font-size:13px;">🎭 부여된 역할 <span class="list-count">{{ userRoles.length }}개</span></span>
             <button class="btn btn-blue btn-sm" @click="openRoleModal">+ 역할 추가</button>
           </div>
-          <div v-if="roleLoading" style="text-align:center;padding:12px;color:#9ca3af;font-size:12px;">로딩 중...</div>
+          <div v-if="uiState.roleLoading" style="text-align:center;padding:12px;color:#9ca3af;font-size:12px;">로딩 중...</div>
           <div v-else-if="userRoles.length===0" style="padding:12px;color:#9ca3af;font-size:12px;text-align:center;">부여된 역할이 없습니다.</div>
           <table v-else class="bo-table" style="font-size:12px;">
             <thead><tr><th>역할명</th><th>부여일시</th><th>유효기간</th><th style="text-align:right;">관리</th></tr></thead>
@@ -612,7 +613,7 @@ window.SyBizUserMng = {
   </div>
 
   <!-- 역할 선택 모달 -->
-  <div v-if="roleModalOpen" class="modal-overlay" @click.self="closeRoleModal">
+  <div v-if="uiState.roleModalOpen" class="modal-overlay" @click.self="closeRoleModal">
     <div style="background:#fff;border-radius:16px;width:min(1000px,95vw);height:min(720px,90vh);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25);">
       <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 22px;background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 60%,#bfdbfe 100%);border-bottom:1px solid #bfdbfe;">
         <div style="display:flex;align-items:center;gap:10px;">
@@ -646,12 +647,12 @@ window.SyBizUserMng = {
                 <div v-for="ch in root.children" :key="ch.roleId"
                   @click="pickRoleInModal(ch)"
                   :style="{padding:'7px 10px',fontSize:'12.5px',cursor:ch.allowed?'pointer':'not-allowed',
-                    color:ch.allowed?(roleModalTemp===ch.roleCode?'#fff':'#374151'):'#d1d5db',
-                    background:roleModalTemp===ch.roleCode?'linear-gradient(135deg,#3b82f6,#2563eb)':'transparent',
-                    borderRadius:'6px',fontWeight:roleModalTemp===ch.roleCode?700:500,marginBottom:'2px',
+                    color:ch.allowed?(uiState.roleModalTemp===ch.roleCode?'#fff':'#374151'):'#d1d5db',
+                    background:uiState.roleModalTemp===ch.roleCode?'linear-gradient(135deg,#3b82f6,#2563eb)':'transparent',
+                    borderRadius:'6px',fontWeight:uiState.roleModalTemp===ch.roleCode?700:500,marginBottom:'2px',
                     display:'flex',alignItems:'center',gap:'6px',transition:'all .1s'}"
-                  @mouseover="ch.allowed&&roleModalTemp!==ch.roleCode&&($event.currentTarget.style.background='#eff6ff')"
-                  @mouseout="roleModalTemp!==ch.roleCode&&($event.currentTarget.style.background='transparent')">
+                  @mouseover="ch.allowed&&uiState.roleModalTemp!==ch.roleCode&&($event.currentTarget.style.background='#eff6ff')"
+                  @mouseout="uiState.roleModalTemp!==ch.roleCode&&($event.currentTarget.style.background='transparent')">
                   <span style="font-size:9px;">●</span>
                   <span>{{ ch.roleNm }}</span>
                 </div>
@@ -691,12 +692,12 @@ window.SyBizUserMng = {
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-top:1px solid #eef0f3;background:#fafbfc;">
         <div style="font-size:11px;color:#6b7280;">
-          <span v-if="roleModalTemp">선택: <b style="color:#2563eb;">{{ roleNmByCode(roleModalTemp) }}</b></span>
+          <span v-if="uiState.roleModalTemp">선택: <b style="color:#2563eb;">{{ roleNmByCode(uiState.roleModalTemp) }}</b></span>
           <span v-else style="color:#9ca3af;">역할을 선택해주세요</span>
         </div>
         <div style="display:flex;gap:8px;">
           <button class="btn btn-secondary btn-sm" @click="closeRoleModal">취소</button>
-          <button class="btn btn-primary btn-sm" @click="confirmRoleModal" :disabled="!roleModalTemp">✔ 역할 부여</button>
+          <button class="btn btn-primary btn-sm" @click="confirmRoleModal" :disabled="!uiState.roleModalTemp">✔ 역할 부여</button>
         </div>
       </div>
     </div>

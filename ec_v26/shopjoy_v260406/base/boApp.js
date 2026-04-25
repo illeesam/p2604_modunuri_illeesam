@@ -1019,7 +1019,7 @@
       );
 
       /* 루트 클릭 → 컨텍스트 메뉴·유저메뉴 닫기 */
-      const onRootClick = () => { closeCtxMenu(); userMenuShow.value = false; };
+      const onRootClick = () => { closeCtxMenu(); uiState.userMenuShow = false; };
 
       return {
         isApiLoading,

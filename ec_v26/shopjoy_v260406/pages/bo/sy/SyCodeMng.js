@@ -177,9 +177,9 @@ window.SyCodeMng = {
     const cfGrpPagedRows = computed(() => { const s = (grpPager.page - 1) * grpPager.size; return cfFilteredGrpRows.value.slice(s, s + grpPager.size); });
     watch(() => cfFilteredGrpRows.value.length, () => { if (grpPager.page > cfGrpTotalPages.value) grpPager.page = Math.max(1, cfGrpTotalPages.value); });
     /* 트리 path 변경 시: 그룹 페이지 리셋 + selectedGrp 해제 + 코드목록 재조회 */
-    watch(grpSelectedPath, () => { grpPager.page = 1; uiState.selectedGrp = ''; handleLoadGrid(); });
+    watch(() => uiState.grpSelectedPath, () => { grpPager.page = 1; uiState.selectedGrp = ''; handleLoadGrid(); });
     /* selectedGrp 변경 시 코드목록 재조회 */
-    watch(selectedGrp, () => handleLoadGrid());
+    watch(() => uiState.selectedGrp, () => handleLoadGrid());
 
     /* 그룹 행 클릭 → 코드목록 필터 (토글) */
     const onGrpRowClick = (g) => {
@@ -252,7 +252,7 @@ window.SyCodeMng = {
           current = current.parentCodeValue ? byValue.get(current.parentCodeValue) : null;
         }
         const indent = '　'.repeat(depth); // 전각 공백으로 들여쓰기
-        return { codes, uiState, uiState, label: `${r.codeLabel}(${r.codeValue})`,
+        return { label: `${r.codeLabel}(${r.codeValue})`,
           value: r.codeValue,
           path: getCodeHierarchyPath(r.codeValue),
           displayLabel: `${indent}${r.codeLabel}(${r.codeValue})`
@@ -501,19 +501,19 @@ window.SyCodeMng = {
       cfSiteNm,
       searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfGrpOptions,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
-      focusedIdx, setFocused, onSearch, onReset, onCellChange,
+      setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       dragSrc, onDragStart, onDragOver, onDragEnd,
-      uiState, toggleCheckAll, fnStatusClass,
+      toggleCheckAll, fnStatusClass,
       exportExcel,
       codeGroups,
       grpRows, cfGrpDirty, addGrp, handleDeleteGrp, cancelGrp, handleSaveGrp, onGrpChange,
-      cfGrpTree, grpExpanded, grpToggleNode, grpSelectNode, grpExpandAll, grpCollapseAll, grpSelectedPath, cfFilteredGrpRows,
+      cfGrpTree, grpExpanded, grpToggleNode, grpSelectNode, grpExpandAll, grpCollapseAll, cfFilteredGrpRows,
       grpPager, GRP_PAGE_SIZES, cfGrpTotalPages, cfGrpPageNums, setGrpPage, onGrpSizeChange, cfGrpPagedRows,
-      selectedGrp, onGrpRowClick,
+      onGrpRowClick,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      activeCodeTab, cfCodeTree, cfCodeTreeExpanded, codeToggleNode, cfFlatTreeRows, cfParentCodeOptions, cfIsTreeTypeGrp,
-      selectedCodeId, handleLoadDetail, closeDetail, getCodeHierarchyPath,
+      cfCodeTree, cfCodeTreeExpanded, codeToggleNode, cfFlatTreeRows, cfParentCodeOptions, cfIsTreeTypeGrp,
+      handleLoadDetail, closeDetail, getCodeHierarchyPath,
       treePager, TREE_PAGE_SIZES, cfTreeTotalPages, cfTreePageNums, setTreePage, onTreeSizeChange, cfPagedTreeRows,
     };
   },
@@ -558,7 +558,7 @@ window.SyCodeMng = {
         <button class="btn btn-sm" @click="grpCollapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:50vh;overflow:auto;">
-        <prop-tree-node :node="cfGrpTree" :expanded="grpExpanded" :selected="grpSelectedPath"
+        <prop-tree-node :node="cfGrpTree" :expanded="grpExpanded" :selected="uiState.grpSelectedPath"
           :on-toggle="grpToggleNode" :on-select="grpSelectNode" :depth="0" />
       </div>
     </div>

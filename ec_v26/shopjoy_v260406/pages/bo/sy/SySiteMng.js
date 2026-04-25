@@ -151,19 +151,16 @@ window.SySiteMng = {
 
     const onSearch = () => {
       Object.assign(applied, {
-        kw: searchKw.value,
-        type: searchType.value,
-        status: searchStatus.value,
-        dateStart: searchDateStart.value,
-        dateEnd: searchDateEnd.value,
+        kw: searchParam.kw,
+        type: searchParam.type,
+        status: searchParam.status,
+        dateStart: searchParam.dateStart,
+        dateEnd: searchParam.dateEnd,
       });
       pager.page = 1;
     };
     const onReset = () => {
-      searchKw.value = '';
-      searchType.value = '';
-      searchStatus.value = '';
-      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
+      Object.assign(searchParam, searchParamOrg);
       Object.assign(applied, { kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
       pager.page = 1;
     };
@@ -175,7 +172,7 @@ window.SySiteMng = {
       if (!ok) return;
       const idx = sites.findIndex(x => x.siteId === s.siteId);
       if (idx !== -1) sites.splice(idx, 1);
-      if (uiStateDetail.selectedId === s.siteId) uiStateDetail.selectedId = null;
+      if (detailModal.editId === s.siteId) { detailModal.show = false; detailModal.editId = null; }
       try {
         const res = await window.boApi.delete(`/bo/sy/site/${s.siteId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -190,33 +187,33 @@ window.SySiteMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'siteId'},{label:'사이트코드',key:'siteCode'},{label:'사이트명',key:'siteNm'},{label:'도메인',key:'domain'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '사이트목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
-    watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
+    watch(() => uiState.selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
-    return { uiStateDetail, sites, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
-      searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange,
-      searchKw, searchType, searchStatus, cfTypeOptions,
+    return { sites, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
+      searchParam, DATE_RANGE_OPTIONS, onDateRangeChange,
+      cfTypeOptions,
       pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums,
       onSearch, onReset, setPage, onSizeChange,
       fnStatusBadge, fnTypeBadge, handleDelete,
-       cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey,
-      exportExcel,
+      cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey,
+      detailModal, exportExcel,
     };
   },
   template: /* html */`
 <div>
   <div class="page-title">사이트관리</div>  <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="사이트코드 / 사이트명 / 도메인 검색" />
-      <select v-model="searchType">
+      <input v-model="searchParam.kw" placeholder="사이트코드 / 사이트명 / 도메인 검색" />
+      <select v-model="searchParam.type">
         <option value="">유형 전체</option>
         <option v-for="t in cfTypeOptions" :key="t">{{ t }}</option>
       </select>
-      <select v-model="searchStatus">
+      <select v-model="searchParam.status">
         <option value="">상태 전체</option><option>운영중</option><option>점검중</option><option>비활성</option>
       </select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -236,7 +233,7 @@ window.SySiteMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
     <div>
@@ -255,13 +252,13 @@ window.SySiteMng = {
       </tr></thead>
       <tbody>
         <tr v-if="cfPageList.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="s in cfPageList" :key="s.siteId" :style="selectedId===s.siteId?'background:#fff8f9;':''">
+        <tr v-for="s in cfPageList" :key="s.siteId" :style="detailModal.editId===s.siteId?'background:#fff8f9;':''">
           <td style="font-size:12px;"><div style="display:flex;align-items:center;gap:6px;"><span style="flex:1;padding:4px 6px;background:#f3f4f6;border-radius:4px;color:#666;font-weight:500;">{{ pathLabel(s.pathId) || '미설정' }}</span><button type="button" @click="openPathPick(s)" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;hover:background:#eef2ff;">🔍</button></div></td>
           <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;">{{ s.siteCode }}</code></td>
           <td><span class="badge" :class="fnTypeBadge(s.siteType)" style="font-size:10px;">{{ s.siteType }}</span></td>
           <td>
-            <span class="title-link" @click="handleLoadDetail(s.siteId)" :style="selectedId===s.siteId?'color:#e8587a;font-weight:700;':''">
-              {{ s.siteNm }}<span v-if="selectedId===s.siteId" style="font-size:10px;margin-left:3px;">▼</span>
+            <span class="title-link" @click="handleLoadDetail(s.siteId)" :style="detailModal.editId===s.siteId?'color:#e8587a;font-weight:700;':''">
+              {{ s.siteNm }}<span v-if="detailModal.editId===s.siteId" style="font-size:10px;margin-left:3px;">▼</span>
             </span>
             <div style="font-size:11px;color:#888;margin-top:2px;">{{ s.description }}</div>
           </td>
@@ -295,7 +292,7 @@ window.SySiteMng = {
     </div>
   </div>
 
-  <div v-if="selectedId" style="margin-top:4px;">
+  <div v-if="detailModal.show" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
