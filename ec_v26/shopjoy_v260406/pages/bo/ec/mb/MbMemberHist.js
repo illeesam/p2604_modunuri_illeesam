@@ -19,6 +19,7 @@ window.MbMemberHist = {
         members.splice(0, members.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
+        console.error('[catch-info]', err);
         error.value = err.message;
         if (props.showToast) props.showToast('MbMember 로드 실패', 'error');
       } finally {

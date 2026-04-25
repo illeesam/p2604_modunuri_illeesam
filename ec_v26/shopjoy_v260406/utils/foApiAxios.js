@@ -39,6 +39,7 @@
 
   /* ── Request: 토큰 주입 + 기본 헤더 설정 + 로그 ── */
   inst.interceptors.request.use(function (cfg) {
+    try { if (typeof global._showProgress === 'function') global._showProgress(true); } catch (_) {}
     try {
       cfg.headers = cfg.headers || {};
       /* Content-Type 기본값 설정 (이미 설정되어 있으면 유지) */
@@ -75,9 +76,11 @@
   function flush(tok) { pending.forEach(function (cb) { cb(tok); }); pending = []; }
 
   inst.interceptors.response.use(function (res) {
+    try { if (typeof global._showProgress === 'function') global._showProgress(false); } catch (_) {}
     console.log(TAG + ' ← ' + res.status, res.config && res.config.url);
     return res;
   }, function (err) {
+    try { if (typeof global._showProgress === 'function') global._showProgress(false); } catch (_) {}
     var res = err.response;
     var cfg = err.config || {};
     var status = res && res.status;

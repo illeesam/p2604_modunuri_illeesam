@@ -19,6 +19,7 @@ window.CmChattDtl = {
         chatts.splice(0, chatts.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
+        console.error('[catch-info]', err);
         error.value = err.message;
         if (props.showToast) props.showToast('CmChatt 로드 실패', 'error');
       } finally {
@@ -112,6 +113,7 @@ window.CmChattDtl = {
       try {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
+        console.error('[catch-info]', err);
         err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; });
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
@@ -131,6 +133,7 @@ window.CmChattDtl = {
         if (props.showToast) props.showToast('등록되었습니다.', 'success');
         if (props.navigate) props.navigate('cmChattMng');
       } catch (err) {
+        console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
         if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
         if (props.showToast) props.showToast(errMsg, 'error', 0);

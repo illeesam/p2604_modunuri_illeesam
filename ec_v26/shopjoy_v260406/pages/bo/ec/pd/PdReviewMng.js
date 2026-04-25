@@ -24,6 +24,7 @@ window.PdReviewMng = {
         members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
         error.value = null;
       } catch (err) {
+        console.error('[catch-info]', err);
         error.value = err.message;
         if (props.showToast) props.showToast('PdReview 로드 실패', 'error');
       } finally {
@@ -71,6 +72,7 @@ window.PdReviewMng = {
         const res = await window.boApi.put(`/bo/ec/pd/review/${row.reviewId}/status`, { reviewStatusCd: newStatus });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
+        console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
         if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
         if (props.showToast) props.showToast(errMsg, 'error', 0);

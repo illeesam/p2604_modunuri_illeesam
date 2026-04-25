@@ -19,6 +19,7 @@ window.PdProdHist = {
         products.splice(0, products.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
+        console.error('[catch-info]', err);
         error.value = err.message;
         if (props.showToast) props.showToast('PdProd 로드 실패', 'error');
       } finally {

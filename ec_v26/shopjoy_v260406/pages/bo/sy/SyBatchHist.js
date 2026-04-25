@@ -21,6 +21,7 @@ window.SyBatchHist = {
         batchLogs.splice(0, batchLogs.length, ...(resLogs.data?.data?.list || []));
         error.value = null;
       } catch (err) {
+        console.error('[catch-info]', err);
         error.value = err.message;
         if (props.showToast) props.showToast('SyBatch 로드 실패', 'error');
       } finally {

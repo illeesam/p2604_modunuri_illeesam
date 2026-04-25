@@ -406,3 +406,18 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 /* 대시보드 3/4열 뷰: 외부 bo-wrap 폭/여백 해제 */
 .bo-wrap:has(.dash-wide) { max-width: none !important; padding: 8px !important; }
 .dash-wide { width: 100%; }
+
+/* ── API Progress Overlay ── */
+.api-progress-overlay {
+  position: fixed; inset: 0; z-index: 99999;
+  background: rgba(0,0,0,.25);
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(1px);
+}
+.api-progress-spinner {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 5px solid rgba(255,255,255,.35);
+  border-top-color: #ff6b9d;
+  animation: bo-spin .7s linear infinite;
+}
+@keyframes bo-spin { to { transform: rotate(360deg); } }

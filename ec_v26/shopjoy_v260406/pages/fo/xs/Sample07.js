@@ -367,6 +367,7 @@ window.XsSample07 = {
         tab.resStatus = status; tab.resTime = elapsed;
         tab.resData = res.data; tab.resJson = JSON.stringify(res.data, null, 2);
       } catch (err) {
+        console.error('[catch-info]', err);
         elapsed = Date.now() - t0; status = err.response?.status || 0;
         tab.resStatus = status; tab.resTime = elapsed;
         const errData = err.response?.data || { error: err.message };

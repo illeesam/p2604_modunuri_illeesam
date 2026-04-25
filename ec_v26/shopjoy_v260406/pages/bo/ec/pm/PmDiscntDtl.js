@@ -22,6 +22,7 @@ window.PmDiscntDtl = {
         discntList.value = list;
         error.value = null;
       } catch (err) {
+        console.error('[catch-info]', err);
         error.value = err.message;
         if (props.showToast) props.showToast('PmDiscnt 로드 실패', 'error');
       } finally {
@@ -76,6 +77,7 @@ window.PmDiscntDtl = {
       try {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
+        console.error('[catch-info]', err);
         err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; });
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
@@ -99,6 +101,7 @@ window.PmDiscntDtl = {
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmDiscntMng');
       } catch (err) {
+        console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
         if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
         if (props.showToast) props.showToast(errMsg, 'error', 0);

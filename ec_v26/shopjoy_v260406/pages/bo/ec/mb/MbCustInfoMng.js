@@ -90,6 +90,7 @@
         sendHistory.splice(0, sendHistory.length, ...(resSend.data?.data?.list || []));
         error.value = null;
       } catch (err) {
+        console.error('[catch-info]', err);
         error.value = err.message;
         if (props.showToast) props.showToast('MbCustInfo 로드 실패', 'error');
       } finally {

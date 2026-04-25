@@ -17,6 +17,7 @@ window.SyBizMng = {
         });
         bizs.splice(0, bizs.length, ...(res.data?.data?.list || []));
       } catch (err) {
+        console.error('[catch-info]', err);
         error.value = err.message;
         if (props.showToast) props.showToast('SyBiz 로드 실패', 'error');
       } finally {

@@ -18,6 +18,7 @@ window.MbMemGroupMng = {
         groups.splice(0, groups.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
+        console.error('[catch-info]', err);
         error.value = err.message;
         if (props.showToast) props.showToast('MbMemGroup 로드 실패', 'error');
       } finally {
@@ -66,6 +67,7 @@ window.MbMemGroupMng = {
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
+        console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
         if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
         if (props.showToast) props.showToast(errMsg, 'error', 0);
@@ -88,6 +90,7 @@ window.MbMemGroupMng = {
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast('저장되었습니다.', 'success');
         } catch (err) {
+          console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
           if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
           if (props.showToast) props.showToast(errMsg, 'error', 0);

@@ -19,6 +19,7 @@ window.SyTemplateDtl = {
         templates = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
+        console.error('[catch-info]', err);
         error.value = err.message;
         if (props.showToast) props.showToast('SyTemplate 로드 실패', 'error');
       } finally {
@@ -92,6 +93,7 @@ window.SyTemplateDtl = {
       try {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
+        console.error('[catch-info]', err);
         err.inner.forEach(e => { errors[e.path] = e.message; });
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
@@ -114,6 +116,7 @@ window.SyTemplateDtl = {
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syTemplateMng');
       } catch (err) {
+        console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
         if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
         if (props.showToast) props.showToast(errMsg, 'error', 0);

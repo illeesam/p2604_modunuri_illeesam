@@ -402,6 +402,23 @@
 
       /* ── Toast (누적 스택) ── */
       const toasts  = reactive([]);
+      /* ── API Progress Overlay ── */
+      const isApiLoading = Vue.ref(false);
+      let _apiLoadingCount = 0;
+      let _hideTimer = null;
+      window._showProgress = (on) => {
+        _apiLoadingCount = Math.max(0, _apiLoadingCount + (on ? 1 : -1));
+        if (_apiLoadingCount > 0) {
+          if (_hideTimer) { clearTimeout(_hideTimer); _hideTimer = null; }
+          isApiLoading.value = true;
+        } else {
+          _hideTimer = setTimeout(() => {
+            if (_apiLoadingCount === 0) isApiLoading.value = false;
+            _hideTimer = null;
+          }, 200);
+        }
+      };
+
       let _toastId  = 0;
       const TOAST_DURATION = 3500;
       const showToast = (msg, type = 'success', duration = TOAST_DURATION, errorDetails = '') => {
@@ -881,6 +898,7 @@
           navigate('dashboard');
           showToast(`${(currentAuthUser?.authNm || currentAuthUser?.name || '사용자')}님 환영합니다.`);
         } catch (err) {
+          console.error('[catch-info]', err);
           loginError.value = err?.response?.data?.message || err?.message || '로그인 실패';
         }
       };
@@ -936,6 +954,7 @@
           loginError.value = '';
           showToast('가입이 완료되었습니다. 로그인해주세요.');
         } catch (err) {
+          console.error('[catch-info]', err);
           loginError.value = err.response?.data?.message || err.message || '가입 실패';
         }
       };
@@ -1006,6 +1025,7 @@
       const onRootClick = () => { closeCtxMenu(); userMenuShow.value = false; };
 
       return {
+        isApiLoading,
         page, editId, navigate, errorMessage, cfDashboardComp,
         TOP_MENUS, LEFT_MENUS, AUTH_METHODS,
         openTabs, closeTab, cfActiveTabId, refreshKeys, keptTabIds, toggleKeep, PAGE_COMP_MAP,
@@ -1565,6 +1585,11 @@
         <button class="btn btn-primary" @click="closeConfirm(true)">{{ confirmState.btnOk }}</button>
       </div>
     </div>
+  </div>
+
+  <!-- API Progress Overlay -->
+  <div v-if="isApiLoading" class="api-progress-overlay">
+    <div class="api-progress-spinner"></div>
   </div>
 
   <!-- Toast 누적 스택 -->

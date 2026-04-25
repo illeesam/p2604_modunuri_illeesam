@@ -25,6 +25,7 @@ window.OdOrderHist = {
         deliveries.splice(0, deliveries.length, ...(resD.data?.data?.list || []));
         error.value = null;
       } catch (err) {
+        console.error('[catch-info]', err);
         error.value = err.message;
         if (props.showToast) props.showToast('OdOrderHist 로드 실패', 'error');
       } finally {

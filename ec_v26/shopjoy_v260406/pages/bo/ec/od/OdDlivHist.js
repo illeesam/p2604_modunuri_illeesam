@@ -19,6 +19,7 @@ window.OdDlivHist = {
         deliveries.splice(0, deliveries.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
+        console.error('[catch-info]', err);
         error.value = err.message;
         if (props.showToast) props.showToast('OdDliv 로드 실패', 'error');
       } finally {

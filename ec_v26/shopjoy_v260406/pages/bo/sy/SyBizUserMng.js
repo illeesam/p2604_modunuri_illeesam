@@ -27,6 +27,7 @@ window.SyBizUserMng = {
         menus.splice(0, menus.length, ...(menuRes.data?.data?.list || []));
         roleMenus.splice(0, roleMenus.length, ...(roleMenuRes.data?.data?.list || []));
       } catch (err) {
+        console.error('[catch-info]', err);
         console.warn('[SyBizUserMng] role/menu load failed', err);
       }
     };

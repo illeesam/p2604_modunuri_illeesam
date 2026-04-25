@@ -69,6 +69,7 @@ window.PdDlivTmpltMng = {
         const res = await (isNewTmplt ? window.boApi.post(`/bo/ec/pd/dliv-tmplt/${form.dlivTmpltId||''}`, { ...form }) : window.boApi.put(`/bo/ec/pd/dliv-tmplt/${form.dlivTmpltId||''}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
+        console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
         if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
         if (props.showToast) props.showToast(errMsg, 'error', 0);
@@ -83,6 +84,7 @@ window.PdDlivTmpltMng = {
         const res = await window.boApi.delete(`/bo/ec/pd/dliv-tmplt/${cfSelectedRow.value.dlivTmpltId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
+        console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
         if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
         if (props.showToast) props.showToast(errMsg, 'error', 0);

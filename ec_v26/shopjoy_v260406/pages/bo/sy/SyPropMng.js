@@ -42,6 +42,7 @@ window.SyPropMng = {
         _rawProps.splice(0, _rawProps.length, ...list);
         reload();
       } catch (err) {
+        console.error('[catch-info]', err);
         if (props.showToast) props.showToast('SyProp 로드 실패', 'error');
       }
     };

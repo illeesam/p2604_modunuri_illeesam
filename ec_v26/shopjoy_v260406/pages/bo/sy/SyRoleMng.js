@@ -18,6 +18,7 @@ window.SyRoleMng = {
         roles.splice(0, roles.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
+        console.error('[catch-info]', err);
         error.value = err.message;
         if (props.showToast) props.showToast('SyRole 로드 실패', 'error');
       } finally {

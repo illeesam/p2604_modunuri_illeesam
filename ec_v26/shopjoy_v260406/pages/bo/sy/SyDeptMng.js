@@ -18,6 +18,7 @@ window.SyDeptMng = {
         depts = res.data?.data?.list || [];
         error.value = null;
       } catch (err) {
+        console.error('[catch-info]', err);
         error.value = err.message;
         if (props.showToast) props.showToast('SyDept 로드 실패', 'error');
       } finally {

@@ -18,6 +18,7 @@ window.PdTagMng = {
         tags.splice(0, tags.length, ...(res.data?.data?.list || []));
         error.value = null;
       } catch (err) {
+        console.error('[catch-info]', err);
         error.value = err.message;
         if (props.showToast) props.showToast('PdTag 로드 실패', 'error');
       } finally {
@@ -62,6 +63,7 @@ window.PdTagMng = {
         const res = await window.boApi.delete(`/bo/ec/pd/tag/${row.tagId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
+        console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
         if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
         if (props.showToast) props.showToast(errMsg, 'error', 0);
@@ -84,6 +86,7 @@ window.PdTagMng = {
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast('저장되었습니다.', 'success');
         } catch (err) {
+          console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
           if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
           if (props.showToast) props.showToast(errMsg, 'error', 0);

@@ -38,6 +38,7 @@ window.SyPathMng = {
         BIZ_OPTIONS.splice(0, BIZ_OPTIONS.length, ...codeList);
         reload();
       } catch (err) {
+        console.error('[catch-info]', err);
         console.warn('[SyPathMng] data load failed', err);
         if (props.showToast) props.showToast('표시경로 데이터 로드 실패', 'error');
       }
