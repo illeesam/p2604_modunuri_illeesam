@@ -6,7 +6,7 @@ window.DpDispAreaDtl = {
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const codes = reactive({ disp_areas: [], layout_types: [] });
     const areas = reactive([]);
-    const uiState = reactive({ loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, isPageCodeLoad: false, pickKw: '', activeTab: 'base', expanded: false, previewMode: 'default', previewPaneWidth: 520, htmlDescEl: null});;
+    const uiState = reactive({ loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, pickKw: '', activeTab: 'base', expanded: false, previewMode: 'default', previewPaneWidth: 520, htmlDescEl: null });
 
     // App 초기화 준비 상태
     const isAppReady = computed(() => {
@@ -79,8 +79,6 @@ window.DpDispAreaDtl = {
       areaBaseDispStartDate: '', areaBaseDispEndDate: '',
       areaBaseDispEnv: '^PROD^',
       areaBaseVisibilityTargets: '^PUBLIC^',
-      error: null,
-      error: null,
     });
 
     const errors = reactive({});
@@ -396,7 +394,7 @@ window.DpDispAreaDtl = {
       form.areaBaseVisibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
-    return { codes, areas, uiState; pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
+    return { codes, areas, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
       form, errors, cfIsNew, codes, uiState, fnAreaTypeLabel,
       handleSave, onCancel, cfRelatedPanels,
       uiState, pickKw, pickSel, cfAvailablePanels, openPick, closePick, togglePick, confirmPick, removePanel, onPanelPicked, movePanel,

@@ -184,7 +184,7 @@ window.DpDispWidgetLibPreview = {
       filterCondition: '',
       filterAuthReq: '',
       filterAuthGrade: '',
-      kw: '',, dashCanvas: null});
+      kw: '', dashCanvas: null});
 
     const searchParamOrg = reactive({
       previewDate: today,

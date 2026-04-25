@@ -6,7 +6,7 @@ window.SyVendorDtl = {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
 
     const vendors = reactive([]);
-    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false, memoEl: null});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, memoEl: null });
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -32,9 +32,7 @@ window.SyVendorDtl = {
     const form = reactive({
       vendorId: null, vendorType: '판매업체', vendorNm: '', ceo: '', bizNo: '', phone: '', email: '',
       zipcode: '', address: '', addressDetail: '',
-      error: null,
       contractDate: '', statusCd: '활성', memo: '',
-      error: null,
     });
     const errors = reactive({});
     const addrDetailRef = ref(null);

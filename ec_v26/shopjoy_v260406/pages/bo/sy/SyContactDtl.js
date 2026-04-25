@@ -7,7 +7,7 @@ window.SyContactDtl = {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
 
     const contacts = reactive([]);
-    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false, tab: window._syContactDtlState.tab || 'content', viewMode2: window._syContactDtlState.viewMode || 'tab', contentEl: null, answerEl: null});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._syContactDtlState.tab || 'content', viewMode2: window._syContactDtlState.viewMode || 'tab', contentEl: null, answerEl: null });
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -57,9 +57,7 @@ window.SyContactDtl = {
 
     const form = reactive({
       inquiryId: null, userId: '', userNm: '', date: '', categoryCd: '배송 문의',
-      error: null,
       title: '', content: '', statusCd: '요청', answer: '',
-      error: null,
     });
     const errors = reactive({});
 

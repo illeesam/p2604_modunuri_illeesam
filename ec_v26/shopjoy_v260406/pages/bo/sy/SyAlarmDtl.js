@@ -6,7 +6,7 @@ window.SyAlarmDtl = {
     const { reactive, computed, onMounted, ref } = Vue;
 
     const alarms = reactive([]);
-    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -30,9 +30,7 @@ window.SyAlarmDtl = {
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({
       alarmId: null, title: '', alarmTypeCd: '푸시', targetTypeCd: '전체', targetId: '',
-      error: null,
       message: '', sendDate: '', statusCd: '임시',
-      error: null,
     });
     const errors = reactive({});
 

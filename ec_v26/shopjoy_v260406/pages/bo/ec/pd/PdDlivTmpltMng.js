@@ -68,7 +68,6 @@ window.PdDlivTmpltMng = {
 
     const cfSelectedRow = computed(() => (dlivTmplts||[]).find(t => t.dlivTmpltId === uiState.selectedId) || null);
     const form = reactive({});
-    const uiState = reactive({ descOpen: false, isNew: false, error: null, isPageCodeLoad: false });
 
     const openDetail = (row) => {
       if (uiState.selectedId === row.dlivTmpltId) { uiState.selectedId = null; return; }

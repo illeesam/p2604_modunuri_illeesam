@@ -6,7 +6,7 @@ window.SySiteDtl = {
     const { reactive, computed, onMounted, ref } = Vue;
 
     const sites = reactive([]);
-    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -35,9 +35,7 @@ window.SySiteDtl = {
       logoUrl: '', favicon: '', description: '',
       email: '', phone: '',
       zipcode: '', address: '', addressDetail: '',
-      error: null,
       businessNo: '', ceo: '', statusCd: '운영중',
-      error: null,
     });
     const errors = reactive({});
     const addrDetailRef = ref(null);

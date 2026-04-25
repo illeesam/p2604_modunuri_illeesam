@@ -92,9 +92,7 @@ window.PmPlanDtl = {
       startDate: DEFAULT_START, endDate: DEFAULT_END,
       productIds: [], visibilityTargets: '^PUBLIC^',
       desc: '', bannerImage: '', content1: '', content2: '', content3: '',
-      error: null,
       vendorId: '', chargeStaff: '',
-      error: null,
     });
     const errors = reactive({});
 

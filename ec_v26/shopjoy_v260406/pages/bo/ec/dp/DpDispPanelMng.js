@@ -84,7 +84,7 @@ window.DpDispPanelMng = {
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     /* 하단 상세 */
-    const uiStateDetail = reactive({ selectedId: null: 'view' });
+    const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
     const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
     const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
@@ -202,10 +202,6 @@ window.DpDispPanelMng = {
       const cur = pager.page, last = cfTotalPages.value;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-    });
-    const uiState = reactive({
-      loading: false,
-      error: null,
     });
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
     const fnTypeBadge = t => ({

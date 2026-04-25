@@ -65,9 +65,7 @@ window.PmEventDtl = {
       title: '', status: '진행중', startDate: DEFAULT_START, endDate: DEFAULT_END,
       authRequired: false, targetProducts: [], visibilityTargets: '^PUBLIC^',
       bannerImage: '', content1: '', content2: '', content3: '', content4: '', content5: '',
-      error: null,
       vendorId: '', chargeStaff: '',
-      error: null,
     });
     const errors = reactive({});
 

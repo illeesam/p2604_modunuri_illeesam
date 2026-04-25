@@ -170,7 +170,7 @@ window.OdOrderDtl = {
         if (paid <= 0) return null;
         const sale = Math.round(paid / (1 - discRates[i]));
         const disc = sale - paid;
-        return { orders, loading; ...d, salePrice: sale, discInfo: discLabels[i], discAmount: disc, price: paid };
+        return { ...d, salePrice: sale, discInfo: discLabels[i], discAmount: disc, price: paid };
       }).filter(Boolean);
     };
     const initItems = async () => {

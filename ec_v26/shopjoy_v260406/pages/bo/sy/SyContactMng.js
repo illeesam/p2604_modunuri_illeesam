@@ -50,9 +50,7 @@ window.SyContactMng = {
       }
     });
     const searchParam = reactive({
-      error: null,
       kw: '', category: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
-      error: null,
     });
     const searchParamOrg = reactive({
       kw: '', category: '', status: '', dateStart: '', dateEnd: '', dateRange: ''

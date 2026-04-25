@@ -6,7 +6,7 @@ window.SyBatchDtl = {
     const { reactive, computed, onMounted, ref } = Vue;
 
     const batches = reactive([]);
-    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -29,9 +29,7 @@ window.SyBatchDtl = {
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({
-      error: null,
       batchId: null, batchNm: '', batchCode: '', description: '', cron: '0 0 * * *', statusCd: '활성',
-      error: null,
     });
     const errors = reactive({});
 

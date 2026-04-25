@@ -63,7 +63,7 @@ window.PmGiftMng = {
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
-    const uiStateDetail = reactive({ selectedId: null: 'view' });
+    const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
   const searchParam = reactive({
     kw: '',
     dateRange: '',
@@ -112,9 +112,7 @@ window.PmGiftMng = {
     const cfPageNums   = computed(() => {
       const cur = pager.page, last = cfTotalPages.value;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
-      error: null,
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-      error: null,
     });
 
     const fnTypeBadge   = t => ({ '구매조건': 'badge-blue', '금액조건': 'badge-green', '수량조건': 'badge-orange', '무조건': 'badge-purple' }[t] || 'badge-gray');

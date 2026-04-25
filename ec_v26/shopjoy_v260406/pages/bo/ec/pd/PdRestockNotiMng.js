@@ -79,10 +79,7 @@ window.PdRestockNotiMng = {
         if (kw && !getProdNm(r.prodId).toLowerCase().includes(kw)) return false;
         if (applied.noti && r.notiYn !== applied.noti) return false;
         return true;
-      error: null,
       }).sort((a, b) => b.regDate > a.regDate ? 1 : -1);
-      error: null,
-      error: null,
     });
     const cfTotal      = computed(() => cfFiltered.value.length);
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));

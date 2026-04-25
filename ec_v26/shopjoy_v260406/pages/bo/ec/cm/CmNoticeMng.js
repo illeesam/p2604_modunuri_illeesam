@@ -59,7 +59,7 @@ window.CmNoticeMng = {
 
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const uiStateDetail = reactive({ selectedId: null: 'view' });
+    const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
   const searchParam = reactive({
     kw: '',
     type: '',
@@ -106,8 +106,6 @@ window.CmNoticeMng = {
       const cur = pager.page, last = cfTotalPages.value;
       const s = Math.max(1, cur - 2), e = Math.min(last, s + 4);
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
-      error: null,
-      error: null,
     });
     const fnStatusBadge = s => ({ '게시': 'badge-green', '예약': 'badge-blue', '종료': 'badge-gray', '임시': 'badge-orange' }[s] || 'badge-gray');
     const fnTypeBadge = t => ({ '일반': 'badge-gray', '긴급': 'badge-red', '이벤트': 'badge-blue', '시스템': 'badge-orange' }[t] || 'badge-gray');

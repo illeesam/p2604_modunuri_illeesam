@@ -69,29 +69,46 @@ window.DpDispRelationMng = {
     Object.assign(searchParam, searchParamOrg);
     onSearch();
   };
-  return {
-              type: 'area',
-              id: area.codeId,
-              code: area.codeValue,
-              name: area.codeLabel,
-              useYn: area.useYn,
-              visibilityTargets: area.visibilityTargets || '',
-              childCount: areaPanels.length,
-              children: areaPanels
-                .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
-                .map(p => ({
-                  type: 'panel',
-                  id: p.dispId,
-                  code: p.dispId,
-                  name: p.name,
-                  useYn: p.useYn,
-                  visibilityTargets: p.visibilityTargets || '',
-                  childCount: (p.rows || []).length,
-                })),
-            };
-          }),
+
+    const cfTreeData = computed(() => {
+      const uis = displays || [];
+      return uis.map(ui => ({
+        type: 'ui',
+        id: ui.dispId,
+        code: ui.dispId,
+        name: ui.name,
+        useYn: ui.useYn,
+        visibilityTargets: ui.visibilityTargets || '',
+        childCount: (ui.areas || []).length,
+        children: (ui.areas || []).map(area => {
+          const areaPanels = (area.panels || []);
+          return {
+            type: 'area',
+            id: area.codeId,
+            code: area.codeValue,
+            name: area.codeLabel,
+            useYn: area.useYn,
+            visibilityTargets: area.visibilityTargets || '',
+            childCount: areaPanels.length,
+            children: areaPanels
+              .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+              .map(p => ({
+                type: 'panel',
+                id: p.dispId,
+                code: p.dispId,
+                name: p.name,
+                useYn: p.useYn,
+                visibilityTargets: p.visibilityTargets || '',
+                childCount: (p.rows || []).length,
+              })),
+          };
+        }),
       }));
     });
+
+    const expandedNodes = reactive(new Set());
+    const toggleNode = (key) => { if (expandedNodes.has(key)) expandedNodes.delete(key); else expandedNodes.add(key); };
+    const isNodeExpanded = (key) => expandedNodes.has(key);
 
     /* 공개범위 표시 */
     const fnGetVisibilityBadges = (targets) => {

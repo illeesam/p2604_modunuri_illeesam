@@ -73,7 +73,7 @@ window.PmPlanMng = {
     ];
 
     /* 하단 상세 */
-    const uiStateDetail = reactive({ selectedId: null: 'view' });
+    const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
   const searchParam = reactive({
     kw: '',
     category: '',
@@ -121,9 +121,7 @@ window.PmPlanMng = {
     const cfPageNums = computed(() => {
       const cur = pager.page, last = cfTotalPages.value;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
-      error: null,
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-      error: null,
     });
     const fnStatusBadge = s => ({ '활성': 'badge-green', '예정': 'badge-blue', '비활성': 'badge-gray', '종료': 'badge-gray' }[s] || 'badge-gray');
     const onSearch = async () => {

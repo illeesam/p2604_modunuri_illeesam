@@ -11,7 +11,7 @@ window.SyRoleMng = {
       checkAll: false,
       error: null,
       userSelectOpen: false,
-      isPageCodeLoad: false,, loading: false, selectedPath: null, focusedIdx: null, selectedRoleId: null, menuSearchKw: ''});
+      isPageCodeLoad: false, loading: false, selectedPath: null, focusedIdx: null, selectedRoleId: null, menuSearchKw: ''});
     const codes = reactive({ role_status: [] });
 
     // onMounted에서 API 로드

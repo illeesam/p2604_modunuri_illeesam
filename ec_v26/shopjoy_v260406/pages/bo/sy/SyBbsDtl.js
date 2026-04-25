@@ -6,7 +6,7 @@ window.SyBbsDtl = {
     const { reactive, computed, onMounted, ref, onBeforeUnmount } = Vue;
 
     const bbss = reactive([]);
-    const uiState = reactive({ loading: false, showBbmDetail: false, error: null, error: null, isPageCodeLoad: false, selectedBbm: null, showBbmModal: false});;
+    const uiState = reactive({ loading: false, showBbmDetail: false, error: null, isPageCodeLoad: false, selectedBbm: null, showBbmModal: false });
     const codes = reactive({});
 
     // onMounted에서 API 로드

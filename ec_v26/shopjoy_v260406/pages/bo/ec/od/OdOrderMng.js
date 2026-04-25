@@ -36,9 +36,6 @@ window.OdOrderMng = {
       dateStart: '',
       dateEnd: '',
       status: ''
-      error: null,
-      error: null,
-      error: null,
     });
     const searchParamOrg = reactive({
       kw: '',
@@ -92,7 +89,7 @@ window.OdOrderMng = {
     });
 
     /* 하단 상세 */
-    const uiStateDetail = reactive({ selectedId: null: 'view' });
+    const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
     const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
     const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };

@@ -4,7 +4,7 @@ window.OdClaimHist = {
   name: 'OdClaimHist',
   props: ['navigate', 'showRefModal', 'showToast', 'claimId'],
   setup(props) {
-    const uiState = reactive({"botTab: window._odClaimHistState.tab || 'items', viewMode2: 'tab', claimType: '취소', claimStatus: '', relatedOrder: null, relatedDliv: null"});
+    const uiState = reactive({botTab: window._odClaimHistState.tab || 'items', viewMode2: 'tab', claimType: '취소', claimStatus: '', relatedOrder: null, relatedDliv: null});
     const { ref, reactive, computed, watch, onMounted } = Vue;
         watch(botTab, v => { window._odClaimHistState.tab = v; });
         const cfCodes = Vue.computed(() => window.getBoCodeStore().svCodes);

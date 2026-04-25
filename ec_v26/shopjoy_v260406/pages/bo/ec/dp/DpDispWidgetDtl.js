@@ -6,7 +6,7 @@ window.DpDispWidgetDtl = {
   setup(props, { emit }) {
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const codes = reactive({ disp_widget_types: [] });
-    const uiState = reactive({ isPageCodeLoad: false, error: null, isPageCodeLoad: false, previewMode: 'default', previewPaneWidth: 460, libPickMode: 'copy', htmlContentEl: null});
+    const uiState = reactive({ isPageCodeLoad: false, error: null, previewMode: 'default', previewPaneWidth: 460, libPickMode: 'copy', htmlContentEl: null});
 
     // App 초기화 준비 상태
     const isAppReady = computed(() => {
@@ -288,7 +288,6 @@ window.DpDispWidgetDtl = {
       });
       return JSON.stringify(obj, null, 2);
     });
-    const uiState = reactive({ isPageCodeLoad: false, error: null, isPageCodeLoad: false, previewMode: 'default', previewPaneWidth: 460, libPickMode: 'copy', htmlContentEl: null});
     const copyJson = () => {
       navigator.clipboard?.writeText(cfSampleJson.value).then(() => {
         uiState.jsonCopied = true;

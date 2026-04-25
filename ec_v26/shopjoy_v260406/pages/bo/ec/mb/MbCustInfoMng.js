@@ -227,7 +227,7 @@
       if (props.showToast) props.showToast('조회 실패', 'error');
     }
   };
-  return { custInfos, uiState; searchMode, searchInput, SEARCH_MODES, memberModal,
+  return { custInfos, uiState, searchMode, searchInput, SEARCH_MODES, memberModal,
         searchParam, searchParamOrg, PERIOD_OPTS, cfDateFrom, cfDateTo,
         customer,
         cfCustOrders, cfCustClaims, cfCustDeliveries, cfCustCache, cfCustCacheBalance,

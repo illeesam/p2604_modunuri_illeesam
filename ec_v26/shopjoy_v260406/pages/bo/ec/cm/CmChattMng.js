@@ -106,8 +106,6 @@ window.CmChattMng = {
       const cur = pager.page, last = cfTotalPages.value;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-      error: null,
-      error: null,
     });
     const fnStatusBadge = s => ({ '진행중': 'badge-green', '종료': 'badge-gray' }[s] || 'badge-gray');
     const onSearch = async () => {

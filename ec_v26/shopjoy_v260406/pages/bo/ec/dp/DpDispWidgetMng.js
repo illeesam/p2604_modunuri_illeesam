@@ -106,7 +106,7 @@ window.DpDispWidgetMng = {
 
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    return { widgets, uiState; pathLabel,
+    return { widgets, uiState, pathLabel,
       codes, wTypeLabel, wIcon, handleDelete,
       searchKw, searchType, searchStatus, pager, PAGE_SIZES,
       cfFiltered, cfTotalCount, cfPageList, cfTotalPages, cfPageNumbers,

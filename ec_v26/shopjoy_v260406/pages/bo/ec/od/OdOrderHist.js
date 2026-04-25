@@ -44,8 +44,6 @@ window.OdOrderHist = {
           { no: 1, prodNm: o.prodNm, optionNm: '-', qty: 1, unitPrice: o.totalPrice, totalPrice: o.totalPrice, statusCd: o.statusCd },
         );
       }
-      error: null,
-      error: null,
     });
 
     const cfRelatedDliv   = computed(() => window.safeArrayUtils.safeFind(deliveries || [], d => d.orderId === props.orderId) || null);
@@ -59,7 +57,7 @@ window.OdOrderHist = {
       ].filter(h => h.date !== '-');
     });
 
-    return { orders, uiState; botTab, orderItems, cfRelatedDliv, cfRelatedClaims, cfDlivHistory, viewMode2, showTab, claims, deliveries };
+    return { orders, uiState, orderItems, cfRelatedDliv, cfRelatedClaims, cfDlivHistory, showTab, claims, deliveries };
   },
   template: /* html */`
 <div>

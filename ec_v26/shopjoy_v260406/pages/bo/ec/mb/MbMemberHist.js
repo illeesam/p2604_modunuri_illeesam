@@ -33,7 +33,7 @@ window.MbMemberHist = {
     const cfMemberOrders = computed(() => window.safeArrayUtils.safeFilter(orders, o => o.userId === props.memberId));
     const cfMemberClaims = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.userId === props.memberId));
 
-    return { members, uiState; tab, cfMemberOrders, cfMemberClaims, viewMode2, showTab };
+    return { members, uiState, cfMemberOrders, cfMemberClaims, showTab };
   },
   template: /* html */`
 <div>

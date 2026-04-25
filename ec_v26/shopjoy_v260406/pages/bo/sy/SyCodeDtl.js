@@ -6,7 +6,7 @@ window.SyCodeDtl = {
     const { reactive, computed, onMounted, ref } = Vue;
 
     const codes = reactive([]);
-    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -28,9 +28,7 @@ window.SyCodeDtl = {
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({
-      error: null,
       codeId: null, codeGrp: '', codeLabel: '', codeValue: '', sortOrd: 1, useYn: 'Y', remark: '',
-      error: null,
     });
     const errors = reactive({});
 

@@ -49,9 +49,7 @@ window.PdTagMng = {
     /* ── 검색 파라미터 ── */
     const searchParam = reactive({
       kw: '',
-      error: null,
       use: ''
-      error: null,
     });
     const searchParamOrg = reactive({
       kw: '',

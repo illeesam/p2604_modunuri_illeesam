@@ -75,13 +75,11 @@ window.SyMenuMng = {
       kw: '',
       type: '',
       useYn: ''
-      error: null,
     });
     const searchParamOrg = reactive({
       kw: '',
       type: '',
       useYn: ''
-      error: null,
     });
     const MENU_TYPES   = ['페이지', '폴더', '외부링크', '구분선'];
 
@@ -118,7 +116,6 @@ window.SyMenuMng = {
       ...m, _depth: m._depth || 0, _row_status: 'N', _row_check: false,
       _orig: { menuCode: m.menuCode, menuNm: m.menuNm, parentId: m.parentId,
                menuUrl: m.menuUrl, menuType: m.menuType, sortOrd: m.sortOrd, useYn: m.useYn, remark: m.remark },
-      error: null,
     });
 
     const handleLoadGrid = () => {

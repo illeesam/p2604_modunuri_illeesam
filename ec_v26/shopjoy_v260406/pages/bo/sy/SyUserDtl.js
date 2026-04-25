@@ -6,7 +6,7 @@ window.SyUserDtl = {
     const { reactive, computed, onMounted, ref } = Vue;
 
     const users = reactive([]);
-    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -33,9 +33,7 @@ window.SyUserDtl = {
       boUserId: null, loginId: '', name: '', email: '', phone: '',
       role: '운영자', dept: '', deptId: null,
       zipcode: '', address: '', addressDetail: '',
-      error: null,
       statusCd: '활성', password: '',
-      error: null,
     });
     const errors = reactive({});
     const addrDetailRef = ref(null);

@@ -5,7 +5,7 @@ window.ZdStore = {
   name: 'ZdStore',
   props: ['navigate', 'adminData', 'showToast'],
   setup(props) {
-    const uiState = reactive({"storeInfo: '', selectedStore: null, viewMode: 'col5'"});
+    const uiState = reactive({ storeInfo: '', selectedStore: null, viewMode: 'col5' });
     const { ref, computed, reactive, onMounted } = Vue;
 
             const openStores = reactive([]);

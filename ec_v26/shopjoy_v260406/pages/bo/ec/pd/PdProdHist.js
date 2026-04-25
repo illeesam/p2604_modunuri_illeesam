@@ -51,8 +51,6 @@ window.PdProdHist = {
           { date: p.regDate || '2026-01-01', field: '판매가', before: '-', after: String(p.price), bo: '관리자' },
         );
       }
-      error: null,
-      error: null,
     });
 
     const cfRelatedOrders = computed(() => {
@@ -61,7 +59,7 @@ window.PdProdHist = {
       return window.safeArrayUtils.safeFilter(orders, o => o.prodNm && p.prodNm && o.prodNm.includes(p.prodNm.slice(0, 8)));
     });
 
-    return { products, uiState; botTab, stockHistory, statusHistory, changeHistory, priceHistory, cfRelatedOrders, viewMode2, showTab };
+    return { products, uiState, stockHistory, statusHistory, changeHistory, priceHistory, cfRelatedOrders, showTab };
   },
   template: /* html */`
 <div>

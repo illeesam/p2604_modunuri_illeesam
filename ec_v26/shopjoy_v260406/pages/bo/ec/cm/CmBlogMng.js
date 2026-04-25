@@ -64,8 +64,6 @@ window.CmBlogMng = {
         if (searchParam.notice && p.isNotice !== searchParam.notice) return false;
         return true;
       }).sort((a, b) => b.regDate > a.regDate ? 1 : -1);
-      error: null,
-      error: null,
     });
     const cfTotal      = computed(() => cfFiltered.value.length);
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));

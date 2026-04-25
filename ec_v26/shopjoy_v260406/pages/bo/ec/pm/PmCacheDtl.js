@@ -55,9 +55,7 @@ window.PmCacheDtl = {
 
     const form = reactive({
       cacheId: null, userId: '', userNm: '', date: '', type: '충전', amount: 0, balance: 0, desc: '',
-      error: null,
       vendorId: '', chargeStaff: '',
-      error: null,
     });
     const errors = reactive({});
 

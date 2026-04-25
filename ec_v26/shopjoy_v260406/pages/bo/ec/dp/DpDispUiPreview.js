@@ -215,7 +215,7 @@ window.DpDispUiPreview = {
       filterStatus: '활성',
       filterVisibility: '',
       filterDispEnv: 'PROD',
-      searchKw: '',, dashCanvas: null});
+      searchKw: '', dashCanvas: null});
 
     const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', kw: '', visibility: '' });
 
@@ -359,7 +359,7 @@ window.DpDispUiPreview = {
     });
 
     /* 실제컨텐츠 토글 */
-    const uiState = reactive({ dashDragOver: false, showRealContent: false });
+    const gridState = reactive({ dashDragOver: false, showRealContent: false });
 
     /* ── 그리드 슬롯 (탭별 동적 배열) ── */
     const makeInit = (cols) => Array(cols * 2).fill(null);
@@ -439,10 +439,10 @@ window.DpDispUiPreview = {
     /* ── 대시보드: 자유 배치 + 크기 조절 ── */
     const dashItems  = reactive([]); // { id, lib, x, y, w, h }
     
-    const onDashDragOver = (e) => { e.preventDefault(); uiState.dashDragOver = true; };
-    const onDashDragLeave = () => { uiState.dashDragOver = false; };
+    const onDashDragOver = (e) => { e.preventDefault(); gridState.dashDragOver = true; };
+    const onDashDragLeave = () => { gridState.dashDragOver = false; };
     const onDashDrop = (e) => {
-      e.preventDefault(); uiState.dashDragOver = false;
+      e.preventDefault(); gridState.dashDragOver = false;
       if (!searchParam.dashCanvas) return;
       const rect = searchParam.dashCanvas.getBoundingClientRect();
 
@@ -537,11 +537,11 @@ window.DpDispUiPreview = {
       cfTree, openNodes, toggleNode, isOpen, allChildrenOpen, toggleAllChildren, expandAll, collapseAll,
       onItemDragStart, onItemDragEnd, onNodeDragStart, onNodeDragEnd,
       previewGrid, GRID_TABS,
-      viewportMode, cfAutoGridCols, uiState,
+      viewportMode, cfAutoGridCols, uiState, gridState,
       tabSlots, cfCurrentSlots,
       dragOverIdx, onDragOver, onDragLeave, onDrop, removeSlot, setSpan, GRID_COLS,
       spanPopupIdx, toggleSpanPopup, closeSpanPopup,
-      dashItems, dashCanvas, uiState,
+      dashItems, dashCanvas,
       onDashDragOver, onDashDragLeave, onDashDrop,
       removeDashItem, startItemMove, startItemResize,
       cfPlacedCount, resetCurrent,
@@ -705,10 +705,10 @@ window.DpDispUiPreview = {
         </div>
         <!-- 실제컨텐츠 + 뷰포트 토글 (dashboard 제외) -->
         <div v-if="previewGrid!=='dashboard'" style="display:flex;align-items:center;gap:4px;padding:6px 0 6px 12px;border-left:1px solid #e5e7eb;margin-left:8px;">
-          <button @click="showRealContent=!showRealContent"
+          <button @click="gridState.showRealContent=!gridState.showRealContent"
             style="font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;margin-right:4px;"
-            :style="showRealContent?'background:#059669;color:#fff;border-color:#059669;':'background:#fff;color:#6b7280;'">
-            {{ showRealContent ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
+            :style="gridState.showRealContent?'background:#059669;color:#fff;border-color:#059669;':'background:#fff;color:#6b7280;'">
+            {{ gridState.showRealContent ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
           </button>
           <div style="width:1px;height:18px;background:#e5e7eb;margin-right:2px;"></div>
           <button v-for="(vp, key) in VIEWPORT" :key="Math.random()" @click="viewportMode=key"
@@ -753,7 +753,7 @@ window.DpDispUiPreview = {
               gap: '10px',
             }">
               <template v-for="(slot, idx) in cfCurrentSlots" :key="Math.random()">
-              <div v-if="!showRealContent || slot"
+              <div v-if="!gridState.showRealContent || slot"
                 @dragover="onDragOver($event, idx)"
                 @dragleave="onDragLeave"
                 @drop="onDrop($event, idx)"
@@ -762,7 +762,7 @@ window.DpDispUiPreview = {
                   dragOverIdx===idx
                     ? 'border:2px dashed #1d4ed8;background:#eff6ff;min-height:110px;'
                     : slot
-                      ? (showRealContent ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:110px;')
+                      ? (gridState.showRealContent ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:110px;')
                       : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;',
                   slot && (slot.colSpan||1) > 1 ? { gridColumn: 'span ' + slot.colSpan } : {},
                   slot && (slot.rowSpan||1) > 1 ? { gridRow:    'span ' + slot.rowSpan } : {},
@@ -784,7 +784,7 @@ window.DpDispUiPreview = {
                 <!-- 배치됨 -->
                 <template v-else-if="slot">
                   <!-- 슬롯 헤더 (실제컨텐츠 OFF) -->
-                  <div v-if="!showRealContent" style="display:flex;align-items:center;gap:5px;padding:6px 10px 5px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
+                  <div v-if="!gridState.showRealContent" style="display:flex;align-items:center;gap:5px;padding:6px 10px 5px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
                     <span style="font-size:12px;">{{ wIcon(slot.widgetType) }}</span>
                     <span style="font-size:10px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:4px;padding:0 5px;white-space:nowrap;">{{ wTypeLabel(slot.widgetType) }}</span>
                     <span style="font-size:11px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ slot.name }}</span>
@@ -863,15 +863,15 @@ window.DpDispUiPreview = {
           @dragleave="onDashDragLeave"
           @drop="onDashDrop"
           style="position:relative;min-height:560px;min-width:600px;background:#fff;border-radius:8px;border:2px dashed #e5e7eb;transition:border-color .15s;"
-          :style="dashDragOver ? 'border-color:#1d4ed8;background:#eff6ff;' : ''">
+          :style="gridState.dashDragOver ? 'border-color:#1d4ed8;background:#eff6ff;' : ''">
 
           <!-- 빈 상태 -->
-          <div v-if="!dashItems.length && !dashDragOver"
+          <div v-if="!dashItems.length && !gridState.dashDragOver"
             style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#d1d5db;pointer-events:none;">
             <span style="font-size:48px;">🧩</span>
             <span style="font-size:13px;">왼쪽 트리에서 위젯을 드래그하여 배치하세요</span>
           </div>
-          <div v-if="dashDragOver && !dashItems.length"
+          <div v-if="gridState.dashDragOver && !dashItems.length"
             style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:14px;font-weight:700;pointer-events:none;">
             ▼ 여기에 배치
           </div>

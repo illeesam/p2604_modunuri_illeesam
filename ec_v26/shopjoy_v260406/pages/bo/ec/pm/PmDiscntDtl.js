@@ -65,9 +65,7 @@ window.PmDiscntDtl = {
       discntStatus: '활성', startDate: DEFAULT_START, endDate: DEFAULT_END,
       applyTarget: '전체상품', minOrderAmt: 0, maxDiscntAmt: 0, remark: '',
       visibilityTargets: '^PUBLIC^',
-      error: null,
       vendorId: '', chargeStaff: '',
-      error: null,
     });
     const errors = reactive({});
 

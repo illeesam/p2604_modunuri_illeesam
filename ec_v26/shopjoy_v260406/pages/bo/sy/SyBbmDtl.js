@@ -32,9 +32,7 @@ window.SyBbmDtl = {
       bbmId: null, bbmCode: '', bbmNm: '', bbmType: '일반',
       allowComment: '불가', allowAttach: '불가', allowLike: 'N',
       contentType: 'textarea', scopeType: '공개',
-      error: null,
       sortOrd: 1, useYn: 'Y', remark: '', pathId: null,
-      error: null,
     });
     const errors = reactive({});
 

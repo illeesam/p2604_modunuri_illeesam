@@ -65,9 +65,7 @@ window.PmGiftDtl = {
       giftStatus: '활성', stock: 0, startDate: DEFAULT_START, endDate: DEFAULT_END,
       giftProdId: null, remark: '',
       visibilityTargets: '^PUBLIC^',
-      error: null,
       vendorId: '', chargeStaff: '',
-      error: null,
     });
     const errors = reactive({});
 

@@ -70,8 +70,6 @@ window.MbMemGroupMng = {
         if (searchParam.use && g.useYn !== searchParam.use) return false;
         return true;
       });
-      error: null,
-      error: null,
     });
     const cfTotal      = computed(() => cfFiltered.value.length);
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));

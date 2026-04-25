@@ -32,14 +32,14 @@ window.DpDispUiSimul = {
       mainTab: 'preview', // 'preview' | 'struct' | 'source'
       viewMode: 'card',   // 'list' | 'card' | 'expand'
       showDesc: true,
-      showAreaDrop: false,, sourceCopied: false, structLayoutType: 'grid', structColCount: 1, structViewport: 'desktop', structShowReal: false, structDashDragOver: false, structSpanPopupIdx: -1, structDragOverIdx: -1, dispUiLayerOpen: true, dispUiModalOpen: false, dispUiAreaErr: false, dispUiSiteModalOpen: false, dispUiSiteSearch: '', dispUiMemberModalOpen: false, dispUiMemberSearch: '', dispUiAreaDrop: false, otherMenuOpen: false});
+      showAreaDrop: false, sourceCopied: false, structLayoutType: 'grid', structColCount: 1, structViewport: 'desktop', structShowReal: false, structDashDragOver: false, structSpanPopupIdx: -1, structDragOverIdx: -1, dispUiLayerOpen: true, dispUiModalOpen: false, dispUiAreaErr: false, dispUiSiteModalOpen: false, dispUiSiteSearch: '', dispUiMemberModalOpen: false, dispUiMemberSearch: '', dispUiAreaDrop: false, otherMenuOpen: false});
 
     /* ── 검색/필터 조건 ── */
     const searchParam = reactive({
       previewDate: today,
       previewTime: new Date().toTimeString().slice(0, 5),
       status: '활성',
-      visibility: '',, structColCount: 1, dispUiAreaErr: false, dispUiSiteSearch: '', dispUiMemberSearch: ''});;
+      visibility: '', structColCount: 1, dispUiAreaErr: false, dispUiSiteSearch: '', dispUiMemberSearch: '' });
     const searchParamOrg = reactive({
       previewDate: today,
       previewTime: new Date().toTimeString().slice(0, 5),

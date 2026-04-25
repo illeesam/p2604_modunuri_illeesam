@@ -6,7 +6,7 @@ window.DpDispUiDtl = {
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const codes = reactive({ disp_ui_types: [] });
     const displays = reactive([]);
-    const uiState = reactive({ expanded: false, loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, isPageCodeLoad: false, activeTab: 'base', previewMode: 'default', previewPaneWidth: 520, pickKw: '', htmlDescEl: null});;
+    const uiState = reactive({ expanded: false, loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, activeTab: 'base', previewMode: 'default', previewPaneWidth: 520, pickKw: '', htmlDescEl: null });
 
     // App 초기화 준비 상태
     const isAppReady = computed(() => {
@@ -69,8 +69,6 @@ window.DpDispUiDtl = {
       uiType: 'FO',
       remark: '', sortOrd: 1, useYn: 'Y', useStartDate: DEFAULT_START_DATE, useEndDate: DEFAULT_END_DATE, regDate: '', displayPath: '', pathId: null,
       titleYn: 'N', title: '', htmlDesc: '',
-      error: null,
-      error: null,
     });
 
     const errors = reactive({});
@@ -333,7 +331,7 @@ window.DpDispUiDtl = {
       if (t === 'base') { await nextTick(); initQuillDesc(); }
     });
 
-    return { codes, displays, uiState; pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { codes, displays, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       form, errors, cfIsNew, UI_TYPE_OPTS,
       handleSave, doCancel, cfRelatedAreas, panelsOfArea,
       activeTab, selectTab, cfActiveArea, uiState, moveArea,

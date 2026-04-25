@@ -97,8 +97,6 @@ window.DpDispWidgetLibMng = {
         if (applied.status && d.status     !== applied.status) return false;
         return true;
       });
-      error: null,
-      error: null,
     });
 
     /* ── 표시경로 ── */
@@ -175,3 +173,109 @@ window.DpDispWidgetLibMng = {
     });
 
     /* ── 하단 인라인 Dtl ── */
+    const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
+    const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id) { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
+    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
+    const closeDetail = () => { uiStateDetail.selectedId = null; };
+    const inlineNavigate = (pg, opts = {}) => {
+      if (pg === 'dpDispWidgetLibMng') { uiStateDetail.selectedId = null; return; }
+      props.navigate(pg, opts);
+    };
+    const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
+    const setPage = (n) => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
+    const onSizeChange = () => { pager.page = 1; };
+    const handleDelete = async (lib) => {
+      const ok = await props.showConfirm('삭제', `[${lib.name}]을 삭제하시겠습니까?`);
+      if (!ok) return;
+      const idx = widgetLibs.findIndex(x => x.libId === lib.libId);
+      if (idx !== -1) widgetLibs.splice(idx, 1);
+      if (uiStateDetail.selectedId === lib.libId) { uiStateDetail.selectedId = null; }
+      try {
+        const res = await window.boApi.delete(`/bo/ec/widget-lib/${lib.libId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        console.error('[catch-info]', err);
+        if (props.showToast) props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+      }
+    };
+
+    return { widgetLibs, uiState, codes, searchParam, pager, PAGE_SIZES,
+      applied, onSearch, onReset, setPage, onSizeChange,
+      cfTree, openNodes, toggleNode, isOpen, selectTree, expandAll, collapseAll,
+      cfFiltered, cfTotalCount, cfPageList, cfTotalPages, cfPageNumbers,
+      wIcon, wTypeLabel,
+      uiStateDetail, cfDetailEditId, handleLoadDetail, openNew, closeDetail, inlineNavigate,
+      cfSiteNm, handleDelete };
+  },
+  template: /* html */`
+<div>
+  <div class="page-title">위젯라이브러리관리</div>
+  <div class="card">
+    <div class="search-bar">
+      <input v-model="searchParam.kw" placeholder="이름/설명/태그 검색" />
+      <select v-model="searchParam.type">
+        <option value="">타입 전체</option>
+        <option v-for="t in codes.disp_widget_types" :key="t.codeValue" :value="t.codeValue">{{ t.codeLabel }}</option>
+      </select>
+      <select v-model="searchParam.status">
+        <option value="">상태 전체</option>
+        <option>활성</option><option>비활성</option>
+      </select>
+      <div class="search-actions">
+        <button class="btn btn-primary" @click="onSearch">조회</button>
+        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="toolbar">
+      <span class="list-title">위젯라이브러리 <span class="list-count">{{ cfTotalCount }}건</span></span>
+      <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+    </div>
+    <table class="bo-table">
+      <thead><tr><th>ID</th><th>이름</th><th>타입</th><th>상태</th><th style="text-align:right">관리</th></tr></thead>
+      <tbody>
+        <tr v-if="cfPageList.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="lib in cfPageList" :key="lib.libId">
+          <td>{{ lib.libId }}</td>
+          <td><span class="title-link" @click="handleLoadDetail(lib.libId)">{{ wIcon(lib.widgetType) }} {{ lib.name }}</span></td>
+          <td><span class="tag">{{ wTypeLabel(lib.widgetType) }}</span></td>
+          <td><span class="badge" :class="lib.status==='활성'?'badge-green':'badge-gray'">{{ lib.status }}</span></td>
+          <td><div class="actions">
+            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(lib.libId)">수정</button>
+            <button class="btn btn-danger btn-sm" @click="handleDelete(lib)">삭제</button>
+          </div></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="pagination">
+      <div></div>
+      <div class="pager">
+        <button :disabled="pager.page===1" @click="setPage(1)">«</button>
+        <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
+        <button v-for="n in cfPageNumbers" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+      </div>
+      <div class="pager-right">
+        <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
+          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
+    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+      <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+    </div>
+    <dp-disp-widget-lib-dtl
+      :key="uiStateDetail.selectedId"
+      :navigate="inlineNavigate" :show-ref-modal="showRefModal"
+      :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes"
+      :edit-id="cfDetailEditId"
+    />
+  </div>
+</div>
+`
+};

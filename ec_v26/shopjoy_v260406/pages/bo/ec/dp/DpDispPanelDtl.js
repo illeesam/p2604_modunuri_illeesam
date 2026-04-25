@@ -5,7 +5,7 @@ window.DpDispPanelDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const panels = reactive([]);
-    const uiState = reactive({ htmlSourceMode: false, libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false, isPageCodeLoad: false, error: null, isPageCodeLoad: false, tab: 'info', previewMode: 'default', previewPaneWidth: 520, libPickMode: 'copy', htmlDescEl: null, htmlContentEl: null});
+    const uiState = reactive({ htmlSourceMode: false, libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false, isPageCodeLoad: false, error: null, tab: 'info', previewMode: 'default', previewPaneWidth: 520, libPickMode: 'copy', htmlDescEl: null, htmlContentEl: null });
     const codes = reactive({ layout_types: [], disp_widget_types: [] });
     const displays = reactive([]);
     const events = reactive([]);
@@ -72,8 +72,6 @@ window.DpDispPanelDtl = {
     const cfPreviewFrameWidth = computed(() => {
       const m = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === uiState.previewMode);
       return (m?.width || 480) + 'px';
-      error: null,
-      error: null,
     });
     /* 패널 폭(스플리터 드래그 반영). 모드 변경 시 자동 갱신 */
         watch(previewMode, (m) => {
@@ -700,13 +698,13 @@ window.DpDispPanelDtl = {
       }
     };
 
-    return { panels, uiState; pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
-      uiState, libPickMode, openLibPick, onLibPicked,
-      uiState, onRowCopy,
+    return { panels, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
+      libPickMode, openLibPick, onLibPicked,
+      onRowCopy,
       cfVisibilityOptions, hasVisibility, toggleVisibility,
       dispEnvOptions, hasDispEnv, toggleDispEnv,
       hasPanelDispEnv, togglePanelDispEnv, hasPanelVisibility, togglePanelVisibility,
-      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, uiState,
+      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag,
       cfIsNew, tab, form, rows, cfAreas, cfTabLabels, cfTabRowMap,
       MAX_WIDGETS, addWidget, removeWidget,
       cfActiveRowIdx, cfActiveRow, moveRow,
@@ -714,10 +712,9 @@ window.DpDispPanelDtl = {
       cfIsCoupon, cfIsHtmlEditor, cfIsEventBanner, cfIsCacheBanner, cfIsWidgetEmbed, cfIsCondProduct,
       cfDisplayRows, cfRelatedEvent, handleSave,
       cfFileListItems, addFileItem, removeFileItem, updateFileItem,
-      htmlDescEl, htmlContentEl, uiState, toggleHtmlSource,
+      htmlDescEl, htmlContentEl, toggleHtmlSource,
       preview, openPreview, closePreview, cfPreviewWidget,
       cardPreview, openCardPreview, closeCardPreview, cfCurrentAreaLabel, fnWLabel,
-      uiState,
       expandedSections, toggleSection, isSectionExpanded,
       fnRowIsHtmlEditor, fnRowIsFileList, fnRowIsImage, fnRowIsText, fnRowIsProduct,
       fnGetDisplayRows, fnGetRelatedEvent,

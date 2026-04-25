@@ -85,9 +85,7 @@ window.PdReviewMng = {
         if (searchParam.status && r.reviewStatusCd !== searchParam.status) return false;
         if (searchParam.rating) { const min = parseFloat(searchParam.rating); if (r.rating < min || r.rating >= min + 1) return false; }
         return true;
-      error: null,
       }).sort((a, b) => b.reviewDate > a.reviewDate ? 1 : -1);
-      error: null,
     });
     const cfTotal      = computed(() => cfFiltered.value.length);
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));

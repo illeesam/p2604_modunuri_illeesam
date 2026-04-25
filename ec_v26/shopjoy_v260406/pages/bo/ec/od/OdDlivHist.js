@@ -31,7 +31,7 @@ window.OdDlivHist = {
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.botTab === id;
     const cfRelatedOrder  = computed(() => getOrder.value(props.orderId));
     const cfRelatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.orderId === props.orderId));
-    return { deliveries, uiState; botTab, cfRelatedOrder, cfRelatedClaims, viewMode2, showTab };
+    return { deliveries, uiState, cfRelatedOrder, cfRelatedClaims, showTab };
   },
   template: /* html */`
 <div>

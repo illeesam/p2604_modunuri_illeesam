@@ -58,9 +58,7 @@ window.PmVoucherDtl = {
       voucherId: null, voucherNm: '', voucherAmt: 0, salePrice: 0,
       issueQty: 0, soldQty: 0, voucherStatus: '활성', startDate: '', endDate: '',
       remark: '',
-      error: null,
       vendorId: '', chargeStaff: '',
-      error: null,
     });
     const errors = reactive({});
 

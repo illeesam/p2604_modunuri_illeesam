@@ -4,7 +4,7 @@ window.StErpGenMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, slipType: '정산', targetMon: new Date(});;
+    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, slipType: '정산', targetMon: new Date() });;
     const codes = reactive({
       erp_statuses: [],
     });

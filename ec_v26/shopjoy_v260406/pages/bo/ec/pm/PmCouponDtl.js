@@ -65,9 +65,7 @@ window.PmCouponDtl = {
       issueMethods: 'auto', issueCondition: 'all', issueGrades: [],
       useScope: 'all', useExclude: '', useRemark: '',
       memo: '',
-      error: null,
       vendorId: '', chargeStaff: '',
-      error: null,
     });
     const errors = reactive({});
 

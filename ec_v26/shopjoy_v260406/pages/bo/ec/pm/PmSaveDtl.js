@@ -64,9 +64,7 @@ window.PmSaveDtl = {
       saveStatus: '활성', startDate: DEFAULT_START, endDate: DEFAULT_END,
       expireDay: 365, minOrderAmt: 0, remark: '',
       visibilityTargets: '^PUBLIC^',
-      error: null,
       vendorId: '', chargeStaff: '',
-      error: null,
     });
     const errors = reactive({});
 
