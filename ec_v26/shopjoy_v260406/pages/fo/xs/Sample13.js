@@ -16,11 +16,11 @@ window.XsSample13 = {
     /* 카테고리 선택 */
     const showCatModal   = ref(false);
     const selectedCatIds = reactive(new Set());
-    const allCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
-    const selectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = allCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
-    const catBtnLabel = computed(() => {
+    const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
+    const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
+    const cfCatBtnLabel = computed(() => {
       if (selectedCatIds.size === 0) return '카테고리';
-      return selectedCatIds.size <= 2 ? selectedCatNames.value.join(', ') : `${selectedCatIds.size}개`;
+      return selectedCatIds.size <= 2 ? cfSelectedCatNames.value.join(', ') : `${selectedCatIds.size}개`;
     });
     const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
 
@@ -38,7 +38,7 @@ window.XsSample13 = {
     const CONDITION_OPTS  = ['항상 표시', '로그인 필요', '로그인+VIP', '로그인+우수', '비로그인 전용'];
     const AUTH_GRADE_OPTS = ['일반', '우수', 'VIP'];
 
-    const accessibleConds = computed(() => {
+    const cfAccessibleConds = computed(() => {
       const c = ['항상 표시'];
       if (!isLoggedIn) { c.push('비로그인 전용'); return c; }
       c.push('로그인 필요');
@@ -47,7 +47,7 @@ window.XsSample13 = {
       return c;
     });
 
-    const allAreas = computed(() =>
+    const cfAllAreas = computed(() =>
       window.getBoCodeStore?.()?.codes||[]
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
@@ -70,7 +70,7 @@ window.XsSample13 = {
       if (searchAuthRequired.value === 'N' &&  p.authRequired) return false;
       if (searchAuthGrade.value    && p.authGrade !== searchAuthGrade.value) return false;
       if (selectedCatIds.size > 0) {
-        const names = selectedCatNames.value;
+        const names = cfSelectedCatNames.value;
         const hit = names.some(nm => p.name.includes(nm)) ||
                     (p.rows || []).some(w => names.some(nm => (w.widgetNm || '').includes(nm)));
         if (!hit) return false;
@@ -86,7 +86,7 @@ window.XsSample13 = {
       coupon:'쿠폰',             html_editor:'HTML 에디터',      event_banner:'이벤트',
       cache_banner:'캐시',       widget_embed:'위젯',
     };
-    const wLabel = (t) => WIDGET_LABELS[t] || t || '-';
+    const fnWLabel = (t) => WIDGET_LABELS[t] || t || '-';
 
     const WIDGET_ICONS = {
       image_banner:'🖼', product_slider:'🛍', product:'📦',
@@ -96,15 +96,15 @@ window.XsSample13 = {
       coupon:'🎟', html_editor:'</>', event_banner:'🎉',
       cache_banner:'💰', widget_embed:'🧩',
     };
-    const wIcon = (t) => WIDGET_ICONS[t] || '◻';
+    const fnWIcon = (t) => WIDGET_ICONS[t] || '◻';
 
-    const filteredAreas = computed(() =>
-      allAreas.value.filter(a => selectedAreas.size === 0 || selectedAreas.has(a.codeValue))
+    const cfFilteredAreas = computed(() =>
+      cfAllAreas.value.filter(a => selectedAreas.size === 0 || selectedAreas.has(a.codeValue))
     );
 
     /* 영역별 패널 목록 */
-    const panelsByArea = computed(() =>
-      filteredAreas.value.map(area => {
+    const cfPanelsByArea = computed(() =>
+      cfFilteredAreas.value.map(area => {
         const panels = []
           .filter(p => p.area === area.codeValue && panelFilter(p))
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
@@ -127,15 +127,15 @@ window.XsSample13 = {
         return `<DispPanel\n${attrs}>\n\n  <!-- 위젯 없음 -->\n\n</DispPanel>`;
       }
       const widgetLines = rows.map((w, i) =>
-        `  // 위젯${i + 1}: ${wLabel(w.widgetType)}${w.widgetNm ? ` (${w.widgetNm})` : ''}\n  <DispWidget widgetType="${w.widgetType}" />`
+        `  // 위젯${i + 1}: ${fnWLabel(w.widgetType)}${w.widgetNm ? ` (${w.widgetNm})` : ''}\n  <DispWidget widgetType="${w.widgetType}" />`
       ).join('\n\n');
       return `<DispPanel\n${attrs}>\n\n${widgetLines}\n\n</DispPanel>`;
     };
 
     /* 전체 소스 복사 */
-    const sourceText = computed(() => {
+    const cfSourceText = computed(() => {
       const parts = [];
-      panelsByArea.value.forEach(({ area, panels }) => {
+      cfPanelsByArea.value.forEach(({ area, panels }) => {
         parts.push(`<!-- ===== ${area.codeValue} ${area.codeLabel} (${panels.length}개) ===== -->`);
         panels.forEach(p => { parts.push(panelSource(p)); });
         parts.push('');
@@ -144,7 +144,7 @@ window.XsSample13 = {
     });
 
     const copySource = () => {
-      navigator.clipboard?.writeText(sourceText.value).then(() => {
+      navigator.clipboard?.writeText(cfSourceText.value).then(() => {
         copied.value = true;
         setTimeout(() => { copied.value = false; }, 2000);
       });
@@ -173,9 +173,9 @@ window.XsSample13 = {
     };
 
     /* 화면영역 드롭다운 */
-    const areaBtnLabel = computed(() => selectedAreas.size === 0 ? '전체 영역' : `${selectedAreas.size}개 선택`);
+    const cfAreaBtnLabel = computed(() => selectedAreas.size === 0 ? '전체 영역' : `${selectedAreas.size}개 선택`);
     const toggleArea    = (code) => { if (selectedAreas.has(code)) selectedAreas.delete(code); else selectedAreas.add(code); };
-    const selectAllAreas = () => { allAreas.value.forEach(a => selectedAreas.add(a.codeValue)); };
+    const selectAllAreas = () => { cfAllAreas.value.forEach(a => selectedAreas.add(a.codeValue)); };
     const clearAllAreas  = () => { selectedAreas.clear(); };
     const resetDate = () => {
       previewDate.value = today;
@@ -184,14 +184,14 @@ window.XsSample13 = {
 
     return {
       previewDate, previewTime, showAreaDrop,
-      selectedAreas, allAreas, areaBtnLabel,
+      selectedAreas, cfAllAreas, cfAreaBtnLabel,
       toggleArea, selectAllAreas, clearAllAreas, resetDate,
       searchStatus, searchCondition, searchAuthRequired, searchAuthGrade,
       CONDITION_OPTS, AUTH_GRADE_OPTS,
-      isLoggedIn, userGrade, userNm, accessibleConds,
-      showCatModal, selectedCatIds, catBtnLabel, onCatApply, selectedCatNames,
-      panelsByArea, panelSource, panelSourceHtml, copied, copiedPanel, copySource, copyPanel,
-      wLabel, wIcon,
+      isLoggedIn, userGrade, userNm, cfAccessibleConds,
+      showCatModal, selectedCatIds, cfCatBtnLabel, onCatApply, cfSelectedCatNames,
+      cfPanelsByArea, panelSource, panelSourceHtml, copied, copiedPanel, copySource, copyPanel,
+      fnWLabel, fnWIcon,
     };
   },
   template: /* html */`
@@ -259,7 +259,7 @@ window.XsSample13 = {
       <button @click="showCatModal=true"
         style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;"
         :style="selectedCatIds.size>0?'border-color:#8e44ad;color:#8e44ad;font-weight:600;':''">
-        📂 {{ catBtnLabel }}
+        📂 {{ cfCatBtnLabel }}
       </button>
 
       <!-- 화면영역 멀티선택 -->
@@ -267,7 +267,7 @@ window.XsSample13 = {
         <button @click="showAreaDrop=!showAreaDrop"
           style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;"
           :style="selectedAreas.size>0?'border-color:#e8587a;color:#e8587a;font-weight:600;':''">
-          <span>🗂 {{ areaBtnLabel }}</span>
+          <span>🗂 {{ cfAreaBtnLabel }}</span>
           <span style="font-size:10px;">{{ showAreaDrop ? '▲' : '▼' }}</span>
         </button>
         <div v-if="showAreaDrop" @click="showAreaDrop=false" style="position:fixed;inset:0;z-index:99;"></div>
@@ -276,7 +276,7 @@ window.XsSample13 = {
             <button @click.stop="selectAllAreas" style="font-size:11px;padding:2px 8px;border:1px solid #1565c0;border-radius:6px;background:#e3f2fd;color:#1565c0;cursor:pointer;">전체선택</button>
             <button @click.stop="clearAllAreas"  style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">전체해제</button>
           </div>
-          <div v-for="a in allAreas" :key="a.codeValue" @click.stop="toggleArea(a.codeValue)"
+          <div v-for="a in cfAllAreas" :key="a.codeValue" @click.stop="toggleArea(a.codeValue)"
             style="display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;"
             :style="selectedAreas.has(a.codeValue)?'background:#fff8f8;':''">
             <div style="width:14px;height:14px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
@@ -296,7 +296,7 @@ window.XsSample13 = {
     <!-- 카테고리 선택 현황 -->
     <div v-if="selectedCatIds.size>0" style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
       <span style="font-size:11px;color:#8e44ad;font-weight:600;">📂 카테고리 필터:</span>
-      <span v-for="nm in selectedCatNames" :key="nm"
+      <span v-for="nm in cfSelectedCatNames" :key="nm"
         style="font-size:11px;background:#f3e5f5;color:#8e44ad;border-radius:8px;padding:2px 8px;">{{ nm }}</span>
     </div>
 
@@ -308,16 +308,16 @@ window.XsSample13 = {
       <span v-if="userNm" style="font-size:11px;color:#555;">{{ userNm }}</span>
       <span v-if="isLoggedIn && userGrade" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;">등급: {{ userGrade }}</span>
       <span style="font-size:11px;color:#aaa;">접근 가능 조건:</span>
-      <span v-for="c in accessibleConds" :key="c" style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:6px;padding:1px 7px;">{{ c }}</span>
+      <span v-for="c in cfAccessibleConds" :key="c" style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:6px;padding:1px 7px;">{{ c }}</span>
     </div>
   </div>
 
   <!-- 영역별 패널+소스 목록 -->
-  <div v-if="panelsByArea.length===0" style="text-align:center;padding:48px;color:#ccc;font-size:13px;">
+  <div v-if="cfPanelsByArea.length===0" style="text-align:center;padding:48px;color:#ccc;font-size:13px;">
     조건에 맞는 영역/패널이 없습니다.
   </div>
 
-  <div v-for="{ area, panels } in panelsByArea" :key="area.codeValue" style="margin-bottom:14px;">
+  <div v-for="{ area, panels } in cfPanelsByArea" :key="area.codeValue" style="margin-bottom:14px;">
 
     <!-- 영역 헤더 -->
     <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:#1e3a5f;color:#fff;border-radius:6px 6px 0 0;">
@@ -364,7 +364,7 @@ window.XsSample13 = {
           <!-- 위젯 헤더 -->
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
             <span style="font-size:10px;color:#bbb;">위젯{{ wi+1 }}</span>
-            <span style="font-size:10px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:1px 5px;white-space:nowrap;">{{ wIcon(w.widgetType) }} {{ wLabel(w.widgetType) }}</span>
+            <span style="font-size:10px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:1px 5px;white-space:nowrap;">{{ fnWIcon(w.widgetType) }} {{ fnWLabel(w.widgetType) }}</span>
             <span v-if="w.widgetNm" style="font-size:11px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ w.widgetNm }}</span>
           </div>
           <!-- 위젯 콘텐츠 렌더링 -->
@@ -470,8 +470,8 @@ window.XsSample13 = {
             <div style="font-size:10px;color:#a0aec0;">외부 위젯 임베드</div>
           </div>
           <div v-else style="background:#f5f5f5;border-radius:8px;padding:14px;text-align:center;color:#888;">
-            <div style="font-size:20px;margin-bottom:4px;">{{ wIcon(w.widgetType) }}</div>
-            <div style="font-size:11px;">{{ wLabel(w.widgetType) }}</div>
+            <div style="font-size:20px;margin-bottom:4px;">{{ fnWIcon(w.widgetType) }}</div>
+            <div style="font-size:11px;">{{ fnWLabel(w.widgetType) }}</div>
           </div>
         </div>
       </div>

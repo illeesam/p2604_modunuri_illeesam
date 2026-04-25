@@ -17,11 +17,11 @@ window.XsSample14 = {
     /* 카테고리 선택 */
     const showCatModal   = ref(false);
     const selectedCatIds = reactive(new Set());
-    const allCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
-    const selectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = allCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
-    const catBtnLabel = computed(() => {
+    const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
+    const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
+    const cfCatBtnLabel = computed(() => {
       if (selectedCatIds.size === 0) return '카테고리';
-      return selectedCatIds.size <= 2 ? selectedCatNames.value.join(', ') : `${selectedCatIds.size}개`;
+      return selectedCatIds.size <= 2 ? cfSelectedCatNames.value.join(', ') : `${selectedCatIds.size}개`;
     });
     const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
 
@@ -39,7 +39,7 @@ window.XsSample14 = {
     const CONDITION_OPTS  = ['항상 표시', '로그인 필요', '로그인+VIP', '로그인+우수', '비로그인 전용'];
     const AUTH_GRADE_OPTS = ['일반', '우수', 'VIP'];
 
-    const accessibleConds = computed(() => {
+    const cfAccessibleConds = computed(() => {
       const c = ['항상 표시'];
       if (!isLoggedIn) { c.push('비로그인 전용'); return c; }
       c.push('로그인 필요');
@@ -67,7 +67,7 @@ window.XsSample14 = {
     const wLabel = (t) => WIDGET_LABELS[t] || t || '-';
     const wIcon  = (t) => WIDGET_ICONS[t] || '▪';
 
-    const allAreas = computed(() =>
+    const cfAllAreas = computed(() =>
       window.getBoCodeStore?.()?.codes||[]
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
@@ -90,7 +90,7 @@ window.XsSample14 = {
       if (searchAuthRequired.value === 'N' &&  p.authRequired) return false;
       if (searchAuthGrade.value    && p.authGrade !== searchAuthGrade.value) return false;
       if (selectedCatIds.size > 0) {
-        const names = selectedCatNames.value;
+        const names = cfSelectedCatNames.value;
         const hit = names.some(nm => p.name.includes(nm)) ||
                     (p.rows || []).some(w => names.some(nm => (w.widgetNm || '').includes(nm)));
         if (!hit) return false;
@@ -99,8 +99,8 @@ window.XsSample14 = {
     };
 
     /* 영역별 패널 목록 */
-    const structAreaList = computed(() => {
-      return allAreas.value
+    const cfStructAreaList = computed(() => {
+      return cfAllAreas.value
         .filter(a => selectedAreas.size === 0 || selectedAreas.has(a.codeValue))
         .map(area => {
           const panels = []
@@ -111,7 +111,7 @@ window.XsSample14 = {
     });
 
     /* 초기 펼침 */
-    const initExpand = () => allAreas.value.forEach(a => expandedAreas.add(a.codeValue));
+    const initExpand = () => cfAllAreas.value.forEach(a => expandedAreas.add(a.codeValue));
 
     /* 영역 토글 */
     const toggleAreaExpand = (code) => {
@@ -141,7 +141,7 @@ window.XsSample14 = {
     };
 
     /* 전체 선택/해제 */
-    const checkAll  = () => { structAreaList.value.forEach(a => a.panels.forEach(p => { checkedPanels.add(p.dispId); (p.rows||[]).forEach((_,wi)=>checkedWidgets.add(`${p.dispId}_${wi}`)); })); };
+    const checkAll  = () => { cfStructAreaList.value.forEach(a => a.panels.forEach(p => { checkedPanels.add(p.dispId); (p.rows||[]).forEach((_,wi)=>checkedWidgets.add(`${p.dispId}_${wi}`)); })); };
     const clearAll  = () => { checkedPanels.clear(); checkedWidgets.clear(); };
 
     /* 영역 전체 체크 */
@@ -163,9 +163,9 @@ window.XsSample14 = {
       ((p.rows||[]).length === 0 || (p.rows||[]).every((_,wi) => checkedWidgets.has(`${p.dispId}_${wi}`)));
 
     /* 선택 위젯 목록 */
-    const checkedWidgetList = computed(() => {
+    const cfCheckedWidgetList = computed(() => {
       const result = [];
-      structAreaList.value.forEach(a =>
+      cfStructAreaList.value.forEach(a =>
         a.panels.forEach(p =>
           (p.rows||[]).forEach((w, wi) => {
             if (checkedWidgets.has(`${p.dispId}_${wi}`))
@@ -177,9 +177,9 @@ window.XsSample14 = {
     });
 
     /* 화면영역 드롭다운 */
-    const areaBtnLabel = computed(() => selectedAreas.size === 0 ? '전체 영역' : `${selectedAreas.size}개 선택`);
+    const cfAreaBtnLabel = computed(() => selectedAreas.size === 0 ? '전체 영역' : `${selectedAreas.size}개 선택`);
     const toggleArea = (code) => { if (selectedAreas.has(code)) selectedAreas.delete(code); else selectedAreas.add(code); };
-    const selectAllAreas = () => { allAreas.value.forEach(a => selectedAreas.add(a.codeValue)); };
+    const selectAllAreas = () => { cfAllAreas.value.forEach(a => selectedAreas.add(a.codeValue)); };
     const clearAllAreas  = () => { selectedAreas.clear(); };
 
     const resetDate = () => {
@@ -214,7 +214,7 @@ window.XsSample14 = {
     const wColor = (t) => WIDGET_COLORS[t] || '#888';
 
     // 헤더 카운트용
-    const previewWidgets = computed(() => {
+    const cfPreviewWidgets = computed(() => {
       if (activeTab.value === 'dashboard') return dashItems;
       return (gridCells[activeTab.value] || []).filter(c => c.widget);
     });
@@ -404,7 +404,7 @@ window.XsSample14 = {
     /* ── 반응형 뷰포트 ── */
     const viewportMode = ref('desktop');
     /* auto-fill 기반 반응형: 뷰포트 너비 제약이 걸리면 자동으로 컬럼 축소 */
-    const autoGridCols = computed(() => {
+    const cfAutoGridCols = computed(() => {
       const map = {
         grid1: 'repeat(1,1fr)',
         grid2: 'repeat(auto-fill,minmax(max(calc(50% - 5px),260px),1fr))',
@@ -413,7 +413,7 @@ window.XsSample14 = {
       };
       return map[activeTab.value] || 'repeat(1,1fr)';
     });
-    const viewportWidth = computed(() => {
+    const cfViewportWidth = computed(() => {
       if (viewportMode.value === 'mobile') return '375px';
       if (viewportMode.value === 'tablet') return '768px';
       return null;
@@ -427,21 +427,21 @@ window.XsSample14 = {
 
     return {
       previewDate, previewTime, showAreaDrop,
-      selectedAreas, allAreas, areaBtnLabel,
+      selectedAreas, cfAllAreas, cfAreaBtnLabel,
       toggleArea, selectAllAreas, clearAllAreas, resetDate,
       searchStatus, searchCondition, searchAuthRequired, searchAuthGrade,
       CONDITION_OPTS, AUTH_GRADE_OPTS,
-      isLoggedIn, userGrade, userNm, accessibleConds,
-      showCatModal, selectedCatIds, catBtnLabel, onCatApply, selectedCatNames,
-      structAreaList, expandedAreas, toggleAreaExpand, initExpand,
+      isLoggedIn, userGrade, userNm, cfAccessibleConds,
+      showCatModal, selectedCatIds, cfCatBtnLabel, onCatApply, cfSelectedCatNames,
+      cfStructAreaList, expandedAreas, toggleAreaExpand, initExpand,
       checkedPanels, checkedWidgets,
       togglePanel, toggleWidget,
       checkAll, clearAll,
       isAreaAllChecked, checkAreaAll,
       isPanelAllChecked,
-      checkedWidgetList,
+      cfCheckedWidgetList,
       TABS, activeTab, GRID_COLS, gridCells, wColor,
-      previewWidgets, dragSrc, dropZoneIdx,
+      cfPreviewWidgets, dragSrc, dropZoneIdx,
       onWidgetDragStart, onAreaNodeDragStart, onPanelNodeDragStart, onDragEnd,
       spanPopupIdx, toggleSpanPopup, closeSpanPopup, setSpan,
       onCellDrop, removeCellWidget,
@@ -451,7 +451,7 @@ window.XsSample14 = {
       wLabel, wIcon,
       popoverKey, popoverWidget, popoverArea, popoverPanel, popoverPos,
       showWidgetInfo, closePopover,
-      viewportMode, autoGridCols, viewportWidth,
+      viewportMode, cfAutoGridCols, cfViewportWidth,
       showRealContent,
     };
   },
@@ -514,7 +514,7 @@ window.XsSample14 = {
       <button @click="showCatModal=true"
         style="font-size:12px;padding:3px 10px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:4px;"
         :style="selectedCatIds.size>0?'border-color:#e8587a;color:#e8587a;font-weight:600;':''">
-        📂 {{ catBtnLabel }}
+        📂 {{ cfCatBtnLabel }}
       </button>
 
       <!-- 화면영역 멀티선택 -->
@@ -522,7 +522,7 @@ window.XsSample14 = {
         <button @click="showAreaDrop=!showAreaDrop"
           style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;"
           :style="selectedAreas.size>0?'border-color:#e8587a;color:#e8587a;font-weight:600;':''">
-          <span>🗂 {{ areaBtnLabel }}</span>
+          <span>🗂 {{ cfAreaBtnLabel }}</span>
           <span style="font-size:10px;">{{ showAreaDrop ? '▲' : '▼' }}</span>
         </button>
         <div v-if="showAreaDrop" @click="showAreaDrop=false" style="position:fixed;inset:0;z-index:99;"></div>
@@ -531,7 +531,7 @@ window.XsSample14 = {
             <button @click.stop="selectAllAreas" style="font-size:11px;padding:2px 8px;border:1px solid #1565c0;border-radius:6px;background:#e3f2fd;color:#1565c0;cursor:pointer;">전체선택</button>
             <button @click.stop="clearAllAreas" style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">전체해제</button>
           </div>
-          <div v-for="a in allAreas" :key="a.codeValue" @click.stop="toggleArea(a.codeValue)"
+          <div v-for="a in cfAllAreas" :key="a.codeValue" @click.stop="toggleArea(a.codeValue)"
             style="display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;"
             :style="selectedAreas.has(a.codeValue)?'background:#fff8f8;':''">
             <div style="width:14px;height:14px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
@@ -556,7 +556,7 @@ window.XsSample14 = {
       <span v-if="userNm" style="font-size:11px;color:#555;">{{ userNm }}</span>
       <span v-if="isLoggedIn && userGrade" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;">등급: {{ userGrade }}</span>
       <span style="font-size:11px;color:#aaa;">접근 가능 조건:</span>
-      <span v-for="c in accessibleConds" :key="c" style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:6px;padding:1px 7px;">{{ c }}</span>
+      <span v-for="c in cfAccessibleConds" :key="c" style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:6px;padding:1px 7px;">{{ c }}</span>
     </div>
   </div>
 
@@ -577,9 +577,9 @@ window.XsSample14 = {
       </div>
 
       <!-- 트리 -->
-      <div v-if="structAreaList.length===0" style="text-align:center;padding:40px;color:#ccc;font-size:13px;">등록된 영역이 없습니다.</div>
+      <div v-if="cfStructAreaList.length===0" style="text-align:center;padding:40px;color:#ccc;font-size:13px;">등록된 영역이 없습니다.</div>
 
-      <div v-for="area in structAreaList" :key="area.codeValue" style="background:#fff;border:1px solid #e0e0e0;border-radius:6px;margin-bottom:8px;overflow:hidden;">
+      <div v-for="area in cfStructAreaList" :key="area.codeValue" style="background:#fff;border:1px solid #e0e0e0;border-radius:6px;margin-bottom:8px;overflow:hidden;">
         <!-- 영역 헤더 -->
         <div style="display:flex;align-items:center;gap:8px;padding:9px 14px;background:linear-gradient(90deg,#2d2d2d,#444);color:#fff;cursor:grab;user-select:none;"
           draggable="true"
@@ -658,7 +658,7 @@ window.XsSample14 = {
         <div style="display:flex;align-items:center;padding:10px 14px 6px;">
           <span style="font-size:13px;font-weight:700;color:#333;">🧩 위젯 컨텐츠 미리보기</span>
           <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-            <span style="font-size:11px;color:#aaa;">{{ previewWidgets.length }}개</span>
+            <span style="font-size:11px;color:#aaa;">{{ cfPreviewWidgets.length }}개</span>
             <button @click="clearPreview"
               style="font-size:11px;padding:2px 10px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">초기화</button>
           </div>
@@ -696,26 +696,26 @@ window.XsSample14 = {
       <!-- 뷰포트 래퍼 (dashboard 제외) -->
       <template v-if="activeTab!=='dashboard'">
       <div :style="{
-        width: viewportWidth || '100%',
-        maxWidth: viewportWidth || '100%',
+        width: cfViewportWidth || '100%',
+        maxWidth: cfViewportWidth || '100%',
         margin: '0 auto',
         transition: 'width .3s, max-width .3s',
       }">
-      <div v-if="viewportWidth" style="text-align:center;margin-bottom:6px;font-size:11px;color:#9ca3af;font-weight:600;padding-top:8px;">
+      <div v-if="cfViewportWidth" style="text-align:center;margin-bottom:6px;font-size:11px;color:#9ca3af;font-weight:600;padding-top:8px;">
         {{ viewportMode==='mobile' ? '📱 375px' : '📟 768px' }}
       </div>
       <div :style="{
-        border: viewportWidth ? '2px solid #d1d5db' : 'none',
-        borderRadius: viewportWidth ? '10px' : '0',
-        padding: viewportWidth ? '10px' : '0',
+        border: cfViewportWidth ? '2px solid #d1d5db' : 'none',
+        borderRadius: cfViewportWidth ? '10px' : '0',
+        padding: cfViewportWidth ? '10px' : '0',
         background: '#fff',
-        boxShadow: viewportWidth ? '0 4px 16px rgba(0,0,0,.1)' : 'none',
+        boxShadow: cfViewportWidth ? '0 4px 16px rgba(0,0,0,.1)' : 'none',
       }">
 
 
       <!-- ===== grid1 / grid2 / grid3 / grid4 =====  -->
       <template v-if="GRID_COLS[activeTab]">
-        <div @click="closeSpanPopup" :style="{ display:'grid', gridTemplateColumns: autoGridCols, gap: '8px' }">
+        <div @click="closeSpanPopup" :style="{ display:'grid', gridTemplateColumns: cfAutoGridCols, gap: '8px' }">
           <template v-for="(cell, ci) in gridCells[activeTab]" :key="ci">
           <div v-if="!showRealContent || cell.widget"
             @dragover.prevent="dropZoneIdx=ci"

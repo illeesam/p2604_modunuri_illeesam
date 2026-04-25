@@ -34,11 +34,11 @@ window.SyBatchHist = {
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
-    const batchOptions = computed(() =>
+    const cfBatchOptions = computed(() =>
       batches.map(b => ({ batchId: b.batchId, label: b.batchNm }))
     );
 
-    const filtered = computed(() => {
+    const cfFiltered = computed(() => {
       const logs = [...(batchLogs || [])];
       logs.sort((a, b) => (b.runAt > a.runAt ? 1 : -1));
       return logs.filter(l => {
@@ -48,15 +48,15 @@ window.SyBatchHist = {
       });
     });
 
-    const total      = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums   = computed(() => {
-      const c = pager.page, l = totalPages.value;
+    const cfTotal      = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums   = computed(() => {
+      const c = pager.page, l = cfTotalPages.value;
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
-    const setPage      = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage      = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const onFilter     = () => { pager.page = 1; };
 
@@ -66,19 +66,19 @@ window.SyBatchHist = {
       expandedId.value = expandedId.value === logId ? null : logId;
     };
 
-    const runBadge = s => ({ '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' }[s] || 'badge-gray');
+    const fnRunBadge = s => ({ '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' }[s] || 'badge-gray');
 
-    const fmtDuration = (sec) => {
+    const fnFmtDuration = (sec) => {
       if (!sec && sec !== 0) return '-';
       if (sec < 60) return `${sec}초`;
       return `${Math.floor(sec / 60)}분 ${sec % 60}초`;
     };
 
-    return { batches, loading, error, searchBatchId, searchStatus, batchOptions,
-      filtered, total, totalPages, pageList, pageNums, pager, PAGE_SIZES,
+    return { batches, loading, error, searchBatchId, searchStatus, cfBatchOptions,
+      cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, pager, PAGE_SIZES,
       setPage, onSizeChange, onFilter,
       expandedId, toggleExpand,
-      runBadge, fmtDuration,
+      fnRunBadge, fnFmtDuration,
     };
   },
   template: /* html */`
@@ -87,12 +87,12 @@ window.SyBatchHist = {
     <div style="font-size:13px;font-weight:700;color:#555;">
       <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
       배치 실행이력
-      <span class="list-count" style="margin-left:4px;">{{ total }}건</span>
+      <span class="list-count" style="margin-left:4px;">{{ cfTotal }}건</span>
     </div>
     <div style="display:flex;gap:6px;align-items:center;">
       <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:160px;" v-model="searchBatchId" @change="onFilter">
         <option value="">배치 전체</option>
-        <option v-for="b in batchOptions" :key="b.batchId" :value="b.batchId">{{ b.label }}</option>
+        <option v-for="b in cfBatchOptions" :key="b.batchId" :value="b.batchId">{{ b.label }}</option>
       </select>
       <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:90px;" v-model="searchStatus" @change="onFilter">
         <option value="">상태 전체</option>
@@ -115,19 +115,19 @@ window.SyBatchHist = {
       </tr>
     </thead>
     <tbody>
-      <tr v-if="pageList.length===0">
+      <tr v-if="cfPageList.length===0">
         <td colspan="8" style="text-align:center;color:#aaa;padding:24px;">실행이력이 없습니다.</td>
       </tr>
 
-      <template v-for="log in pageList" :key="log.logId">
+      <template v-for="log in cfPageList" :key="log.logId">
         <!-- 데이터 행 -->
         <tr :style="log.runStatus==='실패' ? 'background:#fff5f5;' : log.runStatus==='실행중' ? 'background:#f0f8ff;' : ''">
           <td style="color:#aaa;">{{ log.logId }}</td>
           <td style="font-weight:500;">{{ log.batchNm }}</td>
           <td><code style="font-size:11px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ log.batchCode }}</code></td>
           <td style="color:#555;font-family:monospace;font-size:11px;">{{ log.runAt }}</td>
-          <td style="text-align:center;color:#666;">{{ fmtDuration(log.duration) }}</td>
-          <td style="text-align:center;"><span class="badge badge-xs" :class="runBadge(log.runStatus)">{{ log.runStatus }}</span></td>
+          <td style="text-align:center;color:#666;">{{ fnFmtDuration(log.duration) }}</td>
+          <td style="text-align:center;"><span class="badge badge-xs" :class="fnRunBadge(log.runStatus)">{{ log.runStatus }}</span></td>
           <td style="font-size:11px;max-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
             :style="log.runStatus==='실패' ? 'color:#dc2626;' : 'color:#555;'">
             {{ log.message }}
@@ -164,11 +164,11 @@ window.SyBatchHist = {
                 </div>
                 <div>
                   <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">소요시간</span>
-                  <span style="font-size:12px;color:#555;">{{ fmtDuration(log.duration) }}</span>
+                  <span style="font-size:12px;color:#555;">{{ fnFmtDuration(log.duration) }}</span>
                 </div>
                 <div>
                   <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">실행결과</span>
-                  <span class="badge badge-xs" :class="runBadge(log.runStatus)">{{ log.runStatus }}</span>
+                  <span class="badge badge-xs" :class="fnRunBadge(log.runStatus)">{{ log.runStatus }}</span>
                 </div>
               </div>
               <!-- 메시지 전체 -->
@@ -197,9 +197,9 @@ window.SyBatchHist = {
     <div class="pager">
       <button :disabled="pager.page===1" @click="setPage(1)">«</button>
       <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-      <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-      <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-      <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+      <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+      <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+      <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
     </div>
     <div class="pager-right">
       <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

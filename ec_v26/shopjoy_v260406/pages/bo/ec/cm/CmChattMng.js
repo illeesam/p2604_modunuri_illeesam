@@ -32,7 +32,7 @@ window.CmChattMng = {
       if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -49,15 +49,15 @@ window.CmChattMng = {
       if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
+    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const sorted = computed(() => [...chats.value].sort((a, b) => b.date.localeCompare(a.date)));
+    const cfSorted = computed(() => [...chats.value].sort((a, b) => b.date.localeCompare(a.date)));
 
     const applied = reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => window.safeArrayUtils.safeFilter(sorted, c => {
+    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(cfSorted, c => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !c.userNm.toLowerCase().includes(kw) && !c.subject.toLowerCase().includes(kw)) return false;
       if (applied.status && c.status !== applied.status) return false;
@@ -66,15 +66,15 @@ window.CmChattMng = {
       if (applied.dateEnd && _d > applied.dateEnd) return false;
       return true;
     }));
-    const total = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums = computed(() => {
-      const cur = pager.page, last = totalPages.value;
+    const cfTotal = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums = computed(() => {
+      const cur = pager.page, last = cfTotalPages.value;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
-    const statusBadge = s => ({ '진행중': 'badge-green', '종료': 'badge-gray' }[s] || 'badge-gray');
+    const fnStatusBadge = s => ({ '진행중': 'badge-green', '종료': 'badge-gray' }[s] || 'badge-gray');
     const onSearch = () => {
       Object.assign(applied, {
         kw: searchKw.value,
@@ -91,10 +91,10 @@ window.CmChattMng = {
       Object.assign(applied, { kw: '', status: '', dateStart: '', dateEnd: '' });
       pager.page = 1;
     };
-    const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
-    const doDelete = async (c) => {
+    const handleDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.subject}] 채팅을 삭제하시겠습니까?`);
       if (!ok) return;
       const idx = chats.value.findIndex(x => x.chatId === c.chatId);
@@ -111,9 +111,9 @@ window.CmChattMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'채팅ID',key:'chattId'},{label:'회원명',key:'userNm'},{label:'상태',key:'status'},{label:'마지막메시지',key:'lastMessage'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'채팅ID',key:'chattId'},{label:'회원명',key:'userNm'},{label:'상태',key:'status'},{label:'마지막메시지',key:'lastMessage'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
 
-    return { chatts, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { chatts, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -131,7 +131,7 @@ window.CmChattMng = {
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>채팅목록 <span class="list-count">{{ total }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>채팅목록 <span class="list-count">{{ cfTotal }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -142,8 +142,8 @@ window.CmChattMng = {
         <th>ID</th><th>회원</th><th>제목</th><th>마지막 메시지</th><th>메시지수</th><th>미읽음</th><th>상태</th><th>일시</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="c in pageList" :key="c?.chatId" :style="selectedId===c.chatId?'background:#fff8f9;':''">
+        <tr v-if="cfPageList.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="c in cfPageList" :key="c?.chatId" :style="selectedId===c.chatId?'background:#fff8f9;':''">
           <td>{{ c.chatId }}</td>
           <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
           <td><span class="title-link" @click="loadDetail(c.chatId)" :style="selectedId===c.chatId?'color:#e8587a;font-weight:700;':''">{{ c.subject }}<span v-if="selectedId===c.chatId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
@@ -153,12 +153,12 @@ window.CmChattMng = {
             <span v-if="c.unread > 0" class="badge badge-red">{{ c.unread }}</span>
             <span v-else class="badge badge-gray">0</span>
           </td>
-          <td><span class="badge" :class="statusBadge(c.status)">{{ c.status }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(c.status)">{{ c.status }}</span></td>
           <td>{{ c.date }}</td>
-          <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
+          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(c.chatId)">보기</button>
-            <button class="btn btn-danger btn-sm" @click="doDelete(c)">삭제</button>
+            <button class="btn btn-danger btn-sm" @click="handleDelete(c)">삭제</button>
           </div></td>
         </tr>
       </tbody>
@@ -168,9 +168,9 @@ window.CmChattMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -191,7 +191,7 @@ window.CmChattMng = {
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
-      :edit-id="detailEditId"
+      :edit-id="cfDetailEditId"
     />
   </div>
 </div>

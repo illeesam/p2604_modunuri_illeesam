@@ -26,8 +26,8 @@ window.SyBbmDtl = {
       }
     };
     onMounted(() => { fetchData(); });
-    const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({
       bbmId: null, bbmCode: '', bbmNm: '', bbmType: '일반',
       allowComment: '불가', allowAttach: '불가', allowLike: 'N',
@@ -49,13 +49,13 @@ window.SyBbmDtl = {
     });
 
     onMounted(() => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const b = bbms.find(x => x.bbmId === props.editId);
         if (b) Object.assign(form, { ...b });
       }
     });
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
@@ -64,18 +64,18 @@ window.SyBbmDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (isNew.value) {
+      if (cfIsNew.value) {
         bbms.push({ ...form, bbmId: nextId.value(bbms, 'bbmId'), regDate: new Date().toISOString().slice(0, 10) });
       } else {
         const idx = bbms.findIndex(x => x.bbmId === props.editId);
         if (idx !== -1) Object.assign(bbms[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`/bo/sy/bbm/${form.bbmId}`, { ...form }) : window.boApi.put(`/bo/sy/bbm/${form.bbmId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/bbm/${form.bbmId}`, { ...form }) : window.boApi.put(`/bo/sy/bbm/${form.bbmId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syBbmMng');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -84,16 +84,16 @@ window.SyBbmDtl = {
       }
     };
 
-    return { bbms, loading, error, isNew, form, errors, save, siteNm, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
+    return { bbms, loading, error, cfIsNew, form, errors, handleSave, cfSiteNm, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '게시판 등록' : (viewMode ? '게시판 상세' : '게시판 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.bbmId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '게시판 등록' : (viewMode ? '게시판 상세' : '게시판 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.bbmId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ siteNm }}</div>
+        <div class="readonly-field">{{ cfSiteNm }}</div>
       </div>
     </div>
     <div class="form-row">
@@ -183,7 +183,7 @@ window.SyBbmDtl = {
         <button class="btn btn-secondary" @click="navigate('syBbmMng')">닫기</button>
       </template>
       <template v-else>
-        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('syBbmMng')">취소</button>
       </template>
     </div>

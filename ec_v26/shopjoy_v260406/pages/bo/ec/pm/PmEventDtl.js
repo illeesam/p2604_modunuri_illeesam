@@ -29,7 +29,7 @@ window.PmEventDtl = {
       }
     };
     onMounted(() => { fetchData(); });
-    const isNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._ecEventDtlState.tab || 'info');
     watch(tab, v => { window._ecEventDtlState.tab = v; });
     const viewMode2 = ref(window._ecEventDtlState.viewMode || 'tab');
@@ -100,7 +100,7 @@ window.PmEventDtl = {
     };
 
     onMounted(() => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const e = events.window.safeArrayUtils.safeFind(value, x => x.eventId === props.editId);
         if (e) {
           Object.assign(form, { ...e, targetProducts: [...(e.targetProducts || [])] });
@@ -140,7 +140,7 @@ window.PmEventDtl = {
       props.showToast('이벤트 참여가 완료되었습니다! 감사합니다.', 'success');
     };
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
@@ -149,9 +149,9 @@ window.PmEventDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (isNew.value) {
+      if (cfIsNew.value) {
         events.value.push({
           ...form, eventId: nextId.value(events.value, 'eventId'),
           targetProducts: [...form.targetProducts],
@@ -162,9 +162,9 @@ window.PmEventDtl = {
         if (idx !== -1) Object.assign(events.value[idx], { ...form, targetProducts: [...form.targetProducts] });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`/bo/ec/pm/event`, { ...form }) : window.boApi.put(`/bo/ec/pm/event/${form.eventId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/event`, { ...form }) : window.boApi.put(`/bo/ec/pm/event/${form.eventId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmEventMng');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -193,11 +193,11 @@ window.PmEventDtl = {
       showVendorModal.value = false;
     };
 
-    return { events, loading, error, isNew, tab, onTabChange, form, errors, activeContentTab, showProdPopup, prodSearch, filteredProds, toggleProduct, isSelected, selectedProducts, removeProduct, onEventConfirm, save, visibilityOptions, hasVisibility, toggleVisibility, viewMode2, showTab, showVendorModal, selectedVendorNm, selectVendor };
+    return { events, loading, error, cfIsNew, tab, onTabChange, form, errors, activeContentTab, showProdPopup, prodSearch, filteredProds, toggleProduct, isSelected, selectedProducts, removeProduct, onEventConfirm, handleSave, visibilityOptions, hasVisibility, toggleVisibility, viewMode2, showTab, showVendorModal, selectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '이벤트 등록' : (viewMode ? '이벤트 상세' : '이벤트 수정') }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.eventId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '이벤트 등록' : (viewMode ? '이벤트 상세' : '이벤트 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.eventId }}</span></div>
     <div class="tab-bar-row">
       <div class="tab-nav">
         <button class="tab-btn" :class="{active:tab==='banner'}" :disabled="viewMode2!=='tab'" @click="onTabChange('banner')">🎨 배너이미지</button>
@@ -231,7 +231,7 @@ window.PmEventDtl = {
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">닫기</button>
         </template>
         <template v-else>
-          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-primary" @click="handleSave">저장</button>
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">취소</button>
         </template>
       </div>
@@ -338,7 +338,7 @@ window.PmEventDtl = {
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">닫기</button>
         </template>
         <template v-else>
-          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-primary" @click="handleSave">저장</button>
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">취소</button>
         </template>
       </div>
@@ -371,7 +371,7 @@ window.PmEventDtl = {
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">닫기</button>
         </template>
         <template v-else>
-          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-primary" @click="handleSave">저장</button>
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">취소</button>
         </template>
       </div>
@@ -405,7 +405,7 @@ window.PmEventDtl = {
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">닫기</button>
         </template>
         <template v-else>
-          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-primary" @click="handleSave">저장</button>
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">취소</button>
         </template>
       </div>

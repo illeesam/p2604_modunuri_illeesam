@@ -26,7 +26,7 @@ window.PmCacheDtl = {
       }
     };
     onMounted(() => { fetchData(); });
-    const isNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._pmCacheDtlState.tab || 'info');
     watch(tab, v => { window._pmCacheDtlState.tab = v; });
     const viewMode2 = ref(window._pmCacheDtlState.viewMode || 'tab');
@@ -45,36 +45,36 @@ window.PmCacheDtl = {
     });
 
     onMounted(() => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const c = cacheList.window.safeArrayUtils.safeFind(value, x => x.cacheId === props.editId);
         if (c) Object.assign(form, { ...c });
       }
     });
 
     /* 같은 회원의 캐쉬 내역 */
-    const memberCacheHistory = computed(() =>
+    const cfMemberCacheHistory = computed(() =>
       window.safeArrayUtils.safeFilter(cacheList, c => String(c.userId) === String(form.userId) && c.cacheId !== props.editId)
         .slice(0, 20)
     );
 
-    const totalBalance = computed(() => {
+    const cfTotalBalance = computed(() => {
       const list = window.safeArrayUtils.safeFilter(cacheList, c => String(c.userId) === String(form.userId));
       if (!list.length) return 0;
       return list.sort((a, b) => b.date.localeCompare(a.date))[0]?.balance || 0;
     });
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
-        err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; });
+        err.inner.forEach(e => { errors[e.path] = e.message; });
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (isNew.value) {
+      if (cfIsNew.value) {
         cacheList.value.unshift({
           ...form,
           cacheId: nextId.value(cacheList.value, 'cacheId'),
@@ -87,9 +87,9 @@ window.PmCacheDtl = {
         if (idx !== -1) Object.assign(cacheList.value[idx], { ...form, amount: Number(form.amount), balance: Number(form.balance) });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`/bo/ec/pm/cache/${form.cacheId}`, { ...form }) : window.boApi.put(`/bo/ec/pm/cache/${form.cacheId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/cache/${form.cacheId}`, { ...form }) : window.boApi.put(`/bo/ec/pm/cache/${form.cacheId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmCacheMng');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -103,10 +103,8 @@ window.PmCacheDtl = {
       if (m) form.userNm = m.memberNm;
     };
 
-    const typeBadge = t => ({ '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' }[t] || 'badge-gray');
-
     const showVendorModal = ref(false);
-    const selectedVendorNm = computed(() => {
+    const cfSelectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
       const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
@@ -116,16 +114,18 @@ window.PmCacheDtl = {
       showVendorModal.value = false;
     };
 
-    return { caches, loading, error, isNew, tab, form, errors, memberCacheHistory, totalBalance, save, onUserIdChange, typeBadge, viewMode2, showTab, showVendorModal, selectedVendorNm, selectVendor };
+    const fnTypeBadge = t => ({ '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' }[t] || 'badge-gray');
+
+    return { caches, loading, error, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, viewMode2, showTab, showVendorModal, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '캐쉬 등록' : (viewMode ? '캐쉬 상세' : '캐쉬 수정') }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.cacheId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '캐쉬 등록' : (viewMode ? '캐쉬 상세' : '캐쉬 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.cacheId }}</span></div>
     <div class="tab-bar-row">
       <div class="tab-nav">
         <button class="tab-btn" :class="{active:tab==='info'}" :disabled="viewMode2!=='tab'" @click="tab='info'">📋 기본정보</button>
         <button v-if="form.userId" class="tab-btn" :class="{active:tab==='history'}" :disabled="viewMode2!=='tab'" @click="tab='history'">
-          🕒 회원 캐쉬 내역 <span class="tab-count">{{ memberCacheHistory.length }}</span>
+          🕒 회원 캐쉬 내역 <span class="tab-count">{{ cfMemberCacheHistory.length }}</span>
         </button>
       </div>
       <div class="tab-view-modes">
@@ -187,7 +187,7 @@ window.PmCacheDtl = {
           <label class="form-label">판매업체</label>
           <div style="display:flex;gap:8px;align-items:center;">
             <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
-              <span style="padding:8px 12px;flex:1;">{{ selectedVendorNm }}</span>
+              <span style="padding:8px 12px;flex:1;">{{ cfSelectedVendorNm }}</span>
               <span style="padding:8px 12px;color:#999;font-size:12px;">▼</span>
             </div>
             <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
@@ -230,7 +230,7 @@ window.PmCacheDtl = {
           <button class="btn btn-secondary" @click="navigate('pmCacheMng')">닫기</button>
         </template>
         <template v-else>
-          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-primary" @click="handleSave">저장</button>
           <button class="btn btn-secondary" @click="navigate('pmCacheMng')">취소</button>
         </template>
       </div>
@@ -238,19 +238,19 @@ window.PmCacheDtl = {
 
     <!-- 회원 캐쉬 내역 -->
     <div class="card" v-show="showTab('history')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 캐쉬 내역 <span class="tab-count">{{ memberCacheHistory.length }}</span></div>
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 캐쉬 내역 <span class="tab-count">{{ cfMemberCacheHistory.length }}</span></div>
       <div style="margin-bottom:12px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:13px;color:#555;">
           <span class="ref-link" @click="showRefModal('member', Number(form.userId))">{{ form.userNm }}</span> 현재 잔액
         </span>
-        <span style="font-size:20px;font-weight:700;color:#e8587a;">{{ totalBalance.toLocaleString() }}원</span>
+        <span style="font-size:20px;font-weight:700;color:#e8587a;">{{ cfTotalBalance.toLocaleString() }}원</span>
       </div>
-      <table class="bo-table" v-if="memberCacheHistory.length">
+      <table class="bo-table" v-if="cfMemberCacheHistory.length">
         <thead><tr><th>일시</th><th>유형</th><th>금액</th><th>잔액</th><th>내용</th></tr></thead>
         <tbody>
-          <tr v-for="c in memberCacheHistory" :key="c?.cacheId">
+          <tr v-for="c in cfMemberCacheHistory" :key="c?.cacheId">
             <td>{{ c.date }}</td>
-            <td><span class="badge" :class="typeBadge(c.type)">{{ c.type }}</span></td>
+            <td><span class="badge" :class="fnTypeBadge(c.type)">{{ c.type }}</span></td>
             <td :style="c.amount>0?'color:#389e0d;font-weight:600':'color:#cf1322;font-weight:600'">
               {{ c.amount > 0 ? '+' : '' }}{{ c.amount.toLocaleString() }}원
             </td>

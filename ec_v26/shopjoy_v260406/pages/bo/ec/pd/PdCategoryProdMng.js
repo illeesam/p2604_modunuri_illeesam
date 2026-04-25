@@ -101,8 +101,8 @@ window.PdCategoryProdMng = {
     /* 탭별 수 (선택 카테고리 + 하위 합산) */
     const cfTypeCountMap = computed(() => {
       const map = {};
-      if (!selectedCatId.value) return map;
-      const ids = allDescendantIds(selectedCatId.value);
+      if (!cfSelectedCatId.value) return map;
+      const ids = allDescendantIds(cfSelectedCatId.value);
       (categoryProds || [])
         .filter(cp => ids.includes(cp.categoryId))
         .forEach(cp => {
@@ -131,13 +131,13 @@ window.PdCategoryProdMng = {
     });
 
     /* 선택된 카테고리 */
-    const selectedCatId = ref(null);
-    const cfSelectedCat   = computed(() => (categories || []).find(c => c.categoryId === selectedCatId.value));
+    const cfSelectedCatId = ref(null);
+    const cfSelectedCat   = computed(() => (categories || []).find(c => c.categoryId === cfSelectedCatId.value));
     const cfIsLeafCat     = computed(() => {
-      if (!selectedCatId.value) return false;
-      return !(categories || []).some(c => c.parentId === selectedCatId.value);
+      if (!cfSelectedCatId.value) return false;
+      return !(categories || []).some(c => c.parentId === cfSelectedCatId.value);
     });
-    const selectNode = id => { selectedCatId.value = (selectedCatId.value === id) ? null : id; };
+    const selectNode = id => { cfSelectedCatId.value = (cfSelectedCatId.value === id) ? null : id; };
 
     /* ── 전체 편집 목록 (선택 카테고리 + 하위 모두) ── */
     const allRows = reactive([]);
@@ -147,8 +147,8 @@ window.PdCategoryProdMng = {
     const getProdNm = id => { const p = getProd(id); return p ? (p.prodNm || p.productName || '') : ''; };
 
     const loadAllRows = () => {
-      if (!selectedCatId.value) { allRows.length = 0; return; }
-      const ids = allDescendantIds(selectedCatId.value);
+      if (!cfSelectedCatId.value) { allRows.length = 0; return; }
+      const ids = allDescendantIds(cfSelectedCatId.value);
       const links = (categoryProds || [])
         .filter(cp => ids.includes(cp.categoryId))
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
@@ -167,7 +167,7 @@ window.PdCategoryProdMng = {
       })));
     };
 
-    watch(selectedCatId, loadAllRows);
+    watch(cfSelectedCatId, loadAllRows);
 
     /* 현재 탭 행 */
     const cfTabRows = computed(() => allRows.filter(r => r.categoryProdTypeCd === activeTypeCd.value));
@@ -213,7 +213,7 @@ window.PdCategoryProdMng = {
     });
 
     const addProd = prod => {
-      const targetCatId = selectedCatId.value;
+      const targetCatId = cfSelectedCatId.value;
       const maxSort = cfTabRows.value.length ? Math.max(...cfTabRows.value.map(r => r.sortOrd)) : 0;
       allRows.push({
         _id: _seq++, categoryProdId: null,
@@ -232,9 +232,9 @@ window.PdCategoryProdMng = {
 
     /* ── 저장 (현재 탭, 선택 카테고리+하위 전체) ── */
     const onSave = async () => {
-      if (!selectedCatId.value) { props.showToast('카테고리를 선택하세요.', 'error'); return; }
+      if (!cfSelectedCatId.value) { props.showToast('카테고리를 선택하세요.', 'error'); return; }
       const activeTab = window.safeArrayUtils.safeFind(TYPE_TABS, t => t.cd === activeTypeCd.value);
-      const ids = allDescendantIds(selectedCatId.value);
+      const ids = allDescendantIds(cfSelectedCatId.value);
       const ok = await props.showConfirm('저장', `[${cfSelectedCat.value?.categoryNm}] ${activeTab?.nm} 목록을 저장하시겠습니까?`);
       if (!ok) return;
       if (!categoryProds) categoryProds = [];
@@ -259,7 +259,7 @@ window.PdCategoryProdMng = {
       ];
       loadAllRows();
       try {
-        const res = await window.boApi.put(`/bo/ec/pd/category/${selectedCatId.value}/prods/${activeTypeCd.value}`, { prods: cfTabRows.value });
+        const res = await window.boApi.put(`/bo/ec/pd/category/${cfSelectedCatId.value}/prods/${activeTypeCd.value}`, { prods: cfTabRows.value });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {
@@ -280,7 +280,7 @@ window.PdCategoryProdMng = {
       defaultDispStartDate, defaultDispEndDate,
       searchProdNm, applied, onSearch, onReset,
       expandedSet, isExpanded, toggleNode, expandAll, collapseAll,
-      cfCatTreeFlat, selectedCatId, cfSelectedCat, cfIsLeafCat, selectNode,
+      cfCatTreeFlat, cfSelectedCatId, cfSelectedCat, cfIsLeafCat, selectNode,
       totalProdCount, getCatPath,
       allRows, cfFilteredRows, removeRow,
       dragIdx, dragoverIdx, onDragStart, onDragOver, onDrop,
@@ -314,19 +314,19 @@ window.PdCategoryProdMng = {
     <div class="card" style="padding:12px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <span style="font-size:13px;font-weight:600;color:#555">📁 카테고리</span>
-        <div v-if="selectedCatId" style="font-size:11px;color:#1677ff;cursor:pointer" @click="selectedCatId=null">전체</div>
+        <div v-if="cfSelectedCatId" style="font-size:11px;color:#1677ff;cursor:pointer" @click="cfSelectedCatId=null">전체</div>
       </div>
       <div style="display:flex;gap:4px;margin-bottom:8px">
         <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="expandAll">▼ 전체</button>
         <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="collapseAll">▶ 닫기</button>
       </div>
       <div style="max-height:65vh;overflow-y:auto">
-        <div v-for="cat in catTreeFlat" :key="cat?.categoryId"
+        <div v-for="cat in cfCatTreeFlat" :key="cat?.categoryId"
              style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:4px;padding:5px 6px"
              :style="{ paddingLeft: (cat._depth * 14 + 6) + 'px',
-                       background: selectedCatId===cat.categoryId ? '#fce4ec' : 'transparent',
-                       color: selectedCatId===cat.categoryId ? '#e8587a' : '#333',
-                       borderLeft: selectedCatId===cat.categoryId ? '3px solid #e8587a' : '3px solid transparent' }"
+                       background: cfSelectedCatId===cat.categoryId ? '#fce4ec' : 'transparent',
+                       color: cfSelectedCatId===cat.categoryId ? '#e8587a' : '#333',
+                       borderLeft: cfSelectedCatId===cat.categoryId ? '3px solid #e8587a' : '3px solid transparent' }"
              @click="selectNode(cat.categoryId)">
           <span v-if="cat._hasChildren"
                 style="width:14px;text-align:center;font-size:9px;color:#aaa;flex-shrink:0"
@@ -341,7 +341,7 @@ window.PdCategoryProdMng = {
             {{ totalProdCount(cat.categoryId) }}
           </span>
         </div>
-        <div v-if="!catTreeFlat.length" style="text-align:center;padding:20px;color:#aaa;font-size:12px">카테고리 없음</div>
+        <div v-if="!cfCatTreeFlat.length" style="text-align:center;padding:20px;color:#aaa;font-size:12px">카테고리 없음</div>
       </div>
     </div>
 
@@ -349,7 +349,7 @@ window.PdCategoryProdMng = {
     <div class="card">
 
       <!-- 선택 전 안내 -->
-      <div v-if="!selectedCatId" style="text-align:center;padding:60px;color:#aaa">
+      <div v-if="!cfSelectedCatId" style="text-align:center;padding:60px;color:#aaa">
         <div style="font-size:32px;margin-bottom:12px">📂</div>
         <div>좌측에서 카테고리를 선택하세요.</div>
       </div>
@@ -358,11 +358,11 @@ window.PdCategoryProdMng = {
         <!-- 카테고리명 + 저장/추가 버튼 -->
         <div class="toolbar" style="margin-bottom:0">
           <span class="list-title">
-            <span :style="{ color: depthColor((selectedCat?.depth||1)-1), fontWeight:700, marginRight:'4px' }">
-              {{ depthBullet((selectedCat?.depth||1)-1) }}
+            <span :style="{ color: depthColor((cfSelectedCat?.depth||1)-1), fontWeight:700, marginRight:'4px' }">
+              {{ depthBullet((cfSelectedCat?.depth||1)-1) }}
             </span>
-            {{ selectedCat?.categoryNm }}
-            <span v-if="!isLeafCat" style="font-size:11px;color:#aaa;margin-left:6px">(하위 포함)</span>
+            {{ cfSelectedCat?.categoryNm }}
+            <span v-if="!cfIsLeafCat" style="font-size:11px;color:#aaa;margin-left:6px">(하위 포함)</span>
           </span>
           <div style="display:flex;gap:8px">
             <button class="btn btn-secondary btn-sm" @click="pickerOpen=true;pickerSearch=''">+ 상품추가</button>
@@ -377,7 +377,7 @@ window.PdCategoryProdMng = {
                     class="tab-btn" :class="{ active: activeTypeCd===tab.cd }"
                     @click="activeTypeCd=tab.cd">
               {{ tab.nm }}
-              <span v-if="typeCountMap[tab.cd]" class="tab-count">{{ typeCountMap[tab.cd] }}</span>
+              <span v-if="cfTypeCountMap[tab.cd]" class="tab-count">{{ cfTypeCountMap[tab.cd] }}</span>
             </button>
           </div>
           <div class="tab-view-modes">
@@ -409,7 +409,7 @@ window.PdCategoryProdMng = {
             <th style="width:40px;text-align:center">삭제</th>
           </tr></thead>
           <tbody>
-            <tr v-for="(row, idx) in filteredRows" :key="row?._id"
+            <tr v-for="(row, idx) in cfFilteredRows" :key="row?._id"
                 draggable="true"
                 @dragstart="onDragStart(idx)"
                 @dragover.prevent="onDragOver(idx)"
@@ -470,7 +470,7 @@ window.PdCategoryProdMng = {
                 <button class="btn btn-danger btn-xs" @click="removeRow(row)">✕</button>
               </td>
             </tr>
-            <tr v-if="!filteredRows.length">
+            <tr v-if="!cfFilteredRows.length">
               <td :colspan="activeTypeCd!=='NORMAL' ? 11 : 9" style="text-align:center;padding:32px;color:#aaa">
                 {{ applied.prodNm ? '검색 결과가 없습니다.' : '등록된 상품이 없습니다. [+ 상품추가] 버튼으로 추가하세요.' }}
               </td>
@@ -485,7 +485,7 @@ window.PdCategoryProdMng = {
                gridTemplateColumns: viewMode==='2col' ? 'repeat(2,1fr)' : viewMode==='3col' ? 'repeat(3,1fr)' : 'repeat(4,1fr)',
                gap:'10px',
              }">
-          <div v-for="(row, idx) in filteredRows" :key="row?._id"
+          <div v-for="(row, idx) in cfFilteredRows" :key="row?._id"
                draggable="true"
                @dragstart="onDragStart(idx)"
                @dragover.prevent="onDragOver(idx)"
@@ -553,7 +553,7 @@ window.PdCategoryProdMng = {
               </select>
             </template>
           </div>
-          <div v-if="!filteredRows.length"
+          <div v-if="!cfFilteredRows.length"
                style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;border:1px dashed #eee;border-radius:8px">
             등록된 상품이 없습니다. [+ 상품추가] 버튼으로 추가하세요.
           </div>
@@ -573,7 +573,7 @@ window.PdCategoryProdMng = {
           <div>
             <strong style="font-size:15px">상품 추가</strong>
             <span style="font-size:12px;color:#aaa;margin-left:8px">
-              → {{ selectedCat?.categoryNm }} / {{ window.safeArrayUtils.safeFind(TYPE_TABS, t=>t.cd===activeTypeCd)?.nm }}
+              → {{ cfSelectedCat?.categoryNm }} / {{ window.safeArrayUtils.safeFind(TYPE_TABS, t=>t.cd===activeTypeCd)?.nm }}
             </span>
           </div>
           <button class="btn btn-secondary btn-xs" @click="pickerOpen=false">닫기</button>
@@ -591,7 +591,7 @@ window.PdCategoryProdMng = {
               <th style="width:56px;text-align:center">추가</th>
             </tr></thead>
             <tbody>
-              <tr v-for="p in pickerList" :key="p?.productId">
+              <tr v-for="p in cfPickerList" :key="p?.productId">
                 <td style="color:#aaa;font-size:12px">{{ p.productId }}</td>
                 <td>{{ p.prodNm || p.productName }}</td>
                 <td style="text-align:center;font-size:12px;color:#888">{{ p.category || '-' }}</td>
@@ -601,7 +601,7 @@ window.PdCategoryProdMng = {
                   <button class="btn btn-blue btn-xs" @click="addProd(p)">추가</button>
                 </td>
               </tr>
-              <tr v-if="!pickerList.length">
+              <tr v-if="!cfPickerList.length">
                 <td colspan="6" style="text-align:center;padding:24px;color:#aaa">검색 결과가 없습니다.</td>
               </tr>
             </tbody>

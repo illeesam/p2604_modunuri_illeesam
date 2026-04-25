@@ -4,9 +4,9 @@ window.SyDashboardMng = {
   props: ['navigate', 'showToast'],
   setup(props) {
     const { computed } = Vue;
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    const stats = computed(() => [
+    const cfStats = computed(() => [
       { label: '전체 회원',   value: members.value?.length || 0,
         color: '#e8587a', icon: '👥',
         sub: '활성 ' + (members.value?.filter(m => m.status === '활성').length || 0) + '명' },
@@ -46,7 +46,7 @@ window.SyDashboardMng = {
       { id: 'syUserMng',     label: '사용자관리', icon: '🔑', color: '#c41d7f' },
     ];
 
-    return { siteNm, stats, shortcuts };
+    return { cfSiteNm, cfStats, shortcuts };
   },
   template: /* html */`
 <div>
@@ -54,7 +54,7 @@ window.SyDashboardMng = {
 
   <!-- 통계 카드 -->
   <div class="dash-stats">
-    <div v-for="s in stats" :key="s.label" class="dash-stat-card" :style="{'--accent': s.color}">
+    <div v-for="s in cfStats" :key="s.label" class="dash-stat-card" :style="{'--accent': s.color}">
       <div class="dash-stat-icon">{{ s.icon }}</div>
       <div class="dash-stat-body">
         <div class="dash-stat-value">{{ s.value.toLocaleString() }}</div>

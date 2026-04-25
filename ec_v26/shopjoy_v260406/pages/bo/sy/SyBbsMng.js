@@ -60,7 +60,7 @@ window.SyBbsMng = {
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchKw = ref(''); const searchBbmId = ref(''); const searchStatus = ref('');
     const searchDateStart = ref(''); const searchDateEnd = ref(''); const searchDateRange = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
@@ -81,15 +81,15 @@ window.SyBbsMng = {
       if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
+    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const bbmOptions = computed(() => bbms.map(b => ({ value: b.bbmId, label: b.bbmNm })));
+    const cfBbmOptions = computed(() => bbms.map(b => ({ value: b.bbmId, label: b.bbmNm })));
     const bbmNm = (bbmId) => { const b = bbms.find(x => x.bbmId === bbmId); return b ? b.bbmNm : bbmId; };
 
     const applied = reactive({ kw: '', bbmId: '', status: '', dateStart: '', dateEnd: '' });
-    const filtered = computed(() => bbss.filter(b => {
+    const cfFiltered = computed(() => bbss.filter(b => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !b.title.toLowerCase().includes(kw) && !String(b.authorNm || '').toLowerCase().includes(kw)) return false;
       if (applied.bbmId && b.bbmId !== Number(applied.bbmId)) return false;
@@ -99,20 +99,20 @@ window.SyBbsMng = {
       if (applied.dateEnd && d > applied.dateEnd) return false;
       return true;
     }));
-    const total = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums = computed(() => {
-      const cur = pager.page, last = totalPages.value;
+    const cfTotal = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums = computed(() => {
+      const cur = pager.page, last = cfTotalPages.value;
       const s = Math.max(1, cur - 2), e = Math.min(last, s + 4);
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
-    const statusBadge = s => ({ '게시': 'badge-green', '임시': 'badge-gray', '삭제': 'badge-red', '비공개': 'badge-orange' }[s] || 'badge-gray');
+    const fnStatusBadge = s => ({ '게시': 'badge-green', '임시': 'badge-gray', '삭제': 'badge-red', '비공개': 'badge-orange' }[s] || 'badge-gray');
     const onSearch = () => { Object.assign(applied, { kw: searchKw.value, bbmId: searchBbmId.value, status: searchStatus.value, dateStart: searchDateStart.value, dateEnd: searchDateEnd.value }); pager.page = 1; };
     const onReset = () => { searchKw.value = ''; searchBbmId.value = ''; searchStatus.value = ''; searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = ''; Object.assign(applied, { kw: '', bbmId: '', status: '', dateStart: '', dateEnd: '' }); pager.page = 1; };
-    const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    const doDelete = async (b) => {
+    const handleDelete = async (b) => {
       const ok = await props.showConfirm('삭제', `[${b.title}]을 삭제하시겠습니까?`);
       if (!ok) return;
       const idx = bbss.findIndex(x => x.bbsId === b.bbsId);
@@ -128,13 +128,13 @@ window.SyBbsMng = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
-    const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'ID',key:'bbsId'},{label:'제목',key:'title'},{label:'작성자',key:'authorNm'},{label:'조회수',key:'viewCount'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '게시글목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'bbsId'},{label:'제목',key:'title'},{label:'작성자',key:'authorNm'},{label:'조회수',key:'viewCount'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '게시글목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
     watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
     return { bbss, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree, siteNm, searchKw, searchBbmId, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, bbmOptions, bbmNm, exportExcel };
+      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree, cfSiteNm, searchKw, searchBbmId, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, cfBbmOptions, bbmNm, exportExcel };
   },
   template: /* html */`
 <div>
@@ -143,7 +143,7 @@ window.SyBbsMng = {
       <input v-model="searchKw" placeholder="제목 / 작성자 검색" />
       <select v-model="searchBbmId">
         <option value="">게시판 전체</option>
-        <option v-for="o in bbmOptions" :key="o.value" :value="o.value">{{ o.label }}</option>
+        <option v-for="o in cfBbmOptions" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
       <select v-model="searchStatus"><option value="">상태 전체</option><option>게시</option><option>임시</option><option>비공개</option><option>삭제</option></select>
       <span class="search-label">등록일</span>
@@ -161,7 +161,7 @@ window.SyBbsMng = {
 
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>게시글목록 <span class="list-count">{{ total }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>게시글목록 <span class="list-count">{{ cfTotal }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -171,8 +171,8 @@ window.SyBbsMng = {
       <thead><tr>
           <th>ID</th><th>게시판</th><th>제목</th><th>작성자</th><th>조회수</th><th>댓글</th><th>첨부그룹</th><th>상태</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="b in pageList" :key="b.bbsId" :style="selectedId===b.bbsId?'background:#fff8f9;':''">
+        <tr v-if="cfPageList.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="b in cfPageList" :key="b.bbsId" :style="selectedId===b.bbsId?'background:#fff8f9;':''">
           <td>{{ b.bbsId }}</td>
           <td><span class="badge badge-gray">{{ bbmNm(b.bbmId) }}</span></td>
           <td><span class="title-link" @click="loadDetail(b.bbsId)" :style="selectedId===b.bbsId?'color:#e8587a;font-weight:700;':''">{{ b.title }}<span v-if="selectedId===b.bbsId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
@@ -180,12 +180,12 @@ window.SyBbsMng = {
           <td style="text-align:center;">{{ b.viewCount }}</td>
           <td style="text-align:center;">{{ b.commentCount }}</td>
           <td style="font-size:11px;color:#888;">{{ b.attachGrpId || '-' }}</td>
-          <td><span class="badge" :class="statusBadge(b.statusCd)">{{ b.statusCd }}</span></td>
-          <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
+          <td><span class="badge" :class="fnStatusBadge(b.statusCd)">{{ b.statusCd }}</span></td>
+          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td>{{ b.regDate }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(b.bbsId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="doDelete(b)">삭제</button>
+            <button class="btn btn-danger btn-sm" @click="handleDelete(b)">삭제</button>
           </div></td>
         </tr>
       </tbody>
@@ -195,9 +195,9 @@ window.SyBbsMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -210,7 +210,7 @@ window.SyBbsMng = {
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <sy-bbs-dtl :key="selectedId" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
+    <sy-bbs-dtl :key="selectedId" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="cfDetailEditId" />
   </div>
 </div>
 `

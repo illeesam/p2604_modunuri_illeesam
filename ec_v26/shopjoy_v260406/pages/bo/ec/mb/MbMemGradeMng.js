@@ -62,7 +62,7 @@ window.MbMemGradeMng = {
       focusedIdx.value = 0;
     };
     const onCellChange = (idx) => { if (gridRows[idx]._row_status !== 'N') gridRows[idx]._row_status = 'U'; };
-    const deleteRow    = async (idx) => {
+    const handleDeleteRow    = async (idx) => {
       const row = gridRows[idx];
       if (row._row_status === 'N') { gridRows.splice(idx, 1); return; }
       const ok = await props.showConfirm('삭제', `[${row.gradeNm}] 등급을 삭제하시겠습니까?`);
@@ -81,7 +81,7 @@ window.MbMemGradeMng = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
-    const saveAll = async () => {
+    const handleSaveAll = async () => {
       const changed = window.safeArrayUtils.safeFilter(gridRows, r => r._row_status === 'N' || r._row_status === 'U');
       if (!changed.length) { props.showToast('변경된 내용이 없습니다.', 'info'); return; }
       for (const row of changed) {
@@ -112,7 +112,7 @@ window.MbMemGradeMng = {
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     return { grades, loading, error, searchKw, searchUse, pager, cfPageNums, cfTotalPages, setPage, cfTotal, onSearch, onReset,
-             gridRows, addRow, onCellChange, deleteRow, saveAll, focusedIdx, fnYnBadge, GRADE_CODES , PAGE_SIZES , onSizeChange };
+             gridRows, addRow, onCellChange, handleDeleteRow, handleSaveAll, focusedIdx, fnYnBadge, GRADE_CODES , PAGE_SIZES , onSizeChange };
   },
   template: `
 <div>
@@ -137,7 +137,7 @@ window.MbMemGradeMng = {
         <span class="list-count">총 {{ cfTotal }}건</span>
         <div style="margin-left:auto;display:flex;gap:6px;">
           <button class="btn btn-primary btn-sm" @click="addRow">+ 행추가</button>
-          <button class="btn btn-blue btn-sm" @click="saveAll">저장</button>
+          <button class="btn btn-blue btn-sm" @click="handleSaveAll">저장</button>
         </div>
       </div>
       <table class="bo-table">
@@ -167,7 +167,7 @@ window.MbMemGradeMng = {
               <select v-if="row._row_status" class="form-control" v-model="row.useYn" @change="onCellChange(idx)"><option value="Y">Y</option><option value="N">N</option></select>
               <span v-else :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span>
             </td>
-            <td style="text-align:center"><button class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button></td>
+            <td style="text-align:center"><button class="btn btn-danger btn-xs" @click.stop="handleDeleteRow(idx)">삭제</button></td>
           </tr>
           <tr v-if="!gridRows.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>

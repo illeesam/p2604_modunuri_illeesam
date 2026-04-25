@@ -216,7 +216,7 @@ window.ProductModal = {
     }, { immediate: true });
 
     /* 썸네일 목록 — 색상 선택 시 해당 색상 인덱스 기준으로 이미지 3장 순환 */
-    const thumbImgs = computed(() => {
+    const cfThumbImgs = computed(() => {
       const p = props.product;
       if (!p) return [];
       const IMG = 'assets/cdn/prod/img/shop/product';
@@ -237,7 +237,7 @@ window.ProductModal = {
     });
 
     /* 평점 — productId 기반 목 데이터 */
-    const rating = computed(() => {
+    const cfRating = computed(() => {
       const scores = [4.8, 4.5, 4.7, 4.2, 4.9, 4.3, 4.6, 4.1, 4.4, 4.8, 4.7, 4.5];
       const counts = [24, 18, 31,  9, 42, 15, 27,  8, 33, 19, 11, 28];
       const idx = ((parseInt(props.product?.productId) || 1) - 1) % 12;
@@ -245,8 +245,8 @@ window.ProductModal = {
     });
 
     /* 별점 문자열 */
-    const starStr = computed(() => {
-      const r = Math.round(rating.value.score);
+    const cfStarStr = computed(() => {
+      const r = Math.round(cfRating.value.score);
       return '★'.repeat(r) + '☆'.repeat(5 - r);
     });
 
@@ -294,7 +294,7 @@ window.ProductModal = {
       return true;
     };
 
-    return { selColor, selSize, qty, inCart, selThumb, thumbImgs, rating, starStr,
+    return { selColor, selSize, qty, inCart, selThumb, cfThumbImgs, cfRating, cfStarStr,
              toastMsg, toastShow, errColor, errSize, handleLike, handleCart, handleBuyNow };
   },
   template: /* html */ `
@@ -317,12 +317,12 @@ window.ProductModal = {
     <div v-if="product" style="flex:0 0 360px;background:#f5f5f5;display:flex;flex-direction:column;padding:28px 24px 20px;">
       <!-- 메인 이미지 -->
       <div style="flex:1;display:flex;align-items:center;justify-content:center;min-height:280px;">
-        <img v-if="thumbImgs[selThumb]" :src="thumbImgs[selThumb]" :alt="product.prodNm"
+        <img v-if="cfThumbImgs[selThumb]" :src="cfThumbImgs[selThumb]" :alt="product.prodNm"
           style="max-width:100%;max-height:300px;object-fit:contain;" />
       </div>
       <!-- 썸네일 목록 -->
       <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">
-        <div v-for="(img, i) in thumbImgs" :key="i" @click="selThumb=i"
+        <div v-for="(img, i) in cfThumbImgs" :key="i" @click="selThumb=i"
           :style="{
             width:'68px', height:'68px', background:'#fff', cursor:'pointer', boxSizing:'border-box',
             border: selThumb===i ? '2px solid #1a1a1a' : '2px solid transparent',
@@ -343,9 +343,9 @@ window.ProductModal = {
 
       <!-- 평점 -->
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;">
-        <span style="color:#f59e0b;font-size:0.88rem;letter-spacing:1px;">{{ starStr }}</span>
-        <span style="font-size:0.78rem;font-weight:600;color:#555;">{{ rating.score }}</span>
-        <span style="font-size:0.75rem;color:#aaa;">({{ rating.count }}개 리뷰)</span>
+        <span style="color:#f59e0b;font-size:0.88rem;letter-spacing:1px;">{{ cfStarStr }}</span>
+        <span style="font-size:0.78rem;font-weight:600;color:#555;">{{ cfRating.score }}</span>
+        <span style="font-size:0.75rem;color:#aaa;">({{ cfRating.count }}개 리뷰)</span>
       </div>
 
       <!-- 가격 -->
@@ -541,7 +541,7 @@ window.SiteSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed, onMounted } = Vue;
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const kw = ref('');
     const list = ref([]);
     const loading = ref(false);
@@ -553,26 +553,26 @@ window.SiteSelectModal = {
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
     onMounted(() => { fetchData(); });
-    const filtered = computed(() => list.value.filter(s => {
+    const cfFiltered = computed(() => list.value.filter(s => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
       const siteNo = String(s.siteId).padStart(2,'0');
       return s.siteNm.toLowerCase().includes(k) || s.siteCode.toLowerCase().includes(k) || s.domain.toLowerCase().includes(k) || siteNo.includes(k);
     }));
-    return { siteNm, kw, filtered, loading };
+    return { cfSiteNm, kw, cfFiltered, loading };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
-    <div class="modal-header"><span class="modal-title">사이트 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span>
+    <div class="modal-header"><span class="modal-title">사이트 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span>
       <span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#e5e7eb;color:#555;font-size:11px;text-align:center;line-height:16px;margin-left:8px;cursor:help;font-weight:700;"
         title="사이트번호 : 프로그램 작업코드 (01, 02, 03…)&#10;사이트코드 : 라이선스코드 (ST0001 형식)">?</span>
     </span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="사이트번호 / 사이트코드 / 사이트명 / 도메인 검색" style="margin-bottom:12px;" />
     <div class="sel-modal-list">
       <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
-      <div v-else-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
-      <div v-for="s in filtered" :key="s.siteId" class="sel-modal-item">
+      <div v-else-if="cfFiltered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-for="s in cfFiltered" :key="s.siteId" class="sel-modal-item">
         <div class="sel-modal-item-name">{{ s.siteNm }}</div>
         <span class="sel-modal-item-id">{{ s.siteCode }}</span>
         <span style="font-family:monospace;font-size:12px;color:#e8587a;font-weight:700;min-width:26px;text-align:right;">{{ String(s.siteId).padStart(2,'0') }}</span>
@@ -590,7 +590,7 @@ window.VendorSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed, onMounted } = Vue;
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const kw = ref('');
     const list = ref([]);
     const loading = ref(false);
@@ -602,22 +602,22 @@ window.VendorSelectModal = {
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
     onMounted(() => { fetchData(); });
-    const filtered = computed(() => list.value.filter(v => {
+    const cfFiltered = computed(() => list.value.filter(v => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
       return v.vendorNm.toLowerCase().includes(k) || String(v.bizNo || '').includes(k);
     }));
-    return { siteNm, kw, filtered, loading };
+    return { cfSiteNm, kw, cfFiltered, loading };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
-    <div class="modal-header"><span class="modal-title">판매업체 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <div class="modal-header"><span class="modal-title">판매업체 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="업체명 / 사업자번호 검색" style="margin-bottom:12px;" />
     <div class="sel-modal-list">
       <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
-      <div v-else-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
-      <div v-for="v in filtered" :key="v.vendorId" class="sel-modal-item">
+      <div v-else-if="cfFiltered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-for="v in cfFiltered" :key="v.vendorId" class="sel-modal-item">
         <div class="sel-modal-item-name">{{ v.vendorNm }}</div>
         <span class="sel-modal-item-id">{{ v.vendorId }}</span>
         <button class="sel-modal-item-btn" @click="$emit('select', v)">선택</button>
@@ -634,7 +634,7 @@ window.BoUserSelectModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, computed, reactive, onMounted } = Vue;
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const depts = ref([]);
     const users = ref([]);
@@ -663,7 +663,7 @@ window.BoUserSelectModal = {
       nodes.forEach(n => { result.push(n); flattenDept(n._kids, result); });
       return result;
     };
-    const flatDeptTree = computed(() => {
+    const cfFlatDeptTree = computed(() => {
       const kw = deptKw.value.trim().toLowerCase();
       const base = kw
         ? depts.value.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(kw))
@@ -685,9 +685,9 @@ window.BoUserSelectModal = {
     /* ── 사용자 ── */
     const userKw = ref('');
     const selectedIds = reactive(new Set());
-    const totalUsers = computed(() => users.value.length);
+    const cfTotalUsers = computed(() => users.value.length);
 
-    const filtered = computed(() => {
+    const cfFiltered = computed(() => {
       const k = userKw.value.trim().toLowerCase();
       let list = users.value;
       if (selectedDeptId.value !== null) {
@@ -708,18 +708,18 @@ window.BoUserSelectModal = {
       if (selectedIds.has(id)) selectedIds.delete(id);
       else selectedIds.add(id);
     };
-    const allChecked = computed(() => filtered.value.length > 0 && filtered.value.every(u => selectedIds.has(u.userId || u.boUserId)));
+    const cfAllChecked = computed(() => cfFiltered.value.length > 0 && cfFiltered.value.every(u => selectedIds.has(u.userId || u.boUserId)));
     const toggleAll = () => {
-      if (allChecked.value) filtered.value.forEach(u => selectedIds.delete(u.userId || u.boUserId));
-      else filtered.value.forEach(u => selectedIds.add(u.userId || u.boUserId));
+      if (cfAllChecked.value) cfFiltered.value.forEach(u => selectedIds.delete(u.userId || u.boUserId));
+      else cfFiltered.value.forEach(u => selectedIds.add(u.userId || u.boUserId));
     };
-    const selectedCount = computed(() => selectedIds.size);
+    const cfSelectedCount = computed(() => selectedIds.size);
     const confirm = () => {
       const selected = users.value.filter(u => selectedIds.has(u.userId || u.boUserId));
       emit('select', selected);
     };
 
-    return { siteNm, selectedDeptId, deptKw, flatDeptTree, userKw, filtered, totalUsers, loading, isChecked, toggleUser, allChecked, toggleAll, selectedCount, confirm };
+    return { cfSiteNm, selectedDeptId, deptKw, cfFlatDeptTree, userKw, cfFiltered, cfTotalUsers, loading, isChecked, toggleUser, cfAllChecked, toggleAll, cfSelectedCount, confirm };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -729,10 +729,10 @@ window.BoUserSelectModal = {
     <div style="display:flex;align-items:center;justify-content:space-between;padding:15px 20px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div style="display:flex;align-items:center;gap:10px;">
         <span style="font-size:15px;font-weight:800;color:#1a1a2e;">사용자 선택</span>
-        <span style="font-size:10px;font-weight:600;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px;letter-spacing:.02em;">{{ siteNm }}</span>
+        <span style="font-size:10px;font-weight:600;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px;letter-spacing:.02em;">{{ cfSiteNm }}</span>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
-        <span v-if="selectedCount" style="font-size:12px;color:#e8587a;font-weight:700;background:#fff0f4;padding:3px 10px;border-radius:20px;">{{ selectedCount }}명 선택됨</span>
+        <span v-if="cfSelectedCount" style="font-size:12px;color:#e8587a;font-weight:700;background:#fff0f4;padding:3px 10px;border-radius:20px;">{{ cfSelectedCount }}명 선택됨</span>
         <span style="cursor:pointer;font-size:20px;color:#d1d5db;line-height:1;" @click="$emit('close')">✕</span>
       </div>
     </div>
@@ -762,10 +762,10 @@ window.BoUserSelectModal = {
             <span style="font-size:13px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
               :style="{ color: selectedDeptId===null?'#fff':'#374151' }">전체</span>
             <span style="font-size:10px;font-weight:600;flex-shrink:0;"
-              :style="{ color: selectedDeptId===null?'rgba(255,255,255,0.75)':'#bbb' }">{{ totalUsers }}</span>
+              :style="{ color: selectedDeptId===null?'rgba(255,255,255,0.75)':'#bbb' }">{{ cfTotalUsers }}</span>
           </div>
           <!-- 2레벨~: 실 데이터 -->
-          <div v-for="d in flatDeptTree" :key="d.deptId"
+          <div v-for="d in cfFlatDeptTree" :key="d.deptId"
             style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;cursor:pointer;margin-bottom:1px;transition:all .12s;"
             :style="selectedDeptId===d.deptId?'background:#e8587a;box-shadow:0 2px 8px rgba(232,88,122,0.2);':'background:transparent;'"
             @click="selectedDeptId=d.deptId">
@@ -780,7 +780,7 @@ window.BoUserSelectModal = {
               {{ d.deptNm }}
             </span>
           </div>
-          <div v-if="flatDeptTree.length===0" style="padding:20px 0;text-align:center;font-size:12px;color:#bbb;">없음</div>
+          <div v-if="cfFlatDeptTree.length===0" style="padding:20px 0;text-align:center;font-size:12px;color:#bbb;">없음</div>
         </div>
       </div>
 

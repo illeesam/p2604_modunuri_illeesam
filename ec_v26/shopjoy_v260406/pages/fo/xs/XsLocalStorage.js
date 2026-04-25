@@ -27,7 +27,7 @@ window.XsLocalStorage = {
       storageData.splice(0, storageData.length, ...data);
     };
 
-    const filteredData = computed(() => {
+    const cfFilteredData = computed(() => {
       const data = Array.isArray(storageData) ? storageData : [];
       if (!filterKey.value) return data;
       return data.filter(item => item.key.toLowerCase().includes(filterKey.value.toLowerCase()));
@@ -65,7 +65,7 @@ window.XsLocalStorage = {
       editingValue.value = '';
     };
 
-    const deleteItem = (key) => {
+    const handleDelete = (key) => {
       if (!confirm(`'${key}'를 삭제하시겠습니까?`)) return;
       try {
         localStorage.removeItem(key);
@@ -128,8 +128,8 @@ window.XsLocalStorage = {
     loadStorageData();
 
     return {
-      storageData, filterKey, filteredData, editingKey, editingValue, valueColWidth, isResizing,
-      loadStorageData, copyValue, startEdit, saveEdit, cancelEdit, deleteItem, clearAllStorage, parseValue, startResize
+      storageData, filterKey, cfFilteredData, editingKey, editingValue, valueColWidth, isResizing,
+      loadStorageData, copyValue, startEdit, saveEdit, cancelEdit, handleDelete, clearAllStorage, parseValue, startResize
     };
   },
   template: `
@@ -176,7 +176,7 @@ window.XsLocalStorage = {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in filteredData" :key="item.key" style="border-bottom: 1px solid #e5e7eb; transition: all 0.2s;">
+          <tr v-for="item in cfFilteredData" :key="item.key" style="border-bottom: 1px solid #e5e7eb; transition: all 0.2s;">
             <td style="padding: 12px 16px; word-break: break-all; font-family: 'Monaco', 'Menlo', monospace; font-size: 12px; color: #333;">{{ item.key }}</td>
             <td style="padding: 12px 16px;">
               <template v-if="editingKey === item.key">
@@ -197,10 +197,10 @@ window.XsLocalStorage = {
             <td style="padding: 12px 16px; text-align: center; white-space: nowrap;">
               <button @click="copyValue(item.value)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">복사</button>
               <button v-if="editingKey !== item.key" @click="startEdit(item.key, item.value)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">수정</button>
-              <button @click="deleteItem(item.key)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #ffb3c1; background: #fff5f7; color: #d63384; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">삭제</button>
+              <button @click="handleDelete(item.key)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #ffb3c1; background: #fff5f7; color: #d63384; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">삭제</button>
             </td>
           </tr>
-          <tr v-if="filteredData.length === 0">
+          <tr v-if="cfFilteredData.length === 0">
             <td colspan="3" style="text-align: center; padding: 40px; color: #999; font-size: 13px;">데이터가 없습니다.</td>
           </tr>
         </tbody>
@@ -209,7 +209,7 @@ window.XsLocalStorage = {
 
     <!-- 푸터: 항목 수 -->
     <div style="padding: 12px 16px; border-top: 1px solid #e5e7eb; background: #fafafa; font-size: 12px; color: #666;">
-      총 <strong>{{ filteredData.length }}</strong>개 항목
+      총 <strong>{{ cfFilteredData.length }}</strong>개 항목
     </div>
   </div>
 </div>

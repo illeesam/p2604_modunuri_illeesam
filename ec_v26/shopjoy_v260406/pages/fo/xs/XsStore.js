@@ -13,7 +13,7 @@ window.XsStore = {
     const viewMode = ref('col5');
     const editedStoreInfo = reactive({});
 
-    const storeList = computed(() => {
+    const cfStoreList = computed(() => {
       const stores = [];
       if (window.useFoAppInitStore) stores.push({ name: 'useFoAppInitStore', label: 'foAppInitStore.js', api: null, hasLocalStorage: false });
       if (window.useFoAppStore) stores.push({ name: 'useFoAppStore', label: 'foAppStore.js', api: null, hasLocalStorage: false });
@@ -36,7 +36,7 @@ window.XsStore = {
     };
 
     const loadAllStoreData = () => {
-      storeList.value.forEach(store => {
+      cfStoreList.value.forEach(store => {
         loadStoreData(store.name);
       });
     };
@@ -106,7 +106,7 @@ window.XsStore = {
 
     const refreshStoreData = async (storeName) => {
       if (!storeName) return;
-      const store = storeList.value.find(s => s.name === storeName);
+      const store = cfStoreList.value.find(s => s.name === storeName);
       if (!store || !store.api) {
         props.showToast('조회 불가능한 스토어입니다.', 'info');
         return;
@@ -140,13 +140,13 @@ window.XsStore = {
 
     onMounted(() => {
       loadAllStoreData();
-      if (storeList.value.length > 0 && !selectedStore.value) {
-        selectStore(storeList.value[0].name);
+      if (cfStoreList.value.length > 0 && !selectedStore.value) {
+        selectStore(cfStoreList.value[0].name);
       }
     });
 
     return {
-      storeList, selectedStore, storeInfo, selectStore, copyToClipboard, clearStore, openStores, viewMode, closeTab, editedStoreInfo, saveStore, loadAllStoreData, refreshStoreData
+      cfStoreList, selectedStore, storeInfo, selectStore, copyToClipboard, clearStore, openStores, viewMode, closeTab, editedStoreInfo, saveStore, loadAllStoreData, refreshStoreData
     };
   },
   template: `
@@ -163,7 +163,7 @@ window.XsStore = {
   <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 20px; overflow: hidden;">
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">
       <div style="display: flex; gap: 4px; overflow-x: auto; flex: 1; min-width: 0;">
-        <button v-for="store in storeList" :key="store.name"
+        <button v-for="store in cfStoreList" :key="store.name"
           @click="selectStore(store.name)"
           :style="{
             padding: '8px 14px',
@@ -280,7 +280,7 @@ window.XsStore = {
     marginTop: '0'
   }">
 
-    <div v-for="store in storeList" :key="store.name"
+    <div v-for="store in cfStoreList" :key="store.name"
       v-show="viewMode === 'tab' ? selectedStore === store.name : true"
       style="display: flex; flex-direction: column; height: 100%; background: white; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
 

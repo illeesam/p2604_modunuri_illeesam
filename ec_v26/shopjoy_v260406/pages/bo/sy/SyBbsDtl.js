@@ -26,8 +26,8 @@ window.SyBbsDtl = {
       }
     };
     onMounted(() => { fetchData(); });
-    const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
     /* ── 선택된 게시판 정보 ── */
     const selectedBbm = ref(null);
@@ -74,12 +74,12 @@ window.SyBbsDtl = {
     };
 
     /* 게시판 contentType 에 따른 내용 입력 방식 */
-    const contentType = computed(() => selectedBbm.value?.contentType || 'textarea');
-    const allowAttach = computed(() => selectedBbm.value?.allowAttach || '불가');
+    const cfContentType = computed(() => selectedBbm.value?.contentType || 'textarea');
+    const cfAllowAttach = computed(() => selectedBbm.value?.allowAttach || '불가');
 
     /* ── 초기화 ── */
     onMounted(() => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const b = bbss.find(x => x.bbsId === props.editId);
         if (b) {
           Object.assign(form, { ...b });
@@ -87,14 +87,14 @@ window.SyBbsDtl = {
         }
       }
       /* htmleditor 초기화는 selectedBbm 결정 후 — viewMode 일 때는 초기화 불필요 */
-      if (!props.viewMode && contentType.value === 'htmleditor') {
+      if (!props.viewMode && cfContentType.value === 'htmleditor') {
         Vue.nextTick(() => { initQuill(); });
       }
     });
 
-    /* contentType 변화 감지 → Quill 초기화 */
+    /* cfContentType 변화 감지 → Quill 초기화 */
     const { watch, nextTick } = Vue;
-    watch(contentType, (val) => {
+    watch(cfContentType, (val) => {
       if (!props.viewMode && val === 'htmleditor') {
         nextTick(() => { initQuill(); });
       } else {

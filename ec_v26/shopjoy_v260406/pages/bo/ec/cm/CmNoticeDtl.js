@@ -25,7 +25,7 @@ window.CmNoticeDtl = {
       }
     };
     onMounted(() => { fetchData(); });
-    const isNew = computed(() => props.editId === null || props.editId === undefined);
+    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
       noticeId: null, title: '', noticeType: '일반', isFixed: false,
       startDate: '', endDate: '', statusCd: '게시', contentHtml: '',
@@ -39,7 +39,7 @@ window.CmNoticeDtl = {
     let quill = null;
 
     onMounted(() => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const n = notices.window.safeArrayUtils.safeFind(value, x => x.noticeId === props.editId);
         if (n) Object.assign(form, { ...n });
       }
@@ -51,7 +51,7 @@ window.CmNoticeDtl = {
     });
     onBeforeUnmount(() => { quill = null; });
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
@@ -60,7 +60,7 @@ window.CmNoticeDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const isNewNotice = isNew.value;
+      const isNewNotice = cfIsNew.value;
       const ok = await props.showConfirm(isNewNotice ? '등록' : '저장', isNewNotice ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNewNotice) {
@@ -85,11 +85,11 @@ window.CmNoticeDtl = {
       }
     };
 
-    return { notices, loading, error, isNew, form, errors, save };
+    return { notices, loading, error, cfIsNew, form, errors, handleSave };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '공지사항 등록' : (viewMode ? '공지사항 상세' : '공지사항 수정') }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.noticeId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '공지사항 등록' : (viewMode ? '공지사항 상세' : '공지사항 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.noticeId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group" style="flex:2">
@@ -149,7 +149,7 @@ window.CmNoticeDtl = {
         <button class="btn btn-secondary" @click="navigate('cmNoticeMng')">닫기</button>
       </template>
       <template v-else>
-        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('cmNoticeMng')">취소</button>
       </template>
     </div>

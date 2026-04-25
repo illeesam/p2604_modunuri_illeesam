@@ -56,7 +56,7 @@ window.DpDispAreaMng = {
         searchDateEnd.value   = r ? r.to   : '';
       }
     };
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const applied = reactive({ kw: '', areaType: '', useYn: '', dateStart: '', dateEnd: '' });
     const onSearch = () => {
@@ -83,7 +83,7 @@ window.DpDispAreaMng = {
     const isTreeOpen = (k) => treeOpen.has(k);
     const selectTree = (k) => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
 
-    const areaTree = computed(() => {
+    const cfAreaTree = computed(() => {
       const group = {};
       (codes || [])
         .filter(c => c.codeGrp === 'DISP_AREA')
@@ -103,16 +103,16 @@ window.DpDispAreaMng = {
         })),
       }));
     });
-    const expandAll   = () => { window.safeArrayUtils.safeForEach(areaTree, n => treeOpen.add('grp_'+n.label)); treeOpen.add('__root__'); };
+    const expandAll   = () => { window.safeArrayUtils.safeForEach(cfAreaTree, n => treeOpen.add('grp_'+n.label)); treeOpen.add('__root__'); };
     const collapseAll = () => { treeOpen.clear(); treeOpen.add('__root__'); };
 
     /* ── 영역 목록 (codes에서 DISP_AREA 필터) ── */
-    const allAreas = computed(() =>
+    const cfAllAreas = computed(() =>
       (codes || []).filter(c => c.codeGrp === 'DISP_AREA')
     );
-    const filtered = computed(() => {
+    const cfFiltered = computed(() => {
       const kw = applied.kw.trim().toLowerCase();
-      return window.safeArrayUtils.safeFilter(allAreas, a => {
+      return window.safeArrayUtils.safeFilter(cfAllAreas, a => {
         if (kw &&
             !(a.codeValue || '').toLowerCase().includes(kw) &&
             !(a.codeLabel || '').toLowerCase().includes(kw) &&
@@ -133,17 +133,17 @@ window.DpDispAreaMng = {
     /* ── 페이저 ── */
     const pager      = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const total      = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList   = computed(() =>
-      filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size)
+    const cfTotal      = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList   = computed(() =>
+      cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size)
     );
-    const pageNums   = computed(() => {
-      const cur = pager.page, last = totalPages.value;
+    const cfPageNums   = computed(() => {
+      const cur = pager.page, last = cfTotalPages.value;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
-    const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
     /* ── 하단 상세 임베드 ── */
@@ -159,12 +159,12 @@ window.DpDispAreaMng = {
       if (pg === 'dpDispAreaMng') { selectedId.value = null; return; }
       props.navigate(pg, opts);
     };
-    const detailEditId = computed(() =>
+    const cfDetailEditId = computed(() =>
       selectedId.value === '__new__' ? null : selectedId.value
     );
 
     /* ── 삭제 ── */
-    const doDelete = async (a) => {
+    const handleDelete = async (a) => {
       const ok = await props.showConfirm('삭제', `[${a.codeLabel}] 영역을 삭제하시겠습니까?`);
       if (!ok) return;
       const codesData = codes;
@@ -184,7 +184,7 @@ window.DpDispAreaMng = {
 
     /* ── 엑셀 ── */
     const exportExcel = () => {
-      const dataWithPath = filtered.value.map(a => ({
+      const dataWithPath = cfFiltered.value.map(a => ({
         ...a,
         pathLabel: a.pathId ? (window.boCmUtil.getPathLabel(a.pathId) || '') : '',
       }));
@@ -216,8 +216,8 @@ window.DpDispAreaMng = {
       e.preventDefault(); dragOverIdx.value = -1;
       const src = dragSrc.value;
       if (src === null || src === pageIdx) { dragSrc.value = null; return; }
-      const srcId = pageList.value[src]?.codeId;
-      const tgtId = pageList.value[pageIdx]?.codeId;
+      const srcId = cfPageList.value[src]?.codeId;
+      const tgtId = cfPageList.value[pageIdx]?.codeId;
       if (!srcId || !tgtId) { dragSrc.value = null; return; }
       const codesData = codes;
       const si = codes.findIndex(x => x.codeId === srcId);
@@ -233,7 +233,7 @@ window.DpDispAreaMng = {
     const onDragEnd = () => { dragSrc.value = null; dragOverIdx.value = -1; };
 
     const areaTypeLabel = (v) => (window.safeArrayUtils.safeFind(AREA_TYPE_OPTS, o => o.value === v) || {}).label || '-';
-    const statusBadge = s => s === 'Y' ? 'badge-green' : 'badge-gray';
+    const fnStatusBadge = s => s === 'Y' ? 'badge-green' : 'badge-gray';
 
     /* 영역 하위 패널 목록 */
     const panelsOfArea = (areaCode) =>
@@ -251,15 +251,15 @@ window.DpDispAreaMng = {
 
     return { codes, areas, loading, error, pathLabel,
       searchKw, searchAreaType, searchUseYn, searchDateStart, searchDateEnd, searchDateRange,
-      DATE_RANGE_OPTIONS, onDateRangeChange, siteNm,
+      DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm,
       AREA_TYPE_OPTS, LAYOUT_TYPE_OPTS,
-      pager, PAGE_SIZES, total, totalPages, pageList, pageNums, setPage, onSizeChange,
-      onSearch, onReset, doDelete, exportExcel,
-      selectedId, openMode, loadDetail, openNew, closeDetail, inlineNavigate, detailEditId,
+      pager, PAGE_SIZES, cfTotal, cfTotalPages, cfPageList, cfPageNums, setPage, onSizeChange,
+      onSearch, onReset, handleDelete, exportExcel,
+      selectedId, openMode, loadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
       dragSrc, dragOverIdx, onDragStart, onDragOver, onDragLeave, onDrop, onDragEnd,
-      areaTypeLabel, statusBadge, panelsOfArea,
+      areaTypeLabel, fnStatusBadge, panelsOfArea,
       expandedAreas, toggleExpandArea, isAreaExpanded,
-      areaTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll,
+      cfAreaTree, cfAllAreas, cfFiltered, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll,
     };
   },
   template: /* html */`
@@ -315,10 +315,10 @@ window.DpDispAreaMng = {
         fontWeight:700, border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec'),
       }">
       <span @click.stop="toggleTree('__root__')" style="cursor:pointer;">{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
-      <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ total }}</span>
+      <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ cfTotal }}</span>
     </div>
     <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
-      <div v-for="node in areaTree" :key="node?.label">
+      <div v-for="node in cfAreaTree" :key="node?.label">
         <div @click="selectTree(node.label)"
           :style="{
             display:'flex',alignItems:'center',justifyContent:'space-between',
@@ -358,7 +358,7 @@ window.DpDispAreaMng = {
   <!-- 목록 -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-title">전시 영역목록 <span class="list-count">{{ total }}건</span></span>
+      <span class="list-title">전시 영역목록 <span class="list-count">{{ cfTotal }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -374,10 +374,10 @@ window.DpDispAreaMng = {
         </tr>
       </thead>
       <tbody>
-        <tr v-if="pageList.length===0">
+        <tr v-if="cfPageList.length===0">
           <td colspan="4" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <template v-for="(a, pageIdx) in pageList" :key="a?.codeId">
+        <template v-for="(a, pageIdx) in cfPageList" :key="a?.codeId">
           <tr draggable="true"
             @dragstart="onDragStart($event, pageIdx)"
             @dragover="onDragOver($event, pageIdx)"
@@ -400,7 +400,7 @@ window.DpDispAreaMng = {
                   {{ a.codeLabel }}
                   <span v-if="selectedId===a.codeId" style="font-size:10px;margin-left:3px;">▼</span>
                 </span>
-                <span class="badge" :class="statusBadge(a.useYn)" style="font-size:11px;margin-left:8px;">{{ a.useYn==='Y'?'사용':'미사용' }}</span>
+                <span class="badge" :class="fnStatusBadge(a.useYn)" style="font-size:11px;margin-left:8px;">{{ a.useYn==='Y'?'사용':'미사용' }}</span>
               </div>
               <!-- label:value 라인 -->
               <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
@@ -419,7 +419,7 @@ window.DpDispAreaMng = {
                 <span><b style="color:#888;">순서:</b> {{ a.sortOrd ?? '-' }}</span>
                 <span><b style="color:#888;">등록일:</b> {{ a.regDate || '-' }}</span>
                 <span><b style="color:#888;">사이트:</b>
-                  <span style="background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:0 6px;margin-left:3px;">{{ siteNm }}</span>
+                  <span style="background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:0 6px;margin-left:3px;">{{ cfSiteNm }}</span>
                 </span>
                 <span v-if="a.remark" style="flex:1 1 100%;"><b style="color:#888;">설명:</b> {{ a.remark }}</span>
               </div>
@@ -427,7 +427,7 @@ window.DpDispAreaMng = {
             <td style="vertical-align:top;padding-top:10px;">
               <div class="actions" style="justify-content:flex-end;">
                 <button class="btn btn-blue btn-sm" @click="loadDetail(a.codeId)">수정</button>
-                <button class="btn btn-danger btn-sm" @click="doDelete(a)">삭제</button>
+                <button class="btn btn-danger btn-sm" @click="handleDelete(a)">삭제</button>
               </div>
             </td>
           </tr>
@@ -464,9 +464,9 @@ window.DpDispAreaMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -491,7 +491,7 @@ window.DpDispAreaMng = {
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
-      :edit-id="detailEditId"
+      :edit-id="cfDetailEditId"
     />
   </div>
 </div>

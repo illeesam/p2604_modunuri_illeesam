@@ -29,7 +29,7 @@ window.PmDiscntDtl = {
       }
     };
     onMounted(() => { fetchData(); });
-    const isNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._pmDiscntDtlState.tab || 'info');
     watch(tab, v => { window._pmDiscntDtlState.tab = v; });
     const viewMode2 = ref(window._pmDiscntDtlState.viewMode || 'tab');
@@ -56,7 +56,7 @@ window.PmDiscntDtl = {
     });
 
     onMounted(() => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const d = (discntList).find(x => x.discntId === props.editId);
         if (d) Object.assign(form, d);
       }
@@ -71,7 +71,7 @@ window.PmDiscntDtl = {
       form.visibilityTargets = window.visibilityUtil.serialize(list);
     };
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
@@ -80,10 +80,10 @@ window.PmDiscntDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (!discntList.value) discntList.value = [];
-      if (isNew.value) {
+      if (cfIsNew.value) {
         discntList.value.push({
           ...form,
           discntId: Date.now(),
@@ -94,9 +94,9 @@ window.PmDiscntDtl = {
         if (idx !== -1) Object.assign(discntList.value[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }) : window.boApi.put(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }) : window.boApi.put(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmDiscntMng');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -116,11 +116,11 @@ window.PmDiscntDtl = {
       showVendorModal.value = false;
     };
 
-    return { discounts, loading, error, isNew, tab, form, errors, showTab, viewMode2, save, visibilityOptions, hasVisibility, toggleVisibility, showVendorModal, selectedVendorNm, selectVendor };
+    return { discounts, loading, error, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, visibilityOptions, hasVisibility, toggleVisibility, showVendorModal, selectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '할인 등록' : '할인 수정' }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.discntId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '할인 등록' : '할인 수정' }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.discntId }}</span></div>
   <div class="tab-bar-row">
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:tab==='info'}" :disabled="viewMode2!=='tab'" @click="tab='info'">📋 기본정보</button>
@@ -202,7 +202,7 @@ window.PmDiscntDtl = {
       </div>
 
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('pmDiscntMng')">취소</button>
       </div>
     </div>
@@ -270,7 +270,7 @@ window.PmDiscntDtl = {
       </div>
 
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('pmDiscntMng')">취소</button>
       </div>
     </div>
@@ -321,7 +321,7 @@ window.PmDiscntDtl = {
       </div>
 
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('pmDiscntMng')">취소</button>
       </div>
     </div>

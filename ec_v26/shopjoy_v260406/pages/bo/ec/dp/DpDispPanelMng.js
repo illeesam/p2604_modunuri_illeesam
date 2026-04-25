@@ -38,7 +38,7 @@ window.DpDispPanelMng = {
       if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchArea = ref('');
     const searchStatus = ref('');
     const searchDispDate = ref('');
@@ -72,9 +72,9 @@ window.DpDispPanelMng = {
       if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
+    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
     /* 패널미리보기 */
     const previewDisp = (d) => {
@@ -114,7 +114,7 @@ window.DpDispPanelMng = {
 
     const applied = reactive({ kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' });
 
-    const filtered = computed(() => window.safeArrayUtils.safeFilter(displays, d => {
+    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(displays, d => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !d.name.toLowerCase().includes(kw) && !d.area.toLowerCase().includes(kw)) return false;
       if (applied.area && d.area !== applied.area) return false;
@@ -168,21 +168,21 @@ window.DpDispPanelMng = {
       }
       return true;
     }));
-    const areas = computed(() =>
+    const cfAreas = computed(() =>
       (codes || [])
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
-    const total = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums = computed(() => {
-      const cur = pager.page, last = totalPages.value;
+    const cfTotal = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums = computed(() => {
+      const cur = pager.page, last = cfTotalPages.value;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
-    const statusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
-    const typeBadge = t => ({
+    const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
+    const fnTypeBadge = t => ({
       'image_banner':'badge-blue', 'product_slider':'badge-purple', 'product':'badge-purple',
       'chart_bar':'badge-orange', 'chart_line':'badge-orange', 'chart_pie':'badge-orange',
       'text_banner':'badge-gray', 'info_card':'badge-blue', 'popup':'badge-red',
@@ -193,7 +193,7 @@ window.DpDispPanelMng = {
       'approval_widget':'badge-blue', 'map_widget':'badge-blue',
       'event_banner':'badge-blue', 'cache_banner':'badge-green', 'widget_embed':'badge-purple',
     }[t] || 'badge-gray');
-    const typeLabel = t => ({
+    const fnTypeLabel = t => ({
       'image_banner':'이미지배너', 'product_slider':'상품슬라이더', 'product':'상품',
       'chart_bar':'차트(Bar)', 'chart_line':'차트(Line)', 'chart_pie':'차트(Pie)',
       'text_banner':'텍스트배너', 'info_card':'정보카드', 'popup':'팝업',
@@ -236,10 +236,10 @@ window.DpDispPanelMng = {
       Object.assign(applied, { kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' });
       pager.page = 1;
     };
-    const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
-    const doDelete = async (d) => {
+    const handleDelete = async (d) => {
       const ok = await props.showConfirm('삭제', `[${d.name}]을 삭제하시겠습니까?`);
       if (!ok) return;
       const idx = displays.findIndex(x => x.dispId === d.dispId);
@@ -256,7 +256,7 @@ window.DpDispPanelMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'ID',key:'dispId'},{label:'영역',key:'dispArea'},{label:'제목',key:'title'},{label:'유형',key:'dispType'},{label:'상태',key:'status'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}], '전시목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'dispId'},{label:'영역',key:'dispArea'},{label:'제목',key:'title'},{label:'유형',key:'dispType'},{label:'상태',key:'status'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}], '전시목록.csv');
 
     /* 영역 레이블 조회 */
     const areaLabel = (code) => {
@@ -308,8 +308,8 @@ window.DpDispPanelMng = {
       e.preventDefault(); panelDragOverIdx.value = -1;
       const src = panelDragSrc.value;
       if (src === null || src === pageIdx) { panelDragSrc.value = null; return; }
-      const srcId = pageList.value[src]?.dispId;
-      const tgtId = pageList.value[pageIdx]?.dispId;
+      const srcId = cfPageList.value[src]?.dispId;
+      const tgtId = cfPageList.value[pageIdx]?.dispId;
       if (!srcId || !tgtId) { panelDragSrc.value = null; return; }
       const arr = displays;
       const si = arr.findIndex(x => x.dispId === srcId);
@@ -361,7 +361,7 @@ window.DpDispPanelMng = {
     const selectTree = (k) => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
     const expandAll  = () => {
       treeOpen.add('__root__');
-      window.safeArrayUtils.safeForEach(panelTree.value, n => {
+      window.safeArrayUtils.safeForEach(cfPanelTree.value, n => {
         treeOpen.add('grp_'+n.label);
         window.safeArrayUtils.safeForEach(n.children, c => treeOpen.add(n.label+'_'+c.label));
       });
@@ -369,7 +369,7 @@ window.DpDispPanelMng = {
     const collapseAll= () => { treeOpen.clear(); treeOpen.add('__root__'); };
 
     /* 패널 목록 (영역별 그룹) */
-    const panelTree = computed(() => {
+    const cfPanelTree = computed(() => {
       const codesData = codes || [];
       const areaNm = (code) => {
         const c = window.safeArrayUtils.safeFind(codesData, x => x.codeGrp === 'DISP_AREA' && x.codeValue === code);
@@ -400,7 +400,7 @@ window.DpDispPanelMng = {
     });
 
     return { panels, loading, error, pathLabel, displays, codes,
-      panelTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchVisibility, searchLayoutType, VISIBILITY_OPTS, LAYOUT_TYPE_OPTS, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, areas, statusBadge, typeBadge, typeLabel, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, previewDisp, dispSummary, exportExcel, areaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
+      cfPanelTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchVisibility, searchLayoutType, VISIBILITY_OPTS, LAYOUT_TYPE_OPTS, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, dispSummary, exportExcel, areaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
   },
   template: /* html */`
 <div>
@@ -411,7 +411,7 @@ window.DpDispPanelMng = {
       <span class="search-label">화면영역</span>
       <select v-model="searchArea" style="min-width:160px;">
         <option value="">전체 영역</option>
-        <option v-for="a in areas" :key="a?.codeValue" :value="a.codeValue">{{ a.codeValue }} {{ a.codeLabel }}</option>
+        <option v-for="a in cfAreas" :key="a?.codeValue" :value="a.codeValue">{{ a.codeValue }} {{ a.codeLabel }}</option>
       </select>
       <select v-model="searchStatus"><option value="">상태 전체</option><option>활성</option><option>비활성</option></select>
       <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
@@ -461,10 +461,10 @@ window.DpDispPanelMng = {
         fontWeight:700, border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec'),
       }">
       <span @click.stop="toggleTree('__root__')" style="cursor:pointer;">{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
-      <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ total }}</span>
+      <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ cfTotal }}</span>
     </div>
     <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
-      <template v-for="node in panelTree" :key="node?.label">
+      <template v-for="node in cfPanelTree" :key="node?.label">
         <div @click="selectTree(node.label)"
           :style="{
             display:'flex',alignItems:'center',justifyContent:'space-between',

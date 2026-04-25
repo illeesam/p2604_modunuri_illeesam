@@ -192,7 +192,7 @@
       };
 
       /* ── 검색 실행 ── */
-      const doSearch = () => {
+      const onSearch = () => {
         if (searchMode.value === 'member') { openMemberModal(); return; }
         const kw = searchInput.value.trim();
         if (!kw) { props.showToast('검색어를 입력하세요.', 'error'); return; }
@@ -226,7 +226,7 @@
         cfCustOrders, cfCustClaims, cfCustDeliveries, cfCustCache, cfCustCacheBalance,
         cfCustContacts, cfCustChats, cfCustLoginHist, cfCustCouponUsage, cfCustSendHist,
         openMemberModal, searchMemberModal, selectMember,
-        doSearch, clearCustomer,
+        onSearch, clearCustomer,
         fnBadgeCls, fnChannelCls, fnFmtPrice,
         histTab, viewMode2, showTab,
       };
@@ -266,8 +266,8 @@
         <input type="text" v-model="searchInput"
           :placeholder="searchMode==='order'?'주문번호  ex) ORD-2026-025':'클레임번호  ex) CLM-2026-013'"
           style="border:none;background:transparent;padding:8px 14px;font-size:13px;outline:none;flex:1;min-width:0;"
-          @keyup.enter="() => doSearch?.()" />
-        <button @click="doSearch"
+          @keyup.enter="() => onSearch?.()" />
+        <button @click="onSearch"
           style="background:#1976d2;color:#fff;border:none;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">
           조회
         </button>

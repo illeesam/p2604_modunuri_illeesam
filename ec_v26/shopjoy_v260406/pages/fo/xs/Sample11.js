@@ -64,8 +64,8 @@ window.XsSample11 = {
       coupon:'🎟',       html_editor:'📄',     event_banner:'🎉',
       cache_banner:'💰', widget_embed:'🧩',
     };
-    const wLabel = (t) => WIDGET_LABELS[t] || t || '-';
-    const wIcon  = (t) => WIDGET_ICONS[t] || '▪';
+    const fnWLabel = (t) => WIDGET_LABELS[t] || t || '-';
+    const fnWIcon  = (t) => WIDGET_ICONS[t] || '▪';
 
     /* 화면영역 코드 목록 */
     const cfAllAreas = computed(() =>
@@ -125,14 +125,14 @@ window.XsSample11 = {
 
     return {
       previewDate, previewTime, viewMode, showDesc, showAreaDrop,
-      selectedAreas, allAreas, areaList, areaBtnLabel,
+      selectedAreas, cfAllAreas, cfAreaList, cfAreaBtnLabel,
       toggleArea, selectAllAreas, clearAllAreas, resetDate,
       searchStatus, searchCondition, searchAuthRequired, searchAuthGrade,
       CONDITION_OPTS, AUTH_GRADE_OPTS,
-      isLoggedIn, userGrade, userNm, accessibleConds,
-      showCatModal, selectedCatIds, catBtnLabel, onCatApply, selectedCatNames,
-      panelsForArea, totalPanels,
-      wLabel, wIcon,
+      isLoggedIn, userGrade, userNm, cfAccessibleConds,
+      showCatModal, selectedCatIds, cfCatBtnLabel, onCatApply, cfSelectedCatNames,
+      panelsForArea, cfTotalPanels,
+      fnWLabel, fnWIcon,
     };
   },
   template: /* html */`
@@ -199,7 +199,7 @@ window.XsSample11 = {
       <button @click="showCatModal=true"
         style="font-size:12px;padding:3px 10px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:4px;"
         :style="selectedCatIds.size>0?'border-color:#e8587a;color:#e8587a;font-weight:600;':''">
-        📂 {{ catBtnLabel }}
+        📂 {{ cfCatBtnLabel }}
       </button>
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>
 
@@ -221,7 +221,7 @@ window.XsSample11 = {
         <button @click="showAreaDrop=!showAreaDrop"
           style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;"
           :style="selectedAreas.size>0?'border-color:#e8587a;color:#e8587a;font-weight:600;':''">
-          <span>🗂 {{ areaBtnLabel }}</span>
+          <span>🗂 {{ cfAreaBtnLabel }}</span>
           <span style="font-size:10px;">{{ showAreaDrop ? '▲' : '▼' }}</span>
         </button>
         <div v-if="showAreaDrop" @click="showAreaDrop=false" style="position:fixed;inset:0;z-index:99;"></div>
@@ -230,7 +230,7 @@ window.XsSample11 = {
             <button @click.stop="selectAllAreas" style="font-size:11px;padding:2px 8px;border:1px solid #1565c0;border-radius:6px;background:#e3f2fd;color:#1565c0;cursor:pointer;">전체선택</button>
             <button @click.stop="clearAllAreas" style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">전체해제</button>
           </div>
-          <div v-for="a in allAreas" :key="a.codeValue" @click.stop="toggleArea(a.codeValue)"
+          <div v-for="a in cfAllAreas" :key="a.codeValue" @click.stop="toggleArea(a.codeValue)"
             style="display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;"
             :style="selectedAreas.has(a.codeValue)?'background:#fff8f8;':''">
             <div style="width:14px;height:14px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
@@ -256,10 +256,10 @@ window.XsSample11 = {
       <span v-if="searchAuthRequired==='Y'" style="font-size:11px;background:#fff3e0;color:#e65100;border-radius:8px;padding:2px 8px;">인증 필요</span>
       <span v-if="searchAuthRequired==='N'" style="font-size:11px;background:#fce4ec;color:#c62828;border-radius:8px;padding:2px 8px;">인증 불필요</span>
       <span v-if="searchAuthGrade" style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:2px 8px;">등급: {{ searchAuthGrade }}↑</span>
-      <template v-for="nm in selectedCatNames" :key="nm">
+      <template v-for="nm in cfSelectedCatNames" :key="nm">
         <span style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:2px 8px;">📂 {{ nm }}</span>
       </template>
-      <span style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 8px;margin-left:auto;">총 {{ totalPanels }}개 패널</span>
+      <span style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 8px;margin-left:auto;">총 {{ cfTotalPanels }}개 패널</span>
     </div>
 
     <!-- 현재 사용자 정보 -->
@@ -270,14 +270,14 @@ window.XsSample11 = {
       <span v-if="userNm" style="font-size:11px;color:#555;">{{ userNm }}</span>
       <span v-if="isLoggedIn && userGrade" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;">등급: {{ userGrade }}</span>
       <span style="font-size:11px;color:#aaa;">접근 가능 조건:</span>
-      <span v-for="c in accessibleConds" :key="c" style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:6px;padding:1px 7px;">{{ c }}</span>
+      <span v-for="c in cfAccessibleConds" :key="c" style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:6px;padding:1px 7px;">{{ c }}</span>
     </div>
   </div>
 
   <!-- 영역별 패널 목록 -->
-  <div v-if="areaList.length===0" style="text-align:center;padding:40px;color:#ccc;">등록된 화면영역이 없습니다.</div>
+  <div v-if="cfAreaList.length===0" style="text-align:center;padding:40px;color:#ccc;">등록된 화면영역이 없습니다.</div>
 
-  <div v-for="area in areaList" :key="area.codeValue" style="margin-bottom:8px;">
+  <div v-for="area in cfAreaList" :key="area.codeValue" style="margin-bottom:8px;">
     <!-- 영역 헤더 -->
     <div style="background:linear-gradient(90deg,#2d2d2d,#444);color:#fff;padding:8px 14px;border-radius:6px 6px 0 0;display:flex;align-items:center;gap:8px;">
       <span style="font-size:10px;background:rgba(99,179,237,.35);color:#bee3f8;border:1px solid rgba(99,179,237,.4);border-radius:4px;padding:1px 6px;">영역</span>
@@ -335,7 +335,7 @@ window.XsSample11 = {
           <span v-if="!p.rows || p.rows.length===0" style="font-size:11px;color:#ccc;">(위젯 없음)</span>
           <span v-for="(w, wi) in (p.rows||[])" :key="wi"
             style="font-size:11px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:6px;padding:2px 8px;">
-            {{ wIcon(w.widgetType) }} {{ wLabel(w.widgetType) }}<span v-if="w.widgetNm" style="color:#aaa;"> · {{ w.widgetNm }}</span>
+            {{ fnWIcon(w.widgetType) }} {{ fnWLabel(w.widgetType) }}<span v-if="w.widgetNm" style="color:#aaa;"> · {{ w.widgetNm }}</span>
           </span>
         </div>
       </div>

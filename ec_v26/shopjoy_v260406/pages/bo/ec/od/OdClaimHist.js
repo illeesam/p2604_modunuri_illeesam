@@ -69,7 +69,7 @@ window.OdClaimHist = {
       if (idx !== -1) claimItems.splice(idx, 1);
     };
 
-    const saveProcess = () => {
+    const handleSaveProcess = () => {
       const idx = claims.value.findIndex(c => c.claimId === props.claimId);
       if (idx !== -1) Object.assign(claims.value[idx], {
         refundAmount: Number(processForm.refundAmount),
@@ -79,7 +79,7 @@ window.OdClaimHist = {
       props.showToast('저장되었습니다.');
     };
 
-    return { botTab, claimItems, addClaimItem, removeClaimItem, processForm, saveProcess, cfStatusOptions, relatedOrder, relatedDliv, viewMode2, showTab };
+    return { botTab, claimItems, addClaimItem, removeClaimItem, processForm, handleSaveProcess, cfStatusOptions, relatedOrder, relatedDliv, viewMode2, showTab };
   },
   template: /* html */`
 <div>
@@ -191,7 +191,7 @@ window.OdClaimHist = {
       <textarea class="form-control" v-model="processForm.memo" rows="4"></textarea>
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" @click="saveProcess">저장</button>
+      <button class="btn btn-primary" @click="handleSaveProcess">저장</button>
     </div>
   </div>
 

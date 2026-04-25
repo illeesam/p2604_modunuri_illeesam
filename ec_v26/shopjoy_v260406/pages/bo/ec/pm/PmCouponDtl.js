@@ -26,7 +26,7 @@ window.PmCouponDtl = {
       }
     };
     onMounted(() => { loadData(); });
-    const isNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._pmCouponDtlState.tab || 'info');
     watch(tab, v => { window._pmCouponDtlState.tab = v; });
     const viewMode2 = ref(window._pmCouponDtlState.viewMode || 'tab');
@@ -65,7 +65,7 @@ window.PmCouponDtl = {
     });
 
     const initForm = async () => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const c = getCoupon.value(props.editId);
         if (c) Object.assign(form, { ...c });
       }
@@ -98,14 +98,14 @@ window.PmCouponDtl = {
     };
 
     /* 발급목록 */
-    const issuedList = computed(() => {
+    const cfIssuedList = computed(() => {
       if (!coupons.value) return [];
       const c = coupons.window.safeArrayUtils.safeFind(value, x => x.couponId === props.editId);
       return c ? (c.issuedList || []) : [];
     });
 
     /* 사용목록 */
-    const usedList = computed(() => {
+    const cfUsedList = computed(() => {
       if (!coupons.value) return [];
       const c = coupons.window.safeArrayUtils.safeFind(value, x => x.couponId === props.editId);
       return c ? (c.usedList || []) : [];
@@ -181,7 +181,7 @@ window.PmCouponDtl = {
       }
     };
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
@@ -190,10 +190,10 @@ window.PmCouponDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (!coupons.value) coupons = [];
-      if (isNew.value) {
+      if (cfIsNew.value) {
         coupons.value.push({
           ...form,
           couponId: Date.now(),
@@ -206,9 +206,9 @@ window.PmCouponDtl = {
         if (idx !== -1) Object.assign(coupons.value[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`/bo/ec/pm/coupon/${form.couponId}`, { ...form }) : window.boApi.put(`/bo/ec/pm/coupon/${form.couponId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/coupon/${form.couponId}`, { ...form }) : window.boApi.put(`/bo/ec/pm/coupon/${form.couponId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmCouponMng');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -217,15 +217,15 @@ window.PmCouponDtl = {
       }
     };
 
-    return { coupons, loading, error, isNew, tab, form, errors, showTab, viewMode2, save, memoEl, onTabChange,
+    return { coupons, loading, error, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, memoEl, onTabChange,
       COUPON_TYPES, ISSUE_TARGETS, DISCOUNT_TYPES,
-      issuedList, usedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer,
+      cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer,
       showVendorModal, selectedVendorNm, selectVendor,
     };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '쿠폰 등록' : '쿠폰 수정' }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.couponId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '쿠폰 등록' : '쿠폰 수정' }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.couponId }}</span></div>
   <div class="tab-bar-row">
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:tab==='info'}" :disabled="viewMode2!=='tab'" @click="onTabChange('info')">📋 기본정보</button>
@@ -556,12 +556,12 @@ window.PmCouponDtl = {
 
     <!-- 발급목록 -->
     <div class="card" v-show="showTab('issued')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📊 발급목록 <span class="tab-count">{{ issuedList.length }}</span></div>
-      <div v-if="issuedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">발급된 쿠폰이 없습니다.</div>
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📊 발급목록 <span class="tab-count">{{ cfIssuedList.length }}</span></div>
+      <div v-if="cfIssuedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">발급된 쿠폰이 없습니다.</div>
       <table v-else class="bo-table" style="font-size:12px;">
         <thead><tr><th>쿠폰코드</th><th>발급대상</th><th>발급일시</th><th>유효기간</th><th>상태</th></tr></thead>
         <tbody>
-          <tr v-for="(item, idx) in issuedList.slice(0, 10)" :key="idx">
+          <tr v-for="(item, idx) in cfIssuedList.slice(0, 10)" :key="idx">
             <td>{{ item.code || '-' }}</td>
             <td>{{ item.target || '-' }}</td>
             <td>{{ item.issuedDate || '-' }}</td>
@@ -574,12 +574,12 @@ window.PmCouponDtl = {
 
     <!-- 사용목록 -->
     <div class="card" v-show="showTab('used')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">✅ 사용목록 <span class="tab-count">{{ usedList.length }}</span></div>
-      <div v-if="usedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">사용된 쿠폰이 없습니다.</div>
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">✅ 사용목록 <span class="tab-count">{{ cfUsedList.length }}</span></div>
+      <div v-if="cfUsedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">사용된 쿠폰이 없습니다.</div>
       <table v-else class="bo-table" style="font-size:12px;">
         <thead><tr><th>쿠폰코드</th><th>사용자</th><th>주문ID</th><th>주문금액</th><th>할인액</th><th>사용일시</th></tr></thead>
         <tbody>
-          <tr v-for="(item, idx) in usedList.slice(0, 10)" :key="idx">
+          <tr v-for="(item, idx) in cfUsedList.slice(0, 10)" :key="idx">
             <td>{{ item.code || '-' }}</td>
             <td>{{ item.userId || '-' }}</td>
             <td>{{ item.orderId || '-' }}</td>
@@ -593,7 +593,7 @@ window.PmCouponDtl = {
   </div>
 
   <div style="margin-top:16px;text-align:center;gap:8px;display:flex;justify-content:center;">
-    <button class="btn btn-primary" @click="save" style="min-width:120px;">저장</button>
+    <button class="btn btn-primary" @click="handleSave" style="min-width:120px;">저장</button>
     <button class="btn btn-secondary" @click="navigate('pmCouponMng')" style="min-width:120px;">취소</button>
   </div>
 </div>

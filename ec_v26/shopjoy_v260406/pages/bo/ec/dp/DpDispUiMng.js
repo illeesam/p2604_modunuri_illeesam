@@ -52,7 +52,7 @@ window.DpDispUiMng = {
         searchDateEnd.value   = r ? r.to   : '';
       }
     };
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const applied = reactive({ kw: '', uiType: '', useYn: '', dateStart: '', dateEnd: '' });
     const onSearch = () => {
@@ -70,7 +70,7 @@ window.DpDispUiMng = {
     };
 
     /* UI 목록 (codes DISP_UI) */
-    const allUis = computed(() =>
+    const cfAllUis = computed(() =>
       (codes || []).filter(c => c.codeGrp === 'DISP_UI')
     );
     /* 표시경로 (uiType 그룹 > 실제 UI 아이템) */
@@ -79,9 +79,9 @@ window.DpDispUiMng = {
     const toggleTree = (k) => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
     const isTreeOpen = (k) => treeOpen.has(k);
     const selectTree = (k) => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
-    const uiTree = computed(() => {
+    const cfUiTree = computed(() => {
       const group = {};
-      window.safeArrayUtils.safeForEach(allUis, u => {
+      window.safeArrayUtils.safeForEach(cfAllUis, u => {
         const t = u.uiType || '(미분류)';
         if (!group[t]) group[t] = [];
         group[t].push(u);
@@ -92,12 +92,12 @@ window.DpDispUiMng = {
         items: group[t].sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
       }));
     });
-    const expandAll   = () => { window.safeArrayUtils.safeForEach(uiTree, n => { treeOpen.add('grp_'+n.label); n.iwindow.safeArrayUtils.safeForEach(tems, u => treeOpen.add('ui_'+u.codeId)); }); treeOpen.add('__root__'); };
+    const expandAll   = () => { window.safeArrayUtils.safeForEach(cfUiTree, n => { treeOpen.add('grp_'+n.label); n.iwindow.safeArrayUtils.safeForEach(tems, u => treeOpen.add('ui_'+u.codeId)); }); treeOpen.add('__root__'); };
     const collapseAll = () => { treeOpen.clear(); treeOpen.add('__root__'); };
 
-    const filtered = computed(() => {
+    const cfFiltered = computed(() => {
       const kw = applied.kw.trim().toLowerCase();
-      return window.safeArrayUtils.safeFilter(allUis, u => {
+      return window.safeArrayUtils.safeFilter(cfAllUis, u => {
         if (kw &&
             !(u.codeValue || '').toLowerCase().includes(kw) &&
             !(u.codeLabel || '').toLowerCase().includes(kw) &&
@@ -114,17 +114,17 @@ window.DpDispUiMng = {
 
     const pager      = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const total      = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList   = computed(() =>
-      filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size)
+    const cfTotal      = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList   = computed(() =>
+      cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size)
     );
-    const pageNums   = computed(() => {
-      const cur = pager.page, last = totalPages.value;
+    const cfPageNums   = computed(() => {
+      const cur = pager.page, last = cfTotalPages.value;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
-    const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
     const selectedId = ref(null);
@@ -135,11 +135,11 @@ window.DpDispUiMng = {
       if (pg === 'dpDispUiMng') { selectedId.value = null; return; }
       props.navigate(pg, opts);
     };
-    const detailEditId = computed(() =>
+    const cfDetailEditId = computed(() =>
       selectedId.value === '__new__' ? null : selectedId.value
     );
 
-    const doDelete = async (u) => {
+    const handleDelete = async (u) => {
       const ok = await props.showConfirm('삭제', `[${u.codeLabel}] UI를 삭제하시겠습니까?`);
       if (!ok) return;
       const codesData = codes;
@@ -158,7 +158,7 @@ window.DpDispUiMng = {
     };
 
     const exportExcel = () => window.boCmUtil.exportCsv(
-      filtered.value,
+      cfFiltered.value,
       [
         { label: 'ID', key: 'codeId' }, { label: 'UI코드', key: 'codeValue' },
         { label: 'UI명', key: 'codeLabel' }, { label: '유형', key: 'uiType' },
@@ -169,7 +169,7 @@ window.DpDispUiMng = {
     );
 
     const uiTypeLabel = (v) => (window.safeArrayUtils.safeFind(UI_TYPE_OPTS, o => o.value === v) || {}).label || '-';
-    const statusBadge = s => s === 'Y' ? 'badge-green' : 'badge-gray';
+    const fnStatusBadge = s => s === 'Y' ? 'badge-green' : 'badge-gray';
 
     /* UI 하위 영역 개수 (영역의 uiCode 필드 기준) */
     const areaCountFor = (uiCode) =>
@@ -191,14 +191,14 @@ window.DpDispUiMng = {
 
     return { codes, displays, loading, error, pathLabel,
       searchKw, searchUiType, searchUseYn, searchDateStart, searchDateEnd, searchDateRange,
-      DATE_RANGE_OPTIONS, onDateRangeChange, siteNm,
+      DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm,
       UI_TYPE_OPTS,
-      pager, PAGE_SIZES, total, totalPages, pageList, pageNums, setPage, onSizeChange,
-      onSearch, onReset, doDelete, exportExcel,
-      selectedId, loadDetail, openNew, closeDetail, inlineNavigate, detailEditId,
-      uiTypeLabel, statusBadge, areaCountFor, areasOfUi,
+      pager, PAGE_SIZES, cfTotal, cfTotalPages, cfPageList, cfPageNums, setPage, onSizeChange,
+      onSearch, onReset, handleDelete, exportExcel,
+      selectedId, loadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
+      uiTypeLabel, fnStatusBadge, areaCountFor, areasOfUi,
       expandedUIs, toggleExpandUI, isUIExpanded,
-      uiTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll,
+      cfAllUis, cfFiltered, cfUiTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll,
     };
   },
   template: /* html */`
@@ -238,7 +238,7 @@ window.DpDispUiMng = {
     <div class="card" style="width:220px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
       <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid #f0f0f0;margin-bottom:8px;">
         <span style="font-size:12px;font-weight:700;color:#555;">표시경로</span>
-        <span style="font-size:10px;color:#aaa;">{{ uiTree.length }}그룹</span>
+        <span style="font-size:10px;color:#aaa;">{{ cfUiTree.length }}그룹</span>
       </div>
       <div style="display:flex;gap:4px;margin-bottom:8px;">
         <button @click="expandAll" style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">▼ 전체펼치기</button>
@@ -253,10 +253,10 @@ window.DpDispUiMng = {
           fontWeight:700, border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec'),
         }">
         <span @click.stop="toggleTree('__root__')" style="cursor:pointer;">{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
-        <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ total }}</span>
+        <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ cfTotal }}</span>
       </div>
       <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
-        <template v-for="node in uiTree" :key="node?.label">
+        <template v-for="node in cfUiTree" :key="node?.label">
           <div @click="selectTree(node.label)"
             :style="{
               display:'flex',alignItems:'center',justifyContent:'space-between',
@@ -299,7 +299,7 @@ window.DpDispUiMng = {
     <div style="flex:1;min-width:0;">
     <div class="card">
       <div class="toolbar">
-        <span class="list-title">전시 UI목록 <span class="list-count">{{ total }}건</span></span>
+        <span class="list-title">전시 UI목록 <span class="list-count">{{ cfTotal }}건</span></span>
         <div style="display:flex;gap:6px;">
           <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
           <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -314,10 +314,10 @@ window.DpDispUiMng = {
           </tr>
         </thead>
         <tbody>
-          <tr v-if="pageList.length===0">
+          <tr v-if="cfPageList.length===0">
             <td colspan="3" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
           </tr>
-          <template v-for="u in pageList" :key="u?.codeId">
+          <template v-for="u in cfPageList" :key="u?.codeId">
             <tr :style="selectedId===u.codeId?'background:#fff8f9;':''">
               <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">
                 <button @click="toggleExpandUI(u.codeId)" style="background:none;border:none;cursor:pointer;font-size:13px;padding:2px 4px;margin-right:4px;"
@@ -332,7 +332,7 @@ window.DpDispUiMng = {
                     {{ u.codeLabel }}
                     <span v-if="selectedId===u.codeId" style="font-size:10px;margin-left:3px;">▼</span>
                   </span>
-                  <span class="badge" :class="statusBadge(u.useYn)" style="font-size:11px;margin-left:8px;">{{ u.useYn==='Y'?'사용':'미사용' }}</span>
+                  <span class="badge" :class="fnStatusBadge(u.useYn)" style="font-size:11px;margin-left:8px;">{{ u.useYn==='Y'?'사용':'미사용' }}</span>
                 </div>
                 <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
                   <span><b style="color:#888;">표시경로:</b>
@@ -345,7 +345,7 @@ window.DpDispUiMng = {
                   <span><b style="color:#888;">순서:</b> {{ u.sortOrd ?? '-' }}</span>
                   <span><b style="color:#888;">등록일:</b> {{ u.regDate || '-' }}</span>
                   <span><b style="color:#888;">사이트:</b>
-                    <span style="background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:0 6px;margin-left:3px;">{{ siteNm }}</span>
+                    <span style="background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:0 6px;margin-left:3px;">{{ cfSiteNm }}</span>
                   </span>
                   <span v-if="u.remark" style="flex:1 1 100%;"><b style="color:#888;">설명:</b> {{ u.remark }}</span>
                 </div>
@@ -353,7 +353,7 @@ window.DpDispUiMng = {
               <td style="vertical-align:top;padding-top:10px;">
                 <div class="actions" style="justify-content:flex-end;">
                   <button class="btn btn-blue btn-sm" @click="loadDetail(u.codeId)">수정</button>
-                  <button class="btn btn-danger btn-sm" @click="doDelete(u)">삭제</button>
+                  <button class="btn btn-danger btn-sm" @click="handleDelete(u)">삭제</button>
                 </div>
               </td>
             </tr>
@@ -387,9 +387,9 @@ window.DpDispUiMng = {
         <div class="pager">
           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-          <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-          <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-          <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+          <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+          <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+          <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
         </div>
         <div class="pager-right">
           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -411,7 +411,7 @@ window.DpDispUiMng = {
       :navigate="inlineNavigate"
       :show-ref-modal="showRefModal" :show-toast="showToast"
       :show-confirm="showConfirm" :set-api-res="setApiRes"
-      :edit-id="detailEditId" />
+      :edit-id="cfDetailEditId" />
   </div>
 </div>
   `,

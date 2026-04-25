@@ -31,7 +31,7 @@ window.DpDispRelationMng = {
     const isNodeExpanded = (key) => expandedNodes.has(key);
 
     /* 트리 데이터 구성 */
-    const treeData = computed(() => {
+    const cfTreeData = computed(() => {
       const codesArr = codes.value || [];
       const uiCodes = codesArr
         .filter(c => c.codeGrp === 'DISP_UI')
@@ -115,7 +115,7 @@ window.DpDispRelationMng = {
       searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS,
       onSearch, onReset,
       expandedNodes, toggleNode, isNodeExpanded,
-      treeData, getVisibilityBadges, getBadgeColor, getUseYnBadge,
+      cfTreeData, getVisibilityBadges, getBadgeColor, getUseYnBadge,
     };
   },
   template: /* html */`
@@ -138,9 +138,9 @@ window.DpDispRelationMng = {
 
   <!-- 내용 -->
   <div class="card" style="padding:12px;">
-    <div v-if="!treeData.length" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</div>
+    <div v-if="!cfTreeData.length" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</div>
 
-    <div v-for="ui in treeData" :key="ui?.id" style="margin-bottom:12px;border:1px solid #f0f0f0;border-radius:6px;overflow:hidden;">
+    <div v-for="ui in cfTreeData" :key="ui?.id" style="margin-bottom:12px;border:1px solid #f0f0f0;border-radius:6px;overflow:hidden;">
       <!-- UI 행 -->
       <div @click="toggleNode('ui_'+ui.id)"
         style="display:flex;align-items:center;gap:8px;padding:10px;background:#f9f9fb;cursor:pointer;user-select:none;">

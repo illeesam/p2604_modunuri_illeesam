@@ -143,7 +143,7 @@ window.XsSample02 = {
       }
     };
 
-    const doSave = async () => {
+    const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I'), uRows = gridRows.filter(r => r._row_status === 'U'), dRows = gridRows.filter(r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) { showToast('변경된 데이터가 없습니다.', 'error'); return; }
       for (const r of [...iRows, ...uRows]) { if (!r.productNm) { showToast('상품명은 필수 항목입니다.', 'error'); return; } }
@@ -175,7 +175,7 @@ window.XsSample02 = {
     const checkAll = ref(false);
     const toggleCheckAll = () => { cfVisibleRows.value.forEach(r => { r._row_check = checkAll.value; }); };
 
-    const statusBadge = s => ({ N: 'background:#f0f0f0;color:#666;', I: 'background:#dbeafe;color:#1e40af;', U: 'background:#fef3c7;color:#92400e;', D: 'background:#fee2e2;color:#991b1b;' }[s] || '');
+    const fnStatusBadge = s => ({ N: 'background:#f0f0f0;color:#666;', I: 'background:#dbeafe;color:#1e40af;', U: 'background:#fef3c7;color:#92400e;', D: 'background:#fee2e2;color:#991b1b;' }[s] || '');
     const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
 
     const cfTotal        = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
@@ -185,9 +185,9 @@ window.XsSample02 = {
       toast, searchKw, searchCategory, searchStatus, CATEGORY_OPTS, onSearch, onReset,
       gridRows, cfVisibleRows, cfTotal, visibleCount, cfHasMore, loadMore, sentinelEl,
       focusedIdx, setFocused, onCellChange,
-      addRow, deleteRow, cancelRow, deleteRows, cancelChecked, doSave,
+      addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
       dragSrc, onDragStart, onDragOver, onDragEnd,
-      checkAll, toggleCheckAll, statusBadge, rowBg,
+      checkAll, toggleCheckAll, fnStatusBadge, rowBg,
     };
   },
   template: /* html */`
@@ -235,7 +235,7 @@ window.XsSample02 = {
         <button @click="addRow"        style="font-size:11px;padding:4px 10px;border:1px solid #34a853;border-radius:5px;background:#e6f4ea;color:#1e7e34;cursor:pointer;font-weight:600;">+ 행추가</button>
         <button @click="deleteRows"    style="font-size:11px;padding:4px 10px;border:1px solid #fca5a5;border-radius:5px;background:#fee2e2;color:#991b1b;cursor:pointer;">행삭제</button>
         <button @click="cancelChecked" style="font-size:11px;padding:4px 10px;border:1px solid #ddd;border-radius:5px;background:#fff;color:#555;cursor:pointer;">취소</button>
-        <button @click="doSave"        style="font-size:11px;padding:4px 10px;border:none;border-radius:5px;background:#e8587a;color:#fff;cursor:pointer;font-weight:600;">저장</button>
+        <button @click="handleSave"        style="font-size:11px;padding:4px 10px;border:none;border-radius:5px;background:#e8587a;color:#fff;cursor:pointer;font-weight:600;">저장</button>
       </div>
     </div>
 
@@ -273,7 +273,7 @@ window.XsSample02 = {
             <td style="text-align:center;color:#ccc;cursor:grab;font-size:14px;">⠿</td>
             <td style="text-align:center;color:#999;font-size:11px;">{{ row.productId > 0 ? row.productId : 'NEW' }}</td>
             <td style="text-align:center;">
-              <span style="font-size:9px;padding:2px 5px;border-radius:8px;font-weight:700;" :style="statusBadge(row._row_status)">{{ row._row_status }}</span>
+              <span style="font-size:9px;padding:2px 5px;border-radius:8px;font-weight:700;" :style="fnStatusBadge(row._row_status)">{{ row._row_status }}</span>
             </td>
             <td style="text-align:center;"><input type="checkbox" v-model="row._row_check" @click.stop /></td>
             <td>

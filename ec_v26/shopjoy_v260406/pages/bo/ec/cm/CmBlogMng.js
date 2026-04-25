@@ -33,7 +33,7 @@ window.CmBlogMng = {
     const pager        = reactive({ page: 1, size: 20 });
     const selectedId   = ref(null);
 
-    const filtered = computed(() => {
+    const cfFiltered = computed(() => {
       const kw = applied.kw.toLowerCase();
       if (!Array.isArray(blogs)) return [];
       return blogs.filter(p => {
@@ -43,12 +43,12 @@ window.CmBlogMng = {
         return true;
       }).sort((a, b) => b.regDate > a.regDate ? 1 : -1);
     });
-    const total      = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums   = computed(() => { const c=pager.page,l=totalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfTotal      = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const selectedRow = computed(() => {
+    const cfSelectedRow = computed(() => {
       if (!Array.isArray(blogs)) return null;
       return blogs.find(p => p.blogId === selectedId.value) || null;
     });
@@ -65,7 +65,7 @@ window.CmBlogMng = {
       selectedId.value = '__new__'; isNew.value = true;
     };
     const closeDetail = () => { selectedId.value = null; };
-    const doSave = async () => {
+    const handleSave = async () => {
       if (!form.blogTitle) { props.showToast('제목은 필수입니다.', 'error'); return; }
       const isNewPost = isNew.value;
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');
@@ -83,15 +83,15 @@ window.CmBlogMng = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
-    const doDelete = async () => {
-      if (!selectedRow.value) return;
-      const ok = await props.showConfirm('삭제', `[${selectedRow.value.blogTitle}]을 삭제하시겠습니까?`);
+    const handleDelete = async () => {
+      if (!cfSelectedRow.value) return;
+      const ok = await props.showConfirm('삭제', `[${cfSelectedRow.value.blogTitle}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const si = bltnPosts.value.findIndex(p => p.blogId === selectedRow.value.blogId);
+      const si = bltnPosts.value.findIndex(p => p.blogId === cfSelectedRow.value.blogId);
       if (si !== -1) bltnPosts.value.splice(si, 1);
       closeDetail();
       try {
-        const res = await window.boApi.delete(`/bo/ec/cm/blog/${selectedRow.value.blogId}`);
+        const res = await window.boApi.delete(`/bo/ec/cm/blog/${cfSelectedRow.value.blogId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -118,12 +118,12 @@ window.CmBlogMng = {
     };
     const onSearch = () => { Object.assign(applied, { kw: searchKw.value, use: searchUse.value, notice: searchNotice.value }); pager.page = 1; };
     const onReset  = () => { searchKw.value = ''; searchUse.value = ''; searchNotice.value = ''; Object.assign(applied, { kw: '', use: '', notice: '' }); pager.page = 1; };
-    const setPage  = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    const ynBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
+    const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { blogs, loading, error, searchKw, searchUse, searchNotice, pager, pageNums, totalPages, setPage, total, pageList, onSearch, onReset,
-             selectedId, selectedRow, form, isNew, openDetail, openNew, closeDetail, doSave, doDelete, toggleUse, ynBadge , PAGE_SIZES , onSizeChange };
+    return { blogs, loading, error, searchKw, searchUse, searchNotice, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
+             selectedId, cfSelectedRow, form, isNew, openDetail, openNew, closeDetail, handleSave, handleDelete, toggleUse, fnYnBadge , PAGE_SIZES , onSizeChange };
   },
   template: `
 <div>
@@ -145,7 +145,7 @@ window.CmBlogMng = {
     <div class="card">
       <div class="toolbar">
         <span class="list-title">게시글 목록</span>
-        <span class="list-count">총 {{ total }}건</span>
+        <span class="list-count">총 {{ cfTotal }}건</span>
         <button class="btn btn-primary btn-sm" style="margin-left:auto" @click="openNew">+ 신규</button>
       </div>
       <table class="bo-table">
@@ -158,7 +158,7 @@ window.CmBlogMng = {
           <th style="width:80px;text-align:center">공개전환</th>
         </tr></thead>
         <tbody>
-          <tr v-for="row in pageList" :key="row?.blogId" :class="{active:selectedId===row.blogId}" @click="openDetail(row)" style="cursor:pointer">
+          <tr v-for="row in cfPageList" :key="row?.blogId" :class="{active:selectedId===row.blogId}" @click="openDetail(row)" style="cursor:pointer">
             <td>
               <span v-if="row.isNotice==='Y'" class="badge badge-orange" style="margin-right:4px;font-size:10px">공지</span>
               <span class="title-link">{{ row.blogTitle }}</span>
@@ -167,13 +167,13 @@ window.CmBlogMng = {
             <td style="font-size:12px">{{ row.blogAuthor }}</td>
             <td style="text-align:right;font-size:12px">{{ (row.viewCount||0).toLocaleString() }}</td>
             <td style="text-align:center"><span :class="['badge',row.isNotice==='Y'?'badge-orange':'badge-gray']">{{ row.isNotice }}</span></td>
-            <td style="text-align:center"><span :class="['badge',ynBadge(row.useYn)]">{{ row.useYn==='Y'?'공개':'비공개' }}</span></td>
+            <td style="text-align:center"><span :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn==='Y'?'공개':'비공개' }}</span></td>
             <td style="font-size:12px">{{ row.regDate }}</td>
             <td style="text-align:center" @click.stop>
               <button :class="['btn','btn-xs',row.useYn==='Y'?'btn-secondary':'btn-green']" @click="toggleUse(row)">{{ row.useYn==='Y'?'비공개':'공개' }}</button>
             </td>
           </tr>
-          <tr v-if="!pageList.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
+          <tr v-if="!cfPageList.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
       <div class="pagination">
@@ -181,9 +181,9 @@ window.CmBlogMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -196,8 +196,8 @@ window.CmBlogMng = {
       <div class="toolbar">
         <span class="list-title">{{ isNew ? '신규 등록' : '상세 / 수정' }}</span>
         <div style="margin-left:auto;display:flex;gap:6px;">
-          <button class="btn btn-blue btn-sm" @click="doSave">저장</button>
-          <button v-if="!isNew" class="btn btn-danger btn-sm" @click="doDelete">삭제</button>
+          <button class="btn btn-blue btn-sm" @click="handleSave">저장</button>
+          <button v-if="!isNew" class="btn btn-danger btn-sm" @click="handleDelete">삭제</button>
           <button class="btn btn-secondary btn-sm" @click="closeDetail">닫기</button>
         </div>
       </div>
