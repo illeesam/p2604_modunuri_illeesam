@@ -178,7 +178,7 @@ window.SyPostman = {
     const activeTabId = ref(null);
     let _tabSeq = 0;
 
-    const activeTab = computed(() => openTabs.find(t => t.tabId === activeTabId.value) || null);
+    const cfActiveTab = computed(() => openTabs.find(t => t.tabId === activeTabId.value) || null);
 
     const makeTab = (node) => {
       const parentLabel = findParentLabel(treeRoot, node.id) || '';
@@ -341,7 +341,7 @@ window.SyPostman = {
     };
 
     const doSend = async (targetTab) => {
-      const tab = targetTab || activeTab.value;
+      const tab = targetTab || cfActiveTab.value;
       if (!tab || !tab.reqUrl?.trim()) return;
       tab.sending = true;
       tab.resJson = ''; tab.resStatus = null; tab.resTime = null; tab.resData = null;
@@ -430,8 +430,8 @@ window.SyPostman = {
     const histResProgress = ref(0);
 
     const resendHist = async () => {
-      if (!activeTab.value) return;
-      const tab = activeTab.value;
+      if (!cfActiveTab.value) return;
+      const tab = cfActiveTab.value;
       tab.reqMethod = editReq.method;
       tab.reqUrl    = editReq.url;
       tab.reqBody   = editReq.body || '';
@@ -461,14 +461,14 @@ window.SyPostman = {
     };
 
     /* ===== Response Grid (active tab) ===== */
-    const resGridCols = computed(() => {
-      const d = activeTab.value?.resData;
+    const cfResGridCols = computed(() => {
+      const d = cfActiveTab.value?.resData;
       if (!d) return [];
       const arr = Array.isArray(d) ? d : Array.isArray(d?.data) ? d.data : Array.isArray(d?.list) ? d.list : null;
       return arr?.length ? Object.keys(arr[0]) : [];
     });
-    const resGridRows = computed(() => {
-      const d = activeTab.value?.resData;
+    const cfResGridRows = computed(() => {
+      const d = cfActiveTab.value?.resData;
       if (!d) return [];
       if (Array.isArray(d)) return d;
       if (Array.isArray(d?.data)) return d.data;
@@ -516,12 +516,12 @@ window.SyPostman = {
     onMounted(() => { fetchData(); });
 
     return {
-      flatTree, treeSearch, toggleNode, selectApiNode, treeLoaded, appFilter, APP_META,
-      openTabs, activeTabId, activeTab, closeTab, closeAllTabs,
+      cfFlatTree, treeSearch, toggleNode, selectApiNode, treeLoaded, appFilter, APP_META,
+      openTabs, activeTabId, cfActiveTab, closeTab, closeAllTabs,
       settingsOpen, hostUrl, token, defHeaders, lsItems, refreshLs,
       toasts, closeToast,
       doSend, history, histSelIdx, histModal, histModalTab, editReq, histResJson, histResSending, histResStatus, histResTime, histResTs, histResProgress, selectHistory, closeHistModal, resendHist,
-      resGridCols, resGridRows,
+      cfResGridCols, cfResGridRows,
       addRow, removeRow, methodStyle, statusStyle, methodDot, quickRun,
       autoPopupTabId, autoPopupPos, POPUP_ROWS, SECS, MINS, HOURS,
       openAutoPopup, closeAutoPopup, selectAuto, countdown,
@@ -552,7 +552,7 @@ window.SyPostman = {
     </div>
     <div style="flex:1;overflow-y:auto;padding:4px 0;">
       <div v-if="!treeLoaded" style="text-align:center;padding:20px;color:#ccc;font-size:11px;">로딩 중…</div>
-      <div v-for="item in flatTree" :key="item.n.id"
+      <div v-for="item in cfFlatTree" :key="item.n.id"
         @click="item.n.type==='req' ? selectApiNode(item.n) : toggleNode(item.n)"
         style="display:flex;align-items:center;gap:3px;padding:3px 6px;cursor:pointer;white-space:nowrap;overflow:hidden;transition:background .1s;user-select:none;"
         :style="'padding-left:'+(6+item.depth*11)+'px;'+(openTabs.some(t=>t.nodeId===item.n.id)?'color:#e8587a;':'')"
@@ -733,38 +733,38 @@ window.SyPostman = {
     </div>
 
     <!-- 탭 없을 때 빈 상태 -->
-    <div v-if="!activeTab" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#ccc;background:#fafafa;">
+    <div v-if="!cfActiveTab" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#ccc;background:#fafafa;">
       <span style="font-size:40px;">🚀</span>
       <div style="font-size:14px;font-weight:600;color:#bbb;">좌측 API Endpoints에서 항목을 선택하세요</div>
       <div style="font-size:11px;color:#ccc;">선택하면 여기에 탭으로 열립니다</div>
     </div>
 
     <!-- 활성 탭 내용 -->
-    <template v-if="activeTab">
+    <template v-if="cfActiveTab">
       <!-- Request Bar -->
       <div style="padding:8px 12px;border-bottom:1px solid #e0e0e0;background:#fff;flex-shrink:0;">
-        <div style="font-size:10px;color:#aaa;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="activeTab.tabLabel">
-          📌 {{ activeTab.tabLabel }}
-          <span v-if="activeTab.desc" style="margin-left:6px;color:#ccc;">— {{ activeTab.desc }}</span>
+        <div style="font-size:10px;color:#aaa;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="cfActiveTab.tabLabel">
+          📌 {{ cfActiveTab.tabLabel }}
+          <span v-if="cfActiveTab.desc" style="margin-left:6px;color:#ccc;">— {{ cfActiveTab.desc }}</span>
         </div>
         <div style="display:flex;gap:6px;align-items:center;">
-          <select v-model="activeTab.reqMethod"
+          <select v-model="cfActiveTab.reqMethod"
             style="font-size:12px;padding:5px 6px;border:1px solid #ddd;border-radius:5px;font-weight:700;width:90px;cursor:pointer;"
-            :style="methodStyle(activeTab.reqMethod)">
+            :style="methodStyle(cfActiveTab.reqMethod)">
             <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option>
           </select>
-          <input v-model="activeTab.reqUrl" placeholder="URL" @keyup.enter="doSend()"
+          <input v-model="cfActiveTab.reqUrl" placeholder="URL" @keyup.enter="doSend()"
             style="flex:1;font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:5px;outline:none;font-family:monospace;min-width:0;" />
-          <button @click="doSend()" :disabled="activeTab.sending"
+          <button @click="doSend()" :disabled="cfActiveTab.sending"
             style="font-size:12px;padding:5px 20px;border:none;border-radius:5px;background:#e8587a;color:#fff;cursor:pointer;font-weight:700;white-space:nowrap;flex-shrink:0;"
-            :style="activeTab.sending?'opacity:.55;cursor:not-allowed;':''">
-            {{ activeTab.sending ? '전송 중…' : '▶ 전송' }}
+            :style="cfActiveTab.sending?'opacity:.55;cursor:not-allowed;':''">
+            {{ cfActiveTab.sending ? '전송 중…' : '▶ 전송' }}
           </button>
-          <span v-if="activeTab.resStatus!==null" style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:5px;flex-shrink:0;"
-            :style="activeTab.resStatus<300?'background:#dcfce7;color:#166534;':activeTab.resStatus<400?'background:#fef3c7;color:#92400e;':'background:#fee2e2;color:#991b1b;'">
-            {{ activeTab.resStatus }}
+          <span v-if="cfActiveTab.resStatus!==null" style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:5px;flex-shrink:0;"
+            :style="cfActiveTab.resStatus<300?'background:#dcfce7;color:#166534;':cfActiveTab.resStatus<400?'background:#fef3c7;color:#92400e;':'background:#fee2e2;color:#991b1b;'">
+            {{ cfActiveTab.resStatus }}
           </span>
-          <span v-if="activeTab.resTime!==null" style="font-size:11px;color:#aaa;flex-shrink:0;">{{ activeTab.resTime }}ms</span>
+          <span v-if="cfActiveTab.resTime!==null" style="font-size:11px;color:#aaa;flex-shrink:0;">{{ cfActiveTab.resTime }}ms</span>
         </div>
       </div>
 
@@ -775,31 +775,31 @@ window.SyPostman = {
         <div style="width:42%;flex-shrink:0;border-right:1px solid #e0e0e0;display:flex;flex-direction:column;overflow:hidden;">
           <div style="display:flex;border-bottom:1px solid #e0e0e0;background:#f8f8f8;flex-shrink:0;">
             <button v-for="t in [{id:'params',nm:'Params'},{id:'headers',nm:'Headers'},{id:'body',nm:'Body'}]" :key="t.id"
-              @click="activeTab.reqTab=t.id"
+              @click="cfActiveTab.reqTab=t.id"
               style="padding:5px 13px;font-size:11px;border:none;cursor:pointer;font-weight:600;border-bottom:2px solid transparent;transition:all .12s;"
-              :style="activeTab.reqTab===t.id?'background:#fff;border-bottom-color:#e8587a;color:#e8587a;':'background:transparent;color:#999;'">
+              :style="cfActiveTab.reqTab===t.id?'background:#fff;border-bottom-color:#e8587a;color:#e8587a;':'background:transparent;color:#999;'">
               {{ t.nm }}
             </button>
           </div>
           <div style="flex:1;overflow-y:auto;padding:8px;">
-            <template v-if="activeTab.reqTab==='params'">
-              <div v-for="(p,i) in activeTab.reqParams" :key="i" style="display:flex;gap:4px;margin-bottom:4px;align-items:center;">
+            <template v-if="cfActiveTab.reqTab==='params'">
+              <div v-for="(p,i) in cfActiveTab.reqParams" :key="i" style="display:flex;gap:4px;margin-bottom:4px;align-items:center;">
                 <input v-model="p.k" placeholder="Key"   style="flex:1;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #ddd;border-radius:3px;outline:none;" />
                 <input v-model="p.v" placeholder="Value" style="flex:1;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #ddd;border-radius:3px;outline:none;" />
-                <button @click="removeRow(activeTab.reqParams,i)" style="font-size:10px;padding:3px 6px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">✕</button>
+                <button @click="removeRow(cfActiveTab.reqParams,i)" style="font-size:10px;padding:3px 6px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">✕</button>
               </div>
-              <button @click="addRow(activeTab.reqParams)" style="font-size:10px;padding:3px 10px;border:1px dashed #ccc;border-radius:3px;background:#f9f9f9;color:#666;cursor:pointer;">+ 추가</button>
+              <button @click="addRow(cfActiveTab.reqParams)" style="font-size:10px;padding:3px 10px;border:1px dashed #ccc;border-radius:3px;background:#f9f9f9;color:#666;cursor:pointer;">+ 추가</button>
             </template>
-            <template v-if="activeTab.reqTab==='headers'">
-              <div v-for="(h,i) in activeTab.reqHeaders" :key="i" style="display:flex;gap:4px;margin-bottom:4px;align-items:center;">
+            <template v-if="cfActiveTab.reqTab==='headers'">
+              <div v-for="(h,i) in cfActiveTab.reqHeaders" :key="i" style="display:flex;gap:4px;margin-bottom:4px;align-items:center;">
                 <input v-model="h.k" placeholder="Key"   style="flex:1;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #ddd;border-radius:3px;outline:none;" />
                 <input v-model="h.v" placeholder="Value" style="flex:1;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #ddd;border-radius:3px;outline:none;" />
-                <button @click="removeRow(activeTab.reqHeaders,i)" style="font-size:10px;padding:3px 6px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">✕</button>
+                <button @click="removeRow(cfActiveTab.reqHeaders,i)" style="font-size:10px;padding:3px 6px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">✕</button>
               </div>
-              <button @click="addRow(activeTab.reqHeaders)" style="font-size:10px;padding:3px 10px;border:1px dashed #ccc;border-radius:3px;background:#f9f9f9;color:#666;cursor:pointer;">+ 추가</button>
+              <button @click="addRow(cfActiveTab.reqHeaders)" style="font-size:10px;padding:3px 10px;border:1px dashed #ccc;border-radius:3px;background:#f9f9f9;color:#666;cursor:pointer;">+ 추가</button>
             </template>
-            <template v-if="activeTab.reqTab==='body'">
-              <textarea v-model="activeTab.reqBody" placeholder='{\n  "key": "value"\n}'
+            <template v-if="cfActiveTab.reqTab==='body'">
+              <textarea v-model="cfActiveTab.reqBody" placeholder='{\n  "key": "value"\n}'
                 style="width:100%;box-sizing:border-box;font-size:11px;font-family:monospace;padding:7px 8px;border:1px solid #ddd;border-radius:4px;outline:none;resize:vertical;line-height:1.55;min-height:180px;"></textarea>
             </template>
           </div>
@@ -809,40 +809,40 @@ window.SyPostman = {
         <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">
           <div style="display:flex;border-bottom:1px solid #e0e0e0;background:#f8f8f8;flex-shrink:0;align-items:center;">
             <button v-for="t in [{id:'json',nm:'응답 JSON'},{id:'grid',nm:'Grid'}]" :key="t.id"
-              @click="activeTab.resTab=t.id"
+              @click="cfActiveTab.resTab=t.id"
               style="padding:5px 13px;font-size:11px;border:none;cursor:pointer;font-weight:600;border-bottom:2px solid transparent;transition:all .12s;"
-              :style="activeTab.resTab===t.id?'background:#fff;border-bottom-color:#1a73e8;color:#1a73e8;':'background:transparent;color:#999;'">
+              :style="cfActiveTab.resTab===t.id?'background:#fff;border-bottom-color:#1a73e8;color:#1a73e8;':'background:transparent;color:#999;'">
               {{ t.nm }}
-              <span v-if="t.id==='grid'&&resGridRows.length" style="font-size:9px;background:#e8f0fe;color:#1a73e8;padding:1px 5px;border-radius:8px;margin-left:3px;">{{ resGridRows.length }}</span>
+              <span v-if="t.id==='grid'&&cfResGridRows.length" style="font-size:9px;background:#e8f0fe;color:#1a73e8;padding:1px 5px;border-radius:8px;margin-left:3px;">{{ cfResGridRows.length }}</span>
             </button>
-            <span v-if="activeTab.sending" style="margin-left:auto;padding:0 12px;font-size:11px;color:#aaa;">전송 중…</span>
+            <span v-if="cfActiveTab.sending" style="margin-left:auto;padding:0 12px;font-size:11px;color:#aaa;">전송 중…</span>
           </div>
           <div style="flex:1;overflow:auto;padding:8px;">
-            <template v-if="activeTab.resTab==='json'">
-              <pre v-if="activeTab.resJson" style="font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;margin:0;color:#333;line-height:1.55;">{{ activeTab.resJson }}</pre>
+            <template v-if="cfActiveTab.resTab==='json'">
+              <pre v-if="cfActiveTab.resJson" style="font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;margin:0;color:#333;line-height:1.55;">{{ cfActiveTab.resJson }}</pre>
               <div v-else style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100px;color:#ccc;gap:6px;">
                 <span style="font-size:22px;">📭</span>
                 <span style="font-size:12px;">응답이 여기에 표시됩니다</span>
               </div>
             </template>
-            <template v-if="activeTab.resTab==='grid'">
-              <div v-if="!resGridRows.length" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100px;color:#ccc;gap:6px;">
+            <template v-if="cfActiveTab.resTab==='grid'">
+              <div v-if="!cfResGridRows.length" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100px;color:#ccc;gap:6px;">
                 <span style="font-size:22px;">📊</span>
-                <span style="font-size:12px;">{{ activeTab.resData ? 'Array 데이터가 없습니다' : '응답이 여기에 표시됩니다' }}</span>
+                <span style="font-size:12px;">{{ cfActiveTab.resData ? 'Array 데이터가 없습니다' : '응답이 여기에 표시됩니다' }}</span>
               </div>
               <div v-else style="overflow-x:auto;">
-                <div style="font-size:10px;color:#aaa;margin-bottom:5px;">총 {{ resGridRows.length }}건</div>
+                <div style="font-size:10px;color:#aaa;margin-bottom:5px;">총 {{ cfResGridRows.length }}건</div>
                 <table style="width:100%;border-collapse:collapse;font-size:11px;">
                   <thead>
                     <tr style="background:#f8f9fa;border-bottom:2px solid #e0e0e0;">
                       <th style="padding:4px 6px;text-align:center;width:30px;color:#ccc;font-size:10px;font-weight:400;">#</th>
-                      <th v-for="col in resGridCols" :key="col" style="padding:4px 8px;text-align:left;font-weight:600;color:#555;white-space:nowrap;font-size:11px;">{{ col }}</th>
+                      <th v-for="col in cfResGridCols" :key="col" style="padding:4px 8px;text-align:left;font-weight:600;color:#555;white-space:nowrap;font-size:11px;">{{ col }}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(row,i) in resGridRows" :key="i" style="border-bottom:1px solid #f5f5f5;">
+                    <tr v-for="(row,i) in cfResGridRows" :key="i" style="border-bottom:1px solid #f5f5f5;">
                       <td style="text-align:center;padding:3px 6px;color:#ddd;font-size:10px;">{{ i+1 }}</td>
-                      <td v-for="col in resGridCols" :key="col" style="padding:3px 8px;color:#333;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis;" :title="String(row[col])">{{ row[col] }}</td>
+                      <td v-for="col in cfResGridCols" :key="col" style="padding:3px 8px;color:#333;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis;" :title="String(row[col])">{{ row[col] }}</td>
                     </tr>
                   </tbody>
                 </table>

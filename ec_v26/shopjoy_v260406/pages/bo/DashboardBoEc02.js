@@ -64,13 +64,13 @@
       };
       const isSel = (list, v) => list.includes(v);
 
-      const doSearch = () => {
+      const onSearch = () => {
         console.log('[대시보드 검색]', JSON.parse(JSON.stringify(filters)));
       };
       const doExcelDownload = () => {
         const rows = [['월','매출','가입','탈퇴','클릭','주문완료']];
-        monthLabels.value.forEach((m, i) => {
-          rows.push([m, monthlySales.value[i], monthlyJoin.value[i], monthlyLeave.value[i], monthlyClicks.value[i], monthlyOrders.value[i]]);
+        cfMonthLabels.value.forEach((m, i) => {
+          rows.push([m, cfMonthlySales.value[i], cfMonthlyJoin.value[i], cfMonthlyLeave.value[i], cfMonthlyClicks.value[i], cfMonthlyOrders.value[i]]);
         });
         const csv = rows.map(r => r.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
         const blob = new Blob(['﻿'+csv], { type: 'text/csv;charset=utf-8;' });
@@ -81,7 +81,7 @@
         a.click();
         URL.revokeObjectURL(url);
       };
-      const resetFilters = () => {
+      const onReset = () => {
         filters.startDt = startDef;
         filters.endDt   = endDef;
         filters.channels    = [...CHANNELS];
@@ -119,17 +119,17 @@
         { key: '3col', icon: '▭▭▭', label: '3열' },
         { key: '4col', icon: '▭▭▭▭', label: '4열' },
       ];
-      const gridCols = computed(() => {
+      const cfGridCols = computed(() => {
         if (viewMode.value === 'tab') return '1fr';
         return 'repeat(' + parseInt(viewMode.value) + ',minmax(0,1fr))';
       });
       const showPanel = (key) => viewMode.value === 'tab' ? activeTab.value === key : true;
 
       /* ── 보조 대시보드 (원본 KPI 섹션) ── */
-      const totalSales    = computed(() => monthlySales.value.reduce((a,b)=>a+b,0));
-      const totalQtyComp  = computed(() => monthlyOrders.value.reduce((a,b)=>a+b,0));
+      const cfTotalSales    = computed(() => cfMonthlySales.value.reduce((a,b)=>a+b,0));
+      const cfTotalQtyComp  = computed(() => cfMonthlyOrders.value.reduce((a,b)=>a+b,0));
       const marginRate    = 7.7;
-      const avgOrderValue = computed(() => Math.round(totalSales.value / Math.max(totalQtyComp.value, 1)));
+      const cfAvgOrderValue = computed(() => Math.round(cfTotalSales.value / Math.max(cfTotalQtyComp.value, 1)));
 
       const topProducts = [
         { name: '오버사이즈 코트', value: 1495000 },
@@ -168,7 +168,7 @@
         { label: '신규회원', value: 65 }, { label: '재구매', value: 78 },
         { label: '만족도', value: 88 },
       ];
-      const radarPath = computed(() => {
+      const cfRadarPath = computed(() => {
         const cx = 100, cy = 100, R = 70;
         return radarValues.map((v, i) => {
           const a = (i / radarValues.length) * Math.PI * 2 - Math.PI / 2;
@@ -176,7 +176,7 @@
           return `${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`;
         }).join(' ');
       });
-      const radarAxes = computed(() => {
+      const cfRadarAxes = computed(() => {
         const cx = 100, cy = 100, R = 70;
         return radarValues.map((v, i) => {
           const a = (i / radarValues.length) * Math.PI * 2 - Math.PI / 2;
@@ -202,7 +202,7 @@
       const pct = n => (Math.round(n * 10) / 10).toFixed(1) + '%';
 
       /* ── 월별 레이블 (14개월) ── */
-      const monthLabels = computed(() => {
+      const cfMonthLabels = computed(() => {
         try {
           const s = new Date(filters.startDt);
           const e = new Date(filters.endDt);
@@ -219,7 +219,7 @@
       });
 
       /* ── 필터 강도 계수 (0~1) — 필터를 줄일수록 값 감소 ── */
-      const filterFactor = computed(() => {
+      const cfFilterFactor = computed(() => {
         const ratio = (list, all) => list.length === 0 ? 0 : list.length / all.length;
         return (
           ratio(filters.channels,    CHANNELS) *
@@ -242,16 +242,16 @@
       };
 
       /* 1) 월별 매출현황 */
-      const monthlySales = computed(() =>
-        seededBase(137, monthLabels.value.length, 80000000, 180000000).map(v => Math.round(v * filterFactor.value))
+      const cfMonthlySales = computed(() =>
+        seededBase(137, cfMonthLabels.value.length, 80000000, 180000000).map(v => Math.round(v * cfFilterFactor.value))
       );
       /* 2) 월별 고객 가입/탈퇴 */
-      const monthlyJoin   = computed(() => seededBase(211, monthLabels.value.length, 180, 520).map(v => Math.round(v * filterFactor.value)));
-      const monthlyLeave  = computed(() => seededBase(431, monthLabels.value.length, 30, 180).map(v => Math.round(v * filterFactor.value)));
+      const cfMonthlyJoin   = computed(() => seededBase(211, cfMonthLabels.value.length, 180, 520).map(v => Math.round(v * cfFilterFactor.value)));
+      const cfMonthlyLeave  = computed(() => seededBase(431, cfMonthLabels.value.length, 30, 180).map(v => Math.round(v * cfFilterFactor.value)));
       /* 3) 월별 상품상세 클릭 */
-      const monthlyClicks = computed(() => seededBase(719, monthLabels.value.length, 12000, 46000).map(v => Math.round(v * filterFactor.value)));
+      const cfMonthlyClicks = computed(() => seededBase(719, cfMonthLabels.value.length, 12000, 46000).map(v => Math.round(v * cfFilterFactor.value)));
       /* 4) 월별 주문완료 */
-      const monthlyOrders = computed(() => seededBase(983, monthLabels.value.length, 850, 2800).map(v => Math.round(v * filterFactor.value)));
+      const cfMonthlyOrders = computed(() => seededBase(983, cfMonthLabels.value.length, 850, 2800).map(v => Math.round(v * cfFilterFactor.value)));
 
       /* 5) 월별 판매채널별 매출 (선택된 채널만) */
       const CHANNEL_COLORS = {
@@ -259,8 +259,8 @@
         'G마켓':'#3b82f6', 'Auction':'#6366f1', 'GS샵':'#a855f7', 'TMON':'#e11d48',
         '위메프':'#f59e0b', '롯데온':'#9333ea', '홈앤쇼핑':'#0891b2', '현대H몰':'#c2410c',
       };
-      const channelMonthly = computed(() => {
-        const months = monthLabels.value.length;
+      const cfChannelMonthly = computed(() => {
+        const months = cfMonthLabels.value.length;
         const subFactor =
           (filters.ages.length / AGES.length) *
           (filters.genders.length / GENDERS.length) *
