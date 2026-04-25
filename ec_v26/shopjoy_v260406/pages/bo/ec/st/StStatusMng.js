@@ -97,7 +97,7 @@ window.StStatusMng = {
     const vendorPager     = reactive({ page: 1, size: 10 });
 
     const cfVendorRows = computed(() => {
-      const filteredOrders = window.safeArrayUtils.safeFilter(cfOrders, o => inRange(o.orderDate) && o.status !== '취소됨');
+      const filteredOrders = window.safeArrayUtils.safeFilter(cfOrders.value, o => inRange(o.orderDate) && o.status !== '취소됨');
       return cfVendors.value.map(v => {
         const vOrders = window.safeArrayUtils.safeFilter(filteredOrders, o => o.vendorId === v.vendorId);
         const sales   = vOrders.reduce((s, o) => s + (o.totalPrice || 0), 0);
@@ -123,7 +123,7 @@ window.StStatusMng = {
 
     const cfOrderRows = computed(() => {
       const kw = uiState.orderSearchKw.trim().toLowerCase();
-      return window.safeArrayUtils.safeFilter(cfOrders, o => {
+      return window.safeArrayUtils.safeFilter(cfOrders.value, o => {
         if (!inRange(o.orderDate)) return false;
         if (uiState.orderSearchStatus && o.status !== uiState.orderSearchStatus) return false;
         if (kw && !o.orderId.toLowerCase().includes(kw) && !o.userNm.toLowerCase().includes(kw) && !o.prodNm.toLowerCase().includes(kw)) return false;
@@ -140,7 +140,7 @@ window.StStatusMng = {
     const cfOrderPages = computed(() => Math.max(1, Math.ceil(cfOrderTotal.value / orderPager.size)));
     const cfOrderPageList = computed(() => cfOrderRows.value.slice((orderPager.page - 1) * orderPager.size, orderPager.page * orderPager.size));
     const cfOrderSummary  = computed(() => {
-      const valid = window.safeArrayUtils.safeFilter(cfOrderRows, r => !r.isCancelled);
+      const valid = window.safeArrayUtils.safeFilter(cfOrderRows.value, r => !r.isCancelled);
       return { cnt: valid.length, sales: valid.reduce((s, r) => s + r.totalPrice, 0), comm: valid.reduce((s, r) => s + r.comm, 0), settle: valid.reduce((s, r) => s + r.settle, 0) };
     });
 
@@ -151,7 +151,7 @@ window.StStatusMng = {
         const claimPager        = reactive({ page: 1, size: 10 });
 
     const cfClaimRows = computed(() => {
-      return window.safeArrayUtils.safeFilter(cfClaims, c => {
+      return window.safeArrayUtils.safeFilter(cfClaims.value, c => {
         if (!inRange(c.requestDate)) return false;
         if (uiState.claimSearchType   && c.type   !== uiState.claimSearchType)   return false;
         if (uiState.claimSearchStatus && c.status !== uiState.claimSearchStatus) return false;
