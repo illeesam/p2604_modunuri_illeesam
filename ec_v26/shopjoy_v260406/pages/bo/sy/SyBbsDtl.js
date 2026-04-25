@@ -105,13 +105,13 @@ window.SyBbsDtl = {
     onBeforeUnmount(() => { quill = null; });
 
     /* ── 첨부 허용 개수 ── */
-    const attachMaxCount = computed(() => {
+    const cfAttachMaxCount = computed(() => {
       const map = { '불가': 0, '1개': 1, '2개': 2, '3개': 3, '목록': 10 };
-      return map[allowAttach.value] ?? 0;
+      return map[cfAllowAttach.value] ?? 0;
     });
 
     /* ── 저장 ── */
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
@@ -120,18 +120,18 @@ window.SyBbsDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (isNew.value) {
+      if (cfIsNew.value) {
         bbss.unshift({ ...form, bbmId: Number(form.bbmId), bbsId: nextId.value(bbss, 'bbsId'), viewCount: 0, commentCount: 0, regDate: new Date().toISOString().slice(0, 10) });
       } else {
         const idx = bbss.findIndex(x => x.bbsId === props.editId);
         if (idx !== -1) Object.assign(bbss[idx], { ...form, bbmId: Number(form.bbmId) });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`/bo/sy/bbs/${form.bbsId}`, { ...form }) : window.boApi.put(`/bo/sy/bbs/${form.bbsId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/bbs/${form.bbsId}`, { ...form }) : window.boApi.put(`/bo/sy/bbs/${form.bbsId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syBbsMng');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -140,18 +140,18 @@ window.SyBbsDtl = {
       }
     };
 
-    return { bbss, loading, error, isNew, form, errors, selectedBbm, contentType, allowAttach, attachMaxCount,
-      showBbmModal, showBbmDetail, onBbmSelect, save, siteNm,
+    return { bbss, loading, error, cfIsNew, form, errors, selectedBbm, cfContentType, cfAllowAttach, cfAttachMaxCount,
+      showBbmModal, showBbmDetail, onBbmSelect, handleSave, cfSiteNm,
     };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '게시글 등록' : (viewMode ? '게시글 상세' : '게시글 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.bbsId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '게시글 등록' : (viewMode ? '게시글 상세' : '게시글 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.bbsId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ siteNm }}</div>
+        <div class="readonly-field">{{ cfSiteNm }}</div>
       </div>
     </div>
 
@@ -160,7 +160,7 @@ window.SyBbsDtl = {
       <label class="form-label">게시판 <span v-if="!viewMode" class="req">*</span></label>
       <div style="display:flex;align-items:center;gap:8px;">
         <!-- 신규: 선택 버튼 -->
-        <template v-if="isNew && !viewMode">
+        <template v-if="cfIsNew && !viewMode">
           <button class="btn btn-secondary btn-sm" type="button" @click="showBbmModal=true">📋 게시판 선택</button>
           <button v-if="selectedBbm" class="btn btn-blue btn-sm" type="button" @click="showBbmDetail=true" title="게시판 상세보기">🔍</button>
         </template>
@@ -205,25 +205,25 @@ window.SyBbsDtl = {
       <label class="form-label">내용</label>
       <div style="color:#bbb;font-size:13px;padding:12px 0;">게시판을 먼저 선택하세요.</div>
     </div>
-    <div v-else-if="contentType==='불가'" class="form-group">
+    <div v-else-if="cfContentType==='불가'" class="form-group">
       <label class="form-label">내용</label>
       <div style="color:#bbb;font-size:13px;padding:12px 0;">이 게시판은 내용 입력을 지원하지 않습니다.</div>
     </div>
-    <div v-else-if="contentType==='textarea'" class="form-group">
+    <div v-else-if="cfContentType==='textarea'" class="form-group">
       <label class="form-label">내용</label>
       <textarea class="form-control" v-model="form.contentHtml" rows="8" placeholder="게시글 내용을 입력하세요." :readonly="viewMode"></textarea>
     </div>
-    <div v-else-if="contentType==='htmleditor'" class="form-group">
+    <div v-else-if="cfContentType==='htmleditor'" class="form-group">
       <label class="form-label">내용</label>
       <div v-if="viewMode" class="form-control" style="min-height:300px;line-height:1.6;" v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
       <div v-else id="bbs-editor" style="min-height:300px;background:#fff;"></div>
     </div>
 
     <!-- 첨부파일 -->
-    <div v-if="selectedBbm && attachMaxCount > 0" class="form-group">
+    <div v-if="selectedBbm && cfAttachMaxCount > 0" class="form-group">
       <label class="form-label">
         첨부파일
-        <span style="font-size:11px;font-weight:400;color:#bbb;margin-left:4px;">({{ allowAttach }})</span>
+        <span style="font-size:11px;font-weight:400;color:#bbb;margin-left:4px;">({{ cfAllowAttach }})</span>
         <span v-if="form.attachGrpId" style="font-size:11px;font-weight:400;color:#aaa;margin-left:6px;">첨부그룹ID: {{ form.attachGrpId }}</span>
       </label>
       <base-attach-grp
@@ -232,12 +232,12 @@ window.SyBbsDtl = {
         :show-toast="showToast"
         grp-code="BBS_ATTACH"
         grp-name="게시글 첨부파일"
-        :max-count="attachMaxCount"
+        :max-count="cfAttachMaxCount"
         :max-size-mb="10"
         allow-ext="*"
       />
     </div>
-    <div v-else-if="selectedBbm && allowAttach==='불가'" class="form-group">
+    <div v-else-if="selectedBbm && cfAllowAttach==='불가'" class="form-group">
       <label class="form-label">첨부파일</label>
       <div style="color:#bbb;font-size:13px;padding:4px 0;">이 게시판은 첨부파일을 지원하지 않습니다.</div>
     </div>
@@ -248,7 +248,7 @@ window.SyBbsDtl = {
         <button class="btn btn-secondary" @click="navigate('syBbsMng')">닫기</button>
       </template>
       <template v-else>
-        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('syBbsMng')">취소</button>
       </template>
     </div>

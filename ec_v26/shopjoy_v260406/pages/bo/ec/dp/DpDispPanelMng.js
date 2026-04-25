@@ -445,7 +445,7 @@ window.DpDispPanelMng = {
   <div class="card" style="width:240px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid #f0f0f0;margin-bottom:8px;">
       <span style="font-size:12px;font-weight:700;color:#555;">표시경로</span>
-      <span style="font-size:10px;color:#aaa;">{{ panelTree.length }}그룹</span>
+      <span style="font-size:10px;color:#aaa;">{{ cfPanelTree.length }}그룹</span>
     </div>
     <div style="display:flex;gap:4px;margin-bottom:8px;">
       <button @click="expandAll" style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">▼ 전체펼치기</button>
@@ -524,7 +524,7 @@ window.DpDispPanelMng = {
   <div style="flex:1;min-width:0;">
   <div class="card">
     <div class="toolbar">
-      <span class="list-title">전시패널 목록 <span class="list-count">{{ total }}건</span></span>
+      <span class="list-title">전시패널 목록 <span class="list-count">{{ cfTotal }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -541,8 +541,8 @@ window.DpDispPanelMng = {
         </tr>
       </thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <template v-for="(d, pageIdx) in pageList" :key="d?.dispId">
+        <tr v-if="cfPageList.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <template v-for="(d, pageIdx) in cfPageList" :key="d?.dispId">
           <tr draggable="true"
             @dragstart="onPanelDragStart($event, pageIdx)"
             @dragover="onPanelDragOver($event, pageIdx)"
@@ -566,7 +566,7 @@ window.DpDispPanelMng = {
                   {{ d.name }}
                   <span v-if="selectedId===d.dispId" style="font-size:10px;margin-left:3px;">▼</span>
                 </span>
-                <span class="badge" :class="statusBadge(d.status)" style="font-size:11px;margin-left:8px;">{{ d.status }}</span>
+                <span class="badge" :class="fnStatusBadge(d.status)" style="font-size:11px;margin-left:8px;">{{ d.status }}</span>
               </div>
               <!-- label:value 라인 -->
               <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
@@ -607,14 +607,14 @@ window.DpDispPanelMng = {
                 </span>
                 <span><b style="color:#888;">등록일:</b> {{ d.regDate || '-' }}</span>
                 <span><b style="color:#888;">사이트:</b>
-                  <span style="background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:0 6px;margin-left:3px;">{{ siteNm }}</span>
+                  <span style="background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:0 6px;margin-left:3px;">{{ cfSiteNm }}</span>
                 </span>
               </div>
             </td>
             <td style="vertical-align:top;padding-top:10px;">
               <div class="actions" style="justify-content:flex-end;">
                 <button class="btn btn-blue btn-sm" @click="loadDetail(d.dispId)">수정</button>
-                <button class="btn btn-danger btn-sm" @click="doDelete(d)">삭제</button>
+                <button class="btn btn-danger btn-sm" @click="handleDelete(d)">삭제</button>
               </div>
             </td>
           </tr>
@@ -676,9 +676,9 @@ window.DpDispPanelMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -703,7 +703,7 @@ window.DpDispPanelMng = {
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
-      :edit-id="detailEditId"
+      :edit-id="cfDetailEditId"
     />
   </div>
 

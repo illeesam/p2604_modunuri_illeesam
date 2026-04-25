@@ -26,7 +26,7 @@ window.SySiteDtl = {
       }
     };
     onMounted(() => { fetchData(); });
-    const isNew = computed(() => props.editId === null || props.editId === undefined);
+    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
 
     const SITE_TYPES = ['이커머스', '숙박공유', '전문가연결', 'IT매칭', '부동산', '교육', '중고거래', '영화예매', '음식배달', '가격비교', '시각화', '홈페이지', '기타'];
 
@@ -47,7 +47,7 @@ window.SySiteDtl = {
     });
 
     onMounted(() => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const s = sites.find(x => x.siteId === props.editId);
         if (s) Object.assign(form, { ...s });
       } else {
@@ -74,7 +74,7 @@ window.SySiteDtl = {
       document.head.appendChild(s);
     };
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
@@ -83,18 +83,18 @@ window.SySiteDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (isNew.value) {
+      if (cfIsNew.value) {
         sites.push({ ...form, siteId: nextId.value(sites, 'siteId'), regDate: new Date().toISOString().slice(0, 10) });
       } else {
         const idx = sites.findIndex(x => x.siteId === props.editId);
         if (idx !== -1) Object.assign(sites[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`/bo/sy/site`, { ...form }) : window.boApi.put(`/bo/sy/site/${form.siteId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/site`, { ...form }) : window.boApi.put(`/bo/sy/site/${form.siteId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('sySiteMng');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -103,11 +103,11 @@ window.SySiteDtl = {
       }
     };
 
-    return { sites, loading, error, isNew, form, errors, save, SITE_TYPES, addrDetailRef, openKakaoPostcode };
+    return { sites, loading, error, cfIsNew, form, errors, handleSave, SITE_TYPES, addrDetailRef, openKakaoPostcode };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '사이트 등록' : (viewMode ? '사이트 상세' : '사이트 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.siteId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '사이트 등록' : (viewMode ? '사이트 상세' : '사이트 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.siteId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
@@ -200,7 +200,7 @@ window.SySiteDtl = {
         <button class="btn btn-secondary" @click="navigate('sySiteMng')">닫기</button>
       </template>
       <template v-else>
-        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('sySiteMng')">취소</button>
       </template>
     </div>

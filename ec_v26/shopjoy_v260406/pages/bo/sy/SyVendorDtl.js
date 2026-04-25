@@ -26,8 +26,8 @@ window.SyVendorDtl = {
       }
     };
     onMounted(() => { loadData(); });
-    const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const form = reactive({
       vendorId: null, vendorType: '판매업체', vendorNm: '', ceo: '', bizNo: '', phone: '', email: '',
@@ -46,7 +46,7 @@ window.SyVendorDtl = {
     });
 
     const initForm = async () => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const v = vendors.find(x => x.vendorId === props.editId);
         if (v) Object.assign(form, { ...v });
       }
@@ -83,7 +83,7 @@ window.SyVendorDtl = {
       document.head.appendChild(s);
     };
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
@@ -92,18 +92,18 @@ window.SyVendorDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (isNew.value) {
+      if (cfIsNew.value) {
         vendors.push({ ...form, vendorId: nextId.value(vendors, 'vendorId') });
       } else {
         const idx = vendors.findIndex(x => x.vendorId === props.editId);
         if (idx !== -1) Object.assign(vendors[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`/bo/sy/vendor`, { ...form }) : window.boApi.put(`/bo/sy/vendor/${form.vendorId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/vendor`, { ...form }) : window.boApi.put(`/bo/sy/vendor/${form.vendorId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syVendorMng');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -112,16 +112,16 @@ window.SyVendorDtl = {
       }
     };
 
-    return { vendors, loading, error, isNew, form, errors, save, siteNm, addrDetailRef, openKakaoPostcode, memoEl };
+    return { vendors, loading, error, cfIsNew, form, errors, handleSave, cfSiteNm, addrDetailRef, openKakaoPostcode, memoEl };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '업체 등록' : (viewMode ? '업체 상세' : '업체 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.vendorId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '업체 등록' : (viewMode ? '업체 상세' : '업체 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.vendorId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ siteNm }}</div>
+        <div class="readonly-field">{{ cfSiteNm }}</div>
       </div>
     </div>
     <div class="form-row">
@@ -199,7 +199,7 @@ window.SyVendorDtl = {
         <button class="btn btn-secondary" @click="navigate('syVendorMng')">닫기</button>
       </template>
       <template v-else>
-        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('syVendorMng')">취소</button>
       </template>
     </div>

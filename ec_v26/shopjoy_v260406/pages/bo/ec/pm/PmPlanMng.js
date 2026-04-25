@@ -205,7 +205,7 @@ window.PmPlanMng = {
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
           <button class="btn btn-blue btn-sm" @click="loadDetail(p.planId)" style="font-size:11px;padding:4px 12px;">수정</button>
-          <button class="btn btn-danger btn-sm" @click="doDelete(p)" style="font-size:11px;padding:4px 12px;">삭제</button>
+          <button class="btn btn-danger btn-sm" @click="handleDelete(p)" style="font-size:11px;padding:4px 12px;">삭제</button>
           <span style="font-size:11px;color:#999;margin-left:auto;">#{{ p.planId }}</span>
         </div>
       </div>
@@ -215,9 +215,9 @@ window.PmPlanMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -238,9 +238,9 @@ window.PmPlanMng = {
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
-      :edit-id="detailEditId"
+      :edit-id="cfDetailEditId"
     />
   </div>
 </div>
 `
-}
+};

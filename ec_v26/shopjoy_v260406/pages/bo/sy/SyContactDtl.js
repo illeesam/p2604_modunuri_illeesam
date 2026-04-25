@@ -27,8 +27,8 @@ window.SyContactDtl = {
       }
     };
     onMounted(() => { loadData(); });
-    const isNew = computed(() => !props.editId);
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfIsNew = computed(() => !props.editId);
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const tab = ref(window._syContactDtlState.tab || 'content');
     watch(tab, v => { window._syContactDtlState.tab = v; });
     const viewMode2 = ref(window._syContactDtlState.viewMode || 'tab');
@@ -92,15 +92,15 @@ window.SyContactDtl = {
     };
 
     /* 같은 회원의 다른 문의 */
-    const memberContacts = computed(() =>
+    const cfMemberContacts = computed(() =>
       contacts.filter(c => String(c.userId) === String(form.userId) && c.inquiryId !== props.editId)
     );
 
-    const statusBadge = s => ({
+    const fnStatusBadge = s => ({
       '요청': 'badge-orange', '처리중': 'badge-blue', '답변완료': 'badge-green', '취소됨': 'badge-gray'
     }[s] || 'badge-gray');
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
@@ -109,18 +109,18 @@ window.SyContactDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (isNew.value) {
+      if (cfIsNew.value) {
         contacts.push({ ...form, inquiryId: nextId.value(contacts, 'inquiryId'), userId: Number(form.userId), date: form.date || new Date().toISOString().slice(0, 16).replace('T', ' ') });
       } else {
         const idx = contacts.findIndex(x => x.inquiryId === props.editId);
         if (idx !== -1) Object.assign(contacts[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`/bo/sy/contact/${form.inquiryId}`, { ...form }) : window.boApi.put(`/bo/sy/contact/${form.inquiryId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/contact/${form.inquiryId}`, { ...form }) : window.boApi.put(`/bo/sy/contact/${form.inquiryId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syContactMng');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -130,7 +130,7 @@ window.SyContactDtl = {
     };
 
     const saveAnswer = () => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const idx = contacts.findIndex(x => x.inquiryId === props.editId);
         if (idx !== -1) {
           contacts[idx].answer = form.answer;
@@ -140,23 +140,23 @@ window.SyContactDtl = {
       props.showToast('답변이 저장되었습니다.');
     };
 
-    return { contacts, loading, error, isNew, tab, viewMode2, showTab, form, errors, memberContacts, statusBadge, save, saveAnswer, onUserIdChange, siteNm, contentEl, answerEl };
+    return { contacts, loading, error, cfIsNew, tab, viewMode2, showTab, form, errors, cfMemberContacts, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm, contentEl, answerEl };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '문의 등록' : (viewMode ? '문의 상세' : '문의 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.inquiryId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '문의 등록' : (viewMode ? '문의 상세' : '문의 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.inquiryId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ siteNm }}</div>
+        <div class="readonly-field">{{ cfSiteNm }}</div>
       </div>
     </div>
     <div class="tab-bar-row">
       <div class="tab-nav">
         <button class="tab-btn" :class="{active:tab==='content'}" :disabled="viewMode2!=='tab'" @click="tab='content'">📋 문의 내용</button>
         <button class="tab-btn" :class="{active:tab==='answer'}"  :disabled="viewMode2!=='tab'" @click="tab='answer'">💬 답변</button>
-        <button v-if="!isNew && form.userId" class="tab-btn" :class="{active:tab==='history'}" :disabled="viewMode2!=='tab'" @click="tab='history'">🕒 회원 문의 이력 <span class="tab-count">{{ memberContacts.length }}</span></button>
+        <button v-if="!cfIsNew && form.userId" class="tab-btn" :class="{active:tab==='history'}" :disabled="viewMode2!=='tab'" @click="tab='history'">🕒 회원 문의 이력 <span class="tab-count">{{ cfMemberContacts.length }}</span></button>
       </div>
       <div class="tab-view-modes">
         <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭으로 보기">📑</button>
@@ -216,7 +216,7 @@ window.SyContactDtl = {
           <button class="btn btn-secondary" @click="navigate('syContactMng')">닫기</button>
         </template>
         <template v-else>
-          <button class="btn btn-primary" @click="save">저장</button>
+          <button class="btn btn-primary" @click="handleSave">저장</button>
           <button class="btn btn-secondary" @click="navigate('syContactMng')">취소</button>
         </template>
       </div>
@@ -225,7 +225,7 @@ window.SyContactDtl = {
     <!-- 답변 -->
     <div class="card" v-show="showTab('answer')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💬 답변</div>
-      <div v-if="!isNew" style="margin-bottom:16px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
+      <div v-if="!cfIsNew" style="margin-bottom:16px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
         <div style="font-size:12px;color:#888;margin-bottom:6px;">{{ form.categoryCd }} · {{ form.date }}</div>
         <div style="font-size:14px;font-weight:600;margin-bottom:8px;">{{ form.title }}</div>
         <div style="font-size:13px;color:#555;white-space:pre-line;">{{ form.content }}</div>
@@ -241,8 +241,8 @@ window.SyContactDtl = {
           <button class="btn btn-secondary" @click="navigate('syContactMng')">닫기</button>
         </template>
         <template v-else>
-          <button v-if="!isNew" class="btn btn-primary" @click="saveAnswer">답변 저장</button>
-          <button class="btn btn-primary" @click="save">전체 저장</button>
+          <button v-if="!cfIsNew" class="btn btn-primary" @click="saveAnswer">답변 저장</button>
+          <button class="btn btn-primary" @click="handleSave">전체 저장</button>
           <button class="btn btn-secondary" @click="navigate('syContactMng')">취소</button>
         </template>
       </div>
@@ -250,14 +250,14 @@ window.SyContactDtl = {
 
     <!-- 회원 문의 이력 -->
     <div class="card" v-show="showTab('history')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 문의 이력 <span class="tab-count">{{ memberContacts.length }}</span></div>
-      <table class="bo-table" v-if="memberContacts.length">
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 문의 이력 <span class="tab-count">{{ cfMemberContacts.length }}</span></div>
+      <table class="bo-table" v-if="cfMemberContacts.length">
         <thead><tr><th>카테고리</th><th>제목</th><th>상태</th><th>등록일</th><th>관리</th></tr></thead>
         <tbody>
-          <tr v-for="c in memberContacts" :key="c.inquiryId">
+          <tr v-for="c in cfMemberContacts" :key="c.inquiryId">
             <td><span class="tag">{{ c.categoryCd }}</span></td>
             <td>{{ c.title }}</td>
-            <td><span class="badge" :class="statusBadge(c.statusCd)">{{ c.statusCd }}</span></td>
+            <td><span class="badge" :class="fnStatusBadge(c.statusCd)">{{ c.statusCd }}</span></td>
             <td>{{ c.date.slice(0,10) }}</td>
             <td><button class="btn btn-blue btn-sm" @click="navigate('syContactDtl',{id:c.inquiryId})">상세</button></td>
           </tr>

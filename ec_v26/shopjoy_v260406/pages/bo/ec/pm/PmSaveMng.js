@@ -33,7 +33,7 @@ window.PmSaveMng = {
       if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchType = ref('');
     const searchStatus = ref('');
     const viewMode = ref('list'); // 'list' | 'card'
@@ -51,14 +51,14 @@ window.PmSaveMng = {
       if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const isViewMode   = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const detailKey    = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+    const cfIsViewMode   = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
+    const cfDetailKey    = computed(() => `${selectedId.value}_${openMode.value}`);
 
     const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
     const list = computed(() => saveList);
-    const filtered = computed(() => window.safeArrayUtils.safeFilter(list, s => {
+    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(list, s => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !String(s.saveNm || '').toLowerCase().includes(kw) && !String(s.saveId || '').includes(kw)) return false;
       if (applied.type   && s.saveType   !== applied.type)   return false;
@@ -68,17 +68,17 @@ window.PmSaveMng = {
       if (applied.dateEnd   && _d > applied.dateEnd)   return false;
       return true;
     }));
-    const total      = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums   = computed(() => {
-      const cur = pager.page, last = totalPages.value;
+    const cfTotal      = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums   = computed(() => {
+      const cur = pager.page, last = cfTotalPages.value;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
 
-    const typeBadge   = t => ({ '구매적립': 'badge-green', '회원가입': 'badge-blue', '리뷰적립': 'badge-orange', '출석체크': 'badge-purple' }[t] || 'badge-gray');
-    const statusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray', '종료': 'badge-red' }[s] || 'badge-gray');
+    const fnTypeBadge   = t => ({ '구매적립': 'badge-green', '회원가입': 'badge-blue', '리뷰적립': 'badge-orange', '출석체크': 'badge-purple' }[t] || 'badge-gray');
+    const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray', '종료': 'badge-red' }[s] || 'badge-gray');
 
     const onSearch = () => {
       Object.assign(applied, { kw: searchKw.value, type: searchType.value, status: searchStatus.value, dateStart: searchDateStart.value, dateEnd: searchDateEnd.value });
@@ -90,10 +90,10 @@ window.PmSaveMng = {
       Object.assign(applied, { kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
       pager.page = 1;
     };
-    const setPage      = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage      = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
-    const doDelete = async (s) => {
+    const handleDelete = async (s) => {
       const ok = await props.showConfirm('삭제', `[${s.saveNm}] 마일리지를 삭제하시겠습니까?`);
       if (!ok) return;
       const idx = (saveList).findIndex(x => x.saveId === s.saveId);
@@ -110,11 +110,11 @@ window.PmSaveMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(filtered.value,
+    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value,
       [{label:'ID',key:'saveId'},{label:'마일리지명',key:'saveNm'},{label:'유형',key:'saveType'},{label:'적립값',key:'saveVal'},{label:'단위',key:'saveUnit'},{label:'상태',key:'saveStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '마일리지목록.csv');
 
-    return { saves, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm, searchKw, searchType, searchStatus, viewMode, pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums, typeBadge, statusBadge, onSearch, onReset, setPage, onSizeChange, doDelete, selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey, exportExcel };
+    return { saves, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchType, searchStatus, viewMode, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -133,7 +133,7 @@ window.PmSaveMng = {
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>마일리지목록 <span class="list-count">{{ total }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>마일리지목록 <span class="list-count">{{ cfTotal }}건</span></span>
       <div style="display:flex;gap:6px;align-items:center;">
         <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
           <button @click="viewMode='list'" style="font-size:11px;padding:4px 10px;border:none;cursor:pointer;transition:all .15s;"
@@ -148,21 +148,21 @@ window.PmSaveMng = {
     <table class="bo-table" v-if="viewMode==='list'">
       <thead><tr><th>ID</th><th>마일리지명</th><th>유형</th><th>적립값</th><th>단위</th><th>유효기간</th><th>시작일</th><th>종료일</th><th>상태</th><th>사이트</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="s in pageList" :key="s?.saveId" :style="selectedId===s.saveId?'background:#fff8f9;':''">
+        <tr v-if="cfPageList.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="s in cfPageList" :key="s?.saveId" :style="selectedId===s.saveId?'background:#fff8f9;':''">
           <td>{{ s.saveId }}</td>
           <td><span class="title-link" @click="loadDetail(s.saveId)" :style="selectedId===s.saveId?'color:#e8587a;font-weight:700;':''">{{ s.saveNm }}<span v-if="selectedId===s.saveId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td><span class="badge" :class="typeBadge(s.saveType)">{{ s.saveType }}</span></td>
+          <td><span class="badge" :class="fnTypeBadge(s.saveType)">{{ s.saveType }}</span></td>
           <td>{{ (s.saveVal||0).toLocaleString() }}</td>
           <td style="font-size:12px;color:#555;">{{ s.saveUnit || '원' }}</td>
           <td style="font-size:12px;color:#555;">{{ s.expireDay || 365 }}일</td>
           <td>{{ s.startDate }}</td>
           <td>{{ s.endDate }}</td>
-          <td><span class="badge" :class="statusBadge(s.saveStatus)">{{ s.saveStatus }}</span></td>
-          <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
+          <td><span class="badge" :class="fnStatusBadge(s.saveStatus)">{{ s.saveStatus }}</span></td>
+          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(s.saveId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="doDelete(s)">삭제</button>
+            <button class="btn btn-danger btn-sm" @click="handleDelete(s)">삭제</button>
           </div></td>
         </tr>
       </tbody>
@@ -170,16 +170,16 @@ window.PmSaveMng = {
 
     <!-- 카드 뷰 -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
-      <div v-if="pageList.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
-      <div v-for="s in pageList" :key="s?.saveId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
+      <div v-if="cfPageList.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
+      <div v-for="s in cfPageList" :key="s?.saveId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="selectedId===s.saveId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="loadDetail(s.saveId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">마일리지 #{{ s.saveId }}</div>
           <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="loadDetail(s.saveId)" :style="selectedId===s.saveId?{color:'#e8587a'}:{}">{{ s.saveNm }}<span v-if="selectedId===s.saveId" style="font-size:10px;margin-left:4px;">▼</span></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-            <span class="badge" :class="typeBadge(s.saveType)" style="font-size:11px;">{{ s.saveType }}</span>
-            <span class="badge" :class="statusBadge(s.saveStatus)" style="font-size:11px;">{{ s.saveStatus }}</span>
+            <span class="badge" :class="fnTypeBadge(s.saveType)" style="font-size:11px;">{{ s.saveType }}</span>
+            <span class="badge" :class="fnStatusBadge(s.saveStatus)" style="font-size:11px;">{{ s.saveStatus }}</span>
           </div>
           <div style="font-size:12px;color:#666;line-height:1.5;">
             <div>🎯 {{ (s.saveVal||0).toLocaleString() }}{{ s.saveUnit || '원' }}</div>
@@ -189,7 +189,7 @@ window.PmSaveMng = {
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
           <button class="btn btn-blue btn-sm" @click="loadDetail(s.saveId)" style="font-size:11px;padding:4px 12px;">수정</button>
-          <button class="btn btn-danger btn-sm" @click="doDelete(s)" style="font-size:11px;padding:4px 12px;">삭제</button>
+          <button class="btn btn-danger btn-sm" @click="handleDelete(s)" style="font-size:11px;padding:4px 12px;">삭제</button>
           <span style="font-size:11px;color:#999;margin-left:auto;">#{{ s.saveId }}</span>
         </div>
       </div>
@@ -200,9 +200,9 @@ window.PmSaveMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -218,12 +218,12 @@ window.PmSaveMng = {
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
     <pm-save-dtl
-      :key="detailKey"
+      :key="cfDetailKey"
       :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
-      :edit-id="detailEditId"
+      :edit-id="cfDetailEditId"
     />
   </div>
 </div>

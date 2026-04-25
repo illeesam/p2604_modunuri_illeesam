@@ -29,7 +29,7 @@ window.PmGiftDtl = {
       }
     };
     onMounted(() => { fetchData(); });
-    const isNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._pmGiftDtlState.tab || 'info');
     watch(tab, v => { window._pmGiftDtlState.tab = v; });
     const viewMode2 = ref(window._pmGiftDtlState.viewMode || 'tab');
@@ -56,7 +56,7 @@ window.PmGiftDtl = {
     });
 
     onMounted(() => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const g = (giftList).find(x => x.giftId === props.editId);
         if (g) Object.assign(form, g);
       }
@@ -89,7 +89,7 @@ window.PmGiftDtl = {
       return '조건값';
     });
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
@@ -98,10 +98,10 @@ window.PmGiftDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (!giftList.value) giftList.value = [];
-      if (isNew.value) {
+      if (cfIsNew.value) {
         giftList.value.push({
           ...form,
           giftId: Date.now(),
@@ -112,9 +112,9 @@ window.PmGiftDtl = {
         if (idx !== -1) Object.assign(giftList.value[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`/bo/ec/pm/gift`, { ...form }) : window.boApi.put(`/bo/ec/pm/gift/${form.giftId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/gift`, { ...form }) : window.boApi.put(`/bo/ec/pm/gift/${form.giftId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmGiftMng');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -123,11 +123,11 @@ window.PmGiftDtl = {
       }
     };
 
-    return { gifts, loading, error, isNew, tab, form, errors, showTab, viewMode2, save, visibilityOptions, hasVisibility, toggleVisibility, condValLabel, showVendorModal, selectedVendorNm, selectVendor };
+    return { gifts, loading, error, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, visibilityOptions, hasVisibility, toggleVisibility, condValLabel, showVendorModal, selectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '사은품 등록' : '사은품 수정' }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.giftId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '사은품 등록' : '사은품 수정' }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.giftId }}</span></div>
   <div class="tab-bar-row">
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:tab==='info'}" :disabled="viewMode2!=='tab'" @click="tab='info'">📋 기본정보</button>
@@ -233,7 +233,7 @@ window.PmGiftDtl = {
         </div>
       </div>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('pmGiftMng')">취소</button>
       </div>
     </div>
@@ -250,7 +250,7 @@ window.PmGiftDtl = {
         </label>
       </div>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('pmGiftMng')">취소</button>
       </div>
     </div>

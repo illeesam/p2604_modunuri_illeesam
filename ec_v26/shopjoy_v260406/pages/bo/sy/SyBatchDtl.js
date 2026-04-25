@@ -26,8 +26,8 @@ window.SyBatchDtl = {
       }
     };
     onMounted(() => { fetchData(); });
-    const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({
       batchId: null, batchNm: '', batchCode: '', description: '', cron: '0 0 * * *', statusCd: '활성',
     });
@@ -40,7 +40,7 @@ window.SyBatchDtl = {
     });
 
     onMounted(() => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const b = batches.find(x => x.batchId === props.editId);
         if (b) Object.assign(form, { batchNm: b.batchNm, batchCode: b.batchCode, description: b.description, cron: b.cron, statusCd: b.statusCd });
       }
@@ -56,7 +56,7 @@ window.SyBatchDtl = {
       { label: '매월 1일 오전 8시 (0 8 1 * *)', value: '0 8 1 * *' },
     ];
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
@@ -65,18 +65,18 @@ window.SyBatchDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (isNew.value) {
+      if (cfIsNew.value) {
         batches.push({ ...form, batchId: nextId.value(batches, 'batchId'), lastRun: '-', nextRun: '-', runStatus: '대기', runCount: 0, regDate: new Date().toISOString().slice(0, 10) });
       } else {
         const idx = batches.findIndex(x => x.batchId === props.editId);
         if (idx !== -1) Object.assign(batches[idx], { batchNm: form.batchNm, batchCode: form.batchCode, description: form.description, cron: form.cron, statusCd: form.statusCd });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`/bo/sy/batch/${form.batchId}`, { ...form }) : window.boApi.put(`/bo/sy/batch/${form.batchId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/batch/${form.batchId}`, { ...form }) : window.boApi.put(`/bo/sy/batch/${form.batchId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syBatchMng');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -85,16 +85,16 @@ window.SyBatchDtl = {
       }
     };
 
-    return { batches, loading, error, isNew, form, errors, save, CRON_PRESETS, siteNm };
+    return { batches, loading, error, cfIsNew, form, errors, handleSave, CRON_PRESETS, cfSiteNm };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '배치 등록' : (viewMode ? '배치 상세' : '배치 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.batchId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '배치 등록' : (viewMode ? '배치 상세' : '배치 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.batchId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ siteNm }}</div>
+        <div class="readonly-field">{{ cfSiteNm }}</div>
       </div>
     </div>
     <div class="form-row">
@@ -147,7 +147,7 @@ window.SyBatchDtl = {
         <button class="btn btn-secondary" @click="navigate('syBatchMng')">닫기</button>
       </template>
       <template v-else>
-        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('syBatchMng')">취소</button>
       </template>
     </div>

@@ -27,7 +27,7 @@ window.PmVoucherDtl = {
       }
     };
     onMounted(() => { fetchData(); });
-    const isNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._pmVoucherDtlState.tab || 'info');
     watch(tab, v => { window._pmVoucherDtlState.tab = v; });
     const viewMode2 = ref(window._pmVoucherDtlState.viewMode || 'tab');
@@ -55,7 +55,7 @@ window.PmVoucherDtl = {
     });
 
     onMounted(() => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const v = (voucherList || []).find(x => x.voucherId === props.editId);
         if (v) Object.assign(form, { ...v });
       }
@@ -155,7 +155,7 @@ window.PmVoucherDtl = {
       }
     };
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
@@ -164,10 +164,10 @@ window.PmVoucherDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (!voucherList) voucherList = [];
-      if (isNew.value) {
+      if (cfIsNew.value) {
         voucherList.push({
           ...form,
           voucherId: Date.now(),
@@ -179,9 +179,9 @@ window.PmVoucherDtl = {
         if (idx !== -1) Object.assign(voucherList[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`/bo/ec/pm/voucher`, { ...form }) : window.boApi.put(`/bo/ec/pm/voucher/${form.voucherId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/voucher`, { ...form }) : window.boApi.put(`/bo/ec/pm/voucher/${form.voucherId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmVoucherMng');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -190,7 +190,7 @@ window.PmVoucherDtl = {
       }
     };
 
-    return { vouchers, loading, error, isNew, form, errors, save, DEFAULT_START, DEFAULT_END, tab, viewMode2, showTab, onTabChange, issuedList, usedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, showVendorModal, selectedVendorNm, selectVendor };
+    return { vouchers, loading, error, cfIsNew, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, viewMode2, showTab, onTabChange, issuedList, usedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, showVendorModal, selectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>

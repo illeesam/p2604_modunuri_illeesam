@@ -33,7 +33,7 @@ window.SyAttachMng = {
     const onDateRangeChange = () => {
       if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
     };
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
     // Helper function for next ID
     const nextId = {
@@ -90,7 +90,7 @@ window.SyAttachMng = {
 
     const applied = reactive({ kw: '', dateStart: '', dateEnd: '' });
 
-    const filteredFiles = computed(() => {
+    const cfFilteredFiles = computed(() => {
       const items = attaches || [];
       if (!Array.isArray(items)) return [];
       return items.filter(a => {
@@ -146,21 +146,21 @@ window.SyAttachMng = {
       props.showToast('삭제되었습니다.');
     };
 
-    const fmtSize = bytes => {
+    const fnFmtSize = bytes => {
       if (!bytes) return '0 B';
       if (bytes < 1024) return bytes + ' B';
       if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
       return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     };
-    const statusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
+    const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
 
-    const total = computed(() => filteredFiles.value.length);
+    const cfTotal = computed(() => cfFilteredFiles.value.length);
 
-    return { attaches, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, siteNm,
-      attachGrps, grpForm, total,
+    return { attaches, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm,
+      attachGrps, grpForm, cfTotal,
       selectedGrpId, grpForm, grpEditId, grpEditMode, selectGrp, openGrpNew, openGrpEdit, saveGrp, deleteGrp,
-      searchKw, fileForm, fileEditId, fileEditMode, applied, filteredFiles, onSearch, onReset, openFileNew, openFileEdit, saveFile, deleteFile,
-      fmtSize, statusBadge,
+      searchKw, fileForm, fileEditId, fileEditMode, applied, cfFilteredFiles, onSearch, onReset, openFileNew, openFileEdit, saveFile, deleteFile,
+      fnFmtSize, fnStatusBadge,
     };
   },
   template: /* html */`
@@ -229,9 +229,9 @@ window.SyAttachMng = {
             </div>
           </div>
           <div style="margin-top:4px;">
-            <span class="badge" :class="statusBadge(g.status)" style="font-size:10px;">{{ g.status }}</span>
+            <span class="badge" :class="fnStatusBadge(g.status)" style="font-size:10px;">{{ g.status }}</span>
             <span style="font-size:11px;color:#aaa;margin-left:6px;">{{ g.allowExt }}</span>
-            <span style="font-size:11px;color:#2563eb;margin-left:8px;font-weight:500;">{{ siteNm }}</span>
+            <span style="font-size:11px;color:#2563eb;margin-left:8px;font-weight:500;">{{ cfSiteNm }}</span>
           </div>
         </div>
         <div v-if="!attachGrps.length" style="text-align:center;color:#999;padding:20px;font-size:13px;">그룹이 없습니다.</div>
@@ -257,7 +257,7 @@ window.SyAttachMng = {
             <button class="btn btn-primary btn-sm" @click="openFileNew">+ 신규</button>
           </div>
         </div>
-        <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>첨부파일목록 <span class="list-count">{{ total }}건</span></span>
+        <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>첨부파일목록 <span class="list-count">{{ cfTotal }}건</span></span>
 
         <!-- 파일 폼 -->
         <div v-if="fileEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:12px;">
@@ -304,17 +304,17 @@ window.SyAttachMng = {
             <th>ID</th><th>그룹</th><th>파일명</th><th>크기</th><th>확장자</th><th>참조ID</th><th>메모</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th>
           </tr></thead>
           <tbody>
-            <tr v-if="filteredFiles.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-            <tr v-for="a in filteredFiles" :key="a.attachId">
+            <tr v-if="cfFilteredFiles.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+            <tr v-for="a in cfFilteredFiles" :key="a.attachId">
               <td>{{ a.attachId }}</td>
               <td><span style="font-size:11px;color:#666;">{{ a.attachGrpNm }}</span></td>
               <td style="font-size:12px;word-break:break-all;">{{ a.fileNm }}</td>
-              <td style="font-size:12px;">{{ fmtSize(a.fileSize) }}</td>
+              <td style="font-size:12px;">{{ fnFmtSize(a.fileSize) }}</td>
               <td><span style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px;">{{ a.fileExt }}</span></td>
               <td style="font-size:12px;color:#666;">{{ a.refId }}</td>
               <td style="font-size:12px;color:#888;">{{ a.memo }}</td>
               <td style="font-size:12px;">{{ a.regDate }}</td>
-              <td style="font-size:12px;color:#2563eb;">{{ siteNm }}</td>
+              <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
               <td><div class="actions">
                 <button class="btn btn-blue btn-sm" @click="openFileEdit(a)">수정</button>
                 <button class="btn btn-danger btn-sm" @click="deleteFile(a)">삭제</button>

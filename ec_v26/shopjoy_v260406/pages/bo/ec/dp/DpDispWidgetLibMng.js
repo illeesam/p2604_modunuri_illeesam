@@ -27,7 +27,7 @@ window.DpDispWidgetLibMng = {
     onMounted(() => { fetchData(); });
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const WIDGET_TYPES = [
       { value: 'image_banner',   label: '이미지 배너' },
@@ -80,20 +80,20 @@ window.DpDispWidgetLibMng = {
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     const applied = reactive({ kw: '', type: '', status: '' });
-    const doSearch = () => {
+    const onSearch = () => {
       applied.kw     = searchKw.value.trim().toLowerCase();
       applied.type   = searchType.value;
       applied.status = searchStatus.value;
       pager.page = 1;
     };
-    const doReset = () => {
+    const onReset = () => {
       searchKw.value = ''; searchType.value = ''; searchStatus.value = '';
       Object.assign(applied, { kw: '', type: '', status: '' });
       pager.page = 1;
     };
 
     /* 검색 필터만 적용한 리스트 (트리 그룹화용) */
-    const searchedLibs = computed(() => {
+    const cfSearchedLibs = computed(() => {
       if (!Array.isArray(widgetLibs)) return [];
       return widgetLibs.filter(d => {
         if (applied.kw && !d.name.toLowerCase().includes(applied.kw) && !(d.desc||'').toLowerCase().includes(applied.kw) && !(d.tags||'').toLowerCase().includes(applied.kw)) return false;
@@ -105,7 +105,7 @@ window.DpDispWidgetLibMng = {
 
     /* ── 표시경로 ── */
     const selectedTreeKey = ref('');   /* '' = 전체, 'top' or 'top>sub' */
-    const tree = computed(() => {
+    const cfTree = computed(() => {
       const map = {};
       const addToPath = (lib, pathStr) => {
         const parts = pathStr.split('>').map(s => s.trim()).filter(Boolean);
@@ -116,7 +116,7 @@ window.DpDispWidgetLibMng = {
         if (!map[top][rest]) map[top][rest] = [];
         map[top][rest].push(lib);
       };
-      window.safeArrayUtils.safeForEach(searchedLibs, lib => {
+      window.safeArrayUtils.safeForEach(cfSearchedLibs, lib => {
         if (!lib.usedPaths || !lib.usedPaths.length) addToPath(lib, '(미등록) > (미등록)');
         else lib.uwindow.safeArrayUtils.safeForEach(sedPaths, p => addToPath(lib, p));
       });
@@ -138,14 +138,14 @@ window.DpDispWidgetLibMng = {
     const isOpen = (key) => openNodes.has(key);
     const selectTree = (key) => { selectedTreeKey.value = selectedTreeKey.value === key ? '' : key; pager.page = 1; };
     const expandAll = () => {
-      window.safeArrayUtils.safeForEach(tree, n => { openNodes.add(n.label); });
+      window.safeArrayUtils.safeForEach(cfTree, n => { openNodes.add(n.label); });
     };
     const collapseAll = () => { openNodes.clear(); };
 
     /* 트리 선택까지 반영한 최종 리스트 */
-    const filtered = computed(() => {
+    const cfFiltered = computed(() => {
       const key = selectedTreeKey.value;
-      let list = searchedLibs.value;
+      let list = cfSearchedLibs.value;
       if (key) {
         const [top, sub] = key.split('>').map(s => s.trim());
         list = window.safeArrayUtils.safeFilter(list, lib => {
@@ -164,14 +164,14 @@ window.DpDispWidgetLibMng = {
       return [...list].sort((a, b) => b.libId - a.libId);
     });
 
-    const totalCount  = computed(() => filtered.value.length);
-    const pageList    = computed(() => {
+    const cfTotalCount  = computed(() => cfFiltered.value.length);
+    const cfPageList    = computed(() => {
       const s = (pager.page - 1) * pager.size;
-      return filtered.value.slice(s, s + pager.size);
+      return cfFiltered.value.slice(s, s + pager.size);
     });
-    const totalPages  = computed(() => Math.max(1, Math.ceil(totalCount.value / pager.size)));
-    const pageNumbers = computed(() => {
-      const pages = []; const cur = pager.page; const tot = totalPages.value;
+    const cfTotalPages  = computed(() => Math.max(1, Math.ceil(cfTotalCount.value / pager.size)));
+    const cfPageNumbers = computed(() => {
+      const pages = []; const cur = pager.page; const tot = cfTotalPages.value;
       for (let i = Math.max(1, cur - 2); i <= Math.min(tot, cur + 2); i++) pages.push(i);
       return pages;
     });
@@ -182,10 +182,10 @@ window.DpDispWidgetLibMng = {
     const loadDetail  = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
     const openNew     = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
-    const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const detailKey    = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+    const cfDetailKey    = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const doDelete = async (d) => {
+    const handleDelete = async (d) => {
       const ok = await props.showConfirm('삭제', `[${d.name}]을 삭제하시겠습니까?`);
       if (!ok) return;
       const list = widgetLibs || [];
@@ -223,20 +223,20 @@ window.DpDispWidgetLibMng = {
       return '-';
     };
 
-    const statusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
+    const fnStatusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
 
-    const setPage = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     return { widgetLibs, loading, error, pathLabel,
-      WIDGET_TYPES, wTypeLabel, wIcon, doDelete,
+      WIDGET_TYPES, wTypeLabel, wIcon, handleDelete,
       searchKw, searchType, searchStatus, pager, PAGE_SIZES,
-      filtered, totalCount, pageList, totalPages, pageNumbers,
-      tree, openNodes, toggleNode, isOpen, selectedTreeKey, selectTree, expandAll, collapseAll,
-      doSearch, doReset,
-      selectedId, openMode, detailEditId, detailKey,
-      siteNm,
+      cfFiltered, cfTotalCount, cfPageList, cfTotalPages, cfPageNumbers,
+      cfTree, cfSearchedLibs, openNodes, toggleNode, isOpen, selectedTreeKey, selectTree, expandAll, collapseAll,
+      onSearch, onReset,
+      selectedId, openMode, cfDetailEditId, cfDetailKey,
+      cfSiteNm,
       loadDetail, openNew, closeDetail, inlineNavigate,
-      contentSummary, statusCls,
+      contentSummary, fnStatusCls,
        setPage, onSizeChange,
     };;
   },
@@ -252,7 +252,7 @@ window.DpDispWidgetLibMng = {
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
       <div class="form-group" style="margin:0;min-width:180px;flex:1;">
         <label class="form-label">검색어</label>
-        <input v-model="searchKw" class="form-control" placeholder="이름·설명·태그" @keyup.enter="() => doSearch?.()" style="margin:0;" />
+        <input v-model="searchKw" class="form-control" placeholder="이름·설명·태그" @keyup.enter="() => onSearch?.()" style="margin:0;" />
       </div>
       <div class="form-group" style="margin:0;width:160px;">
         <label class="form-label">위젯 유형</label>
@@ -269,8 +269,8 @@ window.DpDispWidgetLibMng = {
           <option value="비활성">비활성</option>
         </select>
       </div>
-      <button @click="doSearch" class="btn btn-primary" style="height:36px;padding:0 20px;">조회</button>
-      <button @click="doReset"  class="btn btn-outline" style="height:36px;padding:0 16px;">초기화</button>
+      <button @click="onSearch" class="btn btn-primary" style="height:36px;padding:0 20px;">조회</button>
+      <button @click="onReset"  class="btn btn-outline" style="height:36px;padding:0 16px;">초기화</button>
       <button @click="openNew"  class="btn btn-primary" style="height:36px;padding:0 18px;margin-left:auto;">+ 신규등록</button>
     </div>
   </div>
@@ -282,7 +282,7 @@ window.DpDispWidgetLibMng = {
   <div class="card" style="width:240px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid #f0f0f0;margin-bottom:8px;">
       <span style="font-size:12px;font-weight:700;color:#555;">표시경로</span>
-      <span style="font-size:10px;color:#aaa;">{{ tree.length }}그룹</span>
+      <span style="font-size:10px;color:#aaa;">{{ cfTree.length }}그룹</span>
     </div>
     <!-- 전체펼치기 / 전체닫기 -->
     <div style="display:flex;gap:4px;margin-bottom:8px;">
@@ -306,11 +306,11 @@ window.DpDispWidgetLibMng = {
         border: '1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec'),
       }">
       <span>{{ isOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
-      <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ totalCount }}</span>
+      <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ cfTotalCount }}</span>
     </div>
     <!-- 트리 노드 (root 하위로 들여쓰기) -->
     <div v-if="isOpen('__root__')" style="padding-left:12px;">
-      <div v-for="node in tree" :key="node?.label">
+      <div v-for="node in cfTree" :key="node?.label">
         <div @click="toggleNode(node.label); selectTree(node.label)"
           :style="{
             display:'flex',alignItems:'center',justifyContent:'space-between',
@@ -341,7 +341,7 @@ window.DpDispWidgetLibMng = {
         </div>
       </div>
     </div>
-    <div v-if="!tree.length" style="padding:20px 8px;text-align:center;color:#ccc;font-size:11px;">위젯이 없습니다.</div>
+    <div v-if="!cfTree.length" style="padding:20px 8px;text-align:center;color:#ccc;font-size:11px;">위젯이 없습니다.</div>
   </div>
 
   <!-- 우측 목록 -->
@@ -349,7 +349,7 @@ window.DpDispWidgetLibMng = {
   <!-- 목록 -->
   <div class="card" style="padding:0;">
     <div style="padding:12px 18px;border-bottom:1px solid #f0f0f0;">
-      <span style="font-size:13px;color:#555;">총 <b>{{ totalCount }}</b>건</span>
+      <span style="font-size:13px;color:#555;">총 <b>{{ cfTotalCount }}</b>건</span>
     </div>
 
     <table class="bo-table">
@@ -361,10 +361,10 @@ window.DpDispWidgetLibMng = {
         </tr>
       </thead>
       <tbody>
-        <tr v-if="pageList.length===0">
+        <tr v-if="cfPageList.length===0">
           <td colspan="3" style="text-align:center;padding:30px;color:#ccc;">등록된 위젯 리소스가 없습니다.</td>
         </tr>
-        <tr v-for="(d, idx) in pageList" :key="d?.libId"
+        <tr v-for="(d, idx) in cfPageList" :key="d?.libId"
           :style="selectedId===d.libId ? 'background:#fff8f8;' : ''">
           <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">#{{ String(d.libId).padStart(4,'0') }}</td>
           <td style="padding:10px 12px;">
@@ -373,7 +373,7 @@ window.DpDispWidgetLibMng = {
               <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">{{ wTypeLabel(d.widgetType) }}</span>
               <span class="title-link" @click="loadDetail(d.libId)"
                 :style="'font-size:14px;font-weight:700;margin-left:8px;'+(selectedId===d.libId?'color:#e8587a;':'color:#222;')">{{ d.name }}</span>
-              <span class="badge" :class="statusCls(d.status)" style="font-size:11px;margin-left:8px;">{{ d.status }}</span>
+              <span class="badge" :class="fnStatusCls(d.status)" style="font-size:11px;margin-left:8px;">{{ d.status }}</span>
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
               <span><b style="color:#888;">내용:</b> {{ contentSummary(d) || '-' }}</span>
@@ -394,14 +394,14 @@ window.DpDispWidgetLibMng = {
               <span v-if="d.tags"><b style="color:#888;">태그:</b> {{ d.tags }}</span>
               <span><b style="color:#888;">등록일:</b> {{ d.regDate || '-' }}</span>
               <span><b style="color:#888;">사이트:</b>
-                <span style="background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:0 6px;margin-left:3px;">{{ siteNm }}</span>
+                <span style="background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:0 6px;margin-left:3px;">{{ cfSiteNm }}</span>
               </span>
             </div>
           </td>
           <td style="vertical-align:top;padding-top:10px;">
             <div class="actions" style="justify-content:flex-end;">
               <button @click.stop="loadDetail(d.libId)" class="btn btn-blue btn-sm">수정</button>
-              <button @click.stop="doDelete(d)" class="btn btn-danger btn-sm">삭제</button>
+              <button @click.stop="handleDelete(d)" class="btn btn-danger btn-sm">삭제</button>
             </div>
           </td>
         </tr>
@@ -414,9 +414,9 @@ window.DpDispWidgetLibMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNumbers" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+           <button v-for="n in cfPageNumbers" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -432,13 +432,13 @@ window.DpDispWidgetLibMng = {
   <!-- 인라인 상세 -->
   <div v-if="selectedId !== null" style="margin-top:16px;">
     <dp-disp-widget-lib-dtl
-      :key="detailKey"
+      :key="cfDetailKey"
       :navigate="inlineNavigate"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
-      :edit-id="detailEditId"
+      :edit-id="cfDetailEditId"
       @close="closeDetail"
     />
   </div>

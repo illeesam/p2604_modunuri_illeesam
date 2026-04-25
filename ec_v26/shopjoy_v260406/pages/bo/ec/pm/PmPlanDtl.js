@@ -29,7 +29,7 @@ window.PmPlanDtl = {
       }
     };
     onMounted(() => { fetchData(); });
-    const isNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._ecPlanDtlState.tab || 'info');
     watch(tab, v => { window._ecPlanDtlState.tab = v; });
     const viewMode2 = ref(window._ecPlanDtlState.viewMode || 'tab');
@@ -128,7 +128,7 @@ window.PmPlanDtl = {
     };
 
     onMounted(() => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const p = (plans).find(x => x.planId === props.editId);
         if (p) {
           Object.assign(form, { ...p, productIds: [...(p.productIds || [])] });
@@ -182,7 +182,7 @@ window.PmPlanDtl = {
       showVendorModal.value = false;
     };
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
@@ -191,9 +191,9 @@ window.PmPlanDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (isNew.value) {
+      if (cfIsNew.value) {
         const newId = Math.max(...(plans).map(p => p.planId), 0) + 1;
         plans.value.push({
           ...form, planId: newId,
@@ -206,9 +206,9 @@ window.PmPlanDtl = {
         if (idx !== -1) Object.assign(plans.value[idx], { ...form, productIds: [...form.productIds] });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`/bo/ec/pm/plan`, form) : window.boApi.put(`/bo/ec/pm/plan/${props.editId}`, form));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/plan`, form) : window.boApi.put(`/bo/ec/pm/plan/${props.editId}`, form));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmPlanMng');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -217,15 +217,15 @@ window.PmPlanDtl = {
       }
     };
 
-    return { plans, loading, error, isNew, tab, onTabChange, form, errors, activeContentTab, showProdPopup, prodSearch,
-      filteredProds, toggleProduct, isSelected, selectedProducts, removeProduct, save,
+    return { plans, loading, error, cfIsNew, tab, onTabChange, form, errors, activeContentTab, showProdPopup, prodSearch,
+      filteredProds, toggleProduct, isSelected, selectedProducts, removeProduct, handleSave,
       CATEGORIES, STATUS_OPTIONS, VISIBILITY_OPTIONS, viewMode2, showTab, hasVisibility, toggleVisibility,
       showVendorModal, selectedVendorNm, selectVendor,
     };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '기획전 등록' : '기획전 상세' }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.planId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '기획전 등록' : '기획전 상세' }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.planId }}</span></div>
     <div class="tab-bar-row">
       <div class="tab-nav">
         <button class="tab-btn" :class="{active:tab==='banner'}" :disabled="viewMode2!=='tab'" @click="onTabChange('banner')">🎨 배너이미지</button>
@@ -254,7 +254,7 @@ window.PmPlanDtl = {
         <div id="quill-banner" style="min-height:300px;background:#fff;border:1px solid #e0e0e0;border-radius:6px;"></div>
       </div>
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">💾 저장</button>
+        <button class="btn btn-primary" @click="handleSave">💾 저장</button>
         <button class="btn btn-secondary" @click="navigate('pmPlanMng')">취소</button>
       </div>
     </div>
@@ -354,7 +354,7 @@ window.PmPlanDtl = {
       </div>
 
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">💾 저장</button>
+        <button class="btn btn-primary" @click="handleSave">💾 저장</button>
         <button class="btn btn-secondary" @click="navigate('pmPlanMng')">취소</button>
       </div>
     </div>
@@ -383,7 +383,7 @@ window.PmPlanDtl = {
       </template>
 
       <div class="form-actions" style="margin-top:12px;">
-        <button class="btn btn-primary" @click="save">💾 저장</button>
+        <button class="btn btn-primary" @click="handleSave">💾 저장</button>
         <button class="btn btn-secondary" @click="navigate('pmPlanMng')">취소</button>
       </div>
     </div>
@@ -409,7 +409,7 @@ window.PmPlanDtl = {
       <div v-else style="text-align:center;color:#999;padding:40px;background:#f9f9f9;border-radius:6px;">선택된 상품이 없습니다.</div>
 
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">💾 저장</button>
+        <button class="btn btn-primary" @click="handleSave">💾 저장</button>
         <button class="btn btn-secondary" @click="navigate('pmPlanMng')">취소</button>
       </div>
     </div>
@@ -466,7 +466,7 @@ window.PmPlanDtl = {
       </div>
 
       <div class="form-actions">
-        <button class="btn btn-primary" @click="save">💾 저장</button>
+        <button class="btn btn-primary" @click="handleSave">💾 저장</button>
         <button class="btn btn-secondary" @click="navigate('pmPlanMng')">취소</button>
       </div>
     </div>

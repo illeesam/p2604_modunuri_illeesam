@@ -797,21 +797,21 @@ window.BoUserSelectModal = {
         <!-- 전체선택 바 -->
         <div style="display:flex;align-items:center;padding:7px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:#fafafa;">
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;color:#374151;user-select:none;">
-            <input type="checkbox" :checked="allChecked" @change="toggleAll" style="width:14px;height:14px;" />
+            <input type="checkbox" :checked="cfAllChecked" @change="toggleAll" style="width:14px;height:14px;" />
             전체선택
           </label>
           <span style="margin-left:auto;font-size:12px;color:#9ca3af;">
-            총 <b style="color:#374151;">{{ filtered.length }}</b>명
+            총 <b style="color:#374151;">{{ cfFiltered.length }}</b>명
           </span>
         </div>
         <!-- 카드 목록 -->
         <div style="flex:1;overflow-y:auto;">
           <div v-if="loading" style="text-align:center;color:#bbb;padding:52px 0;font-size:13px;">로딩 중...</div>
-          <div v-else-if="filtered.length===0" style="text-align:center;color:#bbb;padding:52px 0;font-size:13px;">
+          <div v-else-if="cfFiltered.length===0" style="text-align:center;color:#bbb;padding:52px 0;font-size:13px;">
             <div style="font-size:32px;margin-bottom:8px;">🔍</div>
             검색 결과가 없습니다.
           </div>
-          <div v-for="u in filtered" :key="u.userId || u.boUserId"
+          <div v-for="u in cfFiltered" :key="u.userId || u.boUserId"
             style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .1s;"
             :style="isChecked(u)?'background:#fff5f7;':'' "
             @click="toggleUser(u)">
@@ -842,16 +842,16 @@ window.BoUserSelectModal = {
 
     <!-- ── 푸터 ── -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid #f0f0f0;flex-shrink:0;background:#fff;">
-      <span style="font-size:12px;" :style="selectedCount?'color:#e8587a;font-weight:600;':'color:#bbb;'">
-        {{ selectedCount ? selectedCount+'명이 선택되었습니다.' : '목록에서 사용자를 선택하세요.' }}
+      <span style="font-size:12px;" :style="cfSelectedCount?'color:#e8587a;font-weight:600;':'color:#bbb;'">
+        {{ cfSelectedCount ? cfSelectedCount+'명이 선택되었습니다.' : '목록에서 사용자를 선택하세요.' }}
       </span>
       <div style="display:flex;gap:8px;">
         <button style="padding:8px 22px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#6b7280;font-size:13px;font-weight:600;cursor:pointer;"
           @click="$emit('close')">취소</button>
-        <button :disabled="!selectedCount"
+        <button :disabled="!cfSelectedCount"
           style="padding:8px 22px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;"
-          :style="selectedCount?'background:#e8587a;color:#fff;box-shadow:0 2px 8px rgba(232,88,122,0.35);':'background:#f3f4f6;color:#d1d5db;cursor:not-allowed;'"
-          @click="confirm">확인{{ selectedCount?' ('+selectedCount+'명)':'' }}</button>
+          :style="cfSelectedCount?'background:#e8587a;color:#fff;box-shadow:0 2px 8px rgba(232,88,122,0.35);':'background:#f3f4f6;color:#d1d5db;cursor:not-allowed;'"
+          @click="confirm">확인{{ cfSelectedCount?' ('+cfSelectedCount+'명)':'' }}</button>
       </div>
     </div>
 
@@ -866,7 +866,7 @@ window.MemberSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed, onMounted } = Vue;
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const kw = ref('');
     const list = ref([]);
     const loading = ref(false);
@@ -878,24 +878,24 @@ window.MemberSelectModal = {
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
     onMounted(() => { fetchData(); });
-    const filtered = computed(() => list.value.filter(m => {
+    const cfFiltered = computed(() => list.value.filter(m => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
       return (m.memberNm || '').toLowerCase().includes(k) ||
              (m.memberEmail || m.email || '').toLowerCase().includes(k) ||
              String(m.memberId || m.userId || '').includes(k);
     }));
-    return { siteNm, kw, filtered, loading };
+    return { cfSiteNm, kw, cfFiltered, loading };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
-    <div class="modal-header"><span class="modal-title">회원 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <div class="modal-header"><span class="modal-title">회원 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="이름 / 이메일 / ID 검색" style="margin-bottom:12px;" />
     <div class="sel-modal-list">
       <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
-      <div v-else-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
-      <div v-for="m in filtered" :key="m.memberId || m.userId" class="sel-modal-item">
+      <div v-else-if="cfFiltered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-for="m in cfFiltered" :key="m.memberId || m.userId" class="sel-modal-item">
         <div class="sel-modal-item-name">{{ m.memberNm }} <span style="font-size:11px;color:#888;">{{ m.memberEmail || m.email }}</span></div>
         <span class="sel-modal-item-id">{{ m.memberId || m.userId }}</span>
         <button class="sel-modal-item-btn" @click="$emit('select', m)">선택</button>
@@ -912,7 +912,7 @@ window.OrderSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, computed, onMounted } = Vue;
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const kw = ref('');
     const list = ref([]);
     const loading = ref(false);
@@ -924,24 +924,24 @@ window.OrderSelectModal = {
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
     onMounted(() => { fetchData(); });
-    const filtered = computed(() => list.value.filter(o => {
+    const cfFiltered = computed(() => list.value.filter(o => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
       return (o.orderId || '').toLowerCase().includes(k) ||
              (o.memberNm || o.userNm || '').toLowerCase().includes(k) ||
              (o.prodNm || '').toLowerCase().includes(k);
     }));
-    return { siteNm, kw, filtered, loading };
+    return { cfSiteNm, kw, cfFiltered, loading };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
-    <div class="modal-header"><span class="modal-title">주문 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <div class="modal-header"><span class="modal-title">주문 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="주문ID / 회원명 / 상품명 검색" style="margin-bottom:12px;" />
     <div class="sel-modal-list">
       <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
-      <div v-else-if="filtered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
-      <div v-for="o in filtered" :key="o.orderId" class="sel-modal-item">
+      <div v-else-if="cfFiltered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-for="o in cfFiltered" :key="o.orderId" class="sel-modal-item">
         <div class="sel-modal-item-name">{{ o.orderId }} <span style="font-size:11px;color:#888;">{{ o.memberNm || o.userNm }}</span></div>
         <span class="sel-modal-item-id" style="background:#f0fff0;color:#389e0d;">{{ (o.totalAmt || o.totalPrice || 0).toLocaleString() }}원</span>
         <button class="sel-modal-item-btn" @click="$emit('select', o)">선택</button>
@@ -972,7 +972,7 @@ window.BbmSelectModal = {
     };
     onMounted(() => { fetchData(); });
 
-    const filtered = computed(() => list.value.filter(b => {
+    const cfFiltered = computed(() => list.value.filter(b => {
       if (b.useYn === 'N') return false;
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
@@ -982,35 +982,35 @@ window.BbmSelectModal = {
     /* 검색어 변경 시 첫 페이지로 */
     watch(kw, () => { page.value = 1; });
 
-    const total      = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize)));
-    const pageList   = computed(() => filtered.value.slice((page.value - 1) * pageSize, page.value * pageSize));
-    const pageNums   = computed(() => {
-      const s = Math.max(1, page.value - 2), e = Math.min(totalPages.value, s + 4);
+    const cfTotal      = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pageSize)));
+    const cfPageList   = computed(() => cfFiltered.value.slice((page.value - 1) * pageSize, page.value * pageSize));
+    const cfPageNums   = computed(() => {
+      const s = Math.max(1, page.value - 2), e = Math.min(cfTotalPages.value, s + 4);
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
-    const setPage = n => { if (n >= 1 && n <= totalPages.value) page.value = n; };
+    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) page.value = n; };
 
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
-    const typeBadge = t => ({ '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' }[t] || 'badge-gray');
-    const scopeBadge = s => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[s] || 'badge-gray');
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    const fnTypeBadge = t => ({ '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' }[t] || 'badge-gray');
+    const fnScopeBadge = s => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[s] || 'badge-gray');
 
-    return { siteNm, kw, page, total, totalPages, pageList, pageNums, setPage, typeBadge, scopeBadge, loading };
+    return { cfSiteNm, kw, page, cfTotal, cfTotalPages, cfPageList, cfPageNums, setPage, fnTypeBadge, fnScopeBadge, loading };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box" style="max-width:560px;">
-    <div class="modal-header"><span class="modal-title">게시판 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
+    <div class="modal-header"><span class="modal-title">게시판 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="kw" placeholder="게시판명 / 코드 / 유형 검색" style="margin-bottom:10px;" />
-    <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ total }}건</div>
+    <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ cfTotal }}건</div>
     <div class="sel-modal-list" style="min-height:200px;">
       <div v-if="loading" style="text-align:center;color:#999;padding:30px;font-size:13px;">로딩 중...</div>
-      <div v-else-if="pageList.length===0" style="text-align:center;color:#999;padding:30px;font-size:13px;">검색 결과가 없습니다.</div>
-      <div v-for="b in pageList" :key="b.bbmId" class="sel-modal-item" style="gap:6px;">
+      <div v-else-if="cfPageList.length===0" style="text-align:center;color:#999;padding:30px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-for="b in cfPageList" :key="b.bbmId" class="sel-modal-item" style="gap:6px;">
         <div class="sel-modal-item-name" style="flex:1;min-width:0;">
           <span>{{ b.bbmNm }}</span>
-          <span class="badge" :class="typeBadge(b.bbmType)" style="margin-left:5px;font-size:10px;">{{ b.bbmType }}</span>
-          <span class="badge" :class="scopeBadge(b.scopeType)" style="margin-left:3px;font-size:10px;">{{ b.scopeType }}</span>
+          <span class="badge" :class="fnTypeBadge(b.bbmType)" style="margin-left:5px;font-size:10px;">{{ b.bbmType }}</span>
+          <span class="badge" :class="fnScopeBadge(b.scopeType)" style="margin-left:3px;font-size:10px;">{{ b.scopeType }}</span>
         </div>
         <code style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 6px;border-radius:3px;flex-shrink:0;">{{ b.bbmCode }}</code>
         <span class="sel-modal-item-id" style="background:#f0f0f0;color:#888;flex-shrink:0;">ID: {{ b.bbmId }}</span>
@@ -1021,9 +1021,9 @@ window.BbmSelectModal = {
     <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
       <button class="pager-btn" :disabled="page===1" @click="setPage(1)">«</button>
       <button class="pager-btn" :disabled="page===1" @click="setPage(page-1)">‹</button>
-      <button v-for="n in pageNums" :key="n" class="pager-btn" :class="{active:page===n}" @click="setPage(n)">{{ n }}</button>
-      <button class="pager-btn" :disabled="page===totalPages" @click="setPage(page+1)">›</button>
-      <button class="pager-btn" :disabled="page===totalPages" @click="setPage(totalPages)">»</button>
+      <button v-for="n in cfPageNums" :key="n" class="pager-btn" :class="{active:page===n}" @click="setPage(n)">{{ n }}</button>
+      <button class="pager-btn" :disabled="page===cfTotalPages" @click="setPage(page+1)">›</button>
+      <button class="pager-btn" :disabled="page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
     </div>
   </div>
 </div>`,
@@ -1037,12 +1037,12 @@ window.TemplatePreviewModal = {
   setup(props) {
     const { computed } = Vue;
 
-    const params = computed(() => {
+    const cfParams = computed(() => {
       try { return JSON.parse(props.sampleParams || '{}'); }
       catch { return {}; }
     });
 
-    const isHtml = computed(() =>
+    const cfIsHtml = computed(() =>
       ['메일템플릿', 'MMS템플릿'].includes(props.tmpl?.templateType)
     );
 
@@ -1050,52 +1050,52 @@ window.TemplatePreviewModal = {
     const applyAndRender = (text) => {
       if (!text) return '';
       let base = text;
-      if (!isHtml.value) {
+      if (!cfIsHtml.value) {
         /* 텍스트 계열: HTML 이스케이프 후 파라미터 치환 */
         base = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       }
       return base.replace(/\{\{(\w+)\}\}/g, (_, k) =>
-        params.value[k] !== undefined
-          ? `<span style="background:#fff3cd;color:#856404;border-radius:3px;padding:0 2px;font-weight:600;">${String(params.value[k])}</span>`
+        cfParams.value[k] !== undefined
+          ? `<span style="background:#fff3cd;color:#856404;border-radius:3px;padding:0 2px;font-weight:600;">${String(cfParams.value[k])}</span>`
           : `<span style="color:#dc3545;font-weight:600;">{{${k}}}</span>`
       );
     };
 
-    const renderedSubject = computed(() => applyAndRender(props.tmpl?.subject || ''));
-    const renderedContent = computed(() => applyAndRender(props.tmpl?.content || ''));
+    const cfRenderedSubject = computed(() => applyAndRender(props.tmpl?.subject || ''));
+    const cfRenderedContent = computed(() => applyAndRender(props.tmpl?.content || ''));
 
-    const typeBadge = computed(() => ({
+    const cfTypeBadge = computed(() => ({
       '메일템플릿': 'badge-blue', '문자템플릿': 'badge-green', 'MMS템플릿': 'badge-orange',
       'kakao톡템플릿': 'badge-purple', 'kakao알림톡템플릿': 'badge-purple',
     }[props.tmpl?.templateType] || 'badge-gray'));
 
-    const paramList = computed(() => Object.entries(params.value).map(([k, v]) => ({ k, v })));
+    const cfParamList = computed(() => Object.entries(cfParams.value).map(([k, v]) => ({ k, v })));
 
     /* setup에서 tmpl을 반환해 템플릿에서 직접 접근 가능하게 */
     const fmtKey = k => '{{' + k + '}}';
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    return { siteNm, tmpl: computed(() => props.tmpl), renderedSubject, renderedContent, isHtml, typeBadge, paramList, fmtKey };
+    return { cfSiteNm, tmpl: computed(() => props.tmpl), cfRenderedSubject, cfRenderedContent, cfIsHtml, cfTypeBadge, cfParamList, fmtKey };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box" style="max-width:700px;">
     <div class="modal-header">
-      <span class="modal-title">📄 템플릿 미리보기<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></span>
+      <span class="modal-title">📄 템플릿 미리보기<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span>
       <span class="modal-close" @click="$emit('close')">✕</span>
     </div>
 
     <!-- 템플릿 기본정보 -->
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 14px;background:#f8f9fa;border-radius:8px;">
-      <span class="badge" :class="typeBadge">{{ tmpl?.templateType }}</span>
+      <span class="badge" :class="cfTypeBadge">{{ tmpl?.templateType }}</span>
       <span style="font-weight:700;font-size:14px;color:#1a1a2e;">{{ tmpl?.templateNm }}</span>
     </div>
 
     <!-- 파라미터 샘플 뱃지 -->
-    <div v-if="paramList.length" style="margin-bottom:12px;">
+    <div v-if="cfParamList.length" style="margin-bottom:12px;">
       <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:5px;">파라미터 샘플값</div>
       <div style="display:flex;flex-wrap:wrap;gap:5px;">
-        <span v-for="p in paramList" :key="p.k"
+        <span v-for="p in cfParamList" :key="p.k"
           style="display:inline-flex;align-items:center;gap:3px;font-size:11px;background:#f0f4ff;border:1px solid #d0d9ff;border-radius:4px;padding:2px 8px;color:#2563eb;">
           <b>{{ fmtKey(p.k) }}</b>
           <span style="color:#aaa;margin:0 2px;">=</span>
@@ -1109,20 +1109,20 @@ window.TemplatePreviewModal = {
     <div v-if="tmpl?.subject" style="margin-bottom:12px;">
       <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:4px;">제목 (Subject)</div>
       <div style="padding:9px 13px;background:#fff;border:1px solid #e8e8e8;border-radius:7px;font-size:13px;color:#333;"
-        v-html="renderedSubject"></div>
+        v-html="cfRenderedSubject"></div>
     </div>
 
     <!-- 내용 미리보기 -->
     <div>
       <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:5px;">내용 미리보기</div>
       <!-- HTML 타입 -->
-      <div v-if="isHtml"
+      <div v-if="cfIsHtml"
         style="padding:18px;background:#fff;border:1px solid #e0e0e0;border-radius:8px;min-height:120px;max-height:380px;overflow-y:auto;font-size:13px;line-height:1.8;"
-        v-html="renderedContent"></div>
+        v-html="cfRenderedContent"></div>
       <!-- 텍스트 타입 -->
       <pre v-else
         style="padding:14px 16px;background:#f8f9fa;border:1px solid #e0e0e0;border-radius:8px;min-height:80px;max-height:280px;overflow-y:auto;font-size:13px;line-height:1.8;white-space:pre-wrap;word-break:break-all;margin:0;color:#333;"
-        v-html="renderedContent"></pre>
+        v-html="cfRenderedContent"></pre>
     </div>
 
     <div style="margin-top:18px;display:flex;justify-content:flex-end;">
@@ -1139,7 +1139,7 @@ window.TemplateSendModal = {
   emits: ['close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const targetType = ref('member');
     const kw = ref('');
@@ -1172,7 +1172,7 @@ window.TemplateSendModal = {
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
         .map(d => ({ ...d, _depth: depth, _kids: buildDeptTree(items, d.deptId, depth + 1) }));
     const flattenDept = (nodes, result = []) => { nodes.forEach(n => { result.push(n); flattenDept(n._kids, result); }); return result; };
-    const flatDeptTree = computed(() => {
+    const cfFlatDeptTree = computed(() => {
       const k = deptKw.value.trim().toLowerCase();
       const base = k ? allDepts.value.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(k)) : allDepts.value;
       return flattenDept(buildDeptTree(base, null, 1));
@@ -1193,14 +1193,14 @@ window.TemplateSendModal = {
     const MEMBER_GRADES = ['VIP', '우수', '일반'];
 
     /* ── 목록 ── */
-    const memberList = computed(() => {
+    const cfMemberList = computed(() => {
       const k = kw.value.trim().toLowerCase();
       let list = allMembers.value;
       if (selectedGrade.value) list = list.filter(m => m.memberGrade === selectedGrade.value || m.grade === selectedGrade.value);
       if (k) list = list.filter(m => (m.memberNm || '').toLowerCase().includes(k) || (m.memberEmail || m.email || '').toLowerCase().includes(k) || String(m.memberId || m.userId || '').includes(k));
       return list;
     });
-    const userList = computed(() => {
+    const cfUserList = computed(() => {
       const k = kw.value.trim().toLowerCase();
       let list = allBoUsers.value;
       if (selectedDeptId.value !== null) {
@@ -1210,7 +1210,7 @@ window.TemplateSendModal = {
       if (k) list = list.filter(u => (u.userNm || u.name || '').toLowerCase().includes(k) || (u.userEmail || u.email || '').toLowerCase().includes(k) || String(u.userId || u.boUserId || '').includes(k));
       return list;
     });
-    const list = computed(() => targetType.value === 'member' ? memberList.value : userList.value);
+    const cfList = computed(() => targetType.value === 'member' ? cfMemberList.value : cfUserList.value);
 
     const isSelected = (item) => selected.includes(getId(item));
     const toggleSelect = (item) => {
@@ -1218,15 +1218,15 @@ window.TemplateSendModal = {
       const idx = selected.indexOf(id);
       if (idx === -1) selected.push(id); else selected.splice(idx, 1);
     };
-    const allChecked = computed(() => list.value.length > 0 && list.value.every(x => selected.includes(getId(x))));
+    const cfAllChecked = computed(() => cfList.value.length > 0 && cfList.value.every(x => selected.includes(getId(x))));
     const toggleAll = () => {
-      if (allChecked.value) { selected.splice(0); }
-      else { list.value.forEach(x => { const id = getId(x); if (!selected.includes(id)) selected.push(id); }); }
+      if (cfAllChecked.value) { selected.splice(0); }
+      else { cfList.value.forEach(x => { const id = getId(x); if (!selected.includes(id)) selected.push(id); }); }
     };
 
     watch(targetType, () => { selected.splice(0); kw.value = ''; selectedDeptId.value = null; selectedGrade.value = null; });
 
-    const typeBadge = computed(() => ({
+    const cfTypeBadge = computed(() => ({
       '메일템플릿': 'badge-blue', '문자템플릿': 'badge-green', 'MMS템플릿': 'badge-orange',
       'kakao톡템플릿': 'badge-purple', 'kakao알림톡템플릿': 'badge-purple',
       '시스템알림': 'badge-red', '회원알림': 'badge-teal',
@@ -1234,7 +1234,7 @@ window.TemplateSendModal = {
 
     const gradeBadgeColor = g => ({ 'VIP': '#f59e0b', '우수': '#2563eb', '일반': '#6b7280' }[g] || '#6b7280');
 
-    const doSend = async () => {
+    const handleSend = async () => {
       if (!selected.length) { props.showToast('발송할 수신자를 선택하세요.', 'info'); return; }
       const typeLabel = targetType.value === 'member' ? '회원' : '관리자';
       const ok = await props.showConfirm('템플릿 발송',
@@ -1245,8 +1245,8 @@ window.TemplateSendModal = {
       emit('close');
     };
 
-    return { siteNm, targetType, kw, list, selected, isSelected, toggleSelect, allChecked, toggleAll, typeBadge, gradeBadgeColor, doSend,
-             selectedDeptId, deptKw, flatDeptTree, selectedGrade, MEMBER_GRADES };
+    return { cfSiteNm, targetType, kw, cfList, selected, isSelected, toggleSelect, cfAllChecked, toggleAll, cfTypeBadge, gradeBadgeColor, handleSend,
+             selectedDeptId, deptKw, cfFlatDeptTree, selectedGrade, MEMBER_GRADES };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -1256,7 +1256,7 @@ window.TemplateSendModal = {
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div style="display:flex;align-items:center;gap:10px;">
         <span style="font-size:15px;font-weight:800;color:#1a1a2e;">📨 발송하기</span>
-        <span style="font-size:10px;font-weight:600;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px;">{{ siteNm }}</span>
+        <span style="font-size:10px;font-weight:600;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px;">{{ cfSiteNm }}</span>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
         <span v-if="selected.length" style="font-size:12px;color:#52c41a;font-weight:700;background:#f6ffed;padding:3px 10px;border-radius:20px;">{{ selected.length }}명 선택됨</span>
@@ -1266,7 +1266,7 @@ window.TemplateSendModal = {
 
     <!-- ── 템플릿 정보 바 ── -->
     <div style="display:flex;align-items:center;gap:8px;padding:9px 20px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <span class="badge" :class="typeBadge" style="flex-shrink:0;">{{ tmpl?.templateType }}</span>
+      <span class="badge" :class="cfTypeBadge" style="flex-shrink:0;">{{ tmpl?.templateType }}</span>
       <span style="font-weight:700;font-size:13px;color:#1a1a2e;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ tmpl?.templateNm }}</span>
       <code v-if="tmpl?.templateCode" style="font-size:11px;color:#888;background:#efefef;padding:1px 8px;border-radius:4px;flex-shrink:0;">{{ tmpl.templateCode }}</code>
     </div>
@@ -1310,7 +1310,7 @@ window.TemplateSendModal = {
               <span style="font-size:13px;font-weight:700;flex:1;" :style="{ color: selectedDeptId===null?'#fff':'#374151' }">전체</span>
             </div>
             <!-- 부서 트리 -->
-            <div v-for="d in flatDeptTree" :key="d.deptId"
+            <div v-for="d in cfFlatDeptTree" :key="d.deptId"
               style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;cursor:pointer;margin-bottom:1px;transition:all .12s;"
               :style="selectedDeptId===d.deptId?'background:#e8587a;box-shadow:0 2px 6px rgba(232,88,122,0.2);':''"
               @click="selectedDeptId=d.deptId">
@@ -1363,15 +1363,15 @@ window.TemplateSendModal = {
         </div>
         <div style="display:flex;align-items:center;padding:7px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:#fafafa;">
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;color:#374151;user-select:none;">
-            <input type="checkbox" :checked="allChecked" @change="toggleAll" style="width:14px;height:14px;" /> 전체선택
+            <input type="checkbox" :checked="cfAllChecked" @change="toggleAll" style="width:14px;height:14px;" /> 전체선택
           </label>
-          <span style="margin-left:auto;font-size:12px;color:#9ca3af;">총 <b style="color:#374151;">{{ list.length }}</b>명</span>
+          <span style="margin-left:auto;font-size:12px;color:#9ca3af;">총 <b style="color:#374151;">{{ cfList.length }}</b>명</span>
         </div>
         <div style="flex:1;overflow-y:auto;">
-          <div v-if="list.length===0" style="text-align:center;color:#bbb;padding:52px 0;font-size:13px;">
+          <div v-if="cfList.length===0" style="text-align:center;color:#bbb;padding:52px 0;font-size:13px;">
             <div style="font-size:32px;margin-bottom:8px;">🔍</div>검색 결과가 없습니다.
           </div>
-          <div v-for="item in list" :key="item.userId||item.boUserId"
+          <div v-for="item in cfList" :key="item.userId||item.boUserId"
             style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .1s;"
             :style="isSelected(item)?'background:#f0fff4;':''"
             @click="toggleSelect(item)">
@@ -1413,7 +1413,7 @@ window.TemplateSendModal = {
         <button :disabled="!selected.length"
           style="padding:8px 22px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;"
           :style="selected.length?'background:#52c41a;color:#fff;box-shadow:0 2px 8px rgba(82,196,26,0.35);':'background:#f3f4f6;color:#d1d5db;cursor:not-allowed;'"
-          @click="doSend">
+          @click="handleSend">
           📨 발송{{ selected.length?' ('+selected.length+'명)':'' }}
         </button>
       </div>
@@ -1461,7 +1461,7 @@ window.RoleTreeModal = {
       nodes.forEach(n => { result.push(n); flatten(n._kids, result); });
       return result;
     };
-    const flatTree = computed(() => {
+    const cfFlatTree = computed(() => {
       const excSet = new Set();
       if (props.excludeId) {
         const mark = (id) => { excSet.add(id); allRoles.value.filter(r => r.parentId === id).forEach(r => mark(r.roleId)); };
@@ -1474,15 +1474,15 @@ window.RoleTreeModal = {
     });
     const select = (role) => emit('select', { roleId: role.roleId, roleNm: role.roleNm });
     const selectNone = () => emit('select', { roleId: null, roleNm: '' });
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
-    return { siteNm, kw, hoverId, flatTree, select, selectNone };
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    return { cfSiteNm, kw, hoverId, cfFlatTree, select, selectNone };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box" style="max-width:440px;max-height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
     <div class="tree-modal-header">
       <div>
-        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위역할 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></div>
+        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위역할 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></div>
         <div style="font-size:11px;color:#aaa;margin-top:1px;">역할을 클릭하면 상위역할로 지정됩니다</div>
       </div>
       <span class="modal-close" @click="$emit('close')">✕</span>
@@ -1502,7 +1502,7 @@ window.RoleTreeModal = {
         <div style="flex:1;"><span style="font-size:13px;font-weight:700;color:#1a1a2e;">상위없음</span><span style="font-size:11px;color:#aaa;margin-left:6px;">최상위 권한으로 등록</span></div>
         <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;" :style="{ opacity: hoverId==='__none__' ? 1 : 0 }">›</span>
       </div>
-      <div v-for="r in flatTree" :key="r.roleId"
+      <div v-for="r in cfFlatTree" :key="r.roleId"
         style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s;"
         :style="{ background: hoverId===r.roleId ? '#fff5f7' : '' }"
         @mouseenter="hoverId=r.roleId" @mouseleave="hoverId=null" @click="select(r)">
@@ -1517,7 +1517,7 @@ window.RoleTreeModal = {
         </div>
         <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;" :style="{ opacity: hoverId===r.roleId ? 1 : 0 }">›</span>
       </div>
-      <div v-if="flatTree.length===0" style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
+      <div v-if="cfFlatTree.length===0" style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
         {{ kw ? '검색 결과가 없습니다.' : '선택 가능한 권한이 없습니다.' }}
       </div>
     </div>
@@ -1557,7 +1557,7 @@ window.MenuTreeModal = {
       return result;
     };
 
-    const flatTree = computed(() => {
+    const cfFlatTree = computed(() => {
       const excSet = new Set();
       if (props.excludeId) {
         const markExclude = (id) => {
@@ -1576,9 +1576,9 @@ window.MenuTreeModal = {
 
     const select = (menu) => emit('select', { menuId: menu.menuId, menuNm: menu.menuNm });
     const selectNone = () => emit('select', { menuId: null, menuNm: '' });
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    return { siteNm, kw, hoverId, flatTree, select, selectNone };
+    return { cfSiteNm, kw, hoverId, cfFlatTree, select, selectNone };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -1587,7 +1587,7 @@ window.MenuTreeModal = {
     <!-- ── 헤더 ── -->
     <div class="tree-modal-header">
       <div>
-        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위메뉴 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></div>
+        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위메뉴 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></div>
         <div style="font-size:11px;color:#aaa;margin-top:1px;">메뉴를 클릭하면 상위메뉴로 지정됩니다</div>
       </div>
       <span class="modal-close" @click="$emit('close')">✕</span>
@@ -1622,7 +1622,7 @@ window.MenuTreeModal = {
       </div>
 
       <!-- 메뉴 트리 항목들 -->
-      <div v-for="m in flatTree" :key="m.menuId"
+      <div v-for="m in cfFlatTree" :key="m.menuId"
         style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;
                border-bottom:1px solid #f5f5f5;transition:background .1s;"
         :style="{ background: hoverId===m.menuId ? '#fff5f7' : '' }"
@@ -1648,7 +1648,7 @@ window.MenuTreeModal = {
       </div>
 
       <!-- 빈 상태 -->
-      <div v-if="flatTree.length===0"
+      <div v-if="cfFlatTree.length===0"
         style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
         {{ kw ? '검색 결과가 없습니다.' : '선택 가능한 메뉴가 없습니다.' }}
       </div>
@@ -1692,7 +1692,7 @@ window.DeptTreeModal = {
       return result;
     };
 
-    const flatTree = computed(() => {
+    const cfFlatTree = computed(() => {
       const excSet = new Set();
       if (props.excludeId) {
         const markExclude = (id) => {
@@ -1711,9 +1711,9 @@ window.DeptTreeModal = {
 
     const select = (dept) => emit('select', { deptId: dept.deptId, deptNm: dept.deptNm });
     const selectNone = () => emit('select', { deptId: null, deptNm: '' });
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    return { siteNm, kw, hoverId, flatTree, select, selectNone };
+    return { cfSiteNm, kw, hoverId, cfFlatTree, select, selectNone };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -1724,7 +1724,7 @@ window.DeptTreeModal = {
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="font-size:18px;line-height:1;">🌳</span>
         <div>
-          <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위부서 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></div>
+          <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위부서 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></div>
           <div style="font-size:11px;color:#aaa;margin-top:1px;">부서를 클릭하면 상위부서로 지정됩니다</div>
         </div>
       </div>
@@ -1762,7 +1762,7 @@ window.DeptTreeModal = {
       </div>
 
       <!-- 부서 트리 항목들 -->
-      <div v-for="d in flatTree" :key="d.deptId"
+      <div v-for="d in cfFlatTree" :key="d.deptId"
         style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;
                border-bottom:1px solid #f5f5f5;transition:background .1s;"
         :style="{ background: hoverId===d.deptId ? '#fff5f7' : '' }"
@@ -1788,7 +1788,7 @@ window.DeptTreeModal = {
       </div>
 
       <!-- 빈 상태 -->
-      <div v-if="flatTree.length===0"
+      <div v-if="cfFlatTree.length===0"
         style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
         <div style="font-size:32px;margin-bottom:8px;">🔍</div>
         {{ kw ? '검색 결과가 없습니다.' : '선택 가능한 부서가 없습니다.' }}
@@ -1835,7 +1835,7 @@ window.CategoryTreeModal = {
       return result;
     };
 
-    const flatTree = computed(() => {
+    const cfFlatTree = computed(() => {
       const excSet = new Set();
       if (props.excludeId) {
         const mark = (id) => { excSet.add(id); allCategories.value.filter(c => c.parentId === id).forEach(c => mark(c.categoryId)); };
@@ -1849,15 +1849,15 @@ window.CategoryTreeModal = {
 
     const select     = (cat) => emit('select', { categoryId: cat.categoryId, categoryNm: cat.categoryNm });
     const selectNone = () => emit('select', { categoryId: null, categoryNm: '' });
-    const siteNm   = computed(() => window.boCmUtil.getSiteNm());
-    return { siteNm, kw, hoverId, flatTree, select, selectNone };
+    const cfSiteNm   = computed(() => window.boCmUtil.getSiteNm());
+    return { cfSiteNm, kw, hoverId, cfFlatTree, select, selectNone };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box" style="max-width:440px;max-height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
     <div class="tree-modal-header">
       <div>
-        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위카테고리 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></div>
+        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위카테고리 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></div>
         <div style="font-size:11px;color:#aaa;margin-top:1px;">카테고리를 클릭하면 상위카테고리로 지정됩니다</div>
       </div>
       <span class="modal-close" @click="$emit('close')">✕</span>
@@ -1879,7 +1879,7 @@ window.CategoryTreeModal = {
         <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;" :style="{ opacity: hoverId==='__none__' ? 1 : 0 }">›</span>
       </div>
       <!-- 카테고리 트리 -->
-      <div v-for="c in flatTree" :key="c.categoryId"
+      <div v-for="c in cfFlatTree" :key="c.categoryId"
         style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s;"
         :style="{ background: hoverId===c.categoryId ? '#fff5f7' : '' }"
         @mouseenter="hoverId=c.categoryId" @mouseleave="hoverId=null" @click="select(c)">
@@ -1894,7 +1894,7 @@ window.CategoryTreeModal = {
         </div>
         <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;" :style="{ opacity: hoverId===c.categoryId ? 1 : 0 }">›</span>
       </div>
-      <div v-if="flatTree.length===0" style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
+      <div v-if="cfFlatTree.length===0" style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
         <div style="font-size:32px;margin-bottom:8px;">🔍</div>
         {{ kw ? '검색 결과가 없습니다.' : '선택 가능한 카테고리가 없습니다.' }}
       </div>
@@ -2302,7 +2302,7 @@ window.RowPickModal = {
     };
 
     /* 모든 위젯을 flatten (panel 정보 포함) */
-    const allRows = computed(() => {
+    const cfAllRows = computed(() => {
       const out = [];
       (props.displays || []).forEach(p => {
         if (props.excludePanelId && p.dispId === props.excludePanelId) return;
@@ -2321,7 +2321,7 @@ window.RowPickModal = {
       return out;
     });
 
-    const filtered = computed(() => allRows.value.filter(o => {
+    const cfFiltered = computed(() => cfAllRows.value.filter(o => {
       const kw = searchKw.value.trim().toLowerCase();
       if (kw && !(o.row.widgetNm||'').toLowerCase().includes(kw)
            && !(o.__panelName||'').toLowerCase().includes(kw)
@@ -2333,17 +2333,17 @@ window.RowPickModal = {
       }
       return true;
     }));
-    const total = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList = computed(() => filtered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    const pageNums = computed(() => {
-      const cur = pager.page, last = totalPages.value;
+    const cfTotal = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
+    const cfPageNums = computed(() => {
+      const cur = pager.page, last = cfTotalPages.value;
       const s = Math.max(1, cur-2), e = Math.min(last, s+4);
       return Array.from({ length: e-s+1 }, (_, i) => s+i);
     });
-    const tree = computed(() => {
+    const cfTree = computed(() => {
       const g = {};
-      allRows.value.forEach(o => {
+      cfAllRows.value.forEach(o => {
         const top = (o.__area || '(미등록)').split('_')[0];
         g[top] = (g[top] || 0) + 1;
       });
@@ -2357,15 +2357,15 @@ window.RowPickModal = {
       if (s.has(id)) s.delete(id); else s.add(id);
       checked = s;
     };
-    const allChecked = computed(() => pageList.value.length > 0 && pageList.value.every(o => checked.has(o.__rowId)));
+    const cfAllChecked = computed(() => cfPageList.value.length > 0 && cfPageList.value.every(o => checked.has(o.__rowId)));
     const toggleCheckAll = () => {
       const s = new Set(checked);
-      if (allChecked.value) pageList.value.forEach(o => s.delete(o.__rowId));
-      else pageList.value.forEach(o => s.add(o.__rowId));
+      if (cfAllChecked.value) cfPageList.value.forEach(o => s.delete(o.__rowId));
+      else cfPageList.value.forEach(o => s.add(o.__rowId));
       checked = s;
     };
     const pickMulti = () => {
-      const picks = allRows.value.filter(o => checked.has(o.__rowId));
+      const picks = cfAllRows.value.filter(o => checked.has(o.__rowId));
       if (!picks.length) return;
       emit('pick-multi', picks.map(o => ({ ...o.row })));
       checked = new Set();
@@ -2383,10 +2383,10 @@ window.RowPickModal = {
 
     return {
       searchKw, searchStatus, pager, PAGE_SIZES,
-      total, totalPages, pageList, pageNums,
-      selectedTreeKey, toggleTree, isTreeOpen, selectTree, tree,
+      cfTotal, cfTotalPages, cfPageList, cfPageNums,
+      selectedTreeKey, toggleTree, isTreeOpen, selectTree, cfTree,
       statusCls, areaNm, wLabel,
-      checked, isChecked, toggleCheck, allChecked, toggleCheckAll, pickMulti, pickOne,
+      checked, isChecked, toggleCheck, cfAllChecked, toggleCheckAll, pickMulti, pickOne,
     };
   },
   template: /* html */`
@@ -2411,10 +2411,10 @@ window.RowPickModal = {
         <div @click="toggleTree('__root__'); selectTree('')"
           :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',color: selectedTreeKey==='' ? '#1565c0' : '#222',fontWeight:700,border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec') }">
           <span>{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
-          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ total }}</span>
+          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ cfTotal }}</span>
         </div>
         <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
-          <div v-for="node in tree" :key="node.label"
+          <div v-for="node in cfTree" :key="node.label"
             @click="selectTree(node.label)"
             :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'5px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'2px',background: selectedTreeKey===node.label ? '#e3f2fd' : 'transparent',color: selectedTreeKey===node.label ? '#1565c0' : '#333',fontWeight: selectedTreeKey===node.label ? 700 : 500 }">
             <span>▸ {{ node.label }}</span>
@@ -2424,14 +2424,14 @@ window.RowPickModal = {
       </div>
       <div style="flex:1;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
         <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;display:flex;justify-content:space-between;align-items:center;">
-          <span>총 <b>{{ total }}</b>건 <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span></span>
+          <span>총 <b>{{ cfTotal }}</b>건 <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span></span>
           <button v-if="checked.size" @click="pickMulti" class="btn btn-primary btn-sm" style="font-size:11px;">선택한 {{ checked.size }}개 일괄 복사</button>
         </div>
         <div style="flex:1;overflow-y:auto;">
           <table class="bo-table" style="margin:0;">
             <thead>
               <tr>
-                <th style="width:36px;text-align:center;"><input type="checkbox" :checked="allChecked" @change="toggleCheckAll" /></th>
+                <th style="width:36px;text-align:center;"><input type="checkbox" :checked="cfAllChecked" @change="toggleCheckAll" /></th>
                 <th style="width:110px;">위젯 유형</th>
                 <th>전시항목 정보</th>
                 <th style="width:160px;text-align:left;">사용위치경로</th>
@@ -2439,8 +2439,8 @@ window.RowPickModal = {
               </tr>
             </thead>
             <tbody>
-              <tr v-if="!pageList.length"><td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 전시항목이 없습니다.</td></tr>
-              <tr v-for="o in pageList" :key="o.__rowId"
+              <tr v-if="!cfPageList.length"><td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 전시항목이 없습니다.</td></tr>
+              <tr v-for="o in cfPageList" :key="o.__rowId"
                 :style="isChecked(o.__rowId)?'background:#eef6fd;':''">
                 <td style="text-align:center;vertical-align:top;padding-top:14px;">
                   <input type="checkbox" :checked="isChecked(o.__rowId)" @change="toggleCheck(o.__rowId)" />
@@ -2475,9 +2475,9 @@ window.RowPickModal = {
           <div class="pager">
             <button :disabled="pager.page===1" @click="pager.page=1">«</button>
             <button :disabled="pager.page===1" @click="pager.page--">‹</button>
-            <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
-            <button :disabled="pager.page===totalPages" @click="pager.page++">›</button>
-            <button :disabled="pager.page===totalPages" @click="pager.page=totalPages">»</button>
+            <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
+            <button :disabled="pager.page===cfTotalPages" @click="pager.page++">›</button>
+            <button :disabled="pager.page===cfTotalPages" @click="pager.page=cfTotalPages">»</button>
           </div>
           <div class="pager-right">
             <select class="size-select" v-model.number="pager.size" @change="pager.page=1">
@@ -2515,7 +2515,7 @@ window.AreaPickModal = {
     const isTreeOpen = k => treeOpen.has(k);
     const selectTree = k => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
 
-    const filtered = computed(() => (props.areas || []).filter(a => {
+    const cfFiltered = computed(() => (props.areas || []).filter(a => {
       if (props.excludeUi && a.uiCode === props.excludeUi) return false;
       const kw = searchKw.value.trim().toLowerCase();
       if (kw && !(a.codeValue||'').toLowerCase().includes(kw) && !(a.codeLabel||'').toLowerCase().includes(kw)) return false;
@@ -2526,15 +2526,15 @@ window.AreaPickModal = {
       }
       return true;
     }).sort((a,b) => (a.codeLabel||'').localeCompare(b.codeLabel||'')));
-    const total = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList = computed(() => filtered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    const pageNums = computed(() => {
-      const cur = pager.page, last = totalPages.value;
+    const cfTotal = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
+    const cfPageNums = computed(() => {
+      const cur = pager.page, last = cfTotalPages.value;
       const s = Math.max(1, cur-2), e = Math.min(last, s+4);
       return Array.from({ length: e-s+1 }, (_, i) => s+i);
     });
-    const tree = computed(() => {
+    const cfTree = computed(() => {
       const g = {};
       (props.areas || []).forEach(a => {
         if (props.excludeUi && a.uiCode === props.excludeUi) return;
@@ -2554,11 +2554,11 @@ window.AreaPickModal = {
       if (s.has(id)) s.delete(id); else s.add(id);
       checked = s;
     };
-    const allChecked = computed(() => pageList.value.length > 0 && pageList.value.every(a => checked.has(a.codeId)));
+    const cfAllChecked = computed(() => cfPageList.value.length > 0 && cfPageList.value.every(a => checked.has(a.codeId)));
     const toggleCheckAll = () => {
       const s = new Set(checked);
-      if (allChecked.value) pageList.value.forEach(a => s.delete(a.codeId));
-      else pageList.value.forEach(a => s.add(a.codeId));
+      if (cfAllChecked.value) cfPageList.value.forEach(a => s.delete(a.codeId));
+      else cfPageList.value.forEach(a => s.add(a.codeId));
       checked = s;
     };
     const pickMulti = () => {
@@ -2573,10 +2573,10 @@ window.AreaPickModal = {
 
     return {
       searchKw, searchUseYn, pager, PAGE_SIZES,
-      total, totalPages, pageList, pageNums,
-      selectedTreeKey, toggleTree, isTreeOpen, selectTree, tree,
+      cfTotal, cfTotalPages, cfPageList, cfPageNums,
+      selectedTreeKey, toggleTree, isTreeOpen, selectTree, cfTree,
       statusCls, onPick,
-      checked, isChecked, toggleCheck, allChecked, toggleCheckAll, pickMulti,
+      checked, isChecked, toggleCheck, cfAllChecked, toggleCheckAll, pickMulti,
     };
   },
   template: /* html */`
@@ -2601,10 +2601,10 @@ window.AreaPickModal = {
         <div @click="toggleTree('__root__'); selectTree('')"
           :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',color: selectedTreeKey==='' ? '#1565c0' : '#222',fontWeight:700,border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec') }">
           <span>{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
-          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ total }}</span>
+          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ cfTotal }}</span>
         </div>
         <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
-          <div v-for="node in tree" :key="node.label"
+          <div v-for="node in cfTree" :key="node.label"
             @click="selectTree(node.label)"
             :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'5px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'2px',background: selectedTreeKey===node.label ? '#e3f2fd' : 'transparent',color: selectedTreeKey===node.label ? '#1565c0' : '#333',fontWeight: selectedTreeKey===node.label ? 700 : 500 }">
             <span>▸ {{ node.label }}</span>
@@ -2614,14 +2614,14 @@ window.AreaPickModal = {
       </div>
       <div style="flex:1;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
         <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;display:flex;justify-content:space-between;align-items:center;">
-          <span>총 <b>{{ total }}</b>건 <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span></span>
+          <span>총 <b>{{ cfTotal }}</b>건 <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span></span>
           <button v-if="checked.size" @click="pickMulti" class="btn btn-primary btn-sm" style="font-size:11px;">선택한 {{ checked.size }}개 일괄 추가</button>
         </div>
         <div style="flex:1;overflow-y:auto;">
           <table class="bo-table" style="margin:0;">
             <thead>
               <tr>
-                <th style="width:36px;text-align:center;"><input type="checkbox" :checked="allChecked" @change="toggleCheckAll" /></th>
+                <th style="width:36px;text-align:center;"><input type="checkbox" :checked="cfAllChecked" @change="toggleCheckAll" /></th>
                 <th style="width:56px;">ID</th>
                 <th>영역 정보</th>
                 <th style="width:140px;text-align:left;">사용위치경로</th>
@@ -2629,8 +2629,8 @@ window.AreaPickModal = {
               </tr>
             </thead>
             <tbody>
-              <tr v-if="!pageList.length"><td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 영역이 없습니다.</td></tr>
-              <tr v-for="a in pageList" :key="a.codeId"
+              <tr v-if="!cfPageList.length"><td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 영역이 없습니다.</td></tr>
+              <tr v-for="a in cfPageList" :key="a.codeId"
                 :style="isChecked(a.codeId)?'background:#eef6fd;':''">
                 <td style="text-align:center;vertical-align:top;padding-top:14px;">
                   <input type="checkbox" :checked="isChecked(a.codeId)" @change="toggleCheck(a.codeId)" />
@@ -2665,9 +2665,9 @@ window.AreaPickModal = {
           <div class="pager">
             <button :disabled="pager.page===1" @click="pager.page=1">«</button>
             <button :disabled="pager.page===1" @click="pager.page--">‹</button>
-            <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
-            <button :disabled="pager.page===totalPages" @click="pager.page++">›</button>
-            <button :disabled="pager.page===totalPages" @click="pager.page=totalPages">»</button>
+            <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
+            <button :disabled="pager.page===cfTotalPages" @click="pager.page++">›</button>
+            <button :disabled="pager.page===cfTotalPages" @click="pager.page=cfTotalPages">»</button>
           </div>
           <div class="pager-right">
             <select class="size-select" v-model.number="pager.size" @change="pager.page=1">
@@ -2711,7 +2711,7 @@ window.PanelPickModal = {
       return a ? a.codeLabel : code;
     };
 
-    const filtered = computed(() => (props.displays || []).filter(p => {
+    const cfFiltered = computed(() => (props.displays || []).filter(p => {
       if (props.excludeArea && p.area === props.excludeArea) return false;
       const kw = searchKw.value.trim().toLowerCase();
       if (kw && !(p.name||'').toLowerCase().includes(kw) && !(p.area||'').toLowerCase().includes(kw)) return false;
@@ -2722,15 +2722,15 @@ window.PanelPickModal = {
       }
       return true;
     }).sort((a,b) => (a.name||'').localeCompare(b.name||'')));
-    const total = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList = computed(() => filtered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    const pageNums = computed(() => {
-      const cur = pager.page, last = totalPages.value;
+    const cfTotal = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
+    const cfPageNums = computed(() => {
+      const cur = pager.page, last = cfTotalPages.value;
       const s = Math.max(1, cur-2), e = Math.min(last, s+4);
       return Array.from({ length: e-s+1 }, (_, i) => s+i);
     });
-    const tree = computed(() => {
+    const cfTree = computed(() => {
       const g = {};
       (props.displays || []).forEach(p => {
         if (props.excludeArea && p.area === props.excludeArea) return;
@@ -2750,11 +2750,11 @@ window.PanelPickModal = {
       if (s.has(id)) s.delete(id); else s.add(id);
       checked = s;
     };
-    const allChecked = computed(() => pageList.value.length > 0 && pageList.value.every(p => checked.has(p.dispId)));
+    const cfAllChecked = computed(() => cfPageList.value.length > 0 && cfPageList.value.every(p => checked.has(p.dispId)));
     const toggleCheckAll = () => {
       const s = new Set(checked);
-      if (allChecked.value) pageList.value.forEach(p => s.delete(p.dispId));
-      else pageList.value.forEach(p => s.add(p.dispId));
+      if (cfAllChecked.value) cfPageList.value.forEach(p => s.delete(p.dispId));
+      else cfPageList.value.forEach(p => s.add(p.dispId));
       checked = s;
     };
     const pickMulti = () => {
@@ -2769,10 +2769,10 @@ window.PanelPickModal = {
 
     return {
       searchKw, searchStatus, pager, PAGE_SIZES,
-      total, totalPages, pageList, pageNums,
-      selectedTreeKey, toggleTree, isTreeOpen, selectTree, tree,
+      cfTotal, cfTotalPages, cfPageList, cfPageNums,
+      selectedTreeKey, toggleTree, isTreeOpen, selectTree, cfTree,
       statusCls, onPick, areaNm,
-      checked, isChecked, toggleCheck, allChecked, toggleCheckAll, pickMulti,
+      checked, isChecked, toggleCheck, cfAllChecked, toggleCheckAll, pickMulti,
     };
   },
   template: /* html */`
@@ -2798,10 +2798,10 @@ window.PanelPickModal = {
         <div @click="toggleTree('__root__'); selectTree('')"
           :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',color: selectedTreeKey==='' ? '#1565c0' : '#222',fontWeight:700,border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec') }">
           <span>{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
-          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ total }}</span>
+          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ cfTotal }}</span>
         </div>
         <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
-          <div v-for="node in tree" :key="node.label"
+          <div v-for="node in cfTree" :key="node.label"
             @click="selectTree(node.label)"
             :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'5px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'2px',background: selectedTreeKey===node.label ? '#e3f2fd' : 'transparent',color: selectedTreeKey===node.label ? '#1565c0' : '#333',fontWeight: selectedTreeKey===node.label ? 700 : 500 }">
             <span>▸ {{ node.label }}</span>
@@ -2812,7 +2812,7 @@ window.PanelPickModal = {
       <!-- 목록 -->
       <div style="flex:1;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
         <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;display:flex;justify-content:space-between;align-items:center;">
-          <span>총 <b>{{ total }}</b>건 <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span></span>
+          <span>총 <b>{{ cfTotal }}</b>건 <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span></span>
           <button v-if="checked.size" @click="pickMulti" class="btn btn-primary btn-sm" style="font-size:11px;">선택한 {{ checked.size }}개 일괄 추가</button>
         </div>
         <div style="flex:1;overflow-y:auto;">
@@ -2820,7 +2820,7 @@ window.PanelPickModal = {
             <thead>
               <tr>
                 <th style="width:36px;text-align:center;">
-                  <input type="checkbox" :checked="allChecked" @change="toggleCheckAll" />
+                  <input type="checkbox" :checked="cfAllChecked" @change="toggleCheckAll" />
                 </th>
                 <th style="width:56px;">ID</th>
                 <th>패널 정보</th>
@@ -2829,8 +2829,8 @@ window.PanelPickModal = {
               </tr>
             </thead>
             <tbody>
-              <tr v-if="!pageList.length"><td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 패널이 없습니다.</td></tr>
-              <tr v-for="p in pageList" :key="p.dispId"
+              <tr v-if="!cfPageList.length"><td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 패널이 없습니다.</td></tr>
+              <tr v-for="p in cfPageList" :key="p.dispId"
                 :style="isChecked(p.dispId)?'background:#eef6fd;':''">
                 <td style="text-align:center;vertical-align:top;padding-top:14px;">
                   <input type="checkbox" :checked="isChecked(p.dispId)" @change="toggleCheck(p.dispId)" />
@@ -3082,10 +3082,10 @@ window.PathPickModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const tree = computed(() => window.boCmUtil.buildPathTree(props.bizCd));
+    const cfTree = computed(() => window.boCmUtil.buildPathTree(props.bizCd));
     const expanded = reactive(new Set([null]));
     const toggle = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
-    const expandAll = () => { expanded.clear(); expanded.add(null); const walk = (n) => { expanded.add(n.pathId); (n.children||[]).forEach(walk); }; walk(tree.value); };
+    const expandAll = () => { expanded.clear(); expanded.add(null); const walk = (n) => { expanded.add(n.pathId); (n.children||[]).forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     /* 3레벨 자동 펼침 (모달 오픈 시) */
     const expandLevels = (maxDepth) => {
@@ -3094,7 +3094,7 @@ window.PathPickModal = {
         if (d >= maxDepth) return;
         (n.children || []).forEach(ch => { expanded.add(ch.pathId); walk(ch, d + 1); });
       };
-      walk(tree.value, 0);
+      walk(cfTree.value, 0);
     };
     Vue.onMounted(() => expandLevels(2));
 
@@ -3161,7 +3161,7 @@ window.PathPickModal = {
     };
 
     const labelOf = (id) => window.boCmUtil.getPathLabel(id);
-    return { tree, expanded, toggle, expandAll, collapseAll, selectedId, select, confirm,
+    return { cfTree, expanded, toggle, expandAll, collapseAll, selectedId, select, confirm,
              addParent, addLabel, setAddParent, doAdd, labelOf,
              editingId, editLabel, startEdit, saveEdit, cancelEdit, deleteNode };
   },
@@ -3215,9 +3215,9 @@ window.PathPickModal = {
           @mouseover="(selectedId!==null && addParent!==null) && ($event.currentTarget.style.background='#f9fafb')"
           @mouseout="(selectedId!==null && addParent!==null) && ($event.currentTarget.style.background='transparent')">
           <span style="margin-right:8px;">📁</span>(루트)
-          <span style="font-size:10px;color:#6b7280;background:#fff;padding:1px 8px;border-radius:10px;border:1px solid #e5e7eb;margin-left:8px;font-weight:500;">{{ tree.count }}</span>
+          <span style="font-size:10px;color:#6b7280;background:#fff;padding:1px 8px;border-radius:10px;border:1px solid #e5e7eb;margin-left:8px;font-weight:500;">{{ cfTree.count }}</span>
         </div>
-        <path-pick-tree-node :node="tree" :expanded="expanded" :selected="selectedId" :add-parent="addParent"
+        <path-pick-tree-node :node="cfTree" :expanded="expanded" :selected="selectedId" :add-parent="addParent"
           :editing-id="editingId" :edit-label="editLabel"
           :on-toggle="toggle" :on-select="select" :on-set-parent="setAddParent" :on-confirm="confirm"
           :on-start-edit="startEdit" :on-save-edit="saveEdit" :on-cancel-edit="cancelEdit"

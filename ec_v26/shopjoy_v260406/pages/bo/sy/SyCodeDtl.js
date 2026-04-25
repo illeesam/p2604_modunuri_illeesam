@@ -26,8 +26,8 @@ window.SyCodeDtl = {
       }
     };
     onMounted(() => { fetchData(); });
-    const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({
       codeId: null, codeGrp: '', codeLabel: '', codeValue: '', sortOrd: 1, useYn: 'Y', remark: '',
     });
@@ -40,13 +40,13 @@ window.SyCodeDtl = {
     });
 
     onMounted(() => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const c = codes.find(x => x.codeId === props.editId);
         if (c) Object.assign(form, { ...c });
       }
     });
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
@@ -55,18 +55,18 @@ window.SyCodeDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (isNew.value) {
+      if (cfIsNew.value) {
         codes.push({ ...form, codeId: nextId.value(codes, 'codeId'), sortOrd: Number(form.sortOrd) || 1 });
       } else {
         const idx = codes.findIndex(x => x.codeId === props.editId);
         if (idx !== -1) Object.assign(codes[idx], { ...form, sortOrd: Number(form.sortOrd) || 1 });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`/bo/sy/code/${form.codeId}`, { ...form }) : window.boApi.put(`/bo/sy/code/${form.codeId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/code/${form.codeId}`, { ...form }) : window.boApi.put(`/bo/sy/code/${form.codeId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syCodeMng');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -75,16 +75,16 @@ window.SyCodeDtl = {
       }
     };
 
-    return { codes, loading, error, isNew, form, errors, save, siteNm };
+    return { codes, loading, error, cfIsNew, form, errors, handleSave, cfSiteNm };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '공통코드 등록' : '공통코드 수정' }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.codeId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '공통코드 등록' : '공통코드 수정' }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.codeId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ siteNm }}</div>
+        <div class="readonly-field">{{ cfSiteNm }}</div>
       </div>
     </div>
     <div class="form-row">
@@ -123,7 +123,7 @@ window.SyCodeDtl = {
       </div>
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" @click="save">저장</button>
+      <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('syCodeMng')">취소</button>
     </div>
   </div>

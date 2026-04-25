@@ -26,8 +26,8 @@ window.SyTemplateDtl = {
       }
     };
     onMounted(() => { loadData(); });
-    const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const TEMPLATE_TYPES = ['메일템플릿', '문자템플릿', 'MMS템플릿', 'kakao톡템플릿', 'kakao알림톡템플릿', '시스템알림', '회원알림'];
     const form = reactive({
       templateId: null, templateTypeCd: '메일템플릿', templateCode: '', templateNm: '', subject: '', content: '', useYn: 'Y', sampleParams: '{}',
@@ -35,7 +35,7 @@ window.SyTemplateDtl = {
     const errors = reactive({});
 
     /* ── Quill (메일, 시스템알림) ── */
-    const useHtmlEditor = computed(() => ['메일템플릿', '시스템알림'].includes(form.templateTypeCd));
+    const cfUseHtmlEditor = computed(() => ['메일템플릿', '시스템알림'].includes(form.templateTypeCd));
     const quillEditorEl = ref(null);
     let _quill = null;
 
@@ -63,17 +63,17 @@ window.SyTemplateDtl = {
     };
 
     /* 타입 변경 시 에디터 전환 — post-flush: DOM 업데이트 후 실행 */
-    watch(useHtmlEditor, (isHtml) => {
+    watch(cfUseHtmlEditor, (isHtml) => {
       if (isHtml && !props.viewMode) initQuill();
       else destroyQuill();
     }, { flush: 'post' });
 
     const initForm = async () => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const t = templates.find(x => x.templateId === props.editId);
         if (t) Object.assign(form, { sampleParams: '{}', ...t });
       }
-      if (useHtmlEditor.value && !props.viewMode) { await nextTick(); initQuill(); }
+      if (cfUseHtmlEditor.value && !props.viewMode) { await nextTick(); initQuill(); }
     };
     onMounted(() => { initForm(); });
 
@@ -85,7 +85,7 @@ window.SyTemplateDtl = {
       content: yup.string().required('내용을 입력해주세요.'),
     });
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
@@ -98,18 +98,18 @@ window.SyTemplateDtl = {
         try { JSON.parse(form.sampleParams); }
         catch { props.showToast('파라미터 샘플 JSON 형식이 올바르지 않습니다.', 'error'); return; }
       }
-      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (isNew.value) {
+      if (cfIsNew.value) {
         templates.push({ ...form, templateId: nextId.value(templates, 'templateId'), regDate: new Date().toISOString().slice(0, 10) });
       } else {
         const idx = templates.findIndex(x => x.templateId === props.editId);
         if (idx !== -1) Object.assign(templates[idx], { ...form });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`/bo/sy/template`, { ...form }) : window.boApi.put(`/bo/sy/template/${form.templateId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/template`, { ...form }) : window.boApi.put(`/bo/sy/template/${form.templateId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syTemplateMng');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -118,24 +118,24 @@ window.SyTemplateDtl = {
       }
     };
 
-    const needSubject = computed(() => ['메일템플릿', 'MMS템플릿', '시스템알림'].includes(form.templateTypeCd));
-    const isLongContent = computed(() => ['MMS템플릿'].includes(form.templateTypeCd));
+    const cfNeedSubject = computed(() => ['메일템플릿', 'MMS템플릿', '시스템알림'].includes(form.templateTypeCd));
+    const cfIsLongContent = computed(() => ['MMS템플릿'].includes(form.templateTypeCd));
 
     /* 미리보기 / 발송 모달 */
     const previewOpen = ref(false);
     const sendOpen    = ref(false);
 
-    return { templates, loading, error, isNew, form, errors, save, TEMPLATE_TYPES, needSubject, isLongContent,
-             useHtmlEditor, quillEditorEl, previewOpen, sendOpen, siteNm };
+    return { templates, loading, error, cfIsNew, form, errors, handleSave, TEMPLATE_TYPES, cfNeedSubject, cfIsLongContent,
+             cfUseHtmlEditor, quillEditorEl, previewOpen, sendOpen, cfSiteNm };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '템플릿 등록' : (viewMode ? '템플릿 상세' : '템플릿 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.templateId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '템플릿 등록' : (viewMode ? '템플릿 상세' : '템플릿 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.templateId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ siteNm }}</div>
+        <div class="readonly-field">{{ cfSiteNm }}</div>
       </div>
     </div>
     <div class="form-row">
@@ -159,7 +159,7 @@ window.SyTemplateDtl = {
         <span v-if="errors.templateNm" class="field-error">{{ errors.templateNm }}</span>
       </div>
     </div>
-    <div class="form-row" v-if="needSubject">
+    <div class="form-row" v-if="cfNeedSubject">
       <div class="form-group" style="flex:1">
         <label class="form-label">제목 (Subject)</label>
         <input class="form-control" v-model="form.subject" placeholder="메일/MMS/시스템 제목" :readonly="viewMode" />
@@ -171,14 +171,14 @@ window.SyTemplateDtl = {
           <span style="font-size:11px;color:#888;margin-left:6px;">사용 가능 변수: &#123;&#123;username&#125;&#125;, &#123;&#123;orderId&#125;&#125;, &#123;&#123;prodNm&#125;&#125;, &#123;&#123;trackingNo&#125;&#125; 등</span>
         </label>
         <!-- HTML 에디터 (메일, 시스템알림) -->
-        <template v-if="useHtmlEditor">
+        <template v-if="cfUseHtmlEditor">
           <div v-if="viewMode" class="form-control" style="height:260px;line-height:1.6;overflow:auto;" v-html="form.content || '<span style=color:#bbb>-</span>'"></div>
           <div v-else ref="quillEditorEl"
             style="height:260px;background:#fff;border:1px solid #d9d9d9;border-radius:0 0 6px 6px;"></div>
         </template>
         <!-- 텍스트 영역 -->
         <textarea v-else class="form-control" v-model="form.content"
-          :rows="isLongContent ? 10 : 5"
+          :rows="cfIsLongContent ? 10 : 5"
           placeholder="템플릿 내용 입력"
           :readonly="viewMode"
           :class="errors.content ? 'is-invalid' : ''"></textarea>
@@ -213,7 +213,7 @@ window.SyTemplateDtl = {
       <template v-else>
         <button class="btn btn-secondary" @click="previewOpen=true">📄 미리보기</button>
         <button class="btn btn-primary" style="background:#52c41a;border-color:#52c41a;" @click="sendOpen=true">📨 발송하기</button>
-        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('syTemplateMng')">취소</button>
       </template>
     </div>

@@ -26,8 +26,8 @@ window.SyUserDtl = {
       }
     };
     onMounted(() => { fetchData(); });
-    const isNew = computed(() => props.editId === null || props.editId === undefined);
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const form = reactive({
       boUserId: null, loginId: '', name: '', email: '', phone: '',
@@ -45,7 +45,7 @@ window.SyUserDtl = {
     });
 
     onMounted(() => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const u = boUsers.value.find(x => x.boUserId === props.editId);
         if (u) Object.assign(form, { ...u, password: '' });
       }
@@ -80,19 +80,19 @@ window.SyUserDtl = {
     const clearDept = () => { form.deptId = null; form.dept = ''; };
 
     /* ── 현재 적용 역할 목록 ── */
-    const userRoles = computed(() => {
-      if (isNew.value) return [];
+    const cfUserRoles = computed(() => {
+      if (cfIsNew.value) return [];
       return roleUsers.value
         .filter(ru => ru.boUserId === props.editId)
         .map(ru => roles.value.find(r => r.roleId === ru.roleId))
         .filter(Boolean);
     });
 
-    const roleTypeBadge = (t) => ({
+    const fnRoleTypeBadge = (t) => ({
       '시스템': 'badge-purple', '업무': 'badge-blue', '기타': 'badge-gray',
     }[t] || 'badge-gray');
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
@@ -101,10 +101,10 @@ window.SyUserDtl = {
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (isNew.value && !form.password) { props.showToast('신규 등록 시 비밀번호는 필수입니다.', 'error'); return; }
-      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (cfIsNew.value && !form.password) { props.showToast('신규 등록 시 비밀번호는 필수입니다.', 'error'); return; }
+      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (isNew.value) {
+      if (cfIsNew.value) {
         const { password, ...rest } = form;
         boUsers.value.push({ ...rest, boUserId: nextId.value(boUsers.value, 'boUserId'), lastLogin: '-', regDate: new Date().toISOString().slice(0, 10) });
       } else {
@@ -115,9 +115,9 @@ window.SyUserDtl = {
         }
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`/bo/sy/user`, { ...form }) : window.boApi.put(`/bo/sy/user/${form.boUserId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/user`, { ...form }) : window.boApi.put(`/bo/sy/user/${form.boUserId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syUserMng');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -126,31 +126,31 @@ window.SyUserDtl = {
       }
     };
 
-    return { users, loading, error, isNew, form, errors, save, siteNm,
+    return { users, loading, error, cfIsNew, form, errors, handleSave, cfSiteNm,
              addrDetailRef, openKakaoPostcode,
              deptModal, openDeptModal, onDeptSelect, clearDept,
-             userRoles, roleTypeBadge };
+             cfUserRoles, fnRoleTypeBadge };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ isNew ? '사용자 등록' : (viewMode ? '사용자 상세' : '사용자 수정') }}</div><span v-if="!isNew" style="font-size:12px;color:#999;">#{{ form.boUserId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '사용자 등록' : (viewMode ? '사용자 상세' : '사용자 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.boUserId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">사이트명</label>
-        <div class="readonly-field">{{ siteNm }}</div>
+        <div class="readonly-field">{{ cfSiteNm }}</div>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">로그인ID <span v-if="!viewMode" class="req">*</span></label>
         <input class="form-control" v-model="form.loginId" placeholder="로그인 아이디"
-          :readonly="!isNew || viewMode" :style="(!isNew || viewMode)?'background:#f5f5f5;':''"
+          :readonly="!cfIsNew || viewMode" :style="(!cfIsNew || viewMode)?'background:#f5f5f5;':''"
           :class="errors.loginId ? 'is-invalid' : ''" />
         <span v-if="errors.loginId" class="field-error">{{ errors.loginId }}</span>
       </div>
       <div v-if="!viewMode" class="form-group">
-        <label class="form-label">비밀번호{{ isNew ? '' : ' (변경 시 입력)' }} <span v-if="isNew" class="req">*</span></label>
+        <label class="form-label">비밀번호{{ cfIsNew ? '' : ' (변경 시 입력)' }} <span v-if="cfIsNew" class="req">*</span></label>
         <input class="form-control" type="password" v-model="form.password" placeholder="비밀번호" />
       </div>
     </div>
@@ -221,22 +221,22 @@ window.SyUserDtl = {
         <button class="btn btn-secondary" @click="navigate('syUserMng')">닫기</button>
       </template>
       <template v-else>
-        <button class="btn btn-primary" @click="save">저장</button>
+        <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('syUserMng')">취소</button>
       </template>
     </div>
   </div>
 
   <!-- 적용 역할 목록 -->
-  <div v-if="!isNew" class="card">
+  <div v-if="!cfIsNew" class="card">
     <div class="toolbar" style="margin-bottom:12px;">
       <span class="list-title">
         <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
         적용 역할 목록
-        <span class="list-count">{{ userRoles.length }}건</span>
+        <span class="list-count">{{ cfUserRoles.length }}건</span>
       </span>
     </div>
-    <div v-if="userRoles.length === 0"
+    <div v-if="cfUserRoles.length === 0"
       style="text-align:center;color:#bbb;padding:24px;font-size:13px;">
       배정된 역할이 없습니다.
     </div>
@@ -253,12 +253,12 @@ window.SyUserDtl = {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="r in userRoles" :key="r.roleId">
+        <tr v-for="r in cfUserRoles" :key="r.roleId">
           <td style="text-align:center;color:#888;">{{ r.roleId }}</td>
           <td><span style="font-family:monospace;font-size:11px;color:#2563eb;">{{ r.roleCode }}</span></td>
           <td style="font-weight:600;">{{ r.roleNm }}</td>
           <td style="text-align:center;">
-            <span class="badge" :class="roleTypeBadge(r.roleType)">{{ r.roleType }}</span>
+            <span class="badge" :class="fnRoleTypeBadge(r.roleType)">{{ r.roleType }}</span>
           </td>
           <td style="text-align:center;">
             <span class="badge" :class="r.restrictPerm==='없음'?'badge-green':r.restrictPerm==='읽기'?'badge-orange':'badge-red'">
