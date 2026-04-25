@@ -305,13 +305,13 @@ window.Prod03View = {
     });
 
     /* ── 카테고리 라벨 ── */
-    const categoryLabel = p => {
+    const fnCategoryLabel = p => {
       if (!p) return '';
       return (props.config?.categorys || []).find(c => c.categoryId === p.categoryId)?.categoryNm || p.categoryId || '';
     };
 
     /* ── 옵션 재고 상태 (목업: 색상 + 사이즈) ── */
-    const colorStockMap = computed(() => {
+    const cfColorStockMap = computed(() => {
       const p = props.product;
       if (!p) return {};
       const opt1s = p.opt1s || [];
@@ -325,9 +325,9 @@ window.Prod03View = {
       });
       return map;
     });
-    const colorStatus = (c) => colorStockMap.value[c?.name] || 'ok';
+    const colorStatus = (c) => cfColorStockMap.value[c?.name] || 'ok';
 
-    const sizeStockMap = computed(() => {
+    const cfSizeStockMap = computed(() => {
       const p = props.product;
       if (!p) return {};
       const sizes = p.opt2s || [];
@@ -341,10 +341,10 @@ window.Prod03View = {
       });
       return map;
     });
-    const sizeStatus = (s) => sizeStockMap.value[s] || 'ok';
+    const sizeStatus = (s) => cfSizeStockMap.value[s] || 'ok';
 
     /* ── 옵션별 가격 ── */
-    const basePrice = computed(() => {
+    const cfBasePrice = computed(() => {
       const numStr = String(props.product?.price || '').replace(/[^0-9]/g, '');
       return Number(numStr) || 0;
     });
@@ -353,10 +353,10 @@ window.Prod03View = {
     const getSizeDelta = (sizeName) => (props.product?.opt2Prices || {})[sizeName] || 0;
 
     /* 선택된 색상+사이즈의 최종 단가 */
-    const selectedUnitPrice = computed(() => {
+    const cfSelectedUnitPrice = computed(() => {
       const colorDelta = selectedColor.value?.priceDelta || 0;
       const sizeDelta  = getSizeDelta(selectedSize.value);
-      return basePrice.value + colorDelta + sizeDelta;
+      return cfBasePrice.value + colorDelta + sizeDelta;
     });
 
     /* 모든 옵션 조합의 최소~최대 가격 범위 */

@@ -97,12 +97,12 @@ window.MbMemGroupMng = {
     };
     const onSearch = () => { Object.assign(applied, { kw: searchKw.value, use: searchUse.value }); pager.page = 1; };
     const onReset  = () => { searchKw.value = ''; searchUse.value = ''; Object.assign(applied, { kw: '', use: '' }); pager.page = 1; };
-    const setPage  = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    const ynBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
+    const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { groups, loading, error, searchKw, searchUse, pager, pageNums, totalPages, setPage, total, onSearch, onReset,
-             gridRows, addRow, onCellChange, deleteRow, saveAll, ynBadge , PAGE_SIZES , onSizeChange };
+    return { groups, loading, error, searchKw, searchUse, pager, cfPageNums, cfTotalPages, setPage, cfTotal, onSearch, onReset,
+             gridRows, addRow, onCellChange, deleteRow, saveAll, fnYnBadge , PAGE_SIZES , onSizeChange };
   },
   template: `
 <div>
@@ -122,7 +122,7 @@ window.MbMemGroupMng = {
     <div class="card">
       <div class="toolbar">
         <span class="list-title">회원그룹 목록</span>
-        <span class="list-count">총 {{ total }}건</span>
+        <span class="list-count">총 {{ cfTotal }}건</span>
         <div style="margin-left:auto;display:flex;gap:6px;">
           <button class="btn btn-primary btn-sm" @click="addRow">+ 행추가</button>
           <button class="btn btn-blue btn-sm" @click="saveAll">저장</button>
@@ -142,7 +142,7 @@ window.MbMemGroupMng = {
             <td style="text-align:right">{{ (row.memberCnt||0).toLocaleString() }}</td>
             <td style="text-align:center">
               <select v-if="row._row_status" class="form-control" v-model="row.useYn" @change="onCellChange(idx)"><option value="Y">Y</option><option value="N">N</option></select>
-              <span v-else :class="['badge',ynBadge(row.useYn)]">{{ row.useYn }}</span>
+              <span v-else :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span>
             </td>
             <td style="text-align:center"><button class="btn btn-danger btn-xs" @click="deleteRow(idx)">삭제</button></td>
           </tr>
