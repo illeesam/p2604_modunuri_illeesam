@@ -13,17 +13,19 @@ window.SyCodeMng = {
     const grpSelectedPath = ref('');
 
     /* ── 검색 ── */
-    const searchKw        = ref('');
-    const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
+    const searchParam = reactive({
+      kw: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
+    });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const onDateRangeChange = () => {
-      if (searchDateRange.value) {
-        const r = window.boCmUtil.getDateRange(searchDateRange.value);
-        searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : '';
+    const handleDateRangeChange = () => {
+      if (searchParam.dateRange) {
+        const r = window.boCmUtil.getDateRange(searchParam.dateRange);
+        searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : '';
       }
     };
-    const searchGrp   = ref('');
-    const searchUseYn = ref('');
     const cfGrpOptions  = computed(() => [...new Set(codes.map(c => c.codeGrp))].sort());
     const applied     = reactive({ kw: '', grp: '', useYn: '', dateStart: '', dateEnd: '' });
 
@@ -139,7 +141,10 @@ window.SyCodeMng = {
       const initSet = window.boCmUtil.collectExpandedToDepth(cfGrpTree.value, 2);
       grpExpanded.clear(); initSet.forEach(v => grpExpanded.add(v));
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => {
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
+    });
     const cfGrpTree = computed(() => window.boCmUtil.buildPathTree('sy_code_grp'));
     const cfFilteredGrpRows = computed(() => {
       const sp = grpSelectedPath.value;
@@ -176,28 +181,7 @@ window.SyCodeMng = {
 
     const handleLoadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
-      /* 트리 선택 시 해당 path에 속하는 codeGrp 집합 */
-      const allowedGrps = grpSelectedPath.value
-        ? new Set((codeGroups || [])
-            .filter(g => (g.dispPath || '').startsWith(grpSelectedPath.value))
-            .map(g => g.codeGrp))
-        : null;
-      codes
-        .filter(c => {
-          const kw = applied.kw.trim().toLowerCase();
-          if (kw && !c.codeGrp.toLowerCase().includes(kw)
-                 && !c.codeLabel.toLowerCase().includes(kw)
-                 && !c.codeValue.toLowerCase().includes(kw)) return false;
-          if (applied.grp   && c.codeGrp !== applied.grp)   return false;
-          if (applied.useYn && c.useYn   !== applied.useYn) return false;
-          if (selectedGrp.value && c.codeGrp !== selectedGrp.value) return false;
-          if (allowedGrps && !allowedGrps.has(c.codeGrp)) return false;
-          const _d = String(c.regDate || '').slice(0, 10);
-          if (applied.dateStart && _d < applied.dateStart) return false;
-          if (applied.dateEnd   && _d > applied.dateEnd)   return false;
-          return true;
-        })
-        .forEach(c => gridRows.push(makeRow(c)));
+      codes.forEach(c => gridRows.push(makeRow(c)));
     };
 
     handleLoadGrid();
@@ -262,16 +246,30 @@ window.SyCodeMng = {
       });
     });
 
-    const onSearch = () => {
-      Object.assign(applied, { kw: searchKw.value, grp: searchGrp.value, useYn: searchUseYn.value,
-                                dateStart: searchDateStart.value, dateEnd: searchDateEnd.value });
-      handleLoadGrid();
+    const onSearch = async () => {
+      try {
+        loading.value = true;
+        const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(
+          Object.entries(searchParam).filter(([, v]) => v)
+        )};
+        const res = await window.boApi.get('/bo/sy/code/page', { params });
+        const list = res.data?.data?.list || [];
+        codes.splice(0, codes.length, ...list);
+        updateCodeGroups();
+        loadGrp();
+        Object.assign(applied, { kw: searchParam.kw, grp: searchParam.grp, useYn: searchParam.useYn,
+                                  dateStart: searchParam.dateStart, dateEnd: searchParam.dateEnd });
+        handleLoadGrid();
+      } catch (err) {
+        console.error('[catch-info]', err);
+        props.showToast('조회 중 오류가 발생했습니다.', 'error');
+      } finally {
+        loading.value = false;
+      }
     };
     const onReset = () => {
-      searchKw.value = ''; searchGrp.value = ''; searchUseYn.value = '';
-      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
-      Object.assign(applied, { kw: '', grp: '', useYn: '', dateStart: '', dateEnd: '' });
-      handleLoadGrid();
+      Object.assign(searchParam, searchParamOrg);
+      onSearch();
     };
 
     /* ── 포커스 행 설정 ── */
@@ -491,8 +489,7 @@ window.SyCodeMng = {
 
     return {
       cfSiteNm,
-      searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange,
-      searchKw, searchGrp, searchUseYn, cfGrpOptions, applied,
+      searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, cfGrpOptions, applied,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
@@ -517,19 +514,19 @@ window.SyCodeMng = {
   <!-- 검색 -->
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="코드그룹 / 라벨 / 코드값 검색" />
-      <select v-model="searchGrp">
+      <input v-model="searchParam.kw" placeholder="코드그룹 / 라벨 / 코드값 검색" />
+      <select v-model="searchParam.grp">
         <option value="">그룹 전체</option>
         <option v-for="g in cfGrpOptions" :key="g">{{ g }}</option>
       </select>
-      <select v-model="searchUseYn">
+      <select v-model="searchParam.useYn">
         <option value="">사용여부 전체</option><option value="Y">사용</option><option value="N">미사용</option>
       </select>
       <span class="search-label">등록일</span>
-      <input type="date" v-model="searchDateStart" class="date-range-input" />
+      <input type="date" v-model="searchParam.dateStart" class="date-range-input" />
       <span class="date-range-sep">~</span>
-      <input type="date" v-model="searchDateEnd" class="date-range-input" />
-      <select v-model="searchDateRange" @change="onDateRangeChange">
+      <input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
+      <select v-model="searchParam.dateRange" @change="handleDateRangeChange">
         <option value="">옵션선택</option>
         <option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>

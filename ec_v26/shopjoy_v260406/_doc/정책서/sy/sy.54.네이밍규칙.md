@@ -223,6 +223,97 @@ getters: {
 
 ---
 
+## 검색·필터 구조 규칙
+
+### 1. 검색 파라미터 관리
+
+**하나의 `searchParam` 객체로 관리**하여 일일히 ref를 선언하지 않는다.
+
+```js
+// ✅ 올바른 패턴
+const searchParam = reactive({
+  kw: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
+});
+
+// ❌ 피할 패턴
+const searchKw = ref('');
+const searchGrp = ref('');
+const searchUseYn = ref('');
+// ... 반복
+```
+
+**초기값 저장** — `onMounted` 마지막에 초기값 고정:
+
+```js
+const searchParamOrg = reactive({
+  kw: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
+});
+
+onMounted(() => {
+  handleFetchData();
+  Object.assign(searchParamOrg, searchParam);
+});
+```
+
+**초기화** — 저장된 초기값으로 복원:
+
+```js
+const onReset = () => {
+  Object.assign(searchParam, searchParamOrg);
+  onSearch(); // API 재조회
+};
+```
+
+### 2. 파라미터 전달 — 일괄 할당 방식
+
+**쿼리 파라미터 구성 시** 일일히 `if` 로 추가하지 않고 한 번에 병합:
+
+```js
+// ✅ 올바른 패턴
+const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(
+  Object.entries(searchParam).filter(([, v]) => v)
+)};
+
+// ❌ 피할 패턴
+const params = { pageNo: 1, pageSize: 100000 };
+if (searchParam.kw) params.kw = searchParam.kw;
+if (searchParam.grp) params.grp = searchParam.grp;
+// ... 반복
+```
+
+### 3. 조회·필터 방식 — API 조회 방식 권장
+
+**항상 API로 조회**하고, 클라이언트 필터링은 하지 않는다.
+
+```js
+// ✅ 올바른 패턴 — onSearch에서 API 호출
+const onSearch = async () => {
+  try {
+    loading.value = true;
+    const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(
+      Object.entries(searchParam).filter(([, v]) => v)
+    )};
+    const res = await window.boApi.get('/bo/sy/code/page', { params });
+    const list = res.data?.data?.list || [];
+    codes.splice(0, codes.length, ...list);
+    handleLoadGrid();
+  } catch (err) {
+    console.error('[catch-info]', err);
+    props.showToast('조회 중 오류가 발생했습니다.', 'error');
+  } finally {
+    loading.value = false;
+  }
+};
+
+// handleLoadGrid는 순수 로드만 — 필터링 없음
+const handleLoadGrid = () => {
+  gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
+  codes.forEach(c => gridRows.push(makeRow(c)));
+};
+```
+
+---
+
 ## 관련 정책
 
 - `sy.51.프로그램설계정책.md` — 초기값·데이터 정렬·상세화면 ID 표시
