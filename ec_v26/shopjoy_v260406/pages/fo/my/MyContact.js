@@ -43,17 +43,21 @@ window.MyContact = {
       props.showToast('문의가 취소되었습니다.', 'success');
     };
 
+    const onSearch = async (dateParams) => {
+      if (dateParams) onDateSearch(dateParams);
+      await myStore.loadInquiries();
+    };
     onMounted(() => myStore.loadInquiries());
 
     return {
       myStore, inquiries, expandedInquiry,
-      inquiryPager, paginate, cancelInquiry, cfDateFilteredInquiries, onDateSearch,
+      inquiryPager, paginate, cancelInquiry, cfDateFilteredInquiries, onDateSearch, onSearch,
       uiState, codes };
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myContact">
 
-  <MyDateFilter @search="onDateSearch" />
+  <MyDateFilter @search="onSearch" />
   <PagerHeader :total="cfDateFilteredInquiries.length" :pager="inquiryPager" />
   <div v-if="!cfDateFilteredInquiries.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">문의 내역이 없습니다.</div>
 

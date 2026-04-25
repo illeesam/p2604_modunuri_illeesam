@@ -35,14 +35,18 @@ window.MyChatt = {
     const { inRange, onDateSearch } = window.myDateFilterHelper();
     const cfDateFilteredChats = computed(() => chats.value.filter(c => inRange(c.date)));
 
+    const onSearch = async (dateParams) => {
+      if (dateParams) onDateSearch(dateParams);
+      await myStore.loadChats();
+    };
     onMounted(() => myStore.loadChats());
 
-    return { myStore, chats, expandedChat, chatPager, paginate, cfDateFilteredChats, onDateSearch , uiState, codes };
+    return { myStore, chats, expandedChat, chatPager, paginate, cfDateFilteredChats, onDateSearch, onSearch, uiState, codes };
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myChatt">
 
-  <MyDateFilter @search="onDateSearch" />
+  <MyDateFilter @search="onSearch" />
   <PagerHeader :total="cfDateFilteredChats.length" :pager="chatPager" />
   <div v-if="!cfDateFilteredChats.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">채팅 내역이 없습니다.</div>
 

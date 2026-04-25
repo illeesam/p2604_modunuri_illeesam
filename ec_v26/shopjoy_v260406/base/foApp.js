@@ -1,6 +1,36 @@
 /* ============================================
    ShopJoy - FO Vue 3 SPA (의류 쇼핑몰)
    ============================================ */
+(function () {
+  const _s = document.createElement('style');
+  _s.id = 'fo-app-styles';
+  _s.textContent = `
+  @keyframes fo-toast-progress {
+    from { transform: scaleX(1); transform-origin: left; }
+    to   { transform: scaleX(0); transform-origin: left; }
+  }
+  .fo-dim-enter-active { transition: opacity 0.15s ease; }
+  .fo-dim-leave-active { transition: opacity 0.3s ease; }
+  .fo-dim-enter-from, .fo-dim-leave-to { opacity: 0; }
+  .fo-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--accent, #c9a96e);
+    display: inline-block;
+    animation: fo-dot-wave 1.0s ease-in-out infinite;
+  }
+  @keyframes fo-dot-wave {
+    0%, 100% { transform: translateY(0) scale(0.7); opacity: 0.2; }
+    40%      { transform: translateY(-13px) scale(1.25); opacity: 1; }
+    65%      { transform: translateY(-5px) scale(0.95); opacity: 0.55; }
+  }
+  @keyframes fo-progress-slide {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  `;
+  document.head.appendChild(_s);
+})();
+
 (async function () {
   await window.__SITE_CONFIG_READY__;
   const { createApp, ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
@@ -157,13 +187,20 @@
     const isApiLoading = ref(false);
     let _apiLoadingCount = 0;
     let _progressHideTimer = null;
+    let _progressShowAt = 0;
+    const MIN_SHOW_MS = 300;
+    const HIDE_DELAY_MS = 50;
     window._showProgress = (show) => {
       _apiLoadingCount = Math.max(0, _apiLoadingCount + (show ? 1 : -1));
       if (_apiLoadingCount > 0) {
         if (_progressHideTimer) { clearTimeout(_progressHideTimer); _progressHideTimer = null; }
+        if (!isApiLoading.value) _progressShowAt = Date.now();
         isApiLoading.value = true;
       } else {
-        _progressHideTimer = setTimeout(() => { isApiLoading.value = false; _progressHideTimer = null; }, 200);
+        const elapsed = Date.now() - _progressShowAt;
+        const remain = Math.max(0, MIN_SHOW_MS - elapsed) + HIDE_DELAY_MS;
+        if (_progressHideTimer) clearTimeout(_progressHideTimer);
+        _progressHideTimer = setTimeout(() => { isApiLoading.value = false; _progressHideTimer = null; }, remain);
       }
     };
 
@@ -477,8 +514,22 @@
   template: /* html */ `
 <div style="height:100%;min-height:100vh;display:flex;flex-direction:column;background:var(--bg-base);">
 
-  <!-- API Progress Bar -->
-  <div v-if="isApiLoading" style="position:fixed;top:0;left:0;right:0;height:3px;z-index:99999;overflow:hidden;">
+  <!-- API Progress Bar + Dim + Loading Indicator -->
+  <transition name="fo-dim">
+    <div v-if="isApiLoading" style="position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.18);pointer-events:none;display:flex;align-items:center;justify-content:center;">
+      <div style="background:rgba(255,255,255,0.97);border-radius:18px;padding:28px 40px;box-shadow:0 8px 40px rgba(0,0,0,0.18);display:flex;flex-direction:column;align-items:center;gap:18px;min-width:160px;">
+        <!-- 흐르는 dot 웨이브 -->
+        <div style="display:flex;align-items:center;gap:10px;height:36px;">
+          <div class="fo-dot" style="animation-delay:0s;"></div>
+          <div class="fo-dot" style="animation-delay:0.2s;"></div>
+          <div class="fo-dot" style="animation-delay:0.4s;"></div>
+          <div class="fo-dot" style="animation-delay:0.6s;"></div>
+        </div>
+        <div style="font-size:0.85rem;font-weight:700;color:var(--text-secondary,#666);letter-spacing:0.03em;">조회중입니다...</div>
+      </div>
+    </div>
+  </transition>
+  <div v-show="isApiLoading" style="position:fixed;top:0;left:0;right:0;height:3px;z-index:99999;overflow:hidden;">
     <div style="height:100%;background:linear-gradient(90deg,var(--accent,#c9a96e),#e74c3c,var(--accent,#c9a96e));background-size:200% 100%;animation:fo-progress-slide 1.2s linear infinite;"></div>
   </div>
 
@@ -686,16 +737,6 @@
       </button>
     </div>
   </div>
-  <style>
-  @keyframes fo-toast-progress {
-    from { transform: scaleX(1); transform-origin: left; }
-    to   { transform: scaleX(0); transform-origin: left; }
-  }
-  @keyframes fo-progress-slide {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
-  </style>
 
   <!-- ALERT MODAL -->
   <div v-if="alertState.show" class="modal-overlay" @click.self="closeAlert">

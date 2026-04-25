@@ -413,16 +413,23 @@
       const isApiLoading = Vue.ref(false);
       let _apiLoadingCount = 0;
       let _hideTimer = null;
+      let _progressShowAt = 0;
+      const MIN_SHOW_MS = 300;
+      const HIDE_DELAY_MS = 50;
       window._showProgress = (on) => {
         _apiLoadingCount = Math.max(0, _apiLoadingCount + (on ? 1 : -1));
         if (_apiLoadingCount > 0) {
           if (_hideTimer) { clearTimeout(_hideTimer); _hideTimer = null; }
+          if (!isApiLoading.value) _progressShowAt = Date.now();
           isApiLoading.value = true;
         } else {
+          const elapsed = Date.now() - _progressShowAt;
+          const remain = Math.max(0, MIN_SHOW_MS - elapsed) + HIDE_DELAY_MS;
+          if (_hideTimer) clearTimeout(_hideTimer);
           _hideTimer = setTimeout(() => {
             if (_apiLoadingCount === 0) isApiLoading.value = false;
             _hideTimer = null;
-          }, 200);
+          }, remain);
         }
       };
 
@@ -1593,7 +1600,15 @@
 
   <!-- API Progress Overlay -->
   <div v-if="isApiLoading" class="api-progress-overlay">
-    <div class="api-progress-spinner"></div>
+    <div class="api-progress-card">
+      <div class="api-progress-dots">
+        <div class="bo-dot"></div>
+        <div class="bo-dot"></div>
+        <div class="bo-dot"></div>
+        <div class="bo-dot"></div>
+      </div>
+      <div class="api-progress-label">처리중입니다...</div>
+    </div>
   </div>
 
   <!-- Toast 누적 스택 -->
