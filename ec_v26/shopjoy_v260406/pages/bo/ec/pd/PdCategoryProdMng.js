@@ -187,18 +187,18 @@ window.PdCategoryProdMng = {
         <div class="tab-bar-row" style="margin:12px 0 0">
           <div class="tab-nav" style="flex:1;flex-wrap:wrap">
             <button v-for="tab in TYPE_TABS" :key="tab?.cd"
-                    class="tab-btn" :class="{ active: activeTypeCd===tab.cd }"
-                    @click="activeTypeCd=tab.cd">
+                    class="tab-btn" :class="{ active: uiState.activeTypeCd===tab.cd }"
+                    @click="uiState.activeTypeCd=tab.cd">
               {{ tab.nm }}
               <span v-if="cfTypeCountMap[tab.cd]" class="tab-count">{{ cfTypeCountMap[tab.cd] }}</span>
             </button>
           </div>
           <div class="tab-view-modes">
-            <button class="tab-view-mode-btn" :class="{ active: viewMode==='tab' }"  @click="viewMode='tab'"  title="탭으로 보기">📑</button>
-            <button class="tab-view-mode-btn" :class="{ active: viewMode==='1col' }" @click="viewMode='1col'" title="1열로 보기">1▭</button>
-            <button class="tab-view-mode-btn" :class="{ active: viewMode==='2col' }" @click="viewMode='2col'" title="2열로 보기">2▭</button>
-            <button class="tab-view-mode-btn" :class="{ active: viewMode==='3col' }" @click="viewMode='3col'" title="3열로 보기">3▭</button>
-            <button class="tab-view-mode-btn" :class="{ active: viewMode==='4col' }" @click="viewMode='4col'" title="4열로 보기">4▭</button>
+            <button class="tab-view-mode-btn" :class="{ active: uiState.viewMode==='tab' }"  @click="uiState.viewMode='tab'"  title="탭으로 보기">📑</button>
+            <button class="tab-view-mode-btn" :class="{ active: uiState.viewMode==='1col' }" @click="uiState.viewMode='1col'" title="1열로 보기">1▭</button>
+            <button class="tab-view-mode-btn" :class="{ active: uiState.viewMode==='2col' }" @click="uiState.viewMode='2col'" title="2열로 보기">2▭</button>
+            <button class="tab-view-mode-btn" :class="{ active: uiState.viewMode==='3col' }" @click="uiState.viewMode='3col'" title="3열로 보기">3▭</button>
+            <button class="tab-view-mode-btn" :class="{ active: uiState.viewMode==='4col' }" @click="uiState.viewMode='4col'" title="4열로 보기">4▭</button>
           </div>
         </div>
 
@@ -207,7 +207,7 @@ window.PdCategoryProdMng = {
         </div>
 
         <!-- TABLE 뷰 (tab / 1col) -->
-        <table v-if="viewMode==='tab'||viewMode==='1col'" class="bo-table">
+        <table v-if="uiState.viewMode==='tab'||uiState.viewMode==='1col'" class="bo-table">
           <thead><tr>
             <th style="width:28px"></th>
             <th style="width:36px;text-align:center">순서</th>
@@ -217,8 +217,8 @@ window.PdCategoryProdMng = {
             <th style="width:78px;text-align:right">판매가</th>
             <th style="width:44px;text-align:center">재고</th>
             <th style="width:52px;text-align:center">상태</th>
-            <th v-if="activeTypeCd!=='NORMAL'" style="width:216px;text-align:center">전시기간</th>
-            <th v-if="activeTypeCd!=='NORMAL'" style="width:60px;text-align:center">전시</th>
+            <th v-if="uiState.activeTypeCd!=='NORMAL'" style="width:216px;text-align:center">전시기간</th>
+            <th v-if="uiState.activeTypeCd!=='NORMAL'" style="width:60px;text-align:center">전시</th>
             <th style="width:40px;text-align:center">삭제</th>
           </tr></thead>
           <tbody>
@@ -227,7 +227,7 @@ window.PdCategoryProdMng = {
                 @dragstart="onDragStart(idx)"
                 @dragover.prevent="onDragOver(idx)"
                 @drop="onDrop()"
-                :style="dragoverIdx===idx ? 'background:#e6f4ff' : (row._isNew ? 'background:#f6ffed' : (activeTypeCd!=='NORMAL' && row.dispYn==='N' ? 'background:#fafafa;opacity:0.65' : ''))">
+                :style="dragoverIdx===idx ? 'background:#e6f4ff' : (row._isNew ? 'background:#f6ffed' : (uiState.activeTypeCd!=='NORMAL' && row.dispYn==='N' ? 'background:#fafafa;opacity:0.65' : ''))">
               <td style="text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none">≡</td>
               <td style="text-align:center;font-size:12px;color:#aaa">{{ idx+1 }}</td>
               <td style="text-align:center;font-size:11px;color:#aaa">{{ row.prodId }}</td>
@@ -262,7 +262,7 @@ window.PdCategoryProdMng = {
                   {{ getProd(row.prodId)?.status || '-' }}
                 </span>
               </td>
-              <td v-if="activeTypeCd!=='NORMAL'">
+              <td v-if="uiState.activeTypeCd!=='NORMAL'">
                 <div style="display:flex;align-items:center;gap:2px;justify-content:center">
                   <input type="date" class="form-control" v-model="row.dispStartDate"
                          style="width:100px;padding:2px 4px;font-size:11px;text-align:center" />
@@ -271,7 +271,7 @@ window.PdCategoryProdMng = {
                          style="width:100px;padding:2px 4px;font-size:11px;text-align:center" />
                 </div>
               </td>
-              <td v-if="activeTypeCd!=='NORMAL'" style="text-align:center">
+              <td v-if="uiState.activeTypeCd!=='NORMAL'" style="text-align:center">
                 <select class="form-control" v-model="row.dispYn"
                         style="width:52px;padding:2px 4px;font-size:12px;text-align:center"
                         :style="row.dispYn==='Y' ? 'color:#16a34a;font-weight:600' : 'color:#9ca3af'">
@@ -284,7 +284,7 @@ window.PdCategoryProdMng = {
               </td>
             </tr>
             <tr v-if="!cfFilteredRows.length">
-              <td :colspan="activeTypeCd!=='NORMAL' ? 11 : 9" style="text-align:center;padding:32px;color:#aaa">
+              <td :colspan="uiState.activeTypeCd!=='NORMAL' ? 11 : 9" style="text-align:center;padding:32px;color:#aaa">
                 {{ applied.prodNm ? '검색 결과가 없습니다.' : '등록된 상품이 없습니다. [+ 상품추가] 버튼으로 추가하세요.' }}
               </td>
             </tr>
@@ -295,7 +295,7 @@ window.PdCategoryProdMng = {
         <div v-else
              :style="{
                display:'grid',
-               gridTemplateColumns: viewMode==='2col' ? 'repeat(2,1fr)' : viewMode==='3col' ? 'repeat(3,1fr)' : 'repeat(4,1fr)',
+               gridTemplateColumns: uiState.viewMode==='2col' ? 'repeat(2,1fr)' : uiState.viewMode==='3col' ? 'repeat(3,1fr)' : 'repeat(4,1fr)',
                gap:'10px',
              }">
           <div v-for="(row, idx) in cfFilteredRows" :key="row?._id"
@@ -306,7 +306,7 @@ window.PdCategoryProdMng = {
                style="border:1px solid #eee;border-radius:10px;padding:10px;background:#fff"
                :style="dragoverIdx===idx ? 'border-color:#1677ff;box-shadow:0 0 0 2px #bfdbfe'
                        : row._isNew ? 'border-color:#52c41a'
-                       : (activeTypeCd!=='NORMAL' && row.dispYn==='N') ? 'opacity:0.6' : ''">
+                       : (uiState.activeTypeCd!=='NORMAL' && row.dispYn==='N') ? 'opacity:0.6' : ''">
             <!-- 카드 헤더 -->
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
               <div style="display:flex;align-items:center;gap:5px">
@@ -349,7 +349,7 @@ window.PdCategoryProdMng = {
               </button>
             </div>
             <!-- 전시기간 (NORMAL 제외) -->
-            <template v-if="activeTypeCd!=='NORMAL'">
+            <template v-if="uiState.activeTypeCd!=='NORMAL'">
               <div style="display:flex;align-items:center;gap:2px;margin-bottom:4px">
                 <input type="date" class="form-control" v-model="row.dispStartDate"
                        style="flex:1;padding:2px 4px;font-size:10px;min-width:0" />
@@ -386,7 +386,7 @@ window.PdCategoryProdMng = {
           <div>
             <strong style="font-size:15px">상품 추가</strong>
             <span style="font-size:12px;color:#aaa;margin-left:8px">
-              → {{ cfSelectedCat?.categoryNm }} / {{ window.safeArrayUtils.safeFind(TYPE_TABS, t=>t.cd===activeTypeCd)?.nm }}
+              → {{ cfSelectedCat?.categoryNm }} / {{ window.safeArrayUtils.safeFind(TYPE_TABS, t=>t.cd===uiState.activeTypeCd)?.nm }}
             </span>
           </div>
           <button class="btn btn-secondary btn-xs" @click="pickerOpen=false">닫기</button>

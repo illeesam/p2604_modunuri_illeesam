@@ -491,18 +491,17 @@ window.DpDispWidgetLibPreview = {
       cfSiteNm, today,
       CONDITION_OPTS, AUTH_GRADE_OPTS, VIEWPORT,
       wIcon, wTypeLabel,
-      previewDate, previewTime,
-      filterType, filterStatus, filterCondition, filterAuthReq, filterAuthGrade, searchKw,
+      searchParam, cfDispWidgetTypes,
       onReset, cfFilteredLibs,
-      selectedLibId, onTreeSelect,
+      onTreeSelect,
       cfTree, openNodes, toggleNode, isOpen, allChildrenOpen, toggleAllChildren, expandAll, collapseAll,
       onItemDragStart, onItemDragEnd, onNodeDragStart, onNodeDragEnd,
-      previewGrid, GRID_TABS,
-      viewportMode, cfAutoGridCols, uiState,
+      GRID_TABS,
+      cfAutoGridCols, uiState,
       tabSlots, cfCurrentSlots,
-      dragOverIdx, onDragOver, onDragLeave, onDrop, removeSlot, setSpan, GRID_COLS,
-      spanPopupIdx, toggleSpanPopup, closeSpanPopup,
-      dashItems, dashCanvas, uiState,
+      onDragOver, onDragLeave, onDrop, removeSlot, setSpan, GRID_COLS,
+      toggleSpanPopup, closeSpanPopup,
+      dashItems,
       onDashDragOver, onDashDragLeave, onDashDrop,
       removeDashItem, startItemMove, startItemResize,
       cfPlacedCount, resetCurrent,
@@ -526,34 +525,34 @@ window.DpDispWidgetLibPreview = {
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">📅 전시일시</span>
-        <input type="date" v-model="previewDate" class="form-control" style="width:136px;margin:0;font-size:12px;" />
-        <input type="time" v-model="previewTime" class="form-control" style="width:90px;margin:0;font-size:12px;" />
-        <button @click="previewDate=today;previewTime=new Date().toTimeString().slice(0,5)"
+        <input type="date" v-model="searchParam.previewDate" class="form-control" style="width:136px;margin:0;font-size:12px;" />
+        <input type="time" v-model="searchParam.previewTime" class="form-control" style="width:90px;margin:0;font-size:12px;" />
+        <button @click="searchParam.previewDate=today;searchParam.previewTime=new Date().toTimeString().slice(0,5)"
           style="font-size:11px;padding:3px 8px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;">🕐 현재</button>
       </div>
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">상태</span>
-        <select v-model="filterStatus" class="form-control" style="width:76px;margin:0;font-size:12px;">
+        <select v-model="searchParam.filterStatus" class="form-control" style="width:76px;margin:0;font-size:12px;">
           <option value="">전체</option><option value="활성">활성</option><option value="비활성">비활성</option>
         </select>
       </div>
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">노출조건</span>
-        <select v-model="filterCondition" class="form-control" style="width:105px;margin:0;font-size:12px;">
+        <select v-model="searchParam.filterCondition" class="form-control" style="width:105px;margin:0;font-size:12px;">
           <option value="">전체</option>
           <option v-for="c in CONDITION_OPTS" :key="Math.random()" :value="c">{{ c }}</option>
         </select>
       </div>
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">인증필요</span>
-        <select v-model="filterAuthReq" class="form-control" style="width:70px;margin:0;font-size:12px;">
+        <select v-model="searchParam.filterAuthReq" class="form-control" style="width:70px;margin:0;font-size:12px;">
           <option value="">전체</option><option value="Y">필요</option><option value="N">불필요</option>
         </select>
       </div>
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">등급제한</span>
-        <select v-model="filterAuthGrade" class="form-control" style="width:72px;margin:0;font-size:12px;">
+        <select v-model="searchParam.filterAuthGrade" class="form-control" style="width:72px;margin:0;font-size:12px;">
           <option value="">전체</option>
           <option v-for="g in AUTH_GRADE_OPTS" :key="Math.random()" :value="g">{{ g }}↑</option>
         </select>
@@ -561,11 +560,11 @@ window.DpDispWidgetLibPreview = {
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">위젯유형</span>
-        <select v-model="filterType" class="form-control" style="width:114px;margin:0;font-size:12px;">
-          <option v-for="t in codes.disp_widget_types" :key="t?.value" :value="t.codeValue">{{ t.codeLabel }}</option>
+        <select v-model="searchParam.filterType" class="form-control" style="width:114px;margin:0;font-size:12px;">
+          <option v-for="t in cfDispWidgetTypes" :key="t?.value" :value="t.codeValue">{{ t.codeLabel }}</option>
         </select>
       </div>
-      <input v-model="searchKw" class="form-control" placeholder="이름·태그 검색" style="margin:0;width:130px;font-size:12px;" />
+      <input v-model="searchParam.kw" class="form-control" placeholder="이름·태그 검색" style="margin:0;width:130px;font-size:12px;" />
       <span style="font-size:12px;color:#888;">총 <b>{{ cfFilteredLibs.length }}</b>건</span>
       <button @click="onReset" style="font-size:11px;padding:3px 10px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#666;">초기화</button>
     </div>
@@ -643,7 +642,7 @@ window.DpDispWidgetLibPreview = {
                   @dragend="onItemDragEnd"
                   @click="onTreeSelect(lib)"
                   style="display:flex;align-items:center;gap:7px;padding:5px 10px 5px 42px;cursor:grab;font-size:11px;border-radius:4px;margin:1px 4px;transition:background .15s;"
-                  :style="selectedLibId===lib.libId ? 'background:#dbeafe;color:#1d4ed8;font-weight:700;' : 'color:#374151;'">
+                  :style="uiState.selectedLibId===lib.libId ? 'background:#dbeafe;color:#1d4ed8;font-weight:700;' : 'color:#374151;'">
                   <span style="font-size:9px;color:#c4c4c4;flex-shrink:0;">⠿</span>
                   <span style="font-size:13px;flex-shrink:0;">{{ wIcon(lib.widgetType) }}</span>
                   <span style="font-size:9px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:3px;padding:0 4px;white-space:nowrap;flex-shrink:0;">{{ lib.widgetType ? lib.widgetType.replace('_',' ') : '-' }}</span>
@@ -666,25 +665,25 @@ window.DpDispWidgetLibPreview = {
       <!-- 탭바 + 뷰포트 토글 + 배치수 -->
       <div style="display:flex;align-items:stretch;background:#f8f9fa;border-bottom:1px solid #e8e8e8;flex-shrink:0;padding:0 12px;">
         <div style="display:flex;gap:2px;align-items:flex-end;padding-top:8px;flex:1;">
-          <button v-for="tab in GRID_TABS" :key="tab?.id" @click="previewGrid=tab.id"
+          <button v-for="tab in GRID_TABS" :key="tab?.id" @click="uiState.previewGrid=tab.id"
             style="padding:5px 14px;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;margin-bottom:-1px;"
-            :style="previewGrid===tab.id
+            :style="uiState.previewGrid===tab.id
               ? 'background:#fff;border-color:#e8e8e8;border-bottom-color:#fff;color:#1d4ed8;z-index:1;'
               : 'background:transparent;color:#9ca3af;'">
             {{ tab.label }}
           </button>
         </div>
         <!-- 실제컨텐츠 + 뷰포트 토글 (dashboard 제외) -->
-        <div v-if="previewGrid!=='dashboard'" style="display:flex;align-items:center;gap:4px;padding:6px 0 6px 12px;border-left:1px solid #e5e7eb;margin-left:8px;">
-          <button @click="showRealContent=!showRealContent"
+        <div v-if="uiState.previewGrid!=='dashboard'" style="display:flex;align-items:center;gap:4px;padding:6px 0 6px 12px;border-left:1px solid #e5e7eb;margin-left:8px;">
+          <button @click="uiState.showRealContent=!uiState.showRealContent"
             style="font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;margin-right:4px;"
-            :style="showRealContent?'background:#059669;color:#fff;border-color:#059669;':'background:#fff;color:#6b7280;'">
-            {{ showRealContent ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
+            :style="uiState.showRealContent?'background:#059669;color:#fff;border-color:#059669;':'background:#fff;color:#6b7280;'">
+            {{ uiState.showRealContent ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
           </button>
           <div style="width:1px;height:18px;background:#e5e7eb;margin-right:2px;"></div>
-          <button v-for="(vp, key) in VIEWPORT" :key="Math.random()" @click="viewportMode=key"
+          <button v-for="(vp, key) in VIEWPORT" :key="Math.random()" @click="uiState.viewportMode=key"
             style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
-            :style="viewportMode===key
+            :style="uiState.viewportMode===key
               ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;'
               : 'background:#fff;color:#6b7280;'">
             {{ vp.label }}
@@ -698,25 +697,25 @@ window.DpDispWidgetLibPreview = {
       </div>
 
       <!-- ── 그리드 캔버스 (grid1~4) ── -->
-      <div v-if="previewGrid!=='dashboard'" @click="closeSpanPopup" style="flex:1;overflow-y:auto;overflow-x:auto;padding:16px;">
+      <div v-if="uiState.previewGrid!=='dashboard'" @click="closeSpanPopup" style="flex:1;overflow-y:auto;overflow-x:auto;padding:16px;">
         <!-- 뷰포트 래퍼 -->
         <div :style="{
-          width: VIEWPORT[viewportMode].width || '100%',
-          maxWidth: VIEWPORT[viewportMode].width || '100%',
+          width: VIEWPORT[uiState.viewportMode].width || '100%',
+          maxWidth: VIEWPORT[uiState.viewportMode].width || '100%',
           margin: '0 auto',
           transition: 'width .3s',
         }">
           <!-- 디바이스 프레임 표시 -->
-          <div v-if="viewportMode!=='desktop'"
+          <div v-if="uiState.viewportMode!=='desktop'"
             style="text-align:center;margin-bottom:8px;font-size:11px;color:#9ca3af;font-weight:600;">
-            {{ viewportMode==='mobile' ? '📱 375px' : '📟 768px' }}
+            {{ uiState.viewportMode==='mobile' ? '📱 375px' : '📟 768px' }}
           </div>
           <div :style="{
-            border: viewportMode!=='desktop' ? '2px solid #d1d5db' : 'none',
-            borderRadius: viewportMode!=='desktop' ? '12px' : '0',
-            padding: viewportMode!=='desktop' ? '12px' : '0',
+            border: uiState.viewportMode!=='desktop' ? '2px solid #d1d5db' : 'none',
+            borderRadius: uiState.viewportMode!=='desktop' ? '12px' : '0',
+            padding: uiState.viewportMode!=='desktop' ? '12px' : '0',
             background: '#fff',
-            boxShadow: viewportMode!=='desktop' ? '0 4px 20px rgba(0,0,0,.12)' : 'none',
+            boxShadow: uiState.viewportMode!=='desktop' ? '0 4px 20px rgba(0,0,0,.12)' : 'none',
           }">
             <div :style="{
               display: 'grid',
@@ -724,30 +723,30 @@ window.DpDispWidgetLibPreview = {
               gap: '10px',
             }">
               <template v-for="(slot, idx) in cfCurrentSlots" :key="Math.random()">
-              <div v-if="!showRealContent || slot"
+              <div v-if="!uiState.showRealContent || slot"
                 @dragover="onDragOver($event, idx)"
                 @dragleave="onDragLeave"
                 @drop="onDrop($event, idx)"
                 style="border-radius:8px;transition:all .15s;position:relative;"
                 :style="[
-                  dragOverIdx===idx
+                  uiState.dragOverIdx===idx
                     ? 'border:2px dashed #1d4ed8;background:#eff6ff;min-height:110px;'
                     : slot
-                      ? (showRealContent ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:110px;')
+                      ? (uiState.showRealContent ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:110px;')
                       : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;',
                   slot && (slot.colSpan||1) > 1 ? { gridColumn: 'span ' + slot.colSpan } : {},
                   slot && (slot.rowSpan||1) > 1 ? { gridRow:    'span ' + slot.rowSpan } : {},
                 ]">
 
                 <!-- 비어있음 -->
-                <div v-if="!slot && dragOverIdx!==idx"
+                <div v-if="!slot && uiState.dragOverIdx!==idx"
                   style="height:100%;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:#d1d5db;padding:10px;">
                   <span style="font-size:20px;">+</span>
                   <span style="font-size:11px;">드래그하여 추가</span>
                 </div>
 
                 <!-- 드롭 오버 -->
-                <div v-else-if="!slot && dragOverIdx===idx"
+                <div v-else-if="!slot && uiState.dragOverIdx===idx"
                   style="min-height:60px;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:12px;font-weight:700;padding:10px;">
                   ▼ 여기에 추가
                 </div>
@@ -755,7 +754,7 @@ window.DpDispWidgetLibPreview = {
                 <!-- 배치됨 -->
                 <template v-else-if="slot">
                   <!-- 슬롯 헤더 (실제컨텐츠 OFF) -->
-                  <div v-if="!showRealContent" style="display:flex;align-items:center;gap:5px;padding:6px 10px 5px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
+                  <div v-if="!uiState.showRealContent" style="display:flex;align-items:center;gap:5px;padding:6px 10px 5px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
                     <span style="font-size:12px;">{{ wIcon(slot.widgetType) }}</span>
                     <span style="font-size:10px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:4px;padding:0 5px;white-space:nowrap;">{{ wTypeLabel(slot.widgetType) }}</span>
                     <span style="font-size:11px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ slot.name }}</span>
@@ -763,13 +762,13 @@ window.DpDispWidgetLibPreview = {
                     <button @click="toggleSpanPopup($event, idx)"
                       :title="'열 ' + (slot.colSpan||1) + ' × 행 ' + (slot.rowSpan||1)"
                       style="flex-shrink:0;width:22px;height:22px;border-radius:4px;border:1px solid #e5e7eb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
-                      :style="spanPopupIdx===idx ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#f9fafb;color:#6b7280;'">⚙</button>
+                      :style="uiState.spanPopupIdx===idx ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#f9fafb;color:#6b7280;'">⚙</button>
                     <button @click="removeSlot(idx)"
                       style="flex-shrink:0;width:17px;height:17px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
                   </div>
 
                   <!-- span 설정 레이어 팝업 -->
-                  <div v-if="spanPopupIdx===idx" @click.stop
+                  <div v-if="uiState.spanPopupIdx===idx" @click.stop
                     style="position:absolute;top:36px;right:6px;z-index:20;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);padding:12px 14px;min-width:170px;">
                     <!-- 닫기 -->
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">

@@ -184,21 +184,21 @@ window.StRawMng = {
     });
 
     const cfFiltered = computed(() => {
-      const kw = searchKw.value.trim().toLowerCase();
-      const amtFrom = searchAmtFrom.value !== '' ? Number(searchAmtFrom.value) : null;
-      const amtTo   = searchAmtTo.value   !== '' ? Number(searchAmtTo.value)   : null;
+      const kw = (searchParam.kw || '').trim().toLowerCase();
+      const amtFrom = searchParam.amtFrom !== '' ? Number(searchParam.amtFrom) : null;
+      const amtTo   = searchParam.amtTo   !== '' ? Number(searchParam.amtTo)   : null;
       return window.safeArrayUtils.safeFilter(cfRawList, r => {
-        if (uiState.dateStart        && r.txDate < uiState.dateStart)               return false;
-        if (uiState.dateEnd          && r.txDate > uiState.dateEnd)                 return false;
-        if (searchType.value       && r.sourceType !== searchType.value)        return false;
-        if (searchStatus.value     && r.rawStatusCd !== searchStatus.value)     return false;
-        if (searchVendorType.value && r.vendorTypeCd !== searchVendorType.value) return false;
-        if (searchPayMethod.value  && r.payMethodCd !== searchPayMethod.value)  return false;
-        if (searchBuyConfirm.value && r.buyConfirmYn !== searchBuyConfirm.value) return false;
-        if (searchCloseYn.value    && r.closeYn !== searchCloseYn.value)        return false;
-        if (searchErpSend.value    && r.erpSendYn !== searchErpSend.value)      return false;
-        if (searchPeriod.value     && r.settlePeriod !== searchPeriod.value)    return false;
-        if (searchOrderStatus.value && r.orderItemStatusCd !== searchOrderStatus.value) return false;
+        if (uiState.dateStart          && r.txDate < uiState.dateStart)                     return false;
+        if (uiState.dateEnd            && r.txDate > uiState.dateEnd)                       return false;
+        if (searchParam.type         && r.sourceType !== searchParam.type)             return false;
+        if (searchParam.status       && r.rawStatusCd !== searchParam.status)          return false;
+        if (searchParam.vendorType   && r.vendorTypeCd !== searchParam.vendorType)     return false;
+        if (searchParam.payMethod    && r.payMethodCd !== searchParam.payMethod)       return false;
+        if (searchParam.buyConfirm   && r.buyConfirmYn !== searchParam.buyConfirm)     return false;
+        if (searchParam.closeYn      && r.closeYn !== searchParam.closeYn)             return false;
+        if (searchParam.erpSend      && r.erpSendYn !== searchParam.erpSend)           return false;
+        if (searchParam.period       && r.settlePeriod !== searchParam.period)         return false;
+        if (searchParam.orderStatus  && r.orderItemStatusCd !== searchParam.orderStatus) return false;
         if (amtFrom !== null && r.amount < amtFrom)  return false;
         if (amtTo   !== null && r.amount > amtTo)    return false;
         if (kw && !r.rawId.toLowerCase().includes(kw) && !r.sourceId.toLowerCase().includes(kw)
@@ -241,6 +241,31 @@ window.StRawMng = {
     Object.assign(searchParam, searchParamOrg);
     onSearch();
   };
+
+    const expandedRows = reactive(new Set());
+    const toggleRow = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
+    const isExpanded = id => expandedRows.has(id);
+
+    const fnStatusBadge = s => ({ 'COLLECTED':'badge-green', 'EXCLUDED':'badge-gray', 'SETTLED':'badge-purple', 'PENDING':'badge-blue' }[s] || 'badge-gray');
+    const rawStatusLabel = s => ({ 'COLLECTED':'수집완료', 'EXCLUDED':'제외', 'SETTLED':'정산완료', 'PENDING':'대기' }[s] || s || '-');
+    const fnRawStatusBadge = s => fnStatusBadge(s);
+    const vendorTypeLabel = s => ({ 'SALE':'판매업체', 'DLIV':'배송업체', 'EXTERNAL':'외부업체' }[s] || s || '-');
+    const orderStatusLabel = s => ({ 'ORDERED':'주문완료', 'PAID':'결제완료', 'PREPARING':'준비중', 'SHIPPING':'배송중', 'DELIVERED':'배송완료', 'CONFIRMED':'구매확정', 'CANCELLED':'취소' }[s] || s || '-');
+    const fmtW = n => (Number(n || 0) >= 0 ? '' : '-') + Math.abs(Number(n || 0)).toLocaleString() + '원';
+    const fmtPct = n => Number(n || 0).toLocaleString() + '%';
+    const doCollect = async () => {
+      const ok = await props.showConfirm('재수집', '해당 기간 정산 데이터를 재수집하시겠습니까?');
+      if (!ok) return;
+      try {
+        const res = await window.boApi.post('/bo/ec/st/raw/collect', { dateStart: uiState.dateStart, dateEnd: uiState.dateEnd });
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('재수집이 완료되었습니다.', 'success');
+      } catch (err) {
+        console.error('[catch-info]', err);
+        if (props.showToast) props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+      }
+    };
+
   return {
       uiState, handleDateRangeChange,
       DATE_RANGE_OPTIONS, searchParam,

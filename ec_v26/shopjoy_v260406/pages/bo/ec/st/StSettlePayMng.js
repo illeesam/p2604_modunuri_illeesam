@@ -61,11 +61,11 @@ window.StSettlePayMng = {
     const selected = reactive(new Set());
 
     const cfFiltered = computed(() => {
-      const kw = searchKw.value.trim().toLowerCase();
+      const kw = (searchParam.kw || '').trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(payList, r => {
         if (uiState.dateStart && r.payDate < uiState.dateStart) return false;
         if (uiState.dateEnd   && r.payDate > uiState.dateEnd)   return false;
-        if (searchStatus.value && r.payStatus !== searchStatus.value) return false;
+        if (searchParam.status && r.payStatus !== searchParam.status) return false;
         if (kw && !r.payId.toLowerCase().includes(kw) && !r.vendorNm.toLowerCase().includes(kw)) return false;
         return true;
       });

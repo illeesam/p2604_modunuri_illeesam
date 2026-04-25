@@ -561,7 +561,7 @@ window.DpDispPanelPreview = {
       tabSlots, cfCurrentSlots,
       dragState, onDragOver, onDragLeave, onDrop, removeSlot, setSpan, GRID_COLS,
       toggleSpanPopup, closeSpanPopup,
-      dashItems, dashCanvas,
+      dashItems,
       onDashDragOver, onDashDragLeave, onDashDrop,
       removeDashItem, startItemMove, startItemResize,
       cfPlacedCount, onResetCurrent,
@@ -587,7 +587,7 @@ window.DpDispPanelPreview = {
         <span style="font-size:12px;font-weight:600;color:#555;">📅 전시일시</span>
         <input type="date" v-model="searchParam.previewDate" class="form-control" style="width:136px;margin:0;font-size:12px;" />
         <input type="time" v-model="searchParam.previewTime" class="form-control" style="width:90px;margin:0;font-size:12px;" />
-        <button @click="previewDate=today;previewTime=new Date().toTimeString().slice(0,5)"
+        <button @click="searchParam.previewDate=today;searchParam.previewTime=new Date().toTimeString().slice(0,5)"
           style="font-size:11px;padding:3px 8px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;">🕐 현재</button>
       </div>
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>
@@ -830,10 +830,10 @@ window.DpDispPanelPreview = {
                         style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                         :style="(slot.colSpan||1)<=1?'opacity:.3;cursor:default;':''">−</button>
                       <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">{{ slot.colSpan||1 }}</span>
-                      <button @click="setSpan(idx,'col',+1)" :disabled="(slot.colSpan||1)>=(GRID_COLS[previewGrid]||1)"
+                      <button @click="setSpan(idx,'col',+1)" :disabled="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)"
                         style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
-                        :style="(slot.colSpan||1)>=(GRID_COLS[previewGrid]||1)?'opacity:.3;cursor:default;':''">+</button>
-                      <span style="font-size:10px;color:#9ca3af;">/ {{ GRID_COLS[previewGrid]||1 }}</span>
+                        :style="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)?'opacity:.3;cursor:default;':''">+</button>
+                      <span style="font-size:10px;color:#9ca3af;">/ {{ GRID_COLS[gridState.previewGrid]||1 }}</span>
                     </div>
                     <!-- 행(rowspan) -->
                     <div style="display:flex;align-items:center;gap:6px;">

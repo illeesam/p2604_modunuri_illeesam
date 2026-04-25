@@ -60,12 +60,12 @@ window.StErpViewMng = {
     const pager = reactive({ page: 1, size: 10 });
 
     const cfFiltered = computed(() => {
-      const kw = searchKw.value.trim().toLowerCase();
+      const kw = (searchParam.kw || '').trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(slips, r => {
         if (uiState.dateStart && r.slipDate < uiState.dateStart) return false;
         if (uiState.dateEnd   && r.slipDate > uiState.dateEnd)   return false;
-        if (searchType.value   && r.slipType    !== searchType.value)   return false;
-        if (searchStatus.value && r.sendStatus  !== searchStatus.value) return false;
+        if (searchParam.type   && r.slipType   !== searchParam.type)   return false;
+        if (searchParam.status && r.sendStatus !== searchParam.status) return false;
         if (kw && !r.slipId.toLowerCase().includes(kw) && !r.description.toLowerCase().includes(kw)) return false;
         return true;
       });

@@ -8,6 +8,7 @@ window.PdBundleMng = {
     const products = reactive([]);
     const brands = reactive([]);
     const bundles = reactive([]);
+    const categoryProds = reactive([]);
     const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: null, editBundleId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, pickerOpen: false, pickerSearch: '', dragIdx: null, dragoverIdx: null });
     const codes = reactive({
       product_statuses: [],

@@ -552,7 +552,7 @@ window.DpDispAreaPreview = {
       tabSlots, cfCurrentSlots,
       dragState, onDragOver, onDragLeave, onDrop, removeSlot, setSpan, GRID_COLS,
       toggleSpanPopup, closeSpanPopup,
-      dashItems, dashCanvas,
+      dashItems,
       onDashDragOver, onDashDragLeave, onDashDrop,
       removeDashItem, startItemMove, startItemResize,
       cfPlacedCount, onResetCurrent,
@@ -823,10 +823,10 @@ window.DpDispAreaPreview = {
                         style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                         :style="(slot.colSpan||1)<=1?'opacity:.3;cursor:default;':''">−</button>
                       <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">{{ slot.colSpan||1 }}</span>
-                      <button @click="setSpan(idx,'col',+1)" :disabled="(slot.colSpan||1)>=(GRID_COLS[previewGrid]||1)"
+                      <button @click="setSpan(idx,'col',+1)" :disabled="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)"
                         style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
-                        :style="(slot.colSpan||1)>=(GRID_COLS[previewGrid]||1)?'opacity:.3;cursor:default;':''">+</button>
-                      <span style="font-size:10px;color:#9ca3af;">/ {{ GRID_COLS[previewGrid]||1 }}</span>
+                        :style="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)?'opacity:.3;cursor:default;':''">+</button>
+                      <span style="font-size:10px;color:#9ca3af;">/ {{ GRID_COLS[gridState.previewGrid]||1 }}</span>
                     </div>
                     <!-- 행(rowspan) -->
                     <div style="display:flex;align-items:center;gap:6px;">

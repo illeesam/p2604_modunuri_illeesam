@@ -61,8 +61,8 @@ window.StErpReconMng = {
       return window.safeArrayUtils.safeFilter(reconList, r => {
         if (uiState.dateStart && r.reconDate < uiState.dateStart) return false;
         if (uiState.dateEnd   && r.reconDate > uiState.dateEnd)   return false;
-        if (searchDiff.value && r.diffStatus !== searchDiff.value) return false;
-        if (searchType.value && r.slipType   !== searchType.value) return false;
+        if (searchParam.diff && r.diffStatus !== searchParam.diff) return false;
+        if (searchParam.type && r.slipType   !== searchParam.type) return false;
         return true;
       });
     });

@@ -67,7 +67,7 @@ window.StReconOrderMng = {
     const pager = reactive({ page: 1, size: 10 });
 
     const cfRows = computed(() => {
-      const kw = searchKw.value.trim().toLowerCase();
+      const kw = (searchParam.kw || '').trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(cfOrders, o => {
         if (uiState.dateStart && o.orderDate.slice(0,10) < uiState.dateStart) return false;
         if (uiState.dateEnd   && o.orderDate.slice(0,10) > uiState.dateEnd)   return false;
@@ -81,7 +81,7 @@ window.StReconOrderMng = {
         const diff       = settleAmt - reconAmt;
         const diffStatus = Math.abs(diff) < 1 ? '일치' : (diff > 0 ? '정산과다' : '정산부족');
         return { orderId: o.orderId, orderDate: o.orderDate.slice(0,10), vendorNm: v ? v.vendorNm : '-', orderAmt, settleAmt, reconAmt: Math.round(reconAmt), diff: Math.round(diff), diffStatus };
-      }).filter(r => !searchDiff.value || r.diffStatus === searchDiff.value);
+      }).filter(r => !searchParam.diff || r.diffStatus === searchParam.diff);
     });
 
     const cfTotal  = computed(() => cfRows.value.length);

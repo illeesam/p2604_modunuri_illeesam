@@ -63,12 +63,12 @@ window.StSettleEtcAdjMng = {
     const pager = reactive({ page: 1, size: 10 });
 
     const cfFiltered = computed(() => {
-      const kw = searchKw.value.trim().toLowerCase();
+      const kw = (searchParam.kw || '').trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(etcAdjList, r => {
         if (uiState.dateStart && r.adjDate < uiState.dateStart) return false;
         if (uiState.dateEnd   && r.adjDate > uiState.dateEnd)   return false;
-        if (searchType.value   && r.adjType    !== searchType.value)   return false;
-        if (searchStatus.value && r.aprvStatus !== searchStatus.value) return false;
+        if (searchParam.type   && r.adjType    !== searchParam.type)   return false;
+        if (searchParam.status && r.aprvStatus !== searchParam.status) return false;
         if (kw && !r.adjId.toLowerCase().includes(kw) && !r.vendorNm.toLowerCase().includes(kw) && !r.reason.toLowerCase().includes(kw)) return false;
         return true;
       });
