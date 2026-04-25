@@ -80,15 +80,15 @@ window.foAppHeader = {
     };
 
     /* ── 안전한 사용자 정보 접근 ── */
-    const authUser = computed(() => props?.auth?.user || { authNm: '', memberNm: '', email: '' });
-    const userFirstChar = computed(() => ((authUser.value?.authNm || authUser.value?.memberNm || '').charAt(0)) || '?');
-    const isLogin = computed(() => !!(props?.auth?.user?.authId));
+    const cfAuthUser = computed(() => props?.auth?.user || { authNm: '', memberNm: '', email: '' });
+    const cfUserFirstChar = computed(() => ((cfAuthUser.value?.authNm || cfAuthUser.value?.memberNm || '').charAt(0)) || '?');
+    const cfIsLogin = computed(() => !!(props?.auth?.user?.authId));
 
     /* ── 공통 인풋 스타일 ── */
     const IS = 'width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.88rem;outline:none;';
 
     /* ── 드롭다운 메뉴 항목 ── */
-    const menuItems = computed(() => [
+    const cfMenuItems = computed(() => [
       { icon: '👤', label: '마이페이지',    action: goMy,         color: 'var(--text-primary)' },
       { icon: '✏️', label: '프로필 수정',   action: openProfile,  color: 'var(--text-primary)' },
       { icon: '🔑', label: '비밀번호 변경', action: openPw,       color: 'var(--text-primary)' },
@@ -120,10 +120,10 @@ window.foAppHeader = {
 
     return {
       userMenuRoot,
-      userMenuOpen, toggleUserMenu, closeUserMenu, goMy, doLogout, menuItems,
+      userMenuOpen, toggleUserMenu, closeUserMenu, goMy, doLogout, cfMenuItems,
       profileOpen, pf, openProfile, saveProfile, openKakaoAddrProfile, genderLabel,
       pwOpen, pw, openPw, savePw, IS,
-      authUser, userFirstChar, isLogin,
+      cfAuthUser, cfUserFirstChar, cfIsLogin,
       foSiteNo: window.FO_SITE_NO || '01',
       boSiteNo: '01', /* BO site_no — FO localStorage 접근 금지, 기본값 고정 */
       openQuickMenu: () => window.dispatchEvent(new CustomEvent('open-quick-menu')),
@@ -210,7 +210,7 @@ window.foAppHeader = {
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
 
     <!-- 비로그인 -->
-    <button v-if="!isLogin" @click="onShowLogin"
+    <button v-if="!cfIsLogin" @click="onShowLogin"
       style="padding:7px 16px;border:1.5px solid var(--blue);border-radius:20px;background:transparent;color:var(--blue);cursor:pointer;font-size:0.82rem;font-weight:700;white-space:nowrap;transition:all 0.2s;"
       @mouseenter="$event.target.style.background='var(--blue)';$event.target.style.color='#fff';"
       @mouseleave="$event.target.style.background='transparent';$event.target.style.color='var(--blue)';">
@@ -222,9 +222,9 @@ window.foAppHeader = {
       <button type="button" @click="toggleUserMenu"
         style="display:flex;align-items:center;gap:8px;padding:6px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--bg-card);cursor:pointer;font-size:0.82rem;color:var(--text-primary);font-weight:600;">
         <span style="width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0;">
-          {{ userFirstChar }}
+          {{ cfUserFirstChar }}
         </span>
-        <span class="hidden-sm" style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ authUser.authNm || authUser.memberNm }}</span>
+        <span class="hidden-sm" style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ cfAuthUser.authNm || cfAuthUser.memberNm }}</span>
         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"
           :style="userMenuOpen?'transform:rotate(180deg);transition:0.2s;':'transition:0.2s;'"><path d="M6 9l6 6 6-6"/></svg>
       </button>
@@ -236,18 +236,18 @@ window.foAppHeader = {
         <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
           <div style="display:flex;align-items:center;gap:10px;">
             <span style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--green));color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0;">
-              {{ userFirstChar }}
+              {{ cfUserFirstChar }}
             </span>
             <div style="min-width:0;">
-              <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ authUser.authNm || authUser.memberNm }}</div>
-              <div style="font-size:0.72rem;color:var(--text-muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ authUser.email }}</div>
+              <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ cfAuthUser.authNm || cfAuthUser.memberNm }}</div>
+              <div style="font-size:0.72rem;color:var(--text-muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ cfAuthUser.email }}</div>
             </div>
           </div>
         </div>
 
         <!-- 메뉴 항목 -->
         <div style="padding:4px 0;">
-          <button v-for="item in menuItems" :key="item.label" @click="item.action()"
+          <button v-for="item in cfMenuItems" :key="item.label" @click="item.action()"
             style="width:100%;padding:10px 16px;border:none;background:none;cursor:pointer;text-align:left;font-size:0.86rem;display:flex;align-items:center;gap:9px;transition:background 0.15s;"
             :style="'color:'+item.color"
             @mouseenter="$event.currentTarget.style.background='var(--blue-dim)'"

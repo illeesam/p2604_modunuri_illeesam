@@ -5,7 +5,8 @@ window.MyClaim = {
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
     const myStore = window.useFoMyStore();
-    const { claims, claimFilter, filteredClaims, orders } = Pinia.storeToRefs(myStore);
+    const { claims, claimFilter, cfFilteredClaims, orders } = Pinia.storeToRefs(myStore);
+    const filteredClaims = cfFilteredClaims;
 
     const claimPager = reactive({ page: 1, size: 50 });
     const paginate = myStore.paginate;

@@ -57,11 +57,11 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
       catch (e) { claims.splice(0, claims.length); }
     }
   };
-  const filteredClaims = computed(() => {
+  const cfFilteredClaims = computed(() => {
     if (!Array.isArray(claims)) return [];
     return claimFilter.value === '전체' ? claims : claims.filter(c => c.type === claimFilter.value);
   });
-  const claimsByOrderId = computed(() => {
+  const cfClaimsByOrderId = computed(() => {
     const map = {};
     if (Array.isArray(claims)) claims.forEach(c => { map[c.orderId] = c; });
     return map;
@@ -174,7 +174,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
     /* 주문 */
     orders, loadOrders, setOrderStatus,
     /* 클레임 */
-    claims, claimFilter, filteredClaims, claimsByOrderId, loadClaims, removeClaim,
+    claims, claimFilter, cfFilteredClaims, cfClaimsByOrderId, loadClaims, removeClaim,
     /* 쿠폰 */
     coupons, couponCode, loadCoupons, discountLabel,
     /* 캐쉬 */

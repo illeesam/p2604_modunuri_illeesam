@@ -186,7 +186,7 @@
 
       /* ── 페이지 & 라우팅 ── */
       const page   = ref('dashboard');
-      const dashboardComp = computed(() => 'DashboardBoEc' + (window.BO_SITE_NO || '01'));
+      const cfDashboardComp = computed(() => 'DashboardBoEc' + (window.BO_SITE_NO || '01'));
       const errorMessage = ref('');
       /* API Validation 에러 → toast 출력 (boAxios 에서 window.dispatchEvent('api-validation-error')) */
       window.addEventListener('api-validation-error', (ev) => {
@@ -209,7 +209,7 @@
 
       /* ── 탭 관리 ── */
       const openTabs = reactive([{ id: 'dashboard', label: '대시보드' }]);
-      const activeTabId = computed(() => toTabId(page.value));
+      const cfActiveTabId = computed(() => toTabId(page.value));
       const refreshKeys = reactive({});  // pageId → 재마운트 카운터
 
       /* ── 탭 고정 (keep-alive 시뮬레이션) ── */
@@ -285,7 +285,7 @@
         if (idx === -1) return;
         keptTabIds.delete(tabId);
         openTabs.splice(idx, 1);
-        if (activeTabId.value === tabId) {
+        if (cfActiveTabId.value === tabId) {
           const next = openTabs[Math.min(idx, openTabs.length - 1)];
           if (next) navigate(next.id);
           else { page.value = 'dashboard'; editId.value = null; }
@@ -305,7 +305,7 @@
         const idx = openTabs.findIndex(t => t.id === ctxMenu.tabId);
         if (idx > 0) {
           openTabs.splice(0, idx);
-          if (!openTabs.find(t => t.id === activeTabId.value) && openTabs.length > 0) navigate(openTabs[0]?.id);
+          if (!openTabs.find(t => t.id === cfActiveTabId.value) && openTabs.length > 0) navigate(openTabs[0]?.id);
         }
         closeCtxMenu();
       };
@@ -313,7 +313,7 @@
         const idx = openTabs.findIndex(t => t.id === ctxMenu.tabId);
         if (idx < openTabs.length - 1) {
           openTabs.splice(idx + 1);
-          if (!openTabs.find(t => t.id === activeTabId.value)) navigate(openTabs[idx].id);
+          if (!openTabs.find(t => t.id === cfActiveTabId.value)) navigate(openTabs[idx].id);
         }
         closeCtxMenu();
       };
@@ -353,7 +353,7 @@
       };
 
       /* ── 열린 화면 목록 (가나다순) ── */
-      const openTabsWithGroup = computed(() =>
+      const cfOpenTabsWithGroup = computed(() =>
         [...openTabs].map(tab => {
           const topId = PAGE_TO_TOP[tab.id];
           const topLabel = TOP_MENUS.find(t => t.id === topId)?.label || (tab.id === 'dashboard' ? '홈' : '');
@@ -495,8 +495,8 @@
       /* 공통 필터 표시용 헬퍼 */
       const filterSite      = computed(() => null);
       const filterVendor    = computed(() => null);
-      const filterDlivVendor = computed(() => null);
-      const filterBoUser = computed(() => null);
+      const cfFilterDlivVendor = computed(() => null);
+      const cfFilterBoUser = computed(() => null);
       const filterMember    = computed(() => null);
       const filterOrder     = computed(() => null);
 
@@ -723,7 +723,7 @@
         }
       })();
       const activeRoleId = ref(null);
-      const isLoggedIn = computed(() => !!(currentAuthUser?.authId));
+      const cfIsLoggedIn = computed(() => !!(currentAuthUser?.authId));
       const currentAuthUserRoles = reactive([]);
       const updateCurrentUserRoles = async () => {
         try {
@@ -998,7 +998,7 @@
           else keptTabIds.delete(pgId);
         }
       };
-      const favList = computed(() =>
+      const cfFavList = computed(() =>
         favorites.map(pgId => {
           const topId = PAGE_TO_TOP[pgId];
           const topLabel = TOP_MENUS.find(t => t.id === topId)?.label || '';
@@ -1010,12 +1010,12 @@
       const onRootClick = () => { closeCtxMenu(); userMenuShow.value = false; };
 
       return {
-        page, editId, navigate, errorMessage, dashboardComp,
+        page, editId, navigate, errorMessage, cfDashboardComp,
         TOP_MENUS, LEFT_MENUS, AUTH_METHODS,
-        openTabs, closeTab, activeTabId, refreshKeys, keptTabIds, toggleKeep, PAGE_COMP_MAP,
+        openTabs, closeTab, cfActiveTabId, refreshKeys, keptTabIds, toggleKeep, PAGE_COMP_MAP,
         ctxMenu, showCtxMenu, closeCtxMenu,
         ctxClose, ctxCloseLeft, ctxCloseRight, ctxCloseOthers, ctxCloseAll, ctxNewWindow, ctxRefresh,
-        openNewWindow, openTabsWithGroup,
+        openNewWindow, cfOpenTabsWithGroup,
         activeTop, leftMenuOpen, setTopMenu,
         toasts, showToast, closeToast, closeAllToasts, toastShowDetail, toggleToastDetail,
         confirmState, showConfirm, closeConfirm,
@@ -1023,12 +1023,12 @@
         rightPanelOpen, commonFilter, selectModal, openSelectModal, closeSelectModal, onSelectItem, clearFilter,
         apiLogs, apiLogHoverDetail, apiLogLockedDetail, clearApiLogs, toggleApiLogLock, getApiStatusColor, formatJsonData, isWithin60Seconds, getRelativeTime,
         tabBarRef, scrollTabs,
-        isLoggedIn, currentAuthUser, currentAuthUserRoles, activeRoleId, rolePath, onRoleChange, rolesOfUser, bizInfoOfUser,
+        cfIsLoggedIn, currentAuthUser, currentAuthUserRoles, activeRoleId, rolePath, onRoleChange, rolesOfUser, bizInfoOfUser,
         loginModal, loginForm, regForm, loginError, userMenuShow,
         openLogin, closeLogin, doLogin, quickLogin, doLogout, doRegister,
         profileModal, profileForm, openProfile, saveProfile,
         pwModal, pwForm, pwError, openPwChange, savePwChange,
-        favorites, favKeepSet, sidebarTab, isFav, toggleFav, favList, toggleFavKeep,
+        favorites, favKeepSet, sidebarTab, isFav, toggleFav, cfFavList, toggleFavKeep,
         apiResPanel, setApiRes, closeApiResPanel,
         onRootClick,
         relatedSiteOpen, toggleRelatedSite, openRelatedLink,
@@ -1061,7 +1061,7 @@
 
     <!-- 로그인/유저 영역 -->
     <div class="top-nav-user" @click.stop>
-      <template v-if="isLoggedIn">
+      <template v-if="cfIsLoggedIn">
         <select v-if="currentAuthUserRoles.length > 1" class="user-role-select" v-model="activeRoleId" @change="onRoleChange"
           :title="'역할 ' + currentAuthUserRoles.length + '개 보유'"
           style="margin-right:4px;padding:3px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#374151;max-width:480px;min-width:320px;">
@@ -1100,7 +1100,7 @@
     <button class="tab-scroll-btn" @click="scrollTabs(-1)" title="왼쪽">&#8249;</button>
     <div class="bo-tab-bar" ref="tabBarRef">
       <div v-for="tab in openTabs" :key="tab.id"
-        class="bo-tab" :class="{active: activeTabId===tab.id}"
+        class="bo-tab" :class="{active: cfActiveTabId===tab.id}"
         @click="navigate(tab.id)"
         @contextmenu.prevent="showCtxMenu($event, tab.id)">
         <span @click.stop="toggleKeep(tab.id)"
@@ -1123,7 +1123,7 @@
         <div class="left-nav-group-title">{{ TOP_MENUS.find(t=>t.id===activeTop)?.label }}</div>
         <template v-for="item in (LEFT_MENUS[activeTop] || [])" :key="item?.group || item?.id">
           <div v-if="item.group" class="left-nav-group-header">{{ item.group }}</div>
-          <div v-else class="left-nav-item left-nav-sub-item" :class="{active: activeTabId===item.id}"
+          <div v-else class="left-nav-item left-nav-sub-item" :class="{active: cfActiveTabId===item.id}"
             @click="$event.ctrlKey ? openNewWindow(item.id) : navigate(item.id)"
             :title="'Ctrl+클릭: 새창'">
             {{ item.label }}
@@ -1139,9 +1139,9 @@
         <div class="left-nav-open-list">
           <!-- 즐겨찾기 목록 -->
           <template v-if="sidebarTab==='fav'">
-            <div v-if="favList.length===0" class="left-nav-open-empty">즐겨찾기가 없습니다.</div>
-            <div v-for="fav in favList" :key="fav.id"
-              class="left-nav-open-item" :class="{active: activeTabId===fav.id}"
+            <div v-if="cfFavList.length===0" class="left-nav-open-empty">즐겨찾기가 없습니다.</div>
+            <div v-for="fav in cfFavList" :key="fav.id"
+              class="left-nav-open-item" :class="{active: cfActiveTabId===fav.id}"
               @click="navigate(fav.id)">
               <span @click.stop="toggleFavKeep(fav.id)"
                 :title="favKeepSet.has(fav.id) ? '고정 해제' : '고정 (열 때 상태 유지)'"
@@ -1157,9 +1157,9 @@
           </template>
           <!-- 열린화면 목록 -->
           <template v-if="sidebarTab==='open'">
-            <div v-if="openTabsWithGroup.length===0" class="left-nav-open-empty">열린 화면이 없습니다.</div>
-            <div v-for="tab in openTabsWithGroup" :key="tab.id"
-              class="left-nav-open-item" :class="{active: activeTabId===tab.id}"
+            <div v-if="cfOpenTabsWithGroup.length===0" class="left-nav-open-empty">열린 화면이 없습니다.</div>
+            <div v-for="tab in cfOpenTabsWithGroup" :key="tab.id"
+              class="left-nav-open-item" :class="{active: cfActiveTabId===tab.id}"
               @click="navigate(tab.id)">
               <span class="left-nav-open-path">
                 <span class="left-nav-open-group">{{ tab.topLabel }}</span>
@@ -1272,7 +1272,7 @@
         />
         <!-- 비고정 현재 탭: 전환 시 재마운트 -->
         <div v-if="!keptTabIds.has(page)" :key="page + '_' + (refreshKeys[page] || 0)" style="display:contents;">
-        <component v-if="page==='dashboard'" :is="dashboardComp" :navigate="navigate"  :show-toast="showToast" />
+        <component v-if="page==='dashboard'" :is="cfDashboardComp" :navigate="navigate"  :show-toast="showToast" />
         <mb-member-mng  v-else-if="page==='mbMemberMng'"  :navigate="navigate"  :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <mb-member-dtl  v-else-if="page==='mbMemberDtl'"  :navigate="navigate"  :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
         <pd-prod-mng    v-else-if="page==='pdProdMng'"    :navigate="navigate"  :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
@@ -1419,9 +1419,9 @@
             <span v-if="commonFilter.userId" class="popup-sel-clear" @click.stop="clearFilter('boUser')">✕</span>
           </div>
           <div class="popup-sel-row" @click="openSelectModal('boUser')">
-            <span v-if="filterBoUser" class="popup-sel-name">{{ filterBoUser.name }}</span>
+            <span v-if="cfFilterBoUser" class="popup-sel-name">{{ cfFilterBoUser.name }}</span>
             <span v-else class="popup-sel-placeholder">선택하세요</span>
-            <span v-if="filterBoUser" class="popup-sel-id">{{ filterBoUser.boUserId }}</span>
+            <span v-if="cfFilterBoUser" class="popup-sel-id">{{ cfFilterBoUser.boUserId }}</span>
             <span class="popup-sel-btn">🔍</span>
           </div>
         </div>
@@ -1430,9 +1430,9 @@
             <span v-if="commonFilter.dlivVendorId" class="popup-sel-clear" @click.stop="clearFilter('dlivVendor')">✕</span>
           </div>
           <div class="popup-sel-row" @click="openSelectModal('dlivVendor')">
-            <span v-if="filterDlivVendor" class="popup-sel-name">{{ filterDlivVendor.vendorNm }}</span>
+            <span v-if="cfFilterDlivVendor" class="popup-sel-name">{{ cfFilterDlivVendor.vendorNm }}</span>
             <span v-else class="popup-sel-placeholder">선택하세요</span>
-            <span v-if="filterDlivVendor" class="popup-sel-id">{{ filterDlivVendor.vendorId }}</span>
+            <span v-if="cfFilterDlivVendor" class="popup-sel-id">{{ cfFilterDlivVendor.vendorId }}</span>
             <span class="popup-sel-btn">🔍</span>
           </div>
         </div>

@@ -120,7 +120,7 @@ window.foMyLayout = {
       { pageId: 'myChatt',   label: '채팅',           icon: '💬' },
     ];
 
-    const tabCounts = computed(() => myStore.getTabCounts(props.cartCount));
+    const cfTabCounts = computed(() => myStore.getTabCounts(props.cartCount));
 
     const goTab = (pageId) => {
       if (pageId === 'myCart') {
@@ -130,7 +130,7 @@ window.foMyLayout = {
       }
     };
 
-    return { MY_TABS, tabCounts, goTab };
+    return { MY_TABS, cfTabCounts, goTab };
   },
   template: /* html */ `
 <div style="padding:0 20px 24px;max-width:1100px;margin:0 auto;">
@@ -163,10 +163,10 @@ window.foMyLayout = {
         @mouseleave="activePage===t.pageId || ($event.currentTarget.style.background='transparent')">
         <span style="font-size:1.05rem;">{{ t.icon }}</span>
         <span>{{ t.label }}</span>
-        <span v-if="tabCounts[t.pageId] > 0"
+        <span v-if="cfTabCounts[t.pageId] > 0"
           style="display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;font-size:0.72rem;font-weight:800;"
           :style="activePage===t.pageId ? 'background:rgba(255,255,255,0.25);color:#fff;' : 'background:#fee2e2;color:#dc2626;'">
-          {{ tabCounts[t.pageId] }}
+          {{ cfTabCounts[t.pageId] }}
         </span>
       </button>
       <div v-if="ti < MY_TABS.length-1"

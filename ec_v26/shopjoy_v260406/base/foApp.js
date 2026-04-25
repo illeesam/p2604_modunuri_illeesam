@@ -191,7 +191,7 @@
       saveLikes();
     };
     const isLiked = (productId) => likes.has(productId);
-    const likeCount = computed(() => likes.size);
+    const cfLikeCount = computed(() => likes.size);
 
     /* ── Cart ── */
     const cart = reactive([]);
@@ -229,7 +229,7 @@
       } catch (e) {}
     };
 
-    const cartCount = computed(() => cart.reduce((s, i) => s + i.qty, 0));
+    const cfCartCount = computed(() => cart.reduce((s, i) => s + i.qty, 0));
 
     const addToCart = (product, color, size, qty = 1) => {
       const existing = cart.find(i =>
@@ -426,8 +426,8 @@
       alertState, showAlert, closeAlert,
       confirmState, showConfirm, closeConfirm,
       products, selectedProduct, selectProduct,
-      cart, cartCount, addToCart, removeFromCart, updateCartQty, clearCart,
-      likes, toggleLike, isLiked, likeCount,
+      cart, cfCartCount, addToCart, removeFromCart, updateCartQty, clearCart,
+      likes, toggleLike, isLiked, cfLikeCount,
       instantOrder, cartIds, viewEditId,
       config: window.SITE_CONFIG,
       auth, showLogin, onShowLogin, onLogout,
@@ -445,7 +445,7 @@
 
   <fo-app-header
     :page="page" :theme="theme" :sidebar-open="sidebarOpen" :mobile-open="mobileOpen"
-    :config="config" :navigate="navigate" :toggle-theme="toggleTheme" :cart-count="cartCount" :like-count="likeCount"
+    :config="config" :navigate="navigate" :toggle-theme="toggleTheme" :cart-count="cfCartCount" :like-count="cfLikeCount"
     :auth="auth" :on-show-login="onShowLogin" :on-logout="onLogout"
     @toggle-sidebar="sidebarOpen=!sidebarOpen" @toggle-mobile="toggleMobileMenu"
   />
@@ -453,7 +453,7 @@
   <div style="flex:1;display:flex;overflow:hidden;position:relative;">
     <fo-app-sidebar
       :page="page" :sidebar-open="sidebarOpen" :mobile-open="mobileOpen"
-      :config="config" :navigate="navigate" :cart-count="cartCount" :auth="auth"
+      :config="config" :navigate="navigate" :cart-count="cfCartCount" :auth="auth"
       @toggle-sidebar="sidebarOpen=!sidebarOpen" @close-mobile="closeMobileMenu"
     />
     <div class="sidebar-overlay" :class="{show: mobileOpen}" @click="closeMobileMenu"></div>
@@ -477,7 +477,7 @@
       />
       <cart
         v-else-if="page==='cart'"
-        :navigate="navigate" :config="config" :cart="cart" :cart-count="cartCount"
+        :navigate="navigate" :config="config" :cart="cart" :cart-count="cfCartCount"
         :remove-from-cart="removeFromCart" :update-cart-qty="updateCartQty"
         :show-confirm="showConfirm" :clear-cart="clearCart"
       />
@@ -531,31 +531,31 @@
       <my-order
         v-else-if="page==='myOrder'"
         :navigate="navigate" :config="config"
-        :cart="cart" :cart-count="cartCount"
+        :cart="cart" :cart-count="cfCartCount"
         :show-toast="showToast" :show-confirm="showConfirm"
         :remove-from-cart="removeFromCart" :update-cart-qty="updateCartQty"
       />
       <my-claim
         v-else-if="page==='myClaim'"
-        :navigate="navigate" :config="config" :cart-count="cartCount"
+        :navigate="navigate" :config="config" :cart-count="cfCartCount"
         :show-toast="showToast" :show-confirm="showConfirm"
       />
       <my-coupon
         v-else-if="page==='myCoupon'"
-        :navigate="navigate" :cart-count="cartCount" :show-toast="showToast"
+        :navigate="navigate" :cart-count="cfCartCount" :show-toast="showToast"
       />
       <my-cache
         v-else-if="page==='myCache'"
-        :navigate="navigate" :cart-count="cartCount" :show-toast="showToast"
+        :navigate="navigate" :cart-count="cfCartCount" :show-toast="showToast"
       />
       <my-contact
         v-else-if="page==='myContact'"
-        :navigate="navigate" :cart-count="cartCount"
+        :navigate="navigate" :cart-count="cfCartCount"
         :show-toast="showToast" :show-confirm="showConfirm"
       />
       <my-chatt
         v-else-if="page==='myChatt'"
-        :navigate="navigate" :cart-count="cartCount"
+        :navigate="navigate" :cart-count="cfCartCount"
       />
       <xd-disp-ui01 v-else-if="page==='dispUi01'" />
       <xd-disp-ui02 v-else-if="page==='dispUi02'" />

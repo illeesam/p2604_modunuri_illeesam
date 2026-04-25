@@ -5,7 +5,8 @@ window.MyOrder = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const myStore = window.useFoMyStore();
-    const { orders, claimsByOrderId, coupons } = Pinia.storeToRefs(myStore);
+    const { orders, cfClaimsByOrderId, coupons } = Pinia.storeToRefs(myStore);
+    const claimsByOrderId = cfClaimsByOrderId;
 
     /* ── 로컬 페이저 ── */
     const orderPager = reactive({ page: 1, size: 50 });
