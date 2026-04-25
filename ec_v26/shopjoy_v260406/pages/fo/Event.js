@@ -1,6 +1,6 @@
 /* ShopJoy - Event (이벤트 목록) */
-window.Event = {
-  name: 'Event',
+window.EventPage = {
+  name: 'EventPage',
   props: ['navigate', 'config'],
   setup(props) {
     const { ref, reactive, computed, watch } = Vue;

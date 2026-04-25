@@ -6,7 +6,7 @@ window.Cart = {
   setup(props) {
     const { computed, ref, reactive, watch } = Vue;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, checkedIdxs: new Set() });
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -29,43 +29,44 @@ window.Cart = {
     });
 
     /* ── 체크박스 ── */
-    let checkedIdxs = reactive(new Set());
-
-    const isChecked = (idx) => checkedIdxs.has(idx);
+    const isChecked = (idx) => uiState.checkedIdxs.has(idx);
 
     const toggleCheck = (idx) => {
-      const s = new Set(checkedIdxs);
-      if (s.has(idx)) s.delete(idx);
-      else s.add(idx);
-      checkedIdxs = s;
+      if (uiState.checkedIdxs.has(idx)) uiState.checkedIdxs.delete(idx);
+      else uiState.checkedIdxs.add(idx);
     };
 
     const cfAllChecked = computed(() =>
-      props.cart.length > 0 && checkedIdxs.size === props.cart.length
+      props.cart.length > 0 && uiState.checkedIdxs.size === props.cart.length
     );
     const cfSomeChecked = computed(() =>
-      checkedIdxs.size > 0 && checkedIdxs.size < props.cart.length
+      uiState.checkedIdxs.size > 0 && uiState.checkedIdxs.size < props.cart.length
     );
 
     const toggleAll = () => {
-      if (cfAllChecked.value) checkedIdxs = new Set();
-      else checkedIdxs = new Set(props.cart.map((_, i) => i));
+      if (cfAllChecked.value) {
+        uiState.checkedIdxs.clear();
+      } else {
+        uiState.checkedIdxs.clear();
+        props.cart.forEach((_, i) => uiState.checkedIdxs.add(i));
+      }
     };
 
     /* 체크 해제된 항목 삭제 시 인덱스 재정렬 */
     const removeItem = (idx) => {
       props.removeFromCart(idx);
-      const s = new Set();
-      checkedIdxs.forEach(i => { if (i < idx) s.add(i); else if (i > idx) s.add(i - 1); });
-      checkedIdxs = s;
+      const newSet = new Set();
+      uiState.checkedIdxs.forEach(i => { if (i < idx) newSet.add(i); else if (i > idx) newSet.add(i - 1); });
+      uiState.checkedIdxs.clear();
+      newSet.forEach(i => uiState.checkedIdxs.add(i));
     };
 
     /* 선택 항목만 주문 (체크 없으면 전체) */
     const goOrder = () => {
-      if (checkedIdxs.size === 0) {
+      if (uiState.checkedIdxs.size === 0) {
         props.navigate('order');
       } else {
-        const ids = [...checkedIdxs].sort().map(i => props.cart[i].cartId);
+        const ids = [...uiState.checkedIdxs].sort().map(i => props.cart[i].cartId);
         props.navigate('order', { cartIds: ids });
       }
     };
@@ -85,8 +86,8 @@ window.Cart = {
 
     /* 요약 패널: 체크된 항목(없으면 전체) 기준 */
     const cfSummaryItems = computed(() =>
-      checkedIdxs.size > 0
-        ? [...checkedIdxs].sort().map(i => props.cart[i])
+      uiState.checkedIdxs.size > 0
+        ? [...uiState.checkedIdxs].sort().map(i => props.cart[i])
         : (props.cart || [])
     );
 
@@ -99,16 +100,16 @@ window.Cart = {
     );
 
     const cfOrderCount = computed(() =>
-      checkedIdxs.size > 0 ? checkedIdxs.size : props.cart.length
+      uiState.checkedIdxs.size > 0 ? uiState.checkedIdxs.size : props.cart.length
     );
 
     const handleClearAll = async () => {
       const ok = await props.showConfirm('장바구니 비우기', '장바구니의 모든 상품을 삭제하시겠습니까?', 'warning');
-      if (ok) { props.clearCart(); checkedIdxs = new Set(); }
+      if (ok) { props.clearCart(); uiState.checkedIdxs.clear(); }
     };
 
     return {
-      checkedIdxs, isChecked, toggleCheck, cfAllChecked, cfSomeChecked, toggleAll,
+      isChecked, toggleCheck, cfAllChecked, cfSomeChecked, toggleAll,
       removeItem, goOrder,
       formatPrice, cfTotalPriceStr, cfSummaryItems, cfOrderCount, handleClearAll,
       uiState, codes };
@@ -153,8 +154,8 @@ window.Cart = {
                 style="width:17px;height:17px;cursor:pointer;accent-color:var(--blue);" />
               <span style="font-weight:700;font-size:0.9rem;color:var(--text-primary);">
                 전체 선택
-                <span v-if="checkedIdxs.size>0" style="font-weight:400;color:var(--blue);font-size:0.82rem;">
-                  ({{ checkedIdxs.size }}개 선택됨)
+                <span v-if="uiState.checkedIdxs.size>0" style="font-weight:400;color:var(--blue);font-size:0.82rem;">
+                  ({{ uiState.checkedIdxs.size }}개 선택됨)
                 </span>
                 <span v-else style="font-weight:400;color:var(--text-muted);font-size:0.82rem;">
                   (총 {{ cart.length }}개)
@@ -225,8 +226,8 @@ window.Cart = {
         <div class="card" style="padding:clamp(12px,3vw,24px);position:sticky;top:76px;">
           <h2 style="font-size:1rem;font-weight:700;margin-bottom:18px;color:var(--text-primary);">📋 주문 요약</h2>
 
-          <div v-if="checkedIdxs.size>0" style="margin-bottom:8px;padding:6px 10px;border-radius:6px;background:var(--blue-dim);color:var(--blue);font-size:0.78rem;font-weight:600;">
-            ✔ 선택 {{ checkedIdxs.size }}개 상품만 주문합니다
+          <div v-if="uiState.checkedIdxs.size>0" style="margin-bottom:8px;padding:6px 10px;border-radius:6px;background:var(--blue-dim);color:var(--blue);font-size:0.78rem;font-weight:600;">
+            ✔ 선택 {{ uiState.checkedIdxs.size }}개 상품만 주문합니다
           </div>
 
           <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;font-size:0.875rem;">

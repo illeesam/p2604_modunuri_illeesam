@@ -34,6 +34,33 @@ window.PmCouponMng = {
       }
     });
 
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    const pager = reactive({ page: 1, size: 5 });
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+
+    /* 하단 상세 */
+    const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
+    const searchParam = reactive({
+      kw: '',
+      dateRange: '',
+      dateStart: '',
+      dateEnd: '',
+      status: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '',
+      dateRange: '',
+      dateStart: '',
+      dateEnd: '',
+      status: ''
+    }); // 'view' | 'edit'
+
+    const handleDateRangeChange = () => {
+      if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      pager.page = 1;
+    };
+
     // onMounted에서 API 로드
     const handleFetchData = async () => {
       uiState.loading = true;
@@ -51,34 +78,7 @@ window.PmCouponMng = {
         uiState.loading = false;
       }
     };
-    onMounted(() => { handleFetchData();
-    Object.assign(searchParamOrg, searchParam); });
-    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const handleDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
-      pager.page = 1;
-    };
-    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-     // 'list' | 'card'
-    const pager = reactive({ page: 1, size: 5 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-
-    /* 하단 상세 */
-    const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
-  const searchParam = reactive({
-    kw: '',
-    dateRange: '',
-    dateStart: '',
-    dateEnd: '',
-    status: ''
-  });
-  const searchParamOrg = reactive({
-    kw: '',
-    dateRange: '',
-    dateStart: '',
-    dateEnd: '',
-    status: ''
-  }); // 'view' | 'edit'
+    onMounted(() => { handleFetchData(); Object.assign(searchParamOrg, searchParam); });
     const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
     const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
@@ -153,7 +153,9 @@ window.PmCouponMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'couponId'},{label:'쿠폰명',key:'couponNm'},{label:'유형',key:'discountTypeCd'},{label:'할인값',key:'discountValue'},{label:'최소금액',key:'minOrderAmount'},{label:'상태',key:'statusCd'},{label:'유효기간(시작)',key:'validFrom'},{label:'유효기간(종료)',key:'validTo'}], '쿠폰목록.csv');
 
-    return { uiStateDetail, coupons, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, discountLabel, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, coupons, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, discountLabel, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
+      get viewMode() { return uiState.viewMode; }, set viewMode(v) { uiState.viewMode = v; },
+      get selectedId() { return uiStateDetail.selectedId; } };
   },
   template: /* html */`
 <div>

@@ -670,7 +670,7 @@
   .component('Contact',      window.Contact)
   .component('Faq',          window.Faq)
   .component('Login',        window.Login)
-  .component('EventPage',    window.Event)
+  .component('EventPage',    window.EventPage)
   .component('EventView',    window.EventView)
   .component('BlogPage',     window.Blog)
   .component('BlogView',     window.BlogView)

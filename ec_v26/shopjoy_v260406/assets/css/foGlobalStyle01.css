@@ -430,7 +430,6 @@ body {
   animation: toastIn 0.3s ease;
   font-size: 0.875rem;
   font-weight: 500;
-  position: relative;
 }
 @keyframes toastIn {
   from { opacity: 0; transform: translateY(16px) scale(0.96); }

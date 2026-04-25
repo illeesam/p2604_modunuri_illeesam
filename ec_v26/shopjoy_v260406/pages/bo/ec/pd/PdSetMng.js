@@ -8,6 +8,7 @@ window.PdSetMng = {
     const products = reactive([]);
     const brands = reactive([]);
     const sets = reactive([]);
+    const categoryProds = reactive([]);
     const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: null, editSetId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, dragIdx: null, dragoverIdx: null, pickerOpen: false, pickerSearch: '' });
     const codes = reactive({
       product_statuses: [],
@@ -117,8 +118,7 @@ window.PdSetMng = {
     let _seq = 1;
 
     /* ── 드래그 ── */
-    const dragIdx     = ref(null);
-        const onDragStart = idx => { uiState.dragIdx = idx; };
+    const onDragStart = idx => { uiState.dragIdx = idx; };
     const onDragOver  = idx => { uiState.dragoverIdx = idx; };
     const onDrop = () => {
       if (uiState.dragIdx === null || uiState.dragIdx === uiState.dragoverIdx) {
@@ -134,8 +134,8 @@ window.PdSetMng = {
 
     /* ── 상품 피커 ── */
     const pickerOpen   = ref(false);
-        const cfPickerList   = computed(() => {
-      const q    = pickerSearch.value.trim().toLowerCase();
+    const cfPickerList   = computed(() => {
+      const q    = (uiState.pickerSearch || '').trim().toLowerCase();
       const used = new Set(dtlItems.map(d => d.itemProdId).filter(Boolean));
       return (products || []).filter(p => {
         if (p.productId === uiState.editSetId) return false;
@@ -153,10 +153,10 @@ window.PdSetMng = {
     /* ── 세트상품 목록 ── */
     const cfSetList = computed(() => {
       const kw = searchParam.nm.toLowerCase();
-      const ids = [...new Set((setItems || []).map(s => s.setProdId))];
+      const ids = [...new Set((sets || []).map(s => s.setProdId))];
       return ids
         .map(id => {
-          const items = (setItems || [])
+          const items = (sets || [])
             .filter(s => s.setProdId === id)
             .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
           const prod = getProd(id);
@@ -207,7 +207,7 @@ window.PdSetMng = {
     const openDtl = setProdId => {
       uiState.dtlMode = 'edit';
       uiState.editSetId = setProdId;
-      const src = (setItems)
+      const src = (sets)
         .filter(s => s.setProdId === setProdId)
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
       dtlItems.splice(0, dtlItems.length, ...src.map((s, i) => ({
@@ -297,8 +297,8 @@ window.PdSetMng = {
           regDate: new Date().toISOString().slice(0, 10),
         });
       }
-      const others = (setItems).filter(s => s.setProdId !== setProdId);
-      setItems.value = [
+      const others = (sets).filter(s => s.setProdId !== setProdId);
+      const newSets = [
         ...others,
         ...dtlItems.map((d, i) => ({
           setItemId:       d.setItemId || `SI_${setProdId}_${i + 1}`,
@@ -314,8 +314,9 @@ window.PdSetMng = {
           useYn:           d.useYn,
         })),
       ];
-      if (!categoryProds) categoryProds = [];
-      categoryProds = window.safeArrayUtils.safeFilter(categoryProds, cp => String(cp.prodId) !== String(setProdId));
+      sets.splice(0, sets.length, ...newSets);
+      const filteredCatProds = window.safeArrayUtils.safeFilter(categoryProds, cp => String(cp.prodId) !== String(setProdId));
+      categoryProds.splice(0, categoryProds.length, ...filteredCatProds);
       window.safeArrayUtils.safeForEach(dtlCategories, (cat, i) => {
         categoryProds.push({ categoryProdId: `CP_SET_${setProdId}_${i}`, siteId: '1', categoryId: cat.categoryId, prodId: setProdId, sortOrd: i + 1 });
       });
@@ -336,7 +337,8 @@ window.PdSetMng = {
     const handleDelete = async setProdId => {
       const ok = await props.showConfirm('삭제', '세트상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
       if (!ok) return;
-      setItems.value = (setItems).filter(s => s.setProdId !== setProdId);
+      const remaining = (sets).filter(s => s.setProdId !== setProdId);
+      sets.splice(0, sets.length, ...remaining);
       if (uiState.editSetId === setProdId) closeDtl();
       try {
         const res = await window.boApi.delete(`/bo/ec/pd/prod-set/${setProdId}`);

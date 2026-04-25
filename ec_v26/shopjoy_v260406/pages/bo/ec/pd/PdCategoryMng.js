@@ -166,10 +166,6 @@ window.PdCategoryMng = {
       searchParam, searchParamOrg,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       onSearch, onReset,
-      addRow, deleteRow, cancelRow, handleSave,
-      parentNm,
-      catPickerModal, cfCatPickerList, openParentModal, onParentSelect,
-      fnDepthBullet, fnDepthColor, fnStatusClass,
     };
   },
 

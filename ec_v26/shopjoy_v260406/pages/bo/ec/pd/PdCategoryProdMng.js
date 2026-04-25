@@ -36,7 +36,7 @@ window.PdCategoryProdMng = {
 
     /* ── 뷰모드 영속화 ── */
     if (!window._ecCategoryProdState) window._ecCategoryProdState = { viewMode: 'tab' };
-        watch(viewMode, v => { window._ecCategoryProdState.viewMode = v; });
+        watch(() => uiState.viewMode, v => { window._ecCategoryProdState.viewMode = v; });
 
     /* ── 진열 유형 탭 ── */
     const TYPE_TABS = [
@@ -95,19 +95,11 @@ window.PdCategoryProdMng = {
     onSearch();
   };
   return {
-      codes,
-      viewMode, TYPE_TABS, activeTypeCd, cfTypeCountMap,
-      EMPHASIS_OPTS, parseEmphasis, hasEmphasis, toggleEmphasis,
+      codes, uiState,
+      TYPE_TABS, EMPHASIS_OPTS, parseEmphasis, hasEmphasis, toggleEmphasis,
       defaultDispStartDate, defaultDispEndDate,
       searchParam, searchParamOrg, onSearch, onReset,
-      expandedSet, isExpanded, toggleNode, expandAll, collapseAll,
-      cfCatTreeFlat, cfSelectedCatId, cfSelectedCat, cfIsLeafCat, selectNode,
-      totalProdCount, getCatPath,
-      allRows, cfFilteredRows, removeRow,
-      dragIdx, dragoverIdx, onDragStart, onDragOver, onDrop,
-      pickerOpen, pickerSearch, cfPickerList, addProd,
-      onSave, getProd, getProdNm,
-      fnDepthColor, fnDepthBullet,
+      PAGE_SIZES, pager,
     };
   },
 

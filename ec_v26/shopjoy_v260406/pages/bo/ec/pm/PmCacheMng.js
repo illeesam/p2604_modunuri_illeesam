@@ -32,6 +32,33 @@ window.PmCacheMng = {
       }
     });
 
+    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    const pager = reactive({ page: 1, size: 5 });
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+
+    /* 하단 상세 */
+    const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
+    const searchParam = reactive({
+      kw: '',
+      dateRange: '',
+      dateStart: '',
+      dateEnd: '',
+      type: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '',
+      dateRange: '',
+      dateStart: '',
+      dateEnd: '',
+      type: ''
+    }); // 'view' | 'edit'
+
+    const handleDateRangeChange = () => {
+      if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      pager.page = 1;
+    };
+
     // onMounted에서 API 로드
     const handleFetchData = async () => {
       uiState.loading = true;
@@ -49,34 +76,7 @@ window.PmCacheMng = {
         uiState.loading = false;
       }
     };
-    onMounted(() => { handleFetchData();
-    Object.assign(searchParamOrg, searchParam); });
-    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const handleDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
-      pager.page = 1;
-    };
-    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-     // 'list' | 'card'
-    const pager = reactive({ page: 1, size: 5 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-
-    /* 하단 상세 */
-    const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
-  const searchParam = reactive({
-    kw: '',
-    dateRange: '',
-    dateStart: '',
-    dateEnd: '',
-    type: ''
-  });
-  const searchParamOrg = reactive({
-    kw: '',
-    dateRange: '',
-    dateStart: '',
-    dateEnd: '',
-    type: ''
-  }); // 'view' | 'edit'
+    onMounted(() => { handleFetchData(); Object.assign(searchParamOrg, searchParam); });
     const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
     const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
@@ -132,8 +132,8 @@ window.PmCacheMng = {
     const handleDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.desc}] 내역을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = cacheList.value.findIndex(x => x.cacheId === c.cacheId);
-      if (idx !== -1) cacheList.value.splice(idx, 1);
+      const idx = caches.findIndex(x => x.cacheId === c.cacheId);
+      if (idx !== -1) caches.splice(idx, 1);
       if (uiStateDetail.selectedId === c.cacheId) uiStateDetail.selectedId = null;
       try {
         const res = await window.boApi.delete(`/bo/ec/pm/cache/${c.cacheId}`);
@@ -149,7 +149,9 @@ window.PmCacheMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'cacheId'},{label:'회원명',key:'userNm'},{label:'유형',key:'cacheType'},{label:'금액',key:'amount'},{label:'설명',key:'description'},{label:'등록일',key:'regDate'}], '캐시목록.csv');
 
-    return { uiStateDetail, caches, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, caches, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
+      get viewMode() { return uiState.viewMode; }, set viewMode(v) { uiState.viewMode = v; },
+      get selectedId() { return uiStateDetail.selectedId; } };
   },
   template: /* html */`
 <div>
@@ -220,7 +222,7 @@ window.PmCacheMng = {
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.cacheId)" style="font-size:11px;padding:4px 12px;">수정</button>
-          <button class="btn btn-danger btn-sm" @click="doDelete(c)" style="font-size:11px;padding:4px 12px;">삭제</button>
+          <button class="btn btn-danger btn-sm" @click="handleDelete(c)" style="font-size:11px;padding:4px 12px;">삭제</button>
           <span style="font-size:11px;color:#999;margin-left:auto;">#{{ c.cacheId }}</span>
         </div>
       </div>
@@ -231,9 +233,9 @@ window.PmCacheMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -254,7 +256,7 @@ window.PmCacheMng = {
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
-      :edit-id="detailEditId"
+      :edit-id="cfDetailEditId"
     />
   </div>
 </div>

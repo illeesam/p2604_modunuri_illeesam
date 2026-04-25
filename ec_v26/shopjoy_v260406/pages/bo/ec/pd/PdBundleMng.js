@@ -129,11 +129,7 @@ window.PdBundleMng = {
     const dtlItems = reactive([]);
     let _seq = 1;
 
-    /* ── 구성품 추가 피커 ── */
-    const pickerOpen   = ref(false);
-    
-    /* ── 드래그 정렬 ── */
-    const dragIdx     = ref(null);
+    /* ── 구성품 추가 피커 / 드래그 상태는 uiState에서 관리 ── */
     
     /* ── helpers ── */
     const getProd     = id => (products || []).find(p => p.productId === id);
@@ -277,7 +273,7 @@ window.PdBundleMng = {
     /* ── 피커 목록 ── */
     const cfCurrentBundleId = computed(() => uiState.dtlMode === 'edit' ? uiState.editBundleId : -1);
     const cfPickerList = computed(() => {
-      const q    = pickerSearch.value.trim().toLowerCase();
+      const q    = (uiState.pickerSearch || '').trim().toLowerCase();
       const used = dtlItems.map(d => d.itemProdId);
       return (products || []).filter(p => {
         if (p.productId === cfCurrentBundleId.value) return false;
