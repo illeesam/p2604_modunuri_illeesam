@@ -221,7 +221,7 @@ window.DpDispPanelPreview = {
       filterStatus: '활성',
       filterVisibility: '',
       filterDispEnv: 'PROD',
-      kw: '', dashCanvas: null});
+      kw: ''});
 
     const searchParamOrg = reactive({
       previewDate: today,
@@ -456,14 +456,15 @@ window.DpDispPanelPreview = {
     const closeSpanPopup = () => { gridState.spanPopupIdx = -1; };
 
     /* ── 대시보드: 자유 배치 + 크기 조절 ── */
+    const dashCanvas = ref(null);
     const dashItems  = reactive([]); // { id, lib, x, y, w, h }
-    
+
     const onDashDragOver = (e) => { e.preventDefault(); gridState.dashDragOver = true; };
     const onDashDragLeave = () => { gridState.dashDragOver = false; };
     const onDashDrop = (e) => {
       e.preventDefault(); gridState.dashDragOver = false;
-      if (!searchParam.dashCanvas) return;
-      const rect = searchParam.dashCanvas.getBoundingClientRect();
+      if (!dashCanvas.value) return;
+      const rect = dashCanvas.value.getBoundingClientRect();
 
       /* ── 노드 일괄 배치 ── */
       const nodeLibs = window._dragWidgetLibs;
@@ -550,7 +551,7 @@ window.DpDispPanelPreview = {
       cfSiteNm, today,
       VISIBILITY_OPTS, VIEWPORT,
       wIcon, wTypeLabel,
-      searchParam, searchParamOrg,
+      searchParam, searchParamOrg, codes,
       applied, onSearch, onReset,
       cfFilteredLibs,
       onTreeSelect,
@@ -561,7 +562,7 @@ window.DpDispPanelPreview = {
       tabSlots, cfCurrentSlots,
       dragState, onDragOver, onDragLeave, onDrop, removeSlot, setSpan, GRID_COLS,
       toggleSpanPopup, closeSpanPopup,
-      dashItems,
+      dashCanvas, dashItems,
       onDashDragOver, onDashDragLeave, onDashDrop,
       removeDashItem, startItemMove, startItemResize,
       cfPlacedCount, onResetCurrent,

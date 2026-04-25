@@ -835,7 +835,7 @@
           dept: currentAuthUser.dept || '',
           email: currentAuthUser.email || ''
         });
-        profileModal.show = true; uiState.userMenuShow = false;
+        uiState.profileModalShow = true; uiState.userMenuShow = false;
       };
       const saveProfile  = () => {
         if (!profileForm.name) { showToast('이름을 입력하세요.', 'error'); return; }

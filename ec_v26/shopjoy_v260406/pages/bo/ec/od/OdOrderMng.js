@@ -130,12 +130,14 @@ window.OdOrderMng = {
       '미결제':'badge-gray','부분결제':'badge-orange','결제완료':'badge-green',
       '결제실패':'badge-red','환불중':'badge-orange','부분환불':'badge-orange','환불완료':'badge-purple',
     }[s] || 'badge-gray');
-    const onSearch = () => {
+    const onSearch = async () => {
       pager.page = 1;
+      await handleFetchData();
     };
-    const onReset = () => {
+    const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
       pager.page = 1;
+      await handleFetchData();
     };
   
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };

@@ -219,7 +219,7 @@ window.ZdStore = {
   </div>
 
   <!-- 탭 콘텐츠 영역 (뷰모드별 그리드 레이아웃) -->
-  <div :class="['dtl-tab-grid', 'cols-' + (viewMode === 'col1' ? '1' : viewMode === 'col2' ? '2' : viewMode === 'col3' ? '3' : viewMode === 'col4' ? '4' : viewMode === 'col5' ? '5' : 'tab')]"
+  <div :class="['dtl-tab-grid', 'cols-' + (uiState.viewMode === 'col1' ? '1' : uiState.viewMode === 'col2' ? '2' : uiState.viewMode === 'col3' ? '3' : uiState.viewMode === 'col4' ? '4' : uiState.viewMode === 'col5' ? '5' : 'tab')]"
     style="display: grid; gap: 4px; padding: 0; auto-flow: row;">
 
     <div v-for="store in storeList" :key="store.name"

@@ -184,7 +184,7 @@ window.DpDispWidgetLibPreview = {
       filterCondition: '',
       filterAuthReq: '',
       filterAuthGrade: '',
-      kw: '', dashCanvas: null});
+      kw: ''});
 
     const searchParamOrg = reactive({
       previewDate: today,
@@ -397,14 +397,15 @@ window.DpDispWidgetLibPreview = {
     const closeSpanPopup = () => { uiState.spanPopupIdx = -1; };
 
     /* ── 대시보드: 자유 배치 + 크기 조절 ── */
+    const dashCanvas = ref(null);
     const dashItems  = reactive([]); // { id, lib, x, y, w, h }
     
     const onDashDragOver = (e) => { e.preventDefault(); uiState.dashDragOver = true; };
     const onDashDragLeave = () => { uiState.dashDragOver = false; };
     const onDashDrop = (e) => {
       e.preventDefault(); uiState.dashDragOver = false;
-      if (!searchParam.dashCanvas) return;
-      const rect = searchParam.dashCanvas.getBoundingClientRect();
+      if (!dashCanvas.value) return;
+      const rect = dashCanvas.value.getBoundingClientRect();
 
       /* ── 노드 일괄 배치 ── */
       const nodeLibs = window._dragWidgetLibs;
@@ -501,7 +502,7 @@ window.DpDispWidgetLibPreview = {
       tabSlots, cfCurrentSlots,
       onDragOver, onDragLeave, onDrop, removeSlot, setSpan, GRID_COLS,
       toggleSpanPopup, closeSpanPopup,
-      dashItems,
+      dashCanvas, dashItems,
       onDashDragOver, onDashDragLeave, onDashDrop,
       removeDashItem, startItemMove, startItemResize,
       cfPlacedCount, resetCurrent,
@@ -782,10 +783,10 @@ window.DpDispWidgetLibPreview = {
                         style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                         :style="(slot.colSpan||1)<=1?'opacity:.3;cursor:default;':''">−</button>
                       <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">{{ slot.colSpan||1 }}</span>
-                      <button @click="setSpan(idx,'col',+1)" :disabled="(slot.colSpan||1)>=(GRID_COLS[previewGrid]||1)"
+                      <button @click="setSpan(idx,'col',+1)" :disabled="(slot.colSpan||1)>=(GRID_COLS[uiState.previewGrid]||1)"
                         style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
-                        :style="(slot.colSpan||1)>=(GRID_COLS[previewGrid]||1)?'opacity:.3;cursor:default;':''">+</button>
-                      <span style="font-size:10px;color:#9ca3af;">/ {{ GRID_COLS[previewGrid]||1 }}</span>
+                        :style="(slot.colSpan||1)>=(GRID_COLS[uiState.previewGrid]||1)?'opacity:.3;cursor:default;':''">+</button>
+                      <span style="font-size:10px;color:#9ca3af;">/ {{ GRID_COLS[uiState.previewGrid]||1 }}</span>
                     </div>
                     <!-- 행(rowspan) -->
                     <div style="display:flex;align-items:center;gap:6px;">
@@ -824,15 +825,15 @@ window.DpDispWidgetLibPreview = {
           @dragleave="onDashDragLeave"
           @drop="onDashDrop"
           style="position:relative;min-height:560px;min-width:600px;background:#fff;border-radius:8px;border:2px dashed #e5e7eb;transition:border-color .15s;"
-          :style="dashDragOver ? 'border-color:#1d4ed8;background:#eff6ff;' : ''">
+          :style="uiState.dashDragOver ? 'border-color:#1d4ed8;background:#eff6ff;' : ''">
 
           <!-- 빈 상태 -->
-          <div v-if="!dashItems.length && !dashDragOver"
+          <div v-if="!dashItems.length && !uiState.dashDragOver"
             style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#d1d5db;pointer-events:none;">
             <span style="font-size:48px;">🧩</span>
             <span style="font-size:13px;">왼쪽 트리에서 위젯을 드래그하여 배치하세요</span>
           </div>
-          <div v-if="dashDragOver && !dashItems.length"
+          <div v-if="uiState.dashDragOver && !dashItems.length"
             style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:14px;font-weight:700;pointer-events:none;">
             ▼ 여기에 배치
           </div>
