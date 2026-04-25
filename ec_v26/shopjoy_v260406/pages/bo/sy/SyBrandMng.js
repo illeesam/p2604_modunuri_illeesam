@@ -25,7 +25,10 @@ window.SyBrandMng = {
         const res = await window.boApi.get('/bo/sy/brand/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        brands = res.data?.data?.list || [];
+        const list = res.data?.data?.list || [];
+        brands.splice(0, brands.length, ...list);
+        gridRows.splice(0);
+        list.forEach(b => gridRows.push(makeRow(b)));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -106,25 +109,6 @@ window.SyBrandMng = {
       _orig: EDIT_FIELDS.reduce((acc, f) => { acc[f] = b[f]; return acc; }, {}),
     });
 
-    const handleLoadGrid = () => {
-      gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
-      (brands || [])
-        .filter(b => {
-          const kw = searchParam.kw.trim().toLowerCase();
-          if (kw && !b.brandCode?.toLowerCase().includes(kw)
-                 && !b.brandNm?.toLowerCase().includes(kw)
-                 && !b.brandEnNm?.toLowerCase().includes(kw)) return false;
-          if (searchParam.useYn && b.useYn !== searchParam.useYn) return false;
-          if (uiState.selectedPath != null) { const _desc = window.boCmUtil.getPathDescendants('sy_brand', uiState.selectedPath); if (_desc && !_desc.has(b.pathId)) return false; }
-          const d = String(b.regDate || '').slice(0, 10);
-          if (searchParam.dateStart && d < searchParam.dateStart) return false;
-          if (searchParam.dateEnd   && d > searchParam.dateEnd)   return false;
-          return true;
-        })
-        .forEach(b => gridRows.push(makeRow(b)));
-    };
-
-    handleLoadGrid();
 
     const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
@@ -134,7 +118,7 @@ window.SyBrandMng = {
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);
-      handleLoadGrid();
+      handleFetchData();
     };
 
     const setFocused = (idx) => { uiState.focusedIdx = idx; };
@@ -243,7 +227,7 @@ window.SyBrandMng = {
       if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
       if (dRows.length) toastParts.push(`삭제 ${dRows.length}건`);
       props.showToast(`${toastParts.join(', ')} 저장되었습니다.`);
-      handleLoadGrid();
+      handleFetchData();
     };
 
     /* ── 드래그 ── */
@@ -302,7 +286,7 @@ window.SyBrandMng = {
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
     });
-    watch(() => uiState.selectedPath, () => handleLoadGrid());
+    watch(() => uiState.selectedPath, () => handleFetchData());
 
     return { brands, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange,

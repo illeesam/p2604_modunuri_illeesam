@@ -15,7 +15,10 @@ window.MbMemGradeMng = {
         const res = await window.boApi.get('/bo/ec/mb/member-grade/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        grades.splice(0, grades.length, ...(res.data?.data?.list || []));
+        const list = res.data?.data?.list || [];
+        grades.splice(0, grades.length, ...list);
+        gridRows.splice(0);
+        list.forEach(g => gridRows.push({ ...g, _row_status: null }));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -80,10 +83,6 @@ window.MbMemGradeMng = {
   });
     const FIELDS     = ['gradeCd','gradeNm','gradeRank','minPurchaseAmt','saveRate','useYn'];
 
-    const handleLoadGrid = () => {
-      gridRows.splice(0, gridRows.length, ...cfPageList.value.map(g => ({ ...g, _row_status: null })));
-    };
-    watch([() => pager.page, () => pager.size, searchParam], handleLoadGrid, { immediate: true });
 
     const addRow = () => {
       gridRows.unshift({ gradeId: _tempId--, siteId: 1, gradeCd: '', gradeNm: '', gradeRank: gridRows.length + 1, minPurchaseAmt: 0, saveRate: 1.00, useYn: 'Y', _row_status: 'N' });

@@ -88,7 +88,12 @@ window.XsSample01 = {
     const setPage    = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const getRealIdx = i => (pager.page - 1) * pager.size + i;
 
-    const handleLoadGrid = () => {
+    const handleFetchData = async () => {
+      try {
+        const res = await api.get(API, { cdGrp: CD_GRP });
+        const list = res?.data?.data ?? res?.data ?? [];
+        allData.splice(0, allData.length, ...list.map(toRow));
+      } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
       allData.filter(d => {
         const kw = searchParam.kw.toLowerCase();
@@ -98,22 +103,13 @@ window.XsSample01 = {
         return true;
       }).forEach(d => gridRows.push(makeRow(d)));
     };
-
-    const handleFetchData = async () => {
-      try {
-        const res = await api.get(API, { cdGrp: CD_GRP });
-        const list = res?.data?.data ?? res?.data ?? [];
-        allData.splice(0, allData.length, ...list.map(toRow));
-      } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
-      handleLoadGrid();
-    };
     onMounted(() => {
       handleFetchData();
       Object.assign(searchParamOrg, searchParam);
     });
 
-    const onSearch = () => { handleLoadGrid(); };
-    const onReset  = () => { Object.assign(searchParam, searchParamOrg); handleLoadGrid(); };
+    const onSearch = async () => { pager.page = 1; await handleFetchData(); };
+    const onReset  = async () => { Object.assign(searchParam, searchParamOrg); pager.page = 1; await handleFetchData(); };
 
     const setFocused = idx => { uiState.focusedIdx = idx; };
     const onCellChange = row => {
@@ -168,7 +164,14 @@ window.XsSample01 = {
         const res = await api.get(API, { cdGrp: CD_GRP });
         const list = res?.data?.data ?? res?.data ?? [];
         allData.splice(0, allData.length, ...list.map(toRow));
-        handleLoadGrid();
+        gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
+        allData.filter(d => {
+          const kw = searchParam.kw.toLowerCase();
+          if (kw && !['memberNm', 'email', 'phone'].some(f => String(d[f] || '').toLowerCase().includes(kw))) return false;
+          if (searchParam.grade  && d.grade  !== searchParam.grade)  return false;
+          if (searchParam.status && d.status !== searchParam.status) return false;
+          return true;
+        }).forEach(d => gridRows.push(makeRow(d)));
       } catch (e) { showToast('저장 실패: ' + (e.response?.data?.message || e.message || e), 'error'); }
     };
 
@@ -184,7 +187,7 @@ window.XsSample01 = {
     return {
       toast, searchParam, onSearch, onReset,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, getRealIdx,
-      focusedIdx, setFocused, onCellChange,
+      setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
       onDragStart, onDragOver, onDragEnd,
       uiState, toggleCheckAll, fnStatusBadge, rowBg,

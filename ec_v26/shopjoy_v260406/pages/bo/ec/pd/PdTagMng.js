@@ -80,8 +80,7 @@ window.PdTagMng = {
     const gridRows   = reactive([]);
     let   _tempId    = -1;
 
-    const handleLoadGrid = () => { gridRows.splice(0, gridRows.length, ...cfPageList.value.map(t => ({ ...t, _row_status: null }))); };
-    watch([() => pager.page, searchParam], handleLoadGrid, { immediate: true });
+    watch(cfPageList, (list) => { gridRows.splice(0, gridRows.length, ...list.map(t => ({ ...t, _row_status: null }))); }, { immediate: true });
 
     const addRow       = () => { gridRows.unshift({ tagId: 'T' + (_tempId--), siteId: 1, tagNm: '', tagDesc: '', useCount: 0, sortOrd: 0, useYn: 'Y', _row_status: 'N' }); };
     const onCellChange = (idx) => { if (gridRows[idx]._row_status !== 'N') gridRows[idx]._row_status = 'U'; };

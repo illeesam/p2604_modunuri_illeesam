@@ -152,6 +152,8 @@ window.SyCodeMng = {
         codes.splice(0, codes.length, ...list);
         updateCodeGroups();
         loadGrp();
+        gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
+        codes.forEach(c => gridRows.push(makeRow(c)));
       } catch (_) {}  finally { uiState.loading = false; }
       const initSet = window.boCmUtil.collectExpandedToDepth(cfGrpTree.value, 2);
       grpExpanded.clear(); initSet.forEach(v => grpExpanded.add(v));
@@ -177,9 +179,9 @@ window.SyCodeMng = {
     const cfGrpPagedRows = computed(() => { const s = (grpPager.page - 1) * grpPager.size; return cfFilteredGrpRows.value.slice(s, s + grpPager.size); });
     watch(() => cfFilteredGrpRows.value.length, () => { if (grpPager.page > cfGrpTotalPages.value) grpPager.page = Math.max(1, cfGrpTotalPages.value); });
     /* 트리 path 변경 시: 그룹 페이지 리셋 + selectedGrp 해제 + 코드목록 재조회 */
-    watch(() => uiState.grpSelectedPath, () => { grpPager.page = 1; uiState.selectedGrp = ''; handleLoadGrid(); });
+    watch(() => uiState.grpSelectedPath, () => { grpPager.page = 1; uiState.selectedGrp = ''; handleFetchData(); });
     /* selectedGrp 변경 시 코드목록 재조회 */
-    watch(() => uiState.selectedGrp, () => handleLoadGrid());
+    watch(() => uiState.selectedGrp, () => handleFetchData());
 
     /* 그룹 행 클릭 → 코드목록 필터 (토글) */
     const onGrpRowClick = (g) => {
@@ -194,12 +196,6 @@ window.SyCodeMng = {
                sortOrd: c.sortOrd, useYn: c.useYn, remark: c.remark, parentCodeValue: c.parentCodeValue || null },
     });
 
-    const handleLoadGrid = () => {
-      gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
-      codes.forEach(c => gridRows.push(makeRow(c)));
-    };
-
-    handleLoadGrid();
 
     const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
@@ -261,24 +257,8 @@ window.SyCodeMng = {
     });
 
     const onSearch = async () => {
-      try {
-        uiState.loading = true;
-        const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(
-          Object.entries(searchParam).filter(([, v]) => v)
-        )};
-        const res = await window.boApi.get('/bo/sy/code/page', { params });
-        const list = res.data?.data?.list || [];
-        codes.splice(0, codes.length, ...list);
-        updateCodeGroups();
-        loadGrp();
-        handleLoadGrid();
-        await handleFetchData();
-      } catch (err) {
-        console.error('[catch-info]', err);
-        props.showToast('조회 중 오류가 발생했습니다.', 'error');
-      } finally {
-        uiState.loading = false;
-      }
+      pager.page = 1;
+      await handleFetchData();
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);
@@ -411,7 +391,7 @@ window.SyCodeMng = {
       if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
       if (dRows.length) toastParts.push(`삭제 ${dRows.length}건`);
       props.showToast(`${toastParts.join(', ')} 저장되었습니다.`);
-      handleLoadGrid();
+      await handleFetchData();
     };
 
     /* ── 드래그 이동 ── */

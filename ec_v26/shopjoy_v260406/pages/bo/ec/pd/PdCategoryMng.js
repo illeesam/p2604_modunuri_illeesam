@@ -53,7 +53,10 @@ window.PdCategoryMng = {
     const handleFetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 } });
-        categories.splice(0, categories.length, ...(res.data?.data?.list || []));
+        const list = res.data?.data?.list || [];
+        categories.splice(0, categories.length, ...list);
+        gridRows.splice(0);
+        buildTreeRows(list).forEach(c => gridRows.push(makeRow(c)));
       } catch (_) {
       console.error('[catch-info]', _);}
       expandedSet.clear();
@@ -72,7 +75,7 @@ window.PdCategoryMng = {
         const selectNode = id => {
       uiState.selectedCatId = (uiState.selectedCatId === id) ? null : id;
     };
-    watch(() => uiState.selectedCatId, () => handleLoadGrid());
+    watch(() => uiState.selectedCatId, () => handleFetchData());
 
     /* ── 좌측 트리 빌드 (expanded 반영) ── */
     const cfCatTreeFlat = computed(() => {
@@ -123,22 +126,6 @@ window.PdCategoryMng = {
       _orig: { categoryNm: c.categoryNm, parentId: c.parentId, sortOrd: c.sortOrd, description: c.description, status: c.status },
     });
 
-    const handleLoadGrid = () => {
-      gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
-      const filtered = window.safeArrayUtils.safeFilter(categories, c => {
-        const kw = searchParam.kw.trim().toLowerCase();
-        if (kw && !(c.categoryNm || '').toLowerCase().includes(kw)) return false;
-        if (searchParam.depth  && String(c.depth) !== searchParam.depth) return false;
-        if (searchParam.status && c.status !== searchParam.status) return false;
-        // 트리에서 선택된 경우: 해당 카테고리 + 직계 자식만
-        if (uiState.selectedCatId !== null)
-          return c.categoryId === uiState.selectedCatId || c.parentId === uiState.selectedCatId;
-        return true;
-      });
-      buildTreeRows(filtered).forEach(c => gridRows.push(makeRow(c)));
-    };
-
-    handleLoadGrid();
 
     const cfTotal      = computed(() => window.safeArrayUtils.safeFilter((gridRows || []), r => r._row_status !== 'D').length);
     const cfPagedRows  = computed(() => (gridRows || []).slice((pager.page - 1) * pager.size, pager.page * pager.size));
@@ -158,7 +145,7 @@ window.PdCategoryMng = {
   
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);
-      handleLoadGrid();
+      handleFetchData();
     };
     return {
       codes, uiState,

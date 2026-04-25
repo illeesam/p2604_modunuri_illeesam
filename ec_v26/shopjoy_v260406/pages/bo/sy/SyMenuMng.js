@@ -15,7 +15,10 @@ window.SyMenuMng = {
         const res = await window.boApi.get('/bo/sy/menu/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        menus.splice(0, menus.length, ...(res.data?.data?.list || []));
+        const list = res.data?.data?.list || [];
+        menus.splice(0, menus.length, ...list);
+        gridRows.splice(0);
+        buildTreeRows(list).forEach(m => gridRows.push(makeRow(m)));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -79,7 +82,7 @@ window.SyMenuMng = {
       if (uiState.selectedTreeId == null) return null;
       return window.boCmUtil.collectDescendantIds(menus, 'menuId', 'parentId', uiState.selectedTreeId);
     });
-    watch(() => uiState.selectedTreeId, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
+    watch(() => uiState.selectedTreeId, () => { handleFetchData(); });
 
 
     const MENU_TYPES   = ['페이지', '폴더', '외부링크', '구분선'];
@@ -119,20 +122,6 @@ window.SyMenuMng = {
                menuUrl: m.menuUrl, menuType: m.menuType, sortOrd: m.sortOrd, useYn: m.useYn, remark: m.remark },
     });
 
-    const handleLoadGrid = () => {
-      gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
-      const filtered = menus.filter(m => {
-        if (cfAllowedTreeIds.value && !cfAllowedTreeIds.value.has(m.menuId)) return false;
-        const kw = searchParam.kw.trim().toLowerCase();
-        if (kw && !m.menuCode.toLowerCase().includes(kw) && !m.menuNm.toLowerCase().includes(kw)) return false;
-        if (searchParam.type  && m.menuType !== searchParam.type)  return false;
-        if (searchParam.useYn && m.useYn    !== searchParam.useYn) return false;
-        return true;
-      });
-      buildTreeRows(filtered).forEach(m => gridRows.push(makeRow(m)));
-    };
-
-    handleLoadGrid();
 
     const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
@@ -148,7 +137,7 @@ window.SyMenuMng = {
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);
-      handleLoadGrid();
+      handleFetchData();
     };
 
     const setFocused = (realIdx) => { uiState.focusedIdx = realIdx; };
@@ -238,7 +227,7 @@ window.SyMenuMng = {
       if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
       if (dRows.length) toastParts.push(`삭제 ${dRows.length}건`);
       props.showToast(`${toastParts.join(', ')} 저장되었습니다.`);
-      handleLoadGrid();
+      handleFetchData();
     };
 
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };

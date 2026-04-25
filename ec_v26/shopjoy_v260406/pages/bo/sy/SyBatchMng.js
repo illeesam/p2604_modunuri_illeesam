@@ -15,7 +15,10 @@ window.SyBatchMng = {
         const res = await window.boApi.get('/bo/sy/batch/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        batches = res.data?.data?.list || [];
+        const list = res.data?.data?.list || [];
+        batches.splice(0, batches.length, ...list);
+        gridRows.splice(0);
+        list.forEach(b => gridRows.push(makeRow(b)));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -109,22 +112,6 @@ window.SyBatchMng = {
       _orig: { batchNm: b.batchNm, batchCode: b.batchCode, cron: b.cron, statusCd: b.statusCd, description: b.description },
     });
 
-    const handleLoadGrid = () => {
-      gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
-      batches
-        .filter(b => {
-          const kw = applied.kw.trim().toLowerCase();
-          if (kw && !b.batchNm.toLowerCase().includes(kw) && !b.batchCode.toLowerCase().includes(kw)) return false;
-          if (applied.status && b.statusCd !== applied.status) return false;
-          if (applied.runStatus && b.runStatus !== applied.runStatus) return false;
-          const _d = String(b.regDate || '').slice(0, 10);
-          if (applied.dateStart && _d < applied.dateStart) return false;
-          if (applied.dateEnd && _d > applied.dateEnd) return false;
-          return true;
-        })
-        .forEach(b => gridRows.push(makeRow(b)));
-    };
-    handleLoadGrid();
 
     const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
@@ -229,7 +216,7 @@ window.SyBatchMng = {
       if (uRows.length) parts.push(`수정 ${uRows.length}건`);
       if (dRows.length) parts.push(`삭제 ${dRows.length}건`);
       props.showToast(`${parts.join(', ')} 저장되었습니다.`);
-      handleLoadGrid();
+      handleFetchData();
     };
 
     /* ── 즉시 실행 ── */
@@ -393,8 +380,8 @@ window.SyBatchMng = {
       [{label:'ID',key:'batchId'},{label:'배치명',key:'batchNm'},{label:'배치코드',key:'batchCode'},{label:'Cron',key:'cron'},{label:'최근실행',key:'lastRun'},{label:'실행횟수',key:'runCount'},{label:'활성',key:'statusCd'},{label:'실행상태',key:'runStatus'},{label:'설명',key:'description'}],
       '배치목록.csv'
     );
-    /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
-    watch(() => uiState.selectedPath, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
+    /* 트리 path 변경 시 자동 fetch */
+    watch(() => uiState.selectedPath, () => { handleFetchData(); });
 
 
     return { batches, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,

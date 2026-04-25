@@ -157,7 +157,7 @@ window.SyTemplateMng = {
     }[t] || 'badge-gray');
     const fnUseYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    const onSearch = () => {
+    const onSearch = async () => {
       Object.assign(applied, {
         kw: searchParam.kw,
         type: searchParam.type,
@@ -166,6 +166,7 @@ window.SyTemplateMng = {
         dateEnd: searchParam.dateEnd,
       });
       pager.page = 1;
+      await handleFetchData();
     };
     const onReset = () => {
       Object.assign(searchParam, { kw: '', type: '', useYn: '', dateRange: '', dateStart: '', dateEnd: '' });

@@ -15,7 +15,10 @@ window.MbMemGroupMng = {
         const res = await window.boApi.get('/bo/ec/mb/member-group/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        groups.splice(0, groups.length, ...(res.data?.data?.list || []));
+        const list = res.data?.data?.list || [];
+        groups.splice(0, groups.length, ...list);
+        gridRows.splice(0);
+        list.forEach(g => gridRows.push({ ...g, _row_status: null }));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -79,8 +82,6 @@ window.MbMemGroupMng = {
     const gridRows   = reactive([]);
     let   _tempId    = -1;
 
-    const handleLoadGrid = () => { gridRows.splice(0, gridRows.length, ...cfPageList.value.map(g => ({ ...g, _row_status: null }))); };
-    watch([() => pager.page, searchParam], handleLoadGrid, { immediate: true });
 
     const addRow       = () => { gridRows.unshift({ groupId: 'G' + (_tempId--), siteId: 1, groupNm: '', groupMemo: '', memberCnt: 0, useYn: 'Y', _row_status: 'N' }); };
     const onCellChange = (idx) => { if (gridRows[idx]._row_status !== 'N') gridRows[idx]._row_status = 'U'; };

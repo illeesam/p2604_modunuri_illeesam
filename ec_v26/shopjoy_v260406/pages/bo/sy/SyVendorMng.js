@@ -140,7 +140,7 @@ window.SyVendorMng = {
 
     const fnTypeBadge = t => ({ '판매업체': 'badge-blue', '배송업체': 'badge-orange' }[t] || 'badge-gray');
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
-    const onSearch = () => {
+    const onSearch = async () => {
       Object.assign(applied, {
         kw: searchKw.value,
         type: searchType.value,
@@ -149,6 +149,7 @@ window.SyVendorMng = {
         dateEnd: searchDateEnd.value,
       });
       pager.page = 1;
+      await handleFetchData();
     };
     const onReset = () => {
       searchKw.value = '';

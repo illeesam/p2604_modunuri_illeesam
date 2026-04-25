@@ -84,7 +84,12 @@ window.XsSample02 = {
       if (sentinelEl.value) _observer.observe(sentinelEl.value);
     };
 
-    const handleLoadGrid = () => {
+    const handleFetchData = async () => {
+      try {
+        const res = await api.get(API, { cdGrp: CD_GRP });
+        const list = res?.data?.data ?? res?.data ?? [];
+        allData.splice(0, allData.length, ...list.map(toRow));
+      } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       gridRows.splice(0); uiState.focusedIdx = null; uiState.visibleCount = 10;
       allData.filter(d => {
         const kw = searchParam.kw.toLowerCase();
@@ -93,15 +98,6 @@ window.XsSample02 = {
         if (searchParam.status   && d.status   !== searchParam.status)   return false;
         return true;
       }).forEach(d => gridRows.push(makeRow(d)));
-    };
-
-    const handleFetchData = async () => {
-      try {
-        const res = await api.get(API, { cdGrp: CD_GRP });
-        const list = res?.data?.data ?? res?.data ?? [];
-        allData.splice(0, allData.length, ...list.map(toRow));
-      } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
-      handleLoadGrid();
       Vue.nextTick(setupObserver);
     };
     onMounted(() => {
@@ -113,8 +109,8 @@ window.XsSample02 = {
       if (_observer) _observer.disconnect();
     });
 
-    const onSearch = () => { handleLoadGrid(); Vue.nextTick(setupObserver); };
-    const onReset  = () => { Object.assign(searchParam, searchParamOrg); handleLoadGrid(); Vue.nextTick(setupObserver); };
+    const onSearch = async () => { pager.page = 1; await handleFetchData(); };
+    const onReset  = async () => { Object.assign(searchParam, searchParamOrg); pager.page = 1; await handleFetchData(); };
 
     const setFocused   = idx => { uiState.focusedIdx = idx; };
     const onCellChange = row => {
@@ -180,7 +176,15 @@ window.XsSample02 = {
         const res = await api.get(API, { cdGrp: CD_GRP });
         const list = res?.data?.data ?? res?.data ?? [];
         allData.splice(0, allData.length, ...list.map(toRow));
-        handleLoadGrid(); Vue.nextTick(setupObserver);
+        gridRows.splice(0); uiState.focusedIdx = null; uiState.visibleCount = 10;
+        allData.filter(d => {
+          const kw = searchParam.kw.toLowerCase();
+          if (kw && !String(d.productNm || '').toLowerCase().includes(kw)) return false;
+          if (searchParam.category && d.category !== searchParam.category) return false;
+          if (searchParam.status   && d.status   !== searchParam.status)   return false;
+          return true;
+        }).forEach(d => gridRows.push(makeRow(d)));
+        Vue.nextTick(setupObserver);
       } catch (e) { showToast('저장 실패: ' + (e.response?.data?.message || e.message || e), 'error'); }
     };
 
@@ -205,7 +209,7 @@ window.XsSample02 = {
     return {
       toast, searchParam, CATEGORY_OPTS, onSearch, onReset,
       gridRows, cfVisibleRows, cfTotal, visibleCount, cfHasMore, loadMore: handleLoadMore, sentinelEl,
-      focusedIdx, setFocused, onCellChange,
+      setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
       onDragStart, onDragOver, onDragEnd,
       uiState, toggleCheckAll, fnStatusBadge, rowBg,

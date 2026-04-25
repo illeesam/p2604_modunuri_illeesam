@@ -25,7 +25,10 @@ window.SyRoleMng = {
         const res = await window.boApi.get('/bo/sy/role/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        roles.splice(0, roles.length, ...(res.data?.data?.list || []));
+        const list = res.data?.data?.list || [];
+        roles.splice(0, roles.length, ...list);
+        gridRows.splice(0);
+        buildTreeRows(list).forEach(r => gridRows.push(makeRow(r)));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -211,28 +214,6 @@ window.SyRoleMng = {
       };
     };
 
-    const handleLoadGrid = () => {
-      gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
-      const filtered = roles.filter(r => {
-        const kw = searchParam.kw.trim().toLowerCase();
-        if (kw && !r.roleCode.toLowerCase().includes(kw) && !r.roleNm.toLowerCase().includes(kw)) return false;
-        if (searchParam.type  && r.roleType !== searchParam.type)  return false;
-        if (searchParam.useYn && r.useYn    !== searchParam.useYn) return false;
-        if (searchParam.cat) {
-          const cats = window.boCmUtil.__roleCatOf ? window.boCmUtil.__roleCatOf(r.roleId) : [];
-          if (!cats.includes(searchParam.cat)) return false;
-        }
-        if (cfAllowedRoleIds.value && !cfAllowedRoleIds.value.has(r.roleId)) return false;
-        if (searchParam.treeCatFilter) {
-          const cats = window.boCmUtil.__roleCatOf ? window.boCmUtil.__roleCatOf(r.roleId) : [];
-          if (!cats.includes(searchParam.treeCatFilter)) return false;
-        }
-        return true;
-      });
-      buildTreeRows(filtered).forEach(r => gridRows.push(makeRow(r)));
-    };
-
-    handleLoadGrid();
 
     const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
     const cfPagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
@@ -241,12 +222,13 @@ window.SyRoleMng = {
     const setPage    = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
-    const onSearch = () => {
-      handleLoadGrid();
+    const onSearch = async () => {
+      pager.page = 1;
+      await handleFetchData();
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);
-      handleLoadGrid();
+      handleFetchData();
     };
 
     const setFocused = (realIdx) => {
@@ -349,7 +331,7 @@ window.SyRoleMng = {
       if (uRows.length) parts.push(`수정 ${uRows.length}건`);
       if (dRows.length) parts.push(`삭제 ${dRows.length}건`);
       props.showToast(`${parts.join(', ')} 저장되었습니다.`);
-      handleLoadGrid();
+      handleFetchData();
     };
 
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
@@ -460,9 +442,9 @@ window.SyRoleMng = {
       [{label:'ID',key:'roleId'},{label:'역할코드',key:'roleCode'},{label:'역할명',key:'roleNm'},{label:'상위ID',key:'parentId'},{label:'유형',key:'roleType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'제한',key:'restrictPerm'},{label:'비고',key:'remark'}],
       '역할목록.csv'
     );
-    /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
-    watch(() => uiState.selectedPath, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
-    watch(() => searchParam.treeCatFilter, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
+    /* 트리 path 변경 시 자동 fetch */
+    watch(() => uiState.selectedPath, () => { handleFetchData(); });
+    watch(() => searchParam.treeCatFilter, () => { handleFetchData(); });
 
 
     return {
