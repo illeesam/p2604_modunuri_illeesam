@@ -44,8 +44,7 @@
     /* API 성공 → toast info 출력 (foAxios 에서 window.dispatchEvent('api-success')) */
     window.addEventListener('api-success', (ev) => {
       const d = ev.detail || {};
-      const msg = `${d.method} ${d.url} ${d.status}`;
-      showToast(msg, 'info', 3000, d.detail || '');
+      showToast(`${d.method} ${d.url} ${d.status}`, 'info', 3000, d.detail || '');
     });
 
     /* API 에러 → 오류 페이지 이동 (baseAxios 계열에서 window dispatchEvent 호출) */
@@ -121,24 +120,30 @@
     };
     window.addEventListener('resize', () => { if (window.innerWidth < 1024) uiState.mobileOpen = false; });
 
-    /* ── Toast ── */
-    const toast = reactive({ show: false, msg: '', msgTitle: '', msgDetail: '', type: 'success' });
-    let toastTimer = null;
-    const showToast = (msg, type = 'success', errorDetails = '') => {
-      if (toastTimer) clearTimeout(toastTimer);
-
+    /* ── Toast (누적 스택) ── */
+    const toasts = reactive([]);
+    let _toastSeq = 0;
+    const showToast = (msg, type = 'success', duration = 0, detail = '') => {
       let msgTitle = msg;
       let msgDetail = '';
-      // 에러 메시지에서 METHOD URL STATUS를 분리
-      if (type === 'error' && msg.includes('\n')) {
+      if (msg && msg.includes('\n')) {
         const parts = msg.split('\n');
-        msgDetail = parts[0]; // METHOD URL STATUS
-        msgTitle = parts.slice(1).join('\n'); // 나머지 메시지
+        msgDetail = parts[0];
+        msgTitle  = parts.slice(1).join('\n');
       }
-
-      Object.assign(toast, { show: true, msg, msgTitle, msgDetail, type, errorDetails, expanded: false });
-      toastTimer = setTimeout(() => { toast.show = false; }, 3000);
+      const id = ++_toastSeq;
+      const autoDismiss = duration === 0
+        ? (type === 'error' ? 0 : type === 'info' ? 3000 : 4000)
+        : duration;
+      const t = { id, msg, msgTitle, msgDetail, type, detail, expanded: false };
+      toasts.push(t);
+      if (autoDismiss > 0) setTimeout(() => removeToast(id), autoDismiss);
     };
+    const removeToast  = (id) => { const i = toasts.findIndex(t => t.id === id); if (i !== -1) toasts.splice(i, 1); };
+    const removeAllToasts = () => { toasts.splice(0, toasts.length); };
+    const toggleToastDetail = (t) => { t.expanded = !t.expanded; };
+    /* 하위 호환 (toast.show 단일 참조 제거) */
+    const toast = { show: false };
 
     /* ── Alert Modal ── */
     const alertState = reactive({ show: false, title: '', msg: '', type: 'info', resolve: null });
@@ -428,7 +433,7 @@
     return {
       theme, toggleTheme,
       page, sidebarOpen, navigate, closeMobileMenu, toggleMobileMenu,
-      toast, showToast,
+      toasts, showToast, removeToast, removeAllToasts, toggleToastDetail, toast,
       alertState, showAlert, closeAlert,
       confirmState, showConfirm, closeConfirm,
       products, selectedProduct, selectProduct,
@@ -607,26 +612,36 @@
   <!-- LOGIN MODAL -->
   <login v-if="uiState.showLogin" :show-toast="showToast" @close="uiState.showLogin=false" />
 
-  <!-- TOAST -->
-  <div v-if="toast.show" class="toast-wrap" :class="['toast-'+toast.type, { 'toast-expanded': toast.expanded }]">
-    <div class="toast-content">
-      <span class="toast-icon">{{ toast.type==='success'?'✅':toast.type==='error'?'❌':toast.type==='warning'?'⚠️':'ℹ️' }}</span>
-      <div class="toast-msg-wrapper">
-        <div class="toast-msg">
-          <div class="toast-msg-title">{{ toast.msgTitle || toast.msg }}</div>
-          <div v-if="toast.msgDetail" class="toast-msg-detail">{{ toast.msgDetail }}</div>
-          <!-- 오류 상세 첫 줄 항상 표시 -->
-          <div v-if="toast.errorDetails && toast.type === 'error'" class="toast-error-preview">
-            <pre class="toast-error-preview-content">{{ toast.errorDetails.split(String.fromCharCode(10))[0] }}</pre>
-          </div>
-        </div>
-        <!-- 오류 상세 더보기 아이콘 (우측, 내용이 있을 때만) -->
-        <span v-if="toast.errorDetails && toast.type === 'error' && toast.errorDetails.includes(String.fromCharCode(10))" @click="toast.expanded = !toast.expanded" class="toast-expand-icon" :title="toast.expanded ? '접기' : '더보기'">{{ toast.expanded ? '▲' : '▼' }}</span>
-      </div>
+  <!-- TOAST STACK -->
+  <div v-if="toasts.length" style="position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:420px;min-width:280px;">
+    <!-- 일괄닫기 (2개 이상) -->
+    <div v-if="toasts.length >= 2" style="display:flex;justify-content:flex-end;">
+      <button @click="removeAllToasts" style="font-size:11px;padding:3px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.4);background:rgba(60,60,80,.7);color:#fff;cursor:pointer;backdrop-filter:blur(4px);">✕ 전체 닫기 ({{ toasts.length }})</button>
     </div>
-    <!-- 오류 상세 전체 내용 (펼쳐진 상태) -->
-    <div v-if="toast.expanded && toast.errorDetails" class="toast-error-details">
-      <pre class="toast-error-content">{{ toast.errorDetails }}</pre>
+    <div v-for="t in toasts" :key="t.id"
+      style="border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.18);overflow:hidden;background:#fff;border-left:4px solid;"
+      :style="t.type==='error'?'border-color:#e74c3c;':t.type==='warning'?'border-color:#f39c12;':t.type==='info'?'border-color:#2980b9;':'border-color:#27ae60;'">
+      <div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;">
+        <span style="font-size:16px;flex-shrink:0;margin-top:1px;">{{ t.type==='success'?'✅':t.type==='error'?'❌':t.type==='warning'?'⚠️':'ℹ️' }}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:600;line-height:1.4;word-break:break-all;"
+            :style="t.type==='error'?'color:#c0392b;':t.type==='info'?'color:#1a5276;':'color:#222;'">
+            {{ t.msgTitle || t.msg }}
+          </div>
+          <div v-if="t.msgDetail" style="font-size:11px;color:#666;margin-top:2px;font-family:monospace;">{{ t.msgDetail }}</div>
+          <!-- 상세 펼치기 영역 -->
+          <div v-if="t.expanded && t.detail" style="margin-top:6px;padding:6px 8px;background:#f8f9fa;border-radius:5px;font-size:11px;font-family:monospace;color:#444;white-space:pre-wrap;max-height:160px;overflow-y:auto;word-break:break-all;">{{ t.detail }}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;">
+          <!-- 상세보기 토글 (detail 있을 때만) -->
+          <button v-if="t.detail" @click="toggleToastDetail(t)"
+            style="font-size:11px;padding:2px 6px;border-radius:6px;border:1px solid #ddd;background:#f5f5f5;cursor:pointer;color:#555;line-height:1.4;"
+            :title="t.expanded?'접기':'상세보기'">{{ t.expanded ? '▲' : '▼' }}</button>
+          <!-- 닫기 -->
+          <button @click="removeToast(t.id)"
+            style="font-size:13px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(0,0,0,.08);cursor:pointer;color:#888;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button>
+        </div>
+      </div>
     </div>
   </div>
 

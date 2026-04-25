@@ -24,7 +24,7 @@ window.DpDispPanelMng = {
     // 코드 주입
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
-      codes.layout_types = codeStore.snGetGrpCodes('LAYOUT_TYPE');
+      codes.layout_types = codeStore.snGetGrpCodes('LAYOUT_TYPE') || [];
       codes.disp_area = codeStore.snGetGrpCodes('DISP_AREA') || [];
       uiState.isPageCodeLoad = true;
     };

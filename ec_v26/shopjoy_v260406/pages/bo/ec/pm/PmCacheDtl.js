@@ -67,7 +67,7 @@ window.PmCacheDtl = {
     onMounted(() => {
       handleFetchData();
       if (!cfIsNew.value) {
-        const c = cacheList.window.safeArrayUtils.safeFind(value, x => x.cacheId === props.editId);
+        const c = cacheList.value.find(x => x.cacheId === props.editId);
         if (c) Object.assign(form, { ...c });
       }
     });
@@ -128,7 +128,7 @@ window.PmCacheDtl = {
 
     const cfSelectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
-      const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === form.vendorId);
+      const v = vendors.value.find(x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
     const selectVendor = (vendorId, vendorNm) => {

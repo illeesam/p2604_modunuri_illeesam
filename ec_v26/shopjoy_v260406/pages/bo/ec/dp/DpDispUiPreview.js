@@ -157,7 +157,7 @@ window.DpDispUiPreview = {
     // 코드 주입
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
-      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE');
+      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
       codes.disp_ui = codeStore.snGetGrpCodes('DISP_UI') || [];
       uiState.isPageCodeLoad = true;
     };

@@ -20,7 +20,7 @@ window.DpDispWidgetDtl = {
     // 코드 주입
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
-      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE');
+      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
       uiState.isPageCodeLoad = true;
     };
 
@@ -400,7 +400,7 @@ window.DpDispWidgetDtl = {
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try { await schema.validate(form, { abortEarly: false }); }
-      catch (err) { err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
+      catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
 
       const isNewWidget = cfIsNew.value;
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');

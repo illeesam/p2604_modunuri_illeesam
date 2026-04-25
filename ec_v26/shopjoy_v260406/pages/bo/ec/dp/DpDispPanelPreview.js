@@ -159,7 +159,7 @@ window.DpDispPanelPreview = {
     // 코드 주입
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
-      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE');
+      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
       uiState.isPageCodeLoad = true;
     };
 
@@ -535,7 +535,7 @@ window.DpDispPanelPreview = {
     const cfPlacedCount = computed(() =>
       gridState.previewGrid === 'dashboard'
         ? dashItems.length
-        : window.safeArrayUtils.safeFilter(cfCurrentSlots, Boolean).length
+        : (cfCurrentSlots.value || []).filter(Boolean).length
     );
     const onResetCurrent = () => {
       if (gridState.previewGrid === 'dashboard') {

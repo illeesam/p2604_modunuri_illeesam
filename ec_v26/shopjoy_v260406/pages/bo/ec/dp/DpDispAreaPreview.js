@@ -156,7 +156,7 @@ window.DpDispAreaPreview = {
     // 코드 주입
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
-      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE');
+      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
       codes.disp_area = codeStore.snGetGrpCodes('DISP_AREA') || [];
       uiState.isPageCodeLoad = true;
     };
@@ -296,11 +296,11 @@ window.DpDispAreaPreview = {
     };
     const isOpen = (key) => openNodes.has(key);
     const allChildrenOpen = (node) =>
-      node.cwindow.safeArrayUtils.safeEvery(hildren, sub => openNodes.has(node.label + '_' + sub.label));
+      node.children.every(sub => openNodes.has(node.label + '_' + sub.label));
     const toggleAllChildren = (e, node) => {
       e.stopPropagation();
       const open = !allChildrenOpen(node);
-      node.cwindow.safeArrayUtils.safeForEach(hildren, sub => {
+      node.children.forEach(sub => {
         const key = node.label + '_' + sub.label;
         if (open) openNodes.add(key);
         else openNodes.delete(key);
@@ -527,7 +527,7 @@ window.DpDispAreaPreview = {
     const cfPlacedCount = computed(() =>
       gridState.previewGrid === 'dashboard'
         ? dashItems.length
-        : window.safeArrayUtils.safeFilter(cfCurrentSlots, Boolean).length
+        : (cfCurrentSlots.value || []).filter(Boolean).length
     );
     const onResetCurrent = () => {
       if (gridState.previewGrid === 'dashboard') {
@@ -557,7 +557,7 @@ window.DpDispAreaPreview = {
       dashCanvas, dashItems,
       onDashDragOver, onDashDragLeave, onDashDrop,
       removeDashItem, startItemMove, startItemResize,
-      cfPlacedCount, onResetCurrent,
+      cfPlacedCount, onResetCurrent, codes,
     };
   },
   template: /* html */`

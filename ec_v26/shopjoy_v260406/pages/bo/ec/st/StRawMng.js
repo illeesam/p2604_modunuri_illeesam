@@ -100,7 +100,7 @@ window.StRawMng = {
     const cfRawList = computed(() => {
       const rows = [];
       window.safeArrayUtils.safeForEach(cfOrders, (o, idx) => {
-        const v = cfVendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === o.vendorId);
+        const v = cfVendors.value.find(x => x.vendorId === o.vendorId);
         const isCancelled = o.status === '취소됨';
         const qty         = (idx % 3) + 1;
         const unitPrice   = Math.round((o.totalPrice || 50000) / qty);
@@ -146,8 +146,8 @@ window.StRawMng = {
         });
       });
       window.safeArrayUtils.safeFilter(claims, c => ['환불완료','취소완료'].includes(c.status)).forEach((c, idx) => {
-        const o = orders.window.safeArrayUtils.safeFind(value, x => x.orderId === c.orderId);
-        const v = o ? vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === o.vendorId) : null;
+        const o = orders.value.find(x => x.orderId === c.orderId);
+        const v = o ? vendors.value.find(x => x.vendorId === o.vendorId) : null;
         const refund = -(c.refundAmount || 0);
         const feeAmt = Math.round(Math.abs(refund) * 0.1);
         const txDate = c.requestDate ? c.requestDate.slice(0, 10) : '';

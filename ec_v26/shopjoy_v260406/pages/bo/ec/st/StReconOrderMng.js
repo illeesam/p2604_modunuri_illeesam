@@ -74,7 +74,7 @@ window.StReconOrderMng = {
         if (kw && !o.orderId.toLowerCase().includes(kw) && !o.userNm.toLowerCase().includes(kw)) return false;
         return true;
       }).map(o => {
-        const v = cfVendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === o.vendorId);
+        const v = cfVendors.value.find(x => x.vendorId === o.vendorId);
         const orderAmt   = o.status === '취소됨' ? 0 : o.totalPrice;
         const settleAmt  = Math.round(orderAmt * 0.9); // 수수료 10% 차감 가정
         const reconAmt   = settleAmt + (Math.random() > 0.85 ? (Math.random() > 0.5 ? 100 : -200) : 0); // 일부 차이

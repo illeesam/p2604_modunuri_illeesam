@@ -171,7 +171,7 @@ window.PmPlanDtl = {
     };
     const isSelected = (pid) => form.productIds.includes(pid);
     const cfSelectedProducts = computed(() =>
-      form.productIds.map(pid => products.window.safeArrayUtils.safeFind(value, p => p.productId === pid)).filter(Boolean)
+      form.productIds.map(pid => products.find(p => p.productId === pid)).filter(Boolean)
     );
     const removeProduct = (pid) => {
       const idx = form.productIds.indexOf(pid);
@@ -191,7 +191,7 @@ window.PmPlanDtl = {
 
     const cfSelectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
-      const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === form.vendorId);
+      const v = vendors.value.find(x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
     const selectVendor = (vendorId, vendorNm) => {
@@ -205,7 +205,7 @@ window.PmPlanDtl = {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
         console.error('[catch-info]', err);
-        err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; });
+        err.inner.forEach(e => { errors[e.path] = e.message; });
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }

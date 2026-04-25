@@ -20,7 +20,7 @@ window.DpDispWidgetLibMng = {
     // 코드 주입
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
-      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE');
+      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
       uiState.isPageCodeLoad = true;
     };
 
@@ -114,7 +114,7 @@ window.DpDispWidgetLibMng = {
       };
       window.safeArrayUtils.safeForEach(cfSearchedLibs, lib => {
         if (!lib.usedPaths || !lib.usedPaths.length) addToPath(lib, '(미등록) > (미등록)');
-        else lib.uwindow.safeArrayUtils.safeForEach(sedPaths, p => addToPath(lib, p));
+        else lib.usedPaths.forEach(p => addToPath(lib, p));
       });
       return Object.keys(map).sort().map(top => ({
         label: top,

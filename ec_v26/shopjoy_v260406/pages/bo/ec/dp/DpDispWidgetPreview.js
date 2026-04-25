@@ -22,7 +22,7 @@ const _WP_DispWidgetPreview = {
     // 코드 주입
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
-      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE');
+      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
       uiState.isPageCodeLoad = true;
     };
 
@@ -181,7 +181,7 @@ window.DpDispWidgetPreview = {
     // 코드 주입
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
-      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE');
+      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
       uiState.isPageCodeLoad = true;
     };
 
@@ -547,7 +547,7 @@ window.DpDispWidgetPreview = {
     const cfPlacedCount = computed(() =>
       gridState.previewGrid === 'dashboard'
         ? dashItems.length
-        : window.safeArrayUtils.safeFilter(cfCurrentSlots, Boolean).length
+        : (cfCurrentSlots.value || []).filter(Boolean).length
     );
     const resetCurrent = () => {
       if (gridState.previewGrid === 'dashboard') {
@@ -560,7 +560,7 @@ window.DpDispWidgetPreview = {
     };
 
     return {
-      cfSiteNm, today,
+      cfSiteNm, today, codes,
       VISIBILITY_OPTS, VIEWPORT,
       wIcon, wTypeLabel,
       searchParam, searchParamOrg,

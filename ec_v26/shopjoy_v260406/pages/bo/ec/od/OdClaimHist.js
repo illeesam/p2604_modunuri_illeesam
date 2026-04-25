@@ -48,7 +48,7 @@ window.OdClaimHist = {
             afStatus: c.statusCd, afMemo: '', afAdmin: '', afDate: '',
           });
         uiState.relatedOrder = getOrder.value(c.orderId);
-        uiState.relatedDliv  = deliveries.window.safeArrayUtils.safeFind(value, d => d.orderId === c.orderId) || null;
+        uiState.relatedDliv  = deliveries.value.find(d => d.orderId === c.orderId) || null;
       }
     });
 

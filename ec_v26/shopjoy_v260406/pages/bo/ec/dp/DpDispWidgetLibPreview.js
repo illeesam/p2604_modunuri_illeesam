@@ -477,7 +477,7 @@ window.DpDispWidgetLibPreview = {
     const cfPlacedCount = computed(() =>
       uiState.previewGrid === 'dashboard'
         ? dashItems.length
-        : window.safeArrayUtils.safeFilter(cfCurrentSlots, Boolean).length
+        : (cfCurrentSlots.value || []).filter(Boolean).length
     );
     const resetCurrent = () => {
       if (uiState.previewGrid === 'dashboard') {

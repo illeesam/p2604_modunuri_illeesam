@@ -20,7 +20,7 @@ window.DpDispUiDtl = {
     // 코드 주입
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
-      codes.disp_ui_types = codeStore.snGetGrpCodes('DISP_UI_TYPE');
+      codes.disp_ui_types = codeStore.snGetGrpCodes('DISP_UI_TYPE') || [];
       uiState.isPageCodeLoad = true;
     };
 

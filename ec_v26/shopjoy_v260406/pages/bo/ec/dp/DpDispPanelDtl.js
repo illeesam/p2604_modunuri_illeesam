@@ -22,8 +22,8 @@ window.DpDispPanelDtl = {
     // 코드 주입
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
-      codes.layout_types = codeStore.snGetGrpCodes('LAYOUT_TYPE');
-      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE');
+      codes.layout_types = codeStore.snGetGrpCodes('LAYOUT_TYPE') || [];
+      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
       uiState.isPageCodeLoad = true;
     };
 
@@ -719,7 +719,7 @@ window.DpDispPanelDtl = {
       fnRowIsHtmlEditor, fnRowIsFileList, fnRowIsImage, fnRowIsText, fnRowIsProduct,
       fnGetDisplayRows, fnGetRelatedEvent,
       fnGetFileListItems, fnAddFileItemAt, fnRemoveFileItemAt, fnSetFileItem,
-      moveRowAt,
+      moveRowAt, codes,
     };
   },
   template: /* html */`

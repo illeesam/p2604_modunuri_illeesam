@@ -147,8 +147,8 @@ window.PdProdDtl = {
 
     const generateSkus = () => {
       if (optGroups.length === 0) { skus.length = 0; return; }
-      const g1 = window.safeArrayUtils.safeFirst(optGroups)?.iwindow.safeArrayUtils.safeFilter(tems, i => i.useYn === 'Y' && i.nm.trim()) || [];
-      const g2 = optGroups[1]?.iwindow.safeArrayUtils.safeFilter(tems, i => i.useYn === 'Y' && i.nm.trim()) || [];
+      const g1 = window.safeArrayUtils.safeFirst(optGroups)?.items.filter(i => i.useYn === 'Y' && i.nm.trim()) || [];
+      const g2 = optGroups[1]?.items.filter(i => i.useYn === 'Y' && i.nm.trim()) || [];
       const existMap = {};
       window.safeArrayUtils.safeForEach(skus, s => { existMap[s._optKey] = s; });
       const newSkus = [];
@@ -243,7 +243,7 @@ window.PdProdDtl = {
       contentBlocks.splice(idx, 1);
     };
     const onBlockFileChange = (block, e) => {
-      const file = e.target.window.safeArrayUtils.safeFirst(files); if (!file) return;
+      const file = e.target.files[0]; if (!file) return;
       const reader = new FileReader();
       reader.onload = ev => { block.content = ev.target.result; block.fileName = file.name; };
       reader.readAsDataURL(file); e.target.value = '';
@@ -376,7 +376,7 @@ window.PdProdDtl = {
       return window.safeArrayUtils.safeFilter(cfMdUserList, u => u.name.toLowerCase().includes(q) || (u.dept||'').toLowerCase().includes(q) || (u.role||'').toLowerCase().includes(q));
     });
     const cfMdSelectedNm = computed(() => {
-      const u = cfMdUserList.window.safeArrayUtils.safeFind(value, u => u.boUserId === form.mdUserId);
+      const u = cfMdUserList.value.find(u => u.boUserId === form.mdUserId);
       return u ? `${u.name} (${u.dept||''})` : '';
     });
     const openMdModal  = () => { uiState.mdSearch = ''; uiState.mdModalOpen = true; };
@@ -385,7 +385,7 @@ window.PdProdDtl = {
     const handleInitForm = async () => {
       if (cfIsNew.value) {
         // 신규 등록: 기본값 본인 (목업에서는 첫 번째 활성 사용자)
-        form.mdUserId = cfMdUserList.window.safeArrayUtils.safeGet(value, 0)?.boUserId || '';
+        form.mdUserId = cfMdUserList.value[0]?.boUserId || '';
       }
       if (!cfIsNew.value) {
         const p = getProduct.value(props.editId);

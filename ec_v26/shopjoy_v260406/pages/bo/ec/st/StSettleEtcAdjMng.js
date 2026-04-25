@@ -105,7 +105,7 @@ window.StSettleEtcAdjMng = {
       if (!form.adjType)  { errors.adjType  = '유형을 선택하세요.'; }
       if (!form.reason)   { errors.reason   = '사유를 입력하세요.'; }
       if (Object.keys(errors).length) { props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
-      const v = cfVendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === Number(form.vendorId));
+      const v = cfVendors.value.find(x => x.vendorId === Number(form.vendorId));
       if (v) form.vendorNm = v.vendorNm;
       const ok = await props.showConfirm('저장', '기타조정을 저장하시겠습니까?');
       if (!ok) return;

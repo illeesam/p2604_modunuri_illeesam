@@ -103,7 +103,7 @@ window.StStatusMng = {
         const sales   = vOrders.reduce((s, o) => s + (o.totalPrice || 0), 0);
         const refund  = cfClaims.value
           .filter(c => inRange(c.requestDate) && ['환불완료','취소완료'].includes(c.status))
-          .filter(c => { const o = cfOrders.window.safeArrayUtils.safeFind(value, x => x.orderId === c.orderId); return o && o.vendorId === v.vendorId; })
+          .filter(c => { const o = cfOrders.value.find(x => x.orderId === c.orderId); return o && o.vendorId === v.vendorId; })
           .reduce((s, c) => s + (c.refundAmount || 0), 0);
         const netSales = sales - refund;
         const comm     = Math.round(netSales * COMM_RATE);
@@ -129,7 +129,7 @@ window.StStatusMng = {
         if (kw && !o.orderId.toLowerCase().includes(kw) && !o.userNm.toLowerCase().includes(kw) && !o.prodNm.toLowerCase().includes(kw)) return false;
         return true;
       }).map(o => {
-        const vendor = cfVendors.window.safeArrayUtils.safeFind(value, v => v.vendorId === o.vendorId);
+        const vendor = cfVendors.value.find(v => v.vendorId === o.vendorId);
         const isCancelled = o.status === '취소됨';
         const comm   = isCancelled ? 0 : Math.round((o.totalPrice || 0) * COMM_RATE);
         const settle = isCancelled ? 0 : (o.totalPrice || 0) - comm;

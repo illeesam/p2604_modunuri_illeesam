@@ -20,8 +20,8 @@ window.DpDispAreaDtl = {
     // 코드 주입
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
-      codes.disp_areas = codeStore.snGetGrpCodes('DISP_AREA');
-      codes.layout_types = codeStore.snGetGrpCodes('LAYOUT_TYPE');
+      codes.disp_areas = codeStore.snGetGrpCodes('DISP_AREA') || [];
+      codes.layout_types = codeStore.snGetGrpCodes('LAYOUT_TYPE') || [];
       uiState.isPageCodeLoad = true;
     };
 
