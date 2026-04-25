@@ -2,6 +2,7 @@
 window.XsSample04 = {
   name: 'XsSample04',
   setup() {
+    const { ref, reactive, computed, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, modalType: null, modalVariant: 'info', modalData: null, nested2: false });
     const codes = reactive({});
@@ -24,7 +25,6 @@ window.XsSample04 = {
         fnLoadCodes();
       }
     });
-    const { ref, reactive, onMounted , watch } = Vue;
 
     /* ── 회원 데이터 ── */
     const members = reactive([]);

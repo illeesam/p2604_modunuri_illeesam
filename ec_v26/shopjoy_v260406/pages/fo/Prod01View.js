@@ -6,7 +6,7 @@ window.Prod01View = {
 
     const { ref, reactive, computed, onMounted, onBeforeUnmount, watch } = Vue;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixed: false, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy', photoFromGrid: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixed: false, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy', photoFromGrid: false, showSizeGuide: false, photoPopupOpen: false, zoomOpen: false, showBottomBar: false });
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -231,7 +231,7 @@ window.Prod01View = {
 
       /* ── 하단 바 표시: 구매 버튼이 화면 밖으로 나가면 표시 ── */
       const btn = buyBtnRef.value;
-      showBottomBar.value = btn ? btn.getBoundingClientRect().bottom < mainTop : false;
+      uiState.showBottomBar = btn ? btn.getBoundingClientRect().bottom < mainTop : false;
 
       /* ── 활성 탭 ── */
       const barH = bar.offsetHeight || 44;
@@ -253,8 +253,7 @@ window.Prod01View = {
     };
 
     /* ── 드로어 상태 (anyModalOpen 보다 먼저 선언 필요) ── */
-    const drawerMode   = ref('buy'); // 'buy' | 'cart'
-    Object.assign(uiState, { quickBuyOpen: false });
+    // drawerMode and quickBuyOpen are in uiState
 
     /* ── 모달 공통 닫기 (ESC / 뒤로가기) ── */
     const anyModalOpen = () =>
@@ -304,7 +303,7 @@ window.Prod01View = {
       uiState.qty           = 1;
       uiState.selectedImg   = 0;
       uiState.activeTab     = 'detail';
-      quickBuyOpen.value  = false;
+      uiState.quickBuyOpen = false;
       uiState.tabFixed      = false;
       getScrollEl().scrollTo(0, 0);
     });
@@ -484,11 +483,11 @@ window.Prod01View = {
     const openCartDrawer = () => { uiState.drawerMode = 'cart'; uiState.quickBuyOpen = true; };
 
     /* ── 포토 리뷰 진입 경로 (grid=모아보기에서, list=리뷰목록에서) ── */
-        const openPhotoFromGrid = (r) => { uiState.selectedReview = r; uiState.photoFromGrid = true;  photoPopupOpen.value = false; };
+        const openPhotoFromGrid = (r) => { uiState.selectedReview = r; uiState.photoFromGrid = true;  uiState.photoPopupOpen = false; };
     const openPhotoFromList = (r) => { uiState.selectedReview = r; uiState.photoFromGrid = false; };
     const closePhotoDetail  = () => {
       uiState.selectedReview = null;
-      if (uiState.photoFromGrid) photoPopupOpen.value = true;
+      if (uiState.photoFromGrid) uiState.photoPopupOpen = true;
       uiState.photoFromGrid = false;
     };
 
@@ -529,7 +528,6 @@ window.Prod01View = {
 
     return {
       uiState,
-      showSizeGuide, photoPopupOpen,
       photoNavPrev, photoNavNext, cfPhotoNavIdx,
       cfPhotoGridPageCount, cfPhotoGridItems, photoGridPrev, photoGridNext,
       openPhotoFromGrid, openPhotoFromList, closePhotoDetail,
@@ -538,7 +536,7 @@ window.Prod01View = {
       cfQuickBuyTotal, cfDisplayPrice, getSizeDelta,
       TABS, tabBarRef, sizeSecRef, reviewSecRef, styleSecRef,
       scrollToTab, fnCategoryLabel, stars, colorStatus, sizeStatus,
-      buyBtnRef, showBottomBar,
+      buyBtnRef,
       selectColor, selectSize, handleAddToCart, handleBuyNow, openQuickBuy, openCartDrawer, execBuyNow, execCartFromDrawer,
       codes
     };
@@ -579,8 +577,8 @@ window.Prod01View = {
             @mouseenter="$event.currentTarget.querySelector('.img-nav').style.opacity='1'"
             @mouseleave="$event.currentTarget.querySelector('.img-nav').style.opacity='0'">
             <div style="border-radius:12px;border:1px solid var(--border);overflow:hidden;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;position:relative;background:var(--bg-base);cursor:pointer;"
-              @click="zoomOpen=true">
-              <img v-if="cfMockImages[selectedImg]?.src" :src="cfMockImages[selectedImg].src" :alt="product.prodNm"
+              @click="uiState.zoomOpen=true">
+              <img v-if="cfMockImages[uiState.selectedImg]?.src" :src="cfMockImages[uiState.selectedImg].src" :alt="product.prodNm"
                 style="width:100%;height:100%;object-fit:cover;" />
               <div v-if="product.badge" style="position:absolute;top:14px;left:14px;">
                 <span v-if="product.badge==='NEW'"
@@ -590,7 +588,7 @@ window.Prod01View = {
               </div>
             </div>
             <!-- 확대 아이콘 (우상단) -->
-            <button @click="zoomOpen=true"
+            <button @click="uiState.zoomOpen=true"
               style="position:absolute;top:14px;right:14px;width:36px;height:36px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.08);z-index:2;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-secondary);">
                 <polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline>
@@ -599,11 +597,11 @@ window.Prod01View = {
             </button>
             <!-- 좌/우 화살표 -->
             <div class="img-nav" style="opacity:0;transition:opacity .2s;">
-              <button @click="selectedImg=(selectedImg-1+cfMockImages.length)%cfMockImages.length"
+              <button @click="uiState.selectedImg=(uiState.selectedImg-1+cfMockImages.length)%cfMockImages.length"
                 style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
               </button>
-              <button @click="selectedImg=(selectedImg+1)%cfMockImages.length"
+              <button @click="uiState.selectedImg=(uiState.selectedImg+1)%cfMockImages.length"
                 style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
               </button>
@@ -613,11 +611,11 @@ window.Prod01View = {
           <!-- 썸네일 가로 목록 (하단) -->
           <div style="display:flex;flex-direction:row;gap:8px;overflow-x:auto;scrollbar-width:none;">
             <div v-for="(img,i) in cfMockImages" :key="i"
-              @click="selectedImg=i"
+              @click="uiState.selectedImg=i"
               :style="{
                 width:'72px',height:'72px',borderRadius:'8px',overflow:'hidden',
                 cursor:'pointer',flexShrink:0,
-                border:selectedImg===i?'2px solid var(--blue)':'2px solid var(--border)',
+                border:uiState.selectedImg===i?'2px solid var(--blue)':'2px solid var(--border)',
                 transition:'border-color .15s',
                 background:'var(--bg-base)',
               }">
@@ -684,7 +682,7 @@ window.Prod01View = {
             <div v-if="product.opt2s && product.opt2s.length && !(product.opt2s.length===1 && product.opt2s[0]==='FREE')" style="margin-bottom:20px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                 <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">사이즈 선택<span style="color:var(--blue);margin-left:2px;">*</span></label>
-                <button @click="showSizeGuide=true"
+                <button @click="uiState.showSizeGuide=true"
                   style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:0.75rem;font-weight:600;padding:0;text-decoration:underline;">
                   사이즈 가이드
                 </button>
@@ -889,7 +887,7 @@ window.Prod01View = {
             <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">
               포토&동영상 상품평 <span style="color:var(--blue);">{{ cfReviewsWithPhoto.length }}</span>
             </span>
-            <button @click="photoPopupOpen=true"
+            <button @click="uiState.photoPopupOpen=true"
               style="background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:0.78rem;color:var(--text-secondary);display:flex;align-items:center;gap:4px;">
               모아보기
             </button>
@@ -999,7 +997,7 @@ window.Prod01View = {
 
   <!-- ══ 포토 전체 팝업 ══ -->
   <teleport to="body">
-  <div v-if="photoPopupOpen && product" @click.self="photoPopupOpen=false"
+  <div v-if="uiState.photoPopupOpen && product" @click.self="uiState.photoPopupOpen=false"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1500;display:flex;align-items:center;justify-content:center;padding:20px;">
     <!-- 좌 화살표 -->
     <button v-if="cfPhotoGridPageCount > 1" @click="photoGridPrev"
@@ -1009,7 +1007,7 @@ window.Prod01View = {
     <div @click.stop style="background:var(--bg-card);border-radius:16px;width:100%;max-width:720px;max-height:85vh;overflow-y:auto;padding:24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <span style="font-size:0.95rem;font-weight:800;color:var(--text-primary);">포토&동영상 상품평 {{ cfReviewsWithPhoto.length }}</span>
-        <button @click="photoPopupOpen=false" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">✕</button>
+        <button @click="uiState.photoPopupOpen=false" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">✕</button>
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
         <div v-for="r in cfPhotoGridItems" :key="r.id"
@@ -1022,8 +1020,8 @@ window.Prod01View = {
       </div>
       <!-- 페이지네이션 -->
       <div v-if="cfPhotoGridPageCount > 1" style="display:flex;justify-content:center;align-items:center;gap:6px;margin-top:20px;">
-        <button v-for="p in cfPhotoGridPageCount" :key="p" @click="photoGridPage=p"
-          :style="{ width:'32px', height:'32px', borderRadius:'6px', border:'1px solid var(--border)', background: photoGridPage===p ? 'var(--text-primary)' : 'var(--bg-card)', color: photoGridPage===p ? '#fff' : 'var(--text-secondary)', cursor:'pointer', fontSize:'0.85rem', fontWeight: photoGridPage===p ? 700 : 400 }">
+        <button v-for="p in cfPhotoGridPageCount" :key="p" @click="uiState.photoGridPage=p"
+          :style="{ width:'32px', height:'32px', borderRadius:'6px', border:'1px solid var(--border)', background: uiState.photoGridPage===p ? 'var(--text-primary)' : 'var(--bg-card)', color: uiState.photoGridPage===p ? '#fff' : 'var(--text-secondary)', cursor:'pointer', fontSize:'0.85rem', fontWeight: uiState.photoGridPage===p ? 700 : 400 }">
           {{ p }}
         </button>
       </div>
@@ -1039,7 +1037,7 @@ window.Prod01View = {
 
   <!-- ══ 포토 리뷰 개별 팝업 ══ -->
   <teleport to="body">
-  <div v-if="selectedReview && product" @click.self="closePhotoDetail"
+  <div v-if="uiState.selectedReview && product" @click.self="closePhotoDetail"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1501;display:flex;align-items:center;justify-content:center;padding:20px;">
 
     <!-- 좌 화살표 -->

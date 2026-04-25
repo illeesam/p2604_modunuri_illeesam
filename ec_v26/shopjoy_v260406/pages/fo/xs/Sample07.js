@@ -2,6 +2,7 @@
 window.XsSample07 = {
   name: 'XsSample07',
   setup() {
+    const { ref, reactive, computed, watch, onMounted } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0 });
     const codes = reactive({});
@@ -24,7 +25,6 @@ window.XsSample07 = {
         fnLoadCodes();
       }
     });
-    const { ref, reactive, computed, watch, onMounted } = Vue;
 
     /* ===== Tree (JSON 로딩) ===== */
     const treeRoot   = reactive([]);

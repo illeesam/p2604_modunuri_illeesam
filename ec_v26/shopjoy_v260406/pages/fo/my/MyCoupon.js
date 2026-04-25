@@ -3,6 +3,7 @@ window.MyCoupon = {
   name: 'MyCoupon',
   props: ['navigate', 'cartCount', 'showToast'],
   setup(props) {
+    const { ref, reactive, computed, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'unused'});
     const codes = reactive({});
@@ -25,7 +26,6 @@ window.MyCoupon = {
         fnLoadCodes();
       }
     });
-    const { ref, reactive, computed, onMounted , watch } = Vue;
     const myStore = window.useFoMyStore();
     const { coupons, couponCode } = Pinia.storeToRefs(myStore);
 

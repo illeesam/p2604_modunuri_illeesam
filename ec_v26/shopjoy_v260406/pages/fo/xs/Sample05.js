@@ -6,6 +6,7 @@
 window.XsSample05 = {
   name: 'XsSample05',
   setup() {
+    const { ref, reactive, computed, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dragSrc: null, focusedIdx: null, dragMoved: false, checkAll: false });
     const codes = reactive({});
@@ -28,7 +29,6 @@ window.XsSample05 = {
         fnLoadCodes();
       }
     });
-    const { ref, reactive, computed, onMounted , watch } = Vue;
     const api = window.axiosApi || window.adminApi;
     const API = 'api/base/sy/zz-sample1';
     const CD_GRP = 'S05_BOARD';

@@ -171,14 +171,13 @@ window.MyOrder = {
     const getReview = (orderId, itemIdx) => reviews[`${orderId}_${itemIdx}`] || null;
 
     const { inRange, onDateSearch } = window.myDateFilterHelper();
-    const { computed: _c } = Vue;
     const flowStatusFilter = reactive([]);
     const toggleFlowStatus = (status) => {
       const idx = flowStatusFilter.indexOf(status);
       if (idx === -1) flowStatusFilter.push(status);
       else flowStatusFilter.splice(idx, 1);
     };
-    const cfDateFilteredOrders = _c(() => orders.value
+    const cfDateFilteredOrders = computed(() => orders.value
       .filter(o => inRange(o.orderDate))
       .filter(o => !flowStatusFilter.length || flowStatusFilter.includes(o.status))
     );
@@ -194,7 +193,7 @@ window.MyOrder = {
       myStore, orders, claimsByOrderId, cfDateFilteredOrders, onDateSearch,
       orderPager, paginate,
       flowStatusFilter, toggleFlowStatus,
-      uiState, helpTab,
+      uiState,
       openTracking, openTracking2, showOrderPayBreakdown,
       cancelOrder, confirmPurchase,
       EXCHANGE_REASONS, RETURN_REASONS,
@@ -575,16 +574,16 @@ window.MyOrder = {
         </div>
         <div style="display:flex;border-bottom:2px solid var(--border);">
           <button v-for="t in [{id:'order',label:'주문',icon:'📦'},{id:'cancel',label:'취소',icon:'🚫'},{id:'return',label:'반품',icon:'↩️'},{id:'exchange',label:'교환',icon:'🔄'}]"
-            :key="t.id" @click="helpTab=t.id"
+            :key="t.id" @click="uiState.helpTab=t.id"
             style="padding:8px 14px;border:none;cursor:pointer;font-size:0.82rem;font-weight:700;background:none;position:relative;white-space:nowrap;"
-            :style="helpTab===t.id ? 'color:var(--blue);' : 'color:var(--text-muted);'">
+            :style="uiState.helpTab===t.id ? 'color:var(--blue);' : 'color:var(--text-muted);'">
             {{ t.icon }} {{ t.label }}
-            <span v-if="helpTab===t.id" style="position:absolute;bottom:-2px;left:0;right:0;height:2px;background:var(--blue);border-radius:2px;"></span>
+            <span v-if="uiState.helpTab===t.id" style="position:absolute;bottom:-2px;left:0;right:0;height:2px;background:var(--blue);border-radius:2px;"></span>
           </button>
         </div>
       </div>
       <div style="padding:18px 20px 20px;overflow-y:auto;flex:1;">
-        <div v-if="helpTab==='order'">
+        <div v-if="uiState.helpTab==='order'">
           <p style="font-size:0.8rem;color:var(--text-muted);margin:0 0 14px;line-height:1.5;">주문 접수부터 구매확정까지 아래 순서로 진행됩니다.</p>
           <div v-for="s in [{icon:'📋',status:'주문완료',color:'#3b82f6',desc:'주문이 접수되었습니다. 계좌이체의 경우 입금 확인 후 다음 단계로 넘어갑니다.',tip:'주문완료·결제완료 상태에서만 주문 취소가 가능합니다.'},{icon:'💳',status:'결제완료',color:'#8b5cf6',desc:'입금 확인 또는 카드/캐쉬 결제가 완료되어 상품 준비를 시작합니다.',tip:null},{icon:'📦',status:'배송준비중',color:'#f59e0b',desc:'상품을 포장하고 출고 준비 중입니다. 이 단계부터는 주문 취소가 불가합니다.',tip:'취소가 필요하면 배송완료 후 반품으로 처리해 주세요.'},{icon:'🚚',status:'배송중',color:'#f97316',desc:'택배사에 인계되어 배송지로 이동 중입니다.',tip:null},{icon:'✅',status:'배송완료',color:'#22c55e',desc:'상품이 도착했습니다. 교환·반품 신청은 수령 후 7일 이내에 해주세요.',tip:'배송완료 상태에서 교환신청·반품신청·구매확정 버튼이 활성화됩니다.'},{icon:'🏁',status:'구매확정',color:'#6b7280',desc:'거래가 최종 확정되었습니다. 구매확정 후에는 교환·반품 신청이 불가합니다.',tip:'배송완료 후 미확정 시 14일 후 자동 구매확정 처리됩니다.'}]" :key="s.status" style="display:flex;gap:12px;margin-bottom:14px;">
             <div style="flex-shrink:0;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;" :style="'background:'+s.color+'22;'">{{ s.icon }}</div>
@@ -593,7 +592,7 @@ window.MyOrder = {
             <div v-if="s.tip" style="margin-top:4px;font-size:0.73rem;color:#f59e0b;background:#fef3c7;padding:3px 8px;border-radius:4px;display:inline-block;">💡 {{ s.tip }}</div></div>
           </div>
         </div>
-        <div v-else-if="helpTab==='cancel'">
+        <div v-else-if="uiState.helpTab==='cancel'">
           <div style="background:#fee2e2;border-radius:8px;padding:10px 14px;margin-bottom:14px;"><div style="font-size:0.82rem;font-weight:800;color:#dc2626;margin-bottom:4px;">🚫 취소 신청 안내</div><div style="font-size:0.76rem;color:#7f1d1d;line-height:1.55;">주문완료 또는 결제완료 상태일 때만 취소 신청이 가능합니다.<br>배송준비중 이후에는 반품으로 처리해 주세요.</div></div>
           <div style="font-size:0.8rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;">진행 흐름</div>
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px;flex-wrap:wrap;">
@@ -603,7 +602,7 @@ window.MyOrder = {
             </span>
           </div>
         </div>
-        <div v-else-if="helpTab==='return'">
+        <div v-else-if="uiState.helpTab==='return'">
           <div style="background:#fff7ed;border-radius:8px;padding:10px 14px;margin-bottom:14px;"><div style="font-size:0.82rem;font-weight:800;color:#ea580c;margin-bottom:4px;">↩️ 반품 신청 안내</div><div style="font-size:0.76rem;color:#7c2d12;line-height:1.55;">배송완료 후 <strong>7일 이내</strong>에 신청해야 합니다.<br>미착용·미세탁·태그 부착 상태여야 합니다.</div></div>
           <div style="font-size:0.8rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;">진행 흐름</div>
           <div style="display:flex;align-items:center;gap:4px;margin-bottom:16px;flex-wrap:wrap;">
@@ -613,7 +612,7 @@ window.MyOrder = {
             </span>
           </div>
         </div>
-        <div v-else-if="helpTab==='exchange'">
+        <div v-else-if="uiState.helpTab==='exchange'">
           <div style="background:#eff6ff;border-radius:8px;padding:10px 14px;margin-bottom:14px;"><div style="font-size:0.82rem;font-weight:800;color:#1d4ed8;margin-bottom:4px;">🔄 교환 신청 안내</div><div style="font-size:0.76rem;color:#1e3a8a;line-height:1.55;">배송완료 후 <strong>7일 이내</strong>에 신청해야 합니다.<br>동일 상품의 사이즈·색상 교환만 가능합니다.</div></div>
           <div style="font-size:0.8rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;">진행 흐름</div>
           <div style="display:flex;align-items:center;gap:4px;margin-bottom:16px;flex-wrap:wrap;">
