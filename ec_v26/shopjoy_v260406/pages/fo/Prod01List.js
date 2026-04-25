@@ -197,6 +197,13 @@ window.Prod01List = {
       observer.observe(el);
     };
 
+    const onSearch = async () => {
+      uiState.currentPage = 1;
+      uiState.mobileCount = PAGE_SIZE;
+      await handleLoadProducts();
+      setupObserver();
+    };
+
     const handleFetchData = async () => {
       await handleLoadProducts();
       setupObserver();
@@ -216,7 +223,7 @@ window.Prod01List = {
       fnDiscountRate, fnFmtPrice, fnCategoryLabel,
       cfTotalPages, cfPagedProducts, cfPageNums, PAGE_SIZE,
       cfMobileProducts, cfHasMore,
-      codes,
+      codes, onSearch,
       onResize,
       setupObserver,
       observer
@@ -280,6 +287,10 @@ window.Prod01List = {
         style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;background:#f97316;color:#fff;border-radius:9px;font-size:0.7rem;font-weight:700;">
         {{ (selColors.size+selSizes.size+selCats.size+(uiState.priceMin?1:0)+(uiState.priceMax?1:0)) }}
       </span>
+    </button>
+    <button @click="onSearch"
+      style="padding:10px 18px;border:1.5px solid var(--blue);border-radius:10px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.85rem;font-weight:700;white-space:nowrap;transition:all 0.2s;">
+      조회
     </button>
   </div>
 

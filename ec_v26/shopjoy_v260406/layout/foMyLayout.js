@@ -56,7 +56,7 @@ window.MyDateFilter = {
       <option v-for="p in PERIODS" :key="p.value" :value="p.value">{{ p.label }}</option>
     </select>
     <button @click="search"
-      style="padding:6px 18px;border-radius:6px;border:none;background:var(--blue);color:#fff;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">검색</button>
+      style="padding:6px 18px;border-radius:6px;border:none;background:var(--blue);color:#fff;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">조회</button>
     <button @click="onReset"
       style="padding:6px 14px;border-radius:6px;border:1.5px solid var(--border);background:var(--bg-base);color:var(--text-secondary);font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap;">초기화</button>
   </div>

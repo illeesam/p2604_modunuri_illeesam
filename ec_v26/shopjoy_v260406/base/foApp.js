@@ -138,7 +138,7 @@
         ? (type === 'error' ? 0 : type === 'info' ? 3000 : 4000)
         : duration;
       const expanded = !!(detail) && toastShowDetail.value;
-      const t = { id, msg, msgTitle, msgDetail, type, detail, expanded, persistent: autoDismiss === 0 };
+      const t = { id, msg, msgTitle, msgDetail, type, detail, expanded, persistent: autoDismiss === 0, duration: autoDismiss };
       toasts.push(t);
       if (autoDismiss > 0) setTimeout(() => removeToast(id), autoDismiss);
     };
@@ -152,6 +152,14 @@
     const toggleToastDetail = (t) => { t.expanded = !t.expanded; };
     /* 하위 호환 */
     const toast = { show: false };
+
+    /* ── API Progress Bar ── */
+    const isApiLoading = ref(false);
+    let _apiLoadingCount = 0;
+    window._showProgress = (show) => {
+      _apiLoadingCount = Math.max(0, _apiLoadingCount + (show ? 1 : -1));
+      isApiLoading.value = _apiLoadingCount > 0;
+    };
 
     /* ── Alert Modal ── */
     const alertState = reactive({ show: false, title: '', msg: '', type: 'info', resolve: null });
@@ -442,6 +450,7 @@
       theme, toggleTheme,
       page, sidebarOpen, navigate, closeMobileMenu, toggleMobileMenu,
       toasts, showToast, removeToast, removeAllToasts, toggleToastDetail, toggleAllToastDetail, toastShowDetail, toast,
+      isApiLoading,
       alertState, showAlert, closeAlert,
       confirmState, showConfirm, closeConfirm,
       products, selectedProduct, selectProduct,
@@ -461,6 +470,11 @@
 
   template: /* html */ `
 <div style="height:100%;min-height:100vh;display:flex;flex-direction:column;background:var(--bg-base);">
+
+  <!-- API Progress Bar -->
+  <div v-if="isApiLoading" style="position:fixed;top:0;left:0;right:0;height:3px;z-index:99999;overflow:hidden;">
+    <div style="height:100%;background:linear-gradient(90deg,var(--accent,#c9a96e),#e74c3c,var(--accent,#c9a96e));background-size:200% 100%;animation:fo-progress-slide 1.2s linear infinite;"></div>
+  </div>
 
   <fo-app-header
     :page="page" :theme="theme" :sidebar-open="sidebarOpen" :mobile-open="uiState.mobileOpen"
@@ -649,8 +663,7 @@
       </div>
       <!-- progress bar (auto-dismiss toast) -->
       <div v-if="!t.persistent"
-        style="height:3px;width:100%;background:linear-gradient(to right,#e74c3c,transparent);animation:fo-toast-progress linear forwards;"
-        :style="t.type==='success'?'background:linear-gradient(to right,#27ae60,transparent);':t.type==='info'?'background:linear-gradient(to right,#2980b9,transparent);':t.type==='warning'?'background:linear-gradient(to right,#f39c12,transparent);':'background:linear-gradient(to right,#e74c3c,transparent);'">
+        :style="'height:3px;width:100%;animation:fo-toast-progress '+(t.duration/1000)+'s linear forwards;'+(t.type==='success'?'background:linear-gradient(to right,#27ae60,transparent);':t.type==='info'?'background:linear-gradient(to right,#2980b9,transparent);':t.type==='warning'?'background:linear-gradient(to right,#f39c12,transparent);':'background:linear-gradient(to right,#e74c3c,transparent);')">
       </div>
     </div>
     <!-- 하단 고정 바: 2개 이상일 때 -->
@@ -671,6 +684,10 @@
   @keyframes fo-toast-progress {
     from { transform: scaleX(1); transform-origin: left; }
     to   { transform: scaleX(0); transform-origin: left; }
+  }
+  @keyframes fo-progress-slide {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
   }
   </style>
 
