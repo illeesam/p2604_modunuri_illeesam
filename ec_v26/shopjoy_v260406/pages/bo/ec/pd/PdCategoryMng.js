@@ -34,7 +34,7 @@ window.PdCategoryMng = {
     watch(selectedCatId, () => loadGrid());
 
     /* ── 좌측 트리 빌드 (expanded 반영) ── */
-    const catTreeFlat = computed(() => {
+    const cfCatTreeFlat = computed(() => {
       const _ = expandedSet; // reactive dependency
       const cats = categories;
       const map = {};
@@ -105,14 +105,14 @@ window.PdCategoryMng = {
 
     loadGrid();
 
-    const total      = computed(() => window.safeArrayUtils.safeFilter((gridRows || []), r => r._row_status !== 'D').length);
-    const pagedRows  = computed(() => (gridRows || []).slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const totalPages = computed(() => Math.max(1, Math.ceil((gridRows || []).length / pager.size)));
-    const pageNums   = computed(() => {
-      const c = pager.page, l = totalPages.value, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+    const cfTotal      = computed(() => window.safeArrayUtils.safeFilter((gridRows || []), r => r._row_status !== 'D').length);
+    const cfPagedRows  = computed(() => (gridRows || []).slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil((gridRows || []).length / pager.size)));
+    const cfPageNums   = computed(() => {
+      const c = pager.page, l = cfTotalPages.value, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
-    const setPage       = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage       = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange  = () => { pager.page = 1; };
     const getRealIdx    = localIdx => (pager.page - 1) * pager.size + localIdx;
 
@@ -219,7 +219,7 @@ window.PdCategoryMng = {
     };
 
     /* ── 저장 ── */
-    const doSave = async () => {
+    const handleSave = async () => {
       const iRows = window.safeArrayUtils.safeFilter(gridRows, r => r._row_status === 'I');
       const uRows = window.safeArrayUtils.safeFilter(gridRows, r => r._row_status === 'U');
       const dRows = window.safeArrayUtils.safeFilter(gridRows, r => r._row_status === 'D');
@@ -259,7 +259,7 @@ window.PdCategoryMng = {
     };
 
     const checkAll = ref(false);
-    const toggleCheckAll = () => { window.safeArrayUtils.safeForEach(pagedRows, r => { r._row_check = checkAll.value; }); };
+    const toggleCheckAll = () => { window.safeArrayUtils.safeForEach(cfPagedRows, r => { r._row_check = checkAll.value; }); };
 
     const parentNm = parentId => {
       if (!parentId) return '';
@@ -269,7 +269,7 @@ window.PdCategoryMng = {
 
     /* ── 상위카테고리 선택 모달 ── */
     const catPickerModal = reactive({ show: false, targetRow: null, search: '' });
-    const catPickerList  = computed(() => {
+    const cfCatPickerList  = computed(() => {
       const q = catPickerModal.search.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(categories, c =>
         (!q || (c.categoryNm || '').toLowerCase().includes(q)) &&
@@ -295,14 +295,14 @@ window.PdCategoryMng = {
     const descOpen = ref(false);
     return {
       descOpen,
-      expandedSet, isExpanded, toggleNode, expandAll, collapseAll, catTreeFlat,
+      expandedSet, isExpanded, toggleNode, expandAll, collapseAll, cfCatTreeFlat,
       selectedCatId, selectNode,
       searchKw, searchDepth, searchStatus, applied,
-      gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
-      addRow, addChildRow, deleteRow, cancelRow, cancelChecked, deleteRows, doSave,
+      addRow, addChildRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       checkAll, toggleCheckAll, parentNm,
-      catPickerModal, catPickerList, openParentModal, onParentSelect,
+      catPickerModal, cfCatPickerList, openParentModal, onParentSelect,
       dragRowIdx, dragoverRowIdx, onRowDragStart, onRowDragOver, onRowDrop,
       depthBullet, depthColor, statusClass,
     };
@@ -361,7 +361,7 @@ window.PdCategoryMng = {
         <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="collapseAll">▶ 닫기</button>
       </div>
       <div style="max-height:60vh;overflow-y:auto">
-        <div v-for="cat in catTreeFlat" :key="cat?.categoryId"
+        <div v-for="cat in cfCatTreeFlat" :key="cat?.categoryId"
              :style="{ paddingLeft: (cat._depth * 14 + 6) + 'px', cursor:'pointer', padding:'5px 8px',
                        borderRadius:'4px', paddingLeft: (cat._depth * 14 + 6) + 'px',
                        background: selectedCatId===cat.categoryId ? '#fce4ec' : 'transparent',
@@ -379,7 +379,7 @@ window.PdCategoryMng = {
           <span style="font-size:12px">{{ cat.categoryNm }}</span>
           <span v-if="cat.status==='비활성'" style="font-size:10px;color:#bbb;margin-left:4px">(비활성)</span>
         </div>
-        <div v-if="!catTreeFlat.length" style="text-align:center;padding:20px;color:#aaa;font-size:12px">카테고리 없음</div>
+        <div v-if="!cfCatTreeFlat.length" style="text-align:center;padding:20px;color:#aaa;font-size:12px">카테고리 없음</div>
       </div>
     </div>
 
@@ -391,13 +391,13 @@ window.PdCategoryMng = {
           <span v-if="selectedCatId" style="font-size:12px;color:#1677ff;margin-left:6px">
             — {{ [].find(c=>c.categoryId===selectedCatId)&&[].find(c=>c.categoryId===selectedCatId).categoryNm }} 하위
           </span>
-          <span class="list-count">{{ total }}건</span>
+          <span class="list-count">{{ cfTotal }}건</span>
         </span>
         <div style="display:flex;gap:6px">
           <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
           <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
           <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
-          <button class="btn btn-primary btn-sm" @click="doSave">저장</button>
+          <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
         </div>
       </div>
 
@@ -434,7 +434,7 @@ window.PdCategoryMng = {
               {{ selectedCatId ? '하위 카테고리가 없습니다. [+ 행추가]로 추가하세요.' : '데이터가 없습니다.' }}
             </td>
           </tr>
-          <tr v-for="(row, idx) in pagedRows" :key="row?.categoryId"
+          <tr v-for="(row, idx) in cfPagedRows" :key="row?.categoryId"
               :class="[focusedIdx===getRealIdx(idx) ? 'focused' : '', 'status-'+row._row_status]"
               draggable="true"
               @dragstart="onRowDragStart(getRealIdx(idx))"
@@ -528,9 +528,9 @@ window.PdCategoryMng = {
         <div class="pager">
           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-          <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-          <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-          <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+          <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+          <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+          <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
         </div>
         <div class="pager-right">
           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -554,7 +554,7 @@ window.PdCategoryMng = {
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
           <div style="padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;color:#1677ff"
                @click="onParentSelect(null)">최상위 (상위없음)</div>
-          <div v-for="c in catPickerList" :key="c?.categoryId"
+          <div v-for="c in cfCatPickerList" :key="c?.categoryId"
                style="padding:7px 12px;font-size:13px;border-bottom:1px solid #f9f9f9;cursor:pointer;display:flex;align-items:center;gap:6px"
                :style="{ paddingLeft: (c.depth * 14 + 12) + 'px' }"
                @mouseenter="$event.target.style.background='#f5f5f5'" @mouseleave="$event.target.style.background=''"
@@ -563,7 +563,7 @@ window.PdCategoryMng = {
             <span>{{ c.categoryNm }}</span>
             <span style="font-size:11px;color:#aaa;margin-left:auto">depth {{ c.depth }}</span>
           </div>
-          <div v-if="!catPickerList.length" style="text-align:center;padding:20px;color:#aaa">검색 결과 없음</div>
+          <div v-if="!cfCatPickerList.length" style="text-align:center;padding:20px;color:#aaa">검색 결과 없음</div>
         </div>
       </div>
     </div>

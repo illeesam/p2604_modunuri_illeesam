@@ -69,7 +69,7 @@ window.Home01 = {
       <p style="font-size:0.85rem;color:#999;">고객들이 사랑하는 트렌디한 아이템을 만나보세요</p>
     </div>
     <div class="home-prod-grid">
-      <div v-for="p in allHomeProducts" :key="p.productId"
+      <div v-for="p in cfAllHomeProducts" :key="p.productId"
         style="cursor:pointer;transition:transform .25s,box-shadow .25s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-6px)';$event.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'"
         @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow=''"
@@ -159,7 +159,7 @@ window.Home01 = {
       <p style="font-size:0.85rem;color:#999;">특별 할인 중인 인기 상품을 놓치지 마세요</p>
     </div>
     <div class="home-sale-grid">
-      <div v-for="p in saleProducts" :key="'sale'+p.productId"
+      <div v-for="p in cfSaleProducts" :key="'sale'+p.productId"
         style="cursor:pointer;text-align:center;transition:transform .25s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-4px)'"
         @mouseleave="$event.currentTarget.style.transform=''"
@@ -229,28 +229,28 @@ window.Home01 = {
   setup(props) {
     const { computed } = Vue;
 
-    function categoryLabel(p) {
+    function fnCategoryLabel(p) {
       if (!p) return '';
       const cats = (props.config && props.config.categorys) || [];
       const row = cats.find(c => c.categoryId === p.categoryId);
       return row ? row.categoryNm : p.categoryId;
     }
 
-    function catEmoji(id) {
+    function fnCatEmoji(id) {
       const map = { tops: '👕', bottoms: '👖', outer: '🧥', dress: '👗', acc: '💍' };
       return map[id] || '🏷️';
     }
 
-    const newProducts = computed(() =>
+    const cfNewProducts = computed(() =>
       (props.products || []).filter(p => p.badge === 'NEW').slice(0, 3)
     );
 
-    const bestProducts = computed(() =>
+    const cfBestProducts = computed(() =>
       (props.products || []).filter(p => p.badge === '인기').slice(0, 3)
     );
 
     /* ── 할인 상품 ── */
-    const saleProducts = computed(() =>
+    const cfSaleProducts = computed(() =>
       (props.products || []).filter(p => p.originalPrice && p.priceNum && p.originalPrice > p.priceNum).slice(0, 4)
     );
 
@@ -279,7 +279,7 @@ window.Home01 = {
     });
 
     /* ── 홈 상품 8개 ── */
-    const allHomeProducts = computed(() => {
+    const cfAllHomeProducts = computed(() => {
       const all = props.products || [];
       return all.slice(0, 8);
     });
@@ -297,6 +297,6 @@ window.Home01 = {
     onMounted(startBannerTimer);
     onBeforeUnmount(() => clearInterval(bannerTimer));
 
-    return { categoryLabel, catEmoji, newProducts, bestProducts, allHomeProducts, saleProducts, quickViewProduct, cartModalMode, bannerIdx, banners, setBanner };
+    return { fnCategoryLabel, fnCatEmoji, cfNewProducts, cfBestProducts, cfAllHomeProducts, cfSaleProducts, quickViewProduct, cartModalMode, bannerIdx, banners, setBanner };
   }
 };

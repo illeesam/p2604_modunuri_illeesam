@@ -72,20 +72,20 @@ window.XsSample04 = {
       { id: 'loading',    icon: '⏳', name: '로딩 모달',            desc: '2.5초 후 자동으로 닫힘',               color: '#374151' },
     ];
 
-    const GRADE_BADGE = g => ({
+    const fnGradeBadge = g => ({
       'VVIP': 'background:#fce7f3;color:#9d174d;border:1px solid #fbcfe8;',
       'VIP':  'background:#fef9c3;color:#854d0e;border:1px solid #fde68a;',
       '우수': 'background:#d1fae5;color:#065f46;border:1px solid #a7f3d0;',
       '일반': 'background:#f0f0f0;color:#666;border:1px solid #e0e0e0;',
     }[g] || 'background:#f0f0f0;color:#666;');
 
-    const STATUS_BADGE = s => ({
+    const fnStatusBadge = s => ({
       '활성': 'background:#d1fae5;color:#065f46;',
       '휴면': 'background:#fef3c7;color:#92400e;',
       '탈퇴': 'background:#fee2e2;color:#991b1b;',
     }[s] || '');
 
-    const ALERT_META = v => ({
+    const fnAlertMeta = v => ({
       info:    { icon: 'ℹ️',  label: '안내',  bg: '#3b82f6', bar: '#3b82f6' },
       success: { icon: '✅', label: '성공',  bg: '#22c55e', bar: '#22c55e' },
       warning: { icon: '⚠️', label: '경고',  bg: '#f59e0b', bar: '#f59e0b' },
@@ -181,7 +181,7 @@ window.XsSample04 = {
     return {
       members, modal, form, formErrors, CATALOG,
       openModal, closeModal, doConfirm, loadingDemo, submitForm, openEditConfirm,
-      GRADE_BADGE, STATUS_BADGE, ALERT_META,
+      fnGradeBadge, fnStatusBadge, fnAlertMeta,
       /* BaseModal */
       boData, bModal, openBModal, closeBModal, bShowToast, bShowConfirm,
       demoOrder, demoProduct, demoUser, demoTmpl, demoSampleParams, catSelIds,
@@ -363,10 +363,10 @@ window.XsSample04 = {
             <td style="padding:6px 8px;color:#555;font-family:monospace;font-size:11px;">{{ m.email }}</td>
             <td style="text-align:center;padding:6px 8px;color:#666;font-size:11px;">{{ m.phone }}</td>
             <td style="text-align:center;padding:6px 4px;">
-              <span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;" :style="GRADE_BADGE(m.grade)">{{ m.grade }}</span>
+              <span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;" :style="fnGradeBadge(m.grade)">{{ m.grade }}</span>
             </td>
             <td style="text-align:center;padding:6px 4px;">
-              <span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;" :style="STATUS_BADGE(m.status)">{{ m.status }}</span>
+              <span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;" :style="fnStatusBadge(m.status)">{{ m.status }}</span>
             </td>
             <td style="text-align:right;padding:6px 8px;color:#555;">{{ m.orders }}</td>
             <td style="text-align:right;padding:6px 8px;color:#333;font-weight:700;">{{ m.totalAmt.toLocaleString() }}원</td>
@@ -389,18 +389,18 @@ window.XsSample04 = {
       style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
       <div @click.stop
         style="background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.22);width:340px;max-width:90vw;overflow:hidden;">
-        <div style="height:4px;" :style="'background:'+ALERT_META(modal.variant).bar"></div>
+        <div style="height:4px;" :style="'background:'+fnAlertMeta(modal.variant).bar"></div>
         <div style="padding:22px 20px 18px;">
           <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:18px;">
-            <span style="font-size:30px;line-height:1;flex-shrink:0;">{{ ALERT_META(modal.variant).icon }}</span>
+            <span style="font-size:30px;line-height:1;flex-shrink:0;">{{ fnAlertMeta(modal.variant).icon }}</span>
             <div>
-              <div style="font-size:13px;font-weight:800;color:#111;margin-bottom:5px;">{{ ALERT_META(modal.variant).label }}</div>
+              <div style="font-size:13px;font-weight:800;color:#111;margin-bottom:5px;">{{ fnAlertMeta(modal.variant).label }}</div>
               <div style="font-size:12px;color:#555;line-height:1.65;">{{ modal.data?.msg }}</div>
             </div>
           </div>
           <button @click="closeModal"
             style="width:100%;padding:9px;border:none;border-radius:7px;cursor:pointer;font-size:13px;font-weight:700;color:#fff;"
-            :style="'background:'+ALERT_META(modal.variant).bg">확인</button>
+            :style="'background:'+fnAlertMeta(modal.variant).bg">확인</button>
         </div>
       </div>
     </div>
@@ -480,8 +480,8 @@ window.XsSample04 = {
         <div style="padding:13px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;background:#f8f9fa;">
           <span style="font-size:18px;">👤</span>
           <span style="font-size:13px;font-weight:800;color:#222;">회원 상세 정보</span>
-          <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;" :style="GRADE_BADGE(modal.data.grade)">{{ modal.data.grade }}</span>
-          <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;margin-left:2px;" :style="STATUS_BADGE(modal.data.status)">{{ modal.data.status }}</span>
+          <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;" :style="fnGradeBadge(modal.data.grade)">{{ modal.data.grade }}</span>
+          <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;margin-left:2px;" :style="fnStatusBadge(modal.data.status)">{{ modal.data.status }}</span>
           <span style="flex:1;"></span>
           <button @click="closeModal" style="border:none;background:none;cursor:pointer;font-size:18px;color:#bbb;line-height:1;">✕</button>
         </div>

@@ -55,7 +55,7 @@ window.PdSetMng = {
     const dtlCategories   = reactive([]);
     const catPickerOpen   = ref(false);
     const catPickerSearch = ref('');
-    const catPickerList   = computed(() => {
+    const cfCatPickerList   = computed(() => {
       const q    = catPickerSearch.value.trim().toLowerCase();
       const used = new Set(dtlCategories.map(c => String(c.categoryId)));
       return (categories || []).filter(c =>
@@ -110,7 +110,7 @@ window.PdSetMng = {
     /* ── 상품 피커 ── */
     const pickerOpen   = ref(false);
     const pickerSearch = ref('');
-    const pickerList   = computed(() => {
+    const cfPickerList   = computed(() => {
       const q    = pickerSearch.value.trim().toLowerCase();
       const used = new Set(dtlItems.map(d => d.itemProdId).filter(Boolean));
       return (products || []).filter(p => {
@@ -127,7 +127,7 @@ window.PdSetMng = {
     const getBrandNm = id => { const b = (brands||[]).find(b=>b.brandId==id); return b ? (b.brandNm||id) : id; };
 
     /* ── 세트상품 목록 ── */
-    const setList = computed(() => {
+    const cfSetList = computed(() => {
       const kw = applied.nm.toLowerCase();
       const ids = [...new Set((setItems || []).map(s => s.setProdId))];
       return ids
@@ -141,17 +141,17 @@ window.PdSetMng = {
         .filter(g => !kw || g.prodNm.toLowerCase().includes(kw));
     });
 
-    const totalCnt   = computed(() => setList.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(totalCnt.value / pager.size)));
-    const pageList   = computed(() => setList.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums   = computed(() => {
-      const c = pager.page, l = totalPages.value, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+    const cfTotal      = computed(() => cfSetList.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList   = computed(() => cfSetList.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums   = computed(() => {
+      const c = pager.page, l = cfTotalPages.value, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
 
     const onSearch = () => { Object.assign(applied, { nm: searchNm.value }); pager.page = 1; };
     const onReset  = () => { searchNm.value = ''; Object.assign(applied, { nm: '' }); pager.page = 1; };
-    const setPage  = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
     /* ── 신규 열기 ── */
@@ -193,7 +193,7 @@ window.PdSetMng = {
 
     const closeDtl = () => { dtlMode.value = null; editSetId.value = null; dtlItems.length = 0; };
 
-    const dtlProdNm = computed(() => dtlMode.value === 'new' ? (newForm.prodNm || '(신규 세트상품)') : getProdNm(editSetId.value));
+    const cfDtlProdNm = computed(() => dtlMode.value === 'new' ? (newForm.prodNm || '(신규 세트상품)') : getProdNm(editSetId.value));
 
     /* ── 구성품 추가 (연결상품) ── */
     const addItemFromProd = prod => {
@@ -231,7 +231,7 @@ window.PdSetMng = {
     const removeItem = idx => dtlItems.splice(idx, 1);
 
     /* ── 저장 ── */
-    const saveDtl = async () => {
+    const handleSave = async () => {
       Object.keys(newErrors).forEach(k => delete newErrors[k]);
       if (dtlMode.value === 'new') {
         if (!newForm.prodNm.trim()) newErrors.prodNm = '세트상품명을 입력해주세요.';
@@ -241,13 +241,13 @@ window.PdSetMng = {
       const hasBlankNm = window.safeArrayUtils.safeSome(dtlItems, d => !d.itemNm.trim());
       if (hasBlankNm) { props.showToast('구성품 표시명을 모두 입력해주세요.', 'error'); return; }
 
-      const isNew     = dtlMode.value === 'new';
-      const newProdId = isNew ? (Math.max(0, ...(products || []).map(p => p.productId)) + 1) : null;
-      const setProdId = isNew ? newProdId : editSetId.value;
+      const isNewSet  = dtlMode.value === 'new';
+      const newProdId = isNewSet ? (Math.max(0, ...(products || []).map(p => p.productId)) + 1) : null;
+      const setProdId = isNewSet ? newProdId : editSetId.value;
 
-      const ok = await props.showConfirm(isNew ? '등록' : '저장', isNew ? '세트상품을 등록하시겠습니까?' : '구성품 설정을 저장하시겠습니까?');
+      const ok = await props.showConfirm(isNewSet ? '등록' : '저장', isNewSet ? '세트상품을 등록하시겠습니까?' : '구성품 설정을 저장하시겠습니까?');
       if (!ok) return;
-      if (isNew) {
+      if (isNewSet) {
         products.push({
           productId: newProdId, prodNm: newForm.prodNm,
           brandId: newForm.brandId, vendorId: newForm.vendorId,
@@ -280,11 +280,11 @@ window.PdSetMng = {
       window.safeArrayUtils.safeForEach(dtlCategories, (cat, i) => {
         categoryProds.push({ categoryProdId: `CP_SET_${setProdId}_${i}`, siteId: '1', categoryId: cat.categoryId, prodId: setProdId, sortOrd: i + 1 });
       });
-      if (isNew) { dtlMode.value = 'edit'; editSetId.value = newProdId; }
+      if (isNewSet) { dtlMode.value = 'edit'; editSetId.value = newProdId; }
       try {
-        const res = await (isNew ? window.boApi.post('/bo/ec/pd/prod-set', { prod: { ...newForm, prodTypeCd: 'SET' }, items: dtlItems }) : window.boApi.put(`/bo/ec/pd/prod-set/${setProdId}/items`, { items: dtlItems }));
+        const res = await (isNewSet ? window.boApi.post('/bo/ec/pd/prod-set', { prod: { ...newForm, prodTypeCd: 'SET' }, items: dtlItems }) : window.boApi.put(`/bo/ec/pd/prod-set/${setProdId}/items`, { items: dtlItems }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(isNewSet ? '등록되었습니다.' : '저장되었습니다.', 'success');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
         if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
@@ -293,7 +293,7 @@ window.PdSetMng = {
     };
 
     /* ── 삭제 ── */
-    const deleteProd = async setProdId => {
+    const handleDelete = async setProdId => {
       const ok = await props.showConfirm('삭제', '세트상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
       if (!ok) return;
       setItems.value = (setItems).filter(s => s.setProdId !== setProdId);
@@ -313,15 +313,15 @@ window.PdSetMng = {
 
     return {
       descOpen,
-      searchNm, pager, pageNums, totalPages, setPage, totalCnt, pageList,
+      searchNm, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList,
       onSearch, onReset, getProdNm, getProd, getBrandNm,
       getCategoryNm, getCategoryDepth,
-      dtlCategories, catPickerOpen, catPickerSearch, catPickerList,
+      dtlCategories, catPickerOpen, catPickerSearch, cfCatPickerList,
       addCategory, removeCategory, catDragIdx, catDragoverIdx, onCatDragStart, onCatDragOver, onCatDrop,
-      dtlMode, editSetId, newForm, newErrors, dtlProdNm,
-      dtlItems, openNew, openDtl, closeDtl, saveDtl, deleteProd,
+      dtlMode, editSetId, newForm, newErrors, cfDtlProdNm,
+      dtlItems, openNew, openDtl, closeDtl, handleSave, handleDelete,
       addItemFromProd, addItemBlank, removeItem,
-      pickerOpen, pickerSearch, pickerList,
+      pickerOpen, pickerSearch, cfPickerList,
       dragIdx, dragoverIdx, onDragStart, onDragOver, onDrop,
       PAGE_SIZES, onSizeChange };
   },
@@ -357,7 +357,7 @@ window.PdSetMng = {
   <div class="card">
     <div class="toolbar">
       <span class="list-title">세트상품 목록</span>
-      <span class="list-count">총 {{ totalCnt }}건</span>
+      <span class="list-count">총 {{ cfTotal }}건</span>
       <div class="pager-right">
         <button class="btn btn-green btn-sm" @click="openNew">+ 신규등록</button>
       </div>
@@ -372,7 +372,7 @@ window.PdSetMng = {
         <th style="width:110px;text-align:center">관리</th>
       </tr></thead>
       <tbody>
-        <template v-for="g in pageList" :key="g?.setProdId">
+        <template v-for="g in cfPageList" :key="g?.setProdId">
           <tr :style="(dtlMode==='edit' && editSetId===g.setProdId) ? 'background:#e6f4ff' : ''">
             <td>
               <div style="display:flex;align-items:flex-start;gap:6px">
@@ -407,11 +407,11 @@ window.PdSetMng = {
             </td>
             <td style="text-align:center" class="actions">
               <button class="btn btn-blue btn-xs" @click="openDtl(g.setProdId)">수정</button>
-              <button class="btn btn-danger btn-xs" @click="deleteProd(g.setProdId)">삭제</button>
+              <button class="btn btn-danger btn-xs" @click="handleDelete(g.setProdId)">삭제</button>
             </td>
           </tr>
         </template>
-        <tr v-if="!pageList.length">
+        <tr v-if="!cfPageList.length">
           <td colspan="6" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td>
         </tr>
       </tbody>
@@ -421,9 +421,9 @@ window.PdSetMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -443,7 +443,7 @@ window.PdSetMng = {
         <span :class="['badge', dtlMode==='new' ? 'badge-green' : 'badge-orange']">
           {{ dtlMode==='new' ? '신규' : '세트' }}
         </span>
-        <strong style="font-size:15px">{{ dtlProdNm }}</strong>
+        <strong style="font-size:15px">{{ cfDtlProdNm }}</strong>
         <span style="font-size:12px;color:#aaa">{{ dtlMode==='new' ? '세트상품 등록' : '구성품 관리' }}</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
@@ -451,7 +451,7 @@ window.PdSetMng = {
           🔒 세트 전체 단위로만 클레임 가능
         </span>
         <button class="btn btn-secondary btn-sm" @click="closeDtl">닫기</button>
-        <button class="btn btn-primary btn-sm" @click="saveDtl">
+        <button class="btn btn-primary btn-sm" @click="handleSave">
           {{ dtlMode==='new' ? '등록' : '저장' }}
         </button>
       </div>
@@ -636,7 +636,7 @@ window.PdSetMng = {
               <th style="width:56px;text-align:center">선택</th>
             </tr></thead>
             <tbody>
-              <tr v-for="p in pickerList" :key="p?.productId">
+              <tr v-for="p in cfPickerList" :key="p?.productId">
                 <td style="color:#aaa;font-size:12px">{{ p.productId }}</td>
                 <td>{{ p.prodNm || p.productName }}</td>
                 <td style="text-align:center;font-size:12px;color:#888">{{ p.category || '-' }}</td>
@@ -645,7 +645,7 @@ window.PdSetMng = {
                   <button class="btn btn-blue btn-xs" @click="addItemFromProd(p)">선택</button>
                 </td>
               </tr>
-              <tr v-if="!pickerList.length">
+              <tr v-if="!cfPickerList.length">
                 <td colspan="5" style="text-align:center;padding:24px;color:#aaa">검색 결과가 없습니다.</td>
               </tr>
             </tbody>
@@ -669,8 +669,8 @@ window.PdSetMng = {
           <input class="form-control" v-model="catPickerSearch" placeholder="카테고리 검색..." style="font-size:13px">
         </div>
         <div style="overflow-y:auto;flex:1;padding:0 8px 12px">
-          <div v-if="catPickerList.length===0" style="text-align:center;color:#aaa;padding:24px;font-size:13px">검색 결과 없음</div>
-          <div v-for="cat in catPickerList" :key="cat?.categoryId"
+          <div v-if="cfCatPickerList.length===0" style="text-align:center;color:#aaa;padding:24px;font-size:13px">검색 결과 없음</div>
+          <div v-for="cat in cfCatPickerList" :key="cat?.categoryId"
                @click="addCategory(cat)"
                style="padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px"
                onmouseover="this.style.background='#f5f3ff'" onmouseout="this.style.background=''">

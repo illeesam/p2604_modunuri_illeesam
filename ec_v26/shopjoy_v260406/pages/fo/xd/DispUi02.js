@@ -30,12 +30,12 @@ window.DispUi02 = {
       showBadges: true,
     };
 
-    const totalPanels = computed(() => {
+    const cfTotalPanels = computed(() => {
       const displays = dispDataset.displays || [];
       return params.areas.reduce((s, a) => s + displays.filter(p => p.area === a).length, 0);
     });
 
-    return { params, dispDataset, dispOpt, totalPanels };
+    return { params, dispDataset, dispOpt, cfTotalPanels };
   },
   template: /* html */`
 <div>
@@ -45,7 +45,7 @@ window.DispUi02 = {
       <span style="font-size:16px;font-weight:700;">📋 DispUi02 - SIDEBAR 영역</span>
       <span style="font-size:11px;opacity:.7;margin-left:12px;">SIDEBAR_TOP, SIDEBAR_MID, SIDEBAR_BOT</span>
     </div>
-    <span style="font-size:13px;opacity:.8;">패널 {{ totalPanels }}개</span>
+    <span style="font-size:13px;opacity:.8;">패널 {{ cfTotalPanels }}개</span>
   </div>
 
   <!-- 본문: DispUi 컴포넌트 -->

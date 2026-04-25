@@ -55,20 +55,20 @@ window.PdProdHist = {
       }
     });
 
-    const relatedOrders = computed(() => {
+    const cfRelatedOrders = computed(() => {
       const p = getProduct.value(props.prodId);
       if (!p) return [];
       return window.safeArrayUtils.safeFilter(orders, o => o.prodNm && p.prodNm && o.prodNm.includes(p.prodNm.slice(0, 8)));
     });
 
-    return { products, loading, error, botTab, stockHistory, statusHistory, changeHistory, priceHistory, relatedOrders, viewMode2, showTab };
+    return { products, loading, error, botTab, stockHistory, statusHistory, changeHistory, priceHistory, cfRelatedOrders, viewMode2, showTab };
   },
   template: /* html */`
 <div>
   <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>이력정보</div>
   <div class="tab-bar-row">
     <div class="tab-nav">
-      <button class="tab-btn" :class="{active:botTab==='orders'}"  :disabled="viewMode2!=='tab'" @click="botTab='orders'">🛒 연관 주문 <span class="tab-count">{{ relatedOrders.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='orders'}"  :disabled="viewMode2!=='tab'" @click="botTab='orders'">🛒 연관 주문 <span class="tab-count">{{ cfRelatedOrders.length }}</span></button>
       <button class="tab-btn" :class="{active:botTab==='stock'}"   :disabled="viewMode2!=='tab'" @click="botTab='stock'">📦 재고 이력 <span class="tab-count">{{ stockHistory.length }}</span></button>
       <button class="tab-btn" :class="{active:botTab==='price'}"   :disabled="viewMode2!=='tab'" @click="botTab='price'">💰 가격변경이력 <span class="tab-count">{{ priceHistory.length }}</span></button>
       <button class="tab-btn" :class="{active:botTab==='status'}"  :disabled="viewMode2!=='tab'" @click="botTab='status'">🏷 상품상태 이력 <span class="tab-count">{{ statusHistory.length }}</span></button>
@@ -86,11 +86,11 @@ window.PdProdHist = {
 
   <!-- 연관 주문 -->
   <div class="card" v-show="showTab('orders')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ relatedOrders.length }}</span></div>
-    <table class="bo-table" v-if="relatedOrders.length">
+    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ cfRelatedOrders.length }}</span></div>
+    <table class="bo-table" v-if="cfRelatedOrders.length">
       <thead><tr><th>주문ID</th><th>회원</th><th>주문일</th><th>금액</th><th>상태</th><th>관리</th></tr></thead>
       <tbody>
-        <tr v-for="o in relatedOrders" :key="o?.orderId">
+        <tr v-for="o in cfRelatedOrders" :key="o?.orderId">
           <td><span class="ref-link" @click="showRefModal('order', o.orderId)">{{ o.orderId }}</span></td>
           <td><span class="ref-link" @click="showRefModal('member', o.userId)">{{ o.userNm }}</span></td>
           <td>{{ o.orderDate.slice(0,10) }}</td>

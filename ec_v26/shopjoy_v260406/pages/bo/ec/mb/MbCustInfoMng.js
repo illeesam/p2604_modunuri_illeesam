@@ -17,7 +17,7 @@
     { id: 'custom', label: '직접입력' },
   ];
 
-  const badgeCls = (status) => {
+  const fnBadgeCls = (status) => {
     const map = {
       '활성': 'badge-green', '판매중': 'badge-green', '진행중': 'badge-blue', '처리중': 'badge-blue',
       '완료': 'badge-gray', '종료': 'badge-gray', '배송완료': 'badge-gray', '교환완료': 'badge-gray', '환불완료': 'badge-gray', '취소완료': 'badge-gray', '답변완료': 'badge-gray',
@@ -29,9 +29,9 @@
     return map[status] || 'badge-gray';
   };
 
-  const channelCls = ch => ({ 'SMS': 'badge-orange', '이메일': 'badge-blue', '카카오': 'badge-purple' }[ch] || 'badge-gray');
+  const fnChannelCls = ch => ({ 'SMS': 'badge-orange', '이메일': 'badge-blue', '카카오': 'badge-purple' }[ch] || 'badge-gray');
 
-  const fmtPrice = v => v != null ? Number(v).toLocaleString() + '원' : '-';
+  const fnFmtPrice = v => v != null ? Number(v).toLocaleString() + '원' : '-';
 
   /* 날짜 문자열(YYYY-MM-DD...) → 날짜만 YYYY-MM-DD 추출 */
   const dateStr = v => v ? String(v).slice(0, 10) : '';
@@ -107,8 +107,8 @@
       const customFrom = ref('');
       const customTo   = ref(today());
 
-      const dateFrom = computed(() => calcFrom(period.value, customFrom.value));
-      const dateTo   = computed(() => period.value === 'custom' ? customTo.value : today());
+      const cfDateFrom = computed(() => calcFrom(period.value, customFrom.value));
+      const cfDateTo   = computed(() => period.value === 'custom' ? customTo.value : today());
 
       /* period 변경 시 custom 초기값 세팅 */
       watch(period, v => {
@@ -124,48 +124,48 @@
 
       /* 날짜 필터 헬퍼 */
       const filtered = (list, dateField) =>
-        list.filter(r => inRange(r[dateField], dateFrom.value, dateTo.value));
+        list.filter(r => inRange(r[dateField], cfDateFrom.value, cfDateTo.value));
 
       /* ── 파생 데이터 (computed) ── */
-      const custOrders = computed(() =>
+      const cfCustOrders = computed(() =>
         !customer.value ? [] : filtered(
           window.safeArrayUtils.safeFilter(orders, o => o.userId === customer.value.userId), 'orderDate')
       );
-      const custClaims = computed(() =>
+      const cfCustClaims = computed(() =>
         !customer.value ? [] : filtered(
           window.safeArrayUtils.safeFilter(claims, c => c.userId === customer.value.userId), 'requestDate')
       );
-      const custDeliveries = computed(() =>
+      const cfCustDeliveries = computed(() =>
         !customer.value ? [] : filtered(
           window.safeArrayUtils.safeFilter(deliveries, d => d.userId === customer.value.userId), 'regDate')
       );
-      const custCache = computed(() =>
+      const cfCustCache = computed(() =>
         !customer.value ? [] : filtered(
           window.safeArrayUtils.safeFilter(cacheList, c => c.userId === customer.value.userId), 'date')
       );
-      const custContacts = computed(() =>
+      const cfCustContacts = computed(() =>
         !customer.value ? [] : filtered(
           window.safeArrayUtils.safeFilter(contacts, c => c.userId === customer.value.userId), 'date')
       );
-      const custChats = computed(() =>
+      const cfCustChats = computed(() =>
         !customer.value ? [] : filtered(
           window.safeArrayUtils.safeFilter(chats, c => c.userId === customer.value.userId), 'date')
       );
-      const custLoginHist = computed(() =>
+      const cfCustLoginHist = computed(() =>
         !customer.value ? [] : filtered(
           (loginHistory || []).filter(l => l.userId === customer.value.userId), 'loginDate')
       );
-      const custCouponUsage = computed(() =>
+      const cfCustCouponUsage = computed(() =>
         !customer.value ? [] : filtered(
           (couponUsage || []).filter(u => u.userId === customer.value.userId), 'usedDate')
       );
-      const custSendHist = computed(() =>
+      const cfCustSendHist = computed(() =>
         !customer.value ? [] : filtered(
           (sendHistory || []).filter(s => s.userId === customer.value.userId), 'sendDate')
       );
 
       /* 캐쉬 잔액 = 전체(필터 미적용) 마지막 레코드 */
-      const custCacheBalance = computed(() => {
+      const cfCustCacheBalance = computed(() => {
         if (!customer.value) return 0;
         const all = window.safeArrayUtils.safeFilter(cacheList, c => c.userId === customer.value.userId);
         if (!all.length) return 0;
@@ -221,13 +221,13 @@
       const showTab = (id) => viewMode2.value !== 'tab' || histTab.value === id;
 
       return { custInfos, loading, error, searchMode, searchInput, SEARCH_MODES, memberModal,
-        period, customFrom, customTo, PERIOD_OPTS, dateFrom, dateTo,
+        period, customFrom, customTo, PERIOD_OPTS, cfDateFrom, cfDateTo,
         customer,
-        custOrders, custClaims, custDeliveries, custCache, custCacheBalance,
-        custContacts, custChats, custLoginHist, custCouponUsage, custSendHist,
+        cfCustOrders, cfCustClaims, cfCustDeliveries, cfCustCache, cfCustCacheBalance,
+        cfCustContacts, cfCustChats, cfCustLoginHist, cfCustCouponUsage, cfCustSendHist,
         openMemberModal, searchMemberModal, selectMember,
         doSearch, clearCustomer,
-        badgeCls, channelCls, fmtPrice,
+        fnBadgeCls, fnChannelCls, fnFmtPrice,
         histTab, viewMode2, showTab,
       };
     },
@@ -301,7 +301,7 @@
         style="border:1px solid #ddd;border-radius:6px;padding:4px 10px;font-size:12px;outline:none;" />
     </template>
     <span v-else style="font-size:12px;color:#aaa;">
-      {{ dateFrom ? dateFrom + ' ~ ' + dateTo : '전체 기간' }}
+      {{ cfDateFrom ? cfDateFrom + ' ~ ' + cfDateTo : '전체 기간' }}
     </span>
   </div>
 
@@ -352,7 +352,7 @@
           </div>
           <div style="background:#f3e5f5;border:1px solid #ce93d8;border-radius:8px;padding:10px 18px;text-align:center;min-width:100px;">
             <div style="font-size:11px;color:#7b1fa2;font-weight:600;margin-bottom:2px;">캐쉬 잔액</div>
-            <div style="font-size:17px;font-weight:700;color:#7b1fa2;">{{ custCacheBalance.toLocaleString() }}</div>
+            <div style="font-size:17px;font-weight:700;color:#7b1fa2;">{{ cfCustCacheBalance.toLocaleString() }}</div>
             <div style="font-size:10px;color:#90a4ae;">원</div>
           </div>
         </div>
@@ -362,15 +362,15 @@
     <!-- ── 이력 탭바 + 뷰모드 ── -->
     <div class="tab-bar-row">
       <div class="tab-nav">
-        <button class="tab-btn" :class="{active:histTab==='orders'}"   :disabled="viewMode2!=='tab'" @click="histTab='orders'">🛒 주문이력 <span class="tab-count">{{ custOrders.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='claims'}"   :disabled="viewMode2!=='tab'" @click="histTab='claims'">↩ 클레임이력 <span class="tab-count">{{ custClaims.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='dliv'}"     :disabled="viewMode2!=='tab'" @click="histTab='dliv'">🚚 배송이력 <span class="tab-count">{{ custDeliveries.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='cache'}"    :disabled="viewMode2!=='tab'" @click="histTab='cache'">💰 캐쉬내역 <span class="tab-count">{{ custCache.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='contacts'}" :disabled="viewMode2!=='tab'" @click="histTab='contacts'">📋 문의이력 <span class="tab-count">{{ custContacts.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='chats'}"    :disabled="viewMode2!=='tab'" @click="histTab='chats'">💬 채팅이력 <span class="tab-count">{{ custChats.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='login'}"    :disabled="viewMode2!=='tab'" @click="histTab='login'">🔐 로그인 <span class="tab-count">{{ custLoginHist.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='coupon'}"   :disabled="viewMode2!=='tab'" @click="histTab='coupon'">🎟 쿠폰 <span class="tab-count">{{ custCouponUsage.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='send'}"     :disabled="viewMode2!=='tab'" @click="histTab='send'">📨 발송 <span class="tab-count">{{ custSendHist.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='orders'}"   :disabled="viewMode2!=='tab'" @click="histTab='orders'">🛒 주문이력 <span class="tab-count">{{ cfCustOrders.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='claims'}"   :disabled="viewMode2!=='tab'" @click="histTab='claims'">↩ 클레임이력 <span class="tab-count">{{ cfCustClaims.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='dliv'}"     :disabled="viewMode2!=='tab'" @click="histTab='dliv'">🚚 배송이력 <span class="tab-count">{{ cfCustDeliveries.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='cache'}"    :disabled="viewMode2!=='tab'" @click="histTab='cache'">💰 캐쉬내역 <span class="tab-count">{{ cfCustCache.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='contacts'}" :disabled="viewMode2!=='tab'" @click="histTab='contacts'">📋 문의이력 <span class="tab-count">{{ cfCustContacts.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='chats'}"    :disabled="viewMode2!=='tab'" @click="histTab='chats'">💬 채팅이력 <span class="tab-count">{{ cfCustChats.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='login'}"    :disabled="viewMode2!=='tab'" @click="histTab='login'">🔐 로그인 <span class="tab-count">{{ cfCustLoginHist.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='coupon'}"   :disabled="viewMode2!=='tab'" @click="histTab='coupon'">🎟 쿠폰 <span class="tab-count">{{ cfCustCouponUsage.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='send'}"     :disabled="viewMode2!=='tab'" @click="histTab='send'">📨 발송 <span class="tab-count">{{ cfCustSendHist.length }}</span></button>
       </div>
       <div class="tab-view-modes">
         <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭으로 보기">📑</button>
@@ -389,7 +389,7 @@
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#1976d2;border-radius:2px;display:inline-block;"></span>
           <span style="font-weight:600;font-size:13px;color:#333;">주문이력</span>
-          <span style="margin-left:2px;background:#e3f2fd;color:#1565c0;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ custOrders.length }}건</span>
+          <span style="margin-left:2px;background:#e3f2fd;color:#1565c0;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustOrders.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
           <table class="bo-table" style="font-size:12px;">
@@ -397,15 +397,15 @@
               <th>주문번호</th><th>일시</th><th>상품명</th><th style="text-align:right;">금액</th><th>상태</th>
             </tr></thead>
             <tbody>
-              <tr v-if="!custOrders.length">
+              <tr v-if="!cfCustOrders.length">
                 <td colspan="5" style="text-align:center;color:#ccc;padding:24px;font-size:13px;">주문 내역이 없습니다.</td>
               </tr>
-              <tr v-for="o in custOrders" :key="o?.orderId">
+              <tr v-for="o in cfCustOrders" :key="o?.orderId">
                 <td><a href="#" @click.prevent="showRefModal('order',o.orderId)" style="color:#1976d2;text-decoration:none;font-weight:500;">{{ o.orderId }}</a></td>
                 <td style="color:#888;white-space:nowrap;">{{ o.orderDate }}</td>
                 <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="o.prodNm">{{ o.prodNm }}</td>
-                <td style="text-align:right;font-weight:600;">{{ fmtPrice(o.totalPrice) }}</td>
-                <td><span :class="'badge '+badgeCls(o.status)">{{ o.status }}</span></td>
+                <td style="text-align:right;font-weight:600;">{{ fnFmtPrice(o.totalPrice) }}</td>
+                <td><span :class="'badge '+fnBadgeCls(o.status)">{{ o.status }}</span></td>
               </tr>
             </tbody>
           </table>
@@ -417,7 +417,7 @@
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#ef5350;border-radius:2px;display:inline-block;"></span>
           <span style="font-weight:600;font-size:13px;color:#333;">클레임이력</span>
-          <span style="margin-left:2px;background:#ffebee;color:#c62828;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ custClaims.length }}건</span>
+          <span style="margin-left:2px;background:#ffebee;color:#c62828;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustClaims.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
           <table class="bo-table" style="font-size:12px;">
@@ -425,14 +425,14 @@
               <th>클레임번호</th><th>유형</th><th>상품명</th><th>상태</th><th>신청일</th>
             </tr></thead>
             <tbody>
-              <tr v-if="!custClaims.length">
+              <tr v-if="!cfCustClaims.length">
                 <td colspan="5" style="text-align:center;color:#ccc;padding:24px;font-size:13px;">클레임 내역이 없습니다.</td>
               </tr>
-              <tr v-for="c in custClaims" :key="c?.claimId">
+              <tr v-for="c in cfCustClaims" :key="c?.claimId">
                 <td><a href="#" @click.prevent="showRefModal('claim',c.claimId)" style="color:#1976d2;text-decoration:none;font-weight:500;">{{ c.claimId }}</a></td>
                 <td>{{ c.type }}</td>
                 <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="c.prodNm">{{ c.prodNm }}</td>
-                <td><span :class="'badge '+badgeCls(c.status)">{{ c.status }}</span></td>
+                <td><span :class="'badge '+fnBadgeCls(c.status)">{{ c.status }}</span></td>
                 <td style="color:#888;white-space:nowrap;">{{ c.requestDate ? c.requestDate.slice(0,10) : '' }}</td>
               </tr>
             </tbody>
@@ -445,7 +445,7 @@
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#00897b;border-radius:2px;display:inline-block;"></span>
           <span style="font-weight:600;font-size:13px;color:#333;">배송이력</span>
-          <span style="margin-left:2px;background:#e0f2f1;color:#00695c;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ custDeliveries.length }}건</span>
+          <span style="margin-left:2px;background:#e0f2f1;color:#00695c;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustDeliveries.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
           <table class="bo-table" style="font-size:12px;">
@@ -453,15 +453,15 @@
               <th>배송번호</th><th>주문번호</th><th>택배사</th><th>운송장번호</th><th>상태</th>
             </tr></thead>
             <tbody>
-              <tr v-if="!custDeliveries.length">
+              <tr v-if="!cfCustDeliveries.length">
                 <td colspan="5" style="text-align:center;color:#ccc;padding:24px;font-size:13px;">배송 내역이 없습니다.</td>
               </tr>
-              <tr v-for="d in custDeliveries" :key="d?.dlivId">
+              <tr v-for="d in cfCustDeliveries" :key="d?.dlivId">
                 <td style="font-weight:500;">{{ d.dlivId }}</td>
                 <td>{{ d.orderId }}</td>
                 <td>{{ d.courier || '-' }}</td>
                 <td style="color:#888;">{{ d.trackingNo || '-' }}</td>
-                <td><span :class="'badge '+badgeCls(d.status)">{{ d.status }}</span></td>
+                <td><span :class="'badge '+fnBadgeCls(d.status)">{{ d.status }}</span></td>
               </tr>
             </tbody>
           </table>
@@ -473,8 +473,8 @@
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#f57c00;border-radius:2px;display:inline-block;"></span>
           <span style="font-weight:600;font-size:13px;color:#333;">캐쉬내역</span>
-          <span style="margin-left:2px;background:#fff3e0;color:#e65100;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ custCache.length }}건</span>
-          <span style="margin-left:auto;font-size:12px;color:#7b1fa2;font-weight:600;">잔액 {{ fmtPrice(custCacheBalance) }}</span>
+          <span style="margin-left:2px;background:#fff3e0;color:#e65100;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustCache.length }}건</span>
+          <span style="margin-left:auto;font-size:12px;color:#7b1fa2;font-weight:600;">잔액 {{ fnFmtPrice(cfCustCacheBalance) }}</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
           <table class="bo-table" style="font-size:12px;">
@@ -482,14 +482,14 @@
               <th>일시</th><th>구분</th><th style="text-align:right;">금액</th><th style="text-align:right;">잔액</th><th>사유</th>
             </tr></thead>
             <tbody>
-              <tr v-if="!custCache.length">
+              <tr v-if="!cfCustCache.length">
                 <td colspan="5" style="text-align:center;color:#ccc;padding:24px;font-size:13px;">캐쉬 내역이 없습니다.</td>
               </tr>
-              <tr v-for="c in custCache" :key="c?.cacheId">
+              <tr v-for="c in cfCustCache" :key="c?.cacheId">
                 <td style="color:#888;white-space:nowrap;">{{ c.date }}</td>
                 <td><span :class="'badge '+(c.type==='충전'?'badge-blue':'badge-orange')">{{ c.type }}</span></td>
                 <td style="text-align:right;font-weight:600;" :style="c.amount>0?'color:#1565c0;':'color:#c62828;'">{{ c.amount > 0 ? '+' : '' }}{{ c.amount.toLocaleString() }}원</td>
-                <td style="text-align:right;color:#555;">{{ fmtPrice(c.balance) }}</td>
+                <td style="text-align:right;color:#555;">{{ fnFmtPrice(c.balance) }}</td>
                 <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#666;" :title="c.desc">{{ c.desc }}</td>
               </tr>
             </tbody>
@@ -502,7 +502,7 @@
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#5c6bc0;border-radius:2px;display:inline-block;"></span>
           <span style="font-weight:600;font-size:13px;color:#333;">문의이력</span>
-          <span style="margin-left:2px;background:#e8eaf6;color:#283593;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ custContacts.length }}건</span>
+          <span style="margin-left:2px;background:#e8eaf6;color:#283593;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustContacts.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
           <table class="bo-table" style="font-size:12px;">
@@ -510,14 +510,14 @@
               <th>접수일</th><th>분류</th><th>제목</th><th>상태</th>
             </tr></thead>
             <tbody>
-              <tr v-if="!custContacts.length">
+              <tr v-if="!cfCustContacts.length">
                 <td colspan="4" style="text-align:center;color:#ccc;padding:24px;font-size:13px;">문의 내역이 없습니다.</td>
               </tr>
-              <tr v-for="c in custContacts" :key="c?.inquiryId">
+              <tr v-for="c in cfCustContacts" :key="c?.inquiryId">
                 <td style="color:#888;white-space:nowrap;">{{ c.date ? c.date.slice(0,10) : '' }}</td>
                 <td style="white-space:nowrap;">{{ c.category }}</td>
                 <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="c.title">{{ c.title }}</td>
-                <td><span :class="'badge '+badgeCls(c.status)">{{ c.status }}</span></td>
+                <td><span :class="'badge '+fnBadgeCls(c.status)">{{ c.status }}</span></td>
               </tr>
             </tbody>
           </table>
@@ -529,7 +529,7 @@
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#26a69a;border-radius:2px;display:inline-block;"></span>
           <span style="font-weight:600;font-size:13px;color:#333;">채팅이력</span>
-          <span style="margin-left:2px;background:#e0f2f1;color:#004d40;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ custChats.length }}건</span>
+          <span style="margin-left:2px;background:#e0f2f1;color:#004d40;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustChats.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
           <table class="bo-table" style="font-size:12px;">
@@ -537,14 +537,14 @@
               <th>일시</th><th>제목</th><th>마지막 메시지</th><th>상태</th>
             </tr></thead>
             <tbody>
-              <tr v-if="!custChats.length">
+              <tr v-if="!cfCustChats.length">
                 <td colspan="4" style="text-align:center;color:#ccc;padding:24px;font-size:13px;">채팅 내역이 없습니다.</td>
               </tr>
-              <tr v-for="c in custChats" :key="c?.chatId">
+              <tr v-for="c in cfCustChats" :key="c?.chatId">
                 <td style="color:#888;white-space:nowrap;">{{ c.date ? c.date.slice(0,10) : '' }}</td>
                 <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="c.subject">{{ c.subject }}</td>
                 <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#666;" :title="c.lastMsg">{{ c.lastMsg }}</td>
-                <td><span :class="'badge '+badgeCls(c.status)">{{ c.status }}</span></td>
+                <td><span :class="'badge '+fnBadgeCls(c.status)">{{ c.status }}</span></td>
               </tr>
             </tbody>
           </table>
@@ -556,7 +556,7 @@
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#546e7a;border-radius:2px;display:inline-block;"></span>
           <span style="font-weight:600;font-size:13px;color:#333;">로그인이력</span>
-          <span style="margin-left:2px;background:#eceff1;color:#37474f;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ custLoginHist.length }}건</span>
+          <span style="margin-left:2px;background:#eceff1;color:#37474f;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustLoginHist.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
           <table class="bo-table" style="font-size:12px;">
@@ -564,14 +564,14 @@
               <th>일시</th><th>IP</th><th>기기/브라우저</th><th>결과</th>
             </tr></thead>
             <tbody>
-              <tr v-if="!custLoginHist.length">
+              <tr v-if="!cfCustLoginHist.length">
                 <td colspan="4" style="text-align:center;color:#ccc;padding:24px;font-size:13px;">로그인 내역이 없습니다.</td>
               </tr>
-              <tr v-for="l in custLoginHist" :key="l?.loginId">
+              <tr v-for="l in cfCustLoginHist" :key="l?.loginId">
                 <td style="color:#888;white-space:nowrap;">{{ l.loginDate }}</td>
                 <td style="color:#666;font-family:monospace;">{{ l.ip }}</td>
                 <td style="color:#555;">{{ l.device }}</td>
-                <td><span :class="'badge '+badgeCls(l.result)">{{ l.result }}</span></td>
+                <td><span :class="'badge '+fnBadgeCls(l.result)">{{ l.result }}</span></td>
               </tr>
             </tbody>
           </table>
@@ -583,7 +583,7 @@
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#e91e63;border-radius:2px;display:inline-block;"></span>
           <span style="font-weight:600;font-size:13px;color:#333;">쿠폰사용이력</span>
-          <span style="margin-left:2px;background:#fce4ec;color:#880e4f;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ custCouponUsage.length }}건</span>
+          <span style="margin-left:2px;background:#fce4ec;color:#880e4f;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustCouponUsage.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
           <table class="bo-table" style="font-size:12px;">
@@ -591,10 +591,10 @@
               <th>사용일</th><th>쿠폰명</th><th>코드</th><th>주문번호</th><th style="text-align:right;">할인금액</th>
             </tr></thead>
             <tbody>
-              <tr v-if="!custCouponUsage.length">
+              <tr v-if="!cfCustCouponUsage.length">
                 <td colspan="5" style="text-align:center;color:#ccc;padding:24px;font-size:13px;">쿠폰 사용 내역이 없습니다.</td>
               </tr>
-              <tr v-for="u in custCouponUsage" :key="u?.usageId">
+              <tr v-for="u in cfCustCouponUsage" :key="u?.usageId">
                 <td style="color:#888;white-space:nowrap;">{{ u.usedDate }}</td>
                 <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="u.couponNm">{{ u.couponNm }}</td>
                 <td style="font-family:monospace;color:#666;font-size:11px;">{{ u.couponCode }}</td>
@@ -611,7 +611,7 @@
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#ff7043;border-radius:2px;display:inline-block;"></span>
           <span style="font-weight:600;font-size:13px;color:#333;">발송이력</span>
-          <span style="margin-left:2px;background:#fbe9e7;color:#bf360c;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ custSendHist.length }}건</span>
+          <span style="margin-left:2px;background:#fbe9e7;color:#bf360c;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustSendHist.length }}건</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
           <table class="bo-table" style="font-size:12px;">
@@ -619,14 +619,14 @@
               <th>발송일시</th><th>채널</th><th>제목/내용</th><th>결과</th>
             </tr></thead>
             <tbody>
-              <tr v-if="!custSendHist.length">
+              <tr v-if="!cfCustSendHist.length">
                 <td colspan="4" style="text-align:center;color:#ccc;padding:24px;font-size:13px;">발송 내역이 없습니다.</td>
               </tr>
-              <tr v-for="s in custSendHist" :key="s?.sendId">
+              <tr v-for="s in cfCustSendHist" :key="s?.sendId">
                 <td style="color:#888;white-space:nowrap;">{{ s.sendDate }}</td>
-                <td><span :class="'badge '+channelCls(s.channelCd)">{{ s.channelCd }}</span></td>
+                <td><span :class="'badge '+fnChannelCls(s.channelCd)">{{ s.channelCd }}</span></td>
                 <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;" :title="s.title">{{ s.title }}</td>
-                <td><span :class="'badge '+badgeCls(s.statusCd)">{{ s.statusCd }}</span></td>
+                <td><span :class="'badge '+fnBadgeCls(s.statusCd)">{{ s.statusCd }}</span></td>
               </tr>
             </tbody>
           </table>

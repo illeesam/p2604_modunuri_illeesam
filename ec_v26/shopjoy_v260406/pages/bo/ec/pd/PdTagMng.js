@@ -31,7 +31,7 @@ window.PdTagMng = {
     const applied   = reactive({ kw: '', use: '' });
     const pager     = reactive({ page: 1, size: 20 });
 
-    const filtered = computed(() => {
+    const cfFiltered = computed(() => {
       const kw = applied.kw.toLowerCase();
       return (tags || []).filter(t => {
         if (kw && !t.tagNm.toLowerCase().includes(kw)) return false;
@@ -39,15 +39,15 @@ window.PdTagMng = {
         return true;
       });
     });
-    const total      = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums   = computed(() => { const c=pager.page,l=totalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfTotal      = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const gridRows   = reactive([]);
     let   _tempId    = -1;
 
-    const loadGrid = () => { gridRows.splice(0, gridRows.length, ...pageList.value.map(t => ({ ...t, _row_status: null }))); };
+    const loadGrid = () => { gridRows.splice(0, gridRows.length, ...cfPageList.value.map(t => ({ ...t, _row_status: null }))); };
     watch([() => pager.page, applied], loadGrid, { immediate: true });
 
     const addRow       = () => { gridRows.unshift({ tagId: 'T' + (_tempId--), siteId: 1, tagNm: '', tagDesc: '', useCount: 0, sortOrd: 0, useYn: 'Y', _row_status: 'N' }); };
@@ -93,12 +93,12 @@ window.PdTagMng = {
     };
     const onSearch = () => { Object.assign(applied, { kw: searchKw.value, use: searchUse.value }); pager.page = 1; };
     const onReset  = () => { searchKw.value = ''; searchUse.value = ''; Object.assign(applied, { kw: '', use: '' }); pager.page = 1; };
-    const setPage  = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    const ynBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
+    const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { tags, loading, error, searchKw, searchUse, pager, pageNums, totalPages, setPage, total, onSearch, onReset,
-             gridRows, addRow, onCellChange, deleteRow, saveAll, ynBadge , PAGE_SIZES , onSizeChange };
+    return { tags, loading, error, searchKw, searchUse, pager, cfPageNums, cfTotalPages, setPage, cfTotal, onSearch, onReset,
+             gridRows, addRow, onCellChange, deleteRow, saveAll, fnYnBadge , PAGE_SIZES , onSizeChange };
   },
   template: `
 <div>
@@ -118,7 +118,7 @@ window.PdTagMng = {
     <div class="card">
       <div class="toolbar">
         <span class="list-title">태그 목록</span>
-        <span class="list-count">총 {{ total }}건</span>
+        <span class="list-count">총 {{ cfTotal }}건</span>
         <div style="margin-left:auto;display:flex;gap:6px;">
           <button class="btn btn-primary btn-sm" @click="addRow">+ 행추가</button>
           <button class="btn btn-blue btn-sm" @click="saveAll">저장</button>
@@ -140,7 +140,7 @@ window.PdTagMng = {
             <td style="text-align:right"><input v-if="row._row_status" class="form-control" style="text-align:right" type="number" v-model.number="row.sortOrd" @input="onCellChange(idx)"><span v-else>{{ row.sortOrd }}</span></td>
             <td style="text-align:center">
               <select v-if="row._row_status" class="form-control" v-model="row.useYn" @change="onCellChange(idx)"><option value="Y">Y</option><option value="N">N</option></select>
-              <span v-else :class="['badge',ynBadge(row.useYn)]">{{ row.useYn }}</span>
+              <span v-else :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span>
             </td>
             <td style="text-align:center"><button class="btn btn-danger btn-xs" @click="deleteRow(idx)">삭제</button></td>
           </tr>
@@ -152,9 +152,9 @@ window.PdTagMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

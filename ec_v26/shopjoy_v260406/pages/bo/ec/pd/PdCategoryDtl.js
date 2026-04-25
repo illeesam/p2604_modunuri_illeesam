@@ -25,7 +25,7 @@ window.PdCategoryDtl = {
       }
     };
     onMounted(() => { fetchData(); });
-    const isNew = computed(() => props.editId === null || props.editId === undefined);
+    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
       categoryId: null, parentId: null, categoryNm: '', depth: 1, sortOrd: 1, status: '활성', description: '', imgUrl: '',
     });
@@ -36,14 +36,14 @@ window.PdCategoryDtl = {
     });
 
     onMounted(() => {
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const c = categories.window.safeArrayUtils.safeFind(value, x => x.categoryId === props.editId);
         if (c) Object.assign(form, { ...c });
       }
     });
 
     const parentOptions = computed(() => window.safeArrayUtils.safeFilter(categories, c => {
-      if (!isNew.value && c.categoryId === props.editId) return false;
+      if (!cfIsNew.value && c.categoryId === props.editId) return false;
       return true;
     }));
 
@@ -56,19 +56,19 @@ window.PdCategoryDtl = {
       }
     };
 
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
-        err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; });
+        err.inner.forEach(e => { errors[e.path] = e.message; });
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
       const parentId = form.parentId ? Number(form.parentId) : null;
-      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (isNew.value) {
+      if (cfIsNew.value) {
         categories.value.push({
           ...form, parentId, categoryId: nextId.value(categories.value, 'categoryId'),
           sortOrd: Number(form.sortOrd) || 1, depth: Number(form.depth) || 1,
@@ -78,9 +78,9 @@ window.PdCategoryDtl = {
         if (idx !== -1) Object.assign(categories.value[idx], { ...form, parentId, sortOrd: Number(form.sortOrd) || 1 });
       }
       try {
-        const res = await (isNew.value ? window.boApi.post(`/bo/ec/pd/category/${form.categoryId}`, { ...form }) : window.boApi.put(`/bo/ec/pd/category/${form.categoryId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pd/category/${form.categoryId}`, { ...form }) : window.boApi.put(`/bo/ec/pd/category/${form.categoryId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pdCategoryMng');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -89,11 +89,11 @@ window.PdCategoryDtl = {
       }
     };
 
-    return { categories, loading, error, isNew, form, errors, save, parentOptions, onParentChange };
+    return { categories, loading, error, cfIsNew, form, errors, handleSave, parentOptions, onParentChange };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '카테고리 등록' : '카테고리 수정' }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.categoryId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '카테고리 등록' : '카테고리 수정' }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.categoryId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
@@ -138,7 +138,7 @@ window.PdCategoryDtl = {
       </div>
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" @click="save">저장</button>
+      <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdCategoryMng')">취소</button>
     </div>
   </div>

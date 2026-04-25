@@ -12,7 +12,7 @@ window.MyCache = {
 
     const { inRange, onDateSearch } = window.myDateFilterHelper();
     const { computed: _c } = Vue;
-    const dateFilteredHistory = _c(() => cashHistory.value.filter(h => inRange(h.date)));
+    const cfDateFilteredHistory = _c(() => cashHistory.value.filter(h => inRange(h.date)));
 
     const addCash = () => {
       const amount = parseInt(String(chargeAmount.value).replace(/,/g, ''), 10);
@@ -38,7 +38,7 @@ window.MyCache = {
 
     return {
       myStore, cashBalance, cashHistory, chargeAmount,
-      cashPager, paginate, addCash, openOrderModal, dateFilteredHistory, onDateSearch,
+      cashPager, paginate, addCash, openOrderModal, cfDateFilteredHistory, onDateSearch,
     };
   },
   template: /* html */ `
@@ -67,10 +67,10 @@ window.MyCache = {
     </button>
   </div>
 
-  <PagerHeader :total="dateFilteredHistory.length" :pager="cashPager" />
-  <div v-if="!dateFilteredHistory.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">캐쉬 내역이 없습니다.</div>
+  <PagerHeader :total="cfDateFilteredHistory.length" :pager="cashPager" />
+  <div v-if="!cfDateFilteredHistory.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">캐쉬 내역이 없습니다.</div>
 
-  <div v-for="h in paginate(dateFilteredHistory, cashPager)" :key="h.cashId"
+  <div v-for="h in paginate(cfDateFilteredHistory, cashPager)" :key="h.cashId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;">
     <div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;"
       :style="h.type==='환불'?'background:#ffedd5;':h.type==='충전'?'background:#dcfce7;':'background:#fee2e2;'">

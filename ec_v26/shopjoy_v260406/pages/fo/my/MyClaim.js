@@ -18,19 +18,19 @@ window.MyClaim = {
       if (idx === -1) claimStatusFilter.value.push(step);
       else claimStatusFilter.value.splice(idx, 1);
     };
-    const dateFilteredClaims = _c(() => filteredClaims.value
+    const cfDateFilteredClaims = _c(() => filteredClaims.value
       .filter(c => inRange(c.requestDate))
       .filter(c => !claimStatusFilter.value.length || claimStatusFilter.value.includes(c.status))
     );
 
-    const authUser = computed(() => window.foAuth.state.user);
+    const cfAuthUser = computed(() => window.foAuth.state.user);
     const findProduct = name => props.config.products.find(p => p.prodNm === name) || null;
     const openProductModal = name => {
       const p = findProduct(name);
       if (p) { myStore.productModal.product = p; myStore.productModal.show = true; }
     };
     const openCustomerModal = order => {
-      myStore.customerModal.user = authUser.value;
+      myStore.customerModal.user = cfAuthUser.value;
       myStore.customerModal.order = order || null;
       myStore.customerModal.show = true;
     };
@@ -69,9 +69,9 @@ window.MyClaim = {
 
     return {
       myStore, claims, claimFilter, filteredClaims, orders,
-      claimPager, paginate, dateFilteredClaims, onDateSearch,
+      claimPager, paginate, cfDateFilteredClaims, onDateSearch,
       claimStatusFilter, toggleClaimStatus,
-      authUser, findProduct, openProductModal, openCustomerModal, openOrderModal,
+      cfAuthUser, findProduct, openProductModal, openCustomerModal, openOrderModal,
       openTracking2, cancelClaim,
     };
   },
@@ -136,10 +136,10 @@ window.MyClaim = {
     </div>
   </template>
 
-  <PagerHeader :total="dateFilteredClaims.length" :pager="claimPager" />
-  <div v-if="!dateFilteredClaims.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">해당 내역이 없습니다.</div>
+  <PagerHeader :total="cfDateFilteredClaims.length" :pager="claimPager" />
+  <div v-if="!cfDateFilteredClaims.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">해당 내역이 없습니다.</div>
 
-  <div v-for="c in paginate(dateFilteredClaims, claimPager)" :key="c.claimId"
+  <div v-for="c in paginate(cfDateFilteredClaims, claimPager)" :key="c.claimId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;">
 
     <!-- 카드 헤더 -->
@@ -151,9 +151,9 @@ window.MyClaim = {
           style="margin-left:8px;font-size:0.78rem;color:var(--blue);border:none;background:none;cursor:pointer;padding:0;font-weight:600;text-decoration:underline;text-underline-offset:2px;">
           주문: {{ c.orderId }}
         </button>
-        <button v-if="authUser" @click="openCustomerModal(orders.find(o=>o.orderId===c.orderId))"
+        <button v-if="cfAuthUser" @click="openCustomerModal(orders.find(o=>o.orderId===c.orderId))"
           style="margin-left:8px;font-size:0.78rem;font-weight:600;color:var(--text-secondary);border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;">
-          {{ authUser.name }}
+          {{ cfAuthUser.name }}
         </button>
         <div style="margin-top:4px;font-size:0.78rem;color:var(--text-muted);">
           신청일: {{ c.requestDate }}

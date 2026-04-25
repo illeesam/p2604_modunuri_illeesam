@@ -33,12 +33,12 @@ window.DispUiPage = {
       showBadges: true,        // 정보 배지 표시 여부
     };
 
-    const totalPanels = computed(() => {
+    const cfTotalPanels = computed(() => {
       const displays = dispDataset.displays || [];
       return params.areas.reduce((s, a) => s + displays.filter(p => p.area === a).length, 0);
     });
 
-    return { params, dispDataset, dispOpt, totalPanels };
+    return { params, dispDataset, dispOpt, cfTotalPanels };
   },
   template: /* html */`
 <div>
@@ -48,7 +48,7 @@ window.DispUiPage = {
       <span style="font-size:16px;font-weight:700;">🖥 DispUi미리보기</span>
       <span style="font-size:11px;opacity:.7;margin-left:12px;">전달 파라미터 기준 렌더링</span>
     </div>
-    <span style="font-size:13px;opacity:.8;">패널 {{ totalPanels }}개</span>
+    <span style="font-size:13px;opacity:.8;">패널 {{ cfTotalPanels }}개</span>
   </div>
 
   <!-- 본문: DispUi 컴포넌트 -->

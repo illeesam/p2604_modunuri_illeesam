@@ -45,7 +45,7 @@ window.PdQnaMng = {
     const getProdNm = id => { const p = (products||[]).find(p => p.productId === id); return p ? p.productName : id; };
     const getMemNm  = id => { const m = (members||[]).find(m => m.userId === id); return m ? m.name : id; };
 
-    const filtered = computed(() => {
+    const cfFiltered = computed(() => {
       const kw = applied.kw.toLowerCase();
       return (prodQnas).filter(q => {
         if (kw && !q.qnaTitle.toLowerCase().includes(kw)) return false;
@@ -53,10 +53,10 @@ window.PdQnaMng = {
         return true;
       }).sort((a, b) => b.regDate > a.regDate ? 1 : -1);
     });
-    const total      = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums   = computed(() => { const c=pager.page,l=totalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfTotal      = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const selectedRow = computed(() => (prodQnas||[]).find(q => q.qnaId === selectedId.value) || null);
 
@@ -84,12 +84,12 @@ window.PdQnaMng = {
     };
     const onSearch = () => { Object.assign(applied, { kw: searchKw.value, answ: searchAnsw.value }); pager.page = 1; };
     const onReset  = () => { searchKw.value = ''; searchAnsw.value = ''; Object.assign(applied, { kw: '', answ: '' }); pager.page = 1; };
-    const setPage  = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    const ynBadge  = v => v === 'Y' ? 'badge-green' : 'badge-red';
+    const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-red';
 
-    return { qnas, loading, error, searchKw, searchAnsw, pager, pageNums, totalPages, setPage, total, pageList, onSearch, onReset,
-             selectedId, selectedRow, answForm, openDetail, doAnswer, typeBadge, ynBadge, TYPE_LABELS, getProdNm, getMemNm , PAGE_SIZES , onSizeChange };
+    return { qnas, loading, error, searchKw, searchAnsw, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
+             selectedId, selectedRow, answForm, openDetail, doAnswer, typeBadge, fnYnBadge, TYPE_LABELS, getProdNm, getMemNm , PAGE_SIZES , onSizeChange };
   },
   template: `
 <div>
@@ -111,7 +111,7 @@ window.PdQnaMng = {
     <div class="card">
       <div class="toolbar">
         <span class="list-title">상품 Q&amp;A 목록</span>
-        <span class="list-count">총 {{ total }}건</span>
+        <span class="list-count">총 {{ cfTotal }}건</span>
       </div>
       <table class="bo-table">
         <thead><tr>
@@ -122,16 +122,16 @@ window.PdQnaMng = {
           <th style="width:140px">등록일</th>
         </tr></thead>
         <tbody>
-          <tr v-for="row in pageList" :key="row?.qnaId" :class="{active:selectedId===row.qnaId}" @click="openDetail(row)" style="cursor:pointer">
+          <tr v-for="row in cfPageList" :key="row?.qnaId" :class="{active:selectedId===row.qnaId}" @click="openDetail(row)" style="cursor:pointer">
             <td><span class="title-link">{{ row.scrtYn==='Y' ? '🔒 비밀글' : row.qnaTitle }}</span></td>
             <td style="font-size:12px;color:#666">{{ getProdNm(row.prodId) }}</td>
             <td style="font-size:12px">{{ getMemNm(row.memberId) }}</td>
             <td style="text-align:center"><span :class="['badge',typeBadge(row.qnaTypeCd)]">{{ TYPE_LABELS[row.qnaTypeCd]||row.qnaTypeCd }}</span></td>
             <td style="text-align:center"><span :class="['badge',row.scrtYn==='Y'?'badge-orange':'badge-gray']">{{ row.scrtYn }}</span></td>
-            <td style="text-align:center"><span :class="['badge',ynBadge(row.answYn)]">{{ row.answYn==='Y'?'답변완료':'미답변' }}</span></td>
+            <td style="text-align:center"><span :class="['badge',fnYnBadge(row.answYn)]">{{ row.answYn==='Y'?'답변완료':'미답변' }}</span></td>
             <td style="font-size:12px">{{ row.regDate }}</td>
           </tr>
-          <tr v-if="!pageList.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
+          <tr v-if="!cfPageList.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
       <div class="pagination">
@@ -139,9 +139,9 @@ window.PdQnaMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

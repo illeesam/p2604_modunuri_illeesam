@@ -52,15 +52,15 @@ window.XsSample02 = {
     /* ── 무한스크롤 (IntersectionObserver) ── */
     const visibleCount  = ref(10);
     const sentinelEl    = ref(null);   // 템플릿 ref: "더 불러오기" 요소
-    const visibleRows   = computed(() => gridRows.slice(0, visibleCount.value));
-    const hasMore       = computed(() => visibleCount.value < gridRows.length);
+    const cfVisibleRows   = computed(() => gridRows.slice(0, visibleCount.value));
+    const cfHasMore       = computed(() => visibleCount.value < gridRows.length);
     const loadMore      = () => { visibleCount.value = Math.min(visibleCount.value + 10, gridRows.length); };
 
     let _observer = null;
     const setupObserver = () => {
       if (_observer) _observer.disconnect();
       _observer = new IntersectionObserver(entries => {
-        if (entries[0].isIntersecting && hasMore.value) loadMore();
+        if (entries[0].isIntersecting && cfHasMore.value) loadMore();
       }, { threshold: 0.1 });
       if (sentinelEl.value) _observer.observe(sentinelEl.value);
     };
@@ -173,17 +173,17 @@ window.XsSample02 = {
     const onDragEnd = () => { if (dragMoved.value) showToast('정렬이 변경되었습니다.'); dragSrc.value = null; dragMoved.value = false; };
 
     const checkAll = ref(false);
-    const toggleCheckAll = () => { visibleRows.value.forEach(r => { r._row_check = checkAll.value; }); };
+    const toggleCheckAll = () => { cfVisibleRows.value.forEach(r => { r._row_check = checkAll.value; }); };
 
     const statusBadge = s => ({ N: 'background:#f0f0f0;color:#666;', I: 'background:#dbeafe;color:#1e40af;', U: 'background:#fef3c7;color:#92400e;', D: 'background:#fee2e2;color:#991b1b;' }[s] || '');
     const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
 
-    const total        = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
+    const cfTotal        = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
     const CATEGORY_OPTS = ['상의', '하의', '아우터', '원피스', '신발', '가방'];
 
     return {
       toast, searchKw, searchCategory, searchStatus, CATEGORY_OPTS, onSearch, onReset,
-      gridRows, visibleRows, total, visibleCount, hasMore, loadMore, sentinelEl,
+      gridRows, cfVisibleRows, cfTotal, visibleCount, cfHasMore, loadMore, sentinelEl,
       focusedIdx, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, doSave,
       dragSrc, onDragStart, onDragOver, onDragEnd,
@@ -228,7 +228,7 @@ window.XsSample02 = {
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #f0f0f0;">
       <span style="font-size:12px;font-weight:700;">
         상품 목록
-        <span style="color:#e8587a;margin-left:4px;">{{ total }}건</span>
+        <span style="color:#e8587a;margin-left:4px;">{{ cfTotal }}건</span>
         <span style="font-size:11px;color:#aaa;font-weight:400;margin-left:6px;">{{ visibleCount }}개 표시 중</span>
       </span>
       <div style="display:flex;gap:5px;">
@@ -262,7 +262,7 @@ window.XsSample02 = {
           <tr v-if="gridRows.length===0">
             <td colspan="12" style="text-align:center;padding:40px;color:#ccc;font-size:13px;">데이터가 없습니다.</td>
           </tr>
-          <tr v-for="(row, idx) in visibleRows" :key="row.productId"
+          <tr v-for="(row, idx) in cfVisibleRows" :key="row.productId"
             draggable="true"
             @click="setFocused(idx)"
             @dragstart="onDragStart(idx)"
@@ -318,7 +318,7 @@ window.XsSample02 = {
     </div>
 
     <!-- 로딩 표시 (IntersectionObserver sentinel) -->
-    <div v-if="hasMore" ref="sentinelEl" style="padding:14px;text-align:center;font-size:12px;color:#aaa;border-top:1px solid #f5f5f5;">
+    <div v-if="cfHasMore" ref="sentinelEl" style="padding:14px;text-align:center;font-size:12px;color:#aaa;border-top:1px solid #f5f5f5;">
       <span style="display:inline-flex;align-items:center;gap:6px;">
         <span style="display:inline-block;width:14px;height:14px;border:2px solid #e8587a;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;"></span>
         스크롤하여 더 불러오기 ({{ visibleCount }} / {{ gridRows.length }}건)

@@ -16,11 +16,11 @@ window.XsSample11 = {
     /* 카테고리 선택 */
     const showCatModal   = ref(false);
     const selectedCatIds = reactive(new Set());
-    const allCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
-    const selectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = allCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
-    const catBtnLabel = computed(() => {
+    const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
+    const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
+    const cfCatBtnLabel = computed(() => {
       if (selectedCatIds.size === 0) return '카테고리';
-      return selectedCatIds.size <= 2 ? selectedCatNames.value.join(', ') : `${selectedCatIds.size}개`;
+      return selectedCatIds.size <= 2 ? cfSelectedCatNames.value.join(', ') : `${selectedCatIds.size}개`;
     });
     const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
 
@@ -39,7 +39,7 @@ window.XsSample11 = {
     const AUTH_GRADE_OPTS = ['일반', '우수', 'VIP'];
 
     /* 현재 사용자가 접근 가능한 조건 목록 */
-    const accessibleConds = computed(() => {
+    const cfAccessibleConds = computed(() => {
       const c = ['항상 표시'];
       if (!isLoggedIn) { c.push('비로그인 전용'); return c; }
       c.push('로그인 필요');
@@ -68,21 +68,21 @@ window.XsSample11 = {
     const wIcon  = (t) => WIDGET_ICONS[t] || '▪';
 
     /* 화면영역 코드 목록 */
-    const allAreas = computed(() =>
+    const cfAllAreas = computed(() =>
       window.getBoCodeStore?.()?.codes||[]
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
 
-    const areaList = computed(() => {
-      if (selectedAreas.size === 0) return allAreas.value;
-      return allAreas.value.filter(c => selectedAreas.has(c.codeValue));
+    const cfAreaList = computed(() => {
+      if (selectedAreas.size === 0) return cfAllAreas.value;
+      return cfAllAreas.value.filter(c => selectedAreas.has(c.codeValue));
     });
 
     const toggleArea     = (code) => { if (selectedAreas.has(code)) selectedAreas.delete(code); else selectedAreas.add(code); };
-    const selectAllAreas = () => { allAreas.value.forEach(a => selectedAreas.add(a.codeValue)); };
+    const selectAllAreas = () => { cfAllAreas.value.forEach(a => selectedAreas.add(a.codeValue)); };
     const clearAllAreas  = () => { selectedAreas.clear(); };
-    const areaBtnLabel   = computed(() => selectedAreas.size === 0 ? '전체 영역' : `${selectedAreas.size}개 선택`);
+    const cfAreaBtnLabel   = computed(() => selectedAreas.size === 0 ? '전체 영역' : `${selectedAreas.size}개 선택`);
 
     const resetDate = () => {
       previewDate.value = today;
@@ -106,7 +106,7 @@ window.XsSample11 = {
       if (searchAuthRequired.value === 'N' &&  p.authRequired) return false;
       if (searchAuthGrade.value    && p.authGrade !== searchAuthGrade.value) return false;
       if (selectedCatIds.size > 0) {
-        const names = selectedCatNames.value;
+        const names = cfSelectedCatNames.value;
         const hit = names.some(nm => p.name.includes(nm)) ||
                     (p.rows || []).some(w => names.some(nm => (w.widgetNm || '').includes(nm)));
         if (!hit) return false;
@@ -119,8 +119,8 @@ window.XsSample11 = {
         .filter(p => p.area === areaCode && panelFilter(p))
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
-    const totalPanels = computed(() =>
-      areaList.value.reduce((sum, a) => sum + panelsForArea(a.codeValue).length, 0)
+    const cfTotalPanels = computed(() =>
+      cfAreaList.value.reduce((sum, a) => sum + panelsForArea(a.codeValue).length, 0)
     );
 
     return {

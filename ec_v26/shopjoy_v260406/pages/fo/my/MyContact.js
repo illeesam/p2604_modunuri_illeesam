@@ -12,7 +12,7 @@ window.MyContact = {
 
     const { inRange, onDateSearch } = window.myDateFilterHelper();
     const { computed: _c } = Vue;
-    const dateFilteredInquiries = _c(() => inquiries.value.filter(q => inRange(q.date)));
+    const cfDateFilteredInquiries = _c(() => inquiries.value.filter(q => inRange(q.date)));
 
     const cancelInquiry = async id => {
       const ok = await props.showConfirm('문의 취소', '이 문의를 취소하시겠습니까?', 'warning');
@@ -26,17 +26,17 @@ window.MyContact = {
 
     return {
       myStore, inquiries, expandedInquiry,
-      inquiryPager, paginate, cancelInquiry, dateFilteredInquiries, onDateSearch,
+      inquiryPager, paginate, cancelInquiry, cfDateFilteredInquiries, onDateSearch,
     };
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myContact">
 
   <MyDateFilter @search="onDateSearch" />
-  <PagerHeader :total="dateFilteredInquiries.length" :pager="inquiryPager" />
-  <div v-if="!dateFilteredInquiries.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">문의 내역이 없습니다.</div>
+  <PagerHeader :total="cfDateFilteredInquiries.length" :pager="inquiryPager" />
+  <div v-if="!cfDateFilteredInquiries.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">문의 내역이 없습니다.</div>
 
-  <div v-for="q in paginate(dateFilteredInquiries, inquiryPager)" :key="q.inquiryId"
+  <div v-for="q in paginate(cfDateFilteredInquiries, inquiryPager)" :key="q.inquiryId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;">
     <div style="display:flex;align-items:flex-start;gap:12px;">
       <div style="flex:1;cursor:pointer;" @click="expandedInquiry = expandedInquiry===q.inquiryId ? null : q.inquiryId">

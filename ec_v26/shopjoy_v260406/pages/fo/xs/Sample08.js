@@ -32,11 +32,11 @@ window.XsSample08 = {
 
     const pager      = reactive({ page: 1, size: 20 });
     const PAGE_SIZES = [10, 20, 50];
-    const total      = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
-    const pagedRows  = computed(() => gridRows.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const totalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
-    const pageNums   = computed(() => { const c = pager.page, l = totalPages.value, s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setPage    = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
+    const cfPagedRows  = computed(() => gridRows.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
+    const cfPageNums   = computed(() => { const c = pager.page, l = cfTotalPages.value, s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
+    const setPage    = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const getRealIdx = i => (pager.page - 1) * pager.size + i;
 
     const loadGrid = () => {
@@ -104,7 +104,7 @@ window.XsSample08 = {
 
     return {
       toast, searchKw, searchUseYn, onSearch, onReset,
-      gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, getRealIdx,
       focusedIdx, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, doSave,
       dragSrc, onDragStart, onDragOver, onDragEnd,
@@ -131,7 +131,7 @@ window.XsSample08 = {
 
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #f0f0f0;">
-      <span style="font-size:12px;font-weight:700;">카테고리 목록 <span style="color:#e8587a;margin-left:4px;">{{ total }}건</span></span>
+      <span style="font-size:12px;font-weight:700;">카테고리 목록 <span style="color:#e8587a;margin-left:4px;">{{ cfTotal }}건</span></span>
       <div style="display:flex;gap:5px;">
         <button @click="addRow"        style="font-size:11px;padding:4px 10px;border:1px solid #34a853;border-radius:5px;background:#e6f4ea;color:#1e7e34;cursor:pointer;font-weight:600;">+ 행추가</button>
         <button @click="deleteRows"    style="font-size:11px;padding:4px 10px;border:1px solid #fca5a5;border-radius:5px;background:#fee2e2;color:#991b1b;cursor:pointer;">행삭제</button>
@@ -158,7 +158,7 @@ window.XsSample08 = {
         </thead>
         <tbody>
           <tr v-if="gridRows.length===0"><td colspan="12" style="text-align:center;padding:40px;color:#ccc;font-size:13px;">데이터가 없습니다.</td></tr>
-          <tr v-for="(row,idx) in pagedRows" :key="row.categoryId"
+          <tr v-for="(row,idx) in cfPagedRows" :key="row.categoryId"
             draggable="true" @click="setFocused(getRealIdx(idx))"
             @dragstart="onDragStart(getRealIdx(idx))" @dragover="onDragOver($event,getRealIdx(idx))" @dragend="onDragEnd"
             style="cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s;"
@@ -196,13 +196,13 @@ window.XsSample08 = {
       </table>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1px solid #f0f0f0;">
-      <div style="font-size:11px;color:#aaa;">총 {{ total }}건</div>
+      <div style="font-size:11px;color:#aaa;">총 {{ cfTotal }}건</div>
       <div style="display:flex;gap:3px;">
         <button :disabled="pager.page===1" @click="setPage(1)" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">‹</button>
-        <button v-for="n in pageNums" :key="n" @click="setPage(n)" style="font-size:11px;padding:3px 8px;border:1px solid #ddd;border-radius:4px;cursor:pointer;" :style="pager.page===n?'background:#e8587a;color:#fff;border-color:#e8587a;':'background:#fff;'">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">»</button>
+        <button v-for="n in cfPageNums" :key="n" @click="setPage(n)" style="font-size:11px;padding:3px 8px;border:1px solid #ddd;border-radius:4px;cursor:pointer;" :style="pager.page===n?'background:#e8587a;color:#fff;border-color:#e8587a;':'background:#fff;'">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">»</button>
       </div>
       <select v-model.number="pager.size" @change="()=>{pager.page=1;}" style="font-size:11px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;">
         <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>

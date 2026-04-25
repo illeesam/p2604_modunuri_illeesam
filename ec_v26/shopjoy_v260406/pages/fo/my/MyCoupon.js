@@ -17,14 +17,14 @@ window.MyCoupon = {
     const { inRange, onDateSearch } = window.myDateFilterHelper();
 
     /* ── 탭 + 날짜 필터 적용 목록 ── */
-    const dateFilteredCoupons = computed(() =>
+    const cfDateFilteredCoupons = computed(() =>
       coupons.value
         .filter(c => activeTab.value === 'unused' ? !c.used : c.used)
         .filter(c => inRange(c.regDate))
     );
 
-    const unusedCount = computed(() => coupons.value.filter(c => !c.used).length);
-    const usedCount   = computed(() => coupons.value.filter(c => c.used).length);
+    const cfUnusedCount = computed(() => coupons.value.filter(c => !c.used).length);
+    const cfUsedCount   = computed(() => coupons.value.filter(c => c.used).length);
 
     const addCoupon = () => {
       const code = couponCode.value.trim().toUpperCase();
@@ -49,8 +49,8 @@ window.MyCoupon = {
 
     return {
       myStore, coupons, couponCode, couponPager, paginate,
-      addCoupon, dateFilteredCoupons, onDateSearch,
-      activeTab, unusedCount, usedCount, onTabChange,
+      addCoupon, cfDateFilteredCoupons, onDateSearch,
+      activeTab, cfUnusedCount, cfUsedCount, onTabChange,
     };
   },
   template: /* html */ `
@@ -74,7 +74,7 @@ window.MyCoupon = {
         color: activeTab==='unused' ? 'var(--text-primary)' : 'var(--text-muted)',
         borderBottom: activeTab==='unused' ? '2px solid var(--text-primary)' : '2px solid transparent',
         marginBottom: '-2px',
-      }">미사용 <span style="font-size:0.8rem;margin-left:2px;">({{ unusedCount }})</span></button>
+      }">미사용 <span style="font-size:0.8rem;margin-left:2px;">({{ cfUnusedCount }})</span></button>
     <button @click="onTabChange('used')"
       :style="{
         padding:'10px 24px', background:'none', border:'none', cursor:'pointer',
@@ -82,15 +82,15 @@ window.MyCoupon = {
         color: activeTab==='used' ? 'var(--text-primary)' : 'var(--text-muted)',
         borderBottom: activeTab==='used' ? '2px solid var(--text-primary)' : '2px solid transparent',
         marginBottom: '-2px',
-      }">사용 <span style="font-size:0.8rem;margin-left:2px;">({{ usedCount }})</span></button>
+      }">사용 <span style="font-size:0.8rem;margin-left:2px;">({{ cfUsedCount }})</span></button>
   </div>
 
-  <PagerHeader :total="dateFilteredCoupons.length" :pager="couponPager" />
-  <div v-if="!dateFilteredCoupons.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
+  <PagerHeader :total="cfDateFilteredCoupons.length" :pager="couponPager" />
+  <div v-if="!cfDateFilteredCoupons.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
     {{ activeTab==='unused' ? '사용 가능한 쿠폰이 없습니다.' : '사용된 쿠폰이 없습니다.' }}
   </div>
 
-  <div v-for="c in paginate(dateFilteredCoupons, couponPager)" :key="c.couponId"
+  <div v-for="c in paginate(cfDateFilteredCoupons, couponPager)" :key="c.couponId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:14px;">
 
     <!-- 쿠폰 아이콘 -->
@@ -171,7 +171,7 @@ window.MyCoupon = {
     </div>
   </div>
 
-  <Pagination :total="dateFilteredCoupons.length" :pager="couponPager" />
+  <Pagination :total="cfDateFilteredCoupons.length" :pager="couponPager" />
 
 </fo-my-layout>
   `,

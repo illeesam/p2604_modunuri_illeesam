@@ -34,7 +34,7 @@ window.PdProdDtl = {
       }
     };
     onMounted(() => { loadData(); });
-    const isNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.editId);
     const topTab = ref(window._pdProdDtlState.tab || 'info');
     watch(topTab, v => { window._pdProdDtlState.tab = v; });
     const viewMode2 = ref(window._pdProdDtlState.viewMode || 'tab');
@@ -384,11 +384,11 @@ window.PdProdDtl = {
     const selectMdUser = (u) => { form.mdUserId = u.boUserId; mdModalOpen.value = false; };
 
     const initForm = async () => {
-      if (isNew.value) {
+      if (cfIsNew.value) {
         // 신규 등록: 기본값 본인 (목업에서는 첫 번째 활성 사용자)
         form.mdUserId = mdUserList.window.safeArrayUtils.safeGet(value, 0)?.boUserId || '';
       }
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const p = getProduct.value(props.editId);
         if (p) {
           form.prodId         = p.productId || p.prodId;
@@ -488,16 +488,16 @@ window.PdProdDtl = {
     });
 
     // ── 저장
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try { await schema.validate(form, { abortEarly: false }); }
-      catch (err) { err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
+      catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const imgData = images.map(({ id, ...rest }) => rest);
       const mainImg = window.safeArrayUtils.safeFind(images, img => img.isMain);
-      const ok = await props.showConfirm(isNew.value ? '등록' : '저장', isNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       let savedProdId;
-      if (isNew.value) {
+      if (cfIsNew.value) {
         savedProdId = nextId.value(products.value, 'productId');
         products.value.push({ ...form, productId: savedProdId, price: form.listPrice, stock: useOpt.value ? totalStock.value : form.prodStock, regDate: new Date().toISOString().slice(0, 10), images: imgData, mainImage: mainImg?.previewUrl || '' });
       } else {
@@ -512,9 +512,9 @@ window.PdProdDtl = {
         categoryProds.value.push({ categoryProdId: 'CP_'+savedProdId+'_'+i, siteId: '1', categoryId: cat.categoryId, prodId: savedProdId, sortOrd: i + 1 });
       });
       try {
-        const res = await (isNew.value ? window.boApi.post(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }) : window.boApi.put(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }) : window.boApi.put(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pdProdMng');
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -523,7 +523,7 @@ window.PdProdDtl = {
       }
     };
 
-    return { products, loading, error, isNew, topTab, viewMode2, showTab, form, errors, save,
+    return { products, loading, error, cfIsNew, topTab, viewMode2, showTab, form, errors, handleSave,
       mdModalOpen, mdSearch, mdUserList, mdUserListFiltered, mdSelectedNm, openMdModal, selectMdUser,
       useOpt, clearOpt, optGroups, skus, totalStock, generateSkus,
       skuFilter1, skuFilter2, skuFilterStock, skuFilter1Options, skuFilter2Options, skusFiltered,
@@ -547,7 +547,7 @@ window.PdProdDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '상품 등록' : '상품 수정' }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.prodId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '상품 등록' : '상품 수정' }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.prodId }}</span></div>
 
   <!-- 탭바 -->
   <div class="tab-bar-row">
@@ -799,7 +799,7 @@ window.PdProdDtl = {
     </div>
 
     <div class="form-actions">
-      <button class="btn btn-primary" @click="save">저장</button>
+      <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
   </div>
@@ -984,7 +984,7 @@ window.PdProdDtl = {
     </div>
 
     <div class="form-actions" style="margin-top:16px;">
-      <button class="btn btn-primary" @click="save">저장</button>
+      <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
   </div>
@@ -1108,7 +1108,7 @@ window.PdProdDtl = {
     </div>
 
     <div class="form-actions" style="padding:12px 16px;border-top:1px solid #f0f0f0;">
-      <button class="btn btn-primary" @click="save">저장</button>
+      <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
   </div>
@@ -1179,7 +1179,7 @@ window.PdProdDtl = {
     </div>
 
     <div class="form-actions" style="margin-top:20px;">
-      <button class="btn btn-primary" @click="save">저장</button>
+      <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
   </div>
@@ -1253,7 +1253,7 @@ window.PdProdDtl = {
       </div>
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" @click="save">저장</button>
+      <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
   </div>
@@ -1363,7 +1363,7 @@ window.PdProdDtl = {
     </div>
 
     <div class="form-actions">
-      <button class="btn btn-primary" @click="save">저장</button>
+      <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
 
@@ -1604,7 +1604,7 @@ window.PdProdDtl = {
     </div>
 
     <div class="form-actions">
-      <button class="btn btn-primary" @click="save">저장</button>
+      <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
 
@@ -1671,7 +1671,7 @@ window.PdProdDtl = {
   </div><!-- /dtl-tab-grid -->
 
   <!-- 이력 -->
-  <div v-if="!isNew" style="margin-top:20px;">
+  <div v-if="!cfIsNew" style="margin-top:20px;">
     <pd-prod-hist :prod-id="editId" :navigate="navigate" :show-ref-modal="showRefModal" />
   </div>
 </div>

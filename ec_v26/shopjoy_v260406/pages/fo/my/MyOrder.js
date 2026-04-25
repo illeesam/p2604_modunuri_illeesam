@@ -61,27 +61,27 @@ window.MyOrder = {
       reason: '', reasonDetail: '', exchangeSize: '', exchangeColor: '',
       selectedCouponId: null, exchangeItemIdx: 0,
     });
-    const claimShippingFee = computed(() =>
+    const cfClaimShippingFee = computed(() =>
       CLAIM_FREE_REASONS.includes(claimModal.reason) ? 0 : CLAIM_SHIPPING_FEE
     );
-    const applicableCoupons = computed(() =>
+    const cfApplicableCoupons = computed(() =>
       coupons.value.filter(c => !c.used && (
         c.discountType === 'shipping' ||
-        (c.discountType === 'amount' && c.discountValue >= claimShippingFee.value)
+        (c.discountType === 'amount' && c.discountValue >= cfClaimShippingFee.value)
       ))
     );
-    const claimSelectedCoupon = computed(() =>
+    const cfClaimSelectedCoupon = computed(() =>
       coupons.value.find(c => c.couponId === claimModal.selectedCouponId) || null
     );
-    const claimFinalFee = computed(() => {
-      const fee = claimShippingFee.value;
-      if (!fee || !claimSelectedCoupon.value) return fee;
-      const c = claimSelectedCoupon.value;
+    const cfClaimFinalFee = computed(() => {
+      const fee = cfClaimShippingFee.value;
+      if (!fee || !cfClaimSelectedCoupon.value) return fee;
+      const c = cfClaimSelectedCoupon.value;
       if (c.discountType === 'shipping') return 0;
       if (c.discountType === 'amount') return Math.max(0, fee - c.discountValue);
       return fee;
     });
-    const claimModalProduct = computed(() => {
+    const cfClaimModalProduct = computed(() => {
       if (!claimModal.order) return null;
       const name = claimModal.order.items[claimModal.exchangeItemIdx]?.prodNm;
       return props.config.products.find(p => p.prodNm === name) || null;
@@ -101,7 +101,7 @@ window.MyOrder = {
           props.showToast('교환할 사이즈 또는 색상을 선택해주세요.', 'error'); return;
         }
       }
-      if (claimSelectedCoupon.value) claimSelectedCoupon.value.used = true;
+      if (cfClaimSelectedCoupon.value) cfClaimSelectedCoupon.value.used = true;
       myStore.setOrderStatus(claimModal.orderId, claimModal.type === 'exchange' ? '교환요청' : '반품요청');
       const label = claimModal.type === 'exchange' ? '교환' : '반품';
       claimModal.show = false;
@@ -109,14 +109,14 @@ window.MyOrder = {
     };
 
     /* ── 공유 모달 ── */
-    const authUser = computed(() => window.foAuth.state.user);
+    const cfAuthUser = computed(() => window.foAuth.state.user);
     const findProduct = name => props.config.products.find(p => p.prodNm === name) || null;
     const openProductModal = name => {
       const p = findProduct(name);
       if (p) { myStore.productModal.product = p; myStore.productModal.show = true; }
     };
     const openCustomerModal = order => {
-      myStore.customerModal.user = authUser.value;
+      myStore.customerModal.user = cfAuthUser.value;
       myStore.customerModal.order = order || null;
       myStore.customerModal.show = true;
     };
@@ -160,7 +160,7 @@ window.MyOrder = {
       if (idx === -1) flowStatusFilter.push(status);
       else flowStatusFilter.splice(idx, 1);
     };
-    const dateFilteredOrders = _c(() => orders.value
+    const cfDateFilteredOrders = _c(() => orders.value
       .filter(o => inRange(o.orderDate))
       .filter(o => !flowStatusFilter.length || flowStatusFilter.includes(o.status))
     );
@@ -172,16 +172,16 @@ window.MyOrder = {
     });
 
     return {
-      myStore, orders, claimsByOrderId, dateFilteredOrders, onDateSearch,
+      myStore, orders, claimsByOrderId, cfDateFilteredOrders, onDateSearch,
       orderPager, paginate,
       flowStatusFilter, toggleFlowStatus,
       flowHelpOpen, helpTab,
       openTracking, openTracking2, showOrderPayBreakdown,
       cancelOrder, confirmPurchase,
       EXCHANGE_REASONS, RETURN_REASONS,
-      claimModal, claimShippingFee, applicableCoupons, claimSelectedCoupon, claimFinalFee, claimModalProduct,
+      claimModal, cfClaimShippingFee, cfApplicableCoupons, cfClaimSelectedCoupon, cfClaimFinalFee, cfClaimModalProduct,
       openClaimModal, submitClaimModal,
-      authUser, findProduct, openProductModal, openCustomerModal,
+      cfAuthUser, findProduct, openProductModal, openCustomerModal,
       reviews, reviewModal, openReviewModal, submitReview, getReview, onReviewFileChange, removeReviewFile,
     };
   },
@@ -224,10 +224,10 @@ window.MyOrder = {
     </div>
   </div>
 
-  <PagerHeader :total="dateFilteredOrders.length" :pager="orderPager" />
-  <div v-if="!dateFilteredOrders.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">주문 내역이 없습니다.</div>
+  <PagerHeader :total="cfDateFilteredOrders.length" :pager="orderPager" />
+  <div v-if="!cfDateFilteredOrders.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">주문 내역이 없습니다.</div>
 
-  <div v-for="o in paginate(dateFilteredOrders, orderPager)" :key="o.orderId"
+  <div v-for="o in paginate(cfDateFilteredOrders, orderPager)" :key="o.orderId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;">
 
     <!-- 주문 헤더 -->
@@ -236,9 +236,9 @@ window.MyOrder = {
       <div>
         <span style="font-weight:700;font-size:0.88rem;color:var(--text-primary);">{{ o.orderId }}</span>
         <span style="margin-left:10px;font-size:0.78rem;color:var(--text-muted);">주문일: {{ o.orderDate }}</span>
-        <button v-if="authUser" @click="openCustomerModal(o)"
+        <button v-if="cfAuthUser" @click="openCustomerModal(o)"
           style="margin-left:8px;font-size:0.78rem;font-weight:600;color:var(--text-secondary);border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;">
-          <span style="font-weight:400;color:var(--text-muted);text-decoration:none;">주문자: </span>{{ authUser.name }}
+          <span style="font-weight:400;color:var(--text-muted);text-decoration:none;">주문자: </span>{{ cfAuthUser.name }}
         </button>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
@@ -652,18 +652,18 @@ window.MyOrder = {
         </div>
         <div v-if="claimModal.type==='exchange'" style="display:flex;flex-direction:column;gap:10px;">
           <div style="font-size:0.8rem;font-weight:700;color:var(--text-primary);">교환 옵션 <span style="color:#ef4444;">*</span></div>
-          <div v-if="claimModalProduct && claimModalProduct.opt2s">
+          <div v-if="cfClaimModalProduct && cfClaimModalProduct.opt2s">
             <div style="font-size:0.74rem;color:var(--text-muted);margin-bottom:5px;">사이즈</div>
             <div style="display:flex;flex-wrap:wrap;gap:5px;">
-              <button v-for="sz in claimModalProduct.opt2s" :key="sz" @click="claimModal.exchangeSize = claimModal.exchangeSize===sz ? '' : sz"
+              <button v-for="sz in cfClaimModalProduct.opt2s" :key="sz" @click="claimModal.exchangeSize = claimModal.exchangeSize===sz ? '' : sz"
                 style="padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.78rem;font-weight:600;"
                 :style="claimModal.exchangeSize===sz ? 'background:var(--blue);color:#fff;border:1.5px solid var(--blue);' : 'background:var(--bg-base);color:var(--text-secondary);border:1.5px solid var(--border);'">{{ sz }}</button>
             </div>
           </div>
-          <div v-if="claimModalProduct && claimModalProduct.opt1s">
+          <div v-if="cfClaimModalProduct && cfClaimModalProduct.opt1s">
             <div style="font-size:0.74rem;color:var(--text-muted);margin-bottom:5px;">색상</div>
             <div style="display:flex;flex-wrap:wrap;gap:6px;">
-              <button v-for="col in claimModalProduct.opt1s" :key="col.name" @click="claimModal.exchangeColor = claimModal.exchangeColor===col.name ? '' : col.name"
+              <button v-for="col in cfClaimModalProduct.opt1s" :key="col.name" @click="claimModal.exchangeColor = claimModal.exchangeColor===col.name ? '' : col.name"
                 style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:0.78rem;font-weight:600;"
                 :style="claimModal.exchangeColor===col.name ? 'background:var(--blue);color:#fff;border:1.5px solid var(--blue);' : 'background:var(--bg-base);color:var(--text-secondary);border:1.5px solid var(--border);'">
                 <span style="width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,0.15);" :style="'background:'+col.hex"></span>{{ col.name }}
@@ -675,23 +675,23 @@ window.MyOrder = {
           <div style="font-size:0.8rem;font-weight:700;color:var(--text-primary);margin-bottom:8px;">배송비 안내</div>
           <div v-if="!claimModal.reason" style="font-size:0.78rem;color:var(--text-muted);padding:10px;background:var(--bg-base);border-radius:8px;">사유를 선택하면 배송비가 안내됩니다.</div>
           <template v-else>
-            <div v-if="claimShippingFee===0" style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#dcfce7;border-radius:8px;margin-bottom:8px;">
+            <div v-if="cfClaimShippingFee===0" style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#dcfce7;border-radius:8px;margin-bottom:8px;">
               <span>✅</span><div><div style="font-size:0.82rem;font-weight:800;color:#16a34a;">배송비 무료</div><div style="font-size:0.73rem;color:#15803d;margin-top:1px;">상품 불량·오배송의 경우 왕복 배송비를 당사가 부담합니다.</div></div>
             </div>
             <div v-else style="padding:10px 14px;background:#fff7ed;border-radius:8px;margin-bottom:8px;">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
                 <span style="font-size:0.82rem;font-weight:700;color:#ea580c;">왕복 배송비 (고객 부담)</span>
-                <span style="font-size:0.9rem;font-weight:800;color:#ea580c;">{{ claimShippingFee.toLocaleString() }}원</span>
+                <span style="font-size:0.9rem;font-weight:800;color:#ea580c;">{{ cfClaimShippingFee.toLocaleString() }}원</span>
               </div>
             </div>
-            <div v-if="claimShippingFee>0">
+            <div v-if="cfClaimShippingFee>0">
               <div style="font-size:0.78rem;font-weight:700;color:var(--text-primary);margin-bottom:6px;">🎟 배송비 쿠폰 적용</div>
-              <div v-if="!applicableCoupons.length" style="font-size:0.75rem;color:var(--text-muted);padding:8px 12px;background:var(--bg-base);border-radius:6px;">사용 가능한 쿠폰이 없습니다.</div>
+              <div v-if="!cfApplicableCoupons.length" style="font-size:0.75rem;color:var(--text-muted);padding:8px 12px;background:var(--bg-base);border-radius:6px;">사용 가능한 쿠폰이 없습니다.</div>
               <div v-else style="display:flex;flex-direction:column;gap:5px;">
                 <label style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;border:1.5px solid var(--border);background:var(--bg-base);">
                   <input type="radio" :value="null" v-model="claimModal.selectedCouponId" style="accent-color:var(--blue);"><span style="font-size:0.78rem;color:var(--text-secondary);">쿠폰 사용 안함</span>
                 </label>
-                <label v-for="cp in applicableCoupons" :key="cp.couponId"
+                <label v-for="cp in cfApplicableCoupons" :key="cp.couponId"
                   style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;border:1.5px solid var(--border);"
                   :style="claimModal.selectedCouponId===cp.couponId ? 'border-color:var(--blue);background:var(--blue-dim);' : 'background:var(--bg-base);'">
                   <input type="radio" :value="cp.couponId" v-model="claimModal.selectedCouponId" style="accent-color:var(--blue);">
@@ -701,9 +701,9 @@ window.MyOrder = {
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:8px 12px;background:var(--bg-base);border-radius:8px;border:1px solid var(--border);">
                 <span style="font-size:0.8rem;color:var(--text-secondary);">최종 배송비</span>
-                <span style="font-size:0.92rem;font-weight:800;" :style="claimFinalFee===0 ? 'color:#16a34a;' : 'color:#ea580c;'">{{ claimFinalFee===0 ? '무료' : claimFinalFee.toLocaleString()+'원' }}</span>
+                <span style="font-size:0.92rem;font-weight:800;" :style="cfClaimFinalFee===0 ? 'color:#16a34a;' : 'color:#ea580c;'">{{ cfClaimFinalFee===0 ? '무료' : cfClaimFinalFee.toLocaleString()+'원' }}</span>
               </div>
-              <div v-if="claimFinalFee>0" style="margin-top:10px;padding:10px 14px;background:#eff6ff;border-radius:8px;border:1px solid #bfdbfe;">
+              <div v-if="cfClaimFinalFee>0" style="margin-top:10px;padding:10px 14px;background:#eff6ff;border-radius:8px;border:1px solid #bfdbfe;">
                 <div style="font-size:0.76rem;font-weight:700;color:#1d4ed8;margin-bottom:6px;">🏦 배송비 입금 안내</div>
                 <div style="font-size:0.8rem;color:#1e40af;font-weight:700;margin-bottom:2px;">{{ config.bank.name }} {{ config.bank.account }}</div>
                 <div style="font-size:0.75rem;color:#3730a3;">예금주: {{ config.bank.holder }}</div>

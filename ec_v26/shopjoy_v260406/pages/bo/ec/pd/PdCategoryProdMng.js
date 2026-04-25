@@ -99,7 +99,7 @@ window.PdCategoryProdMng = {
     };
 
     /* 탭별 수 (선택 카테고리 + 하위 합산) */
-    const typeCountMap = computed(() => {
+    const cfTypeCountMap = computed(() => {
       const map = {};
       if (!selectedCatId.value) return map;
       const ids = allDescendantIds(selectedCatId.value);
@@ -113,7 +113,7 @@ window.PdCategoryProdMng = {
     });
 
     /* 트리 플랫 */
-    const catTreeFlat = computed(() => {
+    const cfCatTreeFlat = computed(() => {
       const _ = expandedSet;
       const cats = categories || [];
       const map = {};
@@ -132,8 +132,8 @@ window.PdCategoryProdMng = {
 
     /* 선택된 카테고리 */
     const selectedCatId = ref(null);
-    const selectedCat   = computed(() => (categories || []).find(c => c.categoryId === selectedCatId.value));
-    const isLeafCat     = computed(() => {
+    const cfSelectedCat   = computed(() => (categories || []).find(c => c.categoryId === selectedCatId.value));
+    const cfIsLeafCat     = computed(() => {
       if (!selectedCatId.value) return false;
       return !(categories || []).some(c => c.parentId === selectedCatId.value);
     });
@@ -170,12 +170,12 @@ window.PdCategoryProdMng = {
     watch(selectedCatId, loadAllRows);
 
     /* 현재 탭 행 */
-    const tabRows = computed(() => allRows.filter(r => r.categoryProdTypeCd === activeTypeCd.value));
+    const cfTabRows = computed(() => allRows.filter(r => r.categoryProdTypeCd === activeTypeCd.value));
 
     /* 검색 필터 */
-    const filteredRows = computed(() => {
+    const cfFilteredRows = computed(() => {
       const kw = applied.prodNm.trim().toLowerCase();
-      return window.safeArrayUtils.safeFilter(tabRows, r => !kw || getProdNm(r.prodId).toLowerCase().includes(kw));
+      return window.safeArrayUtils.safeFilter(cfTabRows, r => !kw || getProdNm(r.prodId).toLowerCase().includes(kw));
     });
 
     /* ── 드래그 정렬 ── */
@@ -187,7 +187,7 @@ window.PdCategoryProdMng = {
       if (dragIdx.value === null || dragIdx.value === dragoverIdx.value) {
         dragIdx.value = dragoverIdx.value = null; return;
       }
-      const tabArr = [...tabRows.value];
+      const tabArr = [...cfTabRows.value];
       const [moved] = tabArr.splice(dragIdx.value, 1);
       tabArr.splice(dragoverIdx.value, 0, moved);
       window.safeArrayUtils.safeForEach(tabArr, (r, i) => { r.sortOrd = i + 1; });
@@ -202,9 +202,9 @@ window.PdCategoryProdMng = {
     /* ── 상품 추가 피커 ── */
     const pickerOpen   = ref(false);
     const pickerSearch = ref('');
-    const pickerList   = computed(() => {
+    const cfPickerList   = computed(() => {
       const q    = pickerSearch.value.trim().toLowerCase();
-      const used = new Set(tabRows.value.map(r => r.prodId));
+      const used = new Set(cfTabRows.value.map(r => r.prodId));
       return (products || []).filter(p => {
         if (used.has(p.productId)) return false;
         if (!q) return true;
@@ -214,7 +214,7 @@ window.PdCategoryProdMng = {
 
     const addProd = prod => {
       const targetCatId = selectedCatId.value;
-      const maxSort = tabRows.value.length ? Math.max(...tabRows.value.map(r => r.sortOrd)) : 0;
+      const maxSort = cfTabRows.value.length ? Math.max(...cfTabRows.value.map(r => r.sortOrd)) : 0;
       allRows.push({
         _id: _seq++, categoryProdId: null,
         categoryId:         targetCatId,
@@ -235,7 +235,7 @@ window.PdCategoryProdMng = {
       if (!selectedCatId.value) { props.showToast('카테고리를 선택하세요.', 'error'); return; }
       const activeTab = window.safeArrayUtils.safeFind(TYPE_TABS, t => t.cd === activeTypeCd.value);
       const ids = allDescendantIds(selectedCatId.value);
-      const ok = await props.showConfirm('저장', `[${selectedCat.value?.categoryNm}] ${activeTab?.nm} 목록을 저장하시겠습니까?`);
+      const ok = await props.showConfirm('저장', `[${cfSelectedCat.value?.categoryNm}] ${activeTab?.nm} 목록을 저장하시겠습니까?`);
       if (!ok) return;
       if (!categoryProds) categoryProds = [];
       const others = window.safeArrayUtils.safeFilter(categoryProds, 
@@ -244,7 +244,7 @@ window.PdCategoryProdMng = {
       let seq2 = 0;
       categoryProds = [
         ...others,
-        ...tabRows.value.map(r => ({
+        ...cfTabRows.value.map(r => ({
           categoryProdId:     r.categoryProdId || `CP_${r.categoryId}_${activeTypeCd.value}_${seq2++}`,
           siteId:             '1',
           categoryId:         r.categoryId,
@@ -259,7 +259,7 @@ window.PdCategoryProdMng = {
       ];
       loadAllRows();
       try {
-        const res = await window.boApi.put(`/bo/ec/pd/category/${selectedCatId.value}/prods/${activeTypeCd.value}`, { prods: tabRows.value });
+        const res = await window.boApi.put(`/bo/ec/pd/category/${selectedCatId.value}/prods/${activeTypeCd.value}`, { prods: cfTabRows.value });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {
@@ -275,16 +275,16 @@ window.PdCategoryProdMng = {
     const depthBullet = d => DEPTH_BULLETS[Math.min(d, 3)];
 
     return {
-      viewMode, TYPE_TABS, activeTypeCd, typeCountMap,
+      viewMode, TYPE_TABS, activeTypeCd, cfTypeCountMap,
       EMPHASIS_OPTS, parseEmphasis, hasEmphasis, toggleEmphasis,
       defaultDispStartDate, defaultDispEndDate,
       searchProdNm, applied, onSearch, onReset,
       expandedSet, isExpanded, toggleNode, expandAll, collapseAll,
-      catTreeFlat, selectedCatId, selectedCat, isLeafCat, selectNode,
+      cfCatTreeFlat, selectedCatId, cfSelectedCat, cfIsLeafCat, selectNode,
       totalProdCount, getCatPath,
-      allRows, filteredRows, removeRow,
+      allRows, cfFilteredRows, removeRow,
       dragIdx, dragoverIdx, onDragStart, onDragOver, onDrop,
-      pickerOpen, pickerSearch, pickerList, addProd,
+      pickerOpen, pickerSearch, cfPickerList, addProd,
       onSave, getProd, getProdNm,
       depthColor, depthBullet,
     };

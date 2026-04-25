@@ -41,7 +41,7 @@ window.PdRestockNotiMng = {
     const getProdNm = id => { const p = (products||[]).find(p => p.productId === id); return p ? p.productName : ('상품#'+id); };
     const getMemNm  = id => { const m = (members||[]).find(m => m.userId === id); return m ? m.name : ('회원#'+id); };
 
-    const filtered = computed(() => {
+    const cfFiltered = computed(() => {
       const kw = applied.prod.toLowerCase();
       return (restockNotis || []).filter(r => {
         if (kw && !getProdNm(r.prodId).toLowerCase().includes(kw)) return false;
@@ -49,17 +49,17 @@ window.PdRestockNotiMng = {
         return true;
       }).sort((a, b) => b.regDate > a.regDate ? 1 : -1);
     });
-    const total      = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums   = computed(() => { const c=pager.page,l=totalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfTotal      = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const allChecked    = computed(() => pageList.value.length > 0 && window.safeArrayUtils.safeEvery(pageList, r => checkedIds.has(r.restockNotiId)));
-    const toggleAll     = () => { if (allChecked.value) window.safeArrayUtils.safeForEach(pageList, r => checkedIds.delete(r.restockNotiId)); else window.safeArrayUtils.safeForEach(pageList, r => checkedIds.add(r.restockNotiId)); };
+    const allChecked    = computed(() => cfPageList.value.length > 0 && window.safeArrayUtils.safeEvery(cfPageList, r => checkedIds.has(r.restockNotiId)));
+    const toggleAll     = () => { if (allChecked.value) window.safeArrayUtils.safeForEach(cfPageList, r => checkedIds.delete(r.restockNotiId)); else window.safeArrayUtils.safeForEach(cfPageList, r => checkedIds.add(r.restockNotiId)); };
     const toggleOne     = id => { if (checkedIds.has(id)) checkedIds.delete(id); else checkedIds.add(id); };
     const checkedCount  = computed(() => checkedIds.size);
 
-    const sendNoti = async () => {
+    const handleSend = async () => {
       const targets = (restockNotis||[]).filter(r => checkedIds.has(r.restockNotiId) && r.notiYn === 'N');
       if (!targets.length) { props.showToast('발송할 미발송 항목을 선택하세요.', 'info'); return; }
       const ok = await props.showConfirm('알림발송', `선택한 ${targets.length}건에 재입고 알림을 발송하시겠습니까?`);
@@ -77,12 +77,12 @@ window.PdRestockNotiMng = {
     };
     const onSearch = () => { Object.assign(applied, { prod: searchProd.value, noti: searchNoti.value }); pager.page = 1; };
     const onReset  = () => { searchProd.value = ''; searchNoti.value = ''; Object.assign(applied, { prod: '', noti: '' }); pager.page = 1; };
-    const setPage  = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    const ynBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
+    const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { restockNotis, loading, error, searchProd, searchNoti, pager, pageNums, totalPages, setPage, total, pageList, onSearch, onReset,
-             checkedIds, checkedCount, allChecked, toggleAll, toggleOne, sendNoti, ynBadge, getProdNm, getMemNm , PAGE_SIZES , onSizeChange };
+    return { restockNotis, loading, error, searchProd, searchNoti, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
+             checkedIds, checkedCount, allChecked, toggleAll, toggleOne, handleSend, fnYnBadge, getProdNm, getMemNm , PAGE_SIZES , onSizeChange };
   },
   template: `
 <div>
@@ -104,8 +104,8 @@ window.PdRestockNotiMng = {
     <div class="card">
       <div class="toolbar">
         <span class="list-title">재입고알림 목록</span>
-        <span class="list-count">총 {{ total }}건</span>
-        <button v-if="checkedCount > 0" class="btn btn-blue btn-sm" style="margin-left:auto" @click="sendNoti">
+        <span class="list-count">총 {{ cfTotal }}건</span>
+        <button v-if="checkedCount > 0" class="btn btn-blue btn-sm" style="margin-left:auto" @click="handleSend">
           📣 알림발송 ({{ checkedCount }}건)
         </button>
       </div>
@@ -118,16 +118,16 @@ window.PdRestockNotiMng = {
           <th style="width:140px">신청일</th>
         </tr></thead>
         <tbody>
-          <tr v-for="row in pageList" :key="row?.restockNotiId">
+          <tr v-for="row in cfPageList" :key="row?.restockNotiId">
             <td><input type="checkbox" :checked="checkedIds.has(row.restockNotiId)" @change="toggleOne(row.restockNotiId)"></td>
             <td>{{ getProdNm(row.prodId) }}</td>
             <td style="font-size:12px;color:#888">{{ row.skuId || '-' }}</td>
             <td style="font-size:12px">{{ getMemNm(row.memberId) }}</td>
-            <td style="text-align:center"><span :class="['badge',ynBadge(row.notiYn)]">{{ row.notiYn==='Y'?'발송완료':'미발송' }}</span></td>
+            <td style="text-align:center"><span :class="['badge',fnYnBadge(row.notiYn)]">{{ row.notiYn==='Y'?'발송완료':'미발송' }}</span></td>
             <td style="font-size:12px;color:#888">{{ row.notiDate || '-' }}</td>
             <td style="font-size:12px">{{ row.regDate }}</td>
           </tr>
-          <tr v-if="!pageList.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
+          <tr v-if="!cfPageList.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
       <div class="pagination">
@@ -135,9 +135,9 @@ window.PdRestockNotiMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

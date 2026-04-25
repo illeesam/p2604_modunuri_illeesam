@@ -41,12 +41,12 @@ window.PdReviewMng = {
 
     const STATUS_LIST = ['ACTIVE','HIDDEN','DELETED'];
     const STATUS_LABEL = { ACTIVE:'공개', HIDDEN:'숨김', DELETED:'삭제' };
-    const statusBadge  = s => ({ ACTIVE:'badge-green', HIDDEN:'badge-orange', DELETED:'badge-red' }[s] || 'badge-gray');
+    const fnStatusBadge  = s => ({ ACTIVE:'badge-green', HIDDEN:'badge-orange', DELETED:'badge-red' }[s] || 'badge-gray');
 
     const getProdNm = id => { const p = (products||[]).find(p => p.productId === id); return p ? p.productName : id; };
     const getMemNm  = id => { const m = (members||[]).find(m => m.userId === id); return m ? m.name : id; };
 
-    const filtered = computed(() => {
+    const cfFiltered = computed(() => {
       const kw = applied.kw.toLowerCase();
       return (reviews).filter(r => {
         if (kw && !r.reviewTitle.toLowerCase().includes(kw)) return false;
@@ -55,10 +55,10 @@ window.PdReviewMng = {
         return true;
       }).sort((a, b) => b.reviewDate > a.reviewDate ? 1 : -1);
     });
-    const total      = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums   = computed(() => { const c=pager.page,l=totalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfTotal      = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const selectedRow = computed(() => (reviews||[]).find(r => r.reviewId === selectedId.value) || null);
 
@@ -78,12 +78,12 @@ window.PdReviewMng = {
     };
     const onSearch = () => { Object.assign(applied, { kw: searchKw.value, status: searchStatus.value, rating: searchRating.value }); pager.page = 1; };
     const onReset  = () => { searchKw.value = ''; searchStatus.value = ''; searchRating.value = ''; Object.assign(applied, { kw: '', status: '', rating: '' }); pager.page = 1; };
-    const setPage  = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const starStr  = r => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r));
 
-    return { reviews, loading, error, searchKw, searchStatus, searchRating, pager, pageNums, totalPages, setPage, total, pageList, onSearch, onReset,
-             selectedId, selectedRow, openDetail, changeStatus, statusBadge, STATUS_LIST, STATUS_LABEL, getProdNm, getMemNm, starStr , PAGE_SIZES , onSizeChange };
+    return { reviews, loading, error, searchKw, searchStatus, searchRating, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
+             selectedId, selectedRow, openDetail, changeStatus, fnStatusBadge, STATUS_LIST, STATUS_LABEL, getProdNm, getMemNm, starStr , PAGE_SIZES , onSizeChange };
   },
   template: `
 <div>
@@ -110,7 +110,7 @@ window.PdReviewMng = {
     <div class="card">
       <div class="toolbar">
         <span class="list-title">상품리뷰 목록</span>
-        <span class="list-count">총 {{ total }}건</span>
+        <span class="list-count">총 {{ cfTotal }}건</span>
       </div>
       <table class="bo-table">
         <thead><tr>
@@ -122,13 +122,13 @@ window.PdReviewMng = {
           <th style="width:80px;text-align:center">상태변경</th>
         </tr></thead>
         <tbody>
-          <tr v-for="row in pageList" :key="row?.reviewId" :class="{active:selectedId===row.reviewId}" @click="openDetail(row)" style="cursor:pointer">
+          <tr v-for="row in cfPageList" :key="row?.reviewId" :class="{active:selectedId===row.reviewId}" @click="openDetail(row)" style="cursor:pointer">
             <td><span class="title-link">{{ row.reviewTitle }}</span></td>
             <td style="font-size:12px;color:#666">{{ getProdNm(row.prodId) }}</td>
             <td style="font-size:12px">{{ getMemNm(row.memberId) }}</td>
             <td style="text-align:center;color:#f59e0b;font-size:13px">{{ row.rating.toFixed(1) }} ★</td>
             <td style="text-align:right;font-size:12px">{{ row.helpfulCnt }}</td>
-            <td style="text-align:center"><span :class="['badge',statusBadge(row.reviewStatusCd)]">{{ STATUS_LABEL[row.reviewStatusCd]||row.reviewStatusCd }}</span></td>
+            <td style="text-align:center"><span :class="['badge',fnStatusBadge(row.reviewStatusCd)]">{{ STATUS_LABEL[row.reviewStatusCd]||row.reviewStatusCd }}</span></td>
             <td style="font-size:12px">{{ row.reviewDate }}</td>
             <td style="text-align:center" @click.stop>
               <select class="form-control" style="font-size:11px;padding:2px 4px" :value="row.reviewStatusCd" @change="changeStatus(row,$event.target.value)">
@@ -136,7 +136,7 @@ window.PdReviewMng = {
               </select>
             </td>
           </tr>
-          <tr v-if="!pageList.length"><td colspan="8" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
+          <tr v-if="!cfPageList.length"><td colspan="8" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
       <div class="pagination">
@@ -144,9 +144,9 @@ window.PdReviewMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
