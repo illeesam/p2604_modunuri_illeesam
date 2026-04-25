@@ -110,8 +110,8 @@ window.StSettleAdjMng = {
       Object.keys(errors).forEach(k => delete errors[k]);
       try { await schema.validate(form, { abortEarly: false }); }
       catch (err) {
-      console.error('[catch-info]', err); err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
-      const v = cfVendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === Number(form.vendorId));
+      console.error('[catch-info]', err); err.inner.forEach(e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
+      const v = cfVendors.value.find(x => x.vendorId === Number(form.vendorId));
       if (v) form.vendorNm = v.vendorNm;
       const ok = await props.showConfirm('저장', '정산조정을 저장하시겠습니까?');
       if (!ok) return;
