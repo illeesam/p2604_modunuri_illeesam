@@ -156,9 +156,15 @@
     /* ── API Progress Bar ── */
     const isApiLoading = ref(false);
     let _apiLoadingCount = 0;
+    let _progressHideTimer = null;
     window._showProgress = (show) => {
       _apiLoadingCount = Math.max(0, _apiLoadingCount + (show ? 1 : -1));
-      isApiLoading.value = _apiLoadingCount > 0;
+      if (_apiLoadingCount > 0) {
+        if (_progressHideTimer) { clearTimeout(_progressHideTimer); _progressHideTimer = null; }
+        isApiLoading.value = true;
+      } else {
+        _progressHideTimer = setTimeout(() => { isApiLoading.value = false; _progressHideTimer = null; }, 200);
+      }
     };
 
     /* ── Alert Modal ── */

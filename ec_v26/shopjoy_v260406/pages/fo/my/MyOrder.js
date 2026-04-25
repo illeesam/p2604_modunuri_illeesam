@@ -187,10 +187,14 @@ window.MyOrder = {
       myStore.handleLoadClaims();
       myStore.handleLoadCoupons();
     };
+    const onSearch = async (dateParams) => {
+      if (dateParams) onDateSearch(dateParams);
+      await handleFetchData();
+    };
     onMounted(() => { handleFetchData(); });
 
     return {
-      myStore, orders, claimsByOrderId, cfDateFilteredOrders, onDateSearch,
+      myStore, orders, claimsByOrderId, cfDateFilteredOrders, onDateSearch, onSearch,
       orderPager, paginate,
       flowStatusFilter, toggleFlowStatus,
       openTracking, openTracking2, showOrderPayBreakdown,
@@ -205,7 +209,7 @@ window.MyOrder = {
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myOrder">
 
-  <MyDateFilter @search="onDateSearch" @reset="flowStatusFilter.splice(0)" />
+  <MyDateFilter @search="onSearch" @reset="flowStatusFilter.splice(0)" />
 
   <!-- 주문 처리 흐름 (토글 필터) -->
   <div style="background:#f4f5f7;border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;margin-bottom:14px;">

@@ -88,11 +88,15 @@ window.MyClaim = {
       await myStore.handleLoadClaims();
       myStore.handleLoadOrders();
     };
+    const onSearch = async (dateParams) => {
+      if (dateParams) onDateSearch(dateParams);
+      await handleFetchData();
+    };
     onMounted(() => { handleFetchData(); });
 
     return {
       myStore, claims, claimFilter, filteredClaims, orders,
-      claimPager, paginate, cfDateFilteredClaims, onDateSearch,
+      claimPager, paginate, cfDateFilteredClaims, onDateSearch, onSearch,
       claimStatusFilter, toggleClaimStatus,
       cfAuthUser, findProduct, openProductModal, openCustomerModal, openOrderModal,
       openTracking2, cancelClaim,
@@ -101,7 +105,7 @@ window.MyClaim = {
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myClaim">
 
-  <MyDateFilter @search="onDateSearch" @reset="claimStatusFilter.splice(0)" />
+  <MyDateFilter @search="onSearch" @reset="claimStatusFilter.splice(0)" />
 
   <!-- 유형 필터 -->
   <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">

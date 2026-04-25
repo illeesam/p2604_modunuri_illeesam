@@ -56,17 +56,21 @@ window.MyCache = {
       await myStore.handleLoadCash();
       myStore.handleLoadOrders();
     };
+    const onSearch = async (dateParams) => {
+      if (dateParams) onDateSearch(dateParams);
+      await handleFetchData();
+    };
     onMounted(() => { handleFetchData(); });
 
     return {
       myStore, cashBalance, cashHistory, chargeAmount,
-      cashPager, paginate, addCash, openOrderModal, cfDateFilteredHistory, onDateSearch,
+      cashPager, paginate, addCash, openOrderModal, cfDateFilteredHistory, onDateSearch, onSearch,
       uiState, codes };
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myCache">
 
-  <MyDateFilter @search="onDateSearch" />
+  <MyDateFilter @search="onSearch" />
 
   <!-- 보유 캐쉬 -->
   <div style="background:linear-gradient(135deg,#fbbf24,#f59e0b);border-radius:var(--radius);padding:24px;margin-bottom:20px;color:#1a1a1a;">

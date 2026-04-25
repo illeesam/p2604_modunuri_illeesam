@@ -68,18 +68,22 @@ window.MyCoupon = {
       await myStore.handleLoadCoupons();
       myStore.handleLoadOrders();
     };
+    const onSearch = async (dateParams) => {
+      if (dateParams) onDateSearch(dateParams);
+      await handleFetchData();
+    };
     onMounted(() => { handleFetchData(); });
 
     return {
       myStore, coupons, couponCode, couponPager, paginate,
-      addCoupon, cfDateFilteredCoupons, onDateSearch,
+      addCoupon, cfDateFilteredCoupons, onDateSearch, onSearch,
       cfUnusedCount, cfUsedCount, onTabChange,
       uiState, codes };
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myCoupon">
 
-  <MyDateFilter @search="onDateSearch" />
+  <MyDateFilter @search="onSearch" />
 
   <!-- 쿠폰 등록 -->
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;display:flex;gap:10px;align-items:center;">
