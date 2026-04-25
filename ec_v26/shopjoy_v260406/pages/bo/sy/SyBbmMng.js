@@ -9,7 +9,7 @@ window.SyBbmMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/bbm/page', {
@@ -24,7 +24,7 @@ window.SyBbmMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     /* 표시경로 트리/픽커 (sy_path biz_cd=sy_bbm) */
     const selectedPath = ref(null);
     const expanded = reactive(new Set([null]));
@@ -50,7 +50,7 @@ window.SyBbmMng = {
     const selectedId = ref(null);
     const openMode = ref('view'); // 'view' | 'edit'
     const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const loadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
+    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
     const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
     const inlineNavigate = (pg, opts = {}) => {
@@ -111,7 +111,7 @@ window.SyBbmMng = {
     const bbsCount = (bbmId) => bbss.value.filter(b => b.bbmId === bbmId).length;
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
-    return { bbms, loading, error, cfSiteNm, searchKw, searchType, searchUseYn, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnYnBadge, fnCommentBadge, fnAttachBadge, fnContentBadge, fnScopeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, bbsCount, exportExcel,
+    return { bbms, loading, error, cfSiteNm, searchKw, searchType, searchUseYn, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnYnBadge, fnCommentBadge, fnAttachBadge, fnContentBadge, fnScopeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, bbsCount, exportExcel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
   },
@@ -169,7 +169,7 @@ window.SyBbmMng = {
               </td>
               <td>{{ b.bbmId }}</td>
               <td><code style="font-size:11px;color:#555;">{{ b.bbmCode }}</code></td>
-              <td><span class="title-link" @click="loadDetail(b.bbmId)" :style="selectedId===b.bbmId?'color:#e8587a;font-weight:700;':''">{{ b.bbmNm }}<span v-if="selectedId===b.bbmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+              <td><span class="title-link" @click="handleLoadDetail(b.bbmId)" :style="selectedId===b.bbmId?'color:#e8587a;font-weight:700;':''">{{ b.bbmNm }}<span v-if="selectedId===b.bbmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
               <td><span class="badge" :class="fnTypeBadge(b.bbmType)">{{ b.bbmType }}</span></td>
               <td><span class="badge" :class="fnCommentBadge(b.allowComment)">{{ b.allowComment || '불가' }}</span></td>
               <td><span class="badge" :class="fnAttachBadge(b.allowAttach)">{{ b.allowAttach || '불가' }}</span></td>
@@ -182,7 +182,7 @@ window.SyBbmMng = {
               <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
               <td>{{ b.regDate }}</td>
               <td><div class="actions">
-                <button class="btn btn-blue btn-sm" @click="loadDetail(b.bbmId)">수정</button>
+                <button class="btn btn-blue btn-sm" @click="handleLoadDetail(b.bbmId)">수정</button>
                 <button class="btn btn-danger btn-sm" @click="handleDelete(b)">삭제</button>
               </div></td>
             </tr>

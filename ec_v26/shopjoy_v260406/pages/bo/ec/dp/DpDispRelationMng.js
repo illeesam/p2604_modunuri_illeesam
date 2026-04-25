@@ -7,20 +7,20 @@ window.DpDispRelationMng = {
     const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
     const displays = reactive([]);
 
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 } });
         displays.splice(0, displays.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     /* 검색 */
     const searchDateStart = ref('');
     const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const onSearch = () => { fetchData(); };
-    const onReset = () => { searchDateStart.value = ''; searchDateEnd.value = ''; fetchData(); };
+    const onSearch = () => { handleFetchData(); };
+    const onReset = () => { searchDateStart.value = ''; searchDateEnd.value = ''; handleFetchData(); };
 
     /* 트리 상태 */
     const expandedNodes = reactive(new Set());

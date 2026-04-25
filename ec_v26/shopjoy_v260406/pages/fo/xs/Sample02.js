@@ -54,18 +54,18 @@ window.XsSample02 = {
     const sentinelEl    = ref(null);   // 템플릿 ref: "더 불러오기" 요소
     const cfVisibleRows   = computed(() => gridRows.slice(0, visibleCount.value));
     const cfHasMore       = computed(() => visibleCount.value < gridRows.length);
-    const loadMore      = () => { visibleCount.value = Math.min(visibleCount.value + 10, gridRows.length); };
+    const handleLoadMore      = () => { visibleCount.value = Math.min(visibleCount.value + 10, gridRows.length); };
 
     let _observer = null;
     const setupObserver = () => {
       if (_observer) _observer.disconnect();
       _observer = new IntersectionObserver(entries => {
-        if (entries[0].isIntersecting && cfHasMore.value) loadMore();
+        if (entries[0].isIntersecting && cfHasMore.value) handleLoadMore();
       }, { threshold: 0.1 });
       if (sentinelEl.value) _observer.observe(sentinelEl.value);
     };
 
-    const loadGrid = () => {
+    const handleLoadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; visibleCount.value = 10;
       allData.filter(d => {
         const kw = applied.kw.toLowerCase();
@@ -76,23 +76,23 @@ window.XsSample02 = {
       }).forEach(d => gridRows.push(makeRow(d)));
     };
 
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const res = await api.get(API, { cdGrp: CD_GRP });
         const list = res?.data?.data ?? res?.data ?? [];
         allData.splice(0, allData.length, ...list.map(toRow));
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
-      loadGrid();
+      handleLoadGrid();
       Vue.nextTick(setupObserver);
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     onUnmounted(() => {
       if (_observer) _observer.disconnect();
     });
 
-    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, category: searchCategory.value, status: searchStatus.value }); loadGrid(); Vue.nextTick(setupObserver); };
-    const onReset  = () => { searchKw.value = ''; searchCategory.value = ''; searchStatus.value = ''; Object.assign(applied, { kw: '', category: '', status: '' }); loadGrid(); Vue.nextTick(setupObserver); };
+    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, category: searchCategory.value, status: searchStatus.value }); handleLoadGrid(); Vue.nextTick(setupObserver); };
+    const onReset  = () => { searchKw.value = ''; searchCategory.value = ''; searchStatus.value = ''; Object.assign(applied, { kw: '', category: '', status: '' }); handleLoadGrid(); Vue.nextTick(setupObserver); };
 
     const setFocused   = idx => { focusedIdx.value = idx; };
     const onCellChange = row => {
@@ -158,7 +158,7 @@ window.XsSample02 = {
         const res = await api.get(API, { cdGrp: CD_GRP });
         const list = res?.data?.data ?? res?.data ?? [];
         allData.splice(0, allData.length, ...list.map(toRow));
-        loadGrid(); Vue.nextTick(setupObserver);
+        handleLoadGrid(); Vue.nextTick(setupObserver);
       } catch (e) { showToast('저장 실패: ' + (e.response?.data?.message || e.message || e), 'error'); }
     };
 
@@ -184,7 +184,7 @@ window.XsSample02 = {
 
     return {
       toast, searchKw, searchCategory, searchStatus, CATEGORY_OPTS, onSearch, onReset,
-      gridRows, cfVisibleRows, cfTotal, visibleCount, cfHasMore, loadMore, sentinelEl,
+      gridRows, cfVisibleRows, cfTotal, visibleCount, cfHasMore, loadMore: handleLoadMore, sentinelEl,
       focusedIdx, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
       dragSrc, onDragStart, onDragOver, onDragEnd,

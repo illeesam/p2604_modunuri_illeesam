@@ -19,13 +19,13 @@ window.StSettleAdjMng = {
     const vendorList = reactive([]);
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } });
         vendorList.splice(0, vendorList.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     const adjList = reactive([
       { adjId: 'ADJ-2026-001', adjDate: '2026-04-10', vendorId: 1, vendorNm: '패션스타일 주식회사', adjType: '수수료조정', adjAmt: -5000,  reason: '4월 프로모션 참여 수수료 감면', aprvStatus: '승인', regUserNm: '이관리자' },

@@ -26,7 +26,7 @@ window.SyPathMng = {
     };
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const [pathRes, codeRes] = await Promise.all([
           window.boApi.get('/bo/sy/path/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -42,7 +42,7 @@ window.SyPathMng = {
         if (props.showToast) props.showToast('표시경로 데이터 로드 실패', 'error');
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     /* ── 트리 (선택된 biz_cd로 빌드) ── */
     const selectedBiz = ref('sy_brand');

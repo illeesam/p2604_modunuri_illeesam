@@ -39,7 +39,7 @@ window.StStatusMng = {
     const couponList = reactive([]);
     const cacheDataList = reactive([]);
 
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const [resO, resC, resV, resCp, resCa] = await Promise.all([
           window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -55,7 +55,7 @@ window.StStatusMng = {
         cacheDataList.splice(0, cacheDataList.length, ...(resCa.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const cfOrders   = computed(() => orderList);
     const cfClaims   = computed(() => claimList);
     const cfVendors  = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));

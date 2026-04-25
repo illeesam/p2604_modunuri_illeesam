@@ -11,7 +11,7 @@ window.PmVoucherDtl = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/voucher/page', { params: { pageNo: 1, pageSize: 10000 } });
@@ -26,7 +26,7 @@ window.PmVoucherDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._pmVoucherDtlState.tab || 'info');
     watch(tab, v => { window._pmVoucherDtlState.tab = v; });

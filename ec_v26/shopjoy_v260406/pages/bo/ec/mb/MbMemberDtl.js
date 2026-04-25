@@ -9,7 +9,7 @@ window.MbMemberDtl = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const loadData = async () => {
+    const handleLoadData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/mb/member/page', {
@@ -24,7 +24,7 @@ window.MbMemberDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { loadData(); });
+    onMounted(() => { handleLoadData(); });
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
       userId: null,

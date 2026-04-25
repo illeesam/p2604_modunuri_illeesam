@@ -30,7 +30,7 @@ window.Prod02List = {
     const allProducts = reactive([]);
     const loading = ref(true);
 
-    const loadProducts = async () => {
+    const handleLoadProducts = async () => {
       loading.value = true;
       try {
         const res = await window.foApi.get('/fo/product/list');
@@ -175,11 +175,11 @@ window.Prod02List = {
       observer.observe(el);
     };
 
-    const fetchData = async () => {
-      await loadProducts();
+    const handleFetchData = async () => {
+      await handleLoadProducts();
       setupObserver();
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     onBeforeUnmount(() => {
       if (observer) observer.disconnect();
       window.removeEventListener('resize', onResize);

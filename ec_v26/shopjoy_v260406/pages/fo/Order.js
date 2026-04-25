@@ -15,7 +15,7 @@ window.Order = {
 
     /* ── 쿠폰 로드 ── */
     const allCoupons  = reactive([]);
-    const loadCoupons = async () => {
+    const handleLoadCoupons = async () => {
       try {
         const res = await window.foApi.get('/fo/my/coupon/list');
         allCoupons.splice(0, allCoupons.length, ...(res.data?.data || []).filter(c => !c.used));
@@ -72,7 +72,7 @@ window.Order = {
     /* ── 캐쉬 ── */
     const cashBalance = ref(0);
     const cashInput   = ref(0);
-    const loadCash = async () => {
+    const handleLoadCash = async () => {
       try {
         const res = await window.foApi.get('/fo/my/cash/info');
         cashBalance.value = res.data?.data?.balance || 0;
@@ -122,12 +122,12 @@ window.Order = {
       }).open();
     };
 
-    const fetchData = async () => {
-      await Promise.all([loadCoupons(), loadCash()]);
+    const handleFetchData = async () => {
+      await Promise.all([handleLoadCoupons(), handleLoadCash()]);
       const u = window.foAuth?.state?.user;
       if (u) { form.name = u.memberNm || ''; form.tel = u.phone || ''; form.email = u.email || ''; }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     const errors   = reactive({});
     const clearErr = k => { delete errors[k]; };

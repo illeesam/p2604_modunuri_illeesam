@@ -10,7 +10,7 @@ window.SyTemplateDtl = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const loadData = async () => {
+    const handleLoadData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/template/page', {
@@ -25,7 +25,7 @@ window.SyTemplateDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { loadData(); });
+    onMounted(() => { handleLoadData(); });
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const TEMPLATE_TYPES = ['메일템플릿', '문자템플릿', 'MMS템플릿', 'kakao톡템플릿', 'kakao알림톡템플릿', '시스템알림', '회원알림'];

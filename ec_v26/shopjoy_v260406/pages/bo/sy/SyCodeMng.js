@@ -127,7 +127,7 @@ window.SyCodeMng = {
     const grpExpandAll = () => { const walk = (n) => { grpExpanded.add(n.path); n.children.forEach(walk); }; walk(cfGrpTree.value); };
     const grpCollapseAll = () => { grpExpanded.clear(); grpExpanded.add(''); };
     /* _expand3_grp: 그룹 트리 3레벨 펼침 */
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         loading.value = true;
         const res = await window.boApi.get('/bo/sy/code/page', { params: { pageNo: 1, pageSize: 100000 } });
@@ -139,7 +139,7 @@ window.SyCodeMng = {
       const initSet = window.boCmUtil.collectExpandedToDepth(cfGrpTree.value, 2);
       grpExpanded.clear(); initSet.forEach(v => grpExpanded.add(v));
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const cfGrpTree = computed(() => window.boCmUtil.buildPathTree('sy_code_grp'));
     const cfFilteredGrpRows = computed(() => {
       const sp = grpSelectedPath.value;
@@ -157,9 +157,9 @@ window.SyCodeMng = {
     const cfGrpPagedRows = computed(() => { const s = (grpPager.page - 1) * grpPager.size; return cfFilteredGrpRows.value.slice(s, s + grpPager.size); });
     watch(() => cfFilteredGrpRows.value.length, () => { if (grpPager.page > cfGrpTotalPages.value) grpPager.page = Math.max(1, cfGrpTotalPages.value); });
     /* 트리 path 변경 시: 그룹 페이지 리셋 + selectedGrp 해제 + 코드목록 재조회 */
-    watch(grpSelectedPath, () => { grpPager.page = 1; selectedGrp.value = ''; loadGrid(); });
+    watch(grpSelectedPath, () => { grpPager.page = 1; selectedGrp.value = ''; handleLoadGrid(); });
     /* selectedGrp 변경 시 코드목록 재조회 */
-    watch(selectedGrp, () => loadGrid());
+    watch(selectedGrp, () => handleLoadGrid());
 
     /* 그룹 행 클릭 → 코드목록 필터 (토글) */
     const onGrpRowClick = (g) => {
@@ -174,7 +174,7 @@ window.SyCodeMng = {
                sortOrd: c.sortOrd, useYn: c.useYn, remark: c.remark, parentCodeValue: c.parentCodeValue || null },
     });
 
-    const loadGrid = () => {
+    const handleLoadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       /* 트리 선택 시 해당 path에 속하는 codeGrp 집합 */
       const allowedGrps = grpSelectedPath.value
@@ -200,13 +200,13 @@ window.SyCodeMng = {
         .forEach(c => gridRows.push(makeRow(c)));
     };
 
-    loadGrid();
+    handleLoadGrid();
 
     const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
     /* 상세 조회 */
     const selectedCodeId = ref(null);
-    const loadDetail = (codeId) => { selectedCodeId.value = codeId; };
+    const handleLoadDetail = (codeId) => { selectedCodeId.value = codeId; };
     const closeDetail = () => { selectedCodeId.value = null; };
 
     /* 트리 탭 페이징 */
@@ -265,13 +265,13 @@ window.SyCodeMng = {
     const onSearch = () => {
       Object.assign(applied, { kw: searchKw.value, grp: searchGrp.value, useYn: searchUseYn.value,
                                 dateStart: searchDateStart.value, dateEnd: searchDateEnd.value });
-      loadGrid();
+      handleLoadGrid();
     };
     const onReset = () => {
       searchKw.value = ''; searchGrp.value = ''; searchUseYn.value = '';
       searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
       Object.assign(applied, { kw: '', grp: '', useYn: '', dateStart: '', dateEnd: '' });
-      loadGrid();
+      handleLoadGrid();
     };
 
     /* ── 포커스 행 설정 ── */
@@ -400,7 +400,7 @@ window.SyCodeMng = {
       if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
       if (dRows.length) toastParts.push(`삭제 ${dRows.length}건`);
       props.showToast(`${toastParts.join(', ')} 저장되었습니다.`);
-      loadGrid();
+      handleLoadGrid();
     };
 
     /* ── 드래그 이동 ── */
@@ -506,7 +506,7 @@ window.SyCodeMng = {
       selectedGrp, onGrpRowClick,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       activeCodeTab, cfCodeTree, cfCodeTreeExpanded, codeToggleNode, cfFlatTreeRows, cfParentCodeOptions, cfIsTreeTypeGrp,
-      selectedCodeId, loadDetail, closeDetail, getCodeHierarchyPath,
+      selectedCodeId, handleLoadDetail, closeDetail, getCodeHierarchyPath,
       treePager, TREE_PAGE_SIZES, cfTreeTotalPages, cfTreePageNums, setTreePage, onTreeSizeChange, cfPagedTreeRows,
     };
   },
@@ -707,7 +707,7 @@ window.SyCodeMng = {
           class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
           draggable="true"
           @click="setFocused(getRealIdx(idx))"
-          @dblclick="loadDetail(row.codeId)"
+          @dblclick="handleLoadDetail(row.codeId)"
           @dragstart="onDragStart(getRealIdx(idx))"
           @dragover="onDragOver($event, getRealIdx(idx))"
           @dragend="onDragEnd">

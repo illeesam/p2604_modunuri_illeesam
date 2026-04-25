@@ -9,7 +9,7 @@ window.MbMemGroupMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/mb/member-group/page', {
@@ -24,7 +24,7 @@ window.MbMemGroupMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchKw  = ref('');
     const searchUse = ref('');
@@ -48,8 +48,8 @@ window.MbMemGroupMng = {
     const gridRows   = reactive([]);
     let   _tempId    = -1;
 
-    const loadGrid = () => { gridRows.splice(0, gridRows.length, ...cfPageList.value.map(g => ({ ...g, _row_status: null }))); };
-    watch([() => pager.page, applied], loadGrid, { immediate: true });
+    const handleLoadGrid = () => { gridRows.splice(0, gridRows.length, ...cfPageList.value.map(g => ({ ...g, _row_status: null }))); };
+    watch([() => pager.page, applied], handleLoadGrid, { immediate: true });
 
     const addRow       = () => { gridRows.unshift({ groupId: 'G' + (_tempId--), siteId: 1, groupNm: '', groupMemo: '', memberCnt: 0, useYn: 'Y', _row_status: 'N' }); };
     const onCellChange = (idx) => { if (gridRows[idx]._row_status !== 'N') gridRows[idx]._row_status = 'U'; };

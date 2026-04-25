@@ -12,7 +12,7 @@ window.DpDispUiMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/dp/ui/page', {
@@ -27,7 +27,7 @@ window.DpDispUiMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
@@ -128,7 +128,7 @@ window.DpDispUiMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const selectedId = ref(null);
-    const loadDetail = (id) => { if (selectedId.value === id) { selectedId.value = null; return; } selectedId.value = id; };
+    const handleLoadDetail = (id) => { if (selectedId.value === id) { selectedId.value = null; return; } selectedId.value = id; };
     const openNew = () => { selectedId.value = '__new__'; };
     const closeDetail = () => { selectedId.value = null; };
     const inlineNavigate = (pg, opts = {}) => {
@@ -195,7 +195,7 @@ window.DpDispUiMng = {
       UI_TYPE_OPTS,
       pager, PAGE_SIZES, cfTotal, cfTotalPages, cfPageList, cfPageNums, setPage, onSizeChange,
       onSearch, onReset, handleDelete, exportExcel,
-      selectedId, loadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
+      selectedId, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
       uiTypeLabel, fnStatusBadge, areaCountFor, areasOfUi,
       expandedUIs, toggleExpandUI, isUIExpanded,
       cfAllUis, cfFiltered, cfUiTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll,
@@ -327,7 +327,7 @@ window.DpDispUiMng = {
               <td style="padding:10px 12px;">
                 <div style="margin-bottom:6px;">
                   <code style="font-size:12px;background:#f0f2f5;padding:2px 8px;border-radius:4px;">{{ u.codeValue }}</code>
-                  <span class="title-link" @click="loadDetail(u.codeId)"
+                  <span class="title-link" @click="handleLoadDetail(u.codeId)"
                     :style="'font-size:14px;font-weight:700;margin-left:8px;'+(selectedId===u.codeId?'color:#e8587a;':'color:#222;')">
                     {{ u.codeLabel }}
                     <span v-if="selectedId===u.codeId" style="font-size:10px;margin-left:3px;">▼</span>
@@ -352,7 +352,7 @@ window.DpDispUiMng = {
               </td>
               <td style="vertical-align:top;padding-top:10px;">
                 <div class="actions" style="justify-content:flex-end;">
-                  <button class="btn btn-blue btn-sm" @click="loadDetail(u.codeId)">수정</button>
+                  <button class="btn btn-blue btn-sm" @click="handleLoadDetail(u.codeId)">수정</button>
                   <button class="btn btn-danger btn-sm" @click="handleDelete(u)">삭제</button>
                 </div>
               </td>

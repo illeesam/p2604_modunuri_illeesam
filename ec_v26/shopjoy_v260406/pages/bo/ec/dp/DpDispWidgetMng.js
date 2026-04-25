@@ -10,7 +10,7 @@ window.DpDispWidgetMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const [res, resLibs] = await Promise.all([
@@ -27,7 +27,7 @@ window.DpDispWidgetMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
@@ -181,7 +181,7 @@ window.DpDispWidgetMng = {
     /* ── 하단 인라인 Dtl ── */
     const selectedId = ref(null);
     const openMode   = ref('view');
-    const loadDetail  = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
+    const handleLoadDetail  = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
     const openNew     = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
     const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
@@ -237,7 +237,7 @@ window.DpDispWidgetMng = {
       onSearch, onReset,
       selectedId, openMode, cfDetailEditId, cfDetailKey,
       cfSiteNm,
-      loadDetail, openNew, closeDetail, inlineNavigate,
+      handleLoadDetail, openNew, closeDetail, inlineNavigate,
       contentSummary, fnStatusCls,
       setPage, onSizeChange,
     };
@@ -375,7 +375,7 @@ window.DpDispWidgetMng = {
             <div style="margin-bottom:6px;">
               <span style="font-size:15px;margin-right:4px;">{{ wIcon(d.widgetType) }}</span>
               <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">{{ wTypeLabel(d.widgetType) }}</span>
-              <span class="title-link" @click="loadDetail(d.libId)"
+              <span class="title-link" @click="handleLoadDetail(d.libId)"
                 :style="'font-size:14px;font-weight:700;margin-left:8px;'+(selectedId===d.libId?'color:#e8587a;':'color:#222;')">{{ d.name }}</span>
               <span class="badge" :class="fnStatusCls(d.status)" style="font-size:11px;margin-left:8px;">{{ d.status }}</span>
             </div>
@@ -404,7 +404,7 @@ window.DpDispWidgetMng = {
           </td>
           <td style="vertical-align:top;padding-top:10px;">
             <div class="actions" style="justify-content:flex-end;">
-              <button @click.stop="loadDetail(d.libId)" class="btn btn-blue btn-sm">수정</button>
+              <button @click.stop="handleLoadDetail(d.libId)" class="btn btn-blue btn-sm">수정</button>
               <button @click.stop="handleDelete(d)" class="btn btn-danger btn-sm">삭제</button>
             </div>
           </td>

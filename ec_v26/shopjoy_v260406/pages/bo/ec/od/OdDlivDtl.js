@@ -12,7 +12,7 @@ window.OdDlivDtl = {
     const orders = reactive([]);
 
     // onMounted에서 API 로드
-    const loadData = async () => {
+    const handleLoadData = async () => {
       loading.value = true;
       try {
         const [resD, resC, resO] = await Promise.all([
@@ -31,7 +31,7 @@ window.OdDlivDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { loadData(); });
+    onMounted(() => { handleLoadData(); });
     const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._odDlivDtlState.tab || 'info');
     watch(tab, v => { window._odDlivDtlState.tab = v; });

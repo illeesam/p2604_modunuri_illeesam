@@ -12,7 +12,7 @@ window.DpDispPanelDtl = {
     const events = reactive([]);
 
     // onMounted에서 API 로드
-    const loadData = async () => {
+    const handleLoadData = async () => {
       loading.value = true;
       try {
         const [panelsRes, displaysRes, eventsRes] = await Promise.all([
@@ -31,7 +31,7 @@ window.DpDispPanelDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { loadData(); });
+    onMounted(() => { handleLoadData(); });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, target: null });
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };

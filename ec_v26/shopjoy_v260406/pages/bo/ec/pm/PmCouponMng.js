@@ -9,7 +9,7 @@ window.PmCouponMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/coupon/page', {
@@ -24,7 +24,7 @@ window.PmCouponMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
@@ -42,7 +42,7 @@ window.PmCouponMng = {
     const selectedId = ref(null);
     const openMode = ref('view'); // 'view' | 'edit'
     const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const loadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
+    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
     const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
     const inlineNavigate = (pg, opts = {}) => {
@@ -115,7 +115,7 @@ window.PmCouponMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'couponId'},{label:'쿠폰명',key:'couponNm'},{label:'유형',key:'discountTypeCd'},{label:'할인값',key:'discountValue'},{label:'최소금액',key:'minOrderAmount'},{label:'상태',key:'statusCd'},{label:'유효기간(시작)',key:'validFrom'},{label:'유효기간(종료)',key:'validTo'}], '쿠폰목록.csv');
 
-    return { coupons, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchStatus, viewMode, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, discountLabel, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { coupons, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchStatus, viewMode, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, discountLabel, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -151,7 +151,7 @@ window.PmCouponMng = {
         <tr v-if="cfPageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="c in cfPageList" :key="c?.couponId" :style="selectedId===c.couponId?'background:#fff8f9;':''">
           <td>{{ c.couponId }}</td>
-          <td><span class="title-link" @click="loadDetail(c.couponId)" :style="selectedId===c.couponId?'color:#e8587a;font-weight:700;':''">{{ c.name }}<span v-if="selectedId===c.couponId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="handleLoadDetail(c.couponId)" :style="selectedId===c.couponId?'color:#e8587a;font-weight:700;':''">{{ c.name }}<span v-if="selectedId===c.couponId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:12px;">{{ c.code }}</code></td>
           <td>{{ discountLabel(c) }}</td>
           <td>{{ c.minOrder ? c.minOrder.toLocaleString()+'원↑' : '-' }}</td>
@@ -161,7 +161,7 @@ window.PmCouponMng = {
           <td><span class="badge" :class="fnStatusBadge(c.statusCd)">{{ c.statusCd }}</span></td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="loadDetail(c.couponId)">수정</button>
+            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.couponId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="handleDelete(c)">삭제</button>
           </div></td>
         </tr>
@@ -173,10 +173,10 @@ window.PmCouponMng = {
       <div v-if="cfPageList.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
       <div v-for="c in cfPageList" :key="c?.couponId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="selectedId===c.couponId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
-        @click="loadDetail(c.couponId)">
+        @click="handleLoadDetail(c.couponId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">쿠폰 #{{ c.couponId }}</div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="loadDetail(c.couponId)" :style="selectedId===c.couponId?{color:'#e8587a'}:{}">{{ c.name }}<span v-if="selectedId===c.couponId" style="font-size:10px;margin-left:4px;">▼</span></div>
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(c.couponId)" :style="selectedId===c.couponId?{color:'#e8587a'}:{}">{{ c.name }}<span v-if="selectedId===c.couponId" style="font-size:10px;margin-left:4px;">▼</span></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
             <span class="badge" :class="fnStatusBadge(c.statusCd)" style="font-size:11px;">{{ c.statusCd }}</span>
           </div>
@@ -187,7 +187,7 @@ window.PmCouponMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click="loadDetail(c.couponId)" style="font-size:11px;padding:4px 12px;">수정</button>
+          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.couponId)" style="font-size:11px;padding:4px 12px;">수정</button>
           <button class="btn btn-danger btn-sm" @click="handleDelete(c)" style="font-size:11px;padding:4px 12px;">삭제</button>
           <span style="font-size:11px;color:#999;margin-left:auto;">#{{ c.couponId }}</span>
         </div>

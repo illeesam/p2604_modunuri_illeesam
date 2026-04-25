@@ -10,7 +10,7 @@ window.DpDispUiSimul = {
     const members = reactive([]);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const [dpRes, sitesRes, membersRes] = await Promise.all([
           window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -22,7 +22,7 @@ window.DpDispUiSimul = {
         members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     /* ── 오늘 날짜 ── */
     const today = new Date().toISOString().slice(0, 10);

@@ -142,13 +142,13 @@ window.DpDispWidgetPreview = {
     const { reactive, computed, ref, watch, onMounted, nextTick, watchEffect } = Vue;
     const widgetLibs = reactive([]);
 
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 } });
         widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const today   = new Date().toISOString().slice(0, 10);

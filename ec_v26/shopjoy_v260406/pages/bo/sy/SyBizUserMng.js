@@ -16,7 +16,7 @@ window.SyBizUserMng = {
     const roleMenus = reactive([]);
 
     // onMounted에서 역할/메뉴/역할메뉴 API 로드
-    const loadData = async () => {
+    const handleLoadData = async () => {
       try {
         const [roleRes, menuRes, roleMenuRes] = await Promise.all([
           window.boApi.get('/bo/sy/role/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -30,7 +30,7 @@ window.SyBizUserMng = {
         console.warn('[SyBizUserMng] role/menu load failed', err);
       }
     };
-    onMounted(() => { loadData(); });
+    onMounted(() => { handleLoadData(); });
 
     const ROOT_BADGE_MAP = {
       SUPER_ADMIN:['관리자','#7c3aed'], SITE_GROUP:['사이트','#2563eb'],
@@ -69,14 +69,14 @@ window.SyBizUserMng = {
     const STATUS      = [['ACTIVE','재직'],['LEFT','퇴직'],['SUSPENDED','중지']];
 
     const vendors = reactive([]);
-    const loadDetail = async () => {
+    const handleLoadDetail = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/vendor/page', { params: { pageNo:1, pageSize:10000 } });
         const list = res.data?.data?.list || [];
         vendors.splice(0, vendors.length, ...list);
       } catch(e) { console.warn('[SyBizUserMng] vendor load failed', e); }
     };
-    onMounted(() => { loadDetail(); });
+    onMounted(() => { handleLoadDetail(); });
 
     const cfVendorMap = computed(() => Object.fromEntries(vendors.map(v => [v.vendorId, v])));
     const fnVendorNm  = (id) => (cfVendorMap.value[id] || {}).vendorNm || '#'+id;

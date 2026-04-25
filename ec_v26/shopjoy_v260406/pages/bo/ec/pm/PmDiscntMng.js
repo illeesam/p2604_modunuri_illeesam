@@ -9,7 +9,7 @@ window.PmDiscntMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/discnt/page', {
@@ -24,7 +24,7 @@ window.PmDiscntMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
@@ -42,7 +42,7 @@ window.PmDiscntMng = {
     const selectedId = ref(null);
     const openMode = ref('view');
     const loadView   = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const loadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
+    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
     const openNew    = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
     const inlineNavigate = (pg, opts = {}) => {
@@ -113,7 +113,7 @@ window.PmDiscntMng = {
       [{label:'ID',key:'discntId'},{label:'할인명',key:'discntNm'},{label:'유형',key:'discntType'},{label:'할인값',key:'discntVal'},{label:'상태',key:'discntStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '할인목록.csv');
 
-    return { discounts, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchType, searchStatus, viewMode, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { discounts, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchType, searchStatus, viewMode, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -150,7 +150,7 @@ window.PmDiscntMng = {
         <tr v-if="cfPageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="d in cfPageList" :key="d?.discntId" :style="selectedId===d.discntId?'background:#fff8f9;':''">
           <td>{{ d.discntId }}</td>
-          <td><span class="title-link" @click="loadDetail(d.discntId)" :style="selectedId===d.discntId?'color:#e8587a;font-weight:700;':''">{{ d.discntNm }}<span v-if="selectedId===d.discntId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="handleLoadDetail(d.discntId)" :style="selectedId===d.discntId?'color:#e8587a;font-weight:700;':''">{{ d.discntNm }}<span v-if="selectedId===d.discntId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><span class="badge" :class="fnTypeBadge(d.discntType)">{{ d.discntType }}</span></td>
           <td>{{ d.discntType === '정률' ? (d.discntVal + '%') : (d.discntVal||0).toLocaleString() + '원' }}</td>
           <td style="font-size:12px;color:#555;">{{ d.applyTarget || '전체상품' }}</td>
@@ -159,7 +159,7 @@ window.PmDiscntMng = {
           <td><span class="badge" :class="fnStatusBadge(d.discntStatus)">{{ d.discntStatus }}</span></td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="loadDetail(d.discntId)">수정</button>
+            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(d.discntId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="handleDelete(d)">삭제</button>
           </div></td>
         </tr>
@@ -171,10 +171,10 @@ window.PmDiscntMng = {
       <div v-if="cfPageList.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
       <div v-for="d in cfPageList" :key="d?.discntId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="selectedId===d.discntId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
-        @click="loadDetail(d.discntId)">
+        @click="handleLoadDetail(d.discntId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">할인 #{{ d.discntId }}</div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="loadDetail(d.discntId)" :style="selectedId===d.discntId?{color:'#e8587a'}:{}">{{ d.discntNm }}<span v-if="selectedId===d.discntId" style="font-size:10px;margin-left:4px;">▼</span></div>
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(d.discntId)" :style="selectedId===d.discntId?{color:'#e8587a'}:{}">{{ d.discntNm }}<span v-if="selectedId===d.discntId" style="font-size:10px;margin-left:4px;">▼</span></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
             <span class="badge" :class="fnTypeBadge(d.discntType)" style="font-size:11px;">{{ d.discntType }}</span>
             <span class="badge" :class="fnStatusBadge(d.discntStatus)" style="font-size:11px;">{{ d.discntStatus }}</span>
@@ -186,7 +186,7 @@ window.PmDiscntMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click="loadDetail(d.discntId)" style="font-size:11px;padding:4px 12px;">수정</button>
+          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(d.discntId)" style="font-size:11px;padding:4px 12px;">수정</button>
           <button class="btn btn-danger btn-sm" @click="handleDelete(d)" style="font-size:11px;padding:4px 12px;">삭제</button>
           <span style="font-size:11px;color:#999;margin-left:auto;">#{{ d.discntId }}</span>
         </div>

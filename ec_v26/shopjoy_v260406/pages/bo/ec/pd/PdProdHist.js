@@ -10,7 +10,7 @@ window.PdProdHist = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/pd/prod/page', {
@@ -25,7 +25,7 @@ window.PdProdHist = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const botTab = ref(window._ecProdHistState.tab || 'orders');
     watch(botTab, v => { window._ecProdHistState.tab = v; });
     const viewMode2 = ref(window._ecProdHistState.viewMode || 'tab');

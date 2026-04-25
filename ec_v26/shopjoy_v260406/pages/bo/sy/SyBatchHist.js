@@ -10,7 +10,7 @@ window.SyBatchHist = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const [resBatch, resLogs] = await Promise.all([
@@ -27,7 +27,7 @@ window.SyBatchHist = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     const searchBatchId = ref('');
     const searchStatus  = ref('');

@@ -9,7 +9,7 @@ window.SyAlarmMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/alarm/page', {
@@ -24,7 +24,7 @@ window.SyAlarmMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -66,7 +66,7 @@ window.SyAlarmMng = {
     const selectedId = ref(null);
     const openMode = ref('view'); // 'view' | 'edit'
     const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const loadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
+    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
     const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
     const inlineNavigate = (pg, opts = {}) => {
@@ -130,7 +130,7 @@ window.SyAlarmMng = {
 
 
     return { alarms, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, cfSiteNm, searchKw, searchType, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnTypeBadge, fnTargetBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, cfSiteNm, searchKw, searchType, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnTypeBadge, fnTargetBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -182,7 +182,7 @@ window.SyAlarmMng = {
           <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:a.pathId!=null?'#374151':'#9ca3af',fontWeight:a.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(a.pathId) || '경로 선택...' }}</span><button type="button" @click="openPathPick(a)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
           <td>{{ a.alarmId }}</td>
           <td><span class="badge" :class="fnTypeBadge(a.alarmTypeCd)">{{ a.alarmTypeCd }}</span></td>
-          <td><span class="title-link" @click="loadDetail(a.alarmId)" :style="selectedId===a.alarmId?'color:#e8587a;font-weight:700;':''">{{ a.title }}<span v-if="selectedId===a.alarmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="handleLoadDetail(a.alarmId)" :style="selectedId===a.alarmId?'color:#e8587a;font-weight:700;':''">{{ a.title }}<span v-if="selectedId===a.alarmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ a.message }}</td>
           <td><span class="badge" :class="fnTargetBadge(a.targetTypeCd)">{{ a.targetTypeCd }}</span></td>
           <td>{{ a.sendDate || '-' }}</td>
@@ -190,7 +190,7 @@ window.SyAlarmMng = {
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td>{{ a.regDate }}</td>
           <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="loadDetail(a.alarmId)">수정</button>
+            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(a.alarmId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="handleDelete(a)">삭제</button>
           </div></td>
         </tr>

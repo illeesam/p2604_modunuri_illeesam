@@ -9,7 +9,7 @@ window.PmPlanMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/plan/page', {
@@ -24,7 +24,7 @@ window.PmPlanMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const searchKw = ref('');
     const searchCategory = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
@@ -52,7 +52,7 @@ window.PmPlanMng = {
     const selectedId = ref(null);
     const openMode = ref('view'); // 'view' | 'edit'
     const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const loadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
+    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
     const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
     const inlineNavigate = (pg, opts = {}) => {
@@ -125,7 +125,7 @@ window.PmPlanMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'planId'},{label:'기획전명',key:'planNm'},{label:'카테고리',key:'category'},{label:'테마',key:'theme'},{label:'상품수',key:'productCount'},{label:'상태',key:'status'},{label:'조회수',key:'viewCount'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '기획전목록.csv');
 
-    return { plans, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchCategory, searchStatus, viewMode, pager, PAGE_SIZES, CATEGORIES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { plans, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchCategory, searchStatus, viewMode, pager, PAGE_SIZES, CATEGORIES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -163,7 +163,7 @@ window.PmPlanMng = {
         <tr v-if="cfPageList.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="p in cfPageList" :key="p?.planId" :style="selectedId===p.planId?'background:#fff8f9;':''">
           <td>{{ p.planId }}</td>
-          <td><span class="title-link" @click="loadDetail(p.planId)" :style="selectedId===p.planId?'color:#e8587a;font-weight:700;':''">{{ p.planNm }}<span v-if="selectedId===p.planId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="handleLoadDetail(p.planId)" :style="selectedId===p.planId?'color:#e8587a;font-weight:700;':''">{{ p.planNm }}<span v-if="selectedId===p.planId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><span style="font-size:11px;background:#e8f0fe;color:#1577db;border-radius:4px;padding:2px 8px;">{{ p.category }}</span></td>
           <td>{{ p.theme }}</td>
           <td>{{ p.productIds.length }}개</td>
@@ -173,7 +173,7 @@ window.PmPlanMng = {
           <td>{{ p.regDate }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions" style="display:flex;gap:6px;align-items:center;">
-            <button class="btn btn-blue btn-sm" @click="loadDetail(p.planId)">수정</button>
+            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(p.planId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="handleDelete(p)">삭제</button>
             <span style="font-size:11px;color:#999;margin-left:auto;">#{{ p.planId }}</span>
           </div></td>
@@ -186,12 +186,12 @@ window.PmPlanMng = {
       <div v-if="cfPageList.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
       <div v-for="p in cfPageList" :key="p?.planId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="selectedId===p.planId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
-        @click="loadDetail(p.planId)">
+        @click="handleLoadDetail(p.planId)">
         <!-- 배너 이미지 -->
         <div v-if="p.bannerImage" style="padding:12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;" v-html="p.bannerImage"></div>
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">기획전 #{{ p.planId }}</div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="loadDetail(p.planId)" :style="selectedId===p.planId?{color:'#e8587a'}:{}">{{ p.planNm }}<span v-if="selectedId===p.planId" style="font-size:10px;margin-left:4px;">▼</span></div>
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(p.planId)" :style="selectedId===p.planId?{color:'#e8587a'}:{}">{{ p.planNm }}<span v-if="selectedId===p.planId" style="font-size:10px;margin-left:4px;">▼</span></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
             <span class="badge" :class="fnStatusBadge(p.status)" style="font-size:11px;">{{ p.status }}</span>
             <span class="badge badge-blue" style="font-size:11px;">{{ p.category }}</span>
@@ -204,7 +204,7 @@ window.PmPlanMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click="loadDetail(p.planId)" style="font-size:11px;padding:4px 12px;">수정</button>
+          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(p.planId)" style="font-size:11px;padding:4px 12px;">수정</button>
           <button class="btn btn-danger btn-sm" @click="handleDelete(p)" style="font-size:11px;padding:4px 12px;">삭제</button>
           <span style="font-size:11px;color:#999;margin-left:auto;">#{{ p.planId }}</span>
         </div>

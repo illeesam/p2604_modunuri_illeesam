@@ -17,13 +17,13 @@ window.StReconClaimMng = {
 
     const claimsList = reactive([]);
 
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } });
         claimsList.splice(0, claimsList.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     const searchDiff = ref('');
     const pager = reactive({ page: 1, size: 10 });

@@ -40,7 +40,7 @@ window.StRawMng = {
     const cfClaims  = computed(() => claimList);
     const cfVendors = computed(() => vendorList);
 
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const [resO, resC, resV] = await Promise.all([
           window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -52,7 +52,7 @@ window.StRawMng = {
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     const PAY_METHODS = ['무통장입금','가상계좌','토스페이','카카오페이','네이버페이','핸드폰결제'];
     const PROD_NMS    = ['스탠다드 코튼 티셔츠','슬림 데님 팬츠','캐주얼 후드집업','오버핏 맨투맨','베이직 니트','린넨 셔츠','데일리 스니커즈','크로스백 미니','울 코트','레더 벨트'];

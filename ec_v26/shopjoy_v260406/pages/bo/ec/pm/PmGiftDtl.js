@@ -11,7 +11,7 @@ window.PmGiftDtl = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/gift/page', {
@@ -28,7 +28,7 @@ window.PmGiftDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._pmGiftDtlState.tab || 'info');
     watch(tab, v => { window._pmGiftDtlState.tab = v; });

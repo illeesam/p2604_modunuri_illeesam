@@ -9,7 +9,7 @@ window.SyTemplateMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/template/page', {
@@ -24,7 +24,7 @@ window.SyTemplateMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -69,7 +69,7 @@ window.SyTemplateMng = {
     const selectedId = ref(null);
     const openMode = ref('view'); // 'view' | 'edit'
     const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const loadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
+    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
     const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
     const inlineNavigate = (pg, opts = {}) => {
@@ -165,7 +165,7 @@ window.SyTemplateMng = {
 
 
     return { templates, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchType, searchUseYn, TEMPLATE_TYPES, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnUseYnBadge, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewModal, showPreview, closePreview, sendModal, openSend, closeSend, exportExcel };
+      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchType, searchUseYn, TEMPLATE_TYPES, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnUseYnBadge, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewModal, showPreview, closePreview, sendModal, openSend, closeSend, exportExcel };
   },
   template: /* html */`
 <div>
@@ -223,7 +223,7 @@ window.SyTemplateMng = {
           <td>{{ t.templateId }}</td>
           <td><span class="badge" :class="fnTypeBadge(t.templateTypeCd)">{{ t.templateTypeCd }}</span></td>
           <td><code style="font-size:11px;color:#555;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ t.templateCode || '-' }}</code></td>
-          <td><span class="title-link" @click="loadDetail(t.templateId)" :style="selectedId===t.templateId?'color:#e8587a;font-weight:700;':''">{{ t.templateNm }}<span v-if="selectedId===t.templateId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="handleLoadDetail(t.templateId)" :style="selectedId===t.templateId?'color:#e8587a;font-weight:700;':''">{{ t.templateNm }}<span v-if="selectedId===t.templateId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td style="font-size:12px;color:#555;">{{ t.subject || '-' }}</td>
           <td><span class="badge" :class="fnUseYnBadge(t.useYn)">{{ t.useYn === 'Y' ? '사용' : '미사용' }}</span></td>
           <td>{{ t.regDate }}</td>
@@ -231,7 +231,7 @@ window.SyTemplateMng = {
           <td><div class="actions">
             <button class="btn btn-secondary btn-sm" @click="showPreview(t)">미리보기</button>
             <button class="btn btn-sm" style="background:#52c41a;color:#fff;border-color:#52c41a;" @click="openSend(t)">발송</button>
-            <button class="btn btn-blue btn-sm" @click="loadDetail(t.templateId)">수정</button>
+            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(t.templateId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="handleDelete(t)">삭제</button>
           </div></td>
         </tr>

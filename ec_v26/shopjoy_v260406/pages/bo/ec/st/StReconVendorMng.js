@@ -20,7 +20,7 @@ window.StReconVendorMng = {
     const cfOrders  = computed(() => orderList);
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const [resO, resV] = await Promise.all([
           window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -30,7 +30,7 @@ window.StReconVendorMng = {
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     const searchDiff = ref('');
     const pager = reactive({ page: 1, size: 10 });

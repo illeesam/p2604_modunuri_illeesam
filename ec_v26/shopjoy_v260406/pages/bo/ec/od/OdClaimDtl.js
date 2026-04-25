@@ -12,7 +12,7 @@ window.OdClaimDtl = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const loadData = async () => {
+    const handleLoadData = async () => {
       loading.value = true;
       try {
         const [claimsRes, ordersRes] = await Promise.all([
@@ -29,7 +29,7 @@ window.OdClaimDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { loadData(); });
+    onMounted(() => { handleLoadData(); });
     const cfIsNew = computed(() => !props.editId);
 
     // 주문 조회 헬퍼 함수

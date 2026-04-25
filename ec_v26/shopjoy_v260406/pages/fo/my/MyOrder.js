@@ -93,7 +93,7 @@ window.MyOrder = {
       claimModal.reason = ''; claimModal.reasonDetail = '';
       claimModal.exchangeSize = ''; claimModal.exchangeColor = '';
       claimModal.selectedCouponId = null; claimModal.exchangeItemIdx = 0;
-      if (!coupons.value.length) myStore.loadCoupons();
+      if (!coupons.value.length) myStore.handleLoadCoupons();
     };
     const submitClaimModal = () => {
       if (!claimModal.reason) { props.showToast('신청 사유를 선택해주세요.', 'error'); return; }
@@ -166,12 +166,12 @@ window.MyOrder = {
       .filter(o => !flowStatusFilter.length || flowStatusFilter.includes(o.status))
     );
 
-    const fetchData = async () => {
-      await myStore.loadOrders();
-      myStore.loadClaims();
-      myStore.loadCoupons();
+    const handleFetchData = async () => {
+      await myStore.handleLoadOrders();
+      myStore.handleLoadClaims();
+      myStore.handleLoadCoupons();
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     return {
       myStore, orders, claimsByOrderId, cfDateFilteredOrders, onDateSearch,

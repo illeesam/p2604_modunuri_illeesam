@@ -9,7 +9,7 @@ window.SyBizMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/biz/page', {
@@ -23,7 +23,7 @@ window.SyBizMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     /* 좌측 표시경로 트리 */
     const selectedPath = ref(null);

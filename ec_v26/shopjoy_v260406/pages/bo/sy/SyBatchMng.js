@@ -9,7 +9,7 @@ window.SyBatchMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/batch/page', {
@@ -24,7 +24,7 @@ window.SyBatchMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -81,7 +81,7 @@ window.SyBatchMng = {
       _orig: { batchNm: b.batchNm, batchCode: b.batchCode, cron: b.cron, statusCd: b.statusCd, description: b.description },
     });
 
-    const loadGrid = () => {
+    const handleLoadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       batches
         .filter(b => {
@@ -96,19 +96,19 @@ window.SyBatchMng = {
         })
         .forEach(b => gridRows.push(makeRow(b)));
     };
-    loadGrid();
+    handleLoadGrid();
 
     const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
     const onSearch = () => {
       Object.assign(applied, { kw: searchKw.value, status: searchStatus.value, runStatus: searchRunStatus.value, dateStart: searchDateStart.value, dateEnd: searchDateEnd.value });
-      loadGrid();
+      handleLoadGrid();
     };
     const onReset = () => {
       searchKw.value = ''; searchStatus.value = ''; searchRunStatus.value = '';
       searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
       Object.assign(applied, { kw: '', status: '', runStatus: '', dateStart: '', dateEnd: '' });
-      loadGrid();
+      handleLoadGrid();
     };
 
     const setFocused = (idx) => { focusedIdx.value = idx; };
@@ -196,7 +196,7 @@ window.SyBatchMng = {
       if (uRows.length) parts.push(`수정 ${uRows.length}건`);
       if (dRows.length) parts.push(`삭제 ${dRows.length}건`);
       props.showToast(`${parts.join(', ')} 저장되었습니다.`);
-      loadGrid();
+      handleLoadGrid();
     };
 
     /* ── 즉시 실행 ── */
@@ -363,7 +363,7 @@ window.SyBatchMng = {
       '배치목록.csv'
     );
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
-    watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
+    watch(selectedPath, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
 
 
     return { batches, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,

@@ -11,7 +11,7 @@ window.PmSaveDtl = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/save/page', { params: { pageNo: 1, pageSize: 10000 } });
@@ -26,7 +26,7 @@ window.PmSaveDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._pmSaveDtlState.tab || 'info');
     watch(tab, v => { window._pmSaveDtlState.tab = v; });

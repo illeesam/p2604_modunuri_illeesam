@@ -9,7 +9,7 @@ window.SySiteMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/site/page', {
@@ -25,7 +25,7 @@ window.SySiteMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -68,7 +68,7 @@ window.SySiteMng = {
     const selectedId = ref(null);
     const openMode = ref('view'); // 'view' | 'edit'
     const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const loadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
+    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
     const openNew    = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
     const inlineNavigate = (pg, opts = {}) => {
@@ -161,7 +161,7 @@ window.SySiteMng = {
       pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums,
       onSearch, onReset, setPage, onSizeChange,
       fnStatusBadge, fnTypeBadge, handleDelete,
-      selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey,
+      selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey,
       exportExcel,
     };
   },
@@ -221,7 +221,7 @@ window.SySiteMng = {
           <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;">{{ s.siteCode }}</code></td>
           <td><span class="badge" :class="fnTypeBadge(s.siteType)" style="font-size:10px;">{{ s.siteType }}</span></td>
           <td>
-            <span class="title-link" @click="loadDetail(s.siteId)" :style="selectedId===s.siteId?'color:#e8587a;font-weight:700;':''">
+            <span class="title-link" @click="handleLoadDetail(s.siteId)" :style="selectedId===s.siteId?'color:#e8587a;font-weight:700;':''">
               {{ s.siteNm }}<span v-if="selectedId===s.siteId" style="font-size:10px;margin-left:3px;">▼</span>
             </span>
             <div style="font-size:11px;color:#888;margin-top:2px;">{{ s.description }}</div>
@@ -233,7 +233,7 @@ window.SySiteMng = {
           <td style="font-size:12px;">{{ s.regDate }}</td>
           <td><span class="badge" :class="fnStatusBadge(s.statusCd)">{{ s.statusCd }}</span></td>
           <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="loadDetail(s.siteId)">수정</button>
+            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(s.siteId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="handleDelete(s)">삭제</button>
           </div></td>
         </tr>

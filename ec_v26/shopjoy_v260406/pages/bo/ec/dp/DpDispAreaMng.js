@@ -10,7 +10,7 @@ window.DpDispAreaMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/dp/area/page', {
@@ -25,7 +25,7 @@ window.DpDispAreaMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const fnPathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
@@ -149,7 +149,7 @@ window.DpDispAreaMng = {
     /* ── 하단 상세 임베드 ── */
     const selectedId = ref(null);
     const openMode   = ref('edit');
-    const loadDetail = (id) => {
+    const handleLoadDetail = (id) => {
       if (selectedId.value === id) { selectedId.value = null; return; }
       selectedId.value = id; openMode.value = 'edit';
     };
@@ -255,7 +255,7 @@ window.DpDispAreaMng = {
       AREA_TYPE_OPTS, LAYOUT_TYPE_OPTS,
       pager, PAGE_SIZES, cfTotal, cfTotalPages, cfPageList, cfPageNums, setPage, onSizeChange,
       onSearch, onReset, handleDelete, exportExcel,
-      selectedId, openMode, loadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
+      selectedId, openMode, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
       dragSrc, dragOverIdx, onDragStart, onDragOver, onDragLeave, onDrop, onDragEnd,
       fnAreaTypeLabel, fnStatusBadge, panelsOfArea,
       expandedAreas, toggleExpandArea, isAreaExpanded,
@@ -395,7 +395,7 @@ window.DpDispAreaMng = {
               <!-- 영역명 + 상태 -->
               <div style="margin-bottom:6px;">
                 <code style="font-size:12px;background:#f0f2f5;color:#555;padding:2px 8px;border-radius:4px;letter-spacing:.3px;">{{ a.codeValue }}</code>
-                <span class="title-link" @click="loadDetail(a.codeId)"
+                <span class="title-link" @click="handleLoadDetail(a.codeId)"
                   :style="'font-size:14px;font-weight:700;margin-left:8px;'+(selectedId===a.codeId?'color:#e8587a;':'color:#222;')">
                   {{ a.codeLabel }}
                   <span v-if="selectedId===a.codeId" style="font-size:10px;margin-left:3px;">▼</span>
@@ -426,7 +426,7 @@ window.DpDispAreaMng = {
             </td>
             <td style="vertical-align:top;padding-top:10px;">
               <div class="actions" style="justify-content:flex-end;">
-                <button class="btn btn-blue btn-sm" @click="loadDetail(a.codeId)">수정</button>
+                <button class="btn btn-blue btn-sm" @click="handleLoadDetail(a.codeId)">수정</button>
                 <button class="btn btn-danger btn-sm" @click="handleDelete(a)">삭제</button>
               </div>
             </td>

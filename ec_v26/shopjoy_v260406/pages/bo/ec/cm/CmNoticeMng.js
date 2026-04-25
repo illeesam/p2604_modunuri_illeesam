@@ -9,7 +9,7 @@ window.CmNoticeMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/cm/notice/page', {
@@ -24,7 +24,7 @@ window.CmNoticeMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchKw = ref(''); const searchType = ref(''); const searchStatus = ref('');
     const searchDateStart = ref(''); const searchDateEnd = ref(''); const searchDateRange = ref('');
@@ -38,7 +38,7 @@ window.CmNoticeMng = {
     const selectedId = ref(null);
     const openMode = ref('view'); // 'view' | 'edit'
     const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const loadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
+    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
     const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
     const inlineNavigate = (pg, opts = {}) => {
@@ -93,7 +93,7 @@ window.CmNoticeMng = {
     };
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'noticeId'},{label:'제목',key:'title'},{label:'유형',key:'noticeType'},{label:'상태',key:'statusCd'},{label:'조회수',key:'viewCount'},{label:'등록일',key:'regDate'}], '공지목록.csv');
 
-    return { notices, loading, error, cfSiteNm, searchKw, searchType, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { notices, loading, error, cfSiteNm, searchKw, searchType, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -127,7 +127,7 @@ window.CmNoticeMng = {
         <tr v-for="n in cfPageList" :key="n?.noticeId" :style="selectedId===n.noticeId?'background:#fff8f9;':''">
           <td>{{ n.noticeId }}</td>
           <td><span class="badge" :class="fnTypeBadge(n.noticeType)">{{ n.noticeType }}</span></td>
-          <td><span class="title-link" @click="loadDetail(n.noticeId)" :style="selectedId===n.noticeId?'color:#e8587a;font-weight:700;':''">{{ n.title }}<span v-if="n.isFixed" style="margin-left:4px;font-size:10px;color:#e8587a;">📌</span><span v-if="selectedId===n.noticeId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="handleLoadDetail(n.noticeId)" :style="selectedId===n.noticeId?'color:#e8587a;font-weight:700;':''">{{ n.title }}<span v-if="n.isFixed" style="margin-left:4px;font-size:10px;color:#e8587a;">📌</span><span v-if="selectedId===n.noticeId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><span class="badge" :class="n.isFixed?'badge-red':'badge-gray'">{{ n.isFixed ? '고정' : '-' }}</span></td>
           <td>{{ n.startDate || '-' }}</td>
           <td>{{ n.endDate || '-' }}</td>
@@ -135,7 +135,7 @@ window.CmNoticeMng = {
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td>{{ n.regDate }}</td>
           <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="loadDetail(n.noticeId)">수정</button>
+            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(n.noticeId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="handleDelete(n)">삭제</button>
           </div></td>
         </tr>

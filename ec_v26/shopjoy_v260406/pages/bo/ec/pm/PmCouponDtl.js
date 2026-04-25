@@ -10,7 +10,7 @@ window.PmCouponDtl = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const loadData = async () => {
+    const handleLoadData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/coupon/page', {
@@ -25,7 +25,7 @@ window.PmCouponDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { loadData(); });
+    onMounted(() => { handleLoadData(); });
     const cfIsNew = computed(() => !props.editId);
     const tab = ref(window._pmCouponDtlState.tab || 'info');
     watch(tab, v => { window._pmCouponDtlState.tab = v; });

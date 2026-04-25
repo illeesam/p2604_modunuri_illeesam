@@ -53,7 +53,7 @@ window.PdCategoryProdMng = {
     const expandedSet = reactive(new Set());
 
     /* depth 1 노드 기본 펼침 (2레벨 노출) */
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const [catsRes, prodsRes] = await Promise.all([
           window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -65,7 +65,7 @@ window.PdCategoryProdMng = {
       expandedSet.clear();
       categories.filter(c => c.depth === 1).forEach(c => expandedSet.add(c.categoryId));
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const isExpanded  = id => expandedSet.has(id);
     const toggleNode  = id => {
       if (expandedSet.has(id)) expandedSet.delete(id); else expandedSet.add(id);

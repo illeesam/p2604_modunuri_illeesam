@@ -69,7 +69,7 @@ window.XsSample01 = {
     const setPage    = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const getRealIdx = i => (pager.page - 1) * pager.size + i;
 
-    const loadGrid = () => {
+    const handleLoadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       allData.filter(d => {
         const kw = applied.kw.toLowerCase();
@@ -80,18 +80,18 @@ window.XsSample01 = {
       }).forEach(d => gridRows.push(makeRow(d)));
     };
 
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const res = await api.get(API, { cdGrp: CD_GRP });
         const list = res?.data?.data ?? res?.data ?? [];
         allData.splice(0, allData.length, ...list.map(toRow));
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
-      loadGrid();
+      handleLoadGrid();
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
-    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, grade: searchGrade.value, status: searchStatus.value }); loadGrid(); };
-    const onReset  = () => { searchKw.value = ''; searchGrade.value = ''; searchStatus.value = ''; Object.assign(applied, { kw: '', grade: '', status: '' }); loadGrid(); };
+    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, grade: searchGrade.value, status: searchStatus.value }); handleLoadGrid(); };
+    const onReset  = () => { searchKw.value = ''; searchGrade.value = ''; searchStatus.value = ''; Object.assign(applied, { kw: '', grade: '', status: '' }); handleLoadGrid(); };
 
     const setFocused = idx => { focusedIdx.value = idx; };
     const onCellChange = row => {
@@ -146,7 +146,7 @@ window.XsSample01 = {
         const res = await api.get(API, { cdGrp: CD_GRP });
         const list = res?.data?.data ?? res?.data ?? [];
         allData.splice(0, allData.length, ...list.map(toRow));
-        loadGrid();
+        handleLoadGrid();
       } catch (e) { showToast('저장 실패: ' + (e.response?.data?.message || e.message || e), 'error'); }
     };
 

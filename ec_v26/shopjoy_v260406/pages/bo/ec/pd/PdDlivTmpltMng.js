@@ -6,13 +6,13 @@ window.PdDlivTmpltMng = {
     const { ref, reactive, computed, onMounted } = Vue;
     const dlivTmplts = reactive([]);
 
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/ec/pd/dliv-tmplt/page', { params: { pageNo: 1, pageSize: 10000 } });
         dlivTmplts.splice(0, dlivTmplts.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchKw     = ref('');
     const searchMethod = ref('');

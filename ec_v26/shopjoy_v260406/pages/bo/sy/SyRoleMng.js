@@ -9,7 +9,7 @@ window.SyRoleMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/role/page', {
@@ -24,7 +24,7 @@ window.SyRoleMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -171,7 +171,7 @@ window.SyRoleMng = {
       };
     };
 
-    const loadGrid = () => {
+    const handleLoadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       const filtered = roles.filter(r => {
         const kw = applied.kw.trim().toLowerCase();
@@ -192,7 +192,7 @@ window.SyRoleMng = {
       buildTreeRows(filtered).forEach(r => gridRows.push(makeRow(r)));
     };
 
-    loadGrid();
+    handleLoadGrid();
 
     const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
     const cfPagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
@@ -203,12 +203,12 @@ window.SyRoleMng = {
 
     const onSearch = () => {
       Object.assign(applied, { kw: searchKw.value, type: searchType.value, useYn: searchUseYn.value, cat: searchCat.value });
-      loadGrid();
+      handleLoadGrid();
     };
     const onReset = () => {
       searchKw.value = ''; searchType.value = ''; searchUseYn.value = ''; searchCat.value = '';
       Object.assign(applied, { kw: '', type: '', useYn: '', cat: '' });
-      loadGrid();
+      handleLoadGrid();
     };
 
     const setFocused = (realIdx) => {
@@ -311,7 +311,7 @@ window.SyRoleMng = {
       if (uRows.length) parts.push(`수정 ${uRows.length}건`);
       if (dRows.length) parts.push(`삭제 ${dRows.length}건`);
       props.showToast(`${parts.join(', ')} 저장되었습니다.`);
-      loadGrid();
+      handleLoadGrid();
     };
 
     const checkAll = ref(false);
@@ -427,8 +427,8 @@ window.SyRoleMng = {
       '역할목록.csv'
     );
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
-    watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
-    watch(treeCatFilter, () => { if (typeof loadGrid === 'function') loadGrid(); });
+    watch(selectedPath, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
+    watch(treeCatFilter, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
 
 
     return {

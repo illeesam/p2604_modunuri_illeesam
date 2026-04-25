@@ -10,7 +10,7 @@ window.PdCategoryMng = {
     const expandedSet = reactive(new Set());
 
     /* depth 1 노드 기본 펼침 (2레벨 노출) */
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 } });
         categories.splice(0, categories.length, ...(res.data?.data?.list || []));
@@ -18,7 +18,7 @@ window.PdCategoryMng = {
       expandedSet.clear();
       categories.filter(c => c.depth === 1).forEach(c => expandedSet.add(c.categoryId));
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const isExpanded  = id => expandedSet.has(id);
     const toggleNode  = id => {
       if (expandedSet.has(id)) expandedSet.delete(id); else expandedSet.add(id);
@@ -31,7 +31,7 @@ window.PdCategoryMng = {
     const selectNode = id => {
       selectedCatId.value = (selectedCatId.value === id) ? null : id;
     };
-    watch(selectedCatId, () => loadGrid());
+    watch(selectedCatId, () => handleLoadGrid());
 
     /* ── 좌측 트리 빌드 (expanded 반영) ── */
     const cfCatTreeFlat = computed(() => {
@@ -88,7 +88,7 @@ window.PdCategoryMng = {
       _orig: { categoryNm: c.categoryNm, parentId: c.parentId, sortOrd: c.sortOrd, description: c.description, status: c.status },
     });
 
-    const loadGrid = () => {
+    const handleLoadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       const filtered = window.safeArrayUtils.safeFilter(categories, c => {
         const kw = applied.kw.trim().toLowerCase();
@@ -103,7 +103,7 @@ window.PdCategoryMng = {
       buildTreeRows(filtered).forEach(c => gridRows.push(makeRow(c)));
     };
 
-    loadGrid();
+    handleLoadGrid();
 
     const cfTotal      = computed(() => window.safeArrayUtils.safeFilter((gridRows || []), r => r._row_status !== 'D').length);
     const cfPagedRows  = computed(() => (gridRows || []).slice((pager.page - 1) * pager.size, pager.page * pager.size));
@@ -116,8 +116,8 @@ window.PdCategoryMng = {
     const onSizeChange  = () => { pager.page = 1; };
     const getRealIdx    = localIdx => (pager.page - 1) * pager.size + localIdx;
 
-    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, depth: searchDepth.value, status: searchStatus.value }); loadGrid(); };
-    const onReset  = () => { searchKw.value = ''; searchDepth.value = ''; searchStatus.value = ''; selectedCatId.value = null; Object.assign(applied, { kw: '', depth: '', status: '' }); loadGrid(); };
+    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, depth: searchDepth.value, status: searchStatus.value }); handleLoadGrid(); };
+    const onReset  = () => { searchKw.value = ''; searchDepth.value = ''; searchStatus.value = ''; selectedCatId.value = null; Object.assign(applied, { kw: '', depth: '', status: '' }); handleLoadGrid(); };
 
     const setFocused = realIdx => { focusedIdx.value = realIdx; };
 
@@ -255,7 +255,7 @@ window.PdCategoryMng = {
         });
       });
       props.showToast([iRows.length && `등록 ${iRows.length}건`, uRows.length && `수정 ${uRows.length}건`, dRows.length && `삭제 ${dRows.length}건`].filter(Boolean).join(', ') + ' 저장되었습니다.');
-      loadGrid();
+      handleLoadGrid();
     };
 
     const checkAll = ref(false);

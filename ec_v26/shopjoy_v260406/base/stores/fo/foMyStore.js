@@ -35,7 +35,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
 
   /* ── 주문 ── */
   const orders = reactive([]);
-  const loadOrders = async () => {
+  const handleLoadOrders = async () => {
     if (!Array.isArray(orders) || !orders.length) {
       if (!Array.isArray(orders)) Object.assign(orders, []);
       try { const res = await window.foApi.get('/fo/my/order/list'); orders.splice(0, orders.length, ...(res.data?.data || [])); }
@@ -50,7 +50,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   /* ── 클레임 ── */
   const claims = reactive([]);
   const claimFilter = ref('전체');
-  const loadClaims = async () => {
+  const handleLoadClaims = async () => {
     if (!Array.isArray(claims) || !claims.length) {
       if (!Array.isArray(claims)) Object.assign(claims, []);
       try { const res = await window.foApi.get('/fo/my/claim/list'); claims.splice(0, claims.length, ...(res.data?.data || [])); }
@@ -74,7 +74,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   /* ── 쿠폰 ── */
   const coupons = reactive([]);
   const couponCode = ref('');
-  const loadCoupons = async () => {
+  const handleLoadCoupons = async () => {
     if (!Array.isArray(coupons) || !coupons.length) {
       if (!Array.isArray(coupons)) Object.assign(coupons, []);
       try { const res = await window.foApi.get('/fo/my/coupon/list'); coupons.splice(0, coupons.length, ...(res.data?.data || [])); }
@@ -89,7 +89,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const cashBalance = ref(0);
   const cashHistory = reactive([]);
   const chargeAmount = ref('');
-  const loadCash = async () => {
+  const handleLoadCash = async () => {
     if (!Array.isArray(cashHistory) || !cashHistory.length) {
       if (!Array.isArray(cashHistory)) Object.assign(cashHistory, []);
       try {
@@ -172,13 +172,13 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
     ORDER_FLOW, CANCELABLE, SHOW_COURIER, orderStatusLabel, statusColor,
     CLAIM_FLOWS, CLAIM_DONE, CLAIM_TYPE_COLOR, CLAIM_STATUS_COLOR,
     /* 주문 */
-    orders, loadOrders, setOrderStatus,
+    orders, handleLoadOrders, setOrderStatus,
     /* 클레임 */
-    claims, claimFilter, cfFilteredClaims, cfClaimsByOrderId, loadClaims, removeClaim,
+    claims, claimFilter, cfFilteredClaims, cfClaimsByOrderId, handleLoadClaims, removeClaim,
     /* 쿠폰 */
-    coupons, couponCode, loadCoupons, discountLabel,
+    coupons, couponCode, handleLoadCoupons, discountLabel,
     /* 캐쉬 */
-    cashBalance, cashHistory, chargeAmount, loadCash,
+    cashBalance, cashHistory, chargeAmount, handleLoadCash,
     /* 문의 */
     inquiries, expandedInquiry, loadInquiries, inquiryStatusColor,
     /* 채팅 */

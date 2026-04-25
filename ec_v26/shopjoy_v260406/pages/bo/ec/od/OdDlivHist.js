@@ -10,7 +10,7 @@ window.OdDlivHist = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/od/dliv/page', {
@@ -25,7 +25,7 @@ window.OdDlivHist = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const botTab = ref(window._ecDlivHistState.tab || 'order');
     watch(botTab, v => { window._ecDlivHistState.tab = v; });
     const viewMode2 = ref('tab');

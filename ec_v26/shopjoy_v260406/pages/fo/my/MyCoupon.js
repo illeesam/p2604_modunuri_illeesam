@@ -42,11 +42,11 @@ window.MyCoupon = {
 
     const onTabChange = tab => { activeTab.value = tab; couponPager.page = 1; };
 
-    const fetchData = async () => {
-      await myStore.loadCoupons();
-      myStore.loadOrders();
+    const handleFetchData = async () => {
+      await myStore.handleLoadCoupons();
+      myStore.handleLoadOrders();
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     return {
       myStore, coupons, couponCode, couponPager, paginate,

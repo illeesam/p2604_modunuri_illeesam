@@ -11,7 +11,7 @@ window.SyContactDtl = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const loadData = async () => {
+    const handleLoadData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/contact/page', {
@@ -26,7 +26,7 @@ window.SyContactDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { loadData(); });
+    onMounted(() => { handleLoadData(); });
     const cfIsNew = computed(() => !props.editId);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const tab = ref(window._syContactDtlState.tab || 'content');

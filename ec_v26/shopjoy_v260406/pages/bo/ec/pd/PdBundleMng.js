@@ -12,7 +12,7 @@ window.PdBundleMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const [bundlesRes, prodsRes, catsRes] = await Promise.all([
@@ -31,7 +31,7 @@ window.PdBundleMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     /* ── 검색 ── */

@@ -146,7 +146,7 @@ window.DpDispPanelPreview = {
     const displays = reactive([]);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const [wlRes, dpRes] = await Promise.all([
           window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -156,7 +156,7 @@ window.DpDispPanelPreview = {
         displays.splice(0, displays.length, ...(dpRes.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     const today   = new Date().toISOString().slice(0, 10);
     const nowTime = new Date().toTimeString().slice(0, 5);

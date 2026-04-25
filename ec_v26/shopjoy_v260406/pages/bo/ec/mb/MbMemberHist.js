@@ -10,7 +10,7 @@ window.MbMemberHist = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/mb/member/page', {
@@ -25,7 +25,7 @@ window.MbMemberHist = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const tab = ref(window._ecMemberHistState.tab || 'orders');
     watch(tab, v => { window._ecMemberHistState.tab = v; });
     const viewMode2 = ref(window._ecMemberHistState.viewMode || 'tab');

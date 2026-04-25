@@ -18,13 +18,13 @@ window.StReconPayMng = {
     const orderList = reactive([]);
     const cfOrders = computed(() => orderList);
 
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } });
         orderList.splice(0, orderList.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     const searchDiff = ref('');
     const pager = reactive({ page: 1, size: 10 });

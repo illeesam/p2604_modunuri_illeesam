@@ -20,7 +20,7 @@ window.StReconOrderMng = {
     const cfOrders  = computed(() => orderList);
     const cfVendors = computed(() => vendorList);
 
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const [resO, resV] = await Promise.all([
           window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -30,7 +30,7 @@ window.StReconOrderMng = {
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     const searchKw   = ref('');
     const searchDiff = ref('');

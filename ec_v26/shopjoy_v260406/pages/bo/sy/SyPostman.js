@@ -506,14 +506,14 @@ window.SyPostman = {
     const methodDot = m => ({ GET:'#166534', POST:'#1e40af', PUT:'#92400e', PATCH:'#6b21a8', DELETE:'#991b1b' }[m] || '#888');
 
     /* ===== Mount ===== */
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loadSettings(); refreshLs();
       /* 샘플 데이터: 빈 상태로 시작 */
       treeLoaded.value = true;
       treeRoot.push(buildAutoCrudNodes());
       treeRoot.push(buildAutoCrudRestNodes());
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     return {
       cfFlatTree, treeSearch, toggleNode, selectApiNode, treeLoaded, appFilter, APP_META,

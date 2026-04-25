@@ -9,7 +9,7 @@ window.MbMemGradeMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/mb/member-grade/page', {
@@ -24,7 +24,7 @@ window.MbMemGradeMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const GRADE_CODES = ['BASIC','SILVER','GOLD','VIP','VVIP','PLATINUM'];
 
@@ -52,10 +52,10 @@ window.MbMemGradeMng = {
     const focusedIdx = ref(null);
     const FIELDS     = ['gradeCd','gradeNm','gradeRank','minPurchaseAmt','saveRate','useYn'];
 
-    const loadGrid = () => {
+    const handleLoadGrid = () => {
       gridRows.splice(0, gridRows.length, ...cfPageList.value.map(g => ({ ...g, _row_status: null })));
     };
-    watch([() => pager.page, () => pager.size, applied], loadGrid, { immediate: true });
+    watch([() => pager.page, () => pager.size, applied], handleLoadGrid, { immediate: true });
 
     const addRow = () => {
       gridRows.unshift({ gradeId: _tempId--, siteId: 1, gradeCd: '', gradeNm: '', gradeRank: gridRows.length + 1, minPurchaseAmt: 0, saveRate: 1.00, useYn: 'Y', _row_status: 'N' });

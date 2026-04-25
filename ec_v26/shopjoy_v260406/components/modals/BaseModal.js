@@ -545,14 +545,14 @@ window.SiteSelectModal = {
     const kw = ref('');
     const list = ref([]);
     const loading = ref(false);
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/site', { params: { pageSize: 10000 } });
         list.value = res.data?.data || [];
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const cfFiltered = computed(() => list.value.filter(s => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
@@ -594,14 +594,14 @@ window.VendorSelectModal = {
     const kw = ref('');
     const list = ref([]);
     const loading = ref(false);
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/vendor', { params: { pageSize: 10000 } });
         list.value = res.data?.data || [];
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const cfFiltered = computed(() => list.value.filter(v => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
@@ -639,7 +639,7 @@ window.BoUserSelectModal = {
     const depts = ref([]);
     const users = ref([]);
     const loading = ref(false);
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const [deptRes, userRes] = await Promise.all([
@@ -650,7 +650,7 @@ window.BoUserSelectModal = {
         users.value = userRes.data?.data || [];
       } catch (e) { depts.value = []; users.value = []; } finally { loading.value = false; }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     /* ── 부서 트리 (depth 1부터 시작, root는 별도 렌더) ── */
     const selectedDeptId = ref(null);
@@ -870,14 +870,14 @@ window.MemberSelectModal = {
     const kw = ref('');
     const list = ref([]);
     const loading = ref(false);
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/mb/member', { params: { pageSize: 10000 } });
         list.value = res.data?.data || [];
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const cfFiltered = computed(() => list.value.filter(m => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
@@ -916,14 +916,14 @@ window.OrderSelectModal = {
     const kw = ref('');
     const list = ref([]);
     const loading = ref(false);
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/ord/order', { params: { pageSize: 10000 } });
         list.value = res.data?.data || [];
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const cfFiltered = computed(() => list.value.filter(o => {
       if (!kw.value) return true;
       const k = kw.value.toLowerCase();
@@ -963,14 +963,14 @@ window.BbmSelectModal = {
     const pageSize = 6;
     const list = ref([]);
     const loading = ref(false);
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/bbm', { params: { pageSize: 10000 } });
         list.value = res.data?.data || [];
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     const cfFiltered = computed(() => list.value.filter(b => {
       if (b.useYn === 'N') return false;
@@ -1150,7 +1150,7 @@ window.TemplateSendModal = {
     const allDepts = ref([]);
     const allMembers = ref([]);
     const allBoUsers = ref([]);
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const [deptRes, memberRes, userRes] = await Promise.all([
           window.boApi.get('/bo/sy/dept', { params: { pageSize: 10000 } }),
@@ -1162,7 +1162,7 @@ window.TemplateSendModal = {
         allBoUsers.value = userRes.data?.data || [];
       } catch (e) {}
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     /* ── 부서 트리 (관리자 탭) ── */
     const selectedDeptId = ref(null);
@@ -1443,13 +1443,13 @@ window.RoleTreeModal = {
     const kw = ref('');
     const hoverId = ref(null);
     const allRoles = ref([]);
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/role', { params: { pageSize: 10000 } });
         allRoles.value = res.data?.data || [];
       } catch (e) { allRoles.value = []; }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     const buildTree = (items, parentId, depth) => {
       return items
@@ -1537,13 +1537,13 @@ window.MenuTreeModal = {
     const kw = ref('');
     const hoverId = ref(null);
     const allMenus = ref([]);
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/menu', { params: { pageSize: 10000 } });
         allMenus.value = res.data?.data || [];
       } catch (e) { allMenus.value = []; }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     const buildTree = (items, parentId, depth) => {
       return items
@@ -1671,13 +1671,13 @@ window.DeptTreeModal = {
     const kw = ref('');
     const hoverId = ref(null);
     const allDepts = ref([]);
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/dept', { params: { pageSize: 10000 } });
         allDepts.value = res.data?.data || [];
       } catch (e) { allDepts.value = []; }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     /* ── 트리 구성 ── */
     const buildTree = (items, parentId, depth) => {
@@ -1815,13 +1815,13 @@ window.CategoryTreeModal = {
     const kw = ref('');
     const hoverId = ref(null);
     const allCategories = ref([]);
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/ec/pd/category', { params: { pageSize: 10000 } });
         allCategories.value = res.data?.data || [];
       } catch (e) { allCategories.value = []; }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     const buildTree = (items, parentId, depth) => {
       return items
@@ -3334,15 +3334,15 @@ window.BizPickModal = {
     const kw = ref('');
     const typeFlt = ref('');
     const bizs = reactive([]);
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } });
         bizs.splice(0, bizs.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
-    const onSearch = () => { fetchData(); };
-    const onReset = () => { kw.value = ''; typeFlt.value = ''; fetchData(); };
-    Vue.onMounted(() => { fetchData(); });
+    const onSearch = () => { handleFetchData(); };
+    const onReset = () => { kw.value = ''; typeFlt.value = ''; handleFetchData(); };
+    Vue.onMounted(() => { handleFetchData(); });
     const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
     const vtLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
     const vtBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
@@ -3436,15 +3436,15 @@ window.SimpleUserPickModal = {
     const { ref, reactive, computed } = Vue;
     const kw = ref('');
     const boUsers = reactive([]);
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 } });
         boUsers.splice(0, boUsers.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
-    const onSearch = () => { fetchData(); };
-    const onReset = () => { kw.value = ''; fetchData(); };
-    Vue.onMounted(() => { fetchData(); });
+    const onSearch = () => { handleFetchData(); };
+    const onReset = () => { kw.value = ''; handleFetchData(); };
+    Vue.onMounted(() => { handleFetchData(); });
     const cfExcl = computed(() => new Set(props.excludeIds || []));
     const cfFiltered = computed(() => boUsers.filter(u => {
       if (cfExcl.value.has(u.boUserId)) return false;

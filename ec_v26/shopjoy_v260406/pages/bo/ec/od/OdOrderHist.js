@@ -12,7 +12,7 @@ window.OdOrderHist = {
     const deliveries = reactive([]);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const [resO, resC, resD] = await Promise.all([
@@ -31,7 +31,7 @@ window.OdOrderHist = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const botTab = ref(window._ecOrderHistState.tab || 'products');
     watch(botTab, v => { window._ecOrderHistState.tab = v; });
     const viewMode2 = ref('tab');

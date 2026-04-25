@@ -11,7 +11,7 @@ window.DpDispPanelMng = {
     const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const [panelsRes, displaysRes] = await Promise.all([
@@ -28,7 +28,7 @@ window.DpDispPanelMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const fnPathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const searchKw = ref('');
@@ -64,7 +64,7 @@ window.DpDispPanelMng = {
     const selectedId = ref(null);
     const openMode = ref('view'); // 'view' | 'edit'
     const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const loadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
+    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
     const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
     const inlineNavigate = (pg, opts = {}) => {
@@ -400,7 +400,7 @@ window.DpDispPanelMng = {
     });
 
     return { panels, loading, error, fnPathLabel, displays, codes,
-      cfPanelTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchVisibility, searchLayoutType, VISIBILITY_OPTS, LAYOUT_TYPE_OPTS, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
+      cfPanelTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchVisibility, searchLayoutType, VISIBILITY_OPTS, LAYOUT_TYPE_OPTS, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
   },
   template: /* html */`
 <div>
@@ -561,7 +561,7 @@ window.DpDispPanelMng = {
             <td style="padding:10px 12px;">
               <!-- 패널명 -->
               <div style="margin-bottom:6px;">
-                <span class="title-link" @click="loadDetail(d.dispId)"
+                <span class="title-link" @click="handleLoadDetail(d.dispId)"
                   :style="'font-size:14px;font-weight:700;'+(selectedId===d.dispId?'color:#e8587a;':'color:#222;')">
                   {{ d.name }}
                   <span v-if="selectedId===d.dispId" style="font-size:10px;margin-left:3px;">▼</span>
@@ -613,7 +613,7 @@ window.DpDispPanelMng = {
             </td>
             <td style="vertical-align:top;padding-top:10px;">
               <div class="actions" style="justify-content:flex-end;">
-                <button class="btn btn-blue btn-sm" @click="loadDetail(d.dispId)">수정</button>
+                <button class="btn btn-blue btn-sm" @click="handleLoadDetail(d.dispId)">수정</button>
                 <button class="btn btn-danger btn-sm" @click="handleDelete(d)">삭제</button>
               </div>
             </td>

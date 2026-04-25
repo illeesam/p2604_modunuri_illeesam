@@ -33,7 +33,7 @@ window.SyPropMng = {
     };
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/prop/page', {
           params: { pageNo: 1, pageSize: 10000 }
@@ -45,7 +45,7 @@ window.SyPropMng = {
         if (props.showToast) props.showToast('SyProp 로드 실패', 'error');
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     /* ── 사이트 필터 (공통필터 사이트와 동기화) ── */
     const cfSiteId = computed(() => window.boCommonFilter?.siteId || null);

@@ -75,7 +75,7 @@
     const sendHistory = reactive([]);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const [resCust, resLogin, resCoupon, resSend] = await Promise.all([
@@ -96,7 +96,7 @@
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
       /* ── 검색 상태 ── */
       const searchMode   = ref('member');
       const searchInput  = ref('');

@@ -9,7 +9,7 @@ window.PmEventMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/event/page', {
@@ -24,7 +24,7 @@ window.PmEventMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
@@ -42,7 +42,7 @@ window.PmEventMng = {
     const selectedId = ref(null);
     const openMode = ref('view'); // 'view' | 'edit'
     const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const loadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
+    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
     const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
     const inlineNavigate = (pg, opts = {}) => {
@@ -113,7 +113,7 @@ window.PmEventMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'eventId'},{label:'이벤트명',key:'eventNm'},{label:'유형',key:'eventType'},{label:'상태',key:'status'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '이벤트목록.csv');
 
-    return { events, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchStatus, viewMode, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { events, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchStatus, viewMode, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -150,7 +150,7 @@ window.PmEventMng = {
         <tr v-if="cfPageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="e in cfPageList" :key="e?.eventId" :style="selectedId===e.eventId?'background:#fff8f9;':''">
           <td>{{ e.eventId }}</td>
-          <td><span class="title-link" @click="loadDetail(e.eventId)" :style="selectedId===e.eventId?'color:#e8587a;font-weight:700;':''">{{ e.title }}<span v-if="selectedId===e.eventId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="handleLoadDetail(e.eventId)" :style="selectedId===e.eventId?'color:#e8587a;font-weight:700;':''">{{ e.title }}<span v-if="selectedId===e.eventId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td>{{ e.targetProducts.length }}개 상품</td>
           <td><span class="badge" :class="e.authRequired ? 'badge-orange' : 'badge-gray'">{{ e.authRequired ? '필요' : '불필요' }}</span></td>
           <td>{{ e.startDate }}</td><td>{{ e.endDate }}</td>
@@ -158,7 +158,7 @@ window.PmEventMng = {
           <td>{{ e.regDate }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions" style="display:flex;gap:6px;align-items:center;">
-            <button class="btn btn-blue btn-sm" @click="loadDetail(e.eventId)">수정</button>
+            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(e.eventId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="handleDelete(e)">삭제</button>
             <span style="font-size:11px;color:#999;margin-left:auto;">#{{ e.eventId }}</span>
           </div></td>
@@ -171,12 +171,12 @@ window.PmEventMng = {
       <div v-if="cfPageList.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
       <div v-for="e in cfPageList" :key="e?.eventId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="selectedId===e.eventId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
-        @click="loadDetail(e.eventId)">
+        @click="handleLoadDetail(e.eventId)">
         <!-- 배너 이미지 -->
         <div v-if="e.bannerImage" style="padding:12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;" v-html="e.bannerImage"></div>
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">이벤트 #{{ e.eventId }}</div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="loadDetail(e.eventId)" :style="selectedId===e.eventId?{color:'#e8587a'}:{}">{{ e.title }}<span v-if="selectedId===e.eventId" style="font-size:10px;margin-left:4px;">▼</span></div>
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(e.eventId)" :style="selectedId===e.eventId?{color:'#e8587a'}:{}">{{ e.title }}<span v-if="selectedId===e.eventId" style="font-size:10px;margin-left:4px;">▼</span></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
             <span class="badge" :class="fnStatusBadge(e.status)" style="font-size:11px;">{{ e.status }}</span>
             <span class="badge" :class="e.authRequired ? 'badge-orange' : 'badge-gray'" style="font-size:11px;">{{ e.authRequired ? '인증필요' : '인증불필요' }}</span>
@@ -188,7 +188,7 @@ window.PmEventMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click="loadDetail(e.eventId)" style="font-size:11px;padding:4px 12px;">수정</button>
+          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(e.eventId)" style="font-size:11px;padding:4px 12px;">수정</button>
           <button class="btn btn-danger btn-sm" @click="handleDelete(e)" style="font-size:11px;padding:4px 12px;">삭제</button>
           <span style="font-size:11px;color:#999;margin-left:auto;">#{{ e.eventId }}</span>
         </div>

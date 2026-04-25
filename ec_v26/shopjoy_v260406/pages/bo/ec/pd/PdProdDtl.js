@@ -14,7 +14,7 @@ window.PdProdDtl = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const loadData = async () => {
+    const handleLoadData = async () => {
       loading.value = true;
       try {
         const [prodsRes, usersRes, catsRes] = await Promise.all([
@@ -33,7 +33,7 @@ window.PdProdDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { loadData(); });
+    onMounted(() => { handleLoadData(); });
     const cfIsNew = computed(() => !props.editId);
     const topTab = ref(window._pdProdDtlState.tab || 'info');
     watch(topTab, v => { window._pdProdDtlState.tab = v; });

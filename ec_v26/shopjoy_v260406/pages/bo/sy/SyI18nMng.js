@@ -7,7 +7,7 @@ window.SyI18nMng = {
     const i18nKeys = reactive([]);
     const i18nMsgs = reactive([]);
 
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const [resKeys, resMsgs] = await Promise.all([
           window.boApi.get('/bo/sy/i18n-key/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -17,7 +17,7 @@ window.SyI18nMng = {
         i18nMsgs.splice(0, i18nMsgs.length, ...(resMsgs.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchKw    = ref('');
     const searchScope = ref('');

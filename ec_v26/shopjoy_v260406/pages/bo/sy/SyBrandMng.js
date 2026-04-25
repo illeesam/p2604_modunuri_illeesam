@@ -19,7 +19,7 @@ window.SyBrandMng = {
     });
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/brand/page', {
@@ -34,7 +34,7 @@ window.SyBrandMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -84,7 +84,7 @@ window.SyBrandMng = {
       _orig: EDIT_FIELDS.reduce((acc, f) => { acc[f] = b[f]; return acc; }, {}),
     });
 
-    const loadGrid = () => {
+    const handleLoadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       (brands || [])
         .filter(b => {
@@ -102,20 +102,20 @@ window.SyBrandMng = {
         .forEach(b => gridRows.push(makeRow(b)));
     };
 
-    loadGrid();
+    handleLoadGrid();
 
     const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
     const onSearch = () => {
       Object.assign(applied, { kw: searchKw.value, useYn: searchUseYn.value,
         dateStart: searchDateStart.value, dateEnd: searchDateEnd.value });
-      loadGrid();
+      handleLoadGrid();
     };
     const onReset = () => {
       searchKw.value = ''; searchUseYn.value = '';
       searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
       Object.assign(applied, { kw: '', useYn: '', dateStart: '', dateEnd: '' });
-      loadGrid();
+      handleLoadGrid();
     };
 
     const setFocused = (idx) => { focusedIdx.value = idx; };
@@ -224,7 +224,7 @@ window.SyBrandMng = {
       if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
       if (dRows.length) toastParts.push(`삭제 ${dRows.length}건`);
       props.showToast(`${toastParts.join(', ')} 저장되었습니다.`);
-      loadGrid();
+      handleLoadGrid();
     };
 
     /* ── 드래그 ── */
@@ -283,7 +283,7 @@ window.SyBrandMng = {
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
-    watch(selectedPath, () => loadGrid());
+    watch(selectedPath, () => handleLoadGrid());
 
     return { brands, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchKw, searchUseYn, searchDateRange, searchDateStart, searchDateEnd,

@@ -14,7 +14,7 @@ window.OdOrderDtl = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const loadData = async () => {
+    const handleLoadData = async () => {
       loading.value = true;
       try {
         const [ordersRes, vendorsRes, deliveriesRes, claimsRes] = await Promise.all([
@@ -35,7 +35,7 @@ window.OdOrderDtl = {
         loading.value = false;
       }
     };
-    onMounted(() => { loadData(); });
+    onMounted(() => { handleLoadData(); });
     const cfIsNew = computed(() => !props.editId);
 
     const ORDER_STEPS = ['입금대기', '결제완료', '상품준비중', '배송중', '배송완료', '구매확정'];

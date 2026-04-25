@@ -26,13 +26,13 @@ window.SyUserLoginHist = {
     const boUserList = reactive([]);
     const cfBoUsers = computed(() => boUserList);
 
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 10000 } });
         boUserList.splice(0, boUserList.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     const OS_LIST      = ['Windows 11','Windows 10','macOS 14','macOS 13','iOS 17'];
     const BROWSER_LIST = ['Chrome 123','Edge 122','Safari 17','Firefox 124','Chrome 122'];

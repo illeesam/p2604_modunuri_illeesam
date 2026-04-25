@@ -11,7 +11,7 @@ window.PdRestockNotiMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const [notiRes, prodsRes, membersRes] = await Promise.all([
@@ -30,7 +30,7 @@ window.PdRestockNotiMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchProd = ref('');
     const searchNoti = ref('');

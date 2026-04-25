@@ -11,7 +11,7 @@ window.SyUserMng = {
     const error = ref(null);
 
     // onMounted에서 API 로드
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       loading.value = true;
       try {
         const [resUsers, resDepts] = await Promise.all([
@@ -28,7 +28,7 @@ window.SyUserMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
     /* 좌측 부서 트리 */
     const selectedDeptId = ref(null);
     const expanded = reactive(new Set([null]));
@@ -65,7 +65,7 @@ window.SyUserMng = {
     const selectedId = ref(null);
     const openMode = ref('view'); // 'view' | 'edit'
     const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const loadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
+    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
     const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
     const closeDetail = () => { selectedId.value = null; };
     const inlineNavigate = (pg, opts = {}) => {
@@ -142,7 +142,7 @@ window.SyUserMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'boUserId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'권한',key:'role'},{label:'부서',key:'dept'},{label:'상태',key:'statusCd'},{label:'최종로그인',key:'lastLogin'}], '사용자목록.csv');
 
-    return { users, loading, error, selectedDeptId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchRole, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { users, loading, error, selectedDeptId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchRole, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -194,7 +194,7 @@ window.SyUserMng = {
         <tr v-for="u in cfPageList" :key="u.boUserId" :style="selectedId===u.boUserId?'background:#fff8f9;':''">
           <td>{{ u.boUserId }}</td>
           <td><code style="font-size:12px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ u.loginId }}</code></td>
-          <td><span class="title-link" @click="loadDetail(u.boUserId)" :style="selectedId===u.boUserId?'color:#e8587a;font-weight:700;':''">{{ u.name }}<span v-if="selectedId===u.boUserId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="handleLoadDetail(u.boUserId)" :style="selectedId===u.boUserId?'color:#e8587a;font-weight:700;':''">{{ u.name }}<span v-if="selectedId===u.boUserId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td style="font-size:12px;">{{ u.email }}</td>
           <td>{{ u.phone }}</td>
           <td><span class="badge" :class="fnRoleBadge(u.role)">{{ u.role }}</span></td>
@@ -203,7 +203,7 @@ window.SyUserMng = {
           <td style="font-size:12px;color:#888;">{{ u.lastLogin }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="loadDetail(u.boUserId)">수정</button>
+            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(u.boUserId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="handleDelete(u)">삭제</button>
           </div></td>
         </tr>

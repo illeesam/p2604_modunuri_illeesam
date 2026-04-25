@@ -106,7 +106,7 @@ window.DpDispWidgetLibDtl = {
     const errors = reactive({});
 
     /* ── 기존 데이터 로드 ── */
-    const fetchData = async () => {
+    const handleFetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 } });
         widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.list || []));
@@ -125,7 +125,7 @@ window.DpDispWidgetLibDtl = {
         initQuill();
       }
     };
-    onMounted(() => { fetchData(); });
+    onMounted(() => { handleFetchData(); });
 
     /* ── 위젯 유형별 표시 여부 ── */
     const cfIsImage       = computed(() => form.widgetType === 'image_banner');
