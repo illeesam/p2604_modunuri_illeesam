@@ -50,6 +50,18 @@ window.StSettleCloseMng = {
     onMounted(() => { handleFetchData(); });
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
+    const searchKw = ref('');
+    const searchStatus = ref('');
+
+    const onSearch = async () => {
+      await handleFetchData();
+    };
+    const onReset = () => {
+      searchKw.value = '';
+      searchStatus.value = '';
+      onSearch();
+    };
+
     const closeList = reactive([
       { closeId: 'CLS-2026-03', closeMon: '2026-03', sales: 556600, refund: 174000, net: 382600, comm: 38260, promo: 11478, settle: 332862, status: '마감완료', closeDate: '2026-04-10', regUserNm: '이관리자' },
       { closeId: 'CLS-2026-02', closeMon: '2026-02', sales: 442700, refund: 88000,  net: 354700, comm: 35470, promo: 10641, settle: 308589, status: '마감완료', closeDate: '2026-03-10', regUserNm: '이관리자' },
@@ -109,7 +121,13 @@ window.StSettleCloseMng = {
     const fnStatusBadge = s => ({ '마감완료':'badge-green', '마감예정':'badge-blue', '마감취소':'badge-red' }[s] || 'badge-gray');
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
 
-    return { uiState, closeList, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW };
+    const cfFilteredClose = computed(() => closeList.filter(r => {
+      if (searchKw.value && !r.closeMon.includes(searchKw.value) && !r.regUserNm.includes(searchKw.value)) return false;
+      if (searchStatus.value && r.status !== searchStatus.value) return false;
+      return true;
+    }));
+
+    return { uiState, closeList, cfFilteredClose, searchKw, searchStatus, onSearch, onReset, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW };
   },
   template: /* html */`
 <div>
@@ -160,11 +178,22 @@ window.StSettleCloseMng = {
 
   <!-- 마감 이력 -->
   <div class="card" style="margin-top:12px">
-    <div class="toolbar"><span class="list-title">정산마감 이력</span><span class="list-count">총 {{ closeList.length }}건</span></div>
+    <div class="search-bar" style="margin-bottom:12px">
+      <input v-model="searchKw" placeholder="정산월 / 담당자 검색" style="width:180px" @keyup.enter="onSearch" />
+      <select v-model="searchStatus" style="width:130px">
+        <option value="">상태 전체</option>
+        <option>마감완료</option><option>마감취소</option><option>마감예정</option>
+      </select>
+      <div class="search-actions">
+        <button class="btn btn-primary" @click="onSearch">조회</button>
+        <button class="btn btn-secondary" @click="onReset">초기화</button>
+      </div>
+    </div>
+    <div class="toolbar"><span class="list-title">정산마감 이력</span><span class="list-count">총 {{ cfFilteredClose.length }}건</span></div>
     <table class="bo-table">
       <thead><tr><th>마감ID</th><th>정산월</th><th>매출액</th><th>환불액</th><th>순매출</th><th>수수료</th><th>프로모션비</th><th>정산액</th><th>마감일</th><th>상태</th><th>담당자</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="r in closeList" :key="r?.closeId">
+        <tr v-for="r in cfFilteredClose" :key="r?.closeId">
           <td>{{ r.closeId }}</td>
           <td><strong>{{ r.closeMon }}</strong></td>
           <td>{{ fmtW(r.sales) }}</td>

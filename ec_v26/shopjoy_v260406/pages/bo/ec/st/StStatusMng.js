@@ -169,9 +169,9 @@ window.StStatusMng = {
       cnt:     cfClaimRows.value.length,
       refund:  cfClaimRows.value.reduce((s, r) => s + (r.refundAmount || 0), 0),
       impact:  cfClaimRows.value.reduce((s, r) => s + r.settleImpact, 0),
-      cancel:  window.safeArrayUtils.safeFilter(cfClaimRows, r => r.type === '취소').length,
-      return_: window.safeArrayUtils.safeFilter(cfClaimRows, r => r.type === '반품').length,
-      exchange:window.safeArrayUtils.safeFilter(cfClaimRows, r => r.type === '교환').length,
+      cancel:  cfClaimRows.value.filter(r => r.type === '취소').length,
+      return_: cfClaimRows.value.filter(r => r.type === '반품').length,
+      exchange:cfClaimRows.value.filter(r => r.type === '교환').length,
     }));
 
     /* ════════════════════════════════════════════════
@@ -194,10 +194,10 @@ window.StStatusMng = {
         };
       });
       const cacheRows = [
-        { promoId: 'CCH-001', promoType: '캐쉬', promoNm: '캐쉬 사용 합산', issueCnt: window.safeArrayUtils.safeFilter(cfCacheList, x => x.type==='충전').length, useCnt: window.safeArrayUtils.safeFilter(cfCacheList, x => x.type==='사용').length, discountAmt: window.safeArrayUtils.safeFilter(cfCacheList, x => x.type==='사용').reduce((s,x) => s + Math.abs(x.amount), 0), status: '진행중', period: '상시' },
+        { promoId: 'CCH-001', promoType: '캐쉬', promoNm: '캐쉬 사용 합산', issueCnt: cfCacheList.value.filter(x => x.type==='충전').length, useCnt: cfCacheList.value.filter(x => x.type==='사용').length, discountAmt: cfCacheList.value.filter(x => x.type==='사용').reduce((s,x) => s + Math.abs(x.amount), 0), status: '진행중', period: '상시' },
       ];
       const allRows = [...couponRows, ...cacheRows];
-      return window.safeArrayUtils.safeFilter(allRows, r => {
+      return allRows.filter(r => {
         if (uiState.promoSearchType && r.promoType !== uiState.promoSearchType) return false;
         if (kw && !r.promoNm.toLowerCase().includes(kw) && !r.promoType.toLowerCase().includes(kw)) return false;
         return true;
@@ -219,13 +219,13 @@ window.StStatusMng = {
 
     const cfSettleRows = computed(() => {
       const monthMap = {};
-      window.safeArrayUtils.safeForEach(cfOrders, o => {
+      window.safeArrayUtils.safeForEach(cfOrders.value, o => {
         const m = String(o.orderDate || '').slice(0, 7);
         if (!m) return;
         if (!monthMap[m]) monthMap[m] = { month: m, orderCnt: 0, sales: 0, refund: 0, commAmt: 0, promoAmt: 0 };
         if (o.status !== '취소됨') { monthMap[m].orderCnt++; monthMap[m].sales += o.totalPrice || 0; }
       });
-      window.safeArrayUtils.safeForEach(cfClaims, c => {
+      window.safeArrayUtils.safeForEach(cfClaims.value, c => {
         const m = String(c.requestDate || '').slice(0, 7);
         if (m && monthMap[m] && ['환불완료','취소완료'].includes(c.status)) monthMap[m].refund += c.refundAmount || 0;
       });
@@ -252,7 +252,10 @@ window.StStatusMng = {
     }[s] || 'badge-gray');
     const fnTypeBadge = t => ({ '취소':'badge-red', '반품':'badge-orange', '교환':'badge-purple' }[t] || 'badge-gray');
 
-    const onSearch = () => { vendorPager.page = 1; orderPager.page = 1; claimPager.page = 1; promoPager.page = 1; settlePager.page = 1; };
+    const onSearch = async () => {
+      vendorPager.page = 1; orderPager.page = 1; claimPager.page = 1; promoPager.page = 1; settlePager.page = 1;
+      await handleFetchData();
+    };
     const onReset  = () => {
       uiState.vendorSearchKw = ''; uiState.orderSearchKw = ''; uiState.orderSearchStatus = '';
       uiState.claimSearchType = ''; uiState.claimSearchStatus = ''; uiState.promoSearchKw = ''; uiState.promoSearchType = ''; uiState.settleSearchMonth = '';
@@ -475,7 +478,7 @@ window.StStatusMng = {
       </div>
       <div class="card" style="text-align:center;padding:12px 8px;background:#f0f4ff">
         <div style="font-size:11px;color:#888;margin-bottom:4px">처리율</div>
-        <div style="font-size:18px;font-weight:700;color:#3498db">{{ cfClaimSummary.cnt > 0 ? Math.round(window.safeArrayUtils.safeFilter(cfClaimRows, r=>r.isCompleted).length / cfClaimSummary.cnt * 100) : 0 }}%</div>
+        <div style="font-size:18px;font-weight:700;color:#3498db">{{ cfClaimSummary.cnt > 0 ? Math.round(cfClaimRows.filter(r=>r.isCompleted).length / cfClaimSummary.cnt * 100) : 0 }}%</div>
       </div>
     </div>
     <div class="search-bar" style="margin-bottom:12px">
