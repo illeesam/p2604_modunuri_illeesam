@@ -30,14 +30,14 @@ window.SyBizMng = {
     const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { selectedPath.value = id; };
-    const tree = computed(() => window.boCmUtil.buildPathTree('sy_biz'));
-    const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(tree.value); };
+    const cfTree = computed(() => window.boCmUtil.buildPathTree('sy_biz'));
+    const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     onMounted(() => {
-      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
-    const allowedPathIds = computed(() => selectedPath.value == null ? null : window.boCmUtil.getPathDescendants('sy_biz', selectedPath.value));
+    const cfAllowedPathIds = computed(() => selectedPath.value == null ? null : window.boCmUtil.getPathDescendants('sy_biz', selectedPath.value));
 
     /* 검색 */
     const kw = ref('');
@@ -47,7 +47,7 @@ window.SyBizMng = {
     const STATUS = [['ACTIVE','운영중'],['SUSPENDED','중지'],['TERMINATED','종료']];
     const BIZ_CLASS = ['법인','개인','면세','간이','공공'];
 
-    const filtered = computed(() => {
+    const cfFiltered = computed(() => {
       const items = bizs || [];
       if (!Array.isArray(items)) return [];
       return items.filter(b => {
@@ -55,7 +55,7 @@ window.SyBizMng = {
         if (k && !(b.bizNo||'').includes(k) && !(b.bizNm||'').toLowerCase().includes(k) && !(b.ceoNm||'').toLowerCase().includes(k)) return false;
         if (statusFlt.value && b.statusCd !== statusFlt.value) return false;
         if (vendorTypeFlt.value && b.vendorTypeCd !== vendorTypeFlt.value) return false;
-        if (allowedPathIds.value && !allowedPathIds.value.has(b.pathId)) return false;
+        if (cfAllowedPathIds.value && !cfAllowedPathIds.value.has(b.pathId)) return false;
         return true;
       });
     });
@@ -63,21 +63,21 @@ window.SyBizMng = {
     /* 페이징 */
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / pager.size)));
-    const pageNums = computed(() => { const c=pager.page,l=totalPages.value; const s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
-    const setPage = n => { if(n>=1 && n<=totalPages.value) pager.page = n; };
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfFiltered.value.length / pager.size)));
+    const cfPageNums = computed(() => { const c=pager.page,l=cfTotalPages.value; const s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const setPage = n => { if(n>=1 && n<=cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    const pagedRows = computed(() => filtered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
+    const cfPagedRows = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
     watch(selectedPath, () => pager.page = 1);
 
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : '#'+id);
     const vendorTypeLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
-    const vendorTypeBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', CS:'badge-orange', SITE:'badge-purple', PROG:'badge-red', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
+    const fnVendorTypeBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', CS:'badge-orange', SITE:'badge-purple', PROG:'badge-red', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
     /* 업체유형 → 역할구분 매핑 */
     const ROLE_CAT_BY_VENDOR = { SALES:['판매업체역할','#16a34a'], DELIVERY:['배송업체역할','#f59e0b'], CS:['콜센터업체역할','#0891b2'], SITE:['사이트운영역할','#7c3aed'], PROG:['유지보수역할','#dc2626'], PARTNER:['사이트역할','#2563eb'], INTERNAL:['사이트역할','#2563eb'] };
     const roleCatLabel = (cd) => (ROLE_CAT_BY_VENDOR[cd] || ['-','#9ca3af'])[0];
     const roleCatColor = (cd) => (ROLE_CAT_BY_VENDOR[cd] || ['-','#9ca3af'])[1];
-    const statusBadge = (s) => ({ ACTIVE:'badge-green', SUSPENDED:'badge-orange', TERMINATED:'badge-red' }[s] || 'badge-gray');
+    const fnStatusBadge = (s) => ({ ACTIVE:'badge-green', SUSPENDED:'badge-orange', TERMINATED:'badge-red' }[s] || 'badge-gray');
     const statusLabel = (s) => ({ ACTIVE:'운영중', SUSPENDED:'중지', TERMINATED:'종료' }[s] || s);
 
     /* ── 인라인 폼 (신규/수정) ── */
@@ -116,10 +116,10 @@ window.SyBizMng = {
     const closePathPick = () => { pathPickModal.show = false; };
     const onPathPicked = (pathId) => { formData.pathId = pathId; };
 
-    return { bizs, loading, error, selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
+    return { bizs, loading, error, selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       kw, statusFlt, vendorTypeFlt, STATUS, BIZ_CLASS, VENDOR_TYPES,
-      filtered, pagedRows, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange,
-      pathLabel, vendorTypeLabel, vendorTypeBadge, roleCatLabel, roleCatColor, statusBadge, statusLabel,
+      cfFiltered, cfPagedRows, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange,
+      pathLabel, vendorTypeLabel, fnVendorTypeBadge, roleCatLabel, roleCatColor, fnStatusBadge, statusLabel,
       formMode, formData, openNew, openEdit, closeForm, saveForm,
       pathPickModal, openPathPick, closePathPick, onPathPicked,
     };
@@ -154,14 +154,14 @@ window.SyBizMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
 
     <div>
       <div class="card">
         <div class="toolbar">
-          <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>업체목록 <span class="list-count">{{ Array.isArray(filtered) ? filtered.length : 0 }}건</span></span>
+          <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>업체목록 <span class="list-count">{{ Array.isArray(cfFiltered) ? cfFiltered.length : 0 }}건</span></span>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-blue btn-sm" @click="openNew">+ 신규</button>
           </div>
@@ -172,10 +172,10 @@ window.SyBizMng = {
             <th>업체유형</th><th>역할구분</th><th>사업자번호</th><th>상호</th><th>대표자</th><th>구분</th><th>업태/종목</th><th>전화</th><th>상태</th><th>등록일</th><th style="text-align:right;">관리</th>
           </tr></thead>
           <tbody>
-            <tr v-if="!Array.isArray(pagedRows) || pagedRows.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-            <tr v-for="b in pagedRows" :key="b.bizId">
+            <tr v-if="!Array.isArray(cfPagedRows) || cfPagedRows.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+            <tr v-for="b in cfPagedRows" :key="b.bizId">
               <td><span style="font-family:monospace;font-size:11.5px;color:#374151;">{{ pathLabel(b.pathId) || '-' }}</span></td>
-              <td><span class="badge" :class="vendorTypeBadge(b.vendorTypeCd)" style="font-size:10px;">{{ vendorTypeLabel(b.vendorTypeCd) }}</span></td>
+              <td><span class="badge" :class="fnVendorTypeBadge(b.vendorTypeCd)" style="font-size:10px;">{{ vendorTypeLabel(b.vendorTypeCd) }}</span></td>
               <td><span :style="{background:roleCatColor(b.vendorTypeCd),color:'#fff',fontSize:'10px',fontWeight:700,padding:'2px 7px',borderRadius:'9px'}">{{ roleCatLabel(b.vendorTypeCd) }}</span></td>
               <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;">{{ b.bizNo }}</code></td>
               <td style="font-weight:600;">{{ b.bizNm }}</td>
@@ -183,7 +183,7 @@ window.SyBizMng = {
               <td><span class="badge badge-blue" style="font-size:10px;">{{ b.bizClassCd }}</span></td>
               <td style="font-size:11.5px;color:#666;">{{ b.bizType }} / {{ b.bizItem }}</td>
               <td style="font-size:11.5px;">{{ b.phone }}</td>
-              <td><span class="badge" :class="statusBadge(b.statusCd)" style="font-size:10px;">{{ statusLabel(b.statusCd) }}</span></td>
+              <td><span class="badge" :class="fnStatusBadge(b.statusCd)" style="font-size:10px;">{{ statusLabel(b.statusCd) }}</span></td>
               <td style="font-size:11px;color:#888;">{{ (b.contractDate||'').slice(0,10) }}</td>
               <td style="text-align:right;"><button class="btn btn-primary btn-xs" @click="openEdit(b)">수정</button></td>
             </tr>
@@ -194,9 +194,9 @@ window.SyBizMng = {
           <div class="pager">
             <button :disabled="pager.page===1" @click="setPage(1)">«</button>
             <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-            <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-            <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-            <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+            <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+            <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+            <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
           </div>
           <div class="pager-right">
             <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

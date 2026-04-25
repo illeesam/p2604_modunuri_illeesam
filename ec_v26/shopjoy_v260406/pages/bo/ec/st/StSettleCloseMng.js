@@ -34,12 +34,12 @@ window.StSettleCloseMng = {
     // 이번달 집계
     const thisMonth = new Date().toISOString().slice(0, 7);
     const cfThisMonthOrders = computed(() => window.safeArrayUtils.safeFilter(orders, o => o.orderDate.startsWith(thisMonth) && o.status !== '취소됨'));
-    const thisMonthSales  = computed(() => cfThisMonthOrders.value.reduce((s, o) => s + o.totalPrice, 0));
+    const cfThisMonthSales  = computed(() => cfThisMonthOrders.value.reduce((s, o) => s + o.totalPrice, 0));
     const cfThisMonthRefund = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.requestDate.startsWith(thisMonth) && ['환불완료','취소완료'].includes(c.status)).reduce((s, c) => s + c.refundAmount, 0));
-    const thisMonthNet    = computed(() => thisMonthSales.value - cfThisMonthRefund.value);
-    const thisMonthComm   = computed(() => Math.round(thisMonthNet.value * 0.10));
-    const thisMonthPromo  = computed(() => Math.round(thisMonthNet.value * 0.03));
-    const cfThisMonthSettle = computed(() => thisMonthNet.value - thisMonthComm.value - thisMonthPromo.value);
+    const cfThisMonthNet    = computed(() => cfThisMonthSales.value - cfThisMonthRefund.value);
+    const cfThisMonthComm   = computed(() => Math.round(cfThisMonthNet.value * 0.10));
+    const cfThisMonthPromo  = computed(() => Math.round(cfThisMonthNet.value * 0.03));
+    const cfThisMonthSettle = computed(() => cfThisMonthNet.value - cfThisMonthComm.value - cfThisMonthPromo.value);
 
     const cfAlreadyClosed = computed(() => window.safeArrayUtils.safeSome(closeList, c => c.closeMon === thisMonth));
 
@@ -49,12 +49,12 @@ window.StSettleCloseMng = {
       if (!ok) return;
       closeList.unshift({
         closeId: 'CLS-' + thisMonth, closeMon: thisMonth,
-        sales: thisMonthSales.value, refund: cfThisMonthRefund.value, net: thisMonthNet.value,
-        comm: thisMonthComm.value, promo: thisMonthPromo.value, settle: cfThisMonthSettle.value,
+        sales: cfThisMonthSales.value, refund: cfThisMonthRefund.value, net: cfThisMonthNet.value,
+        comm: cfThisMonthComm.value, promo: cfThisMonthPromo.value, settle: cfThisMonthSettle.value,
         status: '마감완료', closeDate: new Date().toISOString().slice(0,10), regUserNm: '관리자',
       });
       try {
-        const res = await window.boApi.post('/bo/ec/st/close', { closeMon: thisMonth, sales: thisMonthSales.value, refund: cfThisMonthRefund.value, net: thisMonthNet.value, comm: thisMonthComm.value, promo: thisMonthPromo.value, settle: cfThisMonthSettle.value });
+        const res = await window.boApi.post('/bo/ec/st/close', { closeMon: thisMonth, sales: cfThisMonthSales.value, refund: cfThisMonthRefund.value, net: cfThisMonthNet.value, comm: cfThisMonthComm.value, promo: cfThisMonthPromo.value, settle: cfThisMonthSettle.value });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('정산마감이 완료되었습니다.', 'success');
       } catch (err) {
@@ -82,7 +82,7 @@ window.StSettleCloseMng = {
     const fnStatusBadge = s => ({ '마감완료':'badge-green', '마감예정':'badge-blue', '마감취소':'badge-red' }[s] || 'badge-gray');
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
 
-    return { descOpen, closeList, thisMonth, thisMonthSales, cfThisMonthRefund, thisMonthNet, thisMonthComm, thisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW };
+    return { descOpen, closeList, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW };
   },
   template: /* html */`
 <div>
@@ -102,7 +102,7 @@ window.StSettleCloseMng = {
     <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:10px;background:#f0f4ff">
         <div style="font-size:11px;color:#888">매출액</div>
-        <div style="font-size:16px;font-weight:700;color:#3498db">{{ fmtW(thisMonthSales) }}</div>
+        <div style="font-size:16px;font-weight:700;color:#3498db">{{ fmtW(cfThisMonthSales) }}</div>
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#fff8f8">
         <div style="font-size:11px;color:#888">환불액</div>
@@ -110,15 +110,15 @@ window.StSettleCloseMng = {
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#f8f9fa">
         <div style="font-size:11px;color:#888">순매출</div>
-        <div style="font-size:16px;font-weight:700;color:#333">{{ fmtW(thisMonthNet) }}</div>
+        <div style="font-size:16px;font-weight:700;color:#333">{{ fmtW(cfThisMonthNet) }}</div>
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#fffbf0">
         <div style="font-size:11px;color:#888">수수료(10%)</div>
-        <div style="font-size:16px;font-weight:700;color:#e67e22">{{ fmtW(thisMonthComm) }}</div>
+        <div style="font-size:16px;font-weight:700;color:#e67e22">{{ fmtW(cfThisMonthComm) }}</div>
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#fdf5ff">
         <div style="font-size:11px;color:#888">프로모션(3%)</div>
-        <div style="font-size:16px;font-weight:700;color:#9b59b6">{{ fmtW(thisMonthPromo) }}</div>
+        <div style="font-size:16px;font-weight:700;color:#9b59b6">{{ fmtW(cfThisMonthPromo) }}</div>
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#f0fff4">
         <div style="font-size:11px;color:#888">정산예정액</div>

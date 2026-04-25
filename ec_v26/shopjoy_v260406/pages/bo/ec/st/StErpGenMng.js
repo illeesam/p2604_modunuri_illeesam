@@ -11,7 +11,7 @@ window.StErpGenMng = {
 
     const orderList = reactive([]);
     const vendorList = reactive([]);
-    const orders  = computed(() => orderList);
+    const cfOrders  = computed(() => orderList);
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
     const fetchData = async () => {
@@ -28,7 +28,7 @@ window.StErpGenMng = {
 
     const cfPreviewRows = computed(() => {
       return cfVendors.value.map(v => {
-        const vOrders = window.safeArrayUtils.safeFilter(orders, o => o.vendorId === v.vendorId && o.status !== '취소됨' && o.orderDate.startsWith(targetMon.value));
+        const vOrders = window.safeArrayUtils.safeFilter(cfOrders, o => o.vendorId === v.vendorId && o.status !== '취소됨' && o.orderDate.startsWith(targetMon.value));
         const sales   = vOrders.reduce((s, o) => s + o.totalPrice, 0);
         const comm    = Math.round(sales * 0.10);
         const settle  = sales - comm;

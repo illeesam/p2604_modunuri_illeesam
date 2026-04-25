@@ -37,7 +37,7 @@ window.SyBizUserMng = {
       SITE_MGR_ROOT:['판매업체','#16a34a'], DLIV_ROOT:['배송업체','#f59e0b'],
       CS_ROOT:['콜센터업체','#0891b2'], SITE_OP_ROOT:['사이트운영업체','#7c3aed'], PROG_ROOT:['유지보수업체','#dc2626']
     };
-    const tree = computed(() => {
+    const cfTree = computed(() => {
       const rolesById = Object.fromEntries(roles.map(r => [r.roleId, r]));
       const badgeOf = (role) => {
         let cur = role;
@@ -93,23 +93,23 @@ window.SyBizUserMng = {
     const treeRoleCat = ref('');
     const applied = reactive({ vendorId: null });
 
-    const vendorList = computed(() => vendors.filter(v => {
+    const cfVendorList = computed(() => vendors.filter(v => {
       const kw = bizKw.value.trim().toLowerCase();
       if (kw && !(v.vendorNm||'').toLowerCase().includes(kw) && !(v.bizNo||'').includes(kw)) return false;
       if (bizVendorFlt.value && v.vendorTypeCd !== bizVendorFlt.value) return false;
       return true;
     }));
     const bizPager = reactive({ page:1, size:5 });
-    const bizTotalPages = computed(() => Math.max(1, Math.ceil(vendorList.value.length / bizPager.size)));
-    const bizPageNums   = computed(() => { const c=bizPager.page,l=bizTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
-    const bizPagedRows  = computed(() => vendorList.value.slice((bizPager.page-1)*bizPager.size, bizPager.page*bizPager.size));
-    const setBizPage    = n => { if(n>=1&&n<=bizTotalPages.value) bizPager.page=n; };
+    const cfBizTotalPages = computed(() => Math.max(1, Math.ceil(cfVendorList.value.length / bizPager.size)));
+    const cfBizPageNums   = computed(() => { const c=bizPager.page,l=cfBizTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfBizPagedRows  = computed(() => cfVendorList.value.slice((bizPager.page-1)*bizPager.size, bizPager.page*bizPager.size));
+    const setBizPage    = n => { if(n>=1&&n<=cfBizTotalPages.value) bizPager.page=n; };
 
-    const vendorStatusBadge = (s) => ({ ACTIVE:'badge-green', SUSPENDED:'badge-orange', TERMINATED:'badge-red' }[s] || 'badge-gray');
+    const fnVendorStatusBadge = (s) => ({ ACTIVE:'badge-green', SUSPENDED:'badge-orange', TERMINATED:'badge-red' }[s] || 'badge-gray');
     const vendorStatusLabel = (s) => ({ ACTIVE:'운영중', SUSPENDED:'중지', TERMINATED:'종료' }[s] || s);
-    const vendorTypeBadge   = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
+    const fnVendorTypeBadge   = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
     const vendorTypeLabel   = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd)||[,'?'])[1];
-    const statusBadge = (s) => ({ ACTIVE:'badge-green', LEFT:'badge-gray', SUSPENDED:'badge-orange' }[s]||'badge-gray');
+    const fnStatusBadge = (s) => ({ ACTIVE:'badge-green', LEFT:'badge-gray', SUSPENDED:'badge-orange' }[s]||'badge-gray');
     const statusLabel = (s) => ({ ACTIVE:'재직', LEFT:'퇴직', SUSPENDED:'중지' }[s]||s);
 
     const pickVendorRow = (v) => {
@@ -149,18 +149,18 @@ window.SyBizUserMng = {
       return new Set(roles.filter(r=>ids.has(r.roleId)).map(r=>r.roleCode));
     });
 
-    const filtered = computed(() => vendorUsers.filter(u => {
+    const cfFiltered = computed(() => vendorUsers.filter(u => {
       if (applied.vendorId != null && u.vendorId !== applied.vendorId) return false;
       return true;
     }));
 
     const pager = reactive({ page:1, size:10 });
     const PAGE_SIZES = [5,10,20,30,50,100];
-    const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / pager.size)));
-    const pageNums   = computed(() => { const c=pager.page,l=totalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
-    const setPage    = n => { if(n>=1&&n<=totalPages.value) pager.page=n; };
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfFiltered.value.length / pager.size)));
+    const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const setPage    = n => { if(n>=1&&n<=cfTotalPages.value) pager.page=n; };
     const onSizeChange = () => { pager.page=1; };
-    const pagedRows  = computed(() => filtered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
+    const cfPagedRows  = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
 
     /* ── 인라인 폼 (사용자 등록/수정) ── */
     const formMode = ref('');
@@ -249,12 +249,12 @@ window.SyBizUserMng = {
     const roleModalTemp = ref(null);
     const roleTreeExpanded = reactive(new Set());
 
-    const formAllowedRootCode = computed(() => {
+    const cfFormAllowedRootCode = computed(() => {
       const vt = vendorTypeCd(formData.vendorId);
       return vt==='SALES'?'SITE_MGR_ROOT': vt==='DELIVERY'?'DLIV_ROOT': null;
     });
-    const formRoleTree = computed(() => {
-      const allowedRootCode = formAllowedRootCode.value;
+    const cfFormRoleTree = computed(() => {
+      const allowedRootCode = cfFormAllowedRootCode.value;
       const buildBranch = (pid, allowed) => roles
         .filter(r => r.parentId === pid)
         .sort((a,b) => (a.sortOrd||0)-(b.sortOrd||0))
@@ -271,7 +271,7 @@ window.SyBizUserMng = {
     const openRoleModal = () => {
       roleModalTemp.value = null;
       roleTreeExpanded.clear();
-      const root = roles.find(r=>r.roleCode===formAllowedRootCode.value);
+      const root = roles.find(r=>r.roleCode===cfFormAllowedRootCode.value);
       if (root) roleTreeExpanded.add(root.roleId);
       roleModalOpen.value = true;
     };
@@ -331,12 +331,12 @@ window.SyBizUserMng = {
       REP:'관리', MGT:'관리', SITE_ADMIN:'쓰기', SITE_OPER:'쓰기', STAFF:'읽기',
       DLIV_REP:'관리', DLIV_MGT:'관리', DLIV_SITE_ADMIN:'쓰기', DLIV_STAFF:'읽기',
     };
-    const selectedModalRole = computed(() => {
+    const cfSelectedModalRole = computed(() => {
       if (!roleModalTemp.value) return null;
       return roles.find(r=>r.roleCode===roleModalTemp.value) || null;
     });
-    const modalMenuList = computed(() => {
-      const role = selectedModalRole.value;
+    const cfModalMenuList = computed(() => {
+      const role = cfSelectedModalRole.value;
       const rm = role ? roleMenus.filter(x=>x.roleId===role.roleId) : [];
       const permBy = Object.fromEntries(rm.map(x=>[x.menuId, x.permLevel]));
       const fallback = role ? (ROLE_DEFAULT_PERM[role.roleCode]||'없음') : '없음';
@@ -351,18 +351,18 @@ window.SyBizUserMng = {
     return {
       loading, roleLoading,
       vendorUsers, vendorMap, vendorNm, vendorTypeCd, vendorSummary,
-      vendors, vendorList, bizPager, bizTotalPages, bizPageNums, bizPagedRows, setBizPage,
+      vendors, cfVendorList, bizPager, cfBizTotalPages, cfBizPageNums, cfBizPagedRows, setBizPage,
       searchVendorId, bizKw, bizVendorFlt, bizStatusFlt, BIZ_STATUS, applied,
-      pickVendorRow, vendorStatusBadge, vendorStatusLabel, vendorTypeBadge, vendorTypeLabel,
+      pickVendorRow, fnVendorStatusBadge, vendorStatusLabel, fnVendorTypeBadge, vendorTypeLabel,
       vendorPickOpen, onVendorPicked, VENDOR_TYPES,
-      treeRoleCat, tree, expanded, toggleNode, selectNode, expandAll, collapseAll,
-      STATUS, statusBadge, statusLabel,
-      filtered, pagedRows, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange,
+      treeRoleCat, cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
+      STATUS, fnStatusBadge, statusLabel,
+      cfFiltered, cfPagedRows, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange,
       formMode, formData, openNew, openEdit, closeForm, saveForm, deleteRow,
       userRoles, roleModalOpen, roleModalTemp, roleTreeExpanded,
       openRoleModal, closeRoleModal, confirmRoleModal, deleteRole,
-      toggleRoleNode, pickRoleInModal, formRoleTree, formAllowedRootCode,
-      roleNmByCode, selectedModalRole, modalMenuList, permBadgeColor,
+      toggleRoleNode, pickRoleInModal, cfFormRoleTree, cfFormAllowedRootCode,
+      roleNmByCode, cfSelectedModalRole, cfModalMenuList, permBadgeColor,
       sendJoinMail: () => {
         if (!formData.vendorUserEmail) { props.showToast('이메일을 입력해주세요.', 'warning'); return; }
         props.showToast(formData.vendorUserEmail + ' 로 회원가입 메일을 보냈습니다.', 'success');
@@ -397,18 +397,18 @@ window.SyBizUserMng = {
   <!-- 업체 목록 -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>업체목록 <span class="list-count">{{ vendorList.length }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>업체목록 <span class="list-count">{{ cfVendorList.length }}건</span></span>
     </div>
     <table class="bo-table">
       <thead><tr>
         <th>업체유형</th><th>업체명</th><th>사업자번호</th><th>대표자</th><th>전화</th><th style="text-align:right;">선택</th>
       </tr></thead>
       <tbody>
-        <tr v-if="bizPagedRows.length===0"><td colspan="6" style="text-align:center;color:#999;padding:20px;">데이터가 없습니다.</td></tr>
-        <tr v-for="v in bizPagedRows" :key="v.vendorId"
+        <tr v-if="cfBizPagedRows.length===0"><td colspan="6" style="text-align:center;color:#999;padding:20px;">데이터가 없습니다.</td></tr>
+        <tr v-for="v in cfBizPagedRows" :key="v.vendorId"
           :style="{cursor:'pointer',background:searchVendorId===v.vendorId?'#fff0f4':'transparent'}"
           @click="pickVendorRow(v)">
-          <td><span class="badge" :class="vendorTypeBadge(v.vendorTypeCd)" style="font-size:10px;">{{ vendorTypeLabel(v.vendorTypeCd) }}</span></td>
+          <td><span class="badge" :class="fnVendorTypeBadge(v.vendorTypeCd)" style="font-size:10px;">{{ vendorTypeLabel(v.vendorTypeCd) }}</span></td>
           <td style="font-weight:600;">{{ v.vendorNm }}</td>
           <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;">{{ v.bizNo }}</code></td>
           <td>{{ v.ceo }}</td>
@@ -424,9 +424,9 @@ window.SyBizUserMng = {
       <div class="pager">
         <button :disabled="bizPager.page===1" @click="setBizPage(1)">«</button>
         <button :disabled="bizPager.page===1" @click="setBizPage(bizPager.page-1)">‹</button>
-        <button v-for="n in bizPageNums" :key="n" :class="{active:bizPager.page===n}" @click="setBizPage(n)">{{ n }}</button>
-        <button :disabled="bizPager.page===bizTotalPages" @click="setBizPage(bizPager.page+1)">›</button>
-        <button :disabled="bizPager.page===bizTotalPages" @click="setBizPage(bizTotalPages)">»</button>
+        <button v-for="n in cfBizPageNums" :key="n" :class="{active:bizPager.page===n}" @click="setBizPage(n)">{{ n }}</button>
+        <button :disabled="bizPager.page===cfBizTotalPages" @click="setBizPage(bizPager.page+1)">›</button>
+        <button :disabled="bizPager.page===cfBizTotalPages" @click="setBizPage(cfBizTotalPages)">»</button>
       </div>
       <div></div>
     </div>
@@ -441,14 +441,14 @@ window.SyBizUserMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:40vh;overflow:auto;">
-        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
 
     <div>
       <div class="card">
         <div class="toolbar">
-          <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사용자목록 <span class="list-count">{{ filtered.length }}건</span></span>
+          <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사용자목록 <span class="list-count">{{ cfFiltered.length }}건</span></span>
           <button class="btn btn-blue btn-sm" @click="openNew">+ 신규</button>
         </div>
         <table class="bo-table">
@@ -456,15 +456,15 @@ window.SyBizUserMng = {
             <th>업체</th><th>이름</th><th>직위</th><th>부서</th><th>휴대전화</th><th>이메일</th><th>상태</th><th>대표담당자</th><th style="text-align:right;">관리</th>
           </tr></thead>
           <tbody>
-            <tr v-if="pagedRows.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">{{ searchVendorId == null ? '업체를 선택해주세요.' : '데이터가 없습니다.' }}</td></tr>
-            <tr v-for="u in pagedRows" :key="u.vendorUserId" :style="formMode&&formData.vendorUserId===u.vendorUserId?'background:#fff8f9;':''">
+            <tr v-if="cfPagedRows.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">{{ searchVendorId == null ? '업체를 선택해주세요.' : '데이터가 없습니다.' }}</td></tr>
+            <tr v-for="u in cfPagedRows" :key="u.vendorUserId" :style="formMode&&formData.vendorUserId===u.vendorUserId?'background:#fff8f9;':''">
               <td style="font-weight:600;color:#2563eb;font-size:12px;">{{ vendorNm(u.vendorId) }}</td>
               <td>{{ u.memberNm }}</td>
               <td style="font-size:11.5px;">{{ u.positionCd }}</td>
               <td style="font-size:11.5px;color:#666;">{{ u.vendorUserDeptNm }}</td>
               <td style="font-size:11.5px;">{{ u.vendorUserMobile }}</td>
               <td style="font-size:11.5px;">{{ u.vendorUserEmail }}</td>
-              <td><span class="badge" :class="statusBadge(u.vendorUserStatusCd)" style="font-size:10px;">{{ statusLabel(u.vendorUserStatusCd) }}</span></td>
+              <td><span class="badge" :class="fnStatusBadge(u.vendorUserStatusCd)" style="font-size:10px;">{{ statusLabel(u.vendorUserStatusCd) }}</span></td>
               <td style="text-align:center;font-size:12px;">{{ u.isMain==='Y' ? '✅' : '-' }}</td>
               <td style="text-align:right;white-space:nowrap;">
                 <button class="btn btn-primary btn-xs" @click="openEdit(u)">수정</button>
@@ -478,9 +478,9 @@ window.SyBizUserMng = {
           <div class="pager">
             <button :disabled="pager.page===1" @click="setPage(1)">«</button>
             <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-            <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-            <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-            <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+            <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+            <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+            <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
           </div>
           <div class="pager-right">
             <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
