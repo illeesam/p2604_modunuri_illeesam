@@ -172,27 +172,27 @@
       /* ── 파생 데이터 (computed) ── */
       const cfCustOrders = computed(() =>
         !uiState.customer ? [] : filtered(
-          window.safeArrayUtils.safeFilter(orders, o => o.userId === uiState.customer.userId), 'orderDate')
+          orders.filter(o => o.userId === uiState.customer.userId), 'orderDate')
       );
       const cfCustClaims = computed(() =>
         !uiState.customer ? [] : filtered(
-          window.safeArrayUtils.safeFilter(claims, c => c.userId === uiState.customer.userId), 'requestDate')
+          claims.filter(c => c.userId === uiState.customer.userId), 'requestDate')
       );
       const cfCustDeliveries = computed(() =>
         !uiState.customer ? [] : filtered(
-          window.safeArrayUtils.safeFilter(deliveries, d => d.userId === uiState.customer.userId), 'regDate')
+          deliveries.filter(d => d.userId === uiState.customer.userId), 'regDate')
       );
       const cfCustCache = computed(() =>
         !uiState.customer ? [] : filtered(
-          window.safeArrayUtils.safeFilter(cacheList, c => c.userId === uiState.customer.userId), 'date')
+          cacheList.filter(c => c.userId === uiState.customer.userId), 'date')
       );
       const cfCustContacts = computed(() =>
         !uiState.customer ? [] : filtered(
-          window.safeArrayUtils.safeFilter(contacts, c => c.userId === uiState.customer.userId), 'date')
+          contacts.filter(c => c.userId === uiState.customer.userId), 'date')
       );
       const cfCustChats = computed(() =>
         !uiState.customer ? [] : filtered(
-          window.safeArrayUtils.safeFilter(chats, c => c.userId === uiState.customer.userId), 'date')
+          chats.filter(c => c.userId === uiState.customer.userId), 'date')
       );
       const cfCustLoginHist = computed(() =>
         !uiState.customer ? [] : filtered(
@@ -210,7 +210,7 @@
       /* 캐쉬 잔액 = 전체(필터 미적용) 마지막 레코드 */
       const cfCustCacheBalance = computed(() => {
         if (!uiState.customer) return 0;
-        const all = window.safeArrayUtils.safeFilter(cacheList, c => c.userId === uiState.customer.userId);
+        const all = cacheList.filter(c => c.userId === uiState.customer.userId);
         if (!all.length) return 0;
         return all.slice().sort((a, b) => a.cacheId - b.cacheId).at(-1)?.balance ?? 0;
       });
@@ -224,7 +224,7 @@
       const searchMemberModal = () => {
         const kw = memberModal.keyword.trim().toLowerCase();
         memberModal.list = kw
-          ? window.safeArrayUtils.safeFilter(members, m =>
+          ? members.filter(m =>
               m.memberNm.includes(kw) || m.email.toLowerCase().includes(kw) || (m.phone || '').includes(kw))
           : [...members];
       };
@@ -298,7 +298,7 @@
     </template>
 
     <span style="flex:1;"></span>
-    <button v-if="customer" @click="clearCustomer"
+    <button v-if="uiState.customer" @click="clearCustomer"
       style="background:#f5f5f5;border:1px solid #ddd;color:#666;border-radius:8px;padding:7px 16px;font-size:12px;cursor:pointer;">
       ✕ 초기화
     </button>
@@ -329,7 +329,7 @@
   </div>
 
   <!-- ── 고객 없음 안내 ── -->
-  <div v-if="!customer"
+  <div v-if="!uiState.customer"
     style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 0;color:#ccc;gap:12px;">
     <div style="font-size:48px;line-height:1;">👤</div>
     <div style="font-size:15px;color:#bbb;">고객을 검색하여 선택하면 종합 정보가 표시됩니다.</div>
@@ -341,31 +341,31 @@
     <!-- ── 1. 고객 프로필 카드 ── -->
     <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);overflow:hidden;">
       <!-- 상단 컬러 배너 -->
-      <div :style="'height:6px;background:'+(customer.grade==='VIP'?'linear-gradient(90deg,#9c27b0,#e040fb)':customer.grade==='우수'?'linear-gradient(90deg,#1976d2,#42a5f5)':'linear-gradient(90deg,#78909c,#b0bec5)')"></div>
+      <div :style="'height:6px;background:'+(uiState.customer.grade==='VIP'?'linear-gradient(90deg,#9c27b0,#e040fb)':uiState.customer.grade==='우수'?'linear-gradient(90deg,#1976d2,#42a5f5)':'linear-gradient(90deg,#78909c,#b0bec5)')"></div>
       <div style="display:flex;align-items:flex-start;gap:20px;padding:20px 24px;">
         <!-- 아바타 -->
-        <div :style="'width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;flex-shrink:0;'+(customer.grade==='VIP'?'background:linear-gradient(135deg,#9c27b0,#e040fb);':customer.grade==='우수'?'background:linear-gradient(135deg,#1976d2,#42a5f5);':'background:linear-gradient(135deg,#78909c,#b0bec5);')">
-          {{ customer.window.safeArrayUtils.safeGet(memberNm, 0) }}
+        <div :style="'width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;flex-shrink:0;'+(uiState.customer.grade==='VIP'?'background:linear-gradient(135deg,#9c27b0,#e040fb);':uiState.customer.grade==='우수'?'background:linear-gradient(135deg,#1976d2,#42a5f5);':'background:linear-gradient(135deg,#78909c,#b0bec5);')">
+          {{ uiState.customer.memberNm ? uiState.customer.memberNm[0] : '' }}
         </div>
         <!-- 이름/등급/상태 -->
         <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-            <span style="font-size:20px;font-weight:700;color:#212121;">{{ customer.memberNm }}</span>
-            <span :class="'badge '+(customer.grade==='VIP'?'badge-purple':customer.grade==='우수'?'badge-blue':'badge-gray')" style="font-size:12px;">{{ customer.grade }}</span>
-            <span :class="'badge '+(customer.status==='활성'?'badge-green':'badge-red')" style="font-size:12px;">{{ customer.status }}</span>
+            <span style="font-size:20px;font-weight:700;color:#212121;">{{ uiState.customer.memberNm }}</span>
+            <span :class="'badge '+(uiState.customer.grade==='VIP'?'badge-purple':uiState.customer.grade==='우수'?'badge-blue':'badge-gray')" style="font-size:12px;">{{ uiState.customer.grade }}</span>
+            <span :class="'badge '+(uiState.customer.status==='활성'?'badge-green':'badge-red')" style="font-size:12px;">{{ uiState.customer.status }}</span>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:12px 24px;font-size:13px;color:#555;">
-            <span>✉ {{ customer.email }}</span>
-            <span>📞 {{ customer.phone || '-' }}</span>
-            <span style="color:#999;">가입 {{ customer.joinDate }}</span>
-            <span style="color:#999;">최근로그인 {{ customer.lastLogin }}</span>
+            <span>✉ {{ uiState.customer.email }}</span>
+            <span>📞 {{ uiState.customer.phone || '-' }}</span>
+            <span style="color:#999;">가입 {{ uiState.customer.joinDate }}</span>
+            <span style="color:#999;">최근로그인 {{ uiState.customer.lastLogin }}</span>
           </div>
         </div>
         <!-- 핵심 지표 -->
         <div style="display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap;">
           <div style="background:#f0f7ff;border:1px solid #bbdefb;border-radius:8px;padding:10px 18px;text-align:center;min-width:88px;">
             <div style="font-size:11px;color:#1976d2;font-weight:600;margin-bottom:2px;">총 주문</div>
-            <div style="font-size:20px;font-weight:700;color:#1976d2;">{{ customer.orderCount }}</div>
+            <div style="font-size:20px;font-weight:700;color:#1976d2;">{{ uiState.customer.orderCount }}</div>
             <div style="font-size:10px;color:#90a4ae;">건</div>
           </div>
           <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:10px 18px;text-align:center;min-width:110px;">

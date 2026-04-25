@@ -3,7 +3,7 @@ window.XsSample13 = {
   name: 'XsSample13',
   components: { 'category-select-modal': window.CategorySelectModal },
   setup() {
-
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), copiedPanel: null, previewTime: new Date().toTimeString().slice(0, 5) });
     const codes = reactive({});
 
@@ -25,12 +25,8 @@ window.XsSample13 = {
         fnLoadCodes();
       }
     });
-    const { ref, reactive, computed , watch } = Vue;
     const today = new Date().toISOString().slice(0, 10);
-    const previewDate   = ref(today);
-    const previewTime   = ref(new Date().toTimeString().slice(0, 5));
     const selectedAreas = reactive(new Set());
-    const copiedPanel   = ref(null);
     const selectedCatIds = reactive(new Set());
     const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
     const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));

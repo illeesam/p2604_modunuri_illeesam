@@ -92,10 +92,10 @@ window.Location = {
     });
 
     return {
-      mapProvider, mapSrc, uiState, onMapError,
+      uiState, codes, onMapError,
       kakaoLink, naverLink, googleLink,
       ADDR,
-      uiState, codes };
+    };
   },
 
   template: /* html */ `
@@ -119,14 +119,14 @@ window.Location = {
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:24px;">
 
     <!-- 카카오 SDK 모드: div 컨테이너 -->
-    <div v-if="mapProvider==='kakao_sdk'"
+    <div v-if="uiState.mapProvider==='kakao_sdk'"
       id="shopjoy-map"
       style="width:100%;height:clamp(220px,40vw,320px);">
     </div>
 
     <!-- iframe 모드 (Google / OSM) -->
-    <iframe v-else-if="!uiState.mapError && mapSrc"
-      :src="mapSrc"
+    <iframe v-else-if="!uiState.mapError && uiState.mapSrc"
+      :src="uiState.mapSrc"
       width="100%"
       style="border:0;display:block;height:clamp(220px,40vw,320px);"
       allowfullscreen loading="lazy"
@@ -135,7 +135,7 @@ window.Location = {
     </iframe>
 
     <!-- 로딩 중 (mapSrc 아직 미설정) -->
-    <div v-else-if="!uiState.mapError && !mapSrc"
+    <div v-else-if="!uiState.mapError && !uiState.mapSrc"
       style="height:clamp(220px,40vw,320px);display:flex;align-items:center;justify-content:center;background:var(--bg-base);color:var(--text-muted);font-size:13px;gap:8px;">
       <span style="animation:spin .8s linear infinite;display:inline-block;">⏳</span> 지도 로딩 중…
     </div>

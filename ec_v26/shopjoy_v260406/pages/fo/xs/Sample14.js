@@ -3,7 +3,7 @@ window.XsSample14 = {
   name: 'XsSample14',
   components: { 'category-select-modal': window.CategorySelectModal },
   setup() {
-
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), activeTab: 'grid1', dragSrc: null, dragSrcList: null, dropZoneIdx: -1, spanPopupIdx: -1, popoverKey: null, popoverWidget: null, popoverArea: null, popoverPanel: null, viewportMode: 'desktop', previewTime: new Date().toTimeString().slice(0, 5) });
     const codes = reactive({});
 
@@ -25,9 +25,7 @@ window.XsSample14 = {
         fnLoadCodes();
       }
     });
-    const { ref, reactive, computed , watch } = Vue;
     const today = new Date().toISOString().slice(0, 10);
-        const previewTime = ref(new Date().toTimeString().slice(0, 5));
     const selectedAreas = reactive(new Set());
     const expandedAreas = reactive(new Set());
     const checkedPanels  = reactive(new Set());

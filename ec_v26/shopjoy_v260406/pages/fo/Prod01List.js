@@ -7,7 +7,7 @@ window.Prod01List = {
     const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
 
     const PAGE_SIZE   = 12;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, searchText: '', priceMin: '', priceMax: '', currentPage: 1, mobileCount: PAGE_SIZE, isMobile: window.innerWidth < 768 });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, searchText: '', priceMin: '', priceMax: '', currentPage: 1, mobileCount: PAGE_SIZE, uiState.isMobile: window.innerWidth < 768 });
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -167,7 +167,7 @@ window.Prod01List = {
     const cfHasMore       = computed(() => uiState.mobileCount < cfFilteredProducts.value.length);
 
     /* ── 모바일 판별 ── */
-        const onResize = () => { uiState.isMobile = window.innerWidth < 768; };
+        const onResize = () => { uiState.uiState.isMobile = window.innerWidth < 768; };
     window.addEventListener('resize', onResize);
 
     /* ── 필터 변경 시 페이지 리셋 ── */
@@ -190,7 +190,7 @@ window.Prod01List = {
       const el = document.getElementById('sj-sentinel');
       if (!el || !('IntersectionObserver' in window)) return;
       observer = new IntersectionObserver(entries => {
-        if (entries[0].isIntersecting && cfHasMore.value && uiState.isMobile) {
+        if (entries[0].isIntersecting && cfHasMore.value && uiState.uiState.isMobile) {
           uiState.mobileCount = Math.min(cfFilteredProducts.value.length, uiState.mobileCount + PAGE_SIZE);
         }
       }, { rootMargin: '300px' });
@@ -209,7 +209,7 @@ window.Prod01List = {
 
     return {
       uiState,
-      loading, allProducts, cfFilteredProducts,
+      allProducts, cfFilteredProducts,
       selColors, selSizes, selCats,
       cfAllColors, cfAllSizes, cfAllCats,
       toggleColor, toggleSize, toggleCat, cfHasFilter, clearFilters,
@@ -367,7 +367,7 @@ window.Prod01List = {
   </div>
 
   <!-- ── 스켈레톤 ── -->
-  <div v-if="loading" class="grid-3">
+  <div v-if="uiState.loading" class="grid-3">
     <div v-for="i in 6" :key="'sk'+i" class="product-card" style="overflow:hidden;">
       <div style="height:160px;" class="skeleton-line"></div>
       <div style="padding:16px;display:flex;flex-direction:column;gap:10px;">
@@ -384,7 +384,7 @@ window.Prod01List = {
 
   <!-- ── 상품 그리드 ── -->
   <div v-else class="grid-3">
-    <div v-for="p in (isMobile ? cfMobileProducts : cfPagedProducts)" :key="p.productId"
+    <div v-for="p in (uiState.isMobile ? cfMobileProducts : cfPagedProducts)" :key="p.productId"
       class="product-card" style="cursor:pointer;" @click="selectProduct(p)">
 
       <!-- 썸네일 -->
@@ -450,7 +450,7 @@ window.Prod01List = {
   </div>
 
   <!-- 결과 없음 -->
-  <div v-if="!loading && cfFilteredProducts.length===0"
+  <div v-if="!uiState.loading && cfFilteredProducts.length===0"
     style="text-align:center;padding:60px 0;color:var(--text-muted);">
     <div style="font-size:3rem;margin-bottom:12px;">🔍</div>
     <div style="font-size:1rem;font-weight:600;">해당 조건의 상품이 없습니다.</div>
@@ -461,7 +461,7 @@ window.Prod01List = {
   </div>
 
   <!-- ── PC 페이지네이션 ── -->
-  <div v-if="!loading && !isMobile && cfTotalPages > 1"
+  <div v-if="!uiState.loading && !uiState.isMobile && cfTotalPages > 1"
     style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:32px;flex-wrap:wrap;">
     <button @click="currentPage=Math.max(1,currentPage-1)" :disabled="currentPage===1"
       style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.85rem;"
@@ -483,8 +483,8 @@ window.Prod01List = {
   </div>
 
   <!-- ── 모바일 무한스크롤 센티넬 ── -->
-  <div v-if="!loading && isMobile" id="sj-sentinel" style="height:1px;"></div>
-  <div v-if="!loading && isMobile && cfHasMore"
+  <div v-if="!uiState.loading && uiState.isMobile" id="sj-sentinel" style="height:1px;"></div>
+  <div v-if="!uiState.loading && uiState.isMobile && cfHasMore"
     style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.85rem;">
     스크롤하면 더 불러옵니다…
   </div>

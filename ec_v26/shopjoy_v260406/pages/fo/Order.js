@@ -3,7 +3,7 @@ window.Order = {
   name: 'Order',
   props: ['navigate', 'config', 'cart', 'instantOrder', 'cartIds', 'showToast', 'showAlert', 'clearCart'],
   setup(props) {
-
+    const { reactive, computed, ref, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, view: 'order', resultData: null, selectedShipCoupon: null, cashBalance: 0, cashInput: 0 });
     const codes = reactive({});
 
@@ -25,7 +25,6 @@ window.Order = {
         fnLoadCodes();
       }
     });
-    const { reactive, computed, ref, onMounted , watch } = Vue;
 
     /* ── 유틸 ── */
     const parsePrice = s => parseInt(String(s || '').replace(/[^0-9]/g, ''), 10) || 0;

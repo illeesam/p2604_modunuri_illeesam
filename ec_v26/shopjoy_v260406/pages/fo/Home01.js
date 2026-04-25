@@ -11,10 +11,10 @@ window.Home01 = {
     <!-- 좌: 텍스트 (슬라이드별) -->
     <div style="position:relative;z-index:2;flex:1 1 260px;padding:clamp(28px,6vw,80px) clamp(20px,5vw,60px) clamp(28px,6vw,80px) clamp(20px,5vw,48px);min-width:0;">
       <h1 style="font-size:clamp(1.4rem,3.5vw,2.6rem);font-weight:300;line-height:1.3;color:#1a1a1a;margin-bottom:16px;letter-spacing:-0.5px;">
-        {{ banners[bannerIdx].title }}<br><span style="font-weight:700;">{{ banners[bannerIdx].sub }}</span>
+        {{ banners[uiState.bannerIdx].title }}<br><span style="font-weight:700;">{{ banners[uiState.bannerIdx].sub }}</span>
       </h1>
       <p style="font-size:0.85rem;color:#888;line-height:1.8;margin-bottom:28px;max-width:360px;">
-        {{ banners[bannerIdx].desc }}
+        {{ banners[uiState.bannerIdx].desc }}
       </p>
       <button @click="navigate('prodList')"
         style="padding:12px 28px;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;border:1.5px solid #1a1a1a;background:transparent;color:#1a1a1a;cursor:pointer;transition:all .25s;"
@@ -27,7 +27,7 @@ window.Home01 = {
         <span v-for="(b, i) in banners" :key="i" @click="setBanner(i)"
           :style="{
             width: '24px', height: '3px', borderRadius: '2px', cursor: 'pointer', transition: 'background .3s',
-            background: bannerIdx === i ? '#1a1a1a' : '#ccc',
+            background: uiState.bannerIdx === i ? '#1a1a1a' : '#ccc',
           }"></span>
       </div>
     </div>
@@ -37,7 +37,7 @@ window.Home01 = {
         :style="{
           position: i === 0 ? 'relative' : 'absolute',
           maxHeight: '420px', maxWidth: '100%', objectFit: 'contain', zIndex: 1,
-          opacity: bannerIdx === i ? '1' : '0',
+          opacity: uiState.bannerIdx === i ? '1' : '0',
           transition: 'opacity 0.8s ease',
         }" />
     </div>
@@ -88,10 +88,10 @@ window.Home01 = {
           </button>
           <!-- 장바구니 + 빠른보기 (hover 시에만) -->
           <div class="prod-hover" style="opacity:0;transition:opacity .25s;position:absolute;right:12px;top:48px;display:flex;flex-direction:column;gap:6px;">
-            <button @click.stop="quickViewProduct=p; uiState.cartModalMode=true" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="장바구니">
+            <button @click.stop="uiState.quickViewProduct=p; uiState.cartModalMode=true" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="장바구니">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
             </button>
-            <button @click.stop="quickViewProduct=p; uiState.cartModalMode=false" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="빠른보기">
+            <button @click.stop="uiState.quickViewProduct=p; uiState.cartModalMode=false" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="빠른보기">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             </button>
           </div>
@@ -214,13 +214,13 @@ window.Home01 = {
 
   <!-- ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ -->
   <product-modal
-    :show="!!quickViewProduct"
-    :product="quickViewProduct"
+    :show="!!uiState.quickViewProduct"
+    :product="uiState.quickViewProduct"
     :cart-mode="uiState.cartModalMode"
-    :navigate="(page, opts) => { if(opts&&opts.instantOrder){ navigate('order',opts); quickViewProduct=null; } else { selectProduct(quickViewProduct); quickViewProduct=null; } }"
+    :navigate="(page, opts) => { if(opts&&opts.instantOrder){ navigate('order',opts); uiState.quickViewProduct=null; } else { selectProduct(uiState.quickViewProduct); uiState.quickViewProduct=null; } }"
     :toggle-like="toggleLike"
     :is-liked="isLiked"
-    @close="quickViewProduct=null; uiState.cartModalMode=false"
+    @close="uiState.quickViewProduct=null; uiState.cartModalMode=false"
   />
 
 
@@ -296,8 +296,8 @@ window.Home01 = {
       { img: 'assets/cdn/prod/img/slider/slider-3.jpg', title: '특별한 혜택', sub: '시즌 세일 진행중', desc: '인기 상품 최대 50% 할인! 한정 수량으로 준비된 특별 혜택을 놓치지 마세요.' },
     ];
     let bannerTimer = null;
-    const startBannerTimer = () => { bannerTimer = setInterval(() => { uiState.bannerIdx = (uiState.bannerIdx + 1) % banners.length; }, 20000); };
-    const setBanner = (i) => { uiState.bannerIdx = i; clearInterval(bannerTimer); startBannerTimer(); };
+    const startBannerTimer = () => { bannerTimer = setInterval(() => { uiState.uiState.bannerIdx = (uiState.uiState.bannerIdx + 1) % banners.length; }, 20000); };
+    const setBanner = (i) => { uiState.uiState.bannerIdx = i; clearInterval(bannerTimer); startBannerTimer(); };
     onMounted(() => {
       if (!document.getElementById('home-grid-styles')) {
         const s = document.createElement('style');
@@ -314,6 +314,6 @@ window.Home01 = {
     });
     onBeforeUnmount(() => clearInterval(bannerTimer));
 
-    return { fnCategoryLabel, fnCatEmoji, cfNewProducts, cfBestProducts, cfAllHomeProducts, cfSaleProducts, quickViewProduct, uiState, bannerIdx, banners, setBanner, codes };
+    return { fnCategoryLabel, fnCatEmoji, cfNewProducts, cfBestProducts, cfAllHomeProducts, cfSaleProducts, uiState, banners, setBanner, codes };
   }
 };

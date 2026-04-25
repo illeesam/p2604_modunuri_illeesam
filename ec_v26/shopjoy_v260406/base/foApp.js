@@ -107,12 +107,12 @@
       if (opts && opts.editId !== undefined) viewEditId.value = opts.editId;
       else if (opts && opts.eventId !== undefined) viewEditId.value = opts.eventId;
       else viewEditId.value = null;
-      if (mobileOpen.value) mobileOpen.value = false;
+      if (uiState.mobileOpen) uiState.mobileOpen = false;
       page.value = id;
       window.scrollTo(0, 0);
       try { document.querySelector('.layout-main')?.scrollTo(0, 0); } catch (e) {}
     };
-    window.addEventListener('resize', () => { if (window.innerWidth < 1024) mobileOpen.value = false; });
+    window.addEventListener('resize', () => { if (window.innerWidth < 1024) uiState.mobileOpen = false; });
 
     /* ── Toast ── */
     const toast = reactive({ show: false, msg: '', msgTitle: '', msgDetail: '', type: 'success' });
@@ -420,7 +420,7 @@
 
     return {
       theme, toggleTheme,
-      page, sidebarOpen, mobileOpen, navigate, closeMobileMenu, toggleMobileMenu,
+      page, sidebarOpen, navigate, closeMobileMenu, toggleMobileMenu,
       toast, showToast,
       alertState, showAlert, closeAlert,
       confirmState, showConfirm, closeConfirm,
@@ -443,7 +443,7 @@
 <div style="height:100%;min-height:100vh;display:flex;flex-direction:column;background:var(--bg-base);">
 
   <fo-app-header
-    :page="page" :theme="theme" :sidebar-open="sidebarOpen" :mobile-open="mobileOpen"
+    :page="page" :theme="theme" :sidebar-open="sidebarOpen" :mobile-open="uiState.mobileOpen"
     :config="config" :navigate="navigate" :toggle-theme="toggleTheme" :cart-count="cfCartCount" :like-count="cfLikeCount"
     :auth="auth" :on-show-login="onShowLogin" :on-logout="onLogout"
     @toggle-sidebar="sidebarOpen=!sidebarOpen" @toggle-mobile="toggleMobileMenu"
@@ -451,11 +451,11 @@
 
   <div style="flex:1;display:flex;overflow:hidden;position:relative;">
     <fo-app-sidebar
-      :page="page" :sidebar-open="sidebarOpen" :mobile-open="mobileOpen"
+      :page="page" :sidebar-open="sidebarOpen" :mobile-open="uiState.mobileOpen"
       :config="config" :navigate="navigate" :cart-count="cfCartCount" :auth="auth"
       @toggle-sidebar="sidebarOpen=!sidebarOpen" @close-mobile="closeMobileMenu"
     />
-    <div class="sidebar-overlay" :class="{show: mobileOpen}" @click="closeMobileMenu"></div>
+    <div class="sidebar-overlay" :class="{show: uiState.mobileOpen}" @click="closeMobileMenu"></div>
 
     <main class="layout-main" style="flex:1;overflow-y:auto;min-width:0;">
       <component :is="foHomeComp"

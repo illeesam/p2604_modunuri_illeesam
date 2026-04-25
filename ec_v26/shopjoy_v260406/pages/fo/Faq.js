@@ -21,11 +21,11 @@ window.Faq = {
   </div>
   <div class="card" style="padding:8px clamp(14px,3vw,28px);margin-bottom:24px;">
     <div v-for="(faq, idx) in config.faqs" :key="idx" class="faq-item">
-      <button class="faq-question" @click="openFaq=(openFaq===idx?null:idx)">
+      <button class="faq-question" @click="uiState.openFaq=(uiState.uiState.openFaq===idx?null:idx)">
         <span style="flex:1;">{{ faq.q }}</span>
-        <span class="chevron" :class="{open: openFaq===idx}">▼</span>
+        <span class="chevron" :class="{open: uiState.openFaq===idx}">▼</span>
       </button>
-      <div v-show="openFaq===idx" class="faq-answer">{{ faq.a }}</div>
+      <div v-show="uiState.openFaq===idx" class="faq-answer">{{ faq.a }}</div>
     </div>
   </div>
   <div style="text-align:center;padding:clamp(12px,3vw,24px) 0;">
@@ -35,7 +35,7 @@ window.Faq = {
 </div>
   `,
   setup() {
-
+    const { ref, reactive, computed, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, openFaq: null});
     const codes = reactive({});
 
@@ -57,7 +57,6 @@ window.Faq = {
         fnLoadCodes();
       }
     });
-    const { ref , watch } = Vue;
-        return { openFaq , uiState, codes };
+    return { uiState, codes };
   }
 };

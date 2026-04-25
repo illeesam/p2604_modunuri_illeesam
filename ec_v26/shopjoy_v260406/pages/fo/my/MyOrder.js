@@ -3,7 +3,7 @@ window.MyOrder = {
   name: 'MyOrder',
   props: ['navigate', 'config', 'cart', 'cartCount', 'showToast', 'showConfirm', 'removeFromCart', 'updateCartQty'],
   setup(props) {
-
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, helpTab: 'order', flowHelpOpen: false });
     const codes = reactive({});
 
@@ -25,7 +25,6 @@ window.MyOrder = {
         fnLoadCodes();
       }
     });
-    const { ref, reactive, computed, onMounted , watch } = Vue;
     const myStore = window.useFoMyStore();
     const { orders, cfClaimsByOrderId, coupons } = Pinia.storeToRefs(myStore);
     const claimsByOrderId = cfClaimsByOrderId;

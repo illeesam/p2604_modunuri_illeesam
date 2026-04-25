@@ -3,7 +3,7 @@ window.XsSample12 = {
   name: 'XsSample12',
   components: { 'category-select-modal': window.CategorySelectModal },
   setup() {
-
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), previewTime: new Date().toTimeString().slice(0, 5), showAreaDrop: false, showCatModal: false });
     const codes = reactive({});
 
@@ -25,9 +25,7 @@ window.XsSample12 = {
         fnLoadCodes();
       }
     });
-    const { ref, reactive, computed , watch } = Vue;
     const today = new Date().toISOString().slice(0, 10);
-        const previewTime = ref(new Date().toTimeString().slice(0, 5));
     const selectedAreas = reactive(new Set());
     const expandedAreas = reactive(new Set());
     const checkedPanels  = reactive(new Set());
