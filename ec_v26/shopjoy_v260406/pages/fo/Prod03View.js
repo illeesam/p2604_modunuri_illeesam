@@ -43,6 +43,8 @@ window.Prod03View = {
     const sizeSecRef   = ref(null);
     const reviewSecRef = ref(null);
     const styleSecRef  = ref(null);
+
+    /* ── 상수 ── */
     const photoGridPageSize = 12;
 
     /* ── 사이즈 가이드 ── */
