@@ -1044,7 +1044,7 @@
         favorites, favKeepSet, sidebarTab, isFav, toggleFav, cfFavList, toggleFavKeep,
         apiResPanel, setApiRes, closeApiResPanel,
         onRootClick,
-        relatedSiteOpen, toggleRelatedSite, openRelatedLink,
+        toggleRelatedSite, openRelatedLink,
         goFoSite, goBoSite, currentFoSiteNo, currentBoSiteNo, SITE_PAIR_MENU, DISP_LINKS,
         safe: window.safeUtil,
       };
@@ -1210,12 +1210,12 @@
         <div v-if="uiState.relatedSiteOpen"
           @click="uiState.relatedSiteOpen=false"
           style="position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.25);"></div>
-        <div v-if="relatedSiteOpen"
+        <div v-if="uiState.relatedSiteOpen"
           @click.stop
           style="position:fixed;left:12px;bottom:56px;z-index:9999;width:360px;max-height:75vh;overflow:auto;background:#fff;border:1px solid #ffc9d6;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.3);">
           <div style="padding:12px 14px;border-bottom:1px solid #ffc9d6;background:linear-gradient(135deg,#fff0f4,#ffe4ec);display:flex;align-items:center;justify-content:space-between;">
             <span style="font-weight:800;font-size:13px;color:#9f2946;"><span style="color:#e8587a;font-size:9px;margin-right:6px;">●</span>🔗 연관사이트</span>
-            <button @click="relatedSiteOpen=false" style="background:none;border:none;font-size:13px;color:#9f2946;cursor:pointer;padding:2px 6px;border-radius:4px;">✕</button>
+            <button @click="uiState.relatedSiteOpen=false" style="background:none;border:none;font-size:13px;color:#9f2946;cursor:pointer;padding:2px 6px;border-radius:4px;">✕</button>
           </div>
           <div style="padding:12px;">
             <!-- _SITE_NO (FO / BO 분리 링크) -->
