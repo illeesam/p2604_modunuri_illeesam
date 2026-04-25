@@ -4,7 +4,7 @@ window.StErpGenMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, slipType: '정산', targetMon: new Date() });;
+    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
     const codes = reactive({
       erp_statuses: [],
     });
@@ -68,16 +68,16 @@ window.StErpGenMng = {
 
     const doGenerate = async () => {
       if (!cfPreviewRows.value.length) { props.showToast('생성할 전표 데이터가 없습니다.', 'error'); return; }
-      const ok = await props.showConfirm('ERP 전표생성', `${uiState.targetMon} ${uiState.slipType} 전표를 생성하시겠습니까?`);
+      const ok = await props.showConfirm('ERP 전표생성', `${targetMon.value} ${slipType.value} 전표를 생성하시겠습니까?`);
       if (!ok) return;
       genHistory.unshift({
-        genId: 'GEN-' + uiState.targetMon, genMon: uiState.targetMon, slipType: uiState.slipType,
+        genId: 'GEN-' + targetMon.value, genMon: targetMon.value, slipType: slipType.value,
         slipCnt: cfPreviewRows.value.length,
         totalAmt: cfPreviewRows.value.reduce((s, r) => s + r.debitAmt, 0),
         genDate: new Date().toISOString().slice(0,10), status: '생성완료', regUserNm: '관리자',
       });
       try {
-        const res = await window.boApi.post('/bo/ec/st/erp/gen', { targetMon: uiState.targetMon, slipType: uiState.slipType, rows: cfPreviewRows.value });
+        const res = await window.boApi.post('/bo/ec/st/erp/gen', { targetMon: targetMon.value, slipType: slipType.value, rows: cfPreviewRows.value });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('ERP 전표가 생성되었습니다.', 'success');
       } catch (err) {
@@ -91,7 +91,9 @@ window.StErpGenMng = {
     const fnStatusBadge = s => ({ '전송완료':'badge-green', '생성완료':'badge-blue', '오류':'badge-red' }[s] || 'badge-gray');
     const fmtW = n => Number(n||0).toLocaleString() + '원';
 
-    return { uiState, targetMon, slipType, cfPreviewRows, genHistory, doGenerate, fnStatusBadge, fmtW };
+    const onSearch = async () => { await handleFetchData(); };
+
+    return { uiState, targetMon, slipType, cfPreviewRows, genHistory, doGenerate, fnStatusBadge, fmtW, onSearch };
   },
   template: /* html */`
 <div>
@@ -119,7 +121,8 @@ window.StErpGenMng = {
           <option>정산</option><option>수수료</option><option>반품조정</option>
         </select>
       </div>
-      <div class="form-group" style="display:flex;align-items:flex-end">
+      <div class="form-group" style="display:flex;align-items:flex-end;gap:8px">
+        <button class="btn btn-secondary" @click="onSearch">조회</button>
         <button class="btn btn-primary" @click="doGenerate">📋 ERP 전표생성</button>
       </div>
     </div>
