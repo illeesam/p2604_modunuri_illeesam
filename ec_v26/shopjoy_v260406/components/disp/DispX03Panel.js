@@ -33,7 +33,7 @@ window.DispX03Panel = {
       dispEnv:       w.dispEnv || '^PROD^',
     });
 
-    const layoutStyle = computed(() => {
+    const cfLayoutStyle = computed(() => {
       const layout = props.dispOpt?.layout || 'vertical';
       if (layout === 'horizontal') return 'display:flex;gap:12px;overflow-x:auto;';
       if (layout === 'grid')       return 'display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;';
@@ -42,7 +42,7 @@ window.DispX03Panel = {
 
     const onWidgetAction = (payload) => emit('widget-action', payload);
 
-    return { mergedWidget, layoutStyle, onWidgetAction };
+    return { mergedWidget, cfLayoutStyle, onWidgetAction };
   },
   template: /* html */`
 <div class="disp-panel" :data-area="panelItem.area">
@@ -67,7 +67,7 @@ window.DispX03Panel = {
   </div>
 
   <!-- 위젯 목록 -->
-  <div :style="layoutStyle">
+  <div :style="cfLayoutStyle">
     <disp-x04-widget
       v-for="(w, wi) in (panelItem.rows || [])"
       :key="wi"

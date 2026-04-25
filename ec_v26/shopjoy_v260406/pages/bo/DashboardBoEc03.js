@@ -64,13 +64,13 @@
       };
       const isSel = (list, v) => list.includes(v);
 
-      const doSearch = () => {
+      const onSearch = () => {
         console.log('[대시보드 검색]', JSON.parse(JSON.stringify(filters)));
       };
       const doExcelDownload = () => {
         const rows = [['월','매출','가입','탈퇴','클릭','주문완료']];
-        monthLabels.value.forEach((m, i) => {
-          rows.push([m, monthlySales.value[i], monthlyJoin.value[i], monthlyLeave.value[i], monthlyClicks.value[i], monthlyOrders.value[i]]);
+        cfMonthLabels.value.forEach((m, i) => {
+          rows.push([m, cfMonthlySales.value[i], cfMonthlyJoin.value[i], cfMonthlyLeave.value[i], cfMonthlyClicks.value[i], cfMonthlyOrders.value[i]]);
         });
         const csv = rows.map(r => r.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
         const blob = new Blob(['﻿'+csv], { type: 'text/csv;charset=utf-8;' });
@@ -81,7 +81,7 @@
         a.click();
         URL.revokeObjectURL(url);
       };
-      const resetFilters = () => {
+      const onReset = () => {
         filters.startDt = startDef;
         filters.endDt   = endDef;
         filters.channels    = [...CHANNELS];
@@ -119,17 +119,17 @@
         { key: '3col', icon: '▭▭▭', label: '3열' },
         { key: '4col', icon: '▭▭▭▭', label: '4열' },
       ];
-      const gridCols = computed(() => {
+      const cfGridCols = computed(() => {
         if (viewMode.value === 'tab') return '1fr';
         return 'repeat(' + parseInt(viewMode.value) + ',minmax(0,1fr))';
       });
       const showPanel = (key) => viewMode.value === 'tab' ? activeTab.value === key : true;
 
       /* ── 보조 대시보드 (원본 KPI 섹션) ── */
-      const totalSales    = computed(() => monthlySales.value.reduce((a,b)=>a+b,0));
-      const totalQtyComp  = computed(() => monthlyOrders.value.reduce((a,b)=>a+b,0));
+      const cfTotalSales    = computed(() => cfMonthlySales.value.reduce((a,b)=>a+b,0));
+      const cfTotalQtyComp  = computed(() => cfMonthlyOrders.value.reduce((a,b)=>a+b,0));
       const marginRate    = 7.7;
-      const avgOrderValue = computed(() => Math.round(totalSales.value / Math.max(totalQtyComp.value, 1)));
+      const cfAvgOrderValue = computed(() => Math.round(cfTotalSales.value / Math.max(cfTotalQtyComp.value, 1)));
 
       const topProducts = [
         { name: '오버사이즈 코트', value: 1495000 },
@@ -168,7 +168,7 @@
         { label: '신규회원', value: 65 }, { label: '재구매', value: 78 },
         { label: '만족도', value: 88 },
       ];
-      const radarPath = computed(() => {
+      const cfRadarPath = computed(() => {
         const cx = 100, cy = 100, R = 70;
         return radarValues.map((v, i) => {
           const a = (i / radarValues.length) * Math.PI * 2 - Math.PI / 2;
@@ -176,7 +176,7 @@
           return `${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`;
         }).join(' ');
       });
-      const radarAxes = computed(() => {
+      const cfRadarAxes = computed(() => {
         const cx = 100, cy = 100, R = 70;
         return radarValues.map((v, i) => {
           const a = (i / radarValues.length) * Math.PI * 2 - Math.PI / 2;
@@ -202,7 +202,7 @@
       const pct = n => (Math.round(n * 10) / 10).toFixed(1) + '%';
 
       /* ── 월별 레이블 (14개월) ── */
-      const monthLabels = computed(() => {
+      const cfMonthLabels = computed(() => {
         try {
           const s = new Date(filters.startDt);
           const e = new Date(filters.endDt);
@@ -219,7 +219,7 @@
       });
 
       /* ── 필터 강도 계수 (0~1) — 필터를 줄일수록 값 감소 ── */
-      const filterFactor = computed(() => {
+      const cfFilterFactor = computed(() => {
         const ratio = (list, all) => list.length === 0 ? 0 : list.length / all.length;
         return (
           ratio(filters.channels,    CHANNELS) *
@@ -242,16 +242,16 @@
       };
 
       /* 1) 월별 매출현황 */
-      const monthlySales = computed(() =>
-        seededBase(137, monthLabels.value.length, 80000000, 180000000).map(v => Math.round(v * filterFactor.value))
+      const cfMonthlySales = computed(() =>
+        seededBase(137, cfMonthLabels.value.length, 80000000, 180000000).map(v => Math.round(v * cfFilterFactor.value))
       );
       /* 2) 월별 고객 가입/탈퇴 */
-      const monthlyJoin   = computed(() => seededBase(211, monthLabels.value.length, 180, 520).map(v => Math.round(v * filterFactor.value)));
-      const monthlyLeave  = computed(() => seededBase(431, monthLabels.value.length, 30, 180).map(v => Math.round(v * filterFactor.value)));
+      const cfMonthlyJoin   = computed(() => seededBase(211, cfMonthLabels.value.length, 180, 520).map(v => Math.round(v * cfFilterFactor.value)));
+      const cfMonthlyLeave  = computed(() => seededBase(431, cfMonthLabels.value.length, 30, 180).map(v => Math.round(v * cfFilterFactor.value)));
       /* 3) 월별 상품상세 클릭 */
-      const monthlyClicks = computed(() => seededBase(719, monthLabels.value.length, 12000, 46000).map(v => Math.round(v * filterFactor.value)));
+      const cfMonthlyClicks = computed(() => seededBase(719, cfMonthLabels.value.length, 12000, 46000).map(v => Math.round(v * cfFilterFactor.value)));
       /* 4) 월별 주문완료 */
-      const monthlyOrders = computed(() => seededBase(983, monthLabels.value.length, 850, 2800).map(v => Math.round(v * filterFactor.value)));
+      const cfMonthlyOrders = computed(() => seededBase(983, cfMonthLabels.value.length, 850, 2800).map(v => Math.round(v * cfFilterFactor.value)));
 
       /* 5) 월별 판매채널별 매출 (선택된 채널만) */
       const CHANNEL_COLORS = {
@@ -259,8 +259,8 @@
         'G마켓':'#3b82f6', 'Auction':'#6366f1', 'GS샵':'#a855f7', 'TMON':'#e11d48',
         '위메프':'#f59e0b', '롯데온':'#9333ea', '홈앤쇼핑':'#0891b2', '현대H몰':'#c2410c',
       };
-      const channelMonthly = computed(() => {
-        const months = monthLabels.value.length;
+      const cfChannelMonthly = computed(() => {
+        const months = cfMonthLabels.value.length;
         const subFactor =
           (filters.ages.length / AGES.length) *
           (filters.genders.length / GENDERS.length) *
@@ -275,13 +275,13 @@
 
       return {
         fmt, pct, filters, CHANNELS, AGES, GENDERS, MEMBER_TYPES, CATEGORIES,
-        toggle, toggleAll, isSel, resetFilters, doSearch, doExcelDownload,
-        filterExpand, activeTab, TABS, viewMode, VIEW_MODES, gridCols, showPanel,
-        monthLabels, monthlySales, monthlyJoin, monthlyLeave, monthlyClicks, monthlyOrders, channelMonthly,
+        toggle, toggleAll, isSel, onReset, onSearch, doExcelDownload,
+        filterExpand, activeTab, TABS, viewMode, VIEW_MODES, cfGridCols, showPanel,
+        cfMonthLabels, cfMonthlySales, cfMonthlyJoin, cfMonthlyLeave, cfMonthlyClicks, cfMonthlyOrders, cfChannelMonthly,
         linePoints, areaPath, maxOf,
-        totalSales, totalQtyComp, marginRate, avgOrderValue,
+        cfTotalSales, cfTotalQtyComp, marginRate, cfAvgOrderValue,
         topProducts, salesByChannel, salesByDevice, salesByTime,
-        regionSales, hourlyTrend, radarValues, radarPath, radarAxes,
+        regionSales, hourlyTrend, radarValues, cfRadarPath, cfRadarAxes,
         economySales, shippingTypes,
       };
     },
@@ -293,7 +293,7 @@
     <div style="width:6px;height:24px;background:#e8587a;border-radius:3px;"></div>
     <span style="font-size:17px;font-weight:800;letter-spacing:-0.5px;">온라인 쇼핑몰 매출 및 판매현황</span>
     <span style="flex:1;"></span>
-    <span style="font-size:11px;color:#aaa;">14개월 기준 · {{ monthLabels.length > 0 ? (monthLabels[0] + ' ~ ' + monthLabels[monthLabels.length-1]) : '-' }}</span>
+    <span style="font-size:11px;color:#aaa;">14개월 기준 · {{ cfMonthLabels.length > 0 ? (cfMonthLabels[0] + ' ~ ' + cfMonthLabels[cfMonthLabels.length-1]) : '-' }}</span>
   </div>
 
   <!-- 필터 바: 조회기간 + 상세필터 토글 -->
@@ -308,9 +308,9 @@
         {{ filterExpand ? '▲ 상세필터 접기' : '▼ 상세필터 펼치기' }}
       </button>
       <span style="flex:1;"></span>
-      <button class="btn btn-sm btn-primary" @click="doSearch" style="font-size:11px;">🔍 검색</button>
+      <button class="btn btn-sm btn-primary" @click="onSearch" style="font-size:11px;">🔍 검색</button>
       <button class="btn btn-sm" @click="doExcelDownload" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;">📥 엑셀다운로드</button>
-      <button class="btn btn-sm" @click="resetFilters" style="font-size:11px;">🔄 초기화</button>
+      <button class="btn btn-sm" @click="onReset" style="font-size:11px;">🔄 초기화</button>
     </div>
     <div v-if="filterExpand" style="display:flex;flex-direction:column;gap:8px;border-top:1px dashed #eee;padding-top:10px;">
       <div v-for="grp in [
@@ -358,13 +358,13 @@
   </div>
 
   <!-- 탭 컨텐츠: 뷰모드에 따라 grid -->
-  <div :style="{display:'grid',gridTemplateColumns:gridCols,gap:'12px'}">
+  <div :style="{display:'grid',gridTemplateColumns:cfGridCols,gap:'12px'}">
   <!-- 1) 월별 매출현황 -->
   <div v-show="showPanel('sales')" class="card" style="padding:14px;">
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
       💰 <span>월별 매출현황 (14개월)</span>
       <span style="flex:1;"></span>
-      <span style="font-size:11px;color:#888;font-weight:500;">총 {{ fmt(monthlySales.reduce((a,b)=>a+b,0)) }}원</span>
+      <span style="font-size:11px;color:#888;font-weight:500;">총 {{ fmt(cfMonthlySales.reduce((a,b)=>a+b,0)) }}원</span>
     </div>
     <svg viewBox="0 0 800 240" style="width:100%;height:240px;">
       <defs>
@@ -372,14 +372,14 @@
           <stop offset="0%" stop-color="#e8587a"/><stop offset="100%" stop-color="#ff8aa5"/>
         </linearGradient>
       </defs>
-      <g v-for="(v,i) in monthlySales" :key="i">
-        <rect :x="20 + i*(760/monthLabels.length)" :y="230 - (v/maxOf(monthlySales))*210"
-              :width="760/monthLabels.length - 6" :height="(v/maxOf(monthlySales))*210"
+      <g v-for="(v,i) in cfMonthlySales" :key="i">
+        <rect :x="20 + i*(760/cfMonthLabels.length)" :y="230 - (v/maxOf(cfMonthlySales))*210"
+              :width="760/cfMonthLabels.length - 6" :height="(v/maxOf(cfMonthlySales))*210"
               fill="url(#gradSales)" rx="2" />
       </g>
     </svg>
     <div style="display:flex;font-size:10px;color:#888;margin-top:4px;">
-      <span v-for="m in monthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
+      <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
     </div>
   </div>
 
@@ -388,21 +388,21 @@
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
       👥 <span>월별 고객 가입/탈퇴자 현황 (14개월)</span>
       <span style="flex:1;"></span>
-      <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#666;"><span style="width:10px;height:10px;background:#3b82f6;border-radius:2px;"></span>가입 {{ fmt(monthlyJoin.reduce((a,b)=>a+b,0)) }}</span>
-      <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#666;margin-left:10px;"><span style="width:10px;height:10px;background:#ef4444;border-radius:2px;"></span>탈퇴 {{ fmt(monthlyLeave.reduce((a,b)=>a+b,0)) }}</span>
+      <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#666;"><span style="width:10px;height:10px;background:#3b82f6;border-radius:2px;"></span>가입 {{ fmt(cfMonthlyJoin.reduce((a,b)=>a+b,0)) }}</span>
+      <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#666;margin-left:10px;"><span style="width:10px;height:10px;background:#ef4444;border-radius:2px;"></span>탈퇴 {{ fmt(cfMonthlyLeave.reduce((a,b)=>a+b,0)) }}</span>
     </div>
     <svg viewBox="0 0 800 240" style="width:100%;height:240px;">
-      <g v-for="(v,i) in monthlyJoin" :key="i">
-        <rect :x="22 + i*(760/monthLabels.length)" :y="230 - (v/maxOf([...monthlyJoin,...monthlyLeave]))*210"
-              :width="(760/monthLabels.length - 8)/2" :height="(v/maxOf([...monthlyJoin,...monthlyLeave]))*210"
+      <g v-for="(v,i) in cfMonthlyJoin" :key="i">
+        <rect :x="22 + i*(760/cfMonthLabels.length)" :y="230 - (v/maxOf([...cfMonthlyJoin,...cfMonthlyLeave]))*210"
+              :width="(760/cfMonthLabels.length - 8)/2" :height="(v/maxOf([...cfMonthlyJoin,...cfMonthlyLeave]))*210"
               fill="#3b82f6" rx="2" />
-        <rect :x="22 + i*(760/monthLabels.length) + (760/monthLabels.length - 8)/2 + 2" :y="230 - (monthlyLeave[i]/maxOf([...monthlyJoin,...monthlyLeave]))*210"
-              :width="(760/monthLabels.length - 8)/2" :height="(monthlyLeave[i]/maxOf([...monthlyJoin,...monthlyLeave]))*210"
+        <rect :x="22 + i*(760/cfMonthLabels.length) + (760/cfMonthLabels.length - 8)/2 + 2" :y="230 - (cfMonthlyLeave[i]/maxOf([...cfMonthlyJoin,...cfMonthlyLeave]))*210"
+              :width="(760/cfMonthLabels.length - 8)/2" :height="(cfMonthlyLeave[i]/maxOf([...cfMonthlyJoin,...cfMonthlyLeave]))*210"
               fill="#ef4444" rx="2" />
       </g>
     </svg>
     <div style="display:flex;font-size:10px;color:#888;margin-top:4px;">
-      <span v-for="m in monthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
+      <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
     </div>
   </div>
 
@@ -411,7 +411,7 @@
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
       🖱 <span>월별 상품상세 클릭 현황 (14개월)</span>
       <span style="flex:1;"></span>
-      <span style="font-size:11px;color:#888;font-weight:500;">총 {{ fmt(monthlyClicks.reduce((a,b)=>a+b,0)) }}회</span>
+      <span style="font-size:11px;color:#888;font-weight:500;">총 {{ fmt(cfMonthlyClicks.reduce((a,b)=>a+b,0)) }}회</span>
     </div>
     <svg viewBox="0 0 800 240" style="width:100%;height:240px;">
       <defs>
@@ -420,14 +420,14 @@
           <stop offset="100%" stop-color="#10b981" stop-opacity="0.02"/>
         </linearGradient>
       </defs>
-      <path :d="areaPath(monthlyClicks, 800, 240, 20)" fill="url(#gradClicks)" />
-      <polyline :points="linePoints(monthlyClicks, 800, 240, 20)" fill="none" stroke="#10b981" stroke-width="2.5" />
-      <template v-for="(v,i) in monthlyClicks" :key="i">
-        <circle :cx="20 + (i/(monthlyClicks.length-1))*760" :cy="240-20-(v/maxOf(monthlyClicks))*(240-40)" r="3.5" fill="#10b981" stroke="#fff" stroke-width="1.5"/>
+      <path :d="areaPath(cfMonthlyClicks, 800, 240, 20)" fill="url(#gradClicks)" />
+      <polyline :points="linePoints(cfMonthlyClicks, 800, 240, 20)" fill="none" stroke="#10b981" stroke-width="2.5" />
+      <template v-for="(v,i) in cfMonthlyClicks" :key="i">
+        <circle :cx="20 + (i/(cfMonthlyClicks.length-1))*760" :cy="240-20-(v/maxOf(cfMonthlyClicks))*(240-40)" r="3.5" fill="#10b981" stroke="#fff" stroke-width="1.5"/>
       </template>
     </svg>
     <div style="display:flex;font-size:10px;color:#888;margin-top:4px;">
-      <span v-for="m in monthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
+      <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
     </div>
   </div>
 
@@ -436,7 +436,7 @@
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
       📋 <span>월별 주문완료 현황 (14개월)</span>
       <span style="flex:1;"></span>
-      <span style="font-size:11px;color:#888;font-weight:500;">총 {{ fmt(monthlyOrders.reduce((a,b)=>a+b,0)) }}건</span>
+      <span style="font-size:11px;color:#888;font-weight:500;">총 {{ fmt(cfMonthlyOrders.reduce((a,b)=>a+b,0)) }}건</span>
     </div>
     <svg viewBox="0 0 800 240" style="width:100%;height:240px;">
       <defs>
@@ -444,14 +444,14 @@
           <stop offset="0%" stop-color="#7b1fa2"/><stop offset="100%" stop-color="#a855f7"/>
         </linearGradient>
       </defs>
-      <g v-for="(v,i) in monthlyOrders" :key="i">
-        <rect :x="20 + i*(760/monthLabels.length)" :y="230 - (v/maxOf(monthlyOrders))*210"
-              :width="760/monthLabels.length - 6" :height="(v/maxOf(monthlyOrders))*210"
+      <g v-for="(v,i) in cfMonthlyOrders" :key="i">
+        <rect :x="20 + i*(760/cfMonthLabels.length)" :y="230 - (v/maxOf(cfMonthlyOrders))*210"
+              :width="760/cfMonthLabels.length - 6" :height="(v/maxOf(cfMonthlyOrders))*210"
               fill="url(#gradOrder)" rx="2" />
       </g>
     </svg>
     <div style="display:flex;font-size:10px;color:#888;margin-top:4px;">
-      <span v-for="m in monthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
+      <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
     </div>
   </div>
 
@@ -460,18 +460,18 @@
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
       📺 <span>월별 판매채널별 매출현황 (14개월)</span>
       <span style="flex:1;"></span>
-      <span style="font-size:11px;color:#888;font-weight:500;">{{ channelMonthly.length }}개 채널</span>
+      <span style="font-size:11px;color:#888;font-weight:500;">{{ cfChannelMonthly.length }}개 채널</span>
     </div>
     <svg viewBox="0 0 800 260" style="width:100%;height:260px;">
-      <template v-for="(ch, ci) in channelMonthly" :key="ch.name">
+      <template v-for="(ch, ci) in cfChannelMonthly" :key="ch.name">
         <polyline :points="linePoints(ch.values, 800, 260, 20)" fill="none" :stroke="ch.color" stroke-width="2" opacity="0.85" />
       </template>
     </svg>
     <div style="display:flex;font-size:10px;color:#888;margin:4px 0 10px;">
-      <span v-for="m in monthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
+      <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;">
-      <span v-for="ch in channelMonthly" :key="ch.name" style="display:inline-flex;align-items:center;gap:5px;">
+      <span v-for="ch in cfChannelMonthly" :key="ch.name" style="display:inline-flex;align-items:center;gap:5px;">
         <span :style="{width:'12px',height:'3px',background:ch.color,borderRadius:'2px'}"></span>
         <span style="color:#555;">{{ ch.name }}</span>
       </span>
@@ -483,10 +483,10 @@
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">🎯 핵심지표</div>
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
       <div v-for="kpi in [
-        {label:'전체 매출현황', value:fmt(totalSales), unit:'원', color:'#e8587a', icon:'💰', bg:'#fff0f4'},
-        {label:'전체 구매수량', value:fmt(totalQtyComp), unit:'건', color:'#3b82f6', icon:'🛒', bg:'#eff6ff'},
+        {label:'전체 매출현황', value:fmt(cfTotalSales), unit:'원', color:'#e8587a', icon:'💰', bg:'#fff0f4'},
+        {label:'전체 구매수량', value:fmt(cfTotalQtyComp), unit:'건', color:'#3b82f6', icon:'🛒', bg:'#eff6ff'},
         {label:'평균 마진율',   value:pct(marginRate), unit:'',   color:'#10b981', icon:'📈', bg:'#f0fdf4'},
-        {label:'평균 결제금액', value:fmt(avgOrderValue), unit:'원', color:'#f59e0b', icon:'💳', bg:'#fffbeb'},
+        {label:'평균 결제금액', value:fmt(cfAvgOrderValue), unit:'원', color:'#f59e0b', icon:'💳', bg:'#fffbeb'},
       ]" :key="kpi.label"
         :style="{background:kpi.bg,border:'1px solid #eef0f3',borderRadius:'8px',padding:'12px',display:'flex',alignItems:'center',gap:'10px'}">
         <div :style="{fontSize:'22px',width:'36px',height:'36px',borderRadius:'8px',background:'#fff',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}">{{ kpi.icon }}</div>
@@ -574,9 +574,9 @@
       <polygon points="100,30 160,70 140,150 60,150 40,70" fill="none" stroke="#e5e7eb" stroke-width="1"/>
       <polygon points="100,50 145,80 128,140 72,140 55,80" fill="none" stroke="#e5e7eb" stroke-width="1"/>
       <polygon points="100,70 130,90 117,130 83,130 70,90" fill="none" stroke="#e5e7eb" stroke-width="1"/>
-      <line v-for="(a,ai) in radarAxes" :key="ai" x1="100" y1="100" :x2="a.x2" :y2="a.y2" stroke="#e5e7eb" stroke-width="1"/>
-      <polygon :points="radarPath" fill="rgba(232,88,122,0.25)" stroke="#e8587a" stroke-width="2"/>
-      <text v-for="(a,ai) in radarAxes" :key="'l'+ai" :x="a.lx" :y="a.ly" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="#555">{{ a.label }}</text>
+      <line v-for="(a,ai) in cfRadarAxes" :key="ai" x1="100" y1="100" :x2="a.x2" :y2="a.y2" stroke="#e5e7eb" stroke-width="1"/>
+      <polygon :points="cfRadarPath" fill="rgba(232,88,122,0.25)" stroke="#e8587a" stroke-width="2"/>
+      <text v-for="(a,ai) in cfRadarAxes" :key="'l'+ai" :x="a.lx" :y="a.ly" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="#555">{{ a.label }}</text>
     </svg>
   </div>
 

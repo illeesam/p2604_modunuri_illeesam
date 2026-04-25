@@ -64,17 +64,17 @@ window.PmVoucherDtl = {
     });
 
     /* 발급내역 */
-    const issuedList = computed(() => {
+    const cfIssuedList = computed(() => {
       if (!voucherList) return [];
       const v = voucherList.window.safeArrayUtils.safeFind(value, x => x.voucherId === props.editId);
-      return v ? (v.issuedList || []) : [];
+      return v ? (v.cfIssuedList || []) : [];
     });
 
     /* 사용내역 */
-    const usedList = computed(() => {
+    const cfUsedList = computed(() => {
       if (!voucherList) return [];
       const v = voucherList.window.safeArrayUtils.safeFind(value, x => x.voucherId === props.editId);
-      return v ? (v.usedList || []) : [];
+      return v ? (v.cfUsedList || []) : [];
     });
 
     /* 미리보기 형태 */
@@ -122,7 +122,7 @@ window.PmVoucherDtl = {
     };
 
     const showVendorModal = ref(false);
-    const selectedVendorNm = computed(() => {
+    const cfSelectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
       const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
@@ -171,8 +171,8 @@ window.PmVoucherDtl = {
         voucherList.push({
           ...form,
           voucherId: Date.now(),
-          issuedList: [],
-          usedList: [],
+          cfIssuedList: [],
+          cfUsedList: [],
         });
       } else {
         const idx = voucherList.findIndex(x => x.voucherId === props.editId);
@@ -190,7 +190,7 @@ window.PmVoucherDtl = {
       }
     };
 
-    return { vouchers, loading, error, cfIsNew, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, viewMode2, showTab, onTabChange, issuedList, usedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, showVendorModal, selectedVendorNm, selectVendor };
+    return { vouchers, loading, error, cfIsNew, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, viewMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, showVendorModal, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
@@ -277,7 +277,7 @@ window.PmVoucherDtl = {
         <label class="form-label">판매업체</label>
         <div style="display:flex;gap:8px;align-items:center;">
           <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
-            <span style="padding:8px 12px;flex:1;">{{ selectedVendorNm }}</span>
+            <span style="padding:8px 12px;flex:1;">{{ cfSelectedVendorNm }}</span>
             <span style="padding:8px 12px;color:#999;font-size:12px;">▼</span>
           </div>
           <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
@@ -429,8 +429,8 @@ window.PmVoucherDtl = {
     <table class="bo-table" style="margin:0;">
       <thead><tr><th>발급번호</th><th>회원명</th><th>발급일</th><th>발급가격</th><th>만료일</th><th>상태</th></tr></thead>
       <tbody>
-        <tr v-if="issuedList.length===0"><td colspan="6" style="text-align:center;padding:20px;color:#999;">발급내역이 없습니다.</td></tr>
-        <tr v-for="item in issuedList" :key="item?.issueNo">
+        <tr v-if="cfIssuedList.length===0"><td colspan="6" style="text-align:center;padding:20px;color:#999;">발급내역이 없습니다.</td></tr>
+        <tr v-for="item in cfIssuedList" :key="item?.issueNo">
           <td>{{ item.issueNo }}</td>
           <td>{{ item.memberNm }}</td>
           <td>{{ item.issueDate }}</td>
@@ -448,8 +448,8 @@ window.PmVoucherDtl = {
     <table class="bo-table" style="margin:0;">
       <thead><tr><th>사용번호</th><th>발급번호</th><th>회원명</th><th>주문ID</th><th>사용금액</th><th>사용일시</th></tr></thead>
       <tbody>
-        <tr v-if="usedList.length===0"><td colspan="6" style="text-align:center;padding:20px;color:#999;">사용내역이 없습니다.</td></tr>
-        <tr v-for="item in usedList" :key="item?.usageNo">
+        <tr v-if="cfUsedList.length===0"><td colspan="6" style="text-align:center;padding:20px;color:#999;">사용내역이 없습니다.</td></tr>
+        <tr v-for="item in cfUsedList" :key="item?.usageNo">
           <td>{{ item.usageNo }}</td>
           <td>{{ item.issueNo }}</td>
           <td>{{ item.memberNm }}</td>

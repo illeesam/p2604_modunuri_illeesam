@@ -56,8 +56,8 @@ window.PmDiscntMng = {
 
     const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
-    const list = computed(() => discounts || []);
-    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(list, d => {
+    const cfList = computed(() => discounts || []);
+    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(cfList, d => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !String(d.discntNm || '').toLowerCase().includes(kw) && !String(d.discntId || '').includes(kw)) return false;
       if (applied.type   && d.discntType   !== applied.type)   return false;

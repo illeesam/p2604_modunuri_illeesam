@@ -62,10 +62,11 @@ window.MyClaim = {
       props.showToast('신청이 취소되었습니다.', 'info');
     };
 
-    onMounted(async () => {
+    const fetchData = async () => {
       await myStore.loadClaims();
       myStore.loadOrders();
-    });
+    };
+    onMounted(() => { fetchData(); });
 
     return {
       myStore, claims, claimFilter, filteredClaims, orders,

@@ -121,6 +121,13 @@ window.SyBizUserMng = {
       pager.page = 1;
     };
 
+    const onSearch = () => { bizPager.page = 1; };
+    const onReset = () => {
+      bizKw.value = '';
+      bizVendorFlt.value = '';
+      bizPager.page = 1;
+    };
+
     const vendorPickOpen = ref(false);
     const onVendorPicked = (v) => { vendorPickOpen.value=false; pickVendorRow(v); };
 
@@ -352,6 +359,7 @@ window.SyBizUserMng = {
       loading, roleLoading,
       vendorUsers, cfVendorMap, fnVendorNm, fnVendorTypeCd, fnVendorSummary,
       vendors, cfVendorList, bizPager, cfBizTotalPages, cfBizPageNums, cfBizPagedRows, setBizPage,
+      onSearch, onReset,
       searchVendorId, bizKw, bizVendorFlt, bizStatusFlt, BIZ_STATUS, applied,
       pickVendorRow, fnVendorStatusBadge, fnVendorStatusLabel, fnVendorTypeBadge, fnVendorTypeLabel,
       vendorPickOpen, onVendorPicked, VENDOR_TYPES,
@@ -391,6 +399,10 @@ window.SyBizUserMng = {
         <option value="">업체유형 전체</option>
         <option v-for="v in VENDOR_TYPES" :key="v[0]" :value="v[0]">{{ v[1] }}</option>
       </select>
+      <div class="search-actions">
+        <button class="btn btn-primary" @click="onSearch">조회</button>
+        <button class="btn btn-secondary" @click="onReset">초기화</button>
+      </div>
     </div>
   </div>
 

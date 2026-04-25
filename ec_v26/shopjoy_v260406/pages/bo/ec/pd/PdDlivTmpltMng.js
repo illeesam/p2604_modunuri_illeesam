@@ -41,7 +41,7 @@ window.PdDlivTmpltMng = {
     const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const selectedRow = computed(() => (dlivTmplts||[]).find(t => t.dlivTmpltId === selectedId.value) || null);
+    const cfSelectedRow = computed(() => (dlivTmplts||[]).find(t => t.dlivTmpltId === selectedId.value) || null);
     const form = reactive({});
     const isNew = ref(false);
 
@@ -75,12 +75,12 @@ window.PdDlivTmpltMng = {
       }
     };
     const handleDelete = async () => {
-      if (!selectedRow.value) return;
-      const ok = await props.showConfirm('삭제', `[${selectedRow.value.dlivTmpltNm}]을 삭제하시겠습니까?`);
+      if (!cfSelectedRow.value) return;
+      const ok = await props.showConfirm('삭제', `[${cfSelectedRow.value.dlivTmpltNm}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const si = dlivTmplts.findIndex(t => t.dlivTmpltId === selectedRow.value.dlivTmpltId); if (si !== -1) dlivTmplts.splice(si, 1); closeDetail();
+      const si = dlivTmplts.findIndex(t => t.dlivTmpltId === cfSelectedRow.value.dlivTmpltId); if (si !== -1) dlivTmplts.splice(si, 1); closeDetail();
       try {
-        const res = await window.boApi.delete(`/bo/ec/pd/dliv-tmplt/${selectedRow.value.dlivTmpltId}`);
+        const res = await window.boApi.delete(`/bo/ec/pd/dliv-tmplt/${cfSelectedRow.value.dlivTmpltId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

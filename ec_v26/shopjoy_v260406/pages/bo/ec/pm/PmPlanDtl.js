@@ -142,7 +142,7 @@ window.PmPlanDtl = {
     /* 대상 상품 팝업 */
     const showProdPopup = ref(false);
     const prodSearch = ref('');
-    const filteredProds = computed(() => window.safeArrayUtils.safeFilter(products, p => {
+    const cfFilteredProds = computed(() => window.safeArrayUtils.safeFilter(products, p => {
       const kw = prodSearch.value.trim().toLowerCase();
       return !kw || p.prodNm.toLowerCase().includes(kw);
     }));
@@ -152,7 +152,7 @@ window.PmPlanDtl = {
       else form.productIds.splice(idx, 1);
     };
     const isSelected = (pid) => form.productIds.includes(pid);
-    const selectedProducts = computed(() =>
+    const cfSelectedProducts = computed(() =>
       form.productIds.map(pid => products.window.safeArrayUtils.safeFind(value, p => p.productId === pid)).filter(Boolean)
     );
     const removeProduct = (pid) => {
@@ -172,7 +172,7 @@ window.PmPlanDtl = {
     };
 
     const showVendorModal = ref(false);
-    const selectedVendorNm = computed(() => {
+    const cfSelectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
       const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
@@ -218,9 +218,9 @@ window.PmPlanDtl = {
     };
 
     return { plans, loading, error, cfIsNew, tab, onTabChange, form, errors, activeContentTab, showProdPopup, prodSearch,
-      filteredProds, toggleProduct, isSelected, selectedProducts, removeProduct, handleSave,
+      cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, handleSave,
       CATEGORIES, STATUS_OPTIONS, VISIBILITY_OPTIONS, viewMode2, showTab, hasVisibility, toggleVisibility,
-      showVendorModal, selectedVendorNm, selectVendor,
+      showVendorModal, cfSelectedVendorNm, selectVendor,
     };
   },
   template: /* html */`
@@ -316,7 +316,7 @@ window.PmPlanDtl = {
           <label class="form-label">판매업체</label>
           <div style="display:flex;gap:8px;align-items:center;">
             <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
-              <span style="padding:8px 12px;flex:1;">{{ selectedVendorNm }}</span>
+              <span style="padding:8px 12px;flex:1;">{{ cfSelectedVendorNm }}</span>
               <span style="padding:8px 12px;color:#999;font-size:12px;">▼</span>
             </div>
             <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
@@ -396,8 +396,8 @@ window.PmPlanDtl = {
         <div style="clear:both;"></div>
       </div>
 
-      <div v-if="selectedProducts.length > 0" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;">
-        <div v-for="p in selectedProducts" :key="p?.productId" style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;background:#fff;">
+      <div v-if="cfSelectedProducts.length > 0" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;">
+        <div v-for="p in cfSelectedProducts" :key="p?.productId" style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;background:#fff;">
           <div style="height:100px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:32px;border-bottom:1px solid #e8e8e8;">📦</div>
           <div style="padding:8px;font-size:11px;">
             <div style="font-weight:600;color:#222;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.prodNm }}</div>
@@ -452,10 +452,10 @@ window.PmPlanDtl = {
           </template>
 
           <!-- 대상상품 미리보기 -->
-          <div v-if="selectedProducts.length > 0" style="border-top:1px solid #e0e0e0;padding-top:16px;margin-top:16px;">
-            <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">🛍 대상상품 ({{ selectedProducts.length }}개)</div>
+          <div v-if="cfSelectedProducts.length > 0" style="border-top:1px solid #e0e0e0;padding-top:16px;margin-top:16px;">
+            <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">🛍 대상상품 ({{ cfSelectedProducts.length }}개)</div>
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;">
-              <div v-for="p in selectedProducts" :key="p?.productId" style="text-align:center;padding:10px;background:#f9f9f9;border-radius:6px;">
+              <div v-for="p in cfSelectedProducts" :key="p?.productId" style="text-align:center;padding:10px;background:#f9f9f9;border-radius:6px;">
                 <div style="font-size:32px;margin-bottom:4px;">📦</div>
                 <div style="font-size:11px;font-weight:600;color:#222;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.prodNm }}</div>
                 <div style="font-size:12px;color:#e8587a;font-weight:700;margin-top:4px;">{{ (p.price||0).toLocaleString() }}원</div>
@@ -485,8 +485,8 @@ window.PmPlanDtl = {
       <input v-model="prodSearch" type="text" placeholder="상품명 검색" class="form-control" style="width:100%;" />
     </div>
     <div style="flex:1;overflow-y:auto;">
-      <div v-if="filteredProds.length === 0" style="text-align:center;color:#999;padding:40px;">상품이 없습니다.</div>
-      <div v-for="p in filteredProds" :key="p?.productId"
+      <div v-if="cfFilteredProds.length === 0" style="text-align:center;color:#999;padding:40px;">상품이 없습니다.</div>
+      <div v-for="p in cfFilteredProds" :key="p?.productId"
         @click="toggleProduct(p.productId)"
         style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background .1s;"
         :style="isSelected(p.productId) ? 'background:#ede7f6;' : ''"

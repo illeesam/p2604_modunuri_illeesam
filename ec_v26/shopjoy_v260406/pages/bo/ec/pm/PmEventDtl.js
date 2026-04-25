@@ -117,7 +117,7 @@ window.PmEventDtl = {
     /* 대상 상품 팝업 */
     const showProdPopup = ref(false);
     const prodSearch = ref('');
-    const filteredProds = computed(() => window.safeArrayUtils.safeFilter(products, p => {
+    const cfFilteredProds = computed(() => window.safeArrayUtils.safeFilter(products, p => {
       const kw = prodSearch.value.trim().toLowerCase();
       return !kw || p.prodNm.toLowerCase().includes(kw);
     }));
@@ -127,7 +127,7 @@ window.PmEventDtl = {
       else form.targetProducts.splice(idx, 1);
     };
     const isSelected = (pid) => form.targetProducts.includes(pid);
-    const selectedProducts = computed(() =>
+    const cfSelectedProducts = computed(() =>
       form.targetProducts.map(pid => getProduct.value(pid)).filter(Boolean)
     );
     const removeProduct = (pid) => {
@@ -173,7 +173,7 @@ window.PmEventDtl = {
       }
     };
 
-    const visibilityOptions = computed(() => window.visibilityUtil.allOptions());
+    const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
     const hasVisibility = (code) => window.visibilityUtil.has(form.visibilityTargets, code);
     const toggleVisibility = (code) => {
       const list = window.visibilityUtil.parse(form.visibilityTargets);
@@ -183,7 +183,7 @@ window.PmEventDtl = {
     };
 
     const showVendorModal = ref(false);
-    const selectedVendorNm = computed(() => {
+    const cfSelectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
       const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
@@ -193,7 +193,7 @@ window.PmEventDtl = {
       showVendorModal.value = false;
     };
 
-    return { events, loading, error, cfIsNew, tab, onTabChange, form, errors, activeContentTab, showProdPopup, prodSearch, filteredProds, toggleProduct, isSelected, selectedProducts, removeProduct, onEventConfirm, handleSave, visibilityOptions, hasVisibility, toggleVisibility, viewMode2, showTab, showVendorModal, selectedVendorNm, selectVendor };
+    return { events, loading, error, cfIsNew, tab, onTabChange, form, errors, activeContentTab, showProdPopup, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, viewMode2, showTab, showVendorModal, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
@@ -275,7 +275,7 @@ window.PmEventDtl = {
       <div style="margin-top:14px;">
         <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">🔒 공개 대상 (하나라도 해당하면 노출)</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;">
-          <label v-for="opt in visibilityOptions" :key="opt?.codeValue"
+          <label v-for="opt in cfVisibilityOptions" :key="opt?.codeValue"
             :style="{
               display:'inline-flex',alignItems:'center',gap:'6px',padding:'5px 10px',borderRadius:'14px',
               border:'1px solid '+(hasVisibility(opt.codeValue)?'#1565c0':'#ddd'),
@@ -295,7 +295,7 @@ window.PmEventDtl = {
           <label class="form-label">판매업체</label>
           <div style="display:flex;gap:8px;align-items:center;">
             <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
-              <span style="padding:8px 12px;flex:1;">{{ selectedVendorNm }}</span>
+              <span style="padding:8px 12px;flex:1;">{{ cfSelectedVendorNm }}</span>
               <span style="padding:8px 12px;color:#999;font-size:12px;">▼</span>
             </div>
             <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
@@ -384,10 +384,10 @@ window.PmEventDtl = {
         <button v-if="!viewMode" class="btn btn-secondary" @click="showProdPopup=true">+ 상품 추가</button>
         <span style="font-size:13px;color:#888;">{{ form.targetProducts.length }}개 선택됨</span>
       </div>
-      <table class="bo-table" v-if="selectedProducts.length">
+      <table class="bo-table" v-if="cfSelectedProducts.length">
         <thead><tr><th>ID</th><th>상품명</th><th>카테고리</th><th>가격</th><th>재고</th><th>상태</th><th>제거</th></tr></thead>
         <tbody>
-          <tr v-for="p in selectedProducts" :key="p?.productId">
+          <tr v-for="p in cfSelectedProducts" :key="p?.productId">
             <td>{{ p.productId }}</td>
             <td><span class="ref-link" @click="showRefModal('product', p.productId)">{{ p.prodNm }}</span></td>
             <td>{{ p.category }}</td>
@@ -430,10 +430,10 @@ window.PmEventDtl = {
         <div v-else style="padding:12px;background:#f0f0f0;border-radius:6px;font-size:12px;color:#888;margin-bottom:16px;">
           🔒 내용 3~5는 로그인 후 확인 가능합니다.
         </div>
-        <div v-if="selectedProducts.length > 0" style="margin-top:20px;padding-top:20px;border-top:1px solid #e0e0e0;">
-          <div style="font-size:14px;font-weight:700;color:#333;margin-bottom:12px;">🎯 대상 상품 ({{ selectedProducts.length }}개)</div>
+        <div v-if="cfSelectedProducts.length > 0" style="margin-top:20px;padding-top:20px;border-top:1px solid #e0e0e0;">
+          <div style="font-size:14px;font-weight:700;color:#333;margin-bottom:12px;">🎯 대상 상품 ({{ cfSelectedProducts.length }}개)</div>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">
-            <div v-for="p in selectedProducts" :key="p?.productId" style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;background:#fff;">
+            <div v-for="p in cfSelectedProducts" :key="p?.productId" style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;background:#fff;">
               <div style="height:100px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:32px;border-bottom:1px solid #e8e8e8;">📦</div>
               <div style="padding:8px;font-size:11px;">
                 <div style="font-weight:600;color:#222;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.prodNm }}</div>
@@ -458,7 +458,7 @@ window.PmEventDtl = {
         <input class="form-control" v-model="prodSearch" placeholder="상품명 검색" />
       </div>
       <div class="popup-prod-list">
-        <label v-for="p in filteredProds" :key="p?.productId" class="popup-prod-item">
+        <label v-for="p in cfFilteredProds" :key="p?.productId" class="popup-prod-item">
           <input type="checkbox" :checked="isSelected(p.productId)" @change="toggleProduct(p.productId)" />
           <span>{{ p.prodNm }}</span>
           <span style="font-size:12px;color:#888;margin-left:auto;">{{ p.price.toLocaleString() }}원</span>

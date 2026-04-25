@@ -11,7 +11,7 @@ window.BarcodeWidget = {
     const qrcodeEl  = ref(null);
     let qrInst = null;
 
-    const showBarcode = computed(() => ['barcode', 'barcode_qrcode'].includes(props.widget.widgetType));
+    const cfShowBarcode = computed(() => ['barcode', 'barcode_qrcode'].includes(props.widget.widgetType));
     const showQr      = computed(() => ['qrcode',  'barcode_qrcode'].includes(props.widget.widgetType));
 
     const renderBarcode = () => {
@@ -67,7 +67,7 @@ window.BarcodeWidget = {
 
     const render = async () => {
       await nextTick();
-      if (showBarcode.value) renderBarcode();
+      if (cfShowBarcode.value) renderBarcode();
       if (showQr.value)      renderQrcode();
     };
 
@@ -84,14 +84,14 @@ window.BarcodeWidget = {
       });
     });
 
-    return { barcodeEl, qrcodeEl, showBarcode, showQr };
+    return { barcodeEl, qrcodeEl, cfShowBarcode, showQr };
   },
   template: /* html */`
 <div style="background:#fff;border-radius:10px;border:1px solid #e8e8e8;overflow:hidden;">
   <!-- 헤더 -->
   <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;">
     <span style="font-size:11px;color:#888;">
-      {{ showBarcode && showQr ? '🔖 바코드+QR' : showBarcode ? '🔖 바코드' : '📱 QR코드' }}
+      {{ cfShowBarcode && showQr ? '🔖 바코드+QR' : cfShowBarcode ? '🔖 바코드' : '📱 QR코드' }}
       {{ widget.name }}
     </span>
   </div>
@@ -105,7 +105,7 @@ window.BarcodeWidget = {
 
     <template v-else>
       <!-- 바코드 -->
-      <div v-if="showBarcode" style="width:100%;display:flex;justify-content:center;overflow:hidden;">
+      <div v-if="cfShowBarcode" style="width:100%;display:flex;justify-content:center;overflow:hidden;">
         <svg ref="barcodeEl" style="max-width:100%;"></svg>
       </div>
 

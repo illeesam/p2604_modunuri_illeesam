@@ -31,10 +31,11 @@ window.MyCache = {
       if (!ok) props.showToast('주문 정보를 찾을 수 없습니다.', 'error');
     };
 
-    onMounted(async () => {
+    const fetchData = async () => {
       await myStore.loadCash();
       myStore.loadOrders();
-    });
+    };
+    onMounted(() => { fetchData(); });
 
     return {
       myStore, cashBalance, cashHistory, chargeAmount,

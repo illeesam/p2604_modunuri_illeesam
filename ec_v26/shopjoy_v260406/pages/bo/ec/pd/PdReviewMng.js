@@ -60,13 +60,13 @@ window.PdReviewMng = {
     const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const selectedRow = computed(() => (reviews||[]).find(r => r.reviewId === selectedId.value) || null);
+    const cfSelectedRow = computed(() => (reviews||[]).find(r => r.reviewId === selectedId.value) || null);
 
     const openDetail = (row) => { selectedId.value = selectedId.value === row.reviewId ? null : row.reviewId; };
     const changeStatus = async (row, newStatus) => {
       const ok = await props.showConfirm('상태변경', `[${row.reviewTitle}] 상태를 [${STATUS_LABEL[newStatus]}]로 변경하시겠습니까?`);
       if (!ok) return;
-      row.reviewStatusCd = newStatus; if (selectedRow.value) selectedRow.value.reviewStatusCd = newStatus;
+      row.reviewStatusCd = newStatus; if (cfSelectedRow.value) cfSelectedRow.value.reviewStatusCd = newStatus;
       try {
         const res = await window.boApi.put(`/bo/ec/pd/review/${row.reviewId}/status`, { reviewStatusCd: newStatus });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -83,7 +83,7 @@ window.PdReviewMng = {
     const starStr  = r => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r));
 
     return { reviews, loading, error, searchKw, searchStatus, searchRating, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
-             selectedId, selectedRow, openDetail, changeStatus, fnStatusBadge, STATUS_LIST, STATUS_LABEL, getProdNm, getMemNm, starStr , PAGE_SIZES , onSizeChange };
+             selectedId, cfSelectedRow, openDetail, changeStatus, fnStatusBadge, STATUS_LIST, STATUS_LABEL, getProdNm, getMemNm, starStr , PAGE_SIZES , onSizeChange };
   },
   template: `
 <div>
@@ -155,13 +155,13 @@ window.PdReviewMng = {
          </div>
        </div>
     </div>
-    <div class="card" v-if="selectedRow">
+    <div class="card" v-if="cfSelectedRow">
       <div class="toolbar"><span class="list-title">리뷰 내용</span></div>
       <div style="padding:16px">
-        <div style="font-size:16px;font-weight:600;margin-bottom:8px">{{ selectedRow.reviewTitle }}</div>
-        <div style="color:#f59e0b;margin-bottom:8px">평점: {{ selectedRow.rating.toFixed(1) }} / 5.0</div>
-        <div style="background:#f9f9f9;padding:12px;border-radius:6px;white-space:pre-wrap;font-size:14px">{{ selectedRow.reviewContent }}</div>
-        <div style="margin-top:8px;font-size:12px;color:#888">도움이 됐어요 {{ selectedRow.helpfulCnt }} | 도움이 안됐어요 {{ selectedRow.unhelpfulCnt }}</div>
+        <div style="font-size:16px;font-weight:600;margin-bottom:8px">{{ cfSelectedRow.reviewTitle }}</div>
+        <div style="color:#f59e0b;margin-bottom:8px">평점: {{ cfSelectedRow.rating.toFixed(1) }} / 5.0</div>
+        <div style="background:#f9f9f9;padding:12px;border-radius:6px;white-space:pre-wrap;font-size:14px">{{ cfSelectedRow.reviewContent }}</div>
+        <div style="margin-top:8px;font-size:12px;color:#888">도움이 됐어요 {{ cfSelectedRow.helpfulCnt }} | 도움이 안됐어요 {{ cfSelectedRow.unhelpfulCnt }}</div>
       </div>
     </div>
 </div>`

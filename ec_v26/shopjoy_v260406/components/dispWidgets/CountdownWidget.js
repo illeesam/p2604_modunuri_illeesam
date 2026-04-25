@@ -41,12 +41,12 @@ window.CountdownWidget = {
     watch(() => props.widget.countdownTarget, start);
 
     const bgColor   = computed(() => props.widget.countdownBgColor   || '#1a237e');
-    const textColor = computed(() => props.widget.countdownTextColor  || '#ffffff');
+    const cfTextColor = computed(() => props.widget.countdownTextColor  || '#ffffff');
 
-    return { remaining, pad, bgColor, textColor };
+    return { remaining, pad, bgColor, cfTextColor };
   },
   template: /* html */`
-<div :style="{ background: bgColor, borderRadius: '10px', overflow: 'hidden', padding: '20px 16px', textAlign: 'center', color: textColor }">
+<div :style="{ background: bgColor, borderRadius: '10px', overflow: 'hidden', padding: '20px 16px', textAlign: 'center', color: cfTextColor }">
 
   <!-- 타이틀 -->
   <div style="font-size:13px;opacity:.8;margin-bottom:14px;letter-spacing:.3px;">

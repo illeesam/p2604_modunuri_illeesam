@@ -784,12 +784,13 @@
       };
       const bizInfoOfUser = () => '';
       const testAccounts = ref([]);
-      onMounted(async () => {
+      const fetchTestAccounts = async () => {
         try {
           const res = await window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 } });
           testAccounts.value = res.data?.data?.list || [];
         } catch (_) {}
-      });
+      };
+      onMounted(() => { fetchTestAccounts(); });
       watch(currentAuthUser, (u) => {
         try {
           if (u && u.userId) {

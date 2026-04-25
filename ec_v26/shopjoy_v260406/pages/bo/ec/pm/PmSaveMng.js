@@ -57,8 +57,8 @@ window.PmSaveMng = {
 
     const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
-    const list = computed(() => saveList);
-    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(list, s => {
+    const cfList = computed(() => saveList);
+    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(cfList, s => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !String(s.saveNm || '').toLowerCase().includes(kw) && !String(s.saveId || '').includes(kw)) return false;
       if (applied.type   && s.saveType   !== applied.type)   return false;

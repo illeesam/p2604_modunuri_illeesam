@@ -7,7 +7,7 @@ const _WP_DispUiPreview = {
   setup(props) {
     const { ref, reactive, computed, watchEffect } = Vue;
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
-    const chartBars = computed(() => {
+    const cfChartBars = computed(() => {
       const w = props.lib;
       if (!w || !w.chartValues) return [];
       const values = w.chartValues.split(',').map(v => Number(v.trim()) || 0);
@@ -15,7 +15,7 @@ const _WP_DispUiPreview = {
       const max = Math.max(...values, 1);
       return values.map((v,i) => ({ v, label:labels[i]||'', pct:Math.round((v/max)*100), color:chartColors[i%chartColors.length] }));
     });
-    return { chartBars };
+    return { cfChartBars };
   },
   template: /* html */`
 <div style="padding:10px;">
@@ -42,8 +42,8 @@ const _WP_DispUiPreview = {
   <!-- 차트 -->
   <template v-else-if="lib.widgetType&&lib.widgetType.startsWith('chart_')">
     <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:8px;">{{ lib.chartTitle||lib.name }}</div>
-    <div v-if="chartBars.length" style="display:flex;align-items:flex-end;gap:4px;height:60px;">
-      <div v-for="(bar,i) in chartBars" :key="Math.random()" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+    <div v-if="cfChartBars.length" style="display:flex;align-items:flex-end;gap:4px;height:60px;">
+      <div v-for="(bar,i) in cfChartBars" :key="Math.random()" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
         <div :style="{height:bar.pct+'%',background:bar.color,borderRadius:'3px 3px 0 0',width:'100%',minHeight:'3px'}"></div>
         <div style="font-size:9px;color:#aaa;">{{ bar.label }}</div>
       </div>

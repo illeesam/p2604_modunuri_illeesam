@@ -12,7 +12,7 @@ window.DispX04Widget = {
     const { computed } = Vue;
 
     /* 노출 여부 판단 */
-    const visible = computed(() => {
+    const cfVisible = computed(() => {
       const w = props.widgetItem;
       const pm = props.params;
 
@@ -88,7 +88,7 @@ window.DispX04Widget = {
 
     /* 차트 데이터 */
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
-    const chartBars = computed(() => {
+    const cfChartBars = computed(() => {
       const w = props.widgetItem;
       if (!w.chartValues) return [];
       const vals   = w.chartValues.split(',').map(v => Number(v.trim()) || 0);
@@ -132,10 +132,10 @@ window.DispX04Widget = {
       catch { return [{ role: '담당자', name: '' }, { role: '팀장', name: '' }, { role: '부서장', name: '' }]; }
     };
 
-    return { widget: props.widgetItem, visible, handleClick, nameGrad, chartBars, chartColors, parseMarkdown, getVideoEmbed, getMapEmbed, parseApprovalLine };
+    return { widget: props.widgetItem, cfVisible, handleClick, nameGrad, cfChartBars, chartColors, parseMarkdown, getVideoEmbed, getMapEmbed, parseApprovalLine };
   },
   template: /* html */`
-<div v-if="visible" class="disp-widget" :style="{ cursor: widget.clickAction && widget.clickAction !== 'none' ? 'pointer' : 'default' }" @click="handleClick">
+<div v-if="cfVisible" class="disp-widget" :style="{ cursor: widget.clickAction && widget.clickAction !== 'none' ? 'pointer' : 'default' }" @click="handleClick">
 
   <!-- ─── 위젯 타이틀 ─── -->
   <div v-if="widget.titleYn==='Y' && widget.title"
@@ -203,8 +203,8 @@ window.DispX04Widget = {
       <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:14px;">
         {{ widget.widgetType==='chart_bar'?'📊':widget.widgetType==='chart_line'?'📈':'🥧' }} {{ widget.chartTitle || widget.name }}
       </div>
-      <div v-if="chartBars.length" style="display:flex;align-items:flex-end;gap:5px;height:90px;">
-        <div v-for="(bar, i) in chartBars" :key="i" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+      <div v-if="cfChartBars.length" style="display:flex;align-items:flex-end;gap:5px;height:90px;">
+        <div v-for="(bar, i) in cfChartBars" :key="i" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
           <div :style="{ height: bar.pct+'%', background: bar.color, borderRadius:'4px 4px 0 0', width:'100%', minHeight:'4px', transition:'height .3s' }"></div>
           <div style="font-size:10px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">{{ bar.label }}</div>
         </div>

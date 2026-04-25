@@ -59,8 +59,8 @@ window.PmGiftMng = {
 
     const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
-    const list = computed(() => giftList);
-    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(list, g => {
+    const cfList = computed(() => giftList);
+    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(cfList, g => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !String(g.giftNm || '').toLowerCase().includes(kw) && !String(g.giftId || '').includes(kw)) return false;
       if (applied.type   && g.giftType   !== applied.type)   return false;

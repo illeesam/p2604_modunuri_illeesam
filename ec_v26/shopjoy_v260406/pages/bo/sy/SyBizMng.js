@@ -70,6 +70,15 @@ window.SyBizMng = {
     const cfPagedRows = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
     watch(selectedPath, () => pager.page = 1);
 
+    const onSearch = () => { pager.page = 1; };
+    const onReset = () => {
+      kw.value = '';
+      statusFlt.value = '';
+      vendorTypeFlt.value = '';
+      selectedPath.value = null;
+      pager.page = 1;
+    };
+
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : '#'+id);
     const fnVendorTypeLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
     const fnVendorTypeBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', CS:'badge-orange', SITE:'badge-purple', PROG:'badge-red', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
@@ -120,6 +129,7 @@ window.SyBizMng = {
       kw, statusFlt, vendorTypeFlt, STATUS, BIZ_CLASS, VENDOR_TYPES,
       cfFiltered, cfPagedRows, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange,
       pathLabel, fnVendorTypeLabel, fnVendorTypeBadge, fnRoleCatLabel, fnRoleCatColor, fnStatusBadge, fnStatusLabel,
+      onSearch, onReset,
       formMode, formData, openNew, openEdit, closeForm, handleSaveForm,
       pathPickModal, openPathPick, closePathPick, onPathPicked,
     };
@@ -140,8 +150,8 @@ window.SyBizMng = {
         <option v-for="s in STATUS" :key="s[0]" :value="s[0]">{{ s[1] }}</option>
       </select>
       <div class="search-actions">
-        <button class="btn btn-primary" @click="pager.page=1">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="kw='';vendorTypeFlt='';statusFlt='';pager.page=1">초기화</button>
+        <button class="btn btn-primary" @click="onSearch">조회</button>
+        <button class="btn btn-secondary" @click="onReset">초기화</button>
       </div>
     </div>
   </div>

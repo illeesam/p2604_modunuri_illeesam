@@ -175,10 +175,11 @@ window.Prod01List = {
       observer.observe(el);
     };
 
-    onMounted(async () => {
+    const fetchData = async () => {
       await loadProducts();
       setupObserver();
-    });
+    };
+    onMounted(() => { fetchData(); });
     onBeforeUnmount(() => {
       if (observer) observer.disconnect();
       window.removeEventListener('resize', onResize);

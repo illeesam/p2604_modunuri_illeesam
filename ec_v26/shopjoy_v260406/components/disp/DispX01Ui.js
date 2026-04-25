@@ -23,15 +23,15 @@ window.DispX01Ui = {
       { key: 'struct',  label: '🌲 구조보기' },
       { key: 'source',  label: '</> 소스보기' },
     ];
-    const activeTabs = computed(() => {
+    const cfActiveTabs = computed(() => {
       const opts = (props.params.viewOpts || '').split(',').filter(Boolean);
       return opts.length ? ALL_TABS.filter(t => opts.includes(t.key)) : [];
     });
     const activeTab = ref('');
 
     Vue.watchEffect(() => {
-      const first = activeTabs.value[0]?.key || 'content';
-      if (!activeTabs.value.find(t => t.key === activeTab.value)) {
+      const first = cfActiveTabs.value[0]?.key || 'content';
+      if (!cfActiveTabs.value.find(t => t.key === activeTab.value)) {
         activeTab.value = first;
       }
     });
@@ -88,7 +88,7 @@ window.DispX01Ui = {
 
     const areaLabel = (code) => areaInfo(code)?.codeLabel || code;
 
-    const totalPanels = computed(() =>
+    const cfTotalPanels = computed(() =>
       (props.params.areas || []).reduce((s, a) => s + panelsForArea(a).length, 0)
     );
 
@@ -141,7 +141,7 @@ window.DispX01Ui = {
     /* ─────────────────────────────────────────
        소스보기 — 구조화된 라인 목록
     ───────────────────────────────────────── */
-    const sourceLines = computed(() => {
+    const cfSourceLines = computed(() => {
       const lines = [];
       const pm = props.params;
       const allAreas = pm.areas || [];
@@ -230,16 +230,16 @@ window.DispX01Ui = {
     const showContentStruct = ref(false);
 
     return {
-      activeTabs, activeTab,
+      cfActiveTabs, activeTab,
       showContentStruct,
-      wLabel, areaLabel, areaInfo, panelsForArea, totalPanels,
+      wLabel, areaLabel, areaInfo, panelsForArea, cfTotalPanels,
       /* 구조보기 트리 */
       structAreaOpen, structPanelOpen,
       allAreas1Open, allPanels2Open,
       expandAll, collapseAll, toggleAll1, toggleAll2,
       toggleArea, togglePanel,
       /* 소스보기 */
-      sourceLines, lineColor,
+      cfSourceLines, lineColor,
       /* 렌더링 옵션 */
       layout: props.dispOpt?.layout || 'auto',
       showHeader: props.dispOpt?.showHeader !== false,
@@ -272,8 +272,8 @@ window.DispX01Ui = {
   </style>
   <!-- 탭 바 -->
   <div style="display:flex;align-items:stretch;border-bottom:2px solid #e8e0f8;background:#faf8ff;">
-    <template v-if="activeTabs.length > 1">
-      <template v-for="tab in activeTabs" :key="tab.key">
+    <template v-if="cfActiveTabs.length > 1">
+      <template v-for="tab in cfActiveTabs" :key="tab.key">
         <!-- 내용보기 탭: 구조보기 토글 내장 -->
         <div v-if="tab.key==='content'"
           style="display:flex;align-items:center;border-bottom:3px solid transparent;margin-bottom:-2px;"
@@ -326,7 +326,7 @@ window.DispX01Ui = {
     <!-- ══════════════════════════════════════
          내용보기 — 위젯 시각적 렌더링
     ══════════════════════════════════════ -->
-    <div v-if="activeTab==='' || activeTab==='content' || activeTabs.length===0">
+    <div v-if="activeTab==='' || activeTab==='content' || cfActiveTabs.length===0">
 
       <!-- ── 구조보기 OFF: 순수 위젯만 ── -->
       <div v-if="!showContentStruct" style="display:flex;flex-direction:column;gap:0;">
@@ -424,7 +424,7 @@ window.DispX01Ui = {
           :style="allPanels2Open?'background:#e8f5e9;color:#1b5e20;':'background:#fff;color:#388e3c;'">
           {{ allPanels2Open ? '▼' : '▶' }} 2레벨 (패널)
         </button>
-        <span style="font-size:11px;color:#aaa;margin-left:auto;">영역 {{ params.areas.length }}개 · 패널 {{ totalPanels }}개</span>
+        <span style="font-size:11px;color:#aaa;margin-left:auto;">영역 {{ params.areas.length }}개 · 패널 {{ cfTotalPanels }}개</span>
       </div>
 
       <!-- 트리 본문 -->
@@ -515,7 +515,7 @@ window.DispX01Ui = {
       <div style="background:#1e1e2e;min-height:300px;overflow-x:auto;">
         <table style="width:100%;border-collapse:collapse;font-family:'Consolas','D2Coding',monospace;font-size:12px;line-height:1.9;">
           <tbody>
-            <tr v-for="(line, idx) in sourceLines" :key="idx"
+            <tr v-for="(line, idx) in cfSourceLines" :key="idx"
               style="vertical-align:top;"
               onmouseover="this.style.background='rgba(255,255,255,0.04)'"
               onmouseout="this.style.background=''">

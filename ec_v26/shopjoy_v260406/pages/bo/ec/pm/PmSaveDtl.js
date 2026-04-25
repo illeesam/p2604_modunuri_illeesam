@@ -60,7 +60,7 @@ window.PmSaveDtl = {
       }
     });
 
-    const visibilityOptions = computed(() => window.visibilityUtil.allOptions());
+    const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
     const hasVisibility = (code) => window.visibilityUtil.has(form.visibilityTargets, code);
     const toggleVisibility = (code) => {
       const list = window.visibilityUtil.parse(form.visibilityTargets);
@@ -70,7 +70,7 @@ window.PmSaveDtl = {
     };
 
     const showVendorModal = ref(false);
-    const selectedVendorNm = computed(() => {
+    const cfSelectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
       const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
@@ -114,7 +114,7 @@ window.PmSaveDtl = {
       }
     };
 
-    return { saves, loading, error, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, visibilityOptions, hasVisibility, toggleVisibility, showVendorModal, selectedVendorNm, selectVendor };
+    return { saves, loading, error, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, showVendorModal, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
@@ -199,7 +199,7 @@ window.PmSaveDtl = {
           <label class="form-label">판매업체</label>
           <div style="display:flex;gap:8px;align-items:center;">
             <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
-              <span style="padding:8px 12px;flex:1;">{{ selectedVendorNm }}</span>
+              <span style="padding:8px 12px;flex:1;">{{ cfSelectedVendorNm }}</span>
               <span style="padding:8px 12px;color:#999;font-size:12px;">▼</span>
             </div>
             <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
@@ -246,7 +246,7 @@ window.PmSaveDtl = {
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🔒 공개대상</div>
       <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">하나라도 해당하면 노출</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;">
-        <label v-for="opt in visibilityOptions" :key="opt?.codeValue"
+        <label v-for="opt in cfVisibilityOptions" :key="opt?.codeValue"
           :style="{display:'inline-flex',alignItems:'center',gap:'6px',padding:'5px 10px',borderRadius:'14px',border:'1px solid '+(hasVisibility(opt.codeValue)?'#1565c0':'#ddd'),background:hasVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',color:hasVisibility(opt.codeValue)?'#1565c0':'#666',fontSize:'12px',fontWeight:hasVisibility(opt.codeValue)?700:500,cursor:'pointer'}">
           <input type="checkbox" :checked="hasVisibility(opt.codeValue)" @change="toggleVisibility(opt.codeValue)" style="accent-color:#1565c0;" />
           {{ opt.codeLabel }}

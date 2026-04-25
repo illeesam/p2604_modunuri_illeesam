@@ -165,11 +165,12 @@ window.MyOrder = {
       .filter(o => !flowStatusFilter.length || flowStatusFilter.includes(o.status))
     );
 
-    onMounted(async () => {
+    const fetchData = async () => {
       await myStore.loadOrders();
       myStore.loadClaims();
       myStore.loadCoupons();
-    });
+    };
+    onMounted(() => { fetchData(); });
 
     return {
       myStore, orders, claimsByOrderId, cfDateFilteredOrders, onDateSearch,

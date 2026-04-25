@@ -80,14 +80,15 @@ window.XsSample01 = {
       }).forEach(d => gridRows.push(makeRow(d)));
     };
 
-    onMounted(async () => {
+    const fetchData = async () => {
       try {
         const res = await api.get(API, { cdGrp: CD_GRP });
         const list = res?.data?.data ?? res?.data ?? [];
         allData.splice(0, allData.length, ...list.map(toRow));
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       loadGrid();
-    });
+    };
+    onMounted(() => { fetchData(); });
 
     const onSearch = () => { Object.assign(applied, { kw: searchKw.value, grade: searchGrade.value, status: searchStatus.value }); loadGrid(); };
     const onReset  = () => { searchKw.value = ''; searchGrade.value = ''; searchStatus.value = ''; Object.assign(applied, { kw: '', grade: '', status: '' }); loadGrid(); };

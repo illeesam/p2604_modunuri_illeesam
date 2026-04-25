@@ -58,7 +58,7 @@ window.PdQnaMng = {
     const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const selectedRow = computed(() => (prodQnas||[]).find(q => q.qnaId === selectedId.value) || null);
+    const cfSelectedRow = computed(() => (prodQnas||[]).find(q => q.qnaId === selectedId.value) || null);
 
     const openDetail = (row) => {
       if (selectedId.value === row.qnaId) { selectedId.value = null; return; }
@@ -66,15 +66,15 @@ window.PdQnaMng = {
       selectedId.value = row.qnaId;
     };
     const handleAnswer = async () => {
-      if (!selectedRow.value) return;
+      if (!cfSelectedRow.value) return;
       if (!answForm.content.trim()) { props.showToast('답변 내용을 입력하세요.', 'error'); return; }
       const ok = await props.showConfirm('답변저장', '답변을 저장하시겠습니까?');
       if (!ok) return;
-      selectedRow.value.answContent = answForm.content;
-      selectedRow.value.answYn = 'Y';
-      selectedRow.value.answDate = new Date().toLocaleString('sv').replace('T', ' ');
+      cfSelectedRow.value.answContent = answForm.content;
+      cfSelectedRow.value.answYn = 'Y';
+      cfSelectedRow.value.answDate = new Date().toLocaleString('sv').replace('T', ' ');
       try {
-        const res = await window.boApi.put(`/bo/ec/pd/qna/${selectedRow.value.qnaId}/answer`, { answContent: answForm.content });
+        const res = await window.boApi.put(`/bo/ec/pd/qna/${cfSelectedRow.value.qnaId}/answer`, { answContent: answForm.content });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -89,7 +89,7 @@ window.PdQnaMng = {
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-red';
 
     return { qnas, loading, error, searchKw, searchAnsw, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
-             selectedId, selectedRow, answForm, openDetail, handleAnswer, fnTypeBadge, fnYnBadge, TYPE_LABELS, getProdNm, getMemNm , PAGE_SIZES , onSizeChange };
+             selectedId, cfSelectedRow, answForm, openDetail, handleAnswer, fnTypeBadge, fnYnBadge, TYPE_LABELS, getProdNm, getMemNm , PAGE_SIZES , onSizeChange };
   },
   template: `
 <div>
@@ -150,14 +150,14 @@ window.PdQnaMng = {
          </div>
        </div>
     </div>
-    <div class="card" v-if="selectedRow">
+    <div class="card" v-if="cfSelectedRow">
       <div class="toolbar"><span class="list-title">문의 상세 / 답변</span></div>
       <div style="padding:16px">
-        <div style="font-weight:600;margin-bottom:6px">{{ selectedRow.qnaTitle }}</div>
-        <div style="background:#f5f5f5;padding:12px;border-radius:6px;margin-bottom:12px;white-space:pre-wrap;font-size:13px">{{ selectedRow.qnaContent }}</div>
+        <div style="font-weight:600;margin-bottom:6px">{{ cfSelectedRow.qnaTitle }}</div>
+        <div style="background:#f5f5f5;padding:12px;border-radius:6px;margin-bottom:12px;white-space:pre-wrap;font-size:13px">{{ cfSelectedRow.qnaContent }}</div>
         <div style="font-weight:600;margin-bottom:6px;color:#e8587a">답변 작성</div>
         <textarea class="form-control" rows="4" v-model="answForm.content" placeholder="답변 내용을 입력하세요."></textarea>
-        <div v-if="selectedRow.answDate" style="font-size:12px;color:#888;margin-top:4px">최근 답변: {{ selectedRow.answDate }}</div>
+        <div v-if="cfSelectedRow.answDate" style="font-size:12px;color:#888;margin-top:4px">최근 답변: {{ cfSelectedRow.answDate }}</div>
         <div style="margin-top:8px"><button class="btn btn-primary btn-sm" @click="handleAnswer">답변 저장</button></div>
       </div>
     </div>

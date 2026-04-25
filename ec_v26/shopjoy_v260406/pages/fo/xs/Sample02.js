@@ -76,7 +76,7 @@ window.XsSample02 = {
       }).forEach(d => gridRows.push(makeRow(d)));
     };
 
-    onMounted(async () => {
+    const fetchData = async () => {
       try {
         const res = await api.get(API, { cdGrp: CD_GRP });
         const list = res?.data?.data ?? res?.data ?? [];
@@ -84,7 +84,8 @@ window.XsSample02 = {
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       loadGrid();
       Vue.nextTick(setupObserver);
-    });
+    };
+    onMounted(() => { fetchData(); });
 
     onUnmounted(() => {
       if (_observer) _observer.disconnect();

@@ -122,11 +122,12 @@ window.Order = {
       }).open();
     };
 
-    onMounted(async () => {
+    const fetchData = async () => {
       await Promise.all([loadCoupons(), loadCash()]);
       const u = window.foAuth?.state?.user;
       if (u) { form.name = u.memberNm || ''; form.tel = u.phone || ''; form.email = u.email || ''; }
-    });
+    };
+    onMounted(() => { fetchData(); });
 
     const errors   = reactive({});
     const clearErr = k => { delete errors[k]; };
