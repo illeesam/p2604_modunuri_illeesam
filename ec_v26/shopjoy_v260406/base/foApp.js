@@ -49,18 +49,18 @@
       else if (st >= 500 || st === 0) { errorMessage.value = d.message || ''; page.value = 'error500'; }
     });
     const sidebarOpen = ref(true);
-    const mobileOpen  = ref(false);
+    const uiState = reactive({ mobileOpen: false, showLogin: false });
     let replaceNextHash = false;
 
     const closeMobileMenu = () => {
-      mobileOpen.value = false;
+      uiState.mobileOpen = false;
     };
     const toggleMobileMenu = () => {
-      if (mobileOpen.value) {
-        mobileOpen.value = false;
+      if (uiState.mobileOpen) {
+        uiState.mobileOpen = false;
       } else {
         if (window.innerWidth < 1024) sidebarOpen.value = true;
-        mobileOpen.value = true;
+        uiState.mobileOpen = true;
       }
     };
 
@@ -270,8 +270,7 @@
 
     /* ── Auth ── */
     const auth = window.foAuth.state;
-    const showLogin = ref(false);
-    const onShowLogin = () => { showLogin.value = true; };
+    const onShowLogin = () => { uiState.showLogin = true; };
     const MY_PAGES = ['myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt'];
     const onLogout = () => {
       window.foAuth.logout();
@@ -430,7 +429,7 @@
       likes, toggleLike, isLiked, cfLikeCount,
       instantOrder, cartIds, viewEditId,
       config: window.SITE_CONFIG,
-      auth, showLogin, onShowLogin, onLogout,
+      auth, uiState, onShowLogin, onLogout,
       foHomeComp, foProdListComp, foProdViewComp,
       notFoundPageId: computed(() => {
         try { return new URLSearchParams(String(window.location.hash || '').replace(/^#/, '')).get('page') || ''; } catch(e) { return ''; }
@@ -599,7 +598,7 @@
   </div>
 
   <!-- LOGIN MODAL -->
-  <login v-if="showLogin" :show-toast="showToast" @close="showLogin=false" />
+  <login v-if="uiState.showLogin" :show-toast="showToast" @close="uiState.showLogin=false" />
 
   <!-- TOAST -->
   <div v-if="toast.show" class="toast-wrap" :class="['toast-'+toast.type, { 'toast-expanded': toast.expanded }]">

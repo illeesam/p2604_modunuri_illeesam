@@ -917,9 +917,9 @@ window.OrderSelectModal = {
   props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props) {
-    const { ref, computed, onMounted } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const kw = ref('');
+    const searchParam = reactive({ kw: '' });
     const list = ref([]);
     const loading = ref(false);
     const handleFetchData = async () => {
@@ -931,19 +931,19 @@ window.OrderSelectModal = {
     };
     onMounted(() => { handleFetchData(); });
     const cfFiltered = computed(() => list.value.filter(o => {
-      if (!kw.value) return true;
-      const k = kw.value.toLowerCase();
+      if (!searchParam.kw) return true;
+      const k = searchParam.kw.toLowerCase();
       return (o.orderId || '').toLowerCase().includes(k) ||
              (o.memberNm || o.userNm || '').toLowerCase().includes(k) ||
              (o.prodNm || '').toLowerCase().includes(k);
     }));
-    return { cfSiteNm, kw, cfFiltered, loading };
+    return { cfSiteNm, searchParam, cfFiltered, loading };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
     <div class="modal-header"><span class="modal-title">주문 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <input class="form-control" v-model="kw" placeholder="주문ID / 회원명 / 상품명 검색" style="margin-bottom:12px;" />
+    <input class="form-control" v-model="searchParam.kw" placeholder="주문ID / 회원명 / 상품명 검색" style="margin-bottom:12px;" />
     <div class="sel-modal-list">
       <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
       <div v-else-if="cfFiltered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
@@ -963,9 +963,8 @@ window.BbmSelectModal = {
   props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props) {
-    const { ref, computed, watch, onMounted } = Vue;
-    const kw       = ref('');
-    const page     = ref(1);
+    const { ref, reactive, computed, watch, onMounted } = Vue;
+    const searchParam = reactive({ kw: '', page: 1 });
     const pageSize = 6;
     const list = ref([]);
     const loading = ref(false);
@@ -980,34 +979,34 @@ window.BbmSelectModal = {
 
     const cfFiltered = computed(() => list.value.filter(b => {
       if (b.useYn === 'N') return false;
-      if (!kw.value) return true;
-      const k = kw.value.toLowerCase();
+      if (!searchParam.kw) return true;
+      const k = searchParam.kw.toLowerCase();
       return b.bbmNm.toLowerCase().includes(k) || b.bbmCode.toLowerCase().includes(k) || (b.bbmType || '').toLowerCase().includes(k);
     }));
 
     /* 검색어 변경 시 첫 페이지로 */
-    watch(kw, () => { page.value = 1; });
+    watch(() => searchParam.kw, () => { searchParam.page = 1; });
 
     const cfTotal      = computed(() => cfFiltered.value.length);
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pageSize)));
-    const cfPageList   = computed(() => cfFiltered.value.slice((page.value - 1) * pageSize, page.value * pageSize));
+    const cfPageList   = computed(() => cfFiltered.value.slice((searchParam.page - 1) * pageSize, searchParam.page * pageSize));
     const cfPageNums   = computed(() => {
-      const s = Math.max(1, page.value - 2), e = Math.min(cfTotalPages.value, s + 4);
+      const s = Math.max(1, searchParam.page - 2), e = Math.min(cfTotalPages.value, s + 4);
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
-    const onSetPage = n => { if (n >= 1 && n <= cfTotalPages.value) page.value = n; };
+    const onSetPage = n => { if (n >= 1 && n <= cfTotalPages.value) searchParam.page = n; };
 
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const fnTypeBadge = t => ({ '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' }[t] || 'badge-gray');
     const fnScopeBadge = s => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[s] || 'badge-gray');
 
-    return { cfSiteNm, kw, page, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSetPage, fnTypeBadge, fnScopeBadge, loading };
+    return { cfSiteNm, searchParam, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSetPage, fnTypeBadge, fnScopeBadge, loading };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box" style="max-width:560px;">
     <div class="modal-header"><span class="modal-title">게시판 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <input class="form-control" v-model="kw" placeholder="게시판명 / 코드 / 유형 검색" style="margin-bottom:10px;" />
+    <input class="form-control" v-model="searchParam.kw" placeholder="게시판명 / 코드 / 유형 검색" style="margin-bottom:10px;" />
     <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ cfTotal }}건</div>
     <div class="sel-modal-list" style="min-height:200px;">
       <div v-if="loading" style="text-align:center;color:#999;padding:30px;font-size:13px;">로딩 중...</div>
@@ -1025,11 +1024,11 @@ window.BbmSelectModal = {
     </div>
     <!-- 페이징 -->
     <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
-      <button class="pager-btn" :disabled="page===1" @click="onSetPage(1)">«</button>
-      <button class="pager-btn" :disabled="page===1" @click="onSetPage(page-1)">‹</button>
-      <button v-for="n in cfPageNums" :key="n" class="pager-btn" :class="{active:page===n}" @click="onSetPage(n)">{{ n }}</button>
-      <button class="pager-btn" :disabled="page===cfTotalPages" @click="onSetPage(page+1)">›</button>
-      <button class="pager-btn" :disabled="page===cfTotalPages" @click="onSetPage(cfTotalPages)">»</button>
+      <button class="pager-btn" :disabled="searchParam.page===1" @click="onSetPage(1)">«</button>
+      <button class="pager-btn" :disabled="searchParam.page===1" @click="onSetPage(searchParam.page-1)">‹</button>
+      <button v-for="n in cfPageNums" :key="n" class="pager-btn" :class="{active:searchParam.page===n}" @click="onSetPage(n)">{{ n }}</button>
+      <button class="pager-btn" :disabled="searchParam.page===cfTotalPages" @click="onSetPage(searchParam.page+1)">›</button>
+      <button class="pager-btn" :disabled="searchParam.page===cfTotalPages" @click="onSetPage(cfTotalPages)">»</button>
     </div>
   </div>
 </div>`,
@@ -1147,8 +1146,7 @@ window.TemplateSendModal = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    const targetType = ref('member');
-    const kw = ref('');
+    const searchParam = reactive({ type: 'member', kw: '' });
     const selected = reactive([]);
     const getId = (item) => item.memberId || item.userId || item.boUserId;
 
@@ -1171,15 +1169,16 @@ window.TemplateSendModal = {
     onMounted(() => { handleFetchData(); });
 
     /* ── 부서 트리 (관리자 탭) ── */
-    const selectedDeptId = ref(null);
-    const deptKw = ref('');
+    const uiState = reactive({ selectedDeptId: null, selectedGrade: null, deptKw: '' });
+    const selectedDeptId = computed(() => uiState.selectedDeptId);
+    const selectedGrade = computed(() => uiState.selectedGrade);
     const fnBuildDeptTree = (items, parentId, depth) =>
       items.filter(d => (d.parentId || null) === (parentId || null) && d.useYn === 'Y')
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
         .map(d => ({ ...d, _depth: depth, _kids: fnBuildDeptTree(items, d.deptId, depth + 1) }));
     const fnFlattenDept = (nodes, result = []) => { nodes.forEach(n => { result.push(n); fnFlattenDept(n._kids, result); }); return result; };
     const cfFlatDeptTree = computed(() => {
-      const k = deptKw.value.trim().toLowerCase();
+      const k = uiState.deptKw.trim().toLowerCase();
       const base = k ? allDepts.value.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(k)) : allDepts.value;
       return fnFlattenDept(fnBuildDeptTree(base, null, 1));
     });
@@ -1195,19 +1194,18 @@ window.TemplateSendModal = {
     };
 
     /* ── 등급 필터 (회원 탭) ── */
-    const selectedGrade = ref(null);
     const MEMBER_GRADES = ['VIP', '우수', '일반'];
 
     /* ── 목록 ── */
     const cfMemberList = computed(() => {
-      const k = kw.value.trim().toLowerCase();
+      const k = searchParam.kw.trim().toLowerCase();
       let list = allMembers.value;
       if (selectedGrade.value) list = list.filter(m => m.memberGrade === selectedGrade.value || m.grade === selectedGrade.value);
       if (k) list = list.filter(m => (m.memberNm || '').toLowerCase().includes(k) || (m.memberEmail || m.email || '').toLowerCase().includes(k) || String(m.memberId || m.userId || '').includes(k));
       return list;
     });
     const cfUserList = computed(() => {
-      const k = kw.value.trim().toLowerCase();
+      const k = searchParam.kw.trim().toLowerCase();
       let list = allBoUsers.value;
       if (selectedDeptId.value !== null) {
         const ids = fnGetDescDeptIds(selectedDeptId.value);
@@ -1216,7 +1214,7 @@ window.TemplateSendModal = {
       if (k) list = list.filter(u => (u.userNm || u.name || '').toLowerCase().includes(k) || (u.userEmail || u.email || '').toLowerCase().includes(k) || String(u.userId || u.boUserId || '').includes(k));
       return list;
     });
-    const cfList = computed(() => targetType.value === 'member' ? cfMemberList.value : cfUserList.value);
+    const cfList = computed(() => searchParam.type === 'member' ? cfMemberList.value : cfUserList.value);
 
     const fnIsSelected = (item) => selected.includes(getId(item));
     const handleToggleSelect = (item) => {
@@ -1230,7 +1228,7 @@ window.TemplateSendModal = {
       else { cfList.value.forEach(x => { const id = getId(x); if (!selected.includes(id)) selected.push(id); }); }
     };
 
-    watch(targetType, () => { selected.splice(0); kw.value = ''; selectedDeptId.value = null; selectedGrade.value = null; });
+    watch(() => searchParam.type, () => { selected.splice(0); searchParam.kw = ''; uiState.selectedDeptId = null; uiState.selectedGrade = null; });
 
     const cfTypeBadge = computed(() => ({
       '메일템플릿': 'badge-blue', '문자템플릿': 'badge-green', 'MMS템플릿': 'badge-orange',
@@ -1242,7 +1240,7 @@ window.TemplateSendModal = {
 
     const handleSend = async () => {
       if (!selected.length) { props.showToast('발송할 수신자를 선택하세요.', 'info'); return; }
-      const typeLabel = targetType.value === 'member' ? '회원' : '관리자';
+      const typeLabel = searchParam.type === 'member' ? '회원' : '관리자';
       const ok = await props.showConfirm('템플릿 발송',
         `[${props.tmpl?.templateNm}] 템플릿을 선택된 ${typeLabel} ${selected.length}명에게 발송하시겠습니까?`,
         { btnOk: '발송', btnCancel: '취소' });
@@ -1251,8 +1249,8 @@ window.TemplateSendModal = {
       emit('close');
     };
 
-    return { cfSiteNm, targetType, kw, cfList, selected, fnIsSelected, handleToggleSelect, cfAllChecked, handleToggleAll, cfTypeBadge, fnGradeBadgeColor, handleSend,
-             selectedDeptId, deptKw, cfFlatDeptTree, selectedGrade, MEMBER_GRADES };
+    return { cfSiteNm, searchParam, uiState, cfList, selected, fnIsSelected, handleToggleSelect, cfAllChecked, handleToggleAll, cfTypeBadge, fnGradeBadgeColor, handleSend,
+             selectedDeptId, selectedGrade, cfFlatDeptTree, MEMBER_GRADES };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -1279,14 +1277,14 @@ window.TemplateSendModal = {
 
     <!-- ── 탭 ── -->
     <div style="display:flex;border-bottom:2px solid #f0f0f0;flex-shrink:0;background:#fff;">
-      <button @click="targetType='member'"
+      <button @click="searchParam.type='member'"
         style="padding:9px 24px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .12s;"
-        :style="targetType==='member'?'border-bottom:2px solid #e8587a;color:#e8587a;margin-bottom:-2px;':'color:#9ca3af;'">
+        :style="searchParam.type==='member'?'border-bottom:2px solid #e8587a;color:#e8587a;margin-bottom:-2px;':'color:#9ca3af;'">
         👥 회원
       </button>
-      <button @click="targetType='user'"
+      <button @click="searchParam.type='user'"
         style="padding:9px 24px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .12s;"
-        :style="targetType==='user'?'border-bottom:2px solid #e8587a;color:#e8587a;margin-bottom:-2px;':'color:#9ca3af;'">
+        :style="searchParam.type==='user'?'border-bottom:2px solid #e8587a;color:#e8587a;margin-bottom:-2px;':'color:#9ca3af;'">
         👤 관리자
       </button>
     </div>
@@ -1298,7 +1296,7 @@ window.TemplateSendModal = {
       <div style="width:200px;flex-shrink:0;border-right:1px solid #f0f0f0;display:flex;flex-direction:column;background:#f8f9fb;">
 
         <!-- 관리자 탭: 부서 트리 -->
-        <template v-if="targetType==='user'">
+        <template v-if="searchParam.type==='user'">
           <div style="padding:10px 10px 8px;border-bottom:1px solid #ebebeb;">
             <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">조직 / 부서</div>
             <div style="position:relative;">
@@ -1350,7 +1348,7 @@ window.TemplateSendModal = {
               :style="selectedGrade===g?'background:#e8587a;box-shadow:0 2px 6px rgba(232,88,122,0.2);':''"
               @click="selectedGrade=g">
               <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;"
-                :style="{ background: selectedGrade===g?'#fff':gradeBadgeColor(g) }"></span>
+                :style="{ background: selectedGrade===g?'#fff':fnGradeBadgeColor(g) }"></span>
               <span style="font-size:13px;font-weight:600;" :style="{ color: selectedGrade===g?'#fff':'#374151' }">{{ g }}</span>
             </div>
           </div>
@@ -1363,7 +1361,7 @@ window.TemplateSendModal = {
         <div style="padding:10px 14px 8px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
           <div style="position:relative;">
             <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:#bbb;">🔍</span>
-            <input v-model="kw" :placeholder="targetType==='member'?'이름 / 이메일 / ID 검색':'이름 / 이메일 / ID 검색'"
+            <input v-model="searchParam.kw" :placeholder="searchParam.type==='member'?'이름 / 이메일 / ID 검색':'이름 / 이메일 / ID 검색'"
               style="width:100%;border:1px solid #e5e7eb;border-radius:7px;padding:6px 10px 6px 28px;font-size:12px;outline:none;box-sizing:border-box;" />
           </div>
         </div>
@@ -1385,23 +1383,23 @@ window.TemplateSendModal = {
               style="width:15px;height:15px;flex-shrink:0;accent-color:#52c41a;cursor:pointer;" />
             <div style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;transition:all .1s;"
               :style="fnIsSelected(item)?'background:#52c41a;color:#fff;':'background:#f3f4f6;color:#6b7280;'">
-              {{ (targetType==='member' ? item.memberNm : item.name).charAt(0) }}
+              {{ (searchParam.type==='member' ? item.memberNm : item.name).charAt(0) }}
             </div>
             <div style="flex:1;min-width:0;">
               <div style="font-size:13px;font-weight:600;color:#1a1a2e;display:flex;align-items:baseline;gap:5px;">
-                {{ targetType==='member' ? item.memberNm : item.name }}
+                {{ searchParam.type==='member' ? item.memberNm : item.name }}
                 <span style="font-size:11px;color:#9ca3af;font-weight:400;">{{ item.loginId || item.email }}</span>
               </div>
               <div style="font-size:11px;color:#b0b7c3;margin-top:2px;">
-                <template v-if="targetType==='user'">{{ item.dept || '-' }} · {{ item.role }}</template>
+                <template v-if="searchParam.type==='user'">{{ item.dept || '-' }} · {{ item.role }}</template>
                 <template v-else>{{ item.email }}</template>
               </div>
             </div>
             <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;flex-shrink:0;"
-              :style="targetType==='user'
+              :style="searchParam.type==='user'
                 ? (item.status==='활성'?'background:#dcfce7;color:#16a34a;':'background:#f3f4f6;color:#9ca3af;')
                 : (item.grade==='VIP'?'background:#fef3c7;color:#d97706;':item.grade==='우수'?'background:#dbeafe;color:#1d4ed8;':'background:#f3f4f6;color:#6b7280;')">
-              {{ targetType==='user' ? item.status : item.grade }}
+              {{ searchParam.type==='user' ? item.status : item.grade }}
             </span>
           </div>
         </div>
@@ -1445,9 +1443,8 @@ window.RoleTreeModal = {
   props: ['dispDataset', 'excludeId'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, computed, onMounted } = Vue;
-    const kw = ref('');
-    const hoverId = ref(null);
+    const { ref, reactive, computed, onMounted } = Vue;
+    const uiState = reactive({ kw: '', hoverId: null });
     const allRoles = ref([]);
     const handleFetchData = async () => {
       try {
@@ -1474,14 +1471,14 @@ window.RoleTreeModal = {
         mark(props.excludeId);
       }
       const base = allRoles.value.filter(r => !excSet.has(r.roleId) && r.useYn === 'Y');
-      const kwVal = kw.value.trim().toLowerCase();
+      const kwVal = uiState.kw.trim().toLowerCase();
       const list  = kwVal ? base.filter(r => r.roleNm.toLowerCase().includes(kwVal) || r.roleCode.toLowerCase().includes(kwVal)) : base;
       return fnFlatten(fnBuildTree(list, null, 0));
     });
     const onSelect = (role) => emit('select', { roleId: role.roleId, roleNm: role.roleNm });
     const onSelectNone = () => emit('select', { roleId: null, roleNm: '' });
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    return { cfSiteNm, kw, hoverId, cfFlatTree, onSelect, onSelectNone };
+    return { cfSiteNm, uiState, cfFlatTree, onSelect, onSelectNone };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -1496,22 +1493,22 @@ window.RoleTreeModal = {
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div style="position:relative;">
         <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#bbb;">🔍</span>
-        <input class="form-control" v-model="kw" placeholder="역할명 또는 역할코드 검색"
+        <input class="form-control" v-model="uiState.kw" placeholder="역할명 또는 역할코드 검색"
           style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
       </div>
     </div>
     <div style="flex:1;overflow-y:auto;">
       <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;transition:background .12s;"
-        :style="{ background: hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
-        @mouseenter="hoverId='__none__'" @mouseleave="hoverId=null" @click="onSelectNone">
+        :style="{ background: uiState.hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
+        @mouseenter="uiState.hoverId='__none__'" @mouseleave="uiState.hoverId=null" @click="selectNone">
         <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">●</span>
         <div style="flex:1;"><span style="font-size:13px;font-weight:700;color:#1a1a2e;">상위없음</span><span style="font-size:11px;color:#aaa;margin-left:6px;">최상위 권한으로 등록</span></div>
-        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;" :style="{ opacity: hoverId==='__none__' ? 1 : 0 }">›</span>
+        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;" :style="{ opacity: uiState.hoverId==='__none__' ? 1 : 0 }">›</span>
       </div>
       <div v-for="r in cfFlatTree" :key="r.roleId"
         style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s;"
-        :style="{ background: hoverId===r.roleId ? '#fff5f7' : '' }"
-        @mouseenter="hoverId=r.roleId" @mouseleave="hoverId=null" @click="onSelect(r)">
+        :style="{ background: uiState.hoverId===r.roleId ? '#fff5f7' : '' }"
+        @mouseenter="uiState.hoverId=r.roleId" @mouseleave="uiState.hoverId=null" @click="onSelect(r)">
         <span :style="{ marginLeft:(r._depth*14)+'px', marginRight:'7px', fontWeight:'700',
                         fontSize: r._depth===0?'7px':'12px', flexShrink:0,
                         color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(r._depth,3)] }">
@@ -1521,10 +1518,10 @@ window.RoleTreeModal = {
           <span style="font-size:13px;font-weight:600;color:#1a1a2e;">{{ r.roleNm }}</span>
           <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">{{ r.roleCode }}</code>
         </div>
-        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;" :style="{ opacity: hoverId===r.roleId ? 1 : 0 }">›</span>
+        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;" :style="{ opacity: uiState.hoverId===r.roleId ? 1 : 0 }">›</span>
       </div>
       <div v-if="cfFlatTree.length===0" style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
-        {{ kw ? '검색 결과가 없습니다.' : '선택 가능한 권한이 없습니다.' }}
+        {{ uiState.kw ? '검색 결과가 없습니다.' : '선택 가능한 권한이 없습니다.' }}
       </div>
     </div>
     <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
@@ -1539,9 +1536,8 @@ window.MenuTreeModal = {
   props: ['dispDataset', 'excludeId'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, computed, onMounted } = Vue;
-    const kw = ref('');
-    const hoverId = ref(null);
+    const { ref, reactive, computed, onMounted } = Vue;
+    const uiState = reactive({ kw: '', hoverId: null });
     const allMenus = ref([]);
     const handleFetchData = async () => {
       try {
@@ -1573,7 +1569,7 @@ window.MenuTreeModal = {
         markExclude(props.excludeId);
       }
       const base = allMenus.value.filter(m => !excSet.has(m.menuId) && m.useYn === 'Y');
-      const kwVal = kw.value.trim().toLowerCase();
+      const kwVal = uiState.kw.trim().toLowerCase();
       const list  = kwVal
         ? base.filter(m => m.menuNm.toLowerCase().includes(kwVal) || m.menuCode.toLowerCase().includes(kwVal))
         : base;
@@ -1584,7 +1580,7 @@ window.MenuTreeModal = {
     const onSelectNone = () => emit('select', { menuId: null, menuNm: '' });
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    return { cfSiteNm, kw, hoverId, cfFlatTree, onSelect, onSelectNone };
+    return { cfSiteNm, uiState, cfFlatTree, onSelect, onSelectNone };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -1603,7 +1599,7 @@ window.MenuTreeModal = {
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div style="position:relative;">
         <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#bbb;">🔍</span>
-        <input class="form-control" v-model="kw"
+        <input class="form-control" v-model="uiState.kw"
           placeholder="메뉴명 또는 메뉴코드 검색"
           style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
       </div>
@@ -1615,8 +1611,8 @@ window.MenuTreeModal = {
       <!-- 최상위 선택 -->
       <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;
                   border-bottom:2px solid #f0f0f0;transition:background .12s;"
-        :style="{ background: hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
-        @mouseenter="hoverId='__none__'" @mouseleave="hoverId=null"
+        :style="{ background: uiState.hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
+        @mouseenter="uiState.hoverId='__none__'" @mouseleave="uiState.hoverId=null"
         @click="onSelectNone">
         <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">●</span>
         <div style="flex:1;">
@@ -1624,15 +1620,15 @@ window.MenuTreeModal = {
           <span style="font-size:11px;color:#aaa;margin-left:6px;">최상위 메뉴로 등록</span>
         </div>
         <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;"
-          :style="{ opacity: hoverId==='__none__' ? 1 : 0 }">›</span>
+          :style="{ opacity: uiState.hoverId==='__none__' ? 1 : 0 }">›</span>
       </div>
 
       <!-- 메뉴 트리 항목들 -->
       <div v-for="m in cfFlatTree" :key="m.menuId"
         style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;
                border-bottom:1px solid #f5f5f5;transition:background .1s;"
-        :style="{ background: hoverId===m.menuId ? '#fff5f7' : '' }"
-        @mouseenter="hoverId=m.menuId" @mouseleave="hoverId=null"
+        :style="{ background: uiState.hoverId===m.menuId ? '#fff5f7' : '' }"
+        @mouseenter="uiState.hoverId=m.menuId" @mouseleave="uiState.hoverId=null"
         @click="onSelect(m)">
 
         <!-- 블릿 들여쓰기 -->
@@ -1650,13 +1646,13 @@ window.MenuTreeModal = {
 
         <!-- hover 화살표 -->
         <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;"
-          :style="{ opacity: hoverId===m.menuId ? 1 : 0 }">›</span>
+          :style="{ opacity: uiState.hoverId===m.menuId ? 1 : 0 }">›</span>
       </div>
 
       <!-- 빈 상태 -->
       <div v-if="cfFlatTree.length===0"
         style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
-        {{ kw ? '검색 결과가 없습니다.' : '선택 가능한 메뉴가 없습니다.' }}
+        {{ uiState.kw ? '검색 결과가 없습니다.' : '선택 가능한 메뉴가 없습니다.' }}
       </div>
     </div>
 
@@ -1673,9 +1669,8 @@ window.DeptTreeModal = {
   props: ['dispDataset', 'excludeId'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, computed, onMounted } = Vue;
-    const kw = ref('');
-    const hoverId = ref(null);
+    const { ref, reactive, computed, onMounted } = Vue;
+    const uiState = reactive({ kw: '', hoverId: null });
     const allDepts = ref([]);
     const handleFetchData = async () => {
       try {
@@ -1708,7 +1703,7 @@ window.DeptTreeModal = {
         markExclude(props.excludeId);
       }
       const base = allDepts.value.filter(d => !excSet.has(d.deptId) && d.useYn === 'Y');
-      const kwVal = kw.value.trim().toLowerCase();
+      const kwVal = uiState.kw.trim().toLowerCase();
       const list  = kwVal
         ? base.filter(d => d.deptNm.toLowerCase().includes(kwVal) || d.deptCode.toLowerCase().includes(kwVal))
         : base;
@@ -1719,7 +1714,7 @@ window.DeptTreeModal = {
     const selectNone = () => emit('select', { deptId: null, deptNm: '' });
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    return { cfSiteNm, kw, hoverId, cfFlatTree, onSelect, onSelectNone };
+    return { cfSiteNm, uiState, cfFlatTree, select, selectNone };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -1741,7 +1736,7 @@ window.DeptTreeModal = {
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div style="position:relative;">
         <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#bbb;">🔍</span>
-        <input class="form-control" v-model="kw"
+        <input class="form-control" v-model="uiState.kw"
           placeholder="부서명 또는 부서코드 검색"
           style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
       </div>
@@ -1753,8 +1748,8 @@ window.DeptTreeModal = {
       <!-- 최상위 선택 (고정 첫 항목) -->
       <div style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;
                   border-bottom:2px solid #f0f0f0;transition:background .12s;"
-        :style="{ background: hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
-        @mouseenter="hoverId='__none__'" @mouseleave="hoverId=null"
+        :style="{ background: uiState.hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
+        @mouseenter="uiState.hoverId='__none__'" @mouseleave="uiState.hoverId=null"
         @click="onSelectNone">
         <!-- accent bar -->
         <div style="width:4px;align-self:stretch;border-radius:3px;background:#e8587a;flex-shrink:0;opacity:0.7;"></div>
@@ -1764,15 +1759,15 @@ window.DeptTreeModal = {
           <div style="font-size:11px;color:#aaa;margin-top:2px;">최상위 부서로 등록</div>
         </div>
         <span style="font-size:16px;color:#e8587a;font-weight:700;transition:opacity .12s;"
-          :style="{ opacity: hoverId==='__none__' ? 1 : 0 }">›</span>
+          :style="{ opacity: uiState.hoverId==='__none__' ? 1 : 0 }">›</span>
       </div>
 
       <!-- 부서 트리 항목들 -->
       <div v-for="d in cfFlatTree" :key="d.deptId"
         style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;
                border-bottom:1px solid #f5f5f5;transition:background .1s;"
-        :style="{ background: hoverId===d.deptId ? '#fff5f7' : '' }"
-        @mouseenter="hoverId=d.deptId" @mouseleave="hoverId=null"
+        :style="{ background: uiState.hoverId===d.deptId ? '#fff5f7' : '' }"
+        @mouseenter="uiState.hoverId=d.deptId" @mouseleave="uiState.hoverId=null"
         @click="select(d)">
 
         <!-- 블릿 들여쓰기 -->
@@ -1790,14 +1785,14 @@ window.DeptTreeModal = {
 
         <!-- hover 화살표 -->
         <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;"
-          :style="{ opacity: hoverId===d.deptId ? 1 : 0 }">›</span>
+          :style="{ opacity: uiState.hoverId===d.deptId ? 1 : 0 }">›</span>
       </div>
 
       <!-- 빈 상태 -->
       <div v-if="cfFlatTree.length===0"
         style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
         <div style="font-size:32px;margin-bottom:8px;">🔍</div>
-        {{ kw ? '검색 결과가 없습니다.' : '선택 가능한 부서가 없습니다.' }}
+        {{ uiState.kw ? '검색 결과가 없습니다.' : '선택 가능한 부서가 없습니다.' }}
       </div>
     </div>
 
@@ -1817,9 +1812,8 @@ window.CategoryTreeModal = {
   props: ['dispDataset', 'excludeId'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, computed, onMounted } = Vue;
-    const kw = ref('');
-    const hoverId = ref(null);
+    const { ref, reactive, computed, onMounted } = Vue;
+    const uiState = reactive({ kw: '', hoverId: null });
     const allCategories = ref([]);
     const handleFetchData = async () => {
       try {
@@ -1848,7 +1842,7 @@ window.CategoryTreeModal = {
         mark(props.excludeId);
       }
       const base   = allCategories.value.filter(c => !excSet.has(c.categoryId) && (c.useYn === 'Y' || c.status === '활성'));
-      const kwVal  = kw.value.trim().toLowerCase();
+      const kwVal  = uiState.kw.trim().toLowerCase();
       const list   = kwVal ? base.filter(c => c.categoryNm.toLowerCase().includes(kwVal)) : base;
       return flatten(buildTree(list, null, 0));
     });
@@ -1856,7 +1850,7 @@ window.CategoryTreeModal = {
     const select     = (cat) => emit('select', { categoryId: cat.categoryId, categoryNm: cat.categoryNm });
     const selectNone = () => emit('select', { categoryId: null, categoryNm: '' });
     const cfSiteNm   = computed(() => window.boCmUtil.getSiteNm());
-    return { cfSiteNm, kw, hoverId, cfFlatTree, onSelect, onSelectNone };
+    return { cfSiteNm, uiState, cfFlatTree, select, selectNone };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -1871,24 +1865,24 @@ window.CategoryTreeModal = {
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div style="position:relative;">
         <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#bbb;">🔍</span>
-        <input class="form-control" v-model="kw" placeholder="카테고리명 검색"
+        <input class="form-control" v-model="uiState.kw" placeholder="카테고리명 검색"
           style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
       </div>
     </div>
     <div style="flex:1;overflow-y:auto;">
       <!-- 최상위 선택 -->
       <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;transition:background .12s;"
-        :style="{ background: hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
-        @mouseenter="hoverId='__none__'" @mouseleave="hoverId=null" @click="onSelectNone">
+        :style="{ background: uiState.hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
+        @mouseenter="uiState.hoverId='__none__'" @mouseleave="uiState.hoverId=null" @click="selectNone">
         <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">●</span>
         <div style="flex:1;"><span style="font-size:13px;font-weight:700;color:#1a1a2e;">상위없음</span><span style="font-size:11px;color:#aaa;margin-left:6px;">최상위 카테고리로 등록</span></div>
-        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;" :style="{ opacity: hoverId==='__none__' ? 1 : 0 }">›</span>
+        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;" :style="{ opacity: uiState.hoverId==='__none__' ? 1 : 0 }">›</span>
       </div>
       <!-- 카테고리 트리 -->
       <div v-for="c in cfFlatTree" :key="c.categoryId"
         style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s;"
-        :style="{ background: hoverId===c.categoryId ? '#fff5f7' : '' }"
-        @mouseenter="hoverId=c.categoryId" @mouseleave="hoverId=null" @click="select(c)">
+        :style="{ background: uiState.hoverId===c.categoryId ? '#fff5f7' : '' }"
+        @mouseenter="uiState.hoverId=c.categoryId" @mouseleave="uiState.hoverId=null" @click="select(c)">
         <span :style="{ marginLeft:(c._depth*14)+'px', marginRight:'7px', fontWeight:'700',
                         fontSize: c._depth===0?'7px':'12px', flexShrink:0,
                         color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(c._depth,3)] }">
@@ -1902,7 +1896,7 @@ window.CategoryTreeModal = {
       </div>
       <div v-if="cfFlatTree.length===0" style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
         <div style="font-size:32px;margin-bottom:8px;">🔍</div>
-        {{ kw ? '검색 결과가 없습니다.' : '선택 가능한 카테고리가 없습니다.' }}
+        {{ uiState.kw ? '검색 결과가 없습니다.' : '선택 가능한 카테고리가 없습니다.' }}
       </div>
     </div>
     <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
@@ -2117,7 +2111,7 @@ window.CategorySelectModal = {
   setup(props, { emit }) {
     const { ref, reactive, computed, watch, watchEffect } = Vue;
 
-    const kw = ref('');
+    const searchParam = reactive({ kw: '' });
 
     const cfAllCats = computed(() =>
       ((window.dispDataset || {}).categories || [])
@@ -2127,7 +2121,7 @@ window.CategorySelectModal = {
 
     /* 루트/자식 */
     const cfRoots = computed(() => {
-      const kwv = kw.value.trim().toLowerCase();
+      const kwv = searchParam.kw.trim().toLowerCase();
       let list = cfAllCats.value;
       if (kwv) {
         const matchIds = new Set(list.filter(c => c.categoryNm.toLowerCase().includes(kwv)).map(c => c.categoryId));
@@ -2137,7 +2131,7 @@ window.CategorySelectModal = {
     });
 
     const childrenOf = (parentId) => {
-      const kwv = kw.value.trim().toLowerCase();
+      const kwv = searchParam.kw.trim().toLowerCase();
       let list = cfAllCats.value.filter(c => c.parentId === parentId);
       if (kwv) list = list.filter(c => c.categoryNm.toLowerCase().includes(kwv));
       return list;
@@ -2180,7 +2174,7 @@ window.CategorySelectModal = {
     const onReset = () => localSel.clear();
     const apply = () => { emit('apply', [...localSel]); emit('close'); };
 
-    return { kw, cfRoots, childrenOf, expanded, toggleExpand, localSel, toggleChild, toggleRoot, toggleAll, isRootFull, isRootPart, isAllOn, cfIsSomeOn, onReset, apply };
+    return { searchParam, cfRoots, childrenOf, expanded, toggleExpand, localSel, toggleChild, toggleRoot, toggleAll, isRootFull, isRootPart, isAllOn, cfIsSomeOn, onReset, apply };
   },
   template: /* html */`
 <div v-if="show" style="position:fixed;inset:0;background:rgba(0,0,0,0.42);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="$emit('close')">
@@ -2194,7 +2188,7 @@ window.CategorySelectModal = {
 
     <!-- 검색 -->
     <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <input v-model="kw" type="text" placeholder="카테고리명 검색" style="width:100%;box-sizing:border-box;font-size:12px;padding:4px 9px;border:1px solid #ddd;border-radius:5px;outline:none;" />
+      <input v-model="searchParam.kw" type="text" placeholder="카테고리명 검색" style="width:100%;box-sizing:border-box;font-size:12px;padding:4px 9px;border:1px solid #ddd;border-radius:5px;outline:none;" />
     </div>
 
     <!-- 트리 목록 -->
@@ -2511,8 +2505,7 @@ window.AreaPickModal = {
   emits: ['close', 'pick'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const searchKw = ref('');
-    const searchUseYn = ref('');
+    const searchParam = reactive({ kw: '', useYn: '' });
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
     const selectedTreeKey = ref('');
@@ -2523,9 +2516,9 @@ window.AreaPickModal = {
 
     const cfFiltered = computed(() => (props.areas || []).filter(a => {
       if (props.excludeUi && a.uiCode === props.excludeUi) return false;
-      const kw = searchKw.value.trim().toLowerCase();
+      const kw = searchParam.kw.trim().toLowerCase();
       if (kw && !(a.codeValue||'').toLowerCase().includes(kw) && !(a.codeLabel||'').toLowerCase().includes(kw)) return false;
-      if (searchUseYn.value && a.useYn !== searchUseYn.value) return false;
+      if (searchParam.useYn && a.useYn !== searchParam.useYn) return false;
       if (selectedTreeKey.value) {
         const top = (a.codeValue || '').split('_')[0];
         if (top !== selectedTreeKey.value) return false;
@@ -2578,7 +2571,7 @@ window.AreaPickModal = {
     };
 
     return {
-      searchKw, searchUseYn, pager, PAGE_SIZES,
+      searchParam, pager, PAGE_SIZES,
       cfTotal, cfTotalPages, cfPageList, cfPageNums,
       selectedTreeKey, toggleTree, isTreeOpen, selectTree, cfTree,
       statusCls, onPick,
@@ -2594,8 +2587,8 @@ window.AreaPickModal = {
       <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">×</button>
     </div>
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-      <input v-model="searchKw" placeholder="영역코드·영역명 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
-      <select v-model="searchUseYn" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
+      <input v-model="searchParam.kw" placeholder="영역코드·영역명 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
+      <select v-model="searchParam.useYn" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
         <option value="">사용 전체</option>
         <option value="Y">사용</option>
         <option value="N">미사용</option>
@@ -2702,8 +2695,7 @@ window.PanelPickModal = {
   emits: ['close', 'pick'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const searchKw = ref('');
-    const searchStatus = ref('');
+    const searchParam = reactive({ kw: '', status: '' });
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
     const selectedTreeKey = ref('');
@@ -2719,9 +2711,9 @@ window.PanelPickModal = {
 
     const cfFiltered = computed(() => (props.displays || []).filter(p => {
       if (props.excludeArea && p.area === props.excludeArea) return false;
-      const kw = searchKw.value.trim().toLowerCase();
+      const kw = searchParam.kw.trim().toLowerCase();
       if (kw && !(p.name||'').toLowerCase().includes(kw) && !(p.area||'').toLowerCase().includes(kw)) return false;
-      if (searchStatus.value && p.status !== searchStatus.value) return false;
+      if (searchParam.status && p.status !== searchParam.status) return false;
       if (selectedTreeKey.value) {
         const top = (p.area || '').split('_')[0];
         if (top !== selectedTreeKey.value) return false;
@@ -2774,7 +2766,7 @@ window.PanelPickModal = {
     };
 
     return {
-      searchKw, searchStatus, pager, PAGE_SIZES,
+      searchParam, pager, PAGE_SIZES,
       cfTotal, cfTotalPages, cfPageList, cfPageNums,
       selectedTreeKey, toggleTree, isTreeOpen, selectTree, cfTree,
       statusCls, onPick, areaNm,
@@ -2790,8 +2782,8 @@ window.PanelPickModal = {
       <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">×</button>
     </div>
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-      <input v-model="searchKw" placeholder="패널명·영역코드 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
-      <select v-model="searchStatus" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
+      <input v-model="searchParam.kw" placeholder="패널명·영역코드 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
+      <select v-model="searchParam.status" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
         <option value="">상태 전체</option>
         <option value="활성">활성</option>
         <option value="비활성">비활성</option>
@@ -2899,17 +2891,15 @@ window.WidgetLibPickModal = {
   emits: ['close', 'pick'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const searchKw = ref('');
-    const searchType = ref('');
-    const searchStatus = ref('');
+    const searchParam = reactive({ kw: '', type: '', status: '' });
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
 
     const cfFiltered = computed(() => (props.widgetLibs || []).filter(d => {
-      const kw = searchKw.value.trim().toLowerCase();
+      const kw = searchParam.kw.trim().toLowerCase();
       if (kw && !(d.name||'').toLowerCase().includes(kw) && !(d.desc||'').toLowerCase().includes(kw) && !(d.tags||'').toLowerCase().includes(kw)) return false;
-      if (searchType.value && d.widgetType !== searchType.value) return false;
-      if (searchStatus.value && d.status !== searchStatus.value) return false;
+      if (searchParam.type && d.widgetType !== searchParam.type) return false;
+      if (searchParam.status && d.status !== searchParam.status) return false;
       return true;
     }).sort((a,b) => b.libId - a.libId));
     const cfTotal = computed(() => cfFiltered.value.length);
@@ -2962,7 +2952,7 @@ window.WidgetLibPickModal = {
     const onPick = (lib) => emit('pick', lib);
 
     return {
-      searchKw, searchType, searchStatus, WIDGET_TYPES,
+      searchParam, WIDGET_TYPES,
       pager, PAGE_SIZES, cfTotal, cfTotalPages, cfPageList, cfPageNums,
       cfTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree,
       statusCls, onPick,
@@ -2982,11 +2972,11 @@ window.WidgetLibPickModal = {
 
     <!-- 검색 -->
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-      <input v-model="searchKw" placeholder="이름·설명·태그 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
-      <select v-model="searchType" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
+      <input v-model="searchParam.kw" placeholder="이름·설명·태그 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
+      <select v-model="searchParam.type" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
         <option v-for="t in WIDGET_TYPES" :key="t.value" :value="t.value">{{ t.label }}</option>
       </select>
-      <select v-model="searchStatus" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
+      <select v-model="searchParam.status" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
         <option value="">상태 전체</option>
         <option value="활성">활성</option>
         <option value="비활성">비활성</option>
@@ -3337,8 +3327,8 @@ window.BizPickModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const kw = ref('');
-    const typeFlt = ref('');
+    const searchParam = reactive({ kw: '', type: '' });
+    const searchParamOrg = reactive({ kw: '', type: '' });
     const bizs = reactive([]);
     const handleFetchData = async () => {
       try {
@@ -3347,7 +3337,7 @@ window.BizPickModal = {
       } catch (_) {}
     };
     const onSearch = () => { handleFetchData(); };
-    const onReset = () => { kw.value = ''; typeFlt.value = ''; handleFetchData(); };
+    const onReset = () => { Object.assign(searchParam, searchParamOrg); handleFetchData(); };
     Vue.onMounted(() => { handleFetchData(); });
     const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
     const vtLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
@@ -3366,14 +3356,14 @@ window.BizPickModal = {
     const cfAllowedPathIds = computed(() => selectedPathId.value == null ? null : window.boCmUtil.getPathDescendants('sy_biz', selectedPathId.value));
 
     const cfFiltered = computed(() => bizs.filter(b => {
-      const k = kw.value.trim().toLowerCase();
+      const k = searchParam.kw.trim().toLowerCase();
       if (k && !(b.bizNo||'').includes(k) && !(b.bizNm||'').toLowerCase().includes(k) && !(b.ceoNm||'').toLowerCase().includes(k)) return false;
-      if (typeFlt.value && b.vendorTypeCd !== typeFlt.value) return false;
+      if (searchParam.type && b.vendorTypeCd !== searchParam.type) return false;
       if (cfAllowedPathIds.value && !cfAllowedPathIds.value.has(b.pathId)) return false;
       return true;
     }));
     const pickAndClose = (b) => { emit('select', b); emit('close'); };
-    return { kw, typeFlt, VENDOR_TYPES, vtLabel, vtBadge, cfFiltered, pickAndClose,
+    return { searchParam, searchParamOrg, VENDOR_TYPES, vtLabel, vtBadge, cfFiltered, pickAndClose,
              selectedPathId, expanded, cfTree, toggleNode, selectNode, onSearch, onReset };
   },
   template: /* html */`
@@ -3389,8 +3379,8 @@ window.BizPickModal = {
         <span style="color:#9ca3af;cursor:pointer;font-size:20px;" @click="$emit('close')">✕</span>
       </div>
       <div style="display:flex;gap:6px;margin-top:12px;">
-        <input class="form-control" v-model="kw" placeholder="사업자번호 / 상호 / 대표자 검색" style="flex:1;height:32px;font-size:12px;" @keyup.enter="onSearch" />
-        <select class="form-control" v-model="typeFlt" style="width:140px;height:32px;font-size:12px;">
+        <input class="form-control" v-model="searchParam.kw" placeholder="사업자번호 / 상호 / 대표자 검색" style="flex:1;height:32px;font-size:12px;" @keyup.enter="onSearch" />
+        <select class="form-control" v-model="searchParam.type" style="width:140px;height:32px;font-size:12px;">
           <option value="">업체유형 전체</option>
           <option v-for="v in VENDOR_TYPES" :key="v[0]" :value="v[0]">{{ v[1] }}</option>
         </select>
@@ -3440,7 +3430,7 @@ window.SimpleUserPickModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
-    const kw = ref('');
+    const searchParam = reactive({ kw: '' });
     const boUsers = reactive([]);
     const handleFetchData = async () => {
       try {
@@ -3449,17 +3439,17 @@ window.SimpleUserPickModal = {
       } catch (_) {}
     };
     const onSearch = () => { handleFetchData(); };
-    const onReset = () => { kw.value = ''; handleFetchData(); };
+    const onReset = () => { searchParam.kw = ''; handleFetchData(); };
     Vue.onMounted(() => { handleFetchData(); });
     const cfExcl = computed(() => new Set(props.excludeIds || []));
     const cfFiltered = computed(() => boUsers.filter(u => {
       if (cfExcl.value.has(u.boUserId)) return false;
-      const k = kw.value.trim().toLowerCase();
+      const k = searchParam.kw.trim().toLowerCase();
       if (k && !(u.name||'').toLowerCase().includes(k) && !(u.loginId||'').toLowerCase().includes(k) && !(u.email||'').toLowerCase().includes(k)) return false;
       return true;
     }));
     const pick = (u) => { emit('select', u); emit('close'); };
-    return { kw, cfFiltered, pick, onSearch, onReset };
+    return { searchParam, cfFiltered, pick, onSearch, onReset };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -3474,7 +3464,7 @@ window.SimpleUserPickModal = {
         <span style="color:#9ca3af;cursor:pointer;font-size:20px;" @click="$emit('close')">✕</span>
       </div>
       <div style="display:flex;gap:6px;margin-top:12px;">
-        <input class="form-control" v-model="kw" placeholder="이름 / 로그인ID / 이메일 검색" style="flex:1;height:32px;font-size:12px;" @keyup.enter="onSearch" />
+        <input class="form-control" v-model="searchParam.kw" placeholder="이름 / 로그인ID / 이메일 검색" style="flex:1;height:32px;font-size:12px;" @keyup.enter="onSearch" />
         <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>

@@ -74,21 +74,20 @@ window.DpDispWidgetLibMng = {
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
 
     /* ── 검색 ── */
-    const searchKw     = ref('');
-    const searchType   = ref('');
-    const searchStatus = ref('');
+    const searchParam = reactive({ kw: '', type: '', status: '' });
+    const searchParamOrg = reactive({ kw: '', type: '', status: '' });
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     const applied = reactive({ kw: '', type: '', status: '' });
     const onSearch = () => {
-      applied.kw     = searchKw.value.trim().toLowerCase();
-      applied.type   = searchType.value;
-      applied.status = searchStatus.value;
+      applied.kw     = searchParam.kw.trim().toLowerCase();
+      applied.type   = searchParam.type;
+      applied.status = searchParam.status;
       pager.page = 1;
     };
     const onReset = () => {
-      searchKw.value = ''; searchType.value = ''; searchStatus.value = '';
+      Object.assign(searchParam, searchParamOrg);
       Object.assign(applied, { kw: '', type: '', status: '' });
       pager.page = 1;
     };
@@ -231,7 +230,7 @@ window.DpDispWidgetLibMng = {
     const onSizeChange = () => { pager.page = 1; };
     return { widgetLibs, loading, error, pathLabel,
       WIDGET_TYPES, wTypeLabel, wIcon, handleDelete,
-      searchKw, searchType, searchStatus, pager, PAGE_SIZES,
+      searchParam, searchParamOrg, pager, PAGE_SIZES,
       cfFiltered, cfTotalCount, cfPageList, cfTotalPages, cfPageNumbers,
       cfTree, cfSearchedLibs, openNodes, toggleNode, isOpen, selectedTreeKey, selectTree, expandAll, collapseAll,
       onSearch, onReset,
@@ -240,7 +239,7 @@ window.DpDispWidgetLibMng = {
       handleLoadDetail, openNew, closeDetail, inlineNavigate,
       contentSummary, fnStatusCls,
        setPage, onSizeChange,
-    };;
+    };
   },
   template: /* html */`
 <div>
@@ -254,18 +253,18 @@ window.DpDispWidgetLibMng = {
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
       <div class="form-group" style="margin:0;min-width:180px;flex:1;">
         <label class="form-label">검색어</label>
-        <input v-model="searchKw" class="form-control" placeholder="이름·설명·태그" @keyup.enter="() => onSearch?.()" style="margin:0;" />
+        <input v-model="searchParam.kw" class="form-control" placeholder="이름·설명·태그" @keyup.enter="() => onSearch?.()" style="margin:0;" />
       </div>
       <div class="form-group" style="margin:0;width:160px;">
         <label class="form-label">위젯 유형</label>
-        <select v-model="searchType" class="form-control" style="margin:0;">
+        <select v-model="searchParam.type" class="form-control" style="margin:0;">
           <option value="">전체</option>
           <option v-for="t in WIDGET_TYPES" :key="t?.value" :value="t.value">{{ t.label }}</option>
         </select>
       </div>
       <div class="form-group" style="margin:0;width:110px;">
         <label class="form-label">상태</label>
-        <select v-model="searchStatus" class="form-control" style="margin:0;">
+        <select v-model="searchParam.status" class="form-control" style="margin:0;">
           <option value="">전체</option>
           <option value="활성">활성</option>
           <option value="비활성">비활성</option>

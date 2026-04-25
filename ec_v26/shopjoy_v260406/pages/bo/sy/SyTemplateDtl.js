@@ -127,11 +127,10 @@ window.SyTemplateDtl = {
     const cfIsLongContent = computed(() => ['MMS템플릿'].includes(form.templateTypeCd));
 
     /* 미리보기 / 발송 모달 */
-    const previewOpen = ref(false);
-    const sendOpen    = ref(false);
+    const uiState = reactive({ previewOpen: false, sendOpen: false });
 
     return { templates, loading, error, cfIsNew, form, errors, handleSave, TEMPLATE_TYPES, cfNeedSubject, cfIsLongContent,
-             cfUseHtmlEditor, quillEditorEl, previewOpen, sendOpen, cfSiteNm };
+             cfUseHtmlEditor, quillEditorEl, uiState, cfSiteNm };
   },
   template: /* html */`
 <div>
@@ -211,13 +210,13 @@ window.SyTemplateDtl = {
     </div>
     <div class="form-actions">
       <template v-if="viewMode">
-        <button class="btn btn-secondary" @click="previewOpen=true">📄 미리보기</button>
+        <button class="btn btn-secondary" @click="uiState.previewOpen=true">📄 미리보기</button>
         <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
         <button class="btn btn-secondary" @click="navigate('syTemplateMng')">닫기</button>
       </template>
       <template v-else>
-        <button class="btn btn-secondary" @click="previewOpen=true">📄 미리보기</button>
-        <button class="btn btn-primary" style="background:#52c41a;border-color:#52c41a;" @click="sendOpen=true">📨 발송하기</button>
+        <button class="btn btn-secondary" @click="uiState.previewOpen=true">📄 미리보기</button>
+        <button class="btn btn-primary" style="background:#52c41a;border-color:#52c41a;" @click="uiState.sendOpen=true">📨 발송하기</button>
         <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('syTemplateMng')">취소</button>
       </template>
@@ -225,14 +224,14 @@ window.SyTemplateDtl = {
   </div>
 
   <!-- 미리보기 모달 -->
-  <template-preview-modal v-if="previewOpen"
+  <template-preview-modal v-if="uiState.previewOpen"
     :tmpl="form" :sample-params="form.sampleParams"
-    @close="previewOpen=false" />
+    @close="uiState.previewOpen=false" />
 
   <!-- 발송하기 모달 -->
-  <template-send-modal v-if="sendOpen"
+  <template-send-modal v-if="uiState.sendOpen"
     :tmpl="form" :show-toast="showToast" :show-confirm="showConfirm"
-    @close="sendOpen=false" />
+    @close="uiState.sendOpen=false" />
 </div>
 `
 };

@@ -8,6 +8,12 @@ window.SyRoleMng = {
     const loading = ref(false);
     const error = ref(null);
 
+    /* ===== UI State ===== */
+    const uiState = reactive({
+      checkAll: false,
+      userSelectOpen: false,
+    });
+
     // onMounted에서 API 로드
     const handleFetchData = async () => {
       loading.value = true;
@@ -322,8 +328,7 @@ window.SyRoleMng = {
       handleLoadGrid();
     };
 
-    const checkAll = ref(false);
-    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = checkAll.value; }); };
+    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
     const parentNm = (parentId) => {
@@ -398,8 +403,6 @@ window.SyRoleMng = {
     });
 
     /* ── 하단: 대상사용자 (모달 선택) ── */
-    const userSelectOpen = ref(false);
-
     const cfRoleUsersList = computed(() => {
       if (!selectedRoleId.value) return [];
       return roleUsers.value
@@ -414,7 +417,7 @@ window.SyRoleMng = {
         const already = roleUsers.value.some(x => x.roleId === selectedRoleId.value && x.boUserId === u.boUserId);
         if (!already) roleUsers.value.push({ roleId: selectedRoleId.value, boUserId: u.boUserId });
       });
-      userSelectOpen.value = false;
+      uiState.uiState.userSelectOpen = false;
     };
 
     const removeUser = (boUserId) => {
@@ -440,6 +443,7 @@ window.SyRoleMng = {
 
 
     return {
+      uiState,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       cfSiteNm, ROLE_TYPES, PERM_LEVELS, ROLE_CATS, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, fnPermColor, depthBullet, depthColor, fnStatusClass,
@@ -447,11 +451,11 @@ window.SyRoleMng = {
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
-      checkAll, toggleCheckAll, parentNm,
+      toggleCheckAll, parentNm,
       roleTreeModal, openParentModal, onParentSelect,
       selectedRoleId, cfSelectedRoleNm,
       menuSearchKw, cfMenuTree, getMenuPerm, setMenuPerm, setAllMenuPerm, isMenuChecked, toggleAllMenus, cfMenuAllChecked,
-      userSelectOpen, cfRoleUsersList, onUserSelect, removeUser,
+      cfRoleUsersList, onUserSelect, removeUser,
       exportExcel,
     };
   },
@@ -515,7 +519,7 @@ window.SyRoleMng = {
         <tr>
           <th class="col-id">ID</th>
           <th class="col-status">상태</th>
-          <th class="col-check"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
+          <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
           <th style="width:120px;">역할코드</th>
           <th style="min-width:150px;">역할명</th>
           <th style="min-width:120px;">상위역할</th>
@@ -680,7 +684,7 @@ window.SyRoleMng = {
             <span v-else style="font-size:12px;color:#bbb;margin-left:8px;">역할을 선택하면 사용자를 추가할 수 있습니다</span>
           </div>
           <button v-if="selectedRoleId" class="btn btn-primary btn-sm"
-            @click="userSelectOpen=true">+ 사용자 추가</button>
+            @click="uiState.userSelectOpen=true">+ 사용자 추가</button>
         </div>
 
         <!-- 선택된 사용자 목록 -->
@@ -715,8 +719,8 @@ window.SyRoleMng = {
   </div>
 
   <!-- 사용자 선택 모달 -->
-  <bo-user-select-modal v-if="userSelectOpen" @select="onUserSelect"
-    @close="userSelectOpen=false" />
+  <bo-user-select-modal v-if="uiState.userSelectOpen" @select="onUserSelect"
+    @close="uiState.userSelectOpen=false" />
 
   <!-- 상위역할 선택 모달 -->
   <role-tree-modal

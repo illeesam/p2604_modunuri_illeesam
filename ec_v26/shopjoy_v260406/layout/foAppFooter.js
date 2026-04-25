@@ -4,12 +4,12 @@ window.foAppFooter = {
   props: ['config', 'navigate'],
   emits: [],
   setup() {
-    const { ref } = Vue;
-    const menuOpen = ref(false);
-    const toggleMenu = () => { menuOpen.value = !menuOpen.value; };
-    const closeMenu  = () => { menuOpen.value = false; };
+    const { ref, reactive } = Vue;
+    const uiState = reactive({ menuOpen: false });
+    const toggleMenu = () => { uiState.menuOpen = !uiState.menuOpen; };
+    const closeMenu  = () => { uiState.menuOpen = false; };
     /* 외부(헤더 등)에서 팝업 오픈 요청 수신 */
-    window.addEventListener('open-quick-menu', () => { menuOpen.value = true; });
+    window.addEventListener('open-quick-menu', () => { uiState.menuOpen = true; });
     const goItem = (root, target) => {
       if (root === 'foOffice') {
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + (target ? '#page=' + target : '');
@@ -30,7 +30,7 @@ window.foAppFooter = {
         /* target = BO 번호만, bo.html 새창 오픈 — URL 파라미터로 전달, FO localStorage 접근 금지 */
         window.open((window.pageUrl ? window.pageUrl('bo.html') : 'bo.html') + '?SITE_NO=' + target, '_blank');
       }
-      menuOpen.value = false;
+      uiState.menuOpen = false;
     };
     const currentFoSiteNo  = window.FO_SITE_NO || '01';
     const currentBoSiteNo = '01'; /* BO site_no — FO localStorage 접근 금지, 기본값 고정 */
@@ -85,7 +85,7 @@ window.foAppFooter = {
       { fo:'03',   bo:'03' },
       { fo:'9999', bo:'9999' },
     ];
-    return { menuOpen, toggleMenu, closeMenu, goItem, currentFoSiteNo, currentBoSiteNo, FO_MENU, BO_MENU, DISP_MENU, SITE_MENU, SITE_PAIR_MENU };
+    return { uiState, toggleMenu, closeMenu, goItem, currentFoSiteNo, currentBoSiteNo, FO_MENU, BO_MENU, DISP_MENU, SITE_MENU, SITE_PAIR_MENU };
   },
   template: /* html */ `
 <footer style="padding:28px 32px;">
@@ -127,10 +127,10 @@ window.foAppFooter = {
       </button>
 
       <!-- 메뉴 레이어 -->
-      <div v-if="menuOpen"
+      <div v-if="uiState.menuOpen"
         style="position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9998;backdrop-filter:blur(2px);"
         @click="closeMenu"></div>
-      <div v-if="menuOpen"
+      <div v-if="uiState.menuOpen"
         style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9999;background:#fff;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.28);width:920px;max-width:95vw;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;border:1px solid #ffe4ec;"
         @click.stop>
         <!-- 헤더 -->

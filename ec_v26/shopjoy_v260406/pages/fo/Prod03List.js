@@ -5,6 +5,11 @@ window.Prod03List = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
 
+    /* ===== UI State ===== */
+    const uiState = reactive({
+      uiState.filterOpen: false,
+    });
+
     /* ── 상품 이미지 자동 할당 ── */
     const IMG_BASE = 'assets/cdn/prod/img/shop/product';
     const assignImage = (p) => {
@@ -58,7 +63,6 @@ window.Prod03List = {
 
     /* ── 필터 상태 ── */
     const searchText    = ref('');
-    const filterOpen    = ref(false);
     const priceMin      = ref('');
     const priceMax      = ref('');
     const selColors     = reactive(new Set());
@@ -186,8 +190,9 @@ window.Prod03List = {
     });
 
     return {
+      uiState,
       loading, allProducts, cfFilteredProducts,
-      searchText, filterOpen, priceMin, priceMax,
+      searchText, priceMin, priceMax,
       selColors, selSizes, selCats,
       cfAllColors, cfAllSizes, cfAllCats,
       toggleColor, toggleSize, toggleCat, cfHasFilter, clearFilters,
@@ -253,12 +258,12 @@ window.Prod03List = {
         @focus="$event.target.style.borderColor='var(--blue)'"
         @blur="$event.target.style.borderColor='var(--border)'" />
     </div>
-    <button @click="filterOpen=!filterOpen"
+    <button @click="uiState.filterOpen=!uiState.filterOpen"
       style="display:flex;align-items:center;gap:6px;padding:10px 16px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg-card);cursor:pointer;font-size:0.85rem;font-weight:600;white-space:nowrap;transition:all 0.2s;"
-      :style="filterOpen?'border-color:var(--blue);color:var(--blue);':cfHasFilter?'border-color:#f97316;color:#f97316;':'color:var(--text-muted);'">
+      :style="uiState.filterOpen?'border-color:var(--blue);color:var(--blue);':cfHasFilter?'border-color:#f97316;color:#f97316;':'color:var(--text-muted);'">
       <span>⚙️</span>
-      <span>{{ filterOpen ? '필터 닫기' : '필터' }}</span>
-      <span v-if="cfHasFilter && !filterOpen"
+      <span>{{ uiState.filterOpen ? '필터 닫기' : '필터' }}</span>
+      <span v-if="cfHasFilter && !uiState.filterOpen"
         style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;background:#f97316;color:#fff;border-radius:9px;font-size:0.7rem;font-weight:700;">
         {{ (selColors.size+selSizes.size+selCats.size+(priceMin?1:0)+(priceMax?1:0)) }}
       </span>
@@ -266,7 +271,7 @@ window.Prod03List = {
   </div>
 
   <!-- ── 상세 필터 패널 ── -->
-  <div v-show="filterOpen"
+  <div v-show="uiState.filterOpen"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:clamp(12px,2vw,18px);margin-bottom:20px;">
 
     <!-- 가격 구간 -->

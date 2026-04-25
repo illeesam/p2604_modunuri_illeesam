@@ -102,20 +102,19 @@
       /* ── 검색 상태 ── */
       const memberModal  = reactive({ show: false, keyword: '', list: [] });
 
-      /* ── 기간 필터 ── */
-      const period     = ref('1y');
-      const customFrom = ref('');
-      const customTo   = ref(today());
+      /* ── 기간 필터 (searchParam 통합) ── */
+      const searchParam = reactive({ period: '1y', customFrom: '', customTo: today() });
+      const searchParamOrg = reactive({ period: '1y', customFrom: '', customTo: today() });
 
-      const cfDateFrom = computed(() => calcFrom(period.value, customFrom.value));
-      const cfDateTo   = computed(() => period.value === 'custom' ? customTo.value : today());
+      const cfDateFrom = computed(() => calcFrom(searchParam.period, searchParam.customFrom));
+      const cfDateTo   = computed(() => searchParam.period === 'custom' ? searchParam.customTo : today());
 
       /* period 변경 시 custom 초기값 세팅 */
-      watch(period, v => {
+      watch(() => searchParam.period, v => {
         if (v === 'custom') {
           const d = new Date(); d.setFullYear(d.getFullYear() - 1);
-          customFrom.value = d.toISOString().slice(0, 10);
-          customTo.value   = today();
+          searchParam.customFrom = d.toISOString().slice(0, 10);
+          searchParam.customTo   = today();
         }
       });
 
@@ -204,7 +203,7 @@
     }
   };
   return { custInfos, loading, error, searchMode, searchInput, SEARCH_MODES, memberModal,
-        period, customFrom, customTo, PERIOD_OPTS, cfDateFrom, cfDateTo,
+        searchParam, searchParamOrg, PERIOD_OPTS, cfDateFrom, cfDateTo,
         customer,
         cfCustOrders, cfCustClaims, cfCustDeliveries, cfCustCache, cfCustCacheBalance,
         cfCustContacts, cfCustChats, cfCustLoginHist, cfCustCouponUsage, cfCustSendHist,
@@ -269,18 +268,18 @@
     <span style="font-size:12px;color:#888;font-weight:500;white-space:nowrap;">조회기간</span>
     <div style="display:flex;background:#f0f2f5;border-radius:8px;padding:3px;gap:2px;">
       <button v-for="p in PERIOD_OPTS" :key="p?.id"
-        @click="period=p.id"
-        :style="period===p.id
+        @click="searchParam.period=p.id"
+        :style="searchParam.period===p.id
           ? 'background:#1976d2;color:#fff;border:none;border-radius:6px;padding:4px 13px;font-size:12px;font-weight:600;cursor:pointer;'
           : 'background:transparent;color:#666;border:none;border-radius:6px;padding:4px 13px;font-size:12px;cursor:pointer;'">
         {{ p.label }}
       </button>
     </div>
-    <template v-if="period==='custom'">
-      <input type="date" v-model="customFrom"
+    <template v-if="searchParam.period==='custom'">
+      <input type="date" v-model="searchParam.customFrom"
         style="border:1px solid #ddd;border-radius:6px;padding:4px 10px;font-size:12px;outline:none;" />
       <span style="font-size:12px;color:#aaa;">~</span>
-      <input type="date" v-model="customTo"
+      <input type="date" v-model="searchParam.customTo"
         style="border:1px solid #ddd;border-radius:6px;padding:4px 10px;font-size:12px;outline:none;" />
     </template>
     <span v-else style="font-size:12px;color:#aaa;">

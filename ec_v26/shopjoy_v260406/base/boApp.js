@@ -823,10 +823,9 @@
       const loginForm   = reactive({ loginId: 'admin2', loginPwd: 'demo1234', authMethod: '메인' });
       const regForm     = reactive({ name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
       const loginError  = ref('');
-      const userMenuShow = ref(false);
+      const uiState = reactive({ userMenuShow: false, profileModalShow: false, pwModalShow: false, relatedSiteOpen: false });
 
       /* 프로필 모달 */
-      const profileModal = reactive({ show: false });
       const profileForm  = reactive({ name: '', phone: '', dept: '', email: '' });
       const openProfile  = () => {
         if (!currentAuthUser || !currentAuthUser.userId) return;
@@ -836,7 +835,7 @@
           dept: currentAuthUser.dept || '',
           email: currentAuthUser.email || ''
         });
-        profileModal.show = true; userMenuShow.value = false;
+        profileModal.show = true; uiState.userMenuShow = false;
       };
       const saveProfile  = () => {
         if (!profileForm.name) { showToast('이름을 입력하세요.', 'error'); return; }
@@ -846,17 +845,16 @@
         currentAuthUser.name  = profileForm.name || '';
         currentAuthUser.phone = profileForm.phone || '';
         currentAuthUser.dept  = profileForm.dept || '';
-        profileModal.show = false;
+        uiState.profileModalShow = false;
         showToast('프로필이 저장되었습니다.');
       };
 
       /* 비밀번호 변경 모달 */
-      const pwModal  = reactive({ show: false });
       const pwForm   = reactive({ current: '', next: '', confirm: '' });
       const pwError  = ref('');
       const openPwChange = () => {
         Object.assign(pwForm, { current: '', next: '', confirm: '' });
-        pwError.value = ''; pwModal.show = true; userMenuShow.value = false;
+        pwError.value = ''; uiState.pwModalShow = true; uiState.userMenuShow = false;
       };
       const savePwChange = () => {
         pwError.value = '';
@@ -868,7 +866,7 @@
         if (pwForm.next.length < 6) { pwError.value = '새 비밀번호는 6자 이상이어야 합니다.'; return; }
         if (pwForm.next !== pwForm.confirm) { pwError.value = '새 비밀번호가 일치하지 않습니다.'; return; }
         currentAuthUser.password = pwForm.next || '';
-        pwModal.show = false;
+        uiState.pwModalShow = false;
         showToast('비밀번호가 변경되었습니다.');
       };
 
@@ -915,13 +913,13 @@
             configStore.sfReset();
           }
 
-          userMenuShow.value = false;
+          uiState.userMenuShow = false;
           openTabs.splice(0);
           navigate('dashboard');
           showToast('로그아웃되었습니다.');
         } catch (e) {
           console.error('doLogout error:', e);
-          userMenuShow.value = false;
+          uiState.userMenuShow = false;
         }
       };
       /* 다른 탭 로그인/로그아웃 동기화 */
@@ -960,21 +958,20 @@
       };
 
       /* ── 연관사이트 레이어 ── */
-      const relatedSiteOpen = ref(false);
-      const toggleRelatedSite = () => { relatedSiteOpen.value = !relatedSiteOpen.value; };
+      const toggleRelatedSite = () => { uiState.relatedSiteOpen = !uiState.relatedSiteOpen; };
       const openRelatedLink = (url) => {
         window.open(url, '_blank', 'noopener,noreferrer');
-        relatedSiteOpen.value = false;
+        uiState.relatedSiteOpen = false;
       };
       const goFoSite = (no) => {
         try { localStorage.setItem('modu-fo-siteNo', no); } catch(_){}
         window.open('index.html?SITE_NO=' + no, '_blank');
-        relatedSiteOpen.value = false;
+        uiState.relatedSiteOpen = false;
       };
       const goBoSite = (no) => {
         try { localStorage.setItem('modu-bo-siteNo', no); } catch(_){}
         window.open('bo.html?SITE_NO=' + no, '_blank');
-        relatedSiteOpen.value = false;
+        uiState.relatedSiteOpen = false;
       };
       const currentFoSiteNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-fo-siteNo')) || '01';
       const currentBoSiteNo = window.BO_SITE_NO || '01';
@@ -1040,10 +1037,10 @@
         apiLogs, apiLogHoverDetail, apiLogLockedDetail, clearApiLogs, toggleApiLogLock, getApiStatusColor, formatJsonData, isWithin60Seconds, getRelativeTime,
         tabBarRef, scrollTabs,
         cfIsLoggedIn, currentAuthUser, currentAuthUserRoles, activeRoleId, rolePath, onRoleChange, rolesOfUser, bizInfoOfUser,
-        loginModal, loginForm, regForm, loginError, userMenuShow,
+        loginModal, loginForm, regForm, loginError, uiState,
         openLogin, closeLogin, doLogin, quickLogin, doLogout, doRegister,
-        profileModal, profileForm, openProfile, saveProfile,
-        pwModal, pwForm, pwError, openPwChange, savePwChange,
+        profileForm, openProfile, saveProfile,
+        pwForm, pwError, openPwChange, savePwChange,
         favorites, favKeepSet, sidebarTab, isFav, toggleFav, cfFavList, toggleFavKeep,
         apiResPanel, setApiRes, closeApiResPanel,
         onRootClick,
@@ -1089,10 +1086,10 @@
         <span v-else-if="currentAuthUserRoles.length === 1" class="user-role-label"
           style="margin-right:8px;font-size:11px;color:#cdb4ff;font-weight:500;">{{ rolePath(currentAuthUserRoles[0]) }}</span>
         <span class="user-name-label">{{ currentAuthUser?.authNm || currentAuthUser?.name || '' }}</span>
-        <button class="user-avatar-btn" @click="userMenuShow=!userMenuShow" :title="currentAuthUser?.email || ''">
+        <button class="user-avatar-btn" @click="uiState.userMenuShow=!uiState.userMenuShow" :title="currentAuthUser?.email || ''">
           {{ ((currentAuthUser?.authNm || currentAuthUser?.name || '').charAt(0)) || '?' }}
         </button>
-        <div v-if="userMenuShow" class="user-dropdown">
+        <div v-if="uiState.userMenuShow" class="user-dropdown">
           <div class="user-dropdown-header">
             <div class="user-dropdown-name">{{ currentAuthUser?.authNm || currentAuthUser?.name || '' }}</div>
             <div class="user-dropdown-role">{{ currentAuthUser?.role || '' }}</div>
@@ -1210,8 +1207,8 @@
         </div>
 
         <!-- 연관사이트 팝업 레이어 -->
-        <div v-if="relatedSiteOpen"
-          @click="relatedSiteOpen=false"
+        <div v-if="uiState.relatedSiteOpen"
+          @click="uiState.relatedSiteOpen=false"
           style="position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.25);"></div>
         <div v-if="relatedSiteOpen"
           @click.stop
@@ -1652,11 +1649,11 @@
   </div>
 
   <!-- 프로필 모달 -->
-  <div v-if="profileModal && profileModal.show" class="modal-overlay" @click.self="profileModal.show=false">
+  <div v-if="uiState.profileModalShow" class="modal-overlay" @click.self="uiState.profileModalShow=false">
     <div class="modal-box" style="max-width:440px;">
       <div class="modal-header">
         <span class="modal-title">🙍 프로필</span>
-        <span class="modal-close" @click="profileModal.show=false">✕</span>
+        <span class="modal-close" @click="uiState.profileModalShow=false">✕</span>
       </div>
       <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:14px;background:#fff5f7;border-radius:10px;">
         <div style="width:54px;height:54px;border-radius:50%;background:#e8587a;color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ ((currentAuthUser?.authNm || currentAuthUser?.name || '').charAt(0)) || '?' }}</div>
@@ -1686,17 +1683,17 @@
       </div>
       <div class="form-actions">
         <button class="btn btn-primary" @click="saveProfile">저장</button>
-        <button class="btn btn-secondary" @click="profileModal.show=false">취소</button>
+        <button class="btn btn-secondary" @click="uiState.profileModalShow=false">취소</button>
       </div>
     </div>
   </div>
 
   <!-- 비밀번호 변경 모달 -->
-  <div v-if="pwModal && pwModal.show" class="modal-overlay" @click.self="pwModal.show=false">
+  <div v-if="uiState.pwModalShow" class="modal-overlay" @click.self="uiState.pwModalShow=false">
     <div class="modal-box" style="max-width:380px;">
       <div class="modal-header">
         <span class="modal-title">🔑 비밀번호 변경</span>
-        <span class="modal-close" @click="pwModal.show=false">✕</span>
+        <span class="modal-close" @click="uiState.pwModalShow=false">✕</span>
       </div>
       <div class="form-group">
         <label class="form-label">현재 비밀번호 <span class="req">*</span></label>
@@ -1713,7 +1710,7 @@
       <div v-if="pwError" class="login-error">{{ pwError }}</div>
       <div class="form-actions">
         <button class="btn btn-primary" @click="savePwChange">변경</button>
-        <button class="btn btn-secondary" @click="pwModal.show=false">취소</button>
+        <button class="btn btn-secondary" @click="uiState.pwModalShow=false">취소</button>
       </div>
     </div>
   </div>

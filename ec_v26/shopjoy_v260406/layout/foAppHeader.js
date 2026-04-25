@@ -7,16 +7,15 @@ window.foAppHeader = {
   setup(props) {
     const { ref, reactive, computed, watch, onUnmounted, nextTick } = Vue;
 
-    /* ── 유저 드롭다운 ── */
-    const userMenuOpen = ref(false);
+    /* ── UI 상태 ── */
+    const uiState = reactive({ userMenuOpen: false, profileOpen: false, pwOpen: false });
     const userMenuRoot = ref(null);
-    const toggleUserMenu = () => { userMenuOpen.value = !userMenuOpen.value; };
-    const closeUserMenu  = () => { userMenuOpen.value = false; };
+    const toggleUserMenu = () => { uiState.userMenuOpen = !uiState.userMenuOpen; };
+    const closeUserMenu  = () => { uiState.userMenuOpen = false; };
     const goMy    = () => { closeUserMenu(); props.navigate('myOrder'); };
     const doLogout = () => { closeUserMenu(); props.onLogout(); };
 
     /* ── Profile 모달 ── */
-    const profileOpen = ref(false);
     const pf = reactive({ memberNm: '', email: '', phone: '', birthdate: '', gender: '',
                           postcode: '', address: '', addressDetail: '' });
     const openProfile = () => {
@@ -26,7 +25,7 @@ window.foAppHeader = {
       pf.birthdate = u.birthdate || ''; pf.gender = u.gender || '';
       pf.postcode = u.postcode || ''; pf.address = u.address || '';
       pf.addressDetail = u.addressDetail || '';
-      profileOpen.value = true;
+      uiState.profileOpen = true;
     };
     const saveProfile = () => {
       if (!pf.memberNm.trim()) return;
@@ -43,7 +42,7 @@ window.foAppHeader = {
           localStorage.setItem('modu-fo-authUser', JSON.stringify(store.svAuthUser));
         } catch (e) {}
       }
-      profileOpen.value = false;
+      uiState.profileOpen = false;
     };
     const openKakaoAddrProfile = () => {
       if (typeof daum === 'undefined' || !daum.Postcode) return;
@@ -55,9 +54,8 @@ window.foAppHeader = {
     const genderLabel = g => ({ M: '남성', F: '여성', '': '선택안함' }[g] ?? '선택안함');
 
     /* ── 비밀번호 변경 모달 ── */
-    const pwOpen = ref(false);
     const pw = reactive({ current: '', next: '', next2: '', err: '', ok: false });
-    const openPw = () => { closeUserMenu(); pw.current=''; pw.next=''; pw.next2=''; pw.err=''; pw.ok=false; pwOpen.value=true; };
+    const openPw = () => { closeUserMenu(); pw.current=''; pw.next=''; pw.next2=''; pw.err=''; pw.ok=false; uiState.pwOpen=true; };
     const savePw = async () => {
       pw.err = ''; pw.ok = false;
       if (!pw.current) { pw.err = '현재 비밀번호를 입력하세요.'; return; }
@@ -72,7 +70,7 @@ window.foAppHeader = {
             newPassword: pw.next,
           });
           pw.ok = true;
-          setTimeout(() => { pwOpen.value = false; }, 1400);
+          setTimeout(() => { uiState.pwOpen = false; }, 1400);
         } catch (e) {
           pw.err = e.response?.data?.message || '비밀번호 변경 실패';
         }
@@ -105,24 +103,24 @@ window.foAppHeader = {
     function bindUserMenuOutside() {
       unbindUserMenuOutside();
       const onPointerDown = (e) => {
-        if (!userMenuOpen.value) return;
+        if (!uiState.userMenuOpen) return;
         const root = userMenuRoot.value;
         if (root && !root.contains(e.target)) closeUserMenu();
       };
       document.addEventListener('pointerdown', onPointerDown, true);
       removeUserMenuOutside = () => document.removeEventListener('pointerdown', onPointerDown, true);
     }
-    watch(userMenuOpen, (open) => {
+    watch(() => uiState.userMenuOpen, (open) => {
       if (open) nextTick(() => bindUserMenuOutside());
       else unbindUserMenuOutside();
     });
     onUnmounted(() => unbindUserMenuOutside());
 
     return {
-      userMenuRoot,
-      userMenuOpen, toggleUserMenu, closeUserMenu, goMy, doLogout, cfMenuItems,
-      profileOpen, pf, openProfile, saveProfile, openKakaoAddrProfile, genderLabel,
-      pwOpen, pw, openPw, savePw, IS,
+      uiState, userMenuRoot,
+      toggleUserMenu, closeUserMenu, goMy, doLogout, cfMenuItems,
+      pf, openProfile, saveProfile, openKakaoAddrProfile, genderLabel,
+      pw, openPw, savePw, IS,
       cfAuthUser, cfUserFirstChar, cfIsLogin,
       foSiteNo: window.FO_SITE_NO || '01',
       boSiteNo: '01', /* BO site_no — FO localStorage 접근 금지, 기본값 고정 */
@@ -226,11 +224,11 @@ window.foAppHeader = {
         </span>
         <span class="hidden-sm" style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ cfAuthUser.authNm || cfAuthUser.memberNm }}</span>
         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"
-          :style="userMenuOpen?'transform:rotate(180deg);transition:0.2s;':'transition:0.2s;'"><path d="M6 9l6 6 6-6"/></svg>
+          :style="uiState.userMenuOpen?'transform:rotate(180deg);transition:0.2s;':'transition:0.2s;'"><path d="M6 9l6 6 6-6"/></svg>
       </button>
 
       <!-- 드롭다운 -->
-      <div v-if="userMenuOpen" @click.stop
+      <div v-if="uiState.userMenuOpen" @click.stop
         style="position:absolute;right:0;top:calc(100% + 8px);width:196px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 8px 28px rgba(0,0,0,0.13);z-index:100;overflow:hidden;">
         <!-- 사용자 정보 -->
         <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
@@ -307,9 +305,9 @@ window.foAppHeader = {
 
   <!-- ══ Profile 모달 ══ -->
   <Teleport to="body">
-  <div v-if="profileOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="profileOpen=false">
+  <div v-if="uiState.profileOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="uiState.profileOpen=false">
     <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:440px;max-height:88vh;overflow-y:auto;padding:28px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
-      <button @click="profileOpen=false" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>
+      <button @click="uiState.profileOpen=false" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>
 
       <div style="margin-bottom:22px;">
         <div style="font-size:1.2rem;font-weight:800;color:var(--text-primary);">✏️ 프로필 수정</div>
@@ -369,7 +367,7 @@ window.foAppHeader = {
       </div>
 
       <div style="display:flex;gap:10px;margin-top:22px;">
-        <button @click="profileOpen=false"
+        <button @click="uiState.profileOpen=false"
           style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:0.88rem;font-weight:600;">취소</button>
         <button @click="saveProfile" :disabled="!pf.memberNm.trim()"
           style="flex:2;padding:12px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.88rem;font-weight:700;"
@@ -381,9 +379,9 @@ window.foAppHeader = {
 
   <!-- ══ 비밀번호 변경 모달 ══ -->
   <Teleport to="body">
-  <div v-if="pwOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="pwOpen=false">
+  <div v-if="uiState.pwOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="uiState.pwOpen=false">
     <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:400px;padding:28px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
-      <button @click="pwOpen=false" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>
+      <button @click="uiState.pwOpen=false" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>
 
       <div style="margin-bottom:22px;">
         <div style="font-size:1.2rem;font-weight:800;color:var(--text-primary);">🔑 비밀번호 변경</div>
@@ -422,7 +420,7 @@ window.foAppHeader = {
         <div v-if="pw.err" style="color:#ef4444;font-size:0.82rem;padding:8px 12px;background:#fef2f2;border-radius:6px;">{{ pw.err }}</div>
 
         <div style="display:flex;gap:10px;margin-top:8px;">
-          <button @click="pwOpen=false"
+          <button @click="uiState.pwOpen=false"
             style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:0.88rem;font-weight:600;">취소</button>
           <button @click="savePw"
             style="flex:2;padding:12px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.88rem;font-weight:700;">변경하기</button>

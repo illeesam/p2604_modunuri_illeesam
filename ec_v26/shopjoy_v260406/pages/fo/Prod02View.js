@@ -7,7 +7,7 @@ window.Prod02View = {
 
     /* ── 이미지 갤러리 ── */
     const selectedImg = ref(0);
-    const zoomOpen    = ref(false);
+    const uiState = reactive({ zoomOpen: false, photoPopupOpen: false, showBottomBar: false, showSizeGuide: false });
 
     /* ── 구매 옵션 ── */
     const selectedColor = ref(null);
@@ -15,7 +15,6 @@ window.Prod02View = {
     const qty           = ref(1);
     const colorError    = ref('');
     const sizeError     = ref('');
-    const showSizeGuide = ref(false);
 
     /* ── 탭 ── */
     const TABS = [
@@ -27,7 +26,6 @@ window.Prod02View = {
     const activeTab    = ref('detail');
     const tabBarRef    = ref(null);
     const buyBtnRef    = ref(null);
-    const showBottomBar = ref(false);
     const detailSecRef = ref(null);
     const sizeSecRef   = ref(null);
     const reviewSecRef = ref(null);
@@ -35,7 +33,6 @@ window.Prod02View = {
 
     /* ── 상품평 ── */
     const reviewFilter   = ref('최신순');
-    const photoPopupOpen = ref(false);
     const selectedReview = ref(null);
     const photoGridPage = ref(1);
     const photoGridPageSize = 12;

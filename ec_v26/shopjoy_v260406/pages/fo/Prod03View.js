@@ -3,11 +3,21 @@ window.Prod03View = {
   name: "Prod03View",
   props: ['navigate', 'config', 'product', 'addToCart', 'showToast', 'showAlert', 'toggleLike', 'isLiked'],
   setup(props) {
-    const { ref, computed, onMounted, onBeforeUnmount, watch } = Vue;
+    const { ref, computed, onMounted, onBeforeUnmount, watch, reactive } = Vue;
+
+    /* ===== UI State ===== */
+    const uiState = reactive({
+      zoomOpen: false,
+      showSizeGuide: false,
+      showBottomBar: false,
+      photoPopupOpen: false,
+      tabFixed: false,
+      quickBuyOpen: false,
+      photoFromGrid: false,
+    });
 
     /* ── 이미지 갤러리 ── */
     const selectedImg = ref(0);
-    const zoomOpen    = ref(false);
 
     /* ── 구매 옵션 ── */
     const selectedColor = ref(null);
@@ -15,7 +25,6 @@ window.Prod03View = {
     const qty           = ref(1);
     const colorError    = ref('');
     const sizeError     = ref('');
-    const showSizeGuide = ref(false);
 
     /* ── 탭 ── */
     const TABS = [
@@ -27,7 +36,6 @@ window.Prod03View = {
     const activeTab    = ref('detail');
     const tabBarRef    = ref(null);
     const buyBtnRef    = ref(null);
-    const showBottomBar = ref(false);
     const detailSecRef = ref(null);
     const sizeSecRef   = ref(null);
     const reviewSecRef = ref(null);
@@ -35,7 +43,6 @@ window.Prod03View = {
 
     /* ── 상품평 ── */
     const reviewFilter   = ref('최신순');
-    const photoPopupOpen = ref(false);
     const selectedReview = ref(null);
     const photoGridPage = ref(1);
     const photoGridPageSize = 12;
@@ -172,7 +179,6 @@ window.Prod03View = {
     let scrollEl = null;
     const getScrollEl = () => scrollEl || (scrollEl = document.querySelector('.layout-main')) || window;
 
-    const tabFixed     = ref(false);
     const tabFixedTop  = ref(0);
     const tabFixedLeft = ref(0);
     const tabFixedW    = ref(0);
@@ -196,7 +202,7 @@ window.Prod03View = {
       const mainRect = main.getBoundingClientRect ? main.getBoundingClientRect() : { top: 0 };
       const barH = tabBarRef.value?.offsetHeight || 44;
       /* 탭바 fixed 시: mainRect.top + barH 만큼 오프셋 필요 */
-      const offset = tabFixed.value ? barH + 8 : barH + 8;
+      const offset = uiState.uiState.tabFixed ? barH + 8 : barH + 8;
       const elTop = el.getBoundingClientRect().top - mainRect.top;
       const top = main.scrollTop + elTop - offset;
       main.scrollTo({ top, behavior: 'smooth' });
@@ -211,26 +217,26 @@ window.Prod03View = {
       const mainTop = main.getBoundingClientRect().top;
 
       /* ── fixed 전환 ── */
-      if (!tabFixed.value) {
+      if (!uiState.tabFixed) {
         if (bar.getBoundingClientRect().top <= mainTop) {
           tabPlaceholderH.value = bar.offsetHeight;
           tabNaturalScrollTop   = main.scrollTop;
           updateTabFixedPos();
-          tabFixed.value = true;
+          uiState.tabFixed = true;
         }
       } else {
         if (main.scrollTop < tabNaturalScrollTop) {
-          tabFixed.value = false;
+          uiState.tabFixed = false;
         }
       }
 
       /* ── 하단 바 표시: 구매 버튼이 화면 밖으로 나가면 표시 ── */
       const btn = buyBtnRef.value;
-      showBottomBar.value = btn ? btn.getBoundingClientRect().bottom < mainTop : false;
+      uiState.showBottomBar = btn ? btn.getBoundingClientRect().bottom < mainTop : false;
 
       /* ── 활성 탭 ── */
       const barH = bar.offsetHeight || 44;
-      const anchor = tabFixed.value
+      const anchor = uiState.tabFixed
         ? tabFixedTop.value + barH + 20   /* fixed: 탭바 하단 기준 */
         : bar.getBoundingClientRect().bottom + 10;
       const sections = [
@@ -248,19 +254,18 @@ window.Prod03View = {
     };
 
     /* ── 드로어 상태 (anyModalOpen 보다 먼저 선언 필요) ── */
-    const quickBuyOpen = ref(false);
     const drawerMode   = ref('buy'); // 'buy' | 'cart'
 
     /* ── 모달 공통 닫기 (ESC / 뒤로가기) ── */
     const anyModalOpen = () =>
-      zoomOpen.value || photoPopupOpen.value || !!selectedReview.value ||
-      showSizeGuide.value || quickBuyOpen.value;
+      uiState.zoomOpen || uiState.photoPopupOpen || !!selectedReview.value ||
+      uiState.showSizeGuide || uiState.quickBuyOpen;
     const closeAllModals = () => {
-      zoomOpen.value = false;
-      photoPopupOpen.value = false;
+      uiState.zoomOpen = false;
+      uiState.photoPopupOpen = false;
       selectedReview.value = null;
-      showSizeGuide.value = false;
-      quickBuyOpen.value = false;
+      uiState.showSizeGuide = false;
+      uiState.quickBuyOpen = false;
     };
     const onKeydown = (e) => {
       if (e.key === 'Escape' && anyModalOpen()) {
@@ -299,8 +304,8 @@ window.Prod03View = {
       qty.value           = 1;
       selectedImg.value   = 0;
       activeTab.value     = 'detail';
-      quickBuyOpen.value  = false;
-      tabFixed.value      = false;
+      uiState.quickBuyOpen  = false;
+      uiState.tabFixed      = false;
       getScrollEl().scrollTo(0, 0);
     });
 
@@ -450,7 +455,7 @@ window.Prod03View = {
     /* 바로구매: 현재 상품 정보를 파라메터로 전달 (장바구니 미변경) */
     const execBuyNow = () => {
       if (!validate()) return;
-      quickBuyOpen.value = false;
+      uiState.quickBuyOpen = false;
       props.navigate('order', {
         instantOrder: {
           product: props.product,
@@ -465,7 +470,7 @@ window.Prod03View = {
     const execCartFromDrawer = () => {
       if (!validate()) return;
       props.addToCart(props.product, selectedColor.value, selectedSize.value, qty.value);
-      quickBuyOpen.value = false;
+      uiState.quickBuyOpen = false;
       selectedColor.value = props.product?.opt1s?.[0] || null;
       selectedSize.value  = null;
       qty.value = 1;
@@ -475,17 +480,16 @@ window.Prod03View = {
     const handleBuyNow = () => execBuyNow();
 
     /* 하단 바 "바로구매" → 드로어 열기 */
-    const openQuickBuy  = () => { drawerMode.value = 'buy';  quickBuyOpen.value = true; };
-    const openCartDrawer = () => { drawerMode.value = 'cart'; quickBuyOpen.value = true; };
+    const openQuickBuy  = () => { drawerMode.value = 'buy';  uiState.quickBuyOpen = true; };
+    const openCartDrawer = () => { drawerMode.value = 'cart'; uiState.quickBuyOpen = true; };
 
     /* ── 포토 리뷰 진입 경로 (grid=모아보기에서, list=리뷰목록에서) ── */
-    const photoFromGrid = ref(false);
-    const openPhotoFromGrid = (r) => { selectedReview.value = r; photoFromGrid.value = true;  photoPopupOpen.value = false; };
-    const openPhotoFromList = (r) => { selectedReview.value = r; photoFromGrid.value = false; };
+    const openPhotoFromGrid = (r) => { selectedReview.value = r; uiState.photoFromGrid = true;  uiState.photoPopupOpen = false; };
+    const openPhotoFromList = (r) => { selectedReview.value = r; uiState.photoFromGrid = false; };
     const closePhotoDetail  = () => {
       selectedReview.value = null;
-      if (photoFromGrid.value) photoPopupOpen.value = true;
-      photoFromGrid.value = false;
+      if (uiState.photoFromGrid) uiState.photoPopupOpen = true;
+      uiState.photoFromGrid = false;
     };
 
     /* ── 포토 리뷰 좌/우 이동 ── */
@@ -524,19 +528,20 @@ window.Prod03View = {
     };
 
     return {
-      selectedImg, zoomOpen,
-      selectedColor, selectedSize, qty, colorError, sizeError, showSizeGuide,
+      uiState,
+      selectedImg,
+      selectedColor, selectedSize, qty, colorError, sizeError,
       TABS, activeTab, tabBarRef, detailSecRef, sizeSecRef, reviewSecRef, styleSecRef,
-      reviewFilter, photoPopupOpen, selectedReview,
+      reviewFilter, selectedReview,
       photoNavPrev, photoNavNext, cfPhotoNavIdx,
       photoGridPage, cfPhotoGridPageCount, cfPhotoGridItems, photoGridPrev, photoGridNext,
-      photoFromGrid, openPhotoFromGrid, openPhotoFromList, closePhotoDetail,
+      openPhotoFromGrid, openPhotoFromList, closePhotoDetail,
       sizeGuideRows, styleItems,
       cfMockImages, cfMockReviews, cfReviewsWithPhoto, cfFilteredReviews, cfAvgRating, cfRatingDist,
-      tabFixed, tabFixedTop, tabFixedLeft, tabFixedW, tabPlaceholderH,
-      quickBuyOpen, drawerMode, cfQuickBuyTotal, cfDisplayPrice, getSizeDelta,
+      tabFixedTop, tabFixedLeft, tabFixedW, tabPlaceholderH,
+      drawerMode, cfQuickBuyTotal, cfDisplayPrice, getSizeDelta,
       scrollToTab, fnCategoryLabel, stars, colorStatus, sizeStatus,
-      buyBtnRef, showBottomBar,
+      buyBtnRef,
       selectColor, selectSize, handleAddToCart, handleBuyNow, openQuickBuy, openCartDrawer, execBuyNow, execCartFromDrawer,
     };
   },
@@ -583,7 +588,7 @@ window.Prod03View = {
             @mouseenter="$event.currentTarget.querySelector('.img-nav').style.opacity='1'"
             @mouseleave="$event.currentTarget.querySelector('.img-nav').style.opacity='0'">
             <div style="border-radius:12px;border:1px solid var(--border);overflow:hidden;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;position:relative;background:var(--bg-base);cursor:pointer;"
-              @click="zoomOpen=true">
+              @click="uiState.zoomOpen=true">
               <img v-if="cfMockImages[selectedImg]?.src" :src="cfMockImages[selectedImg].src" :alt="product.prodNm"
                 style="width:100%;height:100%;object-fit:cover;" />
               <div v-if="product.badge" style="position:absolute;top:14px;left:14px;">
@@ -594,7 +599,7 @@ window.Prod03View = {
               </div>
             </div>
             <!-- 확대 아이콘 (우상단) -->
-            <button @click="zoomOpen=true"
+            <button @click="uiState.zoomOpen=true"
               style="position:absolute;top:14px;right:14px;width:36px;height:36px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.08);z-index:2;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-secondary);">
                 <polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline>
@@ -688,7 +693,7 @@ window.Prod03View = {
             <div v-if="product.opt2s && product.opt2s.length && !(product.opt2s.length===1 && product.opt2s[0]==='FREE')" style="margin-bottom:20px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                 <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">사이즈 선택<span style="color:var(--blue);margin-left:2px;">*</span></label>
-                <button @click="showSizeGuide=true"
+                <button @click="uiState.showSizeGuide=true"
                   style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:0.75rem;font-weight:600;padding:0;text-decoration:underline;">
                   사이즈 가이드
                 </button>
@@ -767,9 +772,9 @@ window.Prod03View = {
     </div><!-- /page-wrap top -->
 
     <!-- ══ 탭 바 (스크롤 시 헤더 아래 고정) ══ -->
-    <div v-if="tabFixed" :style="{ height: tabPlaceholderH + 'px', marginTop:'24px' }"></div>
+    <div v-if="uiState.tabFixed" :style="{ height: tabPlaceholderH + 'px', marginTop:'24px' }"></div>
     <div ref="tabBarRef"
-      :style="tabFixed ? {
+      :style="uiState.tabFixed ? {
         position:'fixed', top:tabFixedTop+'px', left:tabFixedLeft+'px', width:tabFixedW+'px',
         zIndex:55,
         background:'linear-gradient(to bottom, rgba(245,248,253,0.98) 0%, var(--bg-card) 100%)',
@@ -893,7 +898,7 @@ window.Prod03View = {
             <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">
               포토&동영상 상품평 <span style="color:var(--blue);">{{ cfReviewsWithPhoto.length }}</span>
             </span>
-            <button @click="photoPopupOpen=true"
+            <button @click="uiState.photoPopupOpen=true"
               style="background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:0.78rem;color:var(--text-secondary);display:flex;align-items:center;gap:4px;">
               모아보기
             </button>
@@ -970,10 +975,10 @@ window.Prod03View = {
 
   <!-- ══ 이미지 확대 모달 ══ -->
   <teleport to="body">
-  <div v-if="zoomOpen && product" @click="zoomOpen=false"
+  <div v-if="uiState.zoomOpen && product" @click="uiState.zoomOpen=false"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:1500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
     <!-- 닫기 -->
-    <button @click.stop="zoomOpen=false"
+    <button @click.stop="uiState.zoomOpen=false"
       style="position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.6);border:2px solid rgba(255,255,255,0.8);color:#fff;font-size:1.4rem;width:48px;height:48px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1510;">✕</button>
     <!-- 메인 확대 이미지 -->
     <div @click.stop style="position:relative;width:95vw;height:85vh;border-radius:12px;display:flex;align-items:center;justify-content:center;">
@@ -1003,7 +1008,7 @@ window.Prod03View = {
 
   <!-- ══ 포토 전체 팝업 ══ -->
   <teleport to="body">
-  <div v-if="photoPopupOpen && product" @click.self="photoPopupOpen=false"
+  <div v-if="uiState.photoPopupOpen && product" @click.self="uiState.photoPopupOpen=false"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1500;display:flex;align-items:center;justify-content:center;padding:20px;">
     <!-- 좌 화살표 -->
     <button v-if="cfPhotoGridPageCount > 1" @click="photoGridPrev"
@@ -1013,7 +1018,7 @@ window.Prod03View = {
     <div @click.stop style="background:var(--bg-card);border-radius:16px;width:100%;max-width:720px;max-height:85vh;overflow-y:auto;padding:24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <span style="font-size:0.95rem;font-weight:800;color:var(--text-primary);">포토&동영상 상품평 {{ cfReviewsWithPhoto.length }}</span>
-        <button @click="photoPopupOpen=false" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">✕</button>
+        <button @click="uiState.photoPopupOpen=false" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">✕</button>
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
         <div v-for="r in cfPhotoGridItems" :key="r.id"
@@ -1094,11 +1099,11 @@ window.Prod03View = {
 
   <!-- ══ 사이즈 가이드 모달 ══ -->
   <teleport to="body">
-  <div v-if="showSizeGuide" class="modal-overlay" style="z-index:1500;" @click.self="showSizeGuide=false">
+  <div v-if="uiState.showSizeGuide" class="modal-overlay" style="z-index:1500;" @click.self="uiState.showSizeGuide=false">
     <div class="modal-box" style="max-width:480px;text-align:left;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
         <span style="font-weight:800;font-size:1rem;color:var(--text-primary);">📏 사이즈 가이드</span>
-        <button @click="showSizeGuide=false" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);">✕</button>
+        <button @click="uiState.showSizeGuide=false" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);">✕</button>
       </div>
       <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
         <thead>
@@ -1119,14 +1124,14 @@ window.Prod03View = {
         </tbody>
       </table>
       <p style="margin-top:14px;font-size:0.75rem;color:var(--text-muted);">* 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.</p>
-      <button class="btn-blue" @click="showSizeGuide=false" style="width:100%;margin-top:16px;padding:10px;">확인</button>
+      <button class="btn-blue" @click="uiState.showSizeGuide=false" style="width:100%;margin-top:16px;padding:10px;">확인</button>
     </div>
   </div>
 
   </teleport>
 
   <!-- ══ 고정 하단 바 ══ -->
-  <div v-if="product && showBottomBar"
+  <div v-if="product && uiState.showBottomBar"
     style="position:fixed;bottom:0;left:0;right:0;z-index:100;padding:10px 24px;display:flex;justify-content:center;align-items:center;background:linear-gradient(to top, var(--bg-card) 0%, rgba(245,248,255,0.98) 100%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--border);box-shadow:0 -4px 18px rgba(80,100,160,0.08);">
     <div style="display:flex;align-items:center;gap:10px;max-width:760px;width:100%;">
       <div style="flex:1;min-width:0;overflow:hidden;">
@@ -1141,7 +1146,7 @@ window.Prod03View = {
   </div>
 
   <!-- ══ 바로구매 드로어 (우측) ══ -->
-  <template v-if="quickBuyOpen && product">
+  <template v-if="uiState.quickBuyOpen && product">
     <!-- 딤 오버레이 -->
     <div @click="quickBuyOpen=false"
       style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:150;transition:opacity .25s;"></div>
@@ -1194,7 +1199,7 @@ window.Prod03View = {
               <span :style="{ fontSize:'0.82rem', fontWeight:'600', color: sizeError ? '#ef4444' : 'var(--text-secondary)' }">사이즈<span style="margin-left:2px;">*</span></span>
               <span v-if="sizeError" style="font-size:0.75rem;color:#ef4444;font-weight:500;">필수 선택</span>
             </div>
-            <button @click="showSizeGuide=true" style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:0.75rem;font-weight:600;padding:0;text-decoration:underline;">사이즈 안내</button>
+            <button @click="uiState.showSizeGuide=true" style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:0.75rem;font-weight:600;padding:0;text-decoration:underline;">사이즈 안내</button>
           </div>
           <div :style="{
             display:'flex', flexWrap:'wrap', gap:'6px', padding:'8px',

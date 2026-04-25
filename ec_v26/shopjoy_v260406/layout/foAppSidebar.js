@@ -4,7 +4,7 @@ window.foAppSidebar = {
   props: ['page', 'sidebarOpen', 'mobileOpen', 'config', 'navigate', 'cartCount', 'auth'],
   emits: ['toggle-sidebar', 'close-mobile'],
   setup(props, { emit }) {
-    const { ref, watch } = Vue;
+    const { ref, reactive, watch } = Vue;
 
     const MY_PAGES = ['myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt'];
     const isMenuActive = (page, menuId) => {
@@ -13,11 +13,7 @@ window.foAppSidebar = {
     };
 
     /* 토글 상태 (기본 모두 접힘) */
-    const sample0Open = ref(false);
-    const sample1Open = ref(false);
-    const sample2Open = ref(false);
-    const dispUiOpen  = ref(false);
-    const devToolsOpen = ref(false);
+    const uiState = reactive({ sample0Open: false, sample1Open: false, sample2Open: false, dispUiOpen: false, devToolsOpen: false });
 
     const SAMPLE0_ITEMS = [
       { menuId: 'sample01', menuNm: '01.gridCrud' },
@@ -66,11 +62,11 @@ window.foAppSidebar = {
 
     /* 현재 페이지가 속한 그룹 자동 펼침 */
     watch(() => props.page, (p) => {
-      if (SAMPLE0_ITEMS.some(i => i.menuId === p)) sample0Open.value = true;
-      if (SAMPLE1_ITEMS.some(i => i.menuId === p)) sample1Open.value = true;
-      if (SAMPLE2_ITEMS.some(i => i.menuId === p)) sample2Open.value = true;
-      if (DISP_UI_ITEMS.some(i => i.menuId === p)) dispUiOpen.value  = true;
-      if (DEV_TOOLS_ITEMS.some(i => i.menuId === p)) devToolsOpen.value = true;
+      if (SAMPLE0_ITEMS.some(i => i.menuId === p)) uiState.sample0Open = true;
+      if (SAMPLE1_ITEMS.some(i => i.menuId === p)) uiState.sample1Open = true;
+      if (SAMPLE2_ITEMS.some(i => i.menuId === p)) uiState.sample2Open = true;
+      if (DISP_UI_ITEMS.some(i => i.menuId === p)) uiState.dispUiOpen  = true;
+      if (DEV_TOOLS_ITEMS.some(i => i.menuId === p)) uiState.devToolsOpen = true;
     }, { immediate: true });
 
     const navTo = (menuId) => {
@@ -81,7 +77,7 @@ window.foAppSidebar = {
     const foSiteNo = window.FO_SITE_NO || '01';
     const showSamples = foSiteNo !== '01'; // Site 01은 샘플 메뉴 숨김
 
-    return { isMenuActive, sample0Open, sample1Open, sample2Open, dispUiOpen, devToolsOpen,
+    return { isMenuActive, uiState,
              SAMPLE0_ITEMS, SAMPLE1_ITEMS, SAMPLE2_ITEMS, DISP_UI_ITEMS, DEV_TOOLS_ITEMS, navTo, navToSite,
              showSamples, foSiteNo };
   },
@@ -115,13 +111,13 @@ window.foAppSidebar = {
 
     <!-- 개발도구 섹션 -->
     <div v-if="sidebarOpen" style="padding:12px 8px 0;">
-      <button type="button" @click.stop="devToolsOpen=!devToolsOpen"
+      <button type="button" @click.stop="uiState.devToolsOpen=!uiState.devToolsOpen"
         style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:4px 0;background:none;border:none;cursor:pointer;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
         <span>개발도구</span>
-        <span style="font-size:0.6rem;">{{ devToolsOpen ? '▲' : '▼' }}</span>
+        <span style="font-size:0.6rem;">{{ uiState.devToolsOpen ? '▲' : '▼' }}</span>
       </button>
     </div>
-    <template v-if="devToolsOpen">
+    <template v-if="uiState.devToolsOpen">
       <button v-for="item in DEV_TOOLS_ITEMS" :key="item.menuId || item.siteNo" type="button"
         @click.stop="item.menuId ? navTo(item.menuId) : navToSite(item.siteNo)"
         class="sidebar-link" :class="{active: item.menuId && page === item.menuId}"
@@ -135,13 +131,13 @@ window.foAppSidebar = {
     <template v-if="showSamples">
     <!-- 샘플0 (01~06) -->
     <div v-if="sidebarOpen" style="padding:12px 8px 0;">
-      <button type="button" @click.stop="sample0Open=!sample0Open"
+      <button type="button" @click.stop="uiState.sample0Open=!uiState.sample0Open"
         style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:4px 0;background:none;border:none;cursor:pointer;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
         <span>샘플0</span>
-        <span style="font-size:0.6rem;">{{ sample0Open ? '▲' : '▼' }}</span>
+        <span style="font-size:0.6rem;">{{ uiState.sample0Open ? '▲' : '▼' }}</span>
       </button>
     </div>
-    <template v-if="sample0Open">
+    <template v-if="uiState.sample0Open">
       <button v-for="item in SAMPLE0_ITEMS" :key="item.menuId" type="button"
         @click.stop="navTo(item.menuId)"
         class="sidebar-link" :class="{active: page === item.menuId}"
@@ -153,13 +149,13 @@ window.foAppSidebar = {
 
     <!-- 샘플1 (07~14) -->
     <div v-if="sidebarOpen" style="padding:12px 8px 0;">
-      <button type="button" @click.stop="sample1Open=!sample1Open"
+      <button type="button" @click.stop="uiState.sample1Open=!uiState.sample1Open"
         style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:4px 0;background:none;border:none;cursor:pointer;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
         <span>샘플1</span>
-        <span style="font-size:0.6rem;">{{ sample1Open ? '▲' : '▼' }}</span>
+        <span style="font-size:0.6rem;">{{ uiState.sample1Open ? '▲' : '▼' }}</span>
       </button>
     </div>
-    <template v-if="sample1Open">
+    <template v-if="uiState.sample1Open">
       <button v-for="item in SAMPLE1_ITEMS" :key="item.menuId" type="button"
         @click.stop="navTo(item.menuId)"
         class="sidebar-link" :class="{active: page === item.menuId}"
@@ -171,13 +167,13 @@ window.foAppSidebar = {
 
     <!-- 샘플2 (21~23) -->
     <div v-if="sidebarOpen" style="padding:12px 8px 0;">
-      <button type="button" @click.stop="sample2Open=!sample2Open"
+      <button type="button" @click.stop="uiState.sample2Open=!uiState.sample2Open"
         style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:4px 0;background:none;border:none;cursor:pointer;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
         <span>샘플2</span>
-        <span style="font-size:0.6rem;">{{ sample2Open ? '▲' : '▼' }}</span>
+        <span style="font-size:0.6rem;">{{ uiState.sample2Open ? '▲' : '▼' }}</span>
       </button>
     </div>
-    <template v-if="sample2Open">
+    <template v-if="uiState.sample2Open">
       <button v-for="item in SAMPLE2_ITEMS" :key="item.menuId" type="button"
         @click.stop="navTo(item.menuId)"
         class="sidebar-link" :class="{active: page === item.menuId}"
@@ -189,13 +185,13 @@ window.foAppSidebar = {
 
     <!-- 샘플 전시 (토글) -->
     <div v-if="sidebarOpen" style="padding:12px 8px 0;">
-      <button type="button" @click.stop="dispUiOpen=!dispUiOpen"
+      <button type="button" @click.stop="uiState.dispUiOpen=!uiState.dispUiOpen"
         style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:4px 0;background:none;border:none;cursor:pointer;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
         <span>샘플 전시</span>
-        <span style="font-size:0.6rem;">{{ dispUiOpen ? '▲' : '▼' }}</span>
+        <span style="font-size:0.6rem;">{{ uiState.dispUiOpen ? '▲' : '▼' }}</span>
       </button>
     </div>
-    <template v-if="dispUiOpen">
+    <template v-if="uiState.dispUiOpen">
       <button v-for="item in DISP_UI_ITEMS" :key="item.menuId" type="button"
         @click.stop="navTo(item.menuId)"
         class="sidebar-link" :class="{active: page === item.menuId}"

@@ -4,17 +4,17 @@ window.BoRefModal = {
   props: ['state'],
   emits: ['close'],
   setup(props, { emit }) {
-    const { ref, watch } = Vue;
+    const { reactive, watch } = Vue;
 
     const close = () => emit('close');
     const s = props.state;
 
     /* ── 각 타입별 데이터 ── */
-    const memberData  = ref(null);
-    const productData = ref(null);
-    const orderData   = ref(null);
-    const claimData   = ref(null);
-    const couponData  = ref(null);
+    const member = reactive({});
+    const product = reactive({});
+    const order = reactive({});
+    const claim = reactive({});
+    const coupon = reactive({});
 
     const API_MAP = {
       member:  (id) => window.boApi.get(`/bo/ec/mb/member/${id}`),
@@ -23,14 +23,14 @@ window.BoRefModal = {
       claim:   (id) => window.boApi.get(`/bo/ec/od/claim/${id}`),
       coupon:  (id) => window.boApi.get(`/bo/ec/pm/coupon/${id}`),
     };
-    const DATA_REF_MAP = { member: memberData, product: productData, order: orderData, claim: claimData, coupon: couponData };
+    const DATA_MAP = { member, product, order, claim, coupon };
 
     watch(() => [s.type, s.id], async ([type, id]) => {
-      Object.values(DATA_REF_MAP).forEach(r => { r.value = null; });
+      Object.values(DATA_MAP).forEach(obj => { Object.keys(obj).forEach(k => delete obj[k]); });
       if (!type || !id || !API_MAP[type]) return;
       try {
         const res = await API_MAP[type](id);
-        DATA_REF_MAP[type].value = res.data?.data || null;
+        if (res.data?.data) Object.assign(DATA_MAP[type], res.data.data);
       } catch (_) {}
     }, { immediate: true });
 
@@ -45,7 +45,7 @@ window.BoRefModal = {
       return map[status] || 'badge-gray';
     };
 
-    return { close, memberData, productData, orderData, claimData, couponData, badgeCls, s };
+    return { close, member, product, order, claim, coupon, badgeCls, s };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="close">
@@ -59,77 +59,77 @@ window.BoRefModal = {
 
     <!-- 회원 -->
     <template v-if="s.type==='member'">
-      <template v-if="memberData">
-        <div class="detail-row"><span class="detail-label">회원ID</span><span class="detail-value">{{ memberData.userId }}</span></div>
-        <div class="detail-row"><span class="detail-label">이름</span><span class="detail-value">{{ memberData.memberNm }}</span></div>
-        <div class="detail-row"><span class="detail-label">이메일</span><span class="detail-value">{{ memberData.email }}</span></div>
-        <div class="detail-row"><span class="detail-label">연락처</span><span class="detail-value">{{ memberData.phone }}</span></div>
-        <div class="detail-row"><span class="detail-label">등급</span><span class="detail-value"><span class="badge badge-purple">{{ memberData.gradeCd }}</span></span></div>
-        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(memberData.statusCd)">{{ memberData.statusCd }}</span></span></div>
-        <div class="detail-row"><span class="detail-label">가입일</span><span class="detail-value">{{ memberData.joinDate }}</span></div>
-        <div class="detail-row"><span class="detail-label">최근 로그인</span><span class="detail-value">{{ memberData.lastLogin }}</span></div>
-        <div class="detail-row"><span class="detail-label">주문수</span><span class="detail-value">{{ memberData.orderCount }}건</span></div>
-        <div class="detail-row"><span class="detail-label">총 구매액</span><span class="detail-value">{{ memberData.totalPurchase.toLocaleString() }}원</span></div>
+      <template v-if="member.userId">
+        <div class="detail-row"><span class="detail-label">회원ID</span><span class="detail-value">{{ member.userId }}</span></div>
+        <div class="detail-row"><span class="detail-label">이름</span><span class="detail-value">{{ member.memberNm }}</span></div>
+        <div class="detail-row"><span class="detail-label">이메일</span><span class="detail-value">{{ member.email }}</span></div>
+        <div class="detail-row"><span class="detail-label">연락처</span><span class="detail-value">{{ member.phone }}</span></div>
+        <div class="detail-row"><span class="detail-label">등급</span><span class="detail-value"><span class="badge badge-purple">{{ member.gradeCd }}</span></span></div>
+        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(member.statusCd)">{{ member.statusCd }}</span></span></div>
+        <div class="detail-row"><span class="detail-label">가입일</span><span class="detail-value">{{ member.joinDate }}</span></div>
+        <div class="detail-row"><span class="detail-label">최근 로그인</span><span class="detail-value">{{ member.lastLogin }}</span></div>
+        <div class="detail-row"><span class="detail-label">주문수</span><span class="detail-value">{{ member.orderCount }}건</span></div>
+        <div class="detail-row"><span class="detail-label">총 구매액</span><span class="detail-value">{{ member.totalPurchase.toLocaleString() }}원</span></div>
       </template>
       <div v-else style="color:#999;text-align:center;padding:20px;">회원 정보를 찾을 수 없습니다.</div>
     </template>
 
     <!-- 상품 -->
     <template v-else-if="s.type==='product'">
-      <template v-if="productData">
-        <div class="detail-row"><span class="detail-label">상품ID</span><span class="detail-value">{{ productData.productId }}</span></div>
-        <div class="detail-row"><span class="detail-label">상품명</span><span class="detail-value">{{ productData.prodNm }}</span></div>
-        <div class="detail-row"><span class="detail-label">카테고리</span><span class="detail-value">{{ productData.category }}</span></div>
-        <div class="detail-row"><span class="detail-label">가격</span><span class="detail-value">{{ productData.price.toLocaleString() }}원</span></div>
-        <div class="detail-row"><span class="detail-label">재고</span><span class="detail-value">{{ productData.stock }}개</span></div>
-        <div class="detail-row"><span class="detail-label">브랜드</span><span class="detail-value">{{ productData.brand }}</span></div>
-        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(productData.statusCd)">{{ productData.statusCd }}</span></span></div>
-        <div class="detail-row"><span class="detail-label">등록일</span><span class="detail-value">{{ productData.regDate }}</span></div>
+      <template v-if="product.productId">
+        <div class="detail-row"><span class="detail-label">상품ID</span><span class="detail-value">{{ product.productId }}</span></div>
+        <div class="detail-row"><span class="detail-label">상품명</span><span class="detail-value">{{ product.prodNm }}</span></div>
+        <div class="detail-row"><span class="detail-label">카테고리</span><span class="detail-value">{{ product.category }}</span></div>
+        <div class="detail-row"><span class="detail-label">가격</span><span class="detail-value">{{ product.price.toLocaleString() }}원</span></div>
+        <div class="detail-row"><span class="detail-label">재고</span><span class="detail-value">{{ product.stock }}개</span></div>
+        <div class="detail-row"><span class="detail-label">브랜드</span><span class="detail-value">{{ product.brand }}</span></div>
+        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(product.statusCd)">{{ product.statusCd }}</span></span></div>
+        <div class="detail-row"><span class="detail-label">등록일</span><span class="detail-value">{{ product.regDate }}</span></div>
       </template>
       <div v-else style="color:#999;text-align:center;padding:20px;">상품 정보를 찾을 수 없습니다.</div>
     </template>
 
     <!-- 주문 -->
     <template v-else-if="s.type==='order'">
-      <template v-if="orderData">
-        <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ orderData.orderId }}</span></div>
-        <div class="detail-row"><span class="detail-label">회원</span><span class="detail-value">{{ orderData.userNm }} (ID: {{ orderData.userId }})</span></div>
-        <div class="detail-row"><span class="detail-label">주문일시</span><span class="detail-value">{{ orderData.orderDate }}</span></div>
-        <div class="detail-row"><span class="detail-label">상품</span><span class="detail-value">{{ orderData.prodNm }}</span></div>
-        <div class="detail-row"><span class="detail-label">결제금액</span><span class="detail-value">{{ orderData.totalPrice.toLocaleString() }}원</span></div>
-        <div class="detail-row"><span class="detail-label">결제수단</span><span class="detail-value">{{ orderData.payMethodCd }}</span></div>
-        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(orderData.statusCd)">{{ orderData.statusCd }}</span></span></div>
+      <template v-if="order.orderId">
+        <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ order.orderId }}</span></div>
+        <div class="detail-row"><span class="detail-label">회원</span><span class="detail-value">{{ order.userNm }} (ID: {{ order.userId }})</span></div>
+        <div class="detail-row"><span class="detail-label">주문일시</span><span class="detail-value">{{ order.orderDate }}</span></div>
+        <div class="detail-row"><span class="detail-label">상품</span><span class="detail-value">{{ order.prodNm }}</span></div>
+        <div class="detail-row"><span class="detail-label">결제금액</span><span class="detail-value">{{ order.totalPrice.toLocaleString() }}원</span></div>
+        <div class="detail-row"><span class="detail-label">결제수단</span><span class="detail-value">{{ order.payMethodCd }}</span></div>
+        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(order.statusCd)">{{ order.statusCd }}</span></span></div>
       </template>
       <div v-else style="color:#999;text-align:center;padding:20px;">주문 정보를 찾을 수 없습니다.</div>
     </template>
 
     <!-- 클레임 -->
     <template v-else-if="s.type==='claim'">
-      <template v-if="claimData">
-        <div class="detail-row"><span class="detail-label">클레임ID</span><span class="detail-value">{{ claimData.claimId }}</span></div>
-        <div class="detail-row"><span class="detail-label">회원</span><span class="detail-value">{{ claimData.userNm }}</span></div>
-        <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ claimData.orderId }}</span></div>
-        <div class="detail-row"><span class="detail-label">유형</span><span class="detail-value"><span class="badge badge-orange">{{ claimData.type }}</span></span></div>
-        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(claimData.statusCd)">{{ claimData.statusCd }}</span></span></div>
-        <div class="detail-row"><span class="detail-label">상품명</span><span class="detail-value">{{ claimData.prodNm }}</span></div>
-        <div class="detail-row"><span class="detail-label">사유</span><span class="detail-value">{{ claimData.reasonCd }}</span></div>
-        <div class="detail-row"><span class="detail-label">신청일</span><span class="detail-value">{{ claimData.requestDate }}</span></div>
-        <div class="detail-row" v-if="claimData.refundAmount"><span class="detail-label">환불금액</span><span class="detail-value">{{ claimData.refundAmount.toLocaleString() }}원</span></div>
+      <template v-if="claim.claimId">
+        <div class="detail-row"><span class="detail-label">클레임ID</span><span class="detail-value">{{ claim.claimId }}</span></div>
+        <div class="detail-row"><span class="detail-label">회원</span><span class="detail-value">{{ claim.userNm }}</span></div>
+        <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ claim.orderId }}</span></div>
+        <div class="detail-row"><span class="detail-label">유형</span><span class="detail-value"><span class="badge badge-orange">{{ claim.type }}</span></span></div>
+        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(claim.statusCd)">{{ claim.statusCd }}</span></span></div>
+        <div class="detail-row"><span class="detail-label">상품명</span><span class="detail-value">{{ claim.prodNm }}</span></div>
+        <div class="detail-row"><span class="detail-label">사유</span><span class="detail-value">{{ claim.reasonCd }}</span></div>
+        <div class="detail-row"><span class="detail-label">신청일</span><span class="detail-value">{{ claim.requestDate }}</span></div>
+        <div class="detail-row" v-if="claim.refundAmount"><span class="detail-label">환불금액</span><span class="detail-value">{{ claim.refundAmount.toLocaleString() }}원</span></div>
       </template>
       <div v-else style="color:#999;text-align:center;padding:20px;">클레임 정보를 찾을 수 없습니다.</div>
     </template>
 
     <!-- 쿠폰 -->
     <template v-else-if="s.type==='coupon'">
-      <template v-if="couponData">
-        <div class="detail-row"><span class="detail-label">쿠폰ID</span><span class="detail-value">{{ couponData.couponId }}</span></div>
-        <div class="detail-row"><span class="detail-label">쿠폰명</span><span class="detail-value">{{ couponData.name }}</span></div>
-        <div class="detail-row"><span class="detail-label">코드</span><span class="detail-value">{{ couponData.code }}</span></div>
-        <div class="detail-row"><span class="detail-label">할인</span><span class="detail-value">{{ couponData.discountTypeCd==='rate'?couponData.discountValue+'%':couponData.discountTypeCd==='shipping'?'무료배송':couponData.discountValue.toLocaleString()+'원' }}</span></div>
-        <div class="detail-row"><span class="detail-label">최소주문</span><span class="detail-value">{{ couponData.minOrder ? couponData.minOrder.toLocaleString()+'원 이상' : '제한없음' }}</span></div>
-        <div class="detail-row"><span class="detail-label">발급대상</span><span class="detail-value">{{ couponData.issueTo }}</span></div>
-        <div class="detail-row"><span class="detail-label">만료일</span><span class="detail-value">{{ couponData.expiry }}</span></div>
-        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(couponData.statusCd)">{{ couponData.statusCd }}</span></span></div>
+      <template v-if="coupon.couponId">
+        <div class="detail-row"><span class="detail-label">쿠폰ID</span><span class="detail-value">{{ coupon.couponId }}</span></div>
+        <div class="detail-row"><span class="detail-label">쿠폰명</span><span class="detail-value">{{ coupon.name }}</span></div>
+        <div class="detail-row"><span class="detail-label">코드</span><span class="detail-value">{{ coupon.code }}</span></div>
+        <div class="detail-row"><span class="detail-label">할인</span><span class="detail-value">{{ coupon.discountTypeCd==='rate'?coupon.discountValue+'%':coupon.discountTypeCd==='shipping'?'무료배송':coupon.discountValue.toLocaleString()+'원' }}</span></div>
+        <div class="detail-row"><span class="detail-label">최소주문</span><span class="detail-value">{{ coupon.minOrder ? coupon.minOrder.toLocaleString()+'원 이상' : '제한없음' }}</span></div>
+        <div class="detail-row"><span class="detail-label">발급대상</span><span class="detail-value">{{ coupon.issueTo }}</span></div>
+        <div class="detail-row"><span class="detail-label">만료일</span><span class="detail-value">{{ coupon.expiry }}</span></div>
+        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(coupon.statusCd)">{{ coupon.statusCd }}</span></span></div>
       </template>
       <div v-else style="color:#999;text-align:center;padding:20px;">쿠폰 정보를 찾을 수 없습니다.</div>
     </template>
