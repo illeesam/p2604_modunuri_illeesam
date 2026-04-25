@@ -78,6 +78,21 @@
   inst.interceptors.response.use(function (res) {
     try { if (typeof global._showProgress === 'function') global._showProgress(false); } catch (_) {}
     console.log(TAG + ' ← ' + res.status, res.config && res.config.url);
+    try {
+      var cfg = res.config || {};
+      var method = (cfg.method || 'get').toUpperCase();
+      var displayUrl = cfg.url || '';
+      if (displayUrl.includes('localhost') || displayUrl.includes('127')) {
+        var portMatch = displayUrl.match(/:(\d+)(\/.*)?$/);
+        if (portMatch) displayUrl = ':' + portMatch[1] + (portMatch[2] || '');
+      }
+      var paramStr = cfg.params ? JSON.stringify(cfg.params) : '';
+      var dataStr  = cfg.data  ? (typeof cfg.data === 'string' ? cfg.data : JSON.stringify(cfg.data)) : '';
+      var detail   = [paramStr && ('params: ' + paramStr), dataStr && ('data: ' + dataStr)].filter(Boolean).join('\n');
+      global.dispatchEvent(new CustomEvent('api-success', {
+        detail: { scope: 'fo', method: method, url: displayUrl, status: res.status, detail: detail },
+      }));
+    } catch (_) {}
     return res;
   }, function (err) {
     try { if (typeof global._showProgress === 'function') global._showProgress(false); } catch (_) {}

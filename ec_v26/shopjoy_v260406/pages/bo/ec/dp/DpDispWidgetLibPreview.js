@@ -228,11 +228,11 @@ window.DpDispWidgetLibPreview = {
         if (!map[top][rest]) map[top][rest] = [];
         map[top][rest].push(lib);
       };
-      window.safeArrayUtils.safeForEach(cfFilteredLibs, lib => {
+      window.safeArrayUtils.safeForEach(cfFilteredLibs.value, lib => {
         if (!lib.usedPaths || !lib.usedPaths.length) {
           addToPath(lib, '(미등록) > (미등록)');
         } else {
-          lib.uwindow.safeArrayUtils.safeForEach(sedPaths, p => addToPath(lib, p));
+          window.safeArrayUtils.safeForEach(lib.usedPaths, p => addToPath(lib, p));
         }
       });
       return Object.keys(map).sort().map(top => ({
@@ -269,7 +269,7 @@ window.DpDispWidgetLibPreview = {
         if (firstNode && firstNode.label) openNodes.add(firstNode.label);
       }
     });
-    const expandAll = () => { window.safeArrayUtils.safeForEach(cfTree, n => openNodes.add(n.label)); openNodes.add('__root__'); };
+    const expandAll = () => { window.safeArrayUtils.safeForEach(cfTree.value, n => openNodes.add(n.label)); openNodes.add('__root__'); };
     const collapseAll = () => { openNodes.clear(); openNodes.add('__root__'); };
     const onItemDragStart = (e, lib) => {
       window._dragWidgetLib  = lib;
@@ -307,6 +307,10 @@ window.DpDispWidgetLibPreview = {
       tablet:  { label:'📟 태블릿', width:'768px' },
       mobile:  { label:'📱 모바일', width:'375px' },
     };
+
+    /* 실제컨텐츠 토글 */
+    const uiState = reactive({ dashDragOver: false, showRealContent: false, selectedLibId: null, previewGrid: 'grid1', viewportMode: 'desktop', dragOverIdx: -1, spanPopupIdx: -1});
+
     /* auto-fill 반응형: 뷰포트 width 제약 + 브라우저 창 리사이즈 모두 반응 */
     const cfAutoGridCols = computed(() => {
       const map = {
@@ -317,9 +321,6 @@ window.DpDispWidgetLibPreview = {
       };
       return map[uiState.previewGrid] || 'repeat(1,1fr)';
     });
-
-    /* 실제컨텐츠 토글 */
-    const uiState = reactive({ dashDragOver: false, showRealContent: false, selectedLibId: null, previewGrid: 'grid1', viewportMode: 'desktop', dragOverIdx: -1, spanPopupIdx: -1});
 
     /* ── 그리드 슬롯 (탭별 동적 배열) ── */
     const makeInit = (cols) => Array(cols * 2).fill(null);

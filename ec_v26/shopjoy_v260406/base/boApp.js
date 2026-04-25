@@ -193,6 +193,13 @@
         showToast(msg, 'error', 0, d.errorDetails || '');
       });
 
+      /* API 성공 → toast info 출력 (boAxios 에서 window.dispatchEvent('api-success')) */
+      window.addEventListener('api-success', (ev) => {
+        const d = ev.detail || {};
+        const msg = `${d.method} ${d.url} ${d.status}`;
+        showToast(msg, 'info', 3000, d.detail || '');
+      });
+
       /* API 에러 → 오류 페이지 전환 (boAxios 에서 window.dispatchEvent('api-error')) */
       window.addEventListener('api-error', (ev) => {
         const d = ev.detail || {};

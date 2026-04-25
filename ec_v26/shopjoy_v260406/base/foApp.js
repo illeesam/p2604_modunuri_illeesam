@@ -41,6 +41,13 @@
       showToast(msg, 'error', d.errorDetails || '');
     });
 
+    /* API 성공 → toast info 출력 (foAxios 에서 window.dispatchEvent('api-success')) */
+    window.addEventListener('api-success', (ev) => {
+      const d = ev.detail || {};
+      const msg = `${d.method} ${d.url} ${d.status}`;
+      showToast(msg, 'info', 3000, d.detail || '');
+    });
+
     /* API 에러 → 오류 페이지 이동 (baseAxios 계열에서 window dispatchEvent 호출) */
     window.addEventListener('api-error', (ev) => {
       const d = ev.detail || {};
