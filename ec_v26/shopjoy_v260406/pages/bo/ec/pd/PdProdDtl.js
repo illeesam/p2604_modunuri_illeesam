@@ -171,10 +171,7 @@ window.PdProdDtl = {
     };
     const cfTotalStock = computed(() => window.safeArrayUtils.safeFilter(skus, s => s.useYn === 'Y').reduce((a, s) => a + (Number(s.stock) || 0), 0));
 
-    // ── SKU 필터 (1단/2단/재고)
-    const skuFilter1     = ref('');
-    const skuFilter2     = ref('');
-     // '' | 'in' | 'out'
+    // ── SKU 필터 (1단/2단/재고) - uiState 참조
     const cfSkuFilter1Options = computed(() => [...new Set(skus.map(s => s._nm1).filter(Boolean))]);
     const cfSkuFilter2Options = computed(() => {
       const base = uiState.skuFilter1 ? skus.filter(s => s._nm1 === uiState.skuFilter1) : skus;
@@ -322,11 +319,8 @@ window.PdProdDtl = {
 
     // ── 카테고리 N개 목록 (pd_category_prod)
     const prodCategories = reactive([]); // [{ categoryId, categoryNm, depth }]
-    const catPickerOpen   = ref(false);
-        const catDragIdx      = ref(null);
-    const catDragoverIdx  = ref(null);
     const cfCatPickerList = computed(() => {
-      const q = catPickerSearch.value.trim().toLowerCase();
+      const q = uiState.catPickerSearch.trim().toLowerCase();
       const already = new Set(prodCategories.map(c => String(c.categoryId)));
       return (categories||[])
         .filter(c => {
