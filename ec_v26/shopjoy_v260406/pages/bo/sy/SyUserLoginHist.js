@@ -5,20 +5,16 @@ window.SyUserLoginHist = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const uiState = reactive({ descOpen: false, activeTab: 'log', dateRange: '이번달', dateStart: '', dateEnd: '', searchKw: '', searchResult: '', searchIp: '', searchTokenAction: ''});;
+    const uiState = reactive({ descOpen: false, activeTab: 'log', dateRange: '이번달', dateStart: '', dateEnd: '', searchKw: '', searchResult: '', searchIp: '', searchTokenAction: '' });
      // 'log' | 'hist' | 'token'
 
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-            const dateEnd   = ref('');
     const onDateRangeChange = () => {
       if (uiState.dateRange) { const r = window.boCmUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
-    const searchKw          = ref('');
-    const searchResult      = ref('');
-    const searchIp          = ref('');
-        const pager = reactive({ page: 1, size: 20 });
+    const pager = reactive({ page: 1, size: 20 });
 
     const boUserList = reactive([]);
     const cfBoUsers = computed(() => boUserList);
@@ -183,7 +179,6 @@ window.SyUserLoginHist = {
     return {
       uiState, activeTab, onTabChange,
       DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange,
-      searchKw, searchResult, searchIp, searchTokenAction,
       pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, cfSummary,
       expandedRows, toggleRow, isExpanded,
       fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge,
@@ -211,18 +206,18 @@ window.SyUserLoginHist = {
         <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
       </select>
       <input type="date" v-model="dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="dateEnd" style="width:140px" />
-      <select v-model="searchResult" style="width:130px">
+      <select v-model="uiState.searchResult" style="width:130px">
         <option value="">로그인결과 전체</option>
         <option value="SUCCESS">성공</option><option value="FAIL_PW">비밀번호오류</option>
         <option value="FAIL_LOCKED">계정잠금</option><option value="FAIL_NOT_FOUND">없는계정</option>
       </select>
-      <select v-model="searchTokenAction" style="width:110px">
+      <select v-model="uiState.searchTokenAction" style="width:110px">
         <option value="">토큰액션 전체</option>
         <option value="ISSUE">발급</option><option value="REFRESH">갱신</option>
         <option value="REVOKE">폐기</option><option value="EXPIRE">만료</option>
       </select>
-      <input v-model="searchIp" placeholder="IP 주소" style="width:140px" @keyup.enter="onSearch" />
-      <input v-model="searchKw" placeholder="사용자ID / 이름 / 부서" style="width:190px" @keyup.enter="onSearch" />
+      <input v-model="uiState.searchIp" placeholder="IP 주소" style="width:140px" @keyup.enter="onSearch" />
+      <input v-model="uiState.searchKw" placeholder="사용자ID / 이름 / 부서" style="width:190px" @keyup.enter="onSearch" />
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary" @click="onReset">초기화</button>

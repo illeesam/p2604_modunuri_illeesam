@@ -4,7 +4,10 @@ window.Prod03List = {
   props: ['navigate', 'config', 'products', 'selectProduct', 'toggleLike', 'isLiked'],
   setup(props) {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, searchText: '', priceMin: '', priceMax: '', currentPage: 1, mobileCount: PAGE_SIZE, isMobile: window.innerWidth < 768});;
+    const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
+
+    const PAGE_SIZE   = 12;
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, searchText: '', priceMin: '', priceMax: '', currentPage: 1, mobileCount: PAGE_SIZE, isMobile: window.innerWidth < 768 });
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -25,10 +28,6 @@ window.Prod03List = {
         fnLoadCodes();
       }
     });
-    const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
-
-    /* ===== UI State ===== */
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, searchText: '', priceMin: '', priceMax: '', currentPage: 1, mobileCount: PAGE_SIZE, isMobile: window.innerWidth < 768});
 
     /* ── 상품 이미지 자동 할당 ── */
     const IMG_BASE = 'assets/cdn/prod/img/shop/product';
@@ -81,9 +80,6 @@ window.Prod03List = {
     };
 
     /* ── 필터 상태 ── */
-    const searchText    = ref('');
-    const priceMin      = ref('');
-    const priceMax      = ref('');
     const selColors     = reactive(new Set());
     const selSizes      = reactive(new Set());
     const selCats       = reactive(new Set());
@@ -147,8 +143,7 @@ window.Prod03List = {
     });
 
     /* ── PC 페이지네이션 ── */
-    const PAGE_SIZE   = 12;
-        const cfTotalPages  = computed(() => Math.max(1, Math.ceil(cfFilteredProducts.value.length / PAGE_SIZE)));
+    const cfTotalPages  = computed(() => Math.max(1, Math.ceil(cfFilteredProducts.value.length / PAGE_SIZE)));
     const cfPagedProducts = computed(() => {
       const s = (uiState.currentPage - 1) * PAGE_SIZE;
       return cfFilteredProducts.value.slice(s, s + PAGE_SIZE);
@@ -168,7 +163,6 @@ window.Prod03List = {
     });
 
     /* ── 모바일 무한스크롤 ── */
-    const mobileCount   = ref(PAGE_SIZE);
     const cfMobileProducts = computed(() => cfFilteredProducts.value.slice(0, uiState.mobileCount));
     const cfHasMore       = computed(() => uiState.mobileCount < cfFilteredProducts.value.length);
 
@@ -177,7 +171,14 @@ window.Prod03List = {
     window.addEventListener('resize', onResize);
 
     /* ── 필터 변경 시 페이지 리셋 ── */
-    watch([searchText, priceMin, priceMax, selColors, selSizes, selCats], () => {
+    watch([
+      () => uiState.searchText,
+      () => uiState.priceMin,
+      () => uiState.priceMax,
+      selColors,
+      selSizes,
+      selCats
+    ], () => {
       uiState.currentPage = 1;
       uiState.mobileCount = PAGE_SIZE;
     });
@@ -209,15 +210,17 @@ window.Prod03List = {
     return {
       uiState,
       loading, allProducts, cfFilteredProducts,
-      searchText, priceMin, priceMax,
       selColors, selSizes, selCats,
       cfAllColors, cfAllSizes, cfAllCats,
       toggleColor, toggleSize, toggleCat, cfHasFilter, clearFilters,
       fnDiscountRate, fnFmtPrice, fnCategoryLabel,
-      currentPage, cfTotalPages, cfPagedProducts, cfPageNums, PAGE_SIZE,
-      mobileCount, cfMobileProducts, cfHasMore,
-      isMobile,
-    , uiState, codes };
+      cfTotalPages, cfPagedProducts, cfPageNums, PAGE_SIZE,
+      cfMobileProducts, cfHasMore,
+      codes,
+      onResize,
+      setupObserver,
+      observer
+    };
   },
   template: /* html */ `
 <div class="page-wrap">
@@ -270,7 +273,7 @@ window.Prod03List = {
   <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;">
     <div style="flex:1;position:relative;">
       <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:0.95rem;color:var(--text-muted);">🔍</span>
-      <input v-model="searchText" type="text" placeholder="상품명, 태그 검색..."
+      <input v-model="uiState.searchText" type="text" placeholder="상품명, 태그 검색..."
         style="width:100%;padding:10px 14px 10px 36px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;box-sizing:border-box;"
         @focus="$event.target.style.borderColor='var(--blue)'"
         @blur="$event.target.style.borderColor='var(--border)'" />
@@ -282,7 +285,7 @@ window.Prod03List = {
       <span>{{ uiState.filterOpen ? '필터 닫기' : '필터' }}</span>
       <span v-if="cfHasFilter && !uiState.filterOpen"
         style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;background:#f97316;color:#fff;border-radius:9px;font-size:0.7rem;font-weight:700;">
-        {{ (selColors.size+selSizes.size+selCats.size+(priceMin?1:0)+(priceMax?1:0)) }}
+        {{ (selColors.size+selSizes.size+selCats.size+(uiState.priceMin?1:0)+(uiState.priceMax?1:0)) }}
       </span>
     </button>
   </div>
@@ -296,7 +299,7 @@ window.Prod03List = {
       <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.05em;">💰 판매가 구간</div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <div style="position:relative;">
-          <input v-model="priceMin" type="number" placeholder="최소"
+          <input v-model="uiState.priceMin" type="number" placeholder="최소"
             style="width:110px;padding:7px 28px 7px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.85rem;outline:none;"
             @focus="$event.target.style.borderColor='var(--blue)'"
             @blur="$event.target.style.borderColor='var(--border)'" />
@@ -304,7 +307,7 @@ window.Prod03List = {
         </div>
         <span style="color:var(--text-muted);font-size:0.9rem;">~</span>
         <div style="position:relative;">
-          <input v-model="priceMax" type="number" placeholder="최대"
+          <input v-model="uiState.priceMax" type="number" placeholder="최대"
             style="width:110px;padding:7px 28px 7px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.85rem;outline:none;"
             @focus="$event.target.style.borderColor='var(--blue)'"
             @blur="$event.target.style.borderColor='var(--border)'" />
@@ -312,9 +315,9 @@ window.Prod03List = {
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
           <button v-for="r in [{label:'~3만',max:30000},{label:'3~5만',min:30000,max:50000},{label:'5~10만',min:50000,max:100000},{label:'10만~',min:100000}]" :key="r.label"
-            @click="priceMin=r.min||'';priceMax=r.max||''"
+            @click="uiState.priceMin=r.min||'';uiState.priceMax=r.max||''"
             style="padding:5px 10px;border:1px solid var(--border);border-radius:20px;background:var(--bg-base);cursor:pointer;font-size:0.75rem;font-weight:600;color:var(--text-secondary);transition:all 0.15s;"
-            :style="priceMin==(r.min||'')&&priceMax==(r.max||'')?'background:var(--blue);color:#fff;border-color:var(--blue);':''">
+            :style="uiState.priceMin==(r.min||'')&&uiState.priceMax==(r.max||'')?'background:var(--blue);color:#fff;border-color:var(--blue);':''">
             {{ r.label }}
           </button>
         </div>

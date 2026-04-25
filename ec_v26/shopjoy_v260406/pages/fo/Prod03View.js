@@ -4,7 +4,9 @@ window.Prod03View = {
   props: ['navigate', 'config', 'product', 'addToCart', 'showToast', 'showAlert', 'toggleLike', 'isLiked'],
   setup(props) {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', detailSecRef: null, sizeSecRef: null, reviewSecRef: null, styleSecRef: null, reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy'});;
+    const { ref, computed, onMounted, onBeforeUnmount, watch, reactive } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy' });
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -25,18 +27,6 @@ window.Prod03View = {
         fnLoadCodes();
       }
     });
-    const { ref, computed, onMounted, onBeforeUnmount, watch, reactive } = Vue;
-
-    /* ===== UI State ===== */
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', detailSecRef: null, sizeSecRef: null, reviewSecRef: null, styleSecRef: null, reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy'});
-
-    /* ── 이미지 갤러리 ── */
-    
-    /* ── 구매 옵션 ── */
-        const selectedSize  = ref(null);
-    const qty           = ref(1);
-    const colorError    = ref('');
-    const sizeError     = ref('');
 
     /* ── 탭 ── */
     const TABS = [
@@ -45,15 +35,15 @@ window.Prod03View = {
       { id: 'review', label: '상품평' },
       { id: 'style',  label: '스타일' },
     ];
-    const activeTab    = ref('detail');
+
+    /* ── DOM Refs (ref만 유지) ── */
     const tabBarRef    = ref(null);
     const buyBtnRef    = ref(null);
-        const sizeSecRef   = ref(null);
-        const styleSecRef  = ref(null);
-
-    /* ── 상품평 ── */
-    const reviewFilter   = ref('최신순');
-            const photoGridPageSize = 12;
+    const detailSecRef = ref(null);
+    const sizeSecRef   = ref(null);
+    const reviewSecRef = ref(null);
+    const styleSecRef  = ref(null);
+    const photoGridPageSize = 12;
 
     /* ── 사이즈 가이드 ── */
     const sizeGuideRows = [
@@ -536,20 +526,18 @@ window.Prod03View = {
     return {
       uiState,
       selectedImg,
-      selectedColor, selectedSize, qty, colorError, sizeError,
-      TABS, activeTab, tabBarRef, detailSecRef, sizeSecRef, reviewSecRef, styleSecRef,
-      reviewFilter, selectedReview,
-      photoNavPrev, photoNavNext, cfPhotoNavIdx,
-      photoGridPage, cfPhotoGridPageCount, cfPhotoGridItems, photoGridPrev, photoGridNext,
+      cfPhotoGridPageCount, cfPhotoGridItems, photoGridPrev, photoGridNext,
       openPhotoFromGrid, openPhotoFromList, closePhotoDetail,
       sizeGuideRows, styleItems,
       cfMockImages, cfMockReviews, cfReviewsWithPhoto, cfFilteredReviews, cfAvgRating, cfRatingDist,
-      tabFixedTop, tabFixedLeft, tabFixedW, tabPlaceholderH,
-      drawerMode, cfQuickBuyTotal, cfDisplayPrice, getSizeDelta,
+      cfQuickBuyTotal, cfDisplayPrice, getSizeDelta,
+      TABS, tabBarRef, sizeSecRef, reviewSecRef, styleSecRef,
+      photoNavPrev, photoNavNext, cfPhotoNavIdx,
       scrollToTab, fnCategoryLabel, stars, colorStatus, sizeStatus,
       buyBtnRef,
       selectColor, selectSize, handleAddToCart, handleBuyNow, openQuickBuy, openCartDrawer, execBuyNow, execCartFromDrawer,
-    , uiState, codes };
+      codes
+    };
   },
 
   template: /* html */ `
@@ -692,7 +680,7 @@ window.Prod03View = {
                   <span v-if="c.priceDelta" style="font-size:0.58rem;font-weight:700;color:var(--blue);white-space:nowrap;line-height:1;">+{{ c.priceDelta.toLocaleString('ko-KR') }}</span>
                 </div>
               </div>
-              <div v-if="colorError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ colorError }}</div>
+              <div v-if="uiState.colorError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ uiState.colorError }}</div>
             </div>
 
             <!-- 사이즈 선택 (FREE 또는 미설정이면 숨김) -->
@@ -709,10 +697,10 @@ window.Prod03View = {
                   :style="{
                     padding:'7px 14px',borderRadius:'6px',fontSize:'0.82rem',position:'relative',
                     cursor: sizeStatus(s)==='ok' ? 'pointer' : 'not-allowed',
-                    border: selectedSize===s ? '2px solid var(--blue)' : sizeStatus(s)==='ok' ? '2px solid var(--border)' : '2px solid #e0e0e0',
-                    background: selectedSize===s ? 'var(--blue-dim)' : sizeStatus(s)==='ok' ? 'var(--bg-card)' : '#f5f5f5',
-                    color: selectedSize===s ? 'var(--blue)' : sizeStatus(s)==='ok' ? 'var(--text-secondary)' : '#bbb',
-                    fontWeight: selectedSize===s ? '700' : '500',
+                    border: uiState.selectedSize===s ? '2px solid var(--blue)' : sizeStatus(s)==='ok' ? '2px solid var(--border)' : '2px solid #e0e0e0',
+                    background: uiState.selectedSize===s ? 'var(--blue-dim)' : sizeStatus(s)==='ok' ? 'var(--bg-card)' : '#f5f5f5',
+                    color: uiState.selectedSize===s ? 'var(--blue)' : sizeStatus(s)==='ok' ? 'var(--text-secondary)' : '#bbb',
+                    fontWeight: uiState.selectedSize===s ? '700' : '500',
                     textDecoration: sizeStatus(s)!=='ok' ? 'line-through' : 'none',
                     opacity: sizeStatus(s)!=='ok' ? '0.7' : '1',
                     transition:'all .15s',
@@ -721,25 +709,25 @@ window.Prod03View = {
                   <span v-else-if="sizeStatus(s)==='stop'" style="position:absolute;top:-7px;right:-4px;font-size:0.55rem;background:#9ca3af;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.2;">중지</span>
                 </button>
               </div>
-              <div v-if="sizeError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ sizeError }}</div>
+              <div v-if="uiState.sizeError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ uiState.sizeError }}</div>
             </div>
 
             <!-- 수량 -->
             <div style="margin-bottom:20px;">
               <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:10px;">수량</label>
               <div style="display:flex;align-items:center;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;width:fit-content;">
-                <button @click="qty>1&&qty--" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">−</button>
-                <span style="min-width:44px;text-align:center;font-size:0.9rem;font-weight:700;color:var(--text-primary);">{{ qty }}</span>
-                <button @click="qty++" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">+</button>
+                <button @click="uiState.qty>1&&uiState.qty--" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">−</button>
+                <span style="min-width:44px;text-align:center;font-size:0.9rem;font-weight:700;color:var(--text-primary);">{{ uiState.qty }}</span>
+                <button @click="uiState.qty++" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">+</button>
               </div>
             </div>
 
             <!-- 선택 요약 -->
-            <div v-if="selectedColor||selectedSize"
+            <div v-if="uiState.selectedColor||uiState.selectedSize"
               style="background:var(--bg-base);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:0.82rem;color:var(--text-secondary);line-height:1.9;">
-              <div v-if="selectedColor"><span style="font-weight:600;color:var(--text-primary);">색상:</span> {{ selectedColor.name }}</div>
-              <div v-if="selectedSize"><span style="font-weight:600;color:var(--text-primary);">사이즈:</span> {{ selectedSize }}</div>
-              <div><span style="font-weight:600;color:var(--text-primary);">수량:</span> {{ qty }}개</div>
+              <div v-if="uiState.selectedColor"><span style="font-weight:600;color:var(--text-primary);">색상:</span> {{ uiState.selectedColor.name }}</div>
+              <div v-if="uiState.selectedSize"><span style="font-weight:600;color:var(--text-primary);">사이즈:</span> {{ uiState.selectedSize }}</div>
+              <div><span style="font-weight:600;color:var(--text-primary);">수량:</span> {{ uiState.qty }}개</div>
             </div>
 
             <!-- 버튼 -->
@@ -800,9 +788,9 @@ window.Prod03View = {
           :style="{
             padding:'13px 22px',background:'none',cursor:'pointer',
             border:'none',
-            borderBottom:activeTab===tab.id?'2px solid var(--blue)':'2px solid transparent',
-            color:activeTab===tab.id?'var(--blue)':'var(--text-secondary)',
-            fontWeight:activeTab===tab.id?'700':'500',
+            borderBottom:uiState.activeTab===tab.id?'2px solid var(--blue)':'2px solid transparent',
+            color:uiState.activeTab===tab.id?'var(--blue)':'var(--text-secondary)',
+            fontWeight:uiState.activeTab===tab.id?'700':'500',
             fontSize:'0.88rem',transition:'all .15s',whiteSpace:'nowrap',
             marginBottom:'-2px',
           }">{{ tab.label }}</button>
@@ -923,13 +911,13 @@ window.Prod03View = {
         <!-- 정렬 -->
         <div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;">
           <button v-for="f in ['최신순','별점높은순','별점낮은순','도움순']" :key="f"
-            @click="reviewFilter=f"
+            @click="uiState.reviewFilter=f"
             :style="{
-              padding:'5px 14px',border:reviewFilter===f?'1.5px solid var(--blue)':'1.5px solid var(--border)',
+              padding:'5px 14px',border:uiState.reviewFilter===f?'1.5px solid var(--blue)':'1.5px solid var(--border)',
               borderRadius:'20px',cursor:'pointer',fontSize:'0.8rem',
-              background:reviewFilter===f?'var(--blue-dim)':'var(--bg-card)',
-              color:reviewFilter===f?'var(--blue)':'var(--text-secondary)',
-              fontWeight:reviewFilter===f?'700':'400',
+              background:uiState.reviewFilter===f?'var(--blue-dim)':'var(--bg-card)',
+              color:uiState.reviewFilter===f?'var(--blue)':'var(--text-secondary)',
+              fontWeight:uiState.reviewFilter===f?'700':'400',
             }">{{ f }}</button>
         </div>
 
