@@ -131,7 +131,7 @@ window.SyPostman = {
       }
       return result;
     };
-    const flatTree = computed(() => flattenTree(treeRoot));
+    const cfFlatTree = computed(() => flattenTree(treeRoot));
 
     /* ===== Settings (localStorage 자동저장) ===== */
     const SETTINGS_KEY = 'sj_admin_postman_v1';

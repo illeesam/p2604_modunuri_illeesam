@@ -106,11 +106,11 @@ window.SyBizUserMng = {
     const setBizPage    = n => { if(n>=1&&n<=cfBizTotalPages.value) bizPager.page=n; };
 
     const fnVendorStatusBadge = (s) => ({ ACTIVE:'badge-green', SUSPENDED:'badge-orange', TERMINATED:'badge-red' }[s] || 'badge-gray');
-    const vendorStatusLabel = (s) => ({ ACTIVE:'운영중', SUSPENDED:'중지', TERMINATED:'종료' }[s] || s);
+    const fnVendorStatusLabel = (s) => ({ ACTIVE:'운영중', SUSPENDED:'중지', TERMINATED:'종료' }[s] || s);
     const fnVendorTypeBadge   = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
-    const vendorTypeLabel   = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd)||[,'?'])[1];
+    const fnVendorTypeLabel   = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd)||[,'?'])[1];
     const fnStatusBadge = (s) => ({ ACTIVE:'badge-green', LEFT:'badge-gray', SUSPENDED:'badge-orange' }[s]||'badge-gray');
-    const statusLabel = (s) => ({ ACTIVE:'재직', LEFT:'퇴직', SUSPENDED:'중지' }[s]||s);
+    const fnStatusLabel = (s) => ({ ACTIVE:'재직', LEFT:'퇴직', SUSPENDED:'중지' }[s]||s);
 
     const pickVendorRow = (v) => {
       searchVendorId.value = v.vendorId;
@@ -346,23 +346,23 @@ window.SyBizUserMng = {
         .flatMap(m=>[{...m,_depth:depth,_perm:permBy[m.menuId]||fallback},...buildMenu(m.menuId,depth+1)]);
       return buildMenu(null, 0);
     });
-    const permBadgeColor = (p) => ({관리:'#f59e0b',쓰기:'#16a34a',읽기:'#2563eb',차단:'#e8587a'}[p]||'#9ca3af');
+    const fnPermBadgeColor = (p) => ({관리:'#f59e0b',쓰기:'#16a34a',읽기:'#2563eb',차단:'#e8587a'}[p]||'#9ca3af');
 
     return {
       loading, roleLoading,
-      vendorUsers, cfVendorMap, vendorNm, vendorTypeCd, vendorSummary,
+      vendorUsers, cfVendorMap, fnVendorNm, fnVendorTypeCd, fnVendorSummary,
       vendors, cfVendorList, bizPager, cfBizTotalPages, cfBizPageNums, cfBizPagedRows, setBizPage,
       searchVendorId, bizKw, bizVendorFlt, bizStatusFlt, BIZ_STATUS, applied,
-      pickVendorRow, fnVendorStatusBadge, vendorStatusLabel, fnVendorTypeBadge, vendorTypeLabel,
+      pickVendorRow, fnVendorStatusBadge, fnVendorStatusLabel, fnVendorTypeBadge, fnVendorTypeLabel,
       vendorPickOpen, onVendorPicked, VENDOR_TYPES,
       treeRoleCat, cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
-      STATUS, fnStatusBadge, statusLabel,
+      STATUS, fnStatusBadge, fnStatusLabel,
       cfFiltered, cfPagedRows, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange,
       formMode, formData, openNew, openEdit, closeForm, handleSaveForm, handleDeleteRow,
       userRoles, roleModalOpen, roleModalTemp, roleTreeExpanded,
       openRoleModal, closeRoleModal, confirmRoleModal, handleDeleteRole,
       toggleRoleNode, pickRoleInModal, cfFormRoleTree, cfFormAllowedRootCode,
-      roleNmByCode, cfSelectedModalRole, cfModalMenuList, permBadgeColor,
+      roleNmByCode, cfSelectedModalRole, cfModalMenuList, fnPermBadgeColor,
       sendJoinMail: () => {
         if (!formData.vendorUserEmail) { props.showToast('이메일을 입력해주세요.', 'warning'); return; }
         props.showToast(formData.vendorUserEmail + ' 로 회원가입 메일을 보냈습니다.', 'success');
@@ -382,7 +382,7 @@ window.SyBizUserMng = {
     <div class="search-bar">
       <span class="search-label">업체</span>
       <div :style="{display:'flex',alignItems:'center',gap:'8px',flex:1,maxWidth:'480px',padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',background:'#f5f5f7',color:searchVendorId!=null?'#374151':'#9ca3af',fontWeight:searchVendorId!=null?600:400,fontSize:'12px'}">
-        <span style="flex:1;">{{ searchVendorId != null ? vendorSummary(searchVendorId) : '업체 선택...' }}</span>
+        <span style="flex:1;">{{ searchVendorId != null ? fnVendorSummary(searchVendorId) : '업체 선택...' }}</span>
         <button type="button" @click="vendorPickOpen=true" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}">🔍</button>
         <button v-if="searchVendorId!=null" type="button" @click="searchVendorId=null;applied.vendorId=null;vendorUsers.splice(0)" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #fca5a5',borderRadius:'50%',fontSize:'11px',color:'#dc2626',padding:'0',fontWeight:700}">✕</button>
       </div>
@@ -408,7 +408,7 @@ window.SyBizUserMng = {
         <tr v-for="v in cfBizPagedRows" :key="v.vendorId"
           :style="{cursor:'pointer',background:searchVendorId===v.vendorId?'#fff0f4':'transparent'}"
           @click="pickVendorRow(v)">
-          <td><span class="badge" :class="fnVendorTypeBadge(v.vendorTypeCd)" style="font-size:10px;">{{ vendorTypeLabel(v.vendorTypeCd) }}</span></td>
+          <td><span class="badge" :class="fnVendorTypeBadge(v.vendorTypeCd)" style="font-size:10px;">{{ fnVendorTypeLabel(v.vendorTypeCd) }}</span></td>
           <td style="font-weight:600;">{{ v.vendorNm }}</td>
           <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;">{{ v.bizNo }}</code></td>
           <td>{{ v.ceo }}</td>
@@ -458,13 +458,13 @@ window.SyBizUserMng = {
           <tbody>
             <tr v-if="cfPagedRows.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">{{ searchVendorId == null ? '업체를 선택해주세요.' : '데이터가 없습니다.' }}</td></tr>
             <tr v-for="u in cfPagedRows" :key="u.vendorUserId" :style="formMode&&formData.vendorUserId===u.vendorUserId?'background:#fff8f9;':''">
-              <td style="font-weight:600;color:#2563eb;font-size:12px;">{{ vendorNm(u.vendorId) }}</td>
+              <td style="font-weight:600;color:#2563eb;font-size:12px;">{{ fnVendorNm(u.vendorId) }}</td>
               <td>{{ u.memberNm }}</td>
               <td style="font-size:11.5px;">{{ u.positionCd }}</td>
               <td style="font-size:11.5px;color:#666;">{{ u.vendorUserDeptNm }}</td>
               <td style="font-size:11.5px;">{{ u.vendorUserMobile }}</td>
               <td style="font-size:11.5px;">{{ u.vendorUserEmail }}</td>
-              <td><span class="badge" :class="fnStatusBadge(u.vendorUserStatusCd)" style="font-size:10px;">{{ statusLabel(u.vendorUserStatusCd) }}</span></td>
+              <td><span class="badge" :class="fnStatusBadge(u.vendorUserStatusCd)" style="font-size:10px;">{{ fnStatusLabel(u.vendorUserStatusCd) }}</span></td>
               <td style="text-align:center;font-size:12px;">{{ u.isMain==='Y' ? '✅' : '-' }}</td>
               <td style="text-align:right;white-space:nowrap;">
                 <button class="btn btn-primary btn-xs" @click="openEdit(u)">수정</button>
@@ -506,7 +506,7 @@ window.SyBizUserMng = {
         </div>
         <div style="padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
           <div class="form-group"><label class="form-label">업체</label>
-            <input class="form-control" :value="vendorSummary(formData.vendorId)" readonly disabled style="background:#f3f4f6;" />
+            <input class="form-control" :value="fnVendorSummary(formData.vendorId)" readonly disabled style="background:#f3f4f6;" />
           </div>
           <div class="form-group"><label class="form-label">이름 <span class="req">*</span></label>
             <input class="form-control" v-model="formData.memberNm" />
@@ -654,7 +654,7 @@ window.SyBizUserMng = {
                   <span v-else style="color:#9ca3af;margin-right:4px;font-size:10px;">·</span>{{ m.menuNm }}
                 </td>
                 <td style="text-align:center;padding:6px 12px;border-bottom:1px solid #f3f4f6;">
-                  <span v-if="m._perm!=='없음'" :style="{background:permBadgeColor(m._perm),color:'#fff',fontSize:'10px',padding:'2px 8px',borderRadius:'9px',fontWeight:700}">{{ m._perm }}</span>
+                  <span v-if="m._perm!=='없음'" :style="{background:fnPermBadgeColor(m._perm),color:'#fff',fontSize:'10px',padding:'2px 8px',borderRadius:'9px',fontWeight:700}">{{ m._perm }}</span>
                   <span v-else style="color:#d1d5db;font-size:11px;">—</span>
                 </td>
               </tr>

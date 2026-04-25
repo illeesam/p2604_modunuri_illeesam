@@ -580,8 +580,8 @@ window.DpDispWidgetLibPreview = {
         </select>
       </div>
       <input v-model="searchKw" class="form-control" placeholder="이름·태그 검색" style="margin:0;width:130px;font-size:12px;" />
-      <span style="font-size:12px;color:#888;">총 <b>{{ filteredLibs.length }}</b>건</span>
-      <button @click="resetFilter" style="font-size:11px;padding:3px 10px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#666;">초기화</button>
+      <span style="font-size:12px;color:#888;">총 <b>{{ cfFilteredLibs.length }}</b>건</span>
+      <button @click="onReset" style="font-size:11px;padding:3px 10px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#666;">초기화</button>
     </div>
   </div>
 
@@ -614,11 +614,11 @@ window.DpDispWidgetLibPreview = {
             :style="isOpen('__root__') ? 'transform:rotate(90deg);' : ''">▶</span>
           <span>📂 전체</span>
           <span style="margin-left:auto;font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:8px;padding:0 6px;">
-            {{ tree.reduce((acc,n)=>acc+n.children.reduce((a,c)=>a+c.libs.length,0),0) }}
+            {{ cfTree.reduce((acc,n)=>acc+n.children.reduce((a,c)=>a+c.libs.length,0),0) }}
           </span>
         </div>
         <div v-if="isOpen('__root__')" style="padding-left:8px;">
-        <div v-for="node in tree" :key="node?.label">
+        <div v-for="node in cfTree" :key="node?.label">
           <div @click="toggleNode(node.label)"
             draggable="true"
             @dragstart="onNodeDragStart($event, node.children.flatMap(c => c.libs))"
@@ -670,7 +670,7 @@ window.DpDispWidgetLibPreview = {
           </template>
         </div>
         </div><!-- /root children -->
-        <div v-if="!tree.length" style="padding:24px;text-align:center;color:#ccc;font-size:12px;">위젯이 없습니다.</div>
+        <div v-if="!cfTree.length" style="padding:24px;text-align:center;color:#ccc;font-size:12px;">위젯이 없습니다.</div>
       </div>
     </div>
 
@@ -705,7 +705,7 @@ window.DpDispWidgetLibPreview = {
           </button>
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:0 0 0 12px;">
-          <span style="font-size:12px;color:#555;font-weight:600;">{{ placedCount }}개</span>
+          <span style="font-size:12px;color:#555;font-weight:600;">{{ cfPlacedCount }}개</span>
           <button @click="resetCurrent"
             style="font-size:11px;padding:3px 10px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;cursor:pointer;color:#666;white-space:nowrap;">초기화</button>
         </div>
@@ -734,10 +734,10 @@ window.DpDispWidgetLibPreview = {
           }">
             <div :style="{
               display: 'grid',
-              gridTemplateColumns: autoGridCols,
+              gridTemplateColumns: cfAutoGridCols,
               gap: '10px',
             }">
-              <template v-for="(slot, idx) in currentSlots" :key="Math.random()">
+              <template v-for="(slot, idx) in cfCurrentSlots" :key="Math.random()">
               <div v-if="!showRealContent || slot"
                 @dragover="onDragOver($event, idx)"
                 @dragleave="onDragLeave"

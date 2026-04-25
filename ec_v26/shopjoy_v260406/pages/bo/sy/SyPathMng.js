@@ -254,7 +254,7 @@ window.SyPathMng = {
       </select>
       <div class="search-actions">
         <button class="btn btn-primary btn-sm" @click="fetchData">조회</button>
-        <button class="btn btn-secondary btn-sm" @click="reset">초기화</button>
+        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>
   </div>
@@ -351,9 +351,9 @@ window.SyPathMng = {
         <div class="pager">
           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-          <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-          <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-          <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+          <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+          <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+          <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
         </div>
         <div class="pager-right">
           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -385,7 +385,7 @@ window.SyPathMng = {
           <button class="btn btn-sm" @click="parentModalState.expanded.clear(); parentModalState.expanded.add(null);"
             style="font-size:11px;">▶ 전체닫기</button>
         </div>
-        <path-parent-selector :node="parentTree" :expanded="parentModalState.expanded" :on-toggle="toggleParentNode" :on-select="selectParent" :depth="0" />
+        <path-parent-selector :node="cfParentTree" :expanded="parentModalState.expanded" :on-toggle="toggleParentNode" :on-select="selectParent" :depth="0" />
       </div>
     </div>
   </div>

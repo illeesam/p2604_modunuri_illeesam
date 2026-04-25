@@ -149,7 +149,7 @@ window.DpDispWidgetPreview = {
       } catch (_) {}
     };
     onMounted(() => { fetchData(); });
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const today   = new Date().toISOString().slice(0, 10);
     const nowTime = new Date().toTimeString().slice(0, 5);
@@ -210,7 +210,7 @@ window.DpDispWidgetPreview = {
 
     const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', kw: '', visibility: '' });
 
-    const doSearch = () => {
+    const onSearch = () => {
       Object.assign(applied, {
         type:       filterType.value,
         status:     filterStatus.value,
@@ -220,14 +220,14 @@ window.DpDispWidgetPreview = {
       });
     };
 
-    const resetFilter = () => {
+    const onReset = () => {
       previewDate.value = today; previewTime.value = nowTime;
       filterType.value = ''; filterStatus.value = '활성'; filterDispEnv.value = 'PROD';
       filterVisibility.value = ''; searchKw.value = '';
       Object.assign(applied, { type: '', status: '활성', dispEnv: 'PROD', kw: '', visibility: '' });
     };
 
-    const filteredLibs = computed(() => {
+    const cfFilteredLibs = computed(() => {
       const kw = applied.kw;
       return (widgetLibs || []).filter(lib => {
         if (applied.type   && lib.widgetType !== applied.type) return false;
@@ -245,7 +245,7 @@ window.DpDispWidgetPreview = {
     const onTreeSelect  = (lib) => { selectedLibId.value = lib.libId; };
 
     /* ── 트리 상태 ── */
-    const tree = computed(() => {
+    const cfTree = computed(() => {
       const map = {};
       const addToPath = (lib, pathStr) => {
         const parts = pathStr.split('>').map(s => s.trim()).filter(Boolean);
@@ -256,7 +256,7 @@ window.DpDispWidgetPreview = {
         if (!map[top][rest]) map[top][rest] = [];
         map[top][rest].push(lib);
       };
-      window.safeArrayUtils.safeForEach(filteredLibs, lib => {
+      window.safeArrayUtils.safeForEach(cfFilteredLibs, lib => {
         if (!lib.usedPaths || !lib.usedPaths.length) {
           addToPath(lib, '(미등록) > (미등록)');
         } else {
@@ -291,11 +291,11 @@ window.DpDispWidgetPreview = {
     };
     watchEffect(() => {
       if (!openNodes.has('__root__')) openNodes.add('__root__');
-      if (tree.value.length && openNodes.size === 1) {
-        openNodes.add(tree.window.safeArrayUtils.safeGet(value, 0).label);
+      if (cfTree.value.length && openNodes.size === 1) {
+        openNodes.add(cfTree.window.safeArrayUtils.safeGet(value, 0).label);
       }
     });
-    const expandAll = () => { window.safeArrayUtils.safeForEach(tree, n => openNodes.add(n.label)); openNodes.add('__root__'); };
+    const expandAll = () => { window.safeArrayUtils.safeForEach(cfTree, n => openNodes.add(n.label)); openNodes.add('__root__'); };
     const collapseAll = () => { openNodes.clear(); openNodes.add('__root__'); };
     const onItemDragStart = (e, lib) => {
       window._dragWidgetLib  = lib;
@@ -336,7 +336,7 @@ window.DpDispWidgetPreview = {
       mobile:  { label:'📱 모바일', width:'375px' },
     };
     /* auto-fill 반응형: 뷰포트 width 제약 + 브라우저 창 리사이즈 모두 반응 */
-    const autoGridCols = computed(() => {
+    const cfAutoGridCols = computed(() => {
       const map = {
         grid1: 'repeat(1,1fr)',
         grid2: 'repeat(auto-fill,minmax(max(calc(50% - 5px),260px),1fr))',
@@ -357,7 +357,7 @@ window.DpDispWidgetPreview = {
       grid3: makeInit(3),
       grid4: makeInit(4),
     });
-    const currentSlots = computed(() => tabSlots[previewGrid.value] || []);
+    const cfCurrentSlots = computed(() => tabSlots[previewGrid.value] || []);
 
     /* 마지막 행에 아이템 있으면 자동으로 행 추가 */
     const autoExpand = (tabId) => {
@@ -504,10 +504,10 @@ window.DpDispWidgetPreview = {
     };
 
     /* ── 배치 수 / 초기화 ── */
-    const placedCount = computed(() =>
+    const cfPlacedCount = computed(() =>
       previewGrid.value === 'dashboard'
         ? dashItems.length
-        : window.safeArrayUtils.safeFilter(currentSlots, Boolean).length
+        : window.safeArrayUtils.safeFilter(cfCurrentSlots, Boolean).length
     );
     const resetCurrent = () => {
       if (previewGrid.value === 'dashboard') {
@@ -520,25 +520,25 @@ window.DpDispWidgetPreview = {
     };
 
     return {
-      siteNm, today,
+      cfSiteNm, today,
       WIDGET_TYPES, VISIBILITY_OPTS, VIEWPORT,
       wIcon, wTypeLabel,
       previewDate, previewTime,
       filterType, filterStatus, filterVisibility, filterDispEnv, searchKw,
-      applied, doSearch,
-      resetFilter, filteredLibs,
+      applied, onSearch,
+      onReset, cfFilteredLibs,
       selectedLibId, onTreeSelect,
-      tree, openNodes, toggleNode, isOpen, allChildrenOpen, toggleAllChildren, expandAll, collapseAll,
+      cfTree, openNodes, toggleNode, isOpen, allChildrenOpen, toggleAllChildren, expandAll, collapseAll,
       onItemDragStart, onItemDragEnd, onNodeDragStart, onNodeDragEnd,
       previewGrid, GRID_TABS,
-      viewportMode, autoGridCols, showRealContent,
-      tabSlots, currentSlots,
+      viewportMode, cfAutoGridCols, showRealContent,
+      tabSlots, cfCurrentSlots,
       dragOverIdx, onDragOver, onDragLeave, onDrop, removeSlot, setSpan, GRID_COLS,
       spanPopupIdx, toggleSpanPopup, closeSpanPopup,
       dashItems, dashCanvas, dashDragOver,
       onDashDragOver, onDashDragLeave, onDashDrop,
       removeDashItem, startItemMove, startItemResize,
-      placedCount, resetCurrent,
+      cfPlacedCount, resetCurrent,
     };
   },
   template: /* html */`
@@ -550,7 +550,7 @@ window.DpDispWidgetPreview = {
       <span style="font-size:13px;font-weight:400;color:#888;">위젯 트리 & 드래그하여 배치</span>
     </div>
     <span style="font-size:12px;background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:10px;padding:3px 12px;font-weight:600;">
-      🌐 {{ siteNm }}
+      🌐 {{ cfSiteNm }}
     </span>
   </div>
 
@@ -591,10 +591,10 @@ window.DpDispWidgetPreview = {
         </select>
       </div>
       <input v-model="searchKw" class="form-control" placeholder="이름·태그 검색" style="margin:0;width:130px;font-size:12px;" />
-      <span style="font-size:12px;color:#888;">총 <b>{{ filteredLibs.length }}</b>건</span>
+      <span style="font-size:12px;color:#888;">총 <b>{{ cfFilteredLibs.length }}</b>건</span>
       <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
-        <button @click="doSearch" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">검색</button>
-        <button @click="resetFilter" class="btn btn-secondary btn-sm" style="height:30px;padding:0 12px;">초기화</button>
+        <button @click="onSearch" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">검색</button>
+        <button @click="onReset" class="btn btn-secondary btn-sm" style="height:30px;padding:0 12px;">초기화</button>
       </div>
     </div>
   </div>
@@ -628,11 +628,11 @@ window.DpDispWidgetPreview = {
             :style="isOpen('__root__') ? 'transform:rotate(90deg);' : ''">▶</span>
           <span>📂 전체</span>
           <span style="margin-left:auto;font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:8px;padding:0 6px;">
-            {{ tree.reduce((acc,n)=>acc+n.children.reduce((a,c)=>a+c.libs.length,0),0) }}
+            {{ cfTree.reduce((acc,n)=>acc+n.children.reduce((a,c)=>a+c.libs.length,0),0) }}
           </span>
         </div>
         <div v-if="isOpen('__root__')" style="padding-left:8px;">
-        <div v-for="node in tree" :key="node?.label">
+        <div v-for="node in cfTree" :key="node?.label">
           <div @click="toggleNode(node.label)"
             draggable="true"
             @dragstart="onNodeDragStart($event, node.children.flatMap(c => c.libs))"
@@ -678,7 +678,7 @@ window.DpDispWidgetPreview = {
           </template>
         </div>
         </div><!-- /root children -->
-        <div v-if="!tree.length" style="padding:24px;text-align:center;color:#ccc;font-size:12px;">위젯이 없습니다.</div>
+        <div v-if="!cfTree.length" style="padding:24px;text-align:center;color:#ccc;font-size:12px;">위젯이 없습니다.</div>
       </div>
     </div>
 
@@ -713,7 +713,7 @@ window.DpDispWidgetPreview = {
           </button>
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:0 0 0 12px;">
-          <span style="font-size:12px;color:#555;font-weight:600;">{{ placedCount }}개</span>
+          <span style="font-size:12px;color:#555;font-weight:600;">{{ cfPlacedCount }}개</span>
           <button @click="resetCurrent"
             style="font-size:11px;padding:3px 10px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;cursor:pointer;color:#666;white-space:nowrap;">초기화</button>
         </div>
@@ -742,10 +742,10 @@ window.DpDispWidgetPreview = {
           }">
             <div :style="{
               display: 'grid',
-              gridTemplateColumns: autoGridCols,
+              gridTemplateColumns: cfAutoGridCols,
               gap: '10px',
             }">
-              <template v-for="(slot, idx) in currentSlots" :key="Math.random()">
+              <template v-for="(slot, idx) in cfCurrentSlots" :key="Math.random()">
               <div v-if="!showRealContent || slot"
                 @dragover="onDragOver($event, idx)"
                 @dragleave="onDragLeave"
