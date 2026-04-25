@@ -140,7 +140,7 @@ window.DpDispAreaPreview = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, watchEffect, onMounted } = Vue;
-    const codes = reactive({ disp_widget_types: [] });
+    const codes = reactive({ disp_widget_types: [], disp_area: [] });
     const widgetLibs = reactive([]);
     const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null});
 
@@ -157,6 +157,7 @@ window.DpDispAreaPreview = {
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
       codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE');
+      codes.disp_area = codeStore.snGetGrpCodes('DISP_AREA') || [];
       uiState.isPageCodeLoad = true;
     };
 
@@ -265,7 +266,7 @@ window.DpDispAreaPreview = {
     /* ── 영역 트리: prefix > codeLabel > (codeValue codeLabel) ── */
     const cfTree = computed(() => {
       const map = {};
-      (Array.isArray(codes) ? codes : [])
+      (codes.disp_area || [])
         .filter(c => c.codeGrp === 'DISP_AREA')
         .forEach(a => {
           const top = (a.codeValue || '').split('_')[0] || '(기타)';

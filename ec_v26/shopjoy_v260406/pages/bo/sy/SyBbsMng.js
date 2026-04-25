@@ -139,8 +139,8 @@ window.SyBbsMng = {
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
     const fnStatusBadge = s => ({ '게시': 'badge-green', '임시': 'badge-gray', '삭제': 'badge-red', '비공개': 'badge-orange' }[s] || 'badge-gray');
-    const onSearch = () => { pager.page = 1; };
-    const onReset = () => { Object.assign(searchParam, searchParamOrg); pager.page = 1; };
+    const onSearch = async () => { pager.page = 1; await handleFetchData(); };
+    const onReset = async () => { Object.assign(searchParam, searchParamOrg); pager.page = 1; await handleFetchData(); };
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const handleDelete = async (b) => {

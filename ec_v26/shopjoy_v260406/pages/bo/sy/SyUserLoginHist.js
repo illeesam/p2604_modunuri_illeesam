@@ -170,8 +170,8 @@ window.SyUserLoginHist = {
     const fnActionLabel = cd => ({ 'ISSUE':'발급','REFRESH':'갱신','REVOKE':'폐기','EXPIRE':'만료' }[cd] || cd);
     const fnTypeBadge   = cd => ({ 'ACCESS':'badge-purple','REFRESH':'badge-blue' }[cd] || 'badge-gray');
 
-    const onSearch     = () => { pager.page = 1; };
-    const onReset      = () => { uiState.searchKw=''; uiState.searchResult=''; uiState.searchIp=''; uiState.searchTokenAction=''; uiState.dateRange='이번달'; onDateRangeChange(); pager.page=1; };
+    const onSearch     = async () => { pager.page = 1; await handleFetchData(); };
+    const onReset      = async () => { uiState.searchKw=''; uiState.searchResult=''; uiState.searchIp=''; uiState.searchTokenAction=''; uiState.dateRange='이번달'; onDateRangeChange(); pager.page=1; await handleFetchData(); };
     const setPage      = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const onTabChange  = tab => { uiState.activeTab = tab; pager.page = 1; };

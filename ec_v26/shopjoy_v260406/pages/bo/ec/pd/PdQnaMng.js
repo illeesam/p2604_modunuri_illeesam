@@ -75,7 +75,7 @@ window.PdQnaMng = {
     const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const onSearch = () => { pager.page = 1; };
+    const onSearch = async () => { pager.page = 1; await handleFetchData(); };
     const onReset  = () => { Object.assign(searchParam, searchParamOrg); pager.page = 1; };
     const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };

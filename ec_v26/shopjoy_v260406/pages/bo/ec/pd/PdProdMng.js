@@ -133,12 +133,14 @@ window.PdProdMng = {
     const clearCate = () => { searchParam.cate = ''; };
 
     const fnStatusBadge = s => ({ '판매중': 'badge-green', '품절': 'badge-red', '판매중지': 'badge-gray' }[s] || 'badge-gray');
-    const onSearch = () => {
+    const onSearch = async () => {
       pager.page = 1;
+      await handleFetchData();
     };
-    const onReset = () => {
+    const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
       pager.page = 1;
+    await handleFetchData();
     };
   
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };

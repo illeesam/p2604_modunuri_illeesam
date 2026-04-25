@@ -132,14 +132,16 @@ window.OdClaimMng = {
       '처리중': 'badge-purple', '환불대기': 'badge-orange',
       '완료': 'badge-green', '거부': 'badge-red', '철회': 'badge-gray',
     }[s] || 'badge-gray');
-    const onSearch = () => {
+    const onSearch = async () => {
       pager.page = 1;
+      await handleFetchData();
     };
-    const onReset = () => {
+    const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
       pager.page = 1;
+      await handleFetchData();
     };
-  
+
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 

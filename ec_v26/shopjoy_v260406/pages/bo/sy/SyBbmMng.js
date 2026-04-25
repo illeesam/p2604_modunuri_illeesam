@@ -121,8 +121,9 @@ window.SyBbmMng = {
     const fnAttachBadge  = v => ({ '불가': 'badge-gray', '1개': 'badge-orange', '2개': 'badge-orange', '3개': 'badge-orange', '목록': 'badge-blue' }[v] || 'badge-gray');
     const fnContentBadge = v => ({ '불가': 'badge-gray', 'textarea': 'badge-blue', 'htmleditor': 'badge-green' }[v] || 'badge-gray');
     const fnScopeBadge   = v => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[v] || 'badge-gray');
-    const onSearch = () => {
+    const onSearch = async () => {
       pager.page = 1;
+      await handleFetchData();
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);

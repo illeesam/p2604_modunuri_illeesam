@@ -103,12 +103,14 @@ window.SyContactMng = {
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
     const fnStatusBadge = s => ({ '요청': 'badge-orange', '처리중': 'badge-blue', '답변완료': 'badge-green', '취소됨': 'badge-gray' }[s] || 'badge-gray');
-    const onSearch = () => {
+    const onSearch = async () => {
       pager.page = 1;
+      await handleFetchData();
     };
-    const onReset = () => {
+    const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
       pager.page = 1;
+    await handleFetchData();
     };
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };

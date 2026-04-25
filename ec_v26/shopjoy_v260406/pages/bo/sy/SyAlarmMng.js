@@ -140,8 +140,9 @@ window.SyAlarmMng = {
     const fnStatusBadge = s => ({ '발송완료': 'badge-green', '예약': 'badge-blue', '실패': 'badge-red', '임시': 'badge-gray' }[s] || 'badge-gray');
     const fnTypeBadge = t => ({ '푸시': 'badge-blue', '이메일': 'badge-orange', 'SMS': 'badge-green', '인앱': 'badge-gray' }[t] || 'badge-gray');
     const fnTargetBadge = t => ({ '전체': 'badge-red', 'VIP': 'badge-orange', '우수': 'badge-blue', '일반': 'badge-gray' }[t] || 'badge-gray');
-    const onSearch = () => {
+    const onSearch = async () => {
       pager.page = 1;
+      await handleFetchData();
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);

@@ -140,7 +140,7 @@ window.DpDispUiPreview = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, watchEffect, onMounted } = Vue;
-    const codes = reactive({ disp_widget_types: [] });
+    const codes = reactive({ disp_widget_types: [], disp_ui: [] });
     const widgetLibs = reactive([]);
     const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null, previewGrid: 'grid1', viewportMode: 'desktop', dragOverIdx: -1, spanPopupIdx: -1});
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
@@ -158,6 +158,7 @@ window.DpDispUiPreview = {
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
       codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE');
+      codes.disp_ui = codeStore.snGetGrpCodes('DISP_UI') || [];
       uiState.isPageCodeLoad = true;
     };
 
@@ -260,7 +261,7 @@ window.DpDispUiPreview = {
     /* ── UI 트리: uiType > codeLabel > (codeValue codeLabel) ── */
     const cfTree = computed(() => {
       const map = {};
-      (Array.isArray(codes) ? codes : [])
+      (codes.disp_ui || [])
         .filter(c => c.codeGrp === 'DISP_UI')
         .forEach(u => {
           const top = u.uiType || '(미분류)';

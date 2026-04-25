@@ -128,12 +128,14 @@ window.SyUserMng = {
 
     const fnRoleBadge = r => ({ '슈퍼관리자': 'badge-red', '관리자': 'badge-purple', '운영자': 'badge-blue' }[r] || 'badge-gray');
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
-    const onSearch = () => {
+    const onSearch = async () => {
       pager.page = 1;
+      await handleFetchData();
     };
-    const onReset = () => {
+    const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
       pager.page = 1;
+    await handleFetchData();
     };
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };

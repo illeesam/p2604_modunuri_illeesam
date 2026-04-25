@@ -89,13 +89,14 @@ window.SyBizMng = {
     const cfPagedRows = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
     watch(() => uiState.selectedPath, () => pager.page = 1);
 
-    const onSearch = () => { pager.page = 1; };
-    const onReset = () => {
+    const onSearch = async () => { pager.page = 1; await handleFetchData(); };
+    const onReset = async () => {
       searchParam.kw = '';
       searchParam.statusFlt = '';
       searchParam.vendorTypeFlt = '';
       uiState.selectedPath = null;
       pager.page = 1;
+    await handleFetchData();
     };
 
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : '#'+id);
