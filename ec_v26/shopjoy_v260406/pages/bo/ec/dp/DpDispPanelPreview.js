@@ -522,7 +522,7 @@ window.DpDispPanelPreview = {
         ? dashItems.length
         : window.safeArrayUtils.safeFilter(cfCurrentSlots.value, Boolean).length
     );
-    const resetCurrent = () => {
+    const onResetCurrent = () => {
       if (previewGrid.value === 'dashboard') {
         dashItems.splice(0);
       } else {
@@ -551,7 +551,7 @@ window.DpDispPanelPreview = {
       dashItems, dashCanvas, dashDragOver,
       onDashDragOver, onDashDragLeave, onDashDrop,
       removeDashItem, startItemMove, startItemResize,
-      cfPlacedCount, resetCurrent,
+      cfPlacedCount, onResetCurrent,
     };
   },
   template: /* html */`
@@ -726,7 +726,7 @@ window.DpDispPanelPreview = {
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:0 0 0 12px;">
           <span style="font-size:12px;color:#555;font-weight:600;">{{ cfPlacedCount }}개</span>
-          <button @click="resetCurrent"
+          <button @click="onResetCurrent"
             style="font-size:11px;padding:3px 10px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;cursor:pointer;color:#666;white-space:nowrap;">초기화</button>
         </div>
       </div>

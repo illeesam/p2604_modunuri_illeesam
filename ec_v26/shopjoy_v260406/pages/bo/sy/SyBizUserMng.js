@@ -78,11 +78,11 @@ window.SyBizUserMng = {
     };
     onMounted(() => { loadDetail(); });
 
-    const vendorMap = computed(() => Object.fromEntries(vendors.map(v => [v.vendorId, v])));
-    const vendorNm  = (id) => (vendorMap.value[id] || {}).vendorNm || '#'+id;
-    const vendorTypeCd = (id) => (vendorMap.value[id] || {}).vendorTypeCd || '';
+    const cfVendorMap = computed(() => Object.fromEntries(vendors.map(v => [v.vendorId, v])));
+    const vendorNm  = (id) => (cfVendorMap.value[id] || {}).vendorNm || '#'+id;
+    const vendorTypeCd = (id) => (cfVendorMap.value[id] || {}).vendorTypeCd || '';
     const vendorSummary = (id) => {
-      const v = vendorMap.value[id];
+      const v = cfVendorMap.value[id];
       if (!v) return '';
       const vt = (VENDOR_TYPES.find(x=>x[0]===v.vendorTypeCd)||[,'?'])[1];
       return '['+vt+'] '+v.vendorNm;
@@ -138,8 +138,8 @@ window.SyBizUserMng = {
       }
     };
 
-    /* pathRoleCodes: 선택된 역할 코드 하위 descendants */
-    const pathRoleCodes = computed(() => {
+    /* cfPathRoleCodes: 선택된 역할 코드 하위 descendants */
+    const cfPathRoleCodes = computed(() => {
       if (selectedPath.value == null) return null;
       const root = roles.find(r => r.roleCode === selectedPath.value);
       if (!root) return new Set([selectedPath.value]);
@@ -184,7 +184,7 @@ window.SyBizUserMng = {
     const openEdit = (u) => { Object.assign(formData, u); formMode.value = 'edit'; loadUserRoles(u.vendorUserId); };
     const closeForm = () => { formMode.value = ''; userRoles.splice(0); };
 
-    const saveForm = async () => {
+    const handleSaveForm = async () => {
       if (!formData.memberNm || !formData.vendorUserMobile || !formData.vendorUserEmail) {
         props.showToast('이름/휴대전화/이메일은 필수입니다.', 'error'); return;
       }
@@ -211,7 +211,7 @@ window.SyBizUserMng = {
       }
     };
 
-    const deleteRow = async (u) => {
+    const handleDeleteRow = async (u) => {
       const ok = await props.showConfirm('삭제', `[${u.memberNm}] 사용자를 삭제하시겠습니까?`);
       if (!ok) return;
       try {
@@ -313,7 +313,7 @@ window.SyBizUserMng = {
       closeRoleModal();
     };
 
-    const deleteRole = async (r) => {
+    const handleDeleteRole = async (r) => {
       const ok = await props.showConfirm('역할 삭제', `[${r.roleNm}] 역할을 삭제하시겠습니까?`);
       if (!ok) return;
       try {
@@ -350,7 +350,7 @@ window.SyBizUserMng = {
 
     return {
       loading, roleLoading,
-      vendorUsers, vendorMap, vendorNm, vendorTypeCd, vendorSummary,
+      vendorUsers, cfVendorMap, vendorNm, vendorTypeCd, vendorSummary,
       vendors, cfVendorList, bizPager, cfBizTotalPages, cfBizPageNums, cfBizPagedRows, setBizPage,
       searchVendorId, bizKw, bizVendorFlt, bizStatusFlt, BIZ_STATUS, applied,
       pickVendorRow, fnVendorStatusBadge, vendorStatusLabel, fnVendorTypeBadge, vendorTypeLabel,
@@ -358,9 +358,9 @@ window.SyBizUserMng = {
       treeRoleCat, cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
       STATUS, fnStatusBadge, statusLabel,
       cfFiltered, cfPagedRows, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange,
-      formMode, formData, openNew, openEdit, closeForm, saveForm, deleteRow,
+      formMode, formData, openNew, openEdit, closeForm, handleSaveForm, handleDeleteRow,
       userRoles, roleModalOpen, roleModalTemp, roleTreeExpanded,
-      openRoleModal, closeRoleModal, confirmRoleModal, deleteRole,
+      openRoleModal, closeRoleModal, confirmRoleModal, handleDeleteRole,
       toggleRoleNode, pickRoleInModal, cfFormRoleTree, cfFormAllowedRootCode,
       roleNmByCode, cfSelectedModalRole, cfModalMenuList, permBadgeColor,
       sendJoinMail: () => {
@@ -468,7 +468,7 @@ window.SyBizUserMng = {
               <td style="text-align:center;font-size:12px;">{{ u.isMain==='Y' ? '✅' : '-' }}</td>
               <td style="text-align:right;white-space:nowrap;">
                 <button class="btn btn-primary btn-xs" @click="openEdit(u)">수정</button>
-                <button class="btn btn-danger btn-xs" style="margin-left:4px;" @click="deleteRow(u)">삭제</button>
+                <button class="btn btn-danger btn-xs" style="margin-left:4px;" @click="handleDeleteRow(u)">삭제</button>
               </td>
             </tr>
           </tbody>
@@ -501,7 +501,7 @@ window.SyBizUserMng = {
             <button class="btn btn-blue btn-sm" @click="sendJoinMail">✉ 회원가입메일</button>
             <button class="btn btn-blue btn-sm" @click="sendPwResetMail">🔑 비밀번호초기화</button>
             <button class="btn btn-secondary btn-sm" @click="closeForm">취소</button>
-            <button class="btn btn-primary btn-sm" @click="saveForm">저장</button>
+            <button class="btn btn-primary btn-sm" @click="handleSaveForm">저장</button>
           </div>
         </div>
         <div style="padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
@@ -574,7 +574,7 @@ window.SyBizUserMng = {
                   <span v-else style="color:#d1d5db;">제한없음</span>
                 </td>
                 <td style="text-align:right;">
-                  <button class="btn btn-danger btn-xs" @click="deleteRole(r)">삭제</button>
+                  <button class="btn btn-danger btn-xs" @click="handleDeleteRole(r)">삭제</button>
                 </td>
               </tr>
             </tbody>
@@ -590,9 +590,9 @@ window.SyBizUserMng = {
       <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 22px;background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 60%,#bfdbfe 100%);border-bottom:1px solid #bfdbfe;">
         <div style="display:flex;align-items:center;gap:10px;">
           <span style="font-weight:800;font-size:16px;color:#1f2937;">🎭 역할 선택</span>
-          <span v-if="formAllowedRootCode"
-            :style="{display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:'10px',background:'#fff',border:'1px solid #93c5fd',fontWeight:700,fontSize:'11px',color:formAllowedRootCode==='SITE_MGR_ROOT'?'#16a34a':'#d97706'}">
-            {{ formAllowedRootCode==='SITE_MGR_ROOT' ? '판매업체역할' : '배송업체역할' }}
+          <span v-if="cfFormAllowedRootCode"
+            :style="{display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:'10px',background:'#fff',border:'1px solid #93c5fd',fontWeight:700,fontSize:'11px',color:cfFormAllowedRootCode==='SITE_MGR_ROOT'?'#16a34a':'#d97706'}">
+            {{ cfFormAllowedRootCode==='SITE_MGR_ROOT' ? '판매업체역할' : '배송업체역할' }}
           </span>
         </div>
         <span @click="closeRoleModal"
@@ -605,12 +605,12 @@ window.SyBizUserMng = {
         <div style="border-right:1px solid #eef0f3;background:#fff;overflow:auto;">
           <div style="position:sticky;top:0;background:#fff;padding:12px 14px 8px;border-bottom:1px solid #f3f4f6;font-size:12px;font-weight:700;color:#374151;">📂 역할 트리</div>
           <div style="padding:6px 8px;">
-            <div v-if="!formAllowedRootCode" style="padding:10px;font-size:11px;color:#dc2626;background:#fef2f2;border-radius:6px;">선택한 업체의 업체유형이 없어 역할을 선택할 수 없습니다.</div>
-            <template v-for="root in formRoleTree" :key="root.roleId">
+            <div v-if="!cfFormAllowedRootCode" style="padding:10px;font-size:11px;color:#dc2626;background:#fef2f2;border-radius:6px;">선택한 업체의 업체유형이 없어 역할을 선택할 수 없습니다.</div>
+            <template v-for="root in cfFormRoleTree" :key="root.roleId">
               <div :style="{padding:'7px 8px',fontWeight:700,fontSize:'12.5px',display:'flex',alignItems:'center',gap:'6px',cursor:'pointer',borderRadius:'6px',marginBottom:'2px',
-                color:root.roleCode===formAllowedRootCode?'#1e40af':'#cbd5e1'}"
+                color:root.roleCode===cfFormAllowedRootCode?'#1e40af':'#cbd5e1'}"
                 @click="toggleRoleNode(root.roleId)"
-                @mouseover="root.roleCode===formAllowedRootCode&&($event.currentTarget.style.background='#eff6ff')"
+                @mouseover="root.roleCode===cfFormAllowedRootCode&&($event.currentTarget.style.background='#eff6ff')"
                 @mouseout="$event.currentTarget.style.background='transparent'">
                 <span style="width:12px;font-size:10px;color:#9ca3af;">{{ roleTreeExpanded.has(root.roleId)?'▾':'▸' }}</span>
                 <span>📁 {{ root.roleNm }}</span>
@@ -636,10 +636,10 @@ window.SyBizUserMng = {
         <div style="overflow:auto;background:#fff;">
           <div style="position:sticky;top:0;background:#fff;padding:12px 16px 8px;border-bottom:1px solid #f3f4f6;">
             <div style="font-size:12px;font-weight:700;color:#374151;">🔐 메뉴 접근권한
-              <span v-if="selectedModalRole" style="color:#2563eb;margin-left:8px;">— {{ selectedModalRole.roleNm }}</span>
+              <span v-if="cfSelectedModalRole" style="color:#2563eb;margin-left:8px;">— {{ cfSelectedModalRole.roleNm }}</span>
             </div>
           </div>
-          <div v-if="!selectedModalRole" style="padding:60px 20px;text-align:center;font-size:13px;color:#9ca3af;">
+          <div v-if="!cfSelectedModalRole" style="padding:60px 20px;text-align:center;font-size:13px;color:#9ca3af;">
             <div style="font-size:28px;margin-bottom:8px;">👈</div>좌측에서 역할을 선택하세요
           </div>
           <table v-else style="width:100%;border-collapse:collapse;font-size:12px;">
@@ -648,7 +648,7 @@ window.SyBizUserMng = {
               <th style="text-align:center;padding:8px 12px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb;width:80px;">권한</th>
             </tr></thead>
             <tbody>
-              <tr v-for="(m,i) in modalMenuList" :key="m.menuId" :style="{background:i%2===0?'#fff':'#fafbfc'}">
+              <tr v-for="(m,i) in cfModalMenuList" :key="m.menuId" :style="{background:i%2===0?'#fff':'#fafbfc'}">
                 <td :style="{padding:'6px 12px 6px '+(12+m._depth*16)+'px',fontWeight:m.menuType==='폴더'?700:400,borderBottom:'1px solid #f3f4f6'}">
                   <span v-if="m.menuType==='폴더'" style="color:#f59e0b;margin-right:4px;">📁</span>
                   <span v-else style="color:#9ca3af;margin-right:4px;font-size:10px;">·</span>{{ m.menuNm }}

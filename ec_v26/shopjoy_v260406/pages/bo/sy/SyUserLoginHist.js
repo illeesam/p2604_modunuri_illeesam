@@ -24,7 +24,7 @@ window.SyUserLoginHist = {
     const pager = reactive({ page: 1, size: 20 });
 
     const boUserList = reactive([]);
-    const boUsers = computed(() => boUserList);
+    const cfBoUsers = computed(() => boUserList);
 
     const fetchData = async () => {
       try {
@@ -53,10 +53,10 @@ window.SyUserLoginHist = {
       '2026-04-13 07:58:31','2026-04-12 18:35:44','2026-04-11 14:02:19','2026-04-10 08:47:58',
     ];
 
-    const logList = computed(() => {
+    const cfLogList = computed(() => {
       const rows = [];
       LOG_DATES.forEach((dt, i) => {
-        const u = boUsers.value[i % Math.max(1, boUsers.value.length)];
+        const u = cfBoUsers.value[i % Math.max(1, cfBoUsers.value.length)];
         if (!u) return;
         const resultCd = RESULT_CODES[i % RESULT_CODES.length];
         const isSuccess = resultCd === 'SUCCESS';
@@ -84,7 +84,7 @@ window.SyUserLoginHist = {
       return rows;
     });
 
-    const histList = computed(() => logList.value.map(r => ({
+    const cfHistList = computed(() => cfLogList.value.map(r => ({
       histId:    'UHIST-' + r.logId.slice(-5),
       loginDate: r.loginDate,
       userId:    r.userId,
@@ -99,9 +99,9 @@ window.SyUserLoginHist = {
     const TOKEN_TYPES    = ['ACCESS','REFRESH'];
     const REVOKE_REASONS = ['','','','LOGOUT','FORCE'];
 
-    const tokenList = computed(() => {
+    const cfTokenList = computed(() => {
       const rows = [];
-      logList.value.filter(l => l.accessToken).forEach((l, i) => {
+      cfLogList.value.filter(l => l.accessToken).forEach((l, i) => {
         const tHash = TOKEN_HASHES[i % TOKEN_HASHES.length];
         const actionCd = TOKEN_ACTIONS[i % TOKEN_ACTIONS.length];
         rows.push({
@@ -142,20 +142,20 @@ window.SyUserLoginHist = {
       });
     };
 
-    const filtered = computed(() => {
-      if (activeTab.value === 'log')   return filterRows(logList.value,   'logId');
-      if (activeTab.value === 'token') return filterRows(tokenList.value, 'tokenLogId');
-      return filterRows(histList.value, 'histId');
+    const cfFiltered = computed(() => {
+      if (activeTab.value === 'log')   return filterRows(cfLogList.value,   'logId');
+      if (activeTab.value === 'token') return filterRows(cfTokenList.value, 'tokenLogId');
+      return filterRows(cfHistList.value, 'histId');
     });
 
-    const total    = computed(() => filtered.value.length);
-    const totPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList = computed(() => filtered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    const pageNums = computed(() => { const c=pager.page,l=totPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfTotal    = computed(() => cfFiltered.value.length);
+    const cfTotPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
+    const cfPageNums = computed(() => { const c=pager.page,l=cfTotPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const summary = computed(() => {
-      const all = filterRows(logList.value, 'logId');
-      const tk  = filterRows(tokenList.value, 'tokenLogId');
+    const cfSummary = computed(() => {
+      const all = filterRows(cfLogList.value, 'logId');
+      const tk  = filterRows(cfTokenList.value, 'tokenLogId');
       const uniqueUsers = new Set(all.filter(r=>r.resultCd==='SUCCESS').map(r=>r.userId)).size;
       return {
         total:       all.length,

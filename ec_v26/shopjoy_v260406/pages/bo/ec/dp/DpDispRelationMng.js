@@ -90,13 +90,13 @@ window.DpDispRelationMng = {
     });
 
     /* 공개범위 표시 */
-    const getVisibilityBadges = (targets) => {
+    const fnGetVisibilityBadges = (targets) => {
       if (!targets) return [];
       return targets.split('^').filter(Boolean);
     };
 
     /* 뱃지 색상 */
-    const getBadgeColor = (type) => {
+    const fnGetBadgeColor = (type) => {
       const colors = {
         ui: { bg: '#e8f4f8', color: '#0277bd' },
         area: { bg: '#e8f0fe', color: '#1a73e8' },
@@ -106,7 +106,7 @@ window.DpDispRelationMng = {
     };
 
     /* 사용여부 배지 */
-    const getUseYnBadge = (useYn) => {
+    const fnGetUseYnBadge = (useYn) => {
       return useYn === 'Y' ? { bg: '#c8e6c9', color: '#2e7d32', text: '사용' }
                             : { bg: '#f1f1f1', color: '#666', text: '미사용' };
     };
@@ -115,7 +115,7 @@ window.DpDispRelationMng = {
       searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS,
       onSearch, onReset,
       expandedNodes, toggleNode, isNodeExpanded,
-      cfTreeData, getVisibilityBadges, getBadgeColor, getUseYnBadge,
+      cfTreeData, fnGetVisibilityBadges, fnGetBadgeColor, fnGetUseYnBadge,
     };
   },
   template: /* html */`
@@ -145,12 +145,12 @@ window.DpDispRelationMng = {
       <div @click="toggleNode('ui_'+ui.id)"
         style="display:flex;align-items:center;gap:8px;padding:10px;background:#f9f9fb;cursor:pointer;user-select:none;">
         <span style="font-size:12px;color:#999;width:20px;text-align:center;">{{ isNodeExpanded('ui_'+ui.id) ? '▼' : '▶' }}</span>
-        <span :style="{background: getBadgeColor('ui').bg, color: getBadgeColor('ui').color, fontSize:'10px', borderRadius:'6px', padding:'2px 8px', fontWeight:600}">UI</span>
+        <span :style="{background: fnGetBadgeColor('ui').bg, color: fnGetBadgeColor('ui').color, fontSize:'10px', borderRadius:'6px', padding:'2px 8px', fontWeight:600}">UI</span>
         <span style="font-weight:700;color:#222;flex:1;">{{ ui.name }}</span>
-        <template v-if="getVisibilityBadges(ui.visibilityTargets).length">
-          <span style="font-size:9px;background:#e0e0e0;color:#666;border-radius:4px;padding:2px 6px;">{{ getVisibilityBadges(ui.visibilityTargets).join(', ') }}</span>
+        <template v-if="fnGetVisibilityBadges(ui.visibilityTargets).length">
+          <span style="font-size:9px;background:#e0e0e0;color:#666;border-radius:4px;padding:2px 6px;">{{ fnGetVisibilityBadges(ui.visibilityTargets).join(', ') }}</span>
         </template>
-        <span :style="{background: getUseYnBadge(ui.useYn).bg, color: getUseYnBadge(ui.useYn).color, fontSize:'10px', borderRadius:'6px', padding:'2px 8px', fontWeight:600}">{{ getUseYnBadge(ui.useYn).text }}</span>
+        <span :style="{background: fnGetUseYnBadge(ui.useYn).bg, color: fnGetUseYnBadge(ui.useYn).color, fontSize:'10px', borderRadius:'6px', padding:'2px 8px', fontWeight:600}">{{ fnGetUseYnBadge(ui.useYn).text }}</span>
         <span style="font-size:10px;color:#aaa;">하위: {{ ui.childCount }}</span>
       </div>
 
@@ -160,12 +160,12 @@ window.DpDispRelationMng = {
           <div @click="toggleNode('area_'+area.id)"
             style="display:flex;align-items:center;gap:8px;padding:8px 12px 8px 40px;cursor:pointer;user-select:none;background:#fff;">
             <span style="font-size:12px;color:#999;width:20px;text-align:center;">{{ isNodeExpanded('area_'+area.id) ? '▼' : '▶' }}</span>
-            <span :style="{background: getBadgeColor('area').bg, color: getBadgeColor('area').color, fontSize:'10px', borderRadius:'6px', padding:'2px 8px', fontWeight:600}">영역</span>
+            <span :style="{background: fnGetBadgeColor('area').bg, color: fnGetBadgeColor('area').color, fontSize:'10px', borderRadius:'6px', padding:'2px 8px', fontWeight:600}">영역</span>
             <span style="font-weight:600;color:#333;flex:1;">{{ area.name }}</span>
-            <template v-if="getVisibilityBadges(area.visibilityTargets).length">
-              <span style="font-size:9px;background:#e0e0e0;color:#666;border-radius:4px;padding:2px 6px;">{{ getVisibilityBadges(area.visibilityTargets).join(', ') }}</span>
+            <template v-if="fnGetVisibilityBadges(area.visibilityTargets).length">
+              <span style="font-size:9px;background:#e0e0e0;color:#666;border-radius:4px;padding:2px 6px;">{{ fnGetVisibilityBadges(area.visibilityTargets).join(', ') }}</span>
             </template>
-            <span :style="{background: getUseYnBadge(area.useYn).bg, color: getUseYnBadge(area.useYn).color, fontSize:'10px', borderRadius:'6px', padding:'2px 8px', fontWeight:600}">{{ getUseYnBadge(area.useYn).text }}</span>
+            <span :style="{background: fnGetUseYnBadge(area.useYn).bg, color: fnGetUseYnBadge(area.useYn).color, fontSize:'10px', borderRadius:'6px', padding:'2px 8px', fontWeight:600}">{{ fnGetUseYnBadge(area.useYn).text }}</span>
             <span style="font-size:10px;color:#aaa;">하위: {{ area.childCount }}</span>
           </div>
 
@@ -173,12 +173,12 @@ window.DpDispRelationMng = {
           <div v-if="isNodeExpanded('area_'+area.id)" style="background:#fff;">
             <div v-for="panel in area.children" :key="panel?.id"
               style="display:flex;align-items:center;gap:8px;padding:6px 12px 6px 68px;border-top:1px solid #f5f5f5;font-size:11px;">
-              <span :style="{background: getBadgeColor('panel').bg, color: getBadgeColor('panel').color, fontSize:'9px', borderRadius:'6px', padding:'2px 8px', fontWeight:600, flexShrink:0}">패널</span>
+              <span :style="{background: fnGetBadgeColor('panel').bg, color: fnGetBadgeColor('panel').color, fontSize:'9px', borderRadius:'6px', padding:'2px 8px', fontWeight:600, flexShrink:0}">패널</span>
               <span style="color:#333;flex:1;">{{ panel.name }}</span>
-              <template v-if="getVisibilityBadges(panel.visibilityTargets).length">
-                <span style="font-size:9px;background:#e0e0e0;color:#666;border-radius:4px;padding:2px 6px;">{{ getVisibilityBadges(panel.visibilityTargets).join(', ') }}</span>
+              <template v-if="fnGetVisibilityBadges(panel.visibilityTargets).length">
+                <span style="font-size:9px;background:#e0e0e0;color:#666;border-radius:4px;padding:2px 6px;">{{ fnGetVisibilityBadges(panel.visibilityTargets).join(', ') }}</span>
               </template>
-              <span :style="{background: getUseYnBadge(panel.useYn).bg, color: getUseYnBadge(panel.useYn).color, fontSize:'10px', borderRadius:'6px', padding:'2px 8px', fontWeight:600, flexShrink:0}">{{ getUseYnBadge(panel.useYn).text }}</span>
+              <span :style="{background: fnGetUseYnBadge(panel.useYn).bg, color: fnGetUseYnBadge(panel.useYn).color, fontSize:'10px', borderRadius:'6px', padding:'2px 8px', fontWeight:600, flexShrink:0}">{{ fnGetUseYnBadge(panel.useYn).text }}</span>
               <span style="font-size:10px;color:#aaa;">위젯: {{ panel.childCount }}</span>
             </div>
             <div v-if="!area.children.length" style="padding:8px 12px;color:#ccc;text-align:center;font-size:11px;">패널이 없습니다.</div>

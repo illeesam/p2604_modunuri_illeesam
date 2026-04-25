@@ -98,7 +98,7 @@ window.SyCodeMng = {
         _row_status: 'I', _tempId: _grpTempId--, _orig: {},
       });
     };
-    const delGrp = (idx) => {
+    const handleDeleteGrp = (idx) => {
       const r = grpRows[idx];
       if (r._row_status === 'I') grpRows.splice(idx, 1);
       else r._row_status = r._row_status === 'D' ? 'N' : 'D';
@@ -108,10 +108,10 @@ window.SyCodeMng = {
       if (r._row_status === 'I') { grpRows.splice(idx, 1); return; }
       Object.assign(r, r._orig); r._row_status = 'N';
     };
-    const grpDirty = computed(() => grpRows.filter(r => r._row_status !== 'N').length);
-    const saveGrp = async () => {
-      if (!grpDirty.value) { props.showToast('변경된 행이 없습니다.', 'warning'); return; }
-      const ok = await props.showConfirm('저장', `${grpDirty.value}건 저장하시겠습니까?`);
+    const cfGrpDirty = computed(() => grpRows.filter(r => r._row_status !== 'N').length);
+    const handleSaveGrp = async () => {
+      if (!cfGrpDirty.value) { props.showToast('변경된 행이 없습니다.', 'warning'); return; }
+      const ok = await props.showConfirm('저장', `${cfGrpDirty.value}건 저장하시겠습니까?`);
       if (!ok) return;
       codeGroups.splice(0, codeGroups.length, ...grpRows.filter(r => r._row_status !== 'D').map(r => ({
         codeGrp: r.codeGrp, grpNm: r.grpNm, pathId: r.pathId, dispPath: r.dispPath, description: r.description, type: r.type, useYn: r.useYn,
@@ -500,7 +500,7 @@ window.SyCodeMng = {
       checkAll, toggleCheckAll, fnStatusClass,
       exportExcel,
       codeGroups,
-      grpRows, grpDirty, addGrp, delGrp, cancelGrp, saveGrp, onGrpChange,
+      grpRows, cfGrpDirty, addGrp, handleDeleteGrp, cancelGrp, handleSaveGrp, onGrpChange,
       grpTree, grpExpanded, grpToggleNode, grpSelectNode, grpExpandAll, grpCollapseAll, grpSelectedPath, filteredGrpRows,
       grpPager, GRP_PAGE_SIZES, grpTotalPages, grpPageNums, setGrpPage, onGrpSizeChange, grpPagedRows,
       selectedGrp, onGrpRowClick,
@@ -566,7 +566,7 @@ window.SyCodeMng = {
         </span>
         <div style="display:flex;gap:6px;">
           <button class="btn btn-green btn-sm" @click="addGrp">+ 행추가</button>
-          <button class="btn btn-primary btn-sm" @click="saveGrp" :disabled="!grpDirty">저장 <span v-if="grpDirty">({{ grpDirty }})</span></button>
+          <button class="btn btn-primary btn-sm" @click="handleSaveGrp" :disabled="!cfGrpDirty">저장 <span v-if="cfGrpDirty">({{ cfGrpDirty }})</span></button>
         </div>
       </div>
       <table class="bo-table crud-grid">
@@ -626,7 +626,7 @@ window.SyCodeMng = {
               <button v-if="['U','I','D'].includes(g._row_status)" class="btn btn-secondary btn-xs" @click.stop="cancelGrp(idx)">취소</button>
             </td>
             <td class="col-act-delete-val">
-              <button v-if="['N','U'].includes(g._row_status)" class="btn btn-danger btn-xs" @click.stop="delGrp(idx)">삭제</button>
+              <button v-if="['N','U'].includes(g._row_status)" class="btn btn-danger btn-xs" @click.stop="handleDeleteGrp(idx)">삭제</button>
             </td>
           </tr>
         </tbody>

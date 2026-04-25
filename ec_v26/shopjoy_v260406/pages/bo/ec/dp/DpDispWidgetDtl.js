@@ -13,7 +13,7 @@ window.DpDispWidgetDtl = {
     const onPathPicked = (pathId) => { form.pathId = pathId; };
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
     const widgetLibs = reactive([]);
-    const isNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.editId);
 
     const WIDGET_TYPES = [
       { value: 'image_banner',   label: '이미지 배너' },
@@ -112,7 +112,7 @@ window.DpDispWidgetDtl = {
         const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 } });
         widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.list || []));
       } catch (_) {}
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const src = (Array.isArray(widgetLibs) ? widgetLibs : []).find(d => d.libId == props.editId);
         if (src) Object.assign(form, src);
       } else {
@@ -129,91 +129,91 @@ window.DpDispWidgetDtl = {
     onMounted(() => { fetchData(); });
 
     /* ── 위젯 유형별 표시 여부 ── */
-    const isImage       = computed(() => form.widgetType === 'image_banner');
-    const isProduct     = computed(() => ['product_slider', 'product'].includes(form.widgetType));
-    const isCondProduct = computed(() => form.widgetType === 'cond_product');
-    const isChart       = computed(() => form.widgetType.startsWith('chart_'));
-    const isText        = computed(() => form.widgetType === 'text_banner');
-    const isInfo        = computed(() => form.widgetType === 'info_card');
-    const isPopup       = computed(() => form.widgetType === 'popup');
-    const isFile        = computed(() => form.widgetType === 'file');
-    const isFileList    = computed(() => form.widgetType === 'file_list');
-    const isCoupon      = computed(() => form.widgetType === 'coupon');
-    const isHtmlEditor  = computed(() => form.widgetType === 'html_editor');
-    const isTextarea      = computed(() => form.widgetType === 'textarea');
-    const isMarkdown      = computed(() => form.widgetType === 'markdown');
-    const isBarcode       = computed(() => form.widgetType === 'barcode');
-    const isQrcode        = computed(() => form.widgetType === 'qrcode');
-    const isBarcodeQr     = computed(() => form.widgetType === 'barcode_qrcode');
-    const isCodeWidget    = computed(() => isBarcode.value || isQrcode.value || isBarcodeQr.value);
-    const isVideoPlayer   = computed(() => form.widgetType === 'video_player');
-    const isCountdown     = computed(() => form.widgetType === 'countdown');
-    const isPayment       = computed(() => form.widgetType === 'payment_widget');
-    const isApproval      = computed(() => form.widgetType === 'approval_widget');
-    const isMapWidget     = computed(() => form.widgetType === 'map_widget');
-    const isEvent         = computed(() => form.widgetType === 'event_banner');
-    const isCache       = computed(() => form.widgetType === 'cache_banner');
-    const isEmbed       = computed(() => form.widgetType === 'widget_embed');
+    const cfIsImage       = computed(() => form.widgetType === 'image_banner');
+    const cfIsProduct     = computed(() => ['product_slider', 'product'].includes(form.widgetType));
+    const cfIsCondProduct = computed(() => form.widgetType === 'cond_product');
+    const cfIsChart       = computed(() => form.widgetType.startsWith('chart_'));
+    const cfIsText        = computed(() => form.widgetType === 'text_banner');
+    const cfIsInfo        = computed(() => form.widgetType === 'info_card');
+    const cfIsPopup       = computed(() => form.widgetType === 'popup');
+    const cfIsFile        = computed(() => form.widgetType === 'file');
+    const cfIsFileList    = computed(() => form.widgetType === 'file_list');
+    const cfIsCoupon      = computed(() => form.widgetType === 'coupon');
+    const cfIsHtmlEditor  = computed(() => form.widgetType === 'html_editor');
+    const cfIsTextarea    = computed(() => form.widgetType === 'textarea');
+    const cfIsMarkdown    = computed(() => form.widgetType === 'markdown');
+    const cfIsBarcode     = computed(() => form.widgetType === 'barcode');
+    const cfIsQrcode      = computed(() => form.widgetType === 'qrcode');
+    const cfIsBarcodeQr   = computed(() => form.widgetType === 'barcode_qrcode');
+    const cfIsCodeWidget  = computed(() => cfIsBarcode.value || cfIsQrcode.value || cfIsBarcodeQr.value);
+    const cfIsVideoPlayer = computed(() => form.widgetType === 'video_player');
+    const cfIsCountdown   = computed(() => form.widgetType === 'countdown');
+    const cfIsPayment     = computed(() => form.widgetType === 'payment_widget');
+    const cfIsApproval    = computed(() => form.widgetType === 'approval_widget');
+    const cfIsMapWidget   = computed(() => form.widgetType === 'map_widget');
+    const cfIsEvent       = computed(() => form.widgetType === 'event_banner');
+    const cfIsCache       = computed(() => form.widgetType === 'cache_banner');
+    const cfIsEmbed       = computed(() => form.widgetType === 'widget_embed');
 
     /* ── 파일목록 헬퍼 ── */
-    const fileListItems = computed(() => {
+    const cfFileListItems = computed(() => {
       try { return JSON.parse(form.fileListJson || '[]'); } catch { return []; }
     });
     const saveFileList   = (items) => { form.fileListJson = JSON.stringify(items); };
-    const addFileItem    = () => saveFileList([...fileListItems.value, { name: '', url: '' }]);
-    const removeFileItem = (idx) => saveFileList(window.safeArrayUtils.safeFilter(fileListItems, (_, i) => i !== idx));
+    const addFileItem    = () => saveFileList([...cfFileListItems.value, { name: '', url: '' }]);
+    const removeFileItem = (idx) => saveFileList(window.safeArrayUtils.safeFilter(cfFileListItems, (_, i) => i !== idx));
     const updateFileItem = (idx, field, val) =>
-      saveFileList(fileListItems.value.map((item, i) => i === idx ? { ...item, [field]: val } : item));
+      saveFileList(cfFileListItems.value.map((item, i) => i === idx ? { ...item, [field]: val } : item));
 
     /* ── 동적 공통 입력 행 정의 ── */
-    const displayRows = computed(() => {
-      if (isImage.value) return [
+    const cfDisplayRows = computed(() => {
+      if (cfIsImage.value) return [
         { key: 'imageUrl', label: '이미지 URL',  type: 'input',  ph: 'https://...' },
         { key: 'altText',  label: 'Alt 텍스트',  type: 'input',  ph: '' },
         { key: 'linkUrl',  label: '링크 URL',    type: 'input',  ph: 'https://...' },
       ];
-      if (isProduct.value) return [
+      if (cfIsProduct.value) return [
         { key: 'productIds', label: '상품 ID 목록', type: 'input', ph: '1, 2, 3, ...' },
       ];
-      if (isChart.value) return [
+      if (cfIsChart.value) return [
         { key: 'chartTitle',  label: '차트 제목',        type: 'input',  ph: '' },
         { key: 'chartLabels', label: '라벨 (쉼표 구분)', type: 'input',  ph: '1월, 2월, 3월' },
         { key: 'chartValues', label: '값 (쉼표 구분)',   type: 'input',  ph: '100, 200, 150' },
       ];
-      if (isText.value) return [
+      if (cfIsText.value) return [
         { key: 'textContent', label: '텍스트 내용', type: 'textarea', ph: '' },
         { key: 'bgColor',     label: '배경색',      type: 'color' },
         { key: 'textColor',   label: '글자색',      type: 'color' },
       ];
-      if (isInfo.value) return [
+      if (cfIsInfo.value) return [
         { key: 'infoTitle', label: '카드 제목', type: 'input',    ph: '' },
         { key: 'infoBody',  label: '카드 내용', type: 'textarea', ph: '' },
       ];
-      if (isPopup.value) return [
+      if (cfIsPopup.value) return [
         { key: 'popupWidth',  label: '팝업 너비 (px)',  type: 'number', ph: '' },
         { key: 'popupHeight', label: '팝업 높이 (px)',  type: 'number', ph: '' },
         { key: 'imageUrl',    label: '팝업 이미지 URL', type: 'input',  ph: 'https://...' },
         { key: 'linkUrl',     label: '링크 URL',        type: 'input',  ph: '' },
       ];
-      if (isFile.value) return [
+      if (cfIsFile.value) return [
         { key: 'fileUrl',   label: '파일 URL',    type: 'input', ph: '' },
         { key: 'fileLabel', label: '표시 레이블', type: 'input', ph: '다운로드' },
       ];
-      if (isCoupon.value) return [
+      if (cfIsCoupon.value) return [
         { key: 'couponCode', label: '쿠폰 코드', type: 'input', ph: 'COUPON_CODE' },
         { key: 'couponDesc', label: '쿠폰 설명', type: 'input', ph: '' },
       ];
-      if (isTextarea.value) return [
+      if (cfIsTextarea.value) return [
         { key: 'textareaContent', label: '텍스트 내용', type: 'textarea', ph: '텍스트를 입력하세요...' },
       ];
-      if (isMarkdown.value) return [
+      if (cfIsMarkdown.value) return [
         { key: 'markdownContent', label: 'Markdown 내용', type: 'code', ph: '# 제목\n\n내용을 입력하세요...' },
       ];
-      if (isCodeWidget.value) {
+      if (cfIsCodeWidget.value) {
         const rows = [
           { key: 'codeValue', label: '코드 값', type: 'input', ph: 'COUPON-2026-001234' },
         ];
-        if (isBarcode.value || isBarcodeQr.value) rows.push(
+        if (cfIsBarcode.value || cfIsBarcodeQr.value) rows.push(
           { key: 'codeFormat', label: '바코드 형식', type: 'select', options: [
             {v:'CODE128',l:'CODE128 (범용)'},{v:'EAN13',l:'EAN-13'},{v:'EAN8',l:'EAN-8'},
             {v:'UPC',l:'UPC-A'},{v:'CODE39',l:'CODE39'},{v:'ITF14',l:'ITF-14'},
@@ -221,7 +221,7 @@ window.DpDispWidgetDtl = {
           { key: 'codeHeight', label: '바코드 높이 (px)', type: 'number', ph: '60' },
           { key: 'showCodeLabel', label: '코드값 텍스트', type: 'select', options: [{v:true,l:'표시'},{v:false,l:'숨김'}] },
         );
-        if (isQrcode.value || isBarcodeQr.value) rows.push(
+        if (cfIsQrcode.value || cfIsBarcodeQr.value) rows.push(
           { key: 'qrSize', label: 'QR 크기 (px)', type: 'number', ph: '120' },
           { key: 'qrErrorLevel', label: '오류 정정 수준', type: 'select', options: [
             {v:'L',l:'L – 7%'},{v:'M',l:'M – 15%'},{v:'Q',l:'Q – 25%'},{v:'H',l:'H – 30%'},
@@ -229,32 +229,32 @@ window.DpDispWidgetDtl = {
         );
         return rows;
       }
-      if (isVideoPlayer.value) return [
+      if (cfIsVideoPlayer.value) return [
         { key: 'videoUrl',      label: '동영상 URL',  type: 'input',  ph: 'https://youtube.com/watch?v=...' },
         { key: 'videoType',     label: '동영상 유형', type: 'select', options: [{v:'youtube',l:'YouTube'},{v:'vimeo',l:'Vimeo'},{v:'direct',l:'직접 URL (mp4)'}] },
         { key: 'videoAutoplay', label: '자동재생',    type: 'select', options: [{v:false,l:'사용 안 함'},{v:true,l:'사용 (음소거 필요)'}] },
         { key: 'videoControls', label: '컨트롤바',    type: 'select', options: [{v:true,l:'표시'},{v:false,l:'숨김'}] },
       ];
-      if (isCountdown.value) return [
+      if (cfIsCountdown.value) return [
         { key: 'countdownTarget',     label: '목표 일시',    type: 'input', ph: '2026-12-31 23:59:59' },
         { key: 'countdownTitle',      label: '타이틀',       type: 'input', ph: '이벤트 종료까지' },
         { key: 'countdownExpiredMsg', label: '종료 메시지',  type: 'input', ph: '이벤트가 종료되었습니다.' },
         { key: 'countdownBgColor',    label: '배경색',       type: 'color' },
         { key: 'countdownTextColor',  label: '글자색',       type: 'color' },
       ];
-      if (isPayment.value) return [
+      if (cfIsPayment.value) return [
         { key: 'payAmount',      label: '결제 금액',            type: 'number', ph: '0' },
         { key: 'payCurrency',    label: '통화',                 type: 'select', options: [{v:'KRW',l:'원 (KRW)'},{v:'USD',l:'달러 (USD)'}] },
         { key: 'payMethods',     label: '결제수단 (쉼표 구분)', type: 'input',  ph: 'card,kakao,naver,toss,bank' },
         { key: 'payButtonLabel', label: '버튼 텍스트',          type: 'input',  ph: '결제하기' },
         { key: 'payButtonColor', label: '버튼 색상',            type: 'color' },
       ];
-      if (isApproval.value) return [
+      if (cfIsApproval.value) return [
         { key: 'approvalDocType', label: '문서 유형',     type: 'select', options: [{v:'구매승인',l:'구매승인'},{v:'지출결의',l:'지출결의'},{v:'휴가신청',l:'휴가신청'},{v:'기안',l:'기안'},{v:'품의서',l:'품의서'}] },
         { key: 'approvalTitle',   label: '결재 제목',     type: 'input', ph: '' },
         { key: 'approvalLine',    label: '결재선 (JSON)', type: 'code',  ph: '[{"role":"담당자","name":"홍길동"},{"role":"팀장","name":""}]' },
       ];
-      if (isMapWidget.value) return [
+      if (cfIsMapWidget.value) return [
         { key: 'mapType',        label: '지도 유형',  type: 'select', options: [{v:'google',l:'Google Maps'},{v:'kakao',l:'카카오맵'},{v:'naver',l:'네이버지도'}] },
         { key: 'mapAddress',     label: '주소',       type: 'input',  ph: '서울시 강남구 테헤란로 123' },
         { key: 'mapLat',         label: '위도 (lat)', type: 'input',  ph: '37.5005' },
@@ -262,17 +262,17 @@ window.DpDispWidgetDtl = {
         { key: 'mapZoom',        label: '줌 레벨',   type: 'number', ph: '14' },
         { key: 'mapMarkerLabel', label: '마커 라벨', type: 'input',  ph: '우리 매장' },
       ];
-      if (isEvent.value) return [
+      if (cfIsEvent.value) return [
         { key: 'eventId', label: '이벤트 ID', type: 'input', ph: '' },
       ];
-      if (isCache.value) return [
+      if (cfIsCache.value) return [
         { key: 'cacheDesc',   label: '캐시 설명',  type: 'input',  ph: '' },
         { key: 'cacheAmount', label: '캐시 금액',  type: 'number', ph: '0' },
       ];
-      if (isEmbed.value) return [
+      if (cfIsEmbed.value) return [
         { key: 'embedCode', label: '임베드 코드', type: 'textarea', ph: '<script>...</script>' },
       ];
-      if (isCondProduct.value) return [
+      if (cfIsCondProduct.value) return [
         { key: 'condCategory', label: '카테고리 조건', type: 'input', ph: '' },
         { key: 'condBrand',    label: '브랜드 조건',   type: 'input', ph: '' },
         { key: 'condSort',     label: '정렬 기준',     type: 'select', options: [{v:'newest',l:'최신순'},{v:'popular',l:'인기순'},{v:'price_asc',l:'가격낮은순'},{v:'price_desc',l:'가격높은순'}] },
@@ -282,7 +282,7 @@ window.DpDispWidgetDtl = {
     });
 
     /* ── 샘플 JSON ── */
-    const sampleJson = computed(() => {
+    const cfSampleJson = computed(() => {
       const obj = { ...form };
       // 유형과 무관한 빈 필드 제거 (가독성)
       Object.keys(obj).forEach(k => {
@@ -292,7 +292,7 @@ window.DpDispWidgetDtl = {
     });
     const jsonCopied = ref(false);
     const copyJson = () => {
-      navigator.clipboard?.writeText(sampleJson.value).then(() => {
+      navigator.clipboard?.writeText(cfSampleJson.value).then(() => {
         jsonCopied.value = true;
         setTimeout(() => { jsonCopied.value = false; }, 1500);
       });
@@ -307,7 +307,7 @@ window.DpDispWidgetDtl = {
       { value: 'tablet',  label: '태블릿', width: 768  },
       { value: 'mobile',  label: '모바일', width: 375  },
     ];
-    const previewFrameWidth = computed(() => {
+    const cfPreviewFrameWidth = computed(() => {
       const m = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === previewMode.value);
       return (m?.width || 420) + 'px';
     });
@@ -332,7 +332,7 @@ window.DpDispWidgetDtl = {
     };
 
     /* ── 위젯미리보기용 위젯 객체 ── */
-    const previewWidget = computed(() => ({
+    const cfPreviewWidget = computed(() => ({
       ...form,
       dispId: form.libId || 0,
       name: form.name || '미리보기',
@@ -388,7 +388,7 @@ window.DpDispWidgetDtl = {
       }
     };
 
-    watch(isHtmlEditor, async (val) => {
+    watch(cfIsHtmlEditor, async (val) => {
       if (!val) return;
       htmlSourceMode.value = false;
       quillInst = null;
@@ -404,12 +404,12 @@ window.DpDispWidgetDtl = {
     });
 
     /* ── 저장 ── */
-    const save = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try { await schema.validate(form, { abortEarly: false }); }
       catch (err) { err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
 
-      const isNewWidget = isNew.value;
+      const isNewWidget = cfIsNew.value;
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
       const list = widgetLibs.value || (widgetLibs.value = []);
@@ -434,8 +434,8 @@ window.DpDispWidgetDtl = {
     };
 
     /* ── 삭제 ── */
-    const remove = async () => {
-      if (isNew.value) return;
+    const handleDelete = async () => {
+      if (cfIsNew.value) return;
       const ok = await props.showConfirm('삭제', '이 위젯를 삭제하시겠습니까?');
       if (!ok) return;
       const list = widgetLibs || [];
@@ -491,12 +491,12 @@ window.DpDispWidgetDtl = {
     return {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       libPickOpen, libPickMode, openLibPick, onLibPicked,
-      isNew, form, errors, WIDGET_TYPES,
-      isImage, isProduct, isCondProduct, isChart, isText, isInfo,
-      isPopup, isFile, isFileList, isCoupon, isHtmlEditor, isEvent, isCache, isEmbed,
-      displayRows, fileListItems, addFileItem, removeFileItem, updateFileItem,
-      previewWidget, sampleJson, jsonCopied, copyJson, save, remove,
-      previewMode, PREVIEW_MODES, previewFrameWidth, previewPaneWidth, onSplitDrag, showComponentTooltip,
+      cfIsNew, form, errors, WIDGET_TYPES,
+      cfIsImage, cfIsProduct, cfIsCondProduct, cfIsChart, cfIsText, cfIsInfo,
+      cfIsPopup, cfIsFile, cfIsFileList, cfIsCoupon, cfIsHtmlEditor, cfIsEvent, cfIsCache, cfIsEmbed,
+      cfDisplayRows, cfFileListItems, addFileItem, removeFileItem, updateFileItem,
+      cfPreviewWidget, cfSampleJson, jsonCopied, copyJson, handleSave, handleDelete,
+      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, showComponentTooltip,
       htmlContentEl, htmlSourceMode, toggleHtmlSource,
       dispEnvOptions, hasDispEnv, toggleDispEnv,
     };
@@ -507,15 +507,15 @@ window.DpDispWidgetDtl = {
   <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
     <div style="display:flex;align-items:center;gap:10px;">
       <span style="font-size:15px;font-weight:700;color:#222;">
-        {{ isNew ? '위젯 신규등록' : '위젯 수정' }}
+        {{ cfIsNew ? '위젯 신규등록' : '위젯 수정' }}
       </span>
-      <span v-if="!isNew" style="font-size:11px;background:#eee;color:#666;border-radius:4px;padding:1px 7px;">#{{ String(form.libId).padStart(4,'0') }}</span>
+      <span v-if="!cfIsNew" style="font-size:11px;background:#eee;color:#666;border-radius:4px;padding:1px 7px;">#{{ String(form.libId).padStart(4,'0') }}</span>
     </div>
     <div class="form-actions" style="margin:0;gap:8px;">
       <button @click="openLibPick('copy')" class="btn btn-outline" style="font-size:12px;background:#e3f2fd;color:#1565c0;border-color:#90caf9;">📋 전시위젯Lib 내용복사</button>
       <button @click="openLibPick('ref')"  class="btn btn-outline" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-color:#ce93d8;">🔗 전시위젯Lib 참조</button>
-      <button @click="save"   class="btn btn-primary" style="font-size:13px;">저장</button>
-      <button v-if="!isNew" @click="remove" class="btn btn-outline" style="font-size:13px;color:#e8587a;border-color:#e8587a;">삭제</button>
+      <button @click="handleSave"   class="btn btn-primary" style="font-size:13px;">저장</button>
+      <button v-if="!cfIsNew" @click="handleDelete" class="btn btn-outline" style="font-size:13px;color:#e8587a;border-color:#e8587a;">삭제</button>
       <button @click="$emit('close')" class="btn btn-outline" style="font-size:13px;">닫기</button>
     </div>
     <!-- 위젯Lib 선택 팝업 -->
@@ -659,7 +659,7 @@ window.DpDispWidgetDtl = {
         <div v-if="errors.widgetType" class="field-error" style="margin-bottom:8px;">{{ errors.widgetType }}</div>
 
         <!-- 클릭 액션 (html_editor·file_list·embed 제외) -->
-        <div v-if="!isHtmlEditor && !isFileList && !isEmbed" style="margin-bottom:12px;">
+        <div v-if="!cfIsHtmlEditor && !cfIsFileList && !cfIsEmbed" style="margin-bottom:12px;">
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:8px;">👆 클릭동작</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <div class="form-group" style="margin:0;">
@@ -679,8 +679,8 @@ window.DpDispWidgetDtl = {
         </div>
 
         <!-- 공통 동적 행 -->
-        <div v-if="displayRows.length" style="display:flex;flex-direction:column;gap:10px;">
-          <div v-for="row in displayRows" :key="row?.key" class="form-group" style="margin:0;">
+        <div v-if="cfDisplayRows.length" style="display:flex;flex-direction:column;gap:10px;">
+          <div v-for="row in cfDisplayRows" :key="row?.key" class="form-group" style="margin:0;">
             <label class="form-label">{{ row.label }}</label>
             <input  v-if="row.type==='input'"    v-model="form[row.key]" class="form-control" :placeholder="row.ph||''" style="margin:0;" />
             <input  v-else-if="row.type==='number'"  v-model.number="form[row.key]" type="number" class="form-control" :placeholder="row.ph||''" style="margin:0;" />
@@ -694,7 +694,7 @@ window.DpDispWidgetDtl = {
         </div>
 
         <!-- HTML 에디터 -->
-        <div v-else-if="isHtmlEditor" class="form-group" style="margin:0;">
+        <div v-else-if="cfIsHtmlEditor" class="form-group" style="margin:0;">
           <label class="form-label">HTML 내용</label>
           <div style="display:flex;justify-content:flex-end;margin-bottom:4px;">
             <button @click="toggleHtmlSource"
@@ -711,8 +711,8 @@ window.DpDispWidgetDtl = {
         </div>
 
         <!-- 파일목록 -->
-        <div v-else-if="isFileList">
-          <div v-for="(item, idx) in fileListItems" :key="Math.random()"
+        <div v-else-if="cfIsFileList">
+          <div v-for="(item, idx) in cfFileListItems" :key="Math.random()"
             style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
             <input :value="item.name" @input="updateFileItem(idx,'name',$event.target.value)"
               class="form-control" placeholder="파일명" style="margin:0;flex:1;" />
@@ -757,17 +757,17 @@ window.DpDispWidgetDtl = {
           }">{{ m.label }}</button>
       </div>
       <!-- 디바이스 프레임 -->
-      <div :style="{ width: previewFrameWidth, margin:'0 auto', background:'#fff', border:'1px solid #e4e4e4', borderRadius:'8px', padding:'12px', minHeight:'100px', transition:'width .2s' }">
+      <div :style="{ width: cfPreviewFrameWidth, margin:'0 auto', background:'#fff', border:'1px solid #e4e4e4', borderRadius:'8px', padding:'12px', minHeight:'100px', transition:'width .2s' }">
         <disp-x04-widget
           :params="{ }"
           :disp-opt="{ showBadges: true }"
-          :widget-item="previewWidget"
+          :widget-item="cfPreviewWidget"
         />
       </div>
       <div style="margin-top:12px;font-size:11px;color:#aaa;line-height:1.6;">
         <div>유형: <b>{{ form.widgetType }}</b></div>
         <div v-if="form.tags">태그: {{ form.tags }}</div>
-        <div v-if="!isNew">ID: #{{ String(form.libId).padStart(4,'0') }}</div>
+        <div v-if="!cfIsNew">ID: #{{ String(form.libId).padStart(4,'0') }}</div>
       </div>
 
       <!-- 샘플 JSON -->
@@ -780,7 +780,7 @@ window.DpDispWidgetDtl = {
             {{ jsonCopied ? '✓ 복사됨' : '복사' }}
           </button>
         </div>
-        <pre style="background:#1e1e2e;color:#cdd9e5;border-radius:8px;padding:10px 12px;font-size:10px;line-height:1.55;overflow:auto;max-height:320px;margin:0;white-space:pre-wrap;word-break:break-all;">{{ sampleJson }}</pre>
+        <pre style="background:#1e1e2e;color:#cdd9e5;border-radius:8px;padding:10px 12px;font-size:10px;line-height:1.55;overflow:auto;max-height:320px;margin:0;white-space:pre-wrap;word-break:break-all;">{{ cfSampleJson }}</pre>
       </div>
     </div>
   </div>

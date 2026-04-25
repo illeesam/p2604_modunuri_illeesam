@@ -566,12 +566,12 @@ window.DpDispPanelDtl = {
     const isSectionExpanded = (key) => expandedSections.has(key);
 
     /* row 파라미터 기반 유형 체크 (아코디언 다중 펼치기용) */
-    const rowIsHtmlEditor  = (r) => r?.widgetType === 'html_editor';
-    const rowIsFileList    = (r) => r?.widgetType === 'file_list';
-    const rowIsImage       = (r) => r?.widgetType === 'image_banner';
-    const rowIsText        = (r) => r?.widgetType === 'text_banner';
-    const rowIsProduct     = (r) => ['product_slider','product'].includes(r?.widgetType);
-    const getDisplayRows = (r) => {
+    const fnRowIsHtmlEditor  = (r) => r?.widgetType === 'html_editor';
+    const fnRowIsFileList    = (r) => r?.widgetType === 'file_list';
+    const fnRowIsImage       = (r) => r?.widgetType === 'image_banner';
+    const fnRowIsText        = (r) => r?.widgetType === 'text_banner';
+    const fnRowIsProduct     = (r) => ['product_slider','product'].includes(r?.widgetType);
+    const fnGetDisplayRows = (r) => {
       if (!r) return [];
       const wt = r.widgetType;
       if (wt === 'image_banner')   return [{ key:'imageUrl', label:'이미지 URL', type:'input', ph:'https://...' },{ key:'altText', label:'Alt 텍스트', type:'input', ph:'' },{ key:'linkUrl', label:'링크 URL', type:'input', ph:'https://...' }];
@@ -589,11 +589,11 @@ window.DpDispPanelDtl = {
       if (wt === 'widget_embed')   return [{ key:'embedCode', label:'임베드 코드', type:'code', ph:'<iframe ...></iframe>' }];
       return [];
     };
-    const getRelatedEvent  = (r) => { const eid = r?.eventId; if (!eid) return null; return (Array.isArray(events) ? events : []).find(e => String(e.eventId) === String(eid)) || null; };
-    const getFileListItems = (r) => { try { return JSON.parse(r?.fileListJson || '[]'); } catch { return []; } };
-    const addFileItemAt    = (r) => { r.fileListJson = JSON.stringify([...getFileListItems(r), { name: '', url: '' }]); };
-    const removeFileItemAt = (r, idx) => { r.fileListJson = JSON.stringify(getFileListItems(r).filter((_, i) => i !== idx)); };
-    const setFileItem      = (r, idx, field, val) => { const items = getFileListItems(r); items[idx] = { ...items[idx], [field]: val }; r.fileListJson = JSON.stringify(items); };
+    const fnGetRelatedEvent  = (r) => { const eid = r?.eventId; if (!eid) return null; return (Array.isArray(events) ? events : []).find(e => String(e.eventId) === String(eid)) || null; };
+    const fnGetFileListItems = (r) => { try { return JSON.parse(r?.fileListJson || '[]'); } catch { return []; } };
+    const fnAddFileItemAt    = (r) => { r.fileListJson = JSON.stringify([...fnGetFileListItems(r), { name: '', url: '' }]); };
+    const fnRemoveFileItemAt = (r, idx) => { r.fileListJson = JSON.stringify(fnGetFileListItems(r).filter((_, i) => i !== idx)); };
+    const fnSetFileItem      = (r, idx, field, val) => { const items = fnGetFileListItems(r); items[idx] = { ...items[idx], [field]: val }; r.fileListJson = JSON.stringify(items); };
     /* 위젯 이동 (아코디언 모드 — tab 변경 없이) */
     const moveRowAt = (rowIdx, dir) => {
       const target = rowIdx + dir;
@@ -734,9 +734,9 @@ window.DpDispPanelDtl = {
       cardPreview, openCardPreview, closeCardPreview, cfCurrentAreaLabel, wLabel,
       viewAll,
       expandedSections, toggleSection, isSectionExpanded,
-      rowIsHtmlEditor, rowIsFileList, rowIsImage, rowIsText, rowIsProduct,
-      getDisplayRows, getRelatedEvent,
-      getFileListItems, addFileItemAt, removeFileItemAt, setFileItem,
+      fnRowIsHtmlEditor, fnRowIsFileList, fnRowIsImage, fnRowIsText, fnRowIsProduct,
+      fnGetDisplayRows, fnGetRelatedEvent,
+      fnGetFileListItems, fnAddFileItemAt, fnRemoveFileItemAt, fnSetFileItem,
       moveRowAt,
     };
   },
@@ -1520,7 +1520,7 @@ window.DpDispPanelDtl = {
 
             <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">🎨 표현 설정</div>
             <!-- HTML 에디터: 펼치기 모드에서는 textarea로 표시 -->
-            <div v-if="rowIsHtmlEditor(r)" style="margin-bottom:20px;">
+            <div v-if="fnRowIsHtmlEditor(r)" style="margin-bottom:20px;">
               <div v-if="viewMode" style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;">
                 <span v-if="r.htmlContent" v-html="r.htmlContent"></span>
                 <span v-else style="color:#bbb;">내용 없음</span>
@@ -1528,10 +1528,10 @@ window.DpDispPanelDtl = {
               <textarea v-else class="form-control" v-model="r.htmlContent" rows="6" style="font-family:monospace;font-size:12px;" placeholder="HTML 코드를 입력하세요 (탭 모드에서 Quill 에디터 사용 가능)"></textarea>
             </div>
             <!-- 파일목록 -->
-            <div v-else-if="rowIsFileList(r)" style="margin-bottom:20px;">
+            <div v-else-if="fnRowIsFileList(r)" style="margin-bottom:20px;">
               <div v-if="viewMode">
-                <div v-if="getFileListItems(r).length===0" style="color:#bbb;padding:12px 0;font-size:13px;">첨부파일 없음</div>
-                <div v-for="(f, fi) in getFileListItems(r)" :key="fi" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #e8e8e8;border-radius:6px;margin-bottom:6px;background:#fafafa;">
+                <div v-if="fnGetFileListItems(r).length===0" style="color:#bbb;padding:12px 0;font-size:13px;">첨부파일 없음</div>
+                <div v-for="(f, fi) in fnGetFileListItems(r)" :key="fi" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #e8e8e8;border-radius:6px;margin-bottom:6px;background:#fafafa;">
                   <span>📎</span>
                   <a v-if="f.url" :href="f.url" target="_blank" style="font-size:13px;color:#2563eb;text-decoration:none;flex:1;">{{ f.name || f.url }}</a>
                   <span v-else style="font-size:13px;color:#555;flex:1;">{{ f.name }}</span>
@@ -1541,24 +1541,24 @@ window.DpDispPanelDtl = {
                 <table class="bo-table" style="margin-bottom:8px;">
                   <thead><tr><th style="width:36px;text-align:center;">#</th><th style="width:200px;">파일명</th><th>URL / 경로</th><th style="width:36px;"></th></tr></thead>
                   <tbody>
-                    <tr v-if="getFileListItems(r).length===0"><td colspan="4" style="text-align:center;color:#bbb;padding:16px;font-size:13px;">첨부파일이 없습니다.</td></tr>
-                    <tr v-for="(f, fi) in getFileListItems(r)" :key="fi">
+                    <tr v-if="fnGetFileListItems(r).length===0"><td colspan="4" style="text-align:center;color:#bbb;padding:16px;font-size:13px;">첨부파일이 없습니다.</td></tr>
+                    <tr v-for="(f, fi) in fnGetFileListItems(r)" :key="fi">
                       <td style="text-align:center;color:#aaa;font-size:12px;">{{ fi+1 }}</td>
-                      <td style="padding:4px 6px;"><input class="form-control" :value="f.name" @input="setFileItem(r,fi,'name',$event.target.value)" placeholder="파일명.pdf" style="margin:0;" /></td>
-                      <td style="padding:4px 6px;"><input class="form-control" :value="f.url" @input="setFileItem(r,fi,'url',$event.target.value)" placeholder="https://..." style="margin:0;" /></td>
-                      <td style="text-align:center;padding:4px;"><button @click="removeFileItemAt(r,fi)" style="background:none;border:1px solid #fca5a5;border-radius:4px;color:#ef4444;cursor:pointer;padding:2px 7px;font-size:12px;line-height:1.4;">✕</button></td>
+                      <td style="padding:4px 6px;"><input class="form-control" :value="f.name" @input="fnSetFileItem(r,fi,'name',$event.target.value)" placeholder="파일명.pdf" style="margin:0;" /></td>
+                      <td style="padding:4px 6px;"><input class="form-control" :value="f.url" @input="fnSetFileItem(r,fi,'url',$event.target.value)" placeholder="https://..." style="margin:0;" /></td>
+                      <td style="text-align:center;padding:4px;"><button @click="fnRemoveFileItemAt(r,fi)" style="background:none;border:1px solid #fca5a5;border-radius:4px;color:#ef4444;cursor:pointer;padding:2px 7px;font-size:12px;line-height:1.4;">✕</button></td>
                     </tr>
                   </tbody>
                 </table>
-                <button @click="addFileItemAt(r)" style="font-size:12px;padding:5px 12px;border:1px dashed #aaa;border-radius:5px;background:#fafafa;cursor:pointer;color:#555;">+ 파일 추가</button>
+                <button @click="fnAddFileItemAt(r)" style="font-size:12px;padding:5px 12px;border:1px dashed #aaa;border-radius:5px;background:#fafafa;cursor:pointer;color:#555;">+ 파일 추가</button>
               </div>
             </div>
             <!-- 일반 표현 설정 -->
-            <div v-else-if="getDisplayRows(r).length===0" style="color:#bbb;text-align:center;padding:20px 0 24px;font-size:13px;">위젯 유형을 선택하면 표현 설정 항목이 표시됩니다.</div>
+            <div v-else-if="fnGetDisplayRows(r).length===0" style="color:#bbb;text-align:center;padding:20px 0 24px;font-size:13px;">위젯 유형을 선택하면 표현 설정 항목이 표시됩니다.</div>
             <table v-else class="bo-table" style="margin-bottom:20px;">
               <thead><tr><th style="width:180px;">항목</th><th>값</th></tr></thead>
               <tbody>
-                <tr v-for="drow in getDisplayRows(r)" :key="drow?.key">
+                <tr v-for="drow in fnGetDisplayRows(r)" :key="drow?.key">
                   <td style="font-weight:500;color:#555;vertical-align:middle;">{{ drow.label }}</td>
                   <td style="padding:6px 8px;">
                     <input v-if="drow.type==='input'" class="form-control" v-model="r[drow.key]" :placeholder="drow.ph" style="margin:0;" :readonly="viewMode" />
@@ -1579,24 +1579,24 @@ window.DpDispPanelDtl = {
                         <input class="form-control" v-model="r.eventId" placeholder="이벤트 ID" style="margin:0;max-width:160px;" :readonly="viewMode" />
                         <span v-if="r.eventId" class="ref-link" @click="showRefModal('event', Number(r.eventId))">보기</span>
                       </div>
-                      <div v-if="getRelatedEvent(r)" style="margin-top:6px;padding:8px 12px;background:#e6f4ff;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px;">
-                        <b>{{ getRelatedEvent(r).title }}</b>
-                        <span class="badge badge-green">{{ getRelatedEvent(r).status }}</span>
-                        <span style="color:#888;">{{ getRelatedEvent(r).startDate }} ~ {{ getRelatedEvent(r).endDate }}</span>
+                      <div v-if="fnGetRelatedEvent(r)" style="margin-top:6px;padding:8px 12px;background:#e6f4ff;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px;">
+                        <b>{{ fnGetRelatedEvent(r).title }}</b>
+                        <span class="badge badge-green">{{ fnGetRelatedEvent(r).status }}</span>
+                        <span style="color:#888;">{{ fnGetRelatedEvent(r).startDate }} ~ {{ fnGetRelatedEvent(r).endDate }}</span>
                       </div>
                       <div v-else-if="r.eventId" style="margin-top:6px;font-size:12px;color:#aaa;">해당 이벤트를 찾을 수 없습니다.</div>
                     </div>
                   </td>
                 </tr>
-                <tr v-if="rowIsText(r) && r.textContent">
+                <tr v-if="fnRowIsText(r) && r.textContent">
                   <td style="font-weight:500;color:#555;">미리보기</td>
                   <td style="padding:6px 8px;"><div style="padding:14px;border-radius:6px;font-size:13px;" :style="{background:r.bgColor,color:r.textColor}">{{ r.textContent }}</div></td>
                 </tr>
-                <tr v-if="rowIsImage(r) && r.imageUrl">
+                <tr v-if="fnRowIsImage(r) && r.imageUrl">
                   <td style="font-weight:500;color:#555;">이미지 미리보기</td>
                   <td style="padding:6px 8px;"><img :src="r.imageUrl" style="max-height:120px;border-radius:6px;border:1px solid #e8e8e8;" @error="$event.target.style.display='none'" /></td>
                 </tr>
-                <tr v-if="rowIsProduct(r) && r.productIds">
+                <tr v-if="fnRowIsProduct(r) && r.productIds">
                   <td style="font-weight:500;color:#555;">상품 링크</td>
                   <td style="padding:6px 8px;">
                     <div style="display:flex;flex-wrap:wrap;gap:6px;">

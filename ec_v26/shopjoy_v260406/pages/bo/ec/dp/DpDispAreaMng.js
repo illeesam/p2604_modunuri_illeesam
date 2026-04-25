@@ -26,7 +26,7 @@ window.DpDispAreaMng = {
       }
     };
     onMounted(() => { fetchData(); });
-    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const fnPathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     const AREA_TYPE_OPTS = [
@@ -232,7 +232,7 @@ window.DpDispAreaMng = {
     };
     const onDragEnd = () => { dragSrc.value = null; dragOverIdx.value = -1; };
 
-    const areaTypeLabel = (v) => (window.safeArrayUtils.safeFind(AREA_TYPE_OPTS, o => o.value === v) || {}).label || '-';
+    const fnAreaTypeLabel = (v) => (window.safeArrayUtils.safeFind(AREA_TYPE_OPTS, o => o.value === v) || {}).label || '-';
     const fnStatusBadge = s => s === 'Y' ? 'badge-green' : 'badge-gray';
 
     /* 영역 하위 패널 목록 */
@@ -249,7 +249,7 @@ window.DpDispAreaMng = {
     };
     const isAreaExpanded = (areaId) => expandedAreas.has(areaId);
 
-    return { codes, areas, loading, error, pathLabel,
+    return { codes, areas, loading, error, fnPathLabel,
       searchKw, searchAreaType, searchUseYn, searchDateStart, searchDateEnd, searchDateRange,
       DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm,
       AREA_TYPE_OPTS, LAYOUT_TYPE_OPTS,
@@ -257,7 +257,7 @@ window.DpDispAreaMng = {
       onSearch, onReset, handleDelete, exportExcel,
       selectedId, openMode, loadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
       dragSrc, dragOverIdx, onDragStart, onDragOver, onDragLeave, onDrop, onDragEnd,
-      areaTypeLabel, fnStatusBadge, panelsOfArea,
+      fnAreaTypeLabel, fnStatusBadge, panelsOfArea,
       expandedAreas, toggleExpandArea, isAreaExpanded,
       cfAreaTree, cfAllAreas, cfFiltered, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll,
     };
@@ -300,7 +300,7 @@ window.DpDispAreaMng = {
   <div class="card" style="width:220px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid #f0f0f0;margin-bottom:8px;">
       <span style="font-size:12px;font-weight:700;color:#555;">표시경로</span>
-      <span style="font-size:10px;color:#aaa;">{{ areaTree.length }}그룹</span>
+      <span style="font-size:10px;color:#aaa;">{{ cfAreaTree.length }}그룹</span>
     </div>
     <div style="display:flex;gap:4px;margin-bottom:8px;">
       <button @click="expandAll" style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">▼ 전체펼치기</button>
@@ -406,10 +406,10 @@ window.DpDispAreaMng = {
               <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
                 <span><b style="color:#888;">표시경로:</b>
                   <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;margin-left:3px;">
-                    {{ pathLabel(a.pathId) || a.displayPath || ((a.codeValue||'').split('_')[0] + '.' + (a.codeLabel || a.codeValue)) }}
+                    {{ fnPathLabel(a.pathId) || a.displayPath || ((a.codeValue||'').split('_')[0] + '.' + (a.codeLabel || a.codeValue)) }}
                   </span>
                 </span>
-                <span><b style="color:#888;">유형:</b> {{ areaTypeLabel(a.areaType) }}</span>
+                <span><b style="color:#888;">유형:</b> {{ fnAreaTypeLabel(a.areaType) }}</span>
                 <span><b style="color:#888;">표시:</b>
                   {{ a.layoutType==='dashboard' ? '🧩 대시보드' : '🔲 그리드 ' + (a.gridCols||1) + '열' }}
                 </span>

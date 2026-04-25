@@ -59,7 +59,7 @@ window.SyAttachMng = {
       grpEditId.value = g.attachGrpId; grpEditMode.value = true;
       Object.assign(grpForm, { ...g });
     };
-    const saveGrp = () => {
+    const handleSaveGrp = () => {
       if (!grpForm.grpNm || !grpForm.grpCode) { props.showToast('그룹명과 코드는 필수입니다.', 'error'); return; }
       if (grpEditId.value === null) {
         if (!Array.isArray(attachGrps)) return;
@@ -73,7 +73,7 @@ window.SyAttachMng = {
       }
       grpEditMode.value = false;
     };
-    const deleteGrp = async (g) => {
+    const handleDeleteGrp = async (g) => {
       const ok = await props.showConfirm('그룹 삭제', `[${g.grpNm}] 그룹을 삭제하시겠습니까?`);
       if (!ok) return;
       const idx = attachGrps.findIndex(x => x.attachGrpId === g.attachGrpId);
@@ -125,7 +125,7 @@ window.SyAttachMng = {
       fileEditId.value = a.attachId; fileEditMode.value = true;
       Object.assign(fileForm, { ...a });
     };
-    const saveFile = () => {
+    const handleSaveFile = () => {
       if (!fileForm.fileNm || !fileForm.attachGrpId) { props.showToast('그룹과 파일명은 필수입니다.', 'error'); return; }
       const grp = (Array.isArray(attachGrps) ? attachGrps : []).find(g => g.attachGrpId === fileForm.attachGrpId);
       if (fileEditId.value === null) {
@@ -138,7 +138,7 @@ window.SyAttachMng = {
       }
       fileEditMode.value = false;
     };
-    const deleteFile = async (a) => {
+    const handleDeleteFile = async (a) => {
       const ok = await props.showConfirm('파일 삭제', `[${a.fileNm}] 파일을 삭제하시겠습니까?`);
       if (!ok) return;
       const idx = (Array.isArray(attaches) ? attaches : []).findIndex(x => x.attachId === a.attachId);
@@ -158,8 +158,8 @@ window.SyAttachMng = {
 
     return { attaches, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm,
       attachGrps, grpForm, cfTotal,
-      selectedGrpId, grpForm, grpEditId, grpEditMode, selectGrp, openGrpNew, openGrpEdit, saveGrp, deleteGrp,
-      searchKw, fileForm, fileEditId, fileEditMode, applied, cfFilteredFiles, onSearch, onReset, openFileNew, openFileEdit, saveFile, deleteFile,
+      selectedGrpId, grpForm, grpEditId, grpEditMode, selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
+      searchKw, fileForm, fileEditId, fileEditMode, applied, cfFilteredFiles, onSearch, onReset, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
       fnFmtSize, fnStatusBadge,
     };
   },
@@ -208,7 +208,7 @@ window.SyAttachMng = {
             </select>
           </div>
           <div style="display:flex;gap:6px;">
-            <button class="btn btn-primary btn-sm" style="flex:1;" @click="saveGrp">저장</button>
+            <button class="btn btn-primary btn-sm" style="flex:1;" @click="handleSaveGrp">저장</button>
             <button class="btn btn-secondary btn-sm" style="flex:1;" @click="grpEditMode=false">취소</button>
           </div>
         </div>
@@ -225,7 +225,7 @@ window.SyAttachMng = {
             </div>
             <div style="display:flex;gap:4px;" @click.stop>
               <button class="btn btn-blue btn-sm" style="font-size:11px;padding:2px 6px;" @click="openGrpEdit(g)">수정</button>
-              <button class="btn btn-danger btn-sm" style="font-size:11px;padding:2px 6px;" @click="deleteGrp(g)">삭제</button>
+              <button class="btn btn-danger btn-sm" style="font-size:11px;padding:2px 6px;" @click="handleDeleteGrp(g)">삭제</button>
             </div>
           </div>
           <div style="margin-top:4px;">
@@ -294,7 +294,7 @@ window.SyAttachMng = {
             </div>
           </div>
           <div style="display:flex;gap:6px;">
-            <button class="btn btn-primary btn-sm" @click="saveFile">저장</button>
+            <button class="btn btn-primary btn-sm" @click="handleSaveFile">저장</button>
             <button class="btn btn-secondary btn-sm" @click="fileEditMode=false">취소</button>
           </div>
         </div>
@@ -317,7 +317,7 @@ window.SyAttachMng = {
               <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
               <td><div class="actions">
                 <button class="btn btn-blue btn-sm" @click="openFileEdit(a)">수정</button>
-                <button class="btn btn-danger btn-sm" @click="deleteFile(a)">삭제</button>
+                <button class="btn btn-danger btn-sm" @click="handleDeleteFile(a)">삭제</button>
               </div></td>
             </tr>
           </tbody>

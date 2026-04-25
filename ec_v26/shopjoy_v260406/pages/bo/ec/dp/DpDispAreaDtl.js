@@ -31,7 +31,7 @@ window.DpDispAreaDtl = {
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
-    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const fnPathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     const AREA_TYPE_OPTS = [
@@ -257,7 +257,7 @@ window.DpDispAreaDtl = {
       }
     };
 
-    const doCancel = () => { props.navigate('dpDispAreaMng'); };
+    const onCancel = () => { props.navigate('dpDispAreaMng'); };
 
     /* ── 미리보기 액션 ── */
     const openPanelPreview = () => {
@@ -284,7 +284,7 @@ window.DpDispAreaDtl = {
       'file':'파일', 'coupon':'쿠폰', 'html_editor':'HTML',
       'event_banner':'이벤트', 'cache_banner':'캐쉬', 'widget_embed':'위젯',
     };
-    const wLabel = (t) => WIDGET_LABEL[t] || t || '-';
+    const fnWLabel = (t) => WIDGET_LABEL[t] || t || '-';
 
     const addPanelShortcut = () => {
       if (!form.codeId) return props.showToast && props.showToast('먼저 영역을 저장해주세요.', 'error');
@@ -380,13 +380,13 @@ window.DpDispAreaDtl = {
       form.areaBaseVisibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
-    return { codes, areas, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { codes, areas, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
       form, errors, cfIsNew, AREA_TYPE_OPTS, LAYOUT_TYPE_OPTS,
-      handleSave, doCancel, cfRelatedPanels,
+      handleSave, onCancel, cfRelatedPanels,
       pickOpen, pickKw, pickSel, cfAvailablePanels, openPick, closePick, togglePick, confirmPick, removePanel, onPanelPicked, movePanel,
       activeTab, selectTab, cfActivePanel, expanded,
       previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, showComponentTooltip,
-      openPanelPreview, openWidgetPreview, addPanelShortcut, wLabel,
+      openPanelPreview, openWidgetPreview, addPanelShortcut, fnWLabel,
       cfVisibilityOptions, hasPanelVisibility, togglePanelVisibility,
       areaDispEnvOptions, hasAreaDispEnv, toggleAreaDispEnv,
       htmlDescEl,
@@ -574,7 +574,7 @@ window.DpDispAreaDtl = {
             <div class="form-group" style="grid-column:1 / -1;">
               <label class="form-label">표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">영역이 노출되는 경로 (예: FO.모바일메인)</span></label>
               <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
-                <span style="flex:1;">{{ pathLabel(form.pathId) || '경로 선택...' }}</span>
+                <span style="flex:1;">{{ fnPathLabel(form.pathId) || '경로 선택...' }}</span>
                 <button type="button" @click="openPathPick('form')" title="표시경로 선택"
                   :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
                   @mouseover="$event.currentTarget.style.background='#eef2ff'"
@@ -725,7 +725,7 @@ window.DpDispAreaDtl = {
               style="padding:10px 12px;border:1px solid #e0e4ea;border-radius:8px;background:#fafbfc;">
               <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
                 <span style="font-size:11px;color:#aaa;">#{{ w.sortOrder || (wi+1) }}</span>
-                <span style="background:#e8f0fe;color:#1a73e8;border-radius:8px;padding:1px 8px;font-size:10px;">{{ wLabel(w.widgetType) }}</span>
+                <span style="background:#e8f0fe;color:#1a73e8;border-radius:8px;padding:1px 8px;font-size:10px;">{{ fnWLabel(w.widgetType) }}</span>
               </div>
               <div style="font-size:12px;color:#333;font-weight:600;">{{ w.widgetNm || ('위젯 '+(wi+1)) }}</div>
               <div v-if="w.clickAction && w.clickAction!=='none'" style="font-size:10px;color:#888;margin-top:2px;">클릭: {{ w.clickAction }}</div>

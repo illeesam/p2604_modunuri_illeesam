@@ -94,7 +94,7 @@ window.SyBizMng = {
     const openNew = () => { Object.assign(formData, blankForm()); formMode.value = 'new'; };
     const openEdit = (b) => { Object.assign(formData, b); formMode.value = 'edit'; };
     const closeForm = () => { formMode.value = ''; };
-    const saveForm = async () => {
+    const handleSaveForm = async () => {
       if (!formData.bizNo || !formData.bizNm) {
         if (window.boToast) window.boToast('사업자번호와 상호는 필수입니다.', 'error');
         return;
@@ -120,7 +120,7 @@ window.SyBizMng = {
       kw, statusFlt, vendorTypeFlt, STATUS, BIZ_CLASS, VENDOR_TYPES,
       cfFiltered, cfPagedRows, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange,
       pathLabel, vendorTypeLabel, fnVendorTypeBadge, roleCatLabel, roleCatColor, fnStatusBadge, statusLabel,
-      formMode, formData, openNew, openEdit, closeForm, saveForm,
+      formMode, formData, openNew, openEdit, closeForm, handleSaveForm,
       pathPickModal, openPathPick, closePathPick, onPathPicked,
     };
   },
@@ -215,7 +215,7 @@ window.SyBizMng = {
           </span>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-secondary btn-sm" @click="closeForm">취소</button>
-            <button class="btn btn-primary btn-sm" @click="saveForm">저장</button>
+            <button class="btn btn-primary btn-sm" @click="handleSaveForm">저장</button>
           </div>
         </div>
         <div style="padding:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">

@@ -13,7 +13,7 @@ window.DpDispWidgetLibDtl = {
     const onPathPicked = (pathId) => { form.pathId = pathId; };
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
     const widgetLibs = reactive([]);
-    const isNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.editId);
 
     const WIDGET_TYPES = [
       { value: 'image_banner',   label: '이미지 배너' },
@@ -111,7 +111,7 @@ window.DpDispWidgetLibDtl = {
         const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 } });
         widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.list || []));
       } catch (_) {}
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const src = (Array.isArray(widgetLibs) ? widgetLibs : []).find(d => d.libId == props.editId);
         if (src) Object.assign(form, src);
       } else {

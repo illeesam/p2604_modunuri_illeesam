@@ -29,7 +29,7 @@ window.DpDispPanelMng = {
       }
     };
     onMounted(() => { fetchData(); });
-    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const fnPathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const searchKw = ref('');
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
@@ -88,7 +88,7 @@ window.DpDispPanelMng = {
     };
 
     /* 표현설정 요약 */
-    const dispSummary = (d) => {
+    const fnDispSummary = (d) => {
       if (d.widgetType === 'image_banner') return d.imageUrl ? '🖼 ' + d.imageUrl.split('/').pop().slice(0, 20) : '-';
       if (d.widgetType === 'product_slider' || d.widgetType === 'product') return d.productIds ? '상품: ' + d.productIds.slice(0, 20) : '-';
       if (d.widgetType === 'coupon') return d.couponCode ? '쿠폰: ' + d.couponCode : '-';
@@ -259,7 +259,7 @@ window.DpDispPanelMng = {
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'dispId'},{label:'영역',key:'dispArea'},{label:'제목',key:'title'},{label:'유형',key:'dispType'},{label:'상태',key:'status'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}], '전시목록.csv');
 
     /* 영역 레이블 조회 */
-    const areaLabel = (code) => {
+    const fnAreaLabel = (code) => {
       const found = (codes || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
       return found ? found.codeLabel : code;
     };
@@ -284,7 +284,7 @@ window.DpDispPanelMng = {
       'approval_widget':'전자결재', 'map_widget':'지도맵',
       'event_banner':'이벤트', 'cache_banner':'캐쉬', 'widget_embed':'위젯',
     };
-    const wLabel = (t) => WIDGET_TYPE_LABELS[t] || t || '-';
+    const fnWLabel = (t) => WIDGET_TYPE_LABELS[t] || t || '-';
 
     /* 패널미리보기 (카드) */
     const cardPreviewItem = ref(null);
@@ -399,8 +399,8 @@ window.DpDispPanelMng = {
       }));
     });
 
-    return { panels, loading, error, pathLabel, displays, codes,
-      cfPanelTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchVisibility, searchLayoutType, VISIBILITY_OPTS, LAYOUT_TYPE_OPTS, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, dispSummary, exportExcel, areaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
+    return { panels, loading, error, fnPathLabel, displays, codes,
+      cfPanelTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchVisibility, searchLayoutType, VISIBILITY_OPTS, LAYOUT_TYPE_OPTS, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
   },
   template: /* html */`
 <div>
@@ -571,19 +571,19 @@ window.DpDispPanelMng = {
               <!-- label:value 라인 -->
               <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
                 <span><b style="color:#888;">표시경로:</b>
-                  <template v-if="pathLabel(d.pathId) || d.displayPath">
-                    <span style="background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ pathLabel(d.pathId) || d.displayPath }}</span>
+                  <template v-if="fnPathLabel(d.pathId) || d.displayPath">
+                    <span style="background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ fnPathLabel(d.pathId) || d.displayPath }}</span>
                   </template>
                   <template v-else>
                     <span style="font-size:9px;background:#fff3e0;color:#e65100;border-radius:6px;padding:1px 6px;margin-left:3px;font-weight:600;white-space:nowrap;">(패널)</span>
                     <span style="background:#e8f0fe;color:#0277bd;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ (d.area||'').split('_')[0] }}</span>
                     <span style="color:#ccc;margin:0 3px;">·</span>
-                    <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;">{{ areaLabel(d.area) }}</span>
+                    <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;">{{ fnAreaLabel(d.area) }}</span>
                   </template>
                 </span>
                 <span><b style="color:#888;">화면영역:</b>
                   <code style="font-size:10px;background:#f0f2f5;padding:1px 5px;border-radius:3px;margin:0 3px;">{{ d.area }}</code>
-                  {{ areaLabel(d.area) }}
+                  {{ fnAreaLabel(d.area) }}
                 </span>
                 <span><b style="color:#888;">표시:</b>
                   {{ (d.layoutType||'grid')==='dashboard' ? '🧩 대시보드' : '🔲 그리드 ' + (d.gridCols||1) + '열' }}
@@ -651,7 +651,7 @@ window.DpDispPanelMng = {
                           {{ w.widgetNm || ('전시항목 ' + (wi+1)) }}
                         </td>
                         <td style="padding:4px 8px;text-align:center;">
-                          <span style="background:#e8f0fe;color:#1a73e8;border-radius:8px;padding:1px 7px;font-size:10px;">{{ wLabel(w.widgetType) }}</span>
+                          <span style="background:#e8f0fe;color:#1a73e8;border-radius:8px;padding:1px 7px;font-size:10px;">{{ fnWLabel(w.widgetType) }}</span>
                         </td>
                         <td style="padding:4px 8px;text-align:center;color:#888;">{{ w.clickAction || '-' }}</td>
                         <td style="padding:4px 8px;text-align:center;">
@@ -722,7 +722,7 @@ window.DpDispPanelMng = {
         <!-- 영역 + 상태 배지 -->
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
           <code style="font-size:11px;background:#f0f2f5;color:#555;padding:3px 8px;border-radius:4px;letter-spacing:.3px;">{{ cardPreviewItem.area }}</code>
-          <span style="font-size:12px;background:#e8f4fd;color:#1565c0;border-radius:10px;padding:2px 10px;">{{ areaLabel(cardPreviewItem.area) }}</span>
+          <span style="font-size:12px;background:#e8f4fd;color:#1565c0;border-radius:10px;padding:2px 10px;">{{ fnAreaLabel(cardPreviewItem.area) }}</span>
           <span class="badge" :class="cardPreviewItem.status==='활성'?'badge-green':'badge-gray'" style="font-size:12px;">{{ cardPreviewItem.status }}</span>
         </div>
         <!-- 패널명 -->
@@ -749,7 +749,7 @@ window.DpDispPanelMng = {
             <div v-for="(r, i) in cardPreviewItem.rows" :key="Math.random()"
               style="display:flex;align-items:center;gap:10px;padding:9px 14px;border:1px solid #f0f0f0;border-radius:8px;margin-bottom:6px;background:#fafafa;">
               <span style="font-size:11px;color:#bbb;font-weight:700;min-width:16px;text-align:center;">{{ r.sortOrder || i+1 }}</span>
-              <span style="font-size:13px;font-weight:600;color:#333;flex:1;">{{ wLabel(r.widgetType) }}</span>
+              <span style="font-size:13px;font-weight:600;color:#333;flex:1;">{{ fnWLabel(r.widgetType) }}</span>
               <span v-if="r.clickAction && r.clickAction !== 'none'"
                 style="font-size:10px;color:#888;background:#f0f0f0;border-radius:8px;padding:2px 8px;">{{ r.clickAction }}</span>
             </div>
