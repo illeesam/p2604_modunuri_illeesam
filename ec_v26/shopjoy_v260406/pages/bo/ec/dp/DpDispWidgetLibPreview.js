@@ -184,8 +184,7 @@ window.DpDispWidgetLibPreview = {
       filterCondition: '',
       filterAuthReq: '',
       filterAuthGrade: '',
-      kw: '',
-    });
+      kw: '',, dashCanvas: null});
 
     const searchParamOrg = reactive({
       previewDate: today,
@@ -215,8 +214,7 @@ window.DpDispWidgetLibPreview = {
     });
 
     /* ── 트리 선택 ── */
-    const selectedLibId = ref(null);
-    const onTreeSelect  = (lib) => { selectedLibId.value = lib.libId; };
+        const onTreeSelect  = (lib) => { uiState.selectedLibId = lib.libId; };
 
     /* ── 트리 상태 ── */
     const cfTree = computed(() => {
@@ -294,8 +292,7 @@ window.DpDispWidgetLibPreview = {
     const onNodeDragEnd = () => { window._dragWidgetLibs = null; };
 
     /* ── 그리드 탭 ── */
-    const previewGrid = ref('grid1');
-    const GRID_TABS   = [
+        const GRID_TABS   = [
       { id:'grid1',     label:'grid1',     cols:1 },
       { id:'grid2',     label:'grid2',     cols:2 },
       { id:'grid3',     label:'grid3',     cols:3 },
@@ -305,8 +302,7 @@ window.DpDispWidgetLibPreview = {
     const GRID_COLS = { grid1:1, grid2:2, grid3:3, grid4:4 };
 
     /* ── 반응형 뷰포트 (grid1~4 전용) ── */
-    const viewportMode = ref('desktop');
-    const VIEWPORT = {
+        const VIEWPORT = {
       desktop: { label:'🖥 PC',     width: null  },
       tablet:  { label:'📟 태블릿', width:'768px' },
       mobile:  { label:'📱 모바일', width:'375px' },
@@ -319,11 +315,11 @@ window.DpDispWidgetLibPreview = {
         grid3: 'repeat(auto-fill,minmax(max(calc(33.333% - 6px),190px),1fr))',
         grid4: 'repeat(auto-fill,minmax(max(calc(25% - 6px),220px),1fr))',
       };
-      return map[previewGrid.value] || 'repeat(1,1fr)';
+      return map[uiState.previewGrid] || 'repeat(1,1fr)';
     });
 
     /* 실제컨텐츠 토글 */
-    const uiState = reactive({ dashDragOver: false, showRealContent: false });
+    const uiState = reactive({ dashDragOver: false, showRealContent: false, selectedLibId: null, previewGrid: 'grid1', viewportMode: 'desktop', dragOverIdx: -1, spanPopupIdx: -1});
 
     /* ── 그리드 슬롯 (탭별 동적 배열) ── */
     const makeInit = (cols) => Array(cols * 2).fill(null);
@@ -333,7 +329,7 @@ window.DpDispWidgetLibPreview = {
       grid3: makeInit(3),
       grid4: makeInit(4),
     });
-    const cfCurrentSlots = computed(() => tabSlots[previewGrid.value] || []);
+    const cfCurrentSlots = computed(() => tabSlots[uiState.previewGrid] || []);
 
     /* 마지막 행에 아이템 있으면 자동으로 행 추가 */
     const autoExpand = (tabId) => {
@@ -347,11 +343,10 @@ window.DpDispWidgetLibPreview = {
     };
 
     /* ── 드래그·드롭 (그리드) ── */
-    const dragOverIdx = ref(-1);
-    const onDragOver  = (e, idx) => { e.preventDefault(); dragOverIdx.value = idx; };
-    const onDragLeave = () => { dragOverIdx.value = -1; };
+        const onDragOver  = (e, idx) => { e.preventDefault(); uiState.dragOverIdx = idx; };
+    const onDragLeave = () => { uiState.dragOverIdx = -1; };
     const onDrop = (e, idx) => {
-      e.preventDefault(); dragOverIdx.value = -1;
+      e.preventDefault(); uiState.dragOverIdx = -1;
 
       /* ── 노드 일괄 배치 ── */
       const nodeLibs = window._dragWidgetLibs;
@@ -361,7 +356,7 @@ window.DpDispWidgetLibPreview = {
           props.showToast(`노드 하위 위젯이 ${nodeLibs.length}개로 40개를 초과합니다. 배치할 수 없습니다.`, 'error');
           return;
         }
-        const tabId = previewGrid.value;
+        const tabId = uiState.previewGrid;
         const arr   = tabSlots[tabId];
         const cols  = GRID_COLS[tabId] || 1;
         let placed = 0, i = idx;
@@ -379,39 +374,37 @@ window.DpDispWidgetLibPreview = {
       /* ── 단일 위젯 배치 ── */
       const lib = window._dragWidgetLib;
       if (!lib) return;
-      const tabId = previewGrid.value;
+      const tabId = uiState.previewGrid;
       tabSlots[tabId].splice(idx, 1, { ...lib, colSpan: 1, rowSpan: 1 });
       autoExpand(tabId);
     };
-    const removeSlot = (idx) => { tabSlots[previewGrid.value].splice(idx, 1, null); };
+    const removeSlot = (idx) => { tabSlots[uiState.previewGrid].splice(idx, 1, null); };
 
     /* ── colspan / rowspan 조절 ── */
     const setSpan = (idx, axis, delta) => {
-      const slot = tabSlots[previewGrid.value][idx];
+      const slot = tabSlots[uiState.previewGrid][idx];
       if (!slot) return;
-      const maxCol = GRID_COLS[previewGrid.value] || 1;
+      const maxCol = GRID_COLS[uiState.previewGrid] || 1;
       if (axis === 'col') slot.colSpan = Math.max(1, Math.min(maxCol, (slot.colSpan || 1) + delta));
       if (axis === 'row') slot.rowSpan = Math.max(1, Math.min(4,      (slot.rowSpan || 1) + delta));
     };
 
     /* ── span 팝업 ── */
-    const spanPopupIdx = ref(-1);
-    const toggleSpanPopup = (e, idx) => {
+        const toggleSpanPopup = (e, idx) => {
       e.stopPropagation();
-      spanPopupIdx.value = spanPopupIdx.value === idx ? -1 : idx;
+      uiState.spanPopupIdx = uiState.spanPopupIdx === idx ? -1 : idx;
     };
-    const closeSpanPopup = () => { spanPopupIdx.value = -1; };
+    const closeSpanPopup = () => { uiState.spanPopupIdx = -1; };
 
     /* ── 대시보드: 자유 배치 + 크기 조절 ── */
     const dashItems  = reactive([]); // { id, lib, x, y, w, h }
-    const dashCanvas = ref(null);
-
+    
     const onDashDragOver = (e) => { e.preventDefault(); uiState.dashDragOver = true; };
     const onDashDragLeave = () => { uiState.dashDragOver = false; };
     const onDashDrop = (e) => {
       e.preventDefault(); uiState.dashDragOver = false;
-      if (!dashCanvas.value) return;
-      const rect = dashCanvas.value.getBoundingClientRect();
+      if (!searchParam.dashCanvas) return;
+      const rect = searchParam.dashCanvas.getBoundingClientRect();
 
       /* ── 노드 일괄 배치 ── */
       const nodeLibs = window._dragWidgetLibs;
@@ -480,16 +473,16 @@ window.DpDispWidgetLibPreview = {
 
     /* ── 배치 수 / 초기화 ── */
     const cfPlacedCount = computed(() =>
-      previewGrid.value === 'dashboard'
+      uiState.previewGrid === 'dashboard'
         ? dashItems.length
         : window.safeArrayUtils.safeFilter(cfCurrentSlots, Boolean).length
     );
     const resetCurrent = () => {
-      if (previewGrid.value === 'dashboard') {
+      if (uiState.previewGrid === 'dashboard') {
         dashItems.splice(0);
       } else {
-        const cols = GRID_COLS[previewGrid.value];
-        const arr  = tabSlots[previewGrid.value];
+        const cols = GRID_COLS[uiState.previewGrid];
+        const arr  = tabSlots[uiState.previewGrid];
         arr.splice(0, arr.length, ...makeInit(cols));
       }
     };

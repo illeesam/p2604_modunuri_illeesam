@@ -91,7 +91,7 @@ window.Contact = {
   `,
   setup(props) {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, openFaq: null});
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -120,8 +120,7 @@ window.Contact = {
 
     const form = reactive({ name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
     const errors = reactive({});
-    const openFaq = ref(null);
-
+    
     const clearErr = k => { if (errors[k] !== undefined) delete errors[k]; };
 
     const validate = () => {

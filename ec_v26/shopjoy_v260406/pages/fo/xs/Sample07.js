@@ -3,7 +3,7 @@ window.XsSample07 = {
   name: 'XsSample07',
   setup() {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0});;
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -28,7 +28,7 @@ window.XsSample07 = {
 
     /* ===== Tree (JSON 로딩) ===== */
     const treeRoot   = reactive([]);
-    const uiState    = reactive({ uiState.treeLoaded: false, settingsOpen: false, uiState.histResSending: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0});
 
     const makeNode = n => {
       const node = reactive({
@@ -137,8 +137,7 @@ window.XsSample07 = {
     };
 
     /* ===== Tree Search & Flatten ===== */
-    const treeSearch = ref('');
-    const toggleNode = node => { if (node.type !== 'req') node.open = !node.open; };
+        const toggleNode = node => { if (node.type !== 'req') node.open = !node.open; };
 
     const flattenTree = (nodes, depth = 0) => {
       const result = [];
@@ -164,7 +163,7 @@ window.XsSample07 = {
     const saveSettings = () => {
       try {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify({
-          hostUrl: hostUrl.value, token: token.value,
+          hostUrl: uiState.hostUrl, token: uiState.token,
           defHeaders: defHeaders.filter(h => h.k.trim()),
         }));
       } catch {}
@@ -172,8 +171,8 @@ window.XsSample07 = {
     const loadSettings = () => {
       try {
         const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-        if (s.hostUrl) hostUrl.value = s.hostUrl;
-        if (s.token)   token.value   = s.token;
+        if (s.hostUrl) uiState.hostUrl = s.hostUrl;
+        if (s.token)   uiState.token   = s.token;
         if (s.defHeaders?.length) {
           defHeaders.splice(0);
           s.defHeaders.forEach(h => defHeaders.push({ ...h }));
@@ -196,10 +195,9 @@ window.XsSample07 = {
 
     /* ===== Tab System ===== */
     const openTabs    = reactive([]);
-    const activeTabId = ref(null);
-    let _tabSeq = 0;
+        let _tabSeq = 0;
 
-    const cfActiveTab = computed(() => openTabs.find(t => t.tabId === activeTabId.value) || null);
+    const cfActiveTab = computed(() => openTabs.find(t => t.tabId === uiState.activeTabId) || null);
 
     const makeTab = (node) => {
       const parentLabel = findParentLabel(treeRoot, node.id) || '';
@@ -232,10 +230,10 @@ window.XsSample07 = {
     const selectApiNode = node => {
       if (node.type !== 'req') return;
       const existing = openTabs.find(t => t.nodeId === node.id);
-      if (existing) { activeTabId.value = existing.tabId; return; }
+      if (existing) { uiState.activeTabId = existing.tabId; return; }
       const tab = makeTab(node);
       openTabs.push(tab);
-      activeTabId.value = tab.tabId;
+      uiState.activeTabId = tab.tabId;
     };
 
     /* ===== 자동실행 타이머 관리 ===== */
@@ -270,8 +268,7 @@ window.XsSample07 = {
     };
 
     /* ===== 자동실행 팝업 ===== */
-    const autoPopupTabId = ref(null);
-    const autoPopupPos   = reactive({ top: 0, left: 0 });
+        const autoPopupPos   = reactive({ top: 0, left: 0 });
 
     const SECS  = [1,2,3,4,5,6,7,10,15,20,30,50,60];
     const MINS  = [1,2,3,4,5,10,15,20,30];
@@ -288,17 +285,17 @@ window.XsSample07 = {
       evt.stopPropagation();
       // 이미 자동실행 중이면 토글(끄기)
       if (tab.autoMs) { startAutoRun(tab, 0, ''); return; }
-      if (autoPopupTabId.value === tab.tabId) { autoPopupTabId.value = null; return; }
+      if (uiState.autoPopupTabId === tab.tabId) { uiState.autoPopupTabId = null; return; }
       const rect = evt.currentTarget.getBoundingClientRect();
       autoPopupPos.top  = rect.top;
       autoPopupPos.left = rect.right + 6;
-      autoPopupTabId.value = tab.tabId;
+      uiState.autoPopupTabId = tab.tabId;
     };
-    const closeAutoPopup = () => { autoPopupTabId.value = null; };
+    const closeAutoPopup = () => { uiState.autoPopupTabId = null; };
 
     const selectAuto = (tab, ms, label) => {
       startAutoRun(tab, ms, label);
-      autoPopupTabId.value = null;
+      uiState.autoPopupTabId = null;
     };
 
     const closeTab = (tabId, e) => {
@@ -307,18 +304,18 @@ window.XsSample07 = {
       const idx = openTabs.findIndex(t => t.tabId === tabId);
       if (idx === -1) return;
       openTabs.splice(idx, 1);
-      if (activeTabId.value === tabId) {
+      if (uiState.activeTabId === tabId) {
         const next = openTabs[idx] || openTabs[idx - 1];
-        activeTabId.value = next ? next.tabId : null;
+        uiState.activeTabId = next ? next.tabId : null;
       }
-      if (autoPopupTabId.value === tabId) autoPopupTabId.value = null;
+      if (uiState.autoPopupTabId === tabId) uiState.autoPopupTabId = null;
     };
 
     const closeAllTabs = () => {
       openTabs.forEach(t => stopAutoRun(t.tabId));
       openTabs.splice(0);
-      activeTabId.value = null;
-      autoPopupTabId.value = null;
+      uiState.activeTabId = null;
+      uiState.autoPopupTabId = null;
     };
 
     /* ===== Toast ===== */
@@ -355,7 +352,7 @@ window.XsSample07 = {
     const buildUrl = (tab) => {
       let base = tab.reqUrl.trim();
       if (!base.startsWith('http')) {
-        base = hostUrl.value.replace(/\/$/, '') + (base.startsWith('/') ? base : '/' + base);
+        base = uiState.hostUrl.replace(/\/$/, '') + (base.startsWith('/') ? base : '/' + base);
       }
       const params = tab.reqParams.filter(p => safeStr(p.k).trim());
       if (params.length) {
@@ -376,7 +373,7 @@ window.XsSample07 = {
       const headers = {};
       defHeaders.filter(h => safeStr(h.k).trim()).forEach(h => { headers[safeStr(h.k)] = safeStr(h.v); });
       tab.reqHeaders.filter(h => safeStr(h.k).trim()).forEach(h => { headers[safeStr(h.k)] = safeStr(h.v); });
-      if (token.value.trim()) headers['Authorization'] = `Bearer ${token.value.trim()}`;
+      if (uiState.token.trim()) headers['Authorization'] = `Bearer ${uiState.token.trim()}`;
       let status = null, elapsed = null;
       try {
         const config = { method, url: finalUrl, headers };
@@ -407,8 +404,8 @@ window.XsSample07 = {
             method: tab.reqMethod, url: tab.reqUrl,
             params: _safeReqParams, headers: _safeReqHeaders,
             body: tab.reqBody,
-            token: token.value,
-            host: hostUrl.value,
+            token: uiState.token,
+            host: uiState.hostUrl,
             defHeaders: defHeaders.filter(h => safeStr(h.k).trim()).map(h => ({ k: safeStr(h.k), v: safeStr(h.v) })),
           },
         });
@@ -431,15 +428,15 @@ window.XsSample07 = {
     const history      = reactive([]);
     const histSelIdx   = ref(null);
     const histModal    = ref(null);
-    const histModalTab = ref('req');  // 'req' | 'res'
+      // 'req' | 'res'
 
     // 편집용 복사본 (histModal 원본은 건드리지 않음)
     const editReq = reactive({ method:'', host:'', url:'', token:'', body:'', params:[], headers:[] });
 
     const selectHistory = (h, idx) => {
-      histSelIdx.value   = idx;
-      histModal.value    = h;
-      histModalTab.value = 'req';
+      uiState.histSelIdx   = idx;
+      uiState.histModal    = h;
+      uiState.histModalTab = 'req';
       // editReq 에 딥카피
       editReq.method  = h.reqInfo.method  || '';
       editReq.host    = h.reqInfo.host    || '';
@@ -449,13 +446,13 @@ window.XsSample07 = {
       editReq.params  = (h.reqInfo.params  || []).map(p  => ({k:p.k,  v:p.v}));
       editReq.headers = (h.reqInfo.headers || []).map(h2 => ({k:h2.k, v:h2.v}));
     };
-    const closeHistModal = () => { histModal.value = null; };
+    const closeHistModal = () => { uiState.histModal = null; };
 
     const histResJson     = ref('');
     const histResStatus   = ref(null);
     const histResTime     = ref(null);
     const histResTs       = ref('');
-    const histResProgress = ref(0);  // 0~100, 전송 중 진행 표시
+      // 0~100, 전송 중 진행 표시
 
     const resendHist = async () => {
       if (!cfActiveTab.value) return;
@@ -465,30 +462,30 @@ window.XsSample07 = {
       tab.reqBody   = editReq.body || '';
       tab.reqParams.splice(0, tab.reqParams.length, ...editReq.params.map(p=>({...p})), {k:'',v:''});
       tab.reqHeaders.splice(0, tab.reqHeaders.length, ...editReq.headers.map(h=>({...h})), {k:'',v:''});
-      if (editReq.token) token.value   = editReq.token;
-      if (editReq.host)  hostUrl.value = editReq.host;
+      if (editReq.token) uiState.token   = editReq.token;
+      if (editReq.host)  uiState.hostUrl = editReq.host;
       // 응답 초기화 + 전송 시작
-      histResJson.value     = '';
-      histResStatus.value   = null;
-      histResTime.value     = null;
-      histResTs.value       = '';
-      histResProgress.value = 0;
+      uiState.histResJson     = '';
+      uiState.histResStatus   = null;
+      uiState.histResTime     = null;
+      uiState.histResTs       = '';
+      uiState.histResProgress = 0;
       uiState.histResSending  = true;
       // progress 애니메이션: 0→85 느리게, 나머지는 완료 후 100
       const _start = Date.now();
       const _tick = setInterval(() => {
         const elapsed = Date.now() - _start;
         // 5초 안에 85까지 수렴
-        histResProgress.value = Math.min(85, Math.round((elapsed / 5000) * 85));
+        uiState.histResProgress = Math.min(85, Math.round((elapsed / 5000) * 85));
       }, 80);
       await doSend(tab);
       clearInterval(_tick);
-      histResProgress.value = 100;
+      uiState.histResProgress = 100;
       uiState.histResSending  = false;
-      histResJson.value     = tab.resJson;
-      histResStatus.value   = tab.resStatus;
-      histResTime.value     = tab.resTime;
-      histResTs.value       = new Date().toTimeString().slice(0, 8);
+      uiState.histResJson     = tab.resJson;
+      uiState.histResStatus   = tab.resStatus;
+      uiState.histResTime     = tab.resTime;
+      uiState.histResTs       = new Date().toTimeString().slice(0, 8);
     };
 
     /* ===== Response Grid (active tab) ===== */
@@ -516,7 +513,7 @@ window.XsSample07 = {
         tab = makeTab(node);
         openTabs.push(tab);
       }
-      activeTabId.value = tab.tabId;
+      uiState.activeTabId = tab.tabId;
       doSend(tab);
     };
 

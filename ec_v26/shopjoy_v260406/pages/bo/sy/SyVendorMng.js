@@ -5,7 +5,7 @@ window.SyVendorMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const vendors = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null});
     const codes = reactive({ vendor_status: [] });
 
     // onMounted에서 API 로드
@@ -40,10 +40,9 @@ window.SyVendorMng = {
 
 
     /* ── 좌측 표시경로 트리 ── */
-    const selectedPath = ref(null);
-    const expanded = reactive(new Set(['']));
+        const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
-    const selectNode = (path) => { selectedPath.value = path; };
+    const selectNode = (path) => { uiState.selectedPath = path; };
     const cfTree = computed(() => window.boCmUtil.buildPathTree('sy_vendor'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
@@ -104,20 +103,19 @@ window.SyVendorMng = {
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
-    const selectedId = ref(null);
-    const openMode = ref('view'); // 'view' | 'edit'
-    const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
-    const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
-    const closeDetail = () => { selectedId.value = null; };
+    const uiStateDetail = reactive({ selectedId: null: 'view' });
+    const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
+    const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
+    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
+    const closeDetail = () => { uiStateDetail.selectedId = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'syVendorMng') { selectedId.value = null; return; }
-      if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
+      if (pg === 'syVendorMng') { uiStateDetail.selectedId = null; return; }
+      if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
+    const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
+    const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
     const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
@@ -168,7 +166,7 @@ window.SyVendorMng = {
       if (!ok) return;
       const idx = vendors.findIndex(x => x.vendorId === v.vendorId);
       if (idx !== -1) vendors.splice(idx, 1);
-      if (selectedId.value === v.vendorId) selectedId.value = null;
+      if (uiStateDetail.selectedId === v.vendorId) uiStateDetail.selectedId = null;
       try {
         const res = await window.boApi.delete(`/bo/sy/vendor/${v.vendorId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -186,8 +184,8 @@ window.SyVendorMng = {
     watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
-    return { vendors, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnStatusBadge, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, vendors, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>

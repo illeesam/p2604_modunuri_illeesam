@@ -5,7 +5,7 @@ window.StErpViewMng = {
   setup(props) {
     const { ref, reactive, computed, watch } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({
       erp_statuses: [],
     });
@@ -32,13 +32,11 @@ window.StErpViewMng = {
       }
     });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const dateRange = ref('이번달');
-    const dateStart = ref('');
-    const dateEnd   = ref('');
+            const dateEnd   = ref('');
     const handleDateRangeChange = () => {
-      if (dateRange.value) { const r = window.boCmUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
+      if (uiState.dateRange) { const r = window.boCmUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
-    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
+    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     const slips = reactive([
       { slipId: 'ERP-2026-0411-001', slipDate: '2026-04-11', slipType: '정산', debit: '미지급금',  credit: '현금',      debitAmt: 300000, creditAmt: 300000, description: '2026-03 패션스타일 정산지급',  sendStatus: '전송완료', erpRef: 'ERP-JE-20260411-001' },
@@ -53,8 +51,7 @@ window.StErpViewMng = {
   const searchParam = reactive({
     kw: '',
     type: '',
-    status: ''
-  });
+    status: '', dateEnd: ''});;
   const searchParamOrg = reactive({
     kw: '',
     type: '',
@@ -65,8 +62,8 @@ window.StErpViewMng = {
     const cfFiltered = computed(() => {
       const kw = searchKw.value.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(slips, r => {
-        if (dateStart.value && r.slipDate < dateStart.value) return false;
-        if (dateEnd.value   && r.slipDate > dateEnd.value)   return false;
+        if (uiState.dateStart && r.slipDate < uiState.dateStart) return false;
+        if (uiState.dateEnd   && r.slipDate > uiState.dateEnd)   return false;
         if (searchType.value   && r.slipType    !== searchType.value)   return false;
         if (searchStatus.value && r.sendStatus  !== searchStatus.value) return false;
         if (kw && !r.slipId.toLowerCase().includes(kw) && !r.description.toLowerCase().includes(kw)) return false;

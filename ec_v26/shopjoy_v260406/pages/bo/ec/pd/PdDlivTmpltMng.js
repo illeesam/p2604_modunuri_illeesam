@@ -5,7 +5,7 @@ window.PdDlivTmpltMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const dlivTmplts = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null});
     const codes = reactive({
       dliv_template_types: [],
     });
@@ -66,29 +66,29 @@ window.PdDlivTmpltMng = {
     const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const cfSelectedRow = computed(() => (dlivTmplts||[]).find(t => t.dlivTmpltId === selectedId.value) || null);
+    const cfSelectedRow = computed(() => (dlivTmplts||[]).find(t => t.dlivTmpltId === uiState.selectedId) || null);
     const form = reactive({});
     const uiState = reactive({ descOpen: false, isNew: false, error: null, isPageCodeLoad: false });
 
     const openDetail = (row) => {
-      if (selectedId.value === row.dlivTmpltId) { selectedId.value = null; return; }
+      if (uiState.selectedId === row.dlivTmpltId) { uiState.selectedId = null; return; }
       Object.assign(form, { ...row });
-      selectedId.value = row.dlivTmpltId;
+      uiState.selectedId = row.dlivTmpltId;
       uiState.isNew = false;
     };
     const openNew = () => {
       Object.assign(form, { dlivTmpltId: null, siteId: 1, vendorId: null, dlivTmpltNm: '', dlivMethodCd: 'COURIER', dlivPayTypeCd: 'PREPAY', dlivCourierCd: 'CJ', dlivCost: 3000, freeDlivMinAmt: 50000, islandExtraCost: 5000, returnCost: 3000, exchangeCost: 6000, returnCourierCd: 'CJ', returnAddrZip: '', returnAddr: '', returnAddrDetail: '', returnTelNo: '', baseDlivYn: 'N', useYn: 'Y' });
-      selectedId.value = '__new__';
+      uiState.selectedId = '__new__';
       uiState.isNew = true;
     };
-    const closeDetail = () => { selectedId.value = null; };
+    const closeDetail = () => { uiState.selectedId = null; };
     const handleSave = async () => {
       if (!form.dlivTmpltNm) { props.showToast('템플릿명은 필수입니다.', 'error'); return; }
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
       const isNewTmplt = uiState.isNew;
       const src = dlivTmplts;
-      if (isNewTmplt) { form.dlivTmpltId = 'DT' + String(Date.now()).slice(-6); src.push({ ...form }); selectedId.value = form.dlivTmpltId; uiState.isNew = false; }
+      if (isNewTmplt) { form.dlivTmpltId = 'DT' + String(Date.now()).slice(-6); src.push({ ...form }); uiState.selectedId = form.dlivTmpltId; uiState.isNew = false; }
       else { const si = src.findIndex(t => t.dlivTmpltId === form.dlivTmpltId); if (si !== -1) Object.assign(src[si], form); }
       try {
         const res = await (isNewTmplt ? window.boApi.post(`/bo/ec/pd/dliv-tmplt/${form.dlivTmpltId||''}`, { ...form }) : window.boApi.put(`/bo/ec/pd/dliv-tmplt/${form.dlivTmpltId||''}`, { ...form }));

@@ -5,17 +5,14 @@ window.SyCodeMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const codes = reactive([]);
-    const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false, selectedGrp: '', grpSelectedPath: '', focusedIdx: null, selectedCodeId: null, dragSrc: null, activeCodeTab: '일반'});
     const pageCodeGroups = reactive({});
 
     /* ── 트리/그룹 선택 상태 (loadGrid 보다 먼저 선언) ── */
-    const selectedGrp = ref('');
-    const grpSelectedPath = ref('');
-
+        
     /* ── 검색 ── */
     const searchParam = reactive({
-      kw: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
-    });
+      kw: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: '', dragSrc: null});;
     const searchParamOrg = reactive({
       kw: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
     });
@@ -31,8 +28,7 @@ window.SyCodeMng = {
     /* ── CRUD 그리드 데이터 ── */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
-    const focusedIdx = ref(null);
-
+    
     /* ── 페이징 ── */
     const pager      = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -144,7 +140,7 @@ window.SyCodeMng = {
     /* 좌측 표시경로 트리 (codeGroups의 dispPath 기반) */
     const grpExpanded = reactive(new Set(['']));
     const grpToggleNode = (path) => { if (grpExpanded.has(path)) grpExpanded.delete(path); else grpExpanded.add(path); };
-    const grpSelectNode = (path) => { grpSelectedPath.value = path; };
+    const grpSelectNode = (path) => { uiState.grpSelectedPath = path; };
     const grpExpandAll = () => { const walk = (n) => { grpExpanded.add(n.path); n.children.forEach(walk); }; walk(cfGrpTree.value); };
     const grpCollapseAll = () => { grpExpanded.clear(); grpExpanded.add(''); };
     /* _expand3_grp: 그룹 트리 3레벨 펼침 */
@@ -166,7 +162,7 @@ window.SyCodeMng = {
     });
     const cfGrpTree = computed(() => window.boCmUtil.buildPathTree('sy_code_grp'));
     const cfFilteredGrpRows = computed(() => {
-      const sp = grpSelectedPath.value;
+      const sp = uiState.grpSelectedPath;
       if (!sp) return grpRows;
       return grpRows.filter(r => (r.dispPath || '').startsWith(sp));
     });
@@ -181,13 +177,13 @@ window.SyCodeMng = {
     const cfGrpPagedRows = computed(() => { const s = (grpPager.page - 1) * grpPager.size; return cfFilteredGrpRows.value.slice(s, s + grpPager.size); });
     watch(() => cfFilteredGrpRows.value.length, () => { if (grpPager.page > cfGrpTotalPages.value) grpPager.page = Math.max(1, cfGrpTotalPages.value); });
     /* 트리 path 변경 시: 그룹 페이지 리셋 + selectedGrp 해제 + 코드목록 재조회 */
-    watch(grpSelectedPath, () => { grpPager.page = 1; selectedGrp.value = ''; handleLoadGrid(); });
+    watch(grpSelectedPath, () => { grpPager.page = 1; uiState.selectedGrp = ''; handleLoadGrid(); });
     /* selectedGrp 변경 시 코드목록 재조회 */
     watch(selectedGrp, () => handleLoadGrid());
 
     /* 그룹 행 클릭 → 코드목록 필터 (토글) */
     const onGrpRowClick = (g) => {
-      selectedGrp.value = (selectedGrp.value === g.codeGrp) ? '' : g.codeGrp;
+      uiState.selectedGrp = (uiState.selectedGrp === g.codeGrp) ? '' : g.codeGrp;
     };
 
     const makeRow = (c) => ({
@@ -199,7 +195,7 @@ window.SyCodeMng = {
     });
 
     const handleLoadGrid = () => {
-      gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
+      gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
       codes.forEach(c => gridRows.push(makeRow(c)));
     };
 
@@ -208,9 +204,8 @@ window.SyCodeMng = {
     const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
     /* 상세 조회 */
-    const selectedCodeId = ref(null);
-    const handleLoadDetail = (codeId) => { selectedCodeId.value = codeId; };
-    const closeDetail = () => { selectedCodeId.value = null; };
+        const handleLoadDetail = (codeId) => { uiState.selectedCodeId = codeId; };
+    const closeDetail = () => { uiState.selectedCodeId = null; };
 
     /* 트리 탭 페이징 */
     const treePager = reactive({ page: 1, size: 10 });
@@ -223,8 +218,8 @@ window.SyCodeMng = {
 
     /* 현재 선택된 그룹이 트리형인지 여부 */
     const cfIsTreeTypeGrp = computed(() => {
-      if (!selectedGrp.value || !codeGroups?.length) return false;
-      const grp = codeGroups.find(g => g.codeGrp === selectedGrp.value);
+      if (!uiState.selectedGrp || !codeGroups?.length) return false;
+      const grp = codeGroups.find(g => g.codeGrp === uiState.selectedGrp);
       return grp?.type === '트리';
     });
 
@@ -290,7 +285,7 @@ window.SyCodeMng = {
     };
 
     /* ── 포커스 행 설정 ── */
-    const setFocused = (idx) => { focusedIdx.value = idx; };
+    const setFocused = (idx) => { uiState.focusedIdx = idx; };
 
     /* ── 셀 변경 → 행상태 갱신 ── */
     const onCellChange = (row) => {
@@ -301,7 +296,7 @@ window.SyCodeMng = {
 
     /* ── 행추가: 포커스 행 아래 삽입, 없으면 끝에 추가 ── */
     const addRow = () => {
-      const ref = focusedIdx.value !== null ? gridRows[focusedIdx.value] : null;
+      const ref = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
       const newRow = {
         codeId: _tempId--, codeGrp: ref ? ref.codeGrp : '', codeLabel: '', codeValue: '',
         sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
@@ -309,9 +304,9 @@ window.SyCodeMng = {
         _row_status: 'I', _row_check: false,
         _orig: { codeGrp: ref ? ref.codeGrp : '', codeLabel: '', codeValue: '', sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1, useYn: 'Y', remark: '', parentCodeValue: null },
       };
-      const insertAt = focusedIdx.value !== null ? focusedIdx.value + 1 : gridRows.length;
+      const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(insertAt, 0, newRow);
-      focusedIdx.value = insertAt;
+      uiState.focusedIdx = insertAt;
       pager.page = Math.ceil((insertAt + 1) / pager.size);
     };
 
@@ -320,7 +315,7 @@ window.SyCodeMng = {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
         gridRows.splice(idx, 1);
-        if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= idx ? 1 : 0));
+        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
       } else {
         row._row_status = 'D';
       }
@@ -331,7 +326,7 @@ window.SyCodeMng = {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
         gridRows.splice(idx, 1);
-        if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= idx ? 1 : 0));
+        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
       } else {
         // U / D: 원래값 복원 → N
         if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
@@ -420,18 +415,18 @@ window.SyCodeMng = {
 
     /* ── 드래그 이동 ── */
     const dragSrc  = ref(null);
-    const onDragStart = (idx) => { dragSrc.value = idx; uiState.dragMoved = false; };
+    const onDragStart = (idx) => { uiState.dragSrc = idx; uiState.dragMoved = false; };
     const onDragOver  = (e, idx) => {
       e.preventDefault();
-      if (dragSrc.value === null || dragSrc.value === idx) return;
-      const moved = gridRows.splice(dragSrc.value, 1)[0];
+      if (uiState.dragSrc === null || uiState.dragSrc === idx) return;
+      const moved = gridRows.splice(uiState.dragSrc, 1)[0];
       gridRows.splice(idx, 0, moved);
-      dragSrc.value = idx;
+      uiState.dragSrc = idx;
       uiState.dragMoved = true;
     };
     const onDragEnd = () => {
       if (uiState.dragMoved) props.showToast('정렬정보가 저장되었습니다.');
-      dragSrc.value = null;
+      uiState.dragSrc = null;
       uiState.dragMoved = false;
     };
 
@@ -456,14 +451,13 @@ window.SyCodeMng = {
     );
 
     /* ── 코드 트리 탭 ── */
-    const activeCodeTab = ref('일반');
-    const cfCodeTreeExpanded = reactive(new Set());
+        const cfCodeTreeExpanded = reactive(new Set());
     const codeToggleNode = (codeValue) => {
       if (cfCodeTreeExpanded.has(codeValue)) cfCodeTreeExpanded.delete(codeValue);
       else cfCodeTreeExpanded.add(codeValue);
     };
     const cfCodeTree = computed(() => {
-      if (!selectedGrp.value) return { value: '__root__', label: 'Root', children: [], count: 0 };
+      if (!uiState.selectedGrp) return { value: '__root__', label: 'Root', children: [], count: 0 };
       const visible = gridRows.filter(r => r._row_status !== 'D');
       const byValue = new Map();
       visible.forEach(c => { byValue.set(c.codeValue, c); });

@@ -6,12 +6,11 @@ window.SyBizUserMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
     const vendorUsers = reactive([]);
-    const uiState = reactive({ loading: false, roleLoading: false, roleModalOpen: false, vendorPickOpen: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, roleLoading: false, roleModalOpen: false, vendorPickOpen: false, error: null, isPageCodeLoad: false, selectedPath: null, searchVendorId: null, bizKw: '', bizVendorFlt: '', bizStatusFlt: '', treeRoleCat: '', formMode: '', roleModalTemp: null});
     const codes = reactive({ user_status: [] });
 
     /* ── 역할 트리 (좌측 패널) ── */
-    const selectedPath = ref(null);
-    const expanded = reactive(new Set([null]));
+        const expanded = reactive(new Set([null]));
     const roles = reactive([]);
     const menus = reactive([]);
     const roleMenus = reactive([]);
@@ -51,14 +50,14 @@ window.SyBizUserMng = {
         .map(r => ({ pathId: r.roleCode, path: r.roleCode, name: r.roleNm, pathLabel: r.roleNm,
                      _raw: r, _badge: badgeOf(r), children: childrenOf(r.roleId) }));
       let kids = childrenOf(null);
-      if (treeRoleCat.value && CAT_ROOT_MAP[treeRoleCat.value]) {
-        const wantRoot = CAT_ROOT_MAP[treeRoleCat.value];
+      if (uiState.treeRoleCat && CAT_ROOT_MAP[uiState.treeRoleCat]) {
+        const wantRoot = CAT_ROOT_MAP[uiState.treeRoleCat];
         kids = kids.filter(k => k._raw && k._raw.roleCode === wantRoot);
       }
       return { pathId: null, path: null, name: '전체', pathLabel: '전체', children: kids };
     });
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
-    const selectNode = (id) => { selectedPath.value = id; };
+    const selectNode = (id) => { uiState.selectedPath = id; };
     const expandAll = () => { expanded.add(null); roles.forEach(r => expanded.add(r.roleCode)); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     /* ── 업체 목록 (상단 검색/선택) ── */
@@ -113,15 +112,12 @@ window.SyBizUserMng = {
       return '['+vt+'] '+v.vendorNm;
     };
 
-    const searchVendorId = ref(null);
-    const bizKw = ref(''); const bizVendorFlt = ref(''); const bizStatusFlt = ref('');
-    const treeRoleCat = ref('');
-    const applied = reactive({ vendorId: null });
+                  const applied = reactive({ vendorId: null });
 
     const cfVendorList = computed(() => vendors.filter(v => {
       const kw = bizKw.value.trim().toLowerCase();
       if (kw && !(v.vendorNm||'').toLowerCase().includes(kw) && !(v.bizNo||'').includes(kw)) return false;
-      if (bizVendorFlt.value && v.vendorTypeCd !== bizVendorFlt.value) return false;
+      if (uiState.bizVendorFlt && v.vendorTypeCd !== uiState.bizVendorFlt) return false;
       return true;
     }));
     const bizPager = reactive({ page:1, size:5 });
@@ -138,9 +134,9 @@ window.SyBizUserMng = {
     const fnStatusLabel = (s) => ({ ACTIVE:'재직', LEFT:'퇴직', SUSPENDED:'중지' }[s]||s);
 
     const pickVendorRow = (v) => {
-      searchVendorId.value = v.vendorId;
+      uiState.searchVendorId = v.vendorId;
       applied.vendorId = v.vendorId;
-      treeRoleCat.value = ({ SALES:'SALES', DELIVERY:'DELIVERY', CS:'CS', SITE:'SITE', PROG:'PROG',
+      uiState.treeRoleCat = ({ SALES:'SALES', DELIVERY:'DELIVERY', CS:'CS', SITE:'SITE', PROG:'PROG',
                               PARTNER:'SITE', INTERNAL:'SITE' })[v.vendorTypeCd] || '';
       loadVendorUsers(v.vendorId);
       pager.page = 1;
@@ -148,8 +144,8 @@ window.SyBizUserMng = {
 
     const onSearch = () => { bizPager.page = 1; };
     const onReset = () => {
-      bizKw.value = '';
-      bizVendorFlt.value = '';
+      uiState.bizKw = '';
+      uiState.bizVendorFlt = '';
       bizPager.page = 1;
     };
 
@@ -171,9 +167,9 @@ window.SyBizUserMng = {
 
     /* cfPathRoleCodes: 선택된 역할 코드 하위 descendants */
     const cfPathRoleCodes = computed(() => {
-      if (selectedPath.value == null) return null;
-      const root = roles.find(r => r.roleCode === selectedPath.value);
-      if (!root) return new Set([selectedPath.value]);
+      if (uiState.selectedPath == null) return null;
+      const root = roles.find(r => r.roleCode === uiState.selectedPath);
+      if (!root) return new Set([uiState.selectedPath]);
       const ids = new Set([root.roleId]);
       let added = true;
       while (added) { added = false; roles.forEach(r => { if(ids.has(r.parentId)&&!ids.has(r.roleId)){ids.add(r.roleId);added=true;}}); }
@@ -194,8 +190,7 @@ window.SyBizUserMng = {
     const cfPagedRows  = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
 
     /* ── 인라인 폼 (사용자 등록/수정) ── */
-    const formMode = ref('');
-    const formData = reactive({});
+        const formData = reactive({});
     const blank = () => ({
       vendorUserId: null, vendorId: null, userId: null,
       memberNm: '', positionCd: '', vendorUserDeptNm: '', vendorUserPhone: '',
@@ -205,36 +200,36 @@ window.SyBizUserMng = {
     });
 
     const openNew = () => {
-      const vid = applied.vendorId || searchVendorId.value;
+      const vid = applied.vendorId || uiState.searchVendorId;
       if (!vid) { props.showToast('업체를 먼저 선택해주세요.', 'warning'); return; }
       Object.assign(formData, blank());
       formData.vendorId = vid;
       formData.joinDate = new Date().toISOString().slice(0,10);
-      formMode.value = 'new';
+      uiState.formMode = 'new';
     };
-    const openEdit = (u) => { Object.assign(formData, u); formMode.value = 'edit'; loadUserRoles(u.vendorUserId); };
-    const closeForm = () => { formMode.value = ''; userRoles.splice(0); };
+    const openEdit = (u) => { Object.assign(formData, u); uiState.formMode = 'edit'; loadUserRoles(u.vendorUserId); };
+    const closeForm = () => { uiState.formMode = ''; userRoles.splice(0); };
 
     const handleSaveForm = async () => {
       if (!formData.memberNm || !formData.vendorUserMobile || !formData.vendorUserEmail) {
         props.showToast('이름/휴대전화/이메일은 필수입니다.', 'error'); return;
       }
-      const ok = await props.showConfirm(formMode.value==='new'?'등록':'저장', formMode.value==='new'?'등록하시겠습니까?':'저장하시겠습니까?');
+      const ok = await props.showConfirm(uiState.formMode==='new'?'등록':'저장', uiState.formMode==='new'?'등록하시겠습니까?':'저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = formMode.value === 'new'
+        const res = uiState.formMode === 'new'
           ? await window.boApi.post('/base/sy/vendor-user', { ...formData })
           : await window.boApi.put(`/base/sy/vendor-user/${formData.vendorUserId}`, { ...formData });
         if (props.setApiRes) props.setApiRes({ ok:true, status:res.status, data:res.data });
-        props.showToast(formMode.value==='new'?'등록되었습니다.':'저장되었습니다.', 'success');
+        props.showToast(uiState.formMode==='new'?'등록되었습니다.':'저장되었습니다.', 'success');
         await loadVendorUsers(formData.vendorId);
-        if (formMode.value === 'edit') {
+        if (uiState.formMode === 'edit') {
           const saved = res.data?.data;
           if (saved) Object.assign(formData, saved);
         } else {
           closeForm();
         }
-        formMode.value = formMode.value === 'new' ? '' : 'edit';
+        uiState.formMode = uiState.formMode === 'new' ? '' : 'edit';
       } catch(err) {
         const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
         if (props.setApiRes) props.setApiRes({ ok:false, status:err.response?.status, data:err.response?.data, message:err.message });
@@ -250,7 +245,7 @@ window.SyBizUserMng = {
         if (props.setApiRes) props.setApiRes({ ok:true, status:res.status, data:res.data });
         props.showToast('삭제되었습니다.', 'success');
         await loadVendorUsers(u.vendorId);
-        if (formMode.value === 'edit' && formData.vendorUserId === u.vendorUserId) closeForm();
+        if (uiState.formMode === 'edit' && formData.vendorUserId === u.vendorUserId) closeForm();
       } catch(err) {
         const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
         if (props.setApiRes) props.setApiRes({ ok:false, status:err.response?.status, data:err.response?.data, message:err.message });
@@ -275,8 +270,7 @@ window.SyBizUserMng = {
     };
 
     /* 역할 선택 모달 */
-    const roleModalTemp = ref(null);
-    const roleTreeExpanded = reactive(new Set());
+        const roleTreeExpanded = reactive(new Set());
 
     const cfFormAllowedRootCode = computed(() => {
       const vt = fnVendorTypeCd(formData.vendorId);
@@ -298,7 +292,7 @@ window.SyBizUserMng = {
     });
 
     const openRoleModal = () => {
-      roleModalTemp.value = null;
+      uiState.roleModalTemp = null;
       roleTreeExpanded.clear();
       const root = roles.find(r=>r.roleCode===cfFormAllowedRootCode.value);
       if (root) roleTreeExpanded.add(root.roleId);
@@ -306,7 +300,7 @@ window.SyBizUserMng = {
     };
     const closeRoleModal = () => { uiState.roleModalOpen = false; };
     const toggleRoleNode = (id) => { if(roleTreeExpanded.has(id)) roleTreeExpanded.delete(id); else roleTreeExpanded.add(id); };
-    const pickRoleInModal = (n) => { if (!n.allowed) return; roleModalTemp.value = n.roleCode; };
+    const pickRoleInModal = (n) => { if (!n.allowed) return; uiState.roleModalTemp = n.roleCode; };
 
     const roleNmByCode = (code) => {
       const m = Object.fromEntries(roles.map(x=>[x.roleId,x]));
@@ -319,8 +313,8 @@ window.SyBizUserMng = {
     const roleIdByCode = (code) => roles.find(r=>r.roleCode===code)?.roleId || null;
 
     const confirmRoleModal = async () => {
-      if (!roleModalTemp.value) return;
-      const rid = roleIdByCode(roleModalTemp.value);
+      if (!uiState.roleModalTemp) return;
+      const rid = roleIdByCode(uiState.roleModalTemp);
       if (!rid) { props.showToast('역할을 찾을 수 없습니다.', 'error'); return; }
       if (userRoles.some(r=>r.roleId===rid)) {
         props.showToast('이미 부여된 역할입니다.', 'warning');
@@ -361,8 +355,8 @@ window.SyBizUserMng = {
       DLIV_REP:'관리', DLIV_MGT:'관리', DLIV_SITE_ADMIN:'쓰기', DLIV_STAFF:'읽기',
     };
     const cfSelectedModalRole = computed(() => {
-      if (!roleModalTemp.value) return null;
-      return roles.find(r=>r.roleCode===roleModalTemp.value) || null;
+      if (!uiState.roleModalTemp) return null;
+      return roles.find(r=>r.roleCode===uiState.roleModalTemp) || null;
     });
     const cfModalMenuList = computed(() => {
       const role = cfSelectedModalRole.value;

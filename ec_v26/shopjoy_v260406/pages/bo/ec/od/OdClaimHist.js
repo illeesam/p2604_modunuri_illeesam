@@ -4,13 +4,12 @@ window.OdClaimHist = {
   name: 'OdClaimHist',
   props: ['navigate', 'showRefModal', 'showToast', 'claimId'],
   setup(props) {
+    const uiState = reactive({"botTab: window._odClaimHistState.tab || 'items', viewMode2: 'tab', claimType: '취소', claimStatus: '', relatedOrder: null, relatedDliv: null"});
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const botTab = ref(window._odClaimHistState.tab || 'items');
-    watch(botTab, v => { window._odClaimHistState.tab = v; });
-    const viewMode2 = ref('tab');
-    const cfCodes = Vue.computed(() => window.getBoCodeStore().svCodes);
+        watch(botTab, v => { window._odClaimHistState.tab = v; });
+        const cfCodes = Vue.computed(() => window.getBoCodeStore().svCodes);
 
-    const showTab = (id) => viewMode2.value !== 'tab' || botTab.value === id;
+    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.botTab === id;
 
     /* 클레임 항목 */
     const claimItems = reactive([]);
@@ -20,25 +19,22 @@ window.OdClaimHist = {
     const processForm = reactive({ refundAmount: 0, refundMethodCd: '계좌환불', memo: '' });
 
     /* 클레임 유형별 단계 — parentCodeValues 기반 동적 파생 */
-    const claimType = ref('취소');
-    const TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
+        const TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
     const cfClaimSteps = computed(() => cfCodes.value
       .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
       .sort((a, b) => a.sortOrd - b.sortOrd)
-      .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + (TYPE_CD[claimType.value] || claimType.value) + '^'))
+      .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + (TYPE_CD[uiState.claimType] || uiState.claimType) + '^'))
       .map(c => c.codeLabel)
       .filter(l => !['거부','철회'].includes(l)));
-    const claimStatus = ref('');
-    const cfStatusOptions = computed(() => cfClaimSteps.value);
+        const cfStatusOptions = computed(() => cfClaimSteps.value);
 
-    const relatedOrder = ref(null);
-    const relatedDliv  = ref(null);
+        const relatedDliv  = ref(null);
 
     onMounted(() => {
       const c = getClaim.value(props.claimId);
       if (c) {
-        claimType.value  = c.type || '취소';
-        claimStatus.value = c.statusCd || '';
+        uiState.claimType  = c.type || '취소';
+        uiState.claimStatus = c.statusCd || '';
         Object.assign(processForm, {
           refundAmount: c.refundAmount || 0,
           refundMethodCd: c.refundMethodCd || '계좌환불',
@@ -51,8 +47,8 @@ window.OdClaimHist = {
             chgProdNm: '', chgOptionNm: '',
             afStatus: c.statusCd, afMemo: '', afAdmin: '', afDate: '',
           });
-        relatedOrder.value = getOrder.value(c.orderId);
-        relatedDliv.value  = deliveries.window.safeArrayUtils.safeFind(value, d => d.orderId === c.orderId) || null;
+        uiState.relatedOrder = getOrder.value(c.orderId);
+        uiState.relatedDliv  = deliveries.window.safeArrayUtils.safeFind(value, d => d.orderId === c.orderId) || null;
       }
     });
 
@@ -61,7 +57,7 @@ window.OdClaimHist = {
         _id: itemIdSeq++,
         bfProdNm: '', bfOptionNm: '', bfQty: 1, bfPrice: 0, bfStatus: '결제완료',
         chgProdNm: '', chgOptionNm: '',
-        afStatus: claimStatus.value, afMemo: '', afAdmin: '', afDate: '',
+        afStatus: uiState.claimStatus, afMemo: '', afAdmin: '', afDate: '',
       });
     };
     const removeClaimItem = (id) => {

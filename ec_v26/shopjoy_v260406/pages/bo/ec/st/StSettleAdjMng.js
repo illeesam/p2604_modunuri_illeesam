@@ -5,7 +5,7 @@ window.StSettleAdjMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '', selectedId: null, isNew: false});
     const codes = reactive({
       settle_adj_types: [],
     });
@@ -33,13 +33,11 @@ window.StSettleAdjMng = {
     });
 
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const dateRange = ref('이번달');
-    const dateStart = ref('');
-    const dateEnd   = ref('');
+            const dateEnd   = ref('');
     const handleDateRangeChange = () => {
-      if (dateRange.value) { const r = window.boCmUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
+      if (uiState.dateRange) { const r = window.boCmUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
-    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
+    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     const vendorList = reactive([]);
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
@@ -67,8 +65,8 @@ window.StSettleAdjMng = {
     const cfFiltered = computed(() => {
       const kw = searchKw.value.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(adjList, r => {
-        if (dateStart.value && r.adjDate < dateStart.value) return false;
-        if (dateEnd.value   && r.adjDate > dateEnd.value)   return false;
+        if (uiState.dateStart && r.adjDate < uiState.dateStart) return false;
+        if (uiState.dateEnd   && r.adjDate > uiState.dateEnd)   return false;
         if (searchType.value   && r.adjType     !== searchType.value)   return false;
         if (searchStatus.value && r.aprvStatus  !== searchStatus.value) return false;
         if (kw && !r.adjId.toLowerCase().includes(kw) && !r.vendorNm.toLowerCase().includes(kw) && !r.reason.toLowerCase().includes(kw)) return false;
@@ -80,15 +78,13 @@ window.StSettleAdjMng = {
     const cfPageList = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
     const cfPageNums = computed(() => { const c=pager.page,l=cfTotPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const selectedId = ref(null);
-    const form = reactive({});
+        const form = reactive({});
     const errors = reactive({});
     const isNew  = ref(false);
   const searchParam = reactive({
     kw: '',
     type: '',
-    status: ''
-  });
+    status: '', dateEnd: '', isNew: false});;
   const searchParamOrg = reactive({
     kw: '',
     type: '',
@@ -104,11 +100,11 @@ window.StSettleAdjMng = {
 
     const openNew = () => {
       Object.assign(form, { adjId: null, adjDate: new Date().toISOString().slice(0,10), vendorId: '', vendorNm: '', adjType: '매출조정', adjAmt: 0, reason: '', aprvStatus: '대기', regUserNm: '관리자' });
-      selectedId.value = '__new__'; isNew.value = true;
+      uiState.selectedId = '__new__'; uiState.isNew = true;
       Object.keys(errors).forEach(k => delete errors[k]);
     };
-    const openEdit = (r) => { Object.assign(form, {...r}); selectedId.value = r.adjId; isNew.value = false; Object.keys(errors).forEach(k => delete errors[k]); };
-    const closeForm = () => { selectedId.value = null; };
+    const openEdit = (r) => { Object.assign(form, {...r}); uiState.selectedId = r.adjId; uiState.isNew = false; Object.keys(errors).forEach(k => delete errors[k]); };
+    const closeForm = () => { uiState.selectedId = null; };
 
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
@@ -119,11 +115,11 @@ window.StSettleAdjMng = {
       if (v) form.vendorNm = v.vendorNm;
       const ok = await props.showConfirm('저장', '정산조정을 저장하시겠습니까?');
       if (!ok) return;
-      if (isNew.value) { form.adjId = 'ADJ-' + Date.now(); adjList.unshift({ ...form }); }
+      if (uiState.isNew) { form.adjId = 'ADJ-' + Date.now(); adjList.unshift({ ...form }); }
       else { const idx = adjList.findIndex(x => x.adjId === form.adjId); if (idx !== -1) Object.assign(adjList[idx], { ...form }); }
       closeForm();
       try {
-        const res = await (isNew.value ? window.boApi.post('/bo/ec/st/adj', { ...form }) : window.boApi.put(`/bo/ec/st/adj/${form.adjId}`, { ...form }));
+        const res = await (uiState.isNew ? window.boApi.post('/bo/ec/st/adj', { ...form }) : window.boApi.put(`/bo/ec/st/adj/${form.adjId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {
@@ -137,7 +133,7 @@ window.StSettleAdjMng = {
     const handleDelete = async (r) => {
       const ok = await props.showConfirm('삭제', `[${r.adjId}] 정산조정을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = adjList.findIndex(x => x.adjId === r.adjId); if (idx !== -1) adjList.splice(idx, 1); if (selectedId.value === r.adjId) closeForm();
+      const idx = adjList.findIndex(x => x.adjId === r.adjId); if (idx !== -1) adjList.splice(idx, 1); if (uiState.selectedId === r.adjId) closeForm();
       try {
         const res = await window.boApi.delete(`/bo/ec/st/adj/${r.adjId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });

@@ -5,7 +5,7 @@ window.SyPropMng = {
 
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const uiState = reactive({ isPageCodeLoad: false });
+    const uiState = reactive({ isPageCodeLoad: false, _newId: -1, selectedPath: ''});
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -42,16 +42,13 @@ window.SyPropMng = {
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* ── 검색 ── */
-    const kw       = ref('');
-    const useFlt   = ref('');
-    const typeFlt  = ref('');
+    const searchParam = reactive({ kw: '', useFlt: '', typeFlt: '' });
     const TYPES    = ['STRING','NUMBER','BOOLEAN','JSON'];
 
     /* ── 데이터 (작업 상태 포함) ── */
     const rows = reactive([]);
     const _rawProps = reactive([]); // 원본 데이터 (cancelRow 복원용)
-    const _newId = ref(-1);
-    const reload = () => {
+        const reload = () => {
       rows.splice(0, rows.length, ..._rawProps.map(p => ({ ...p, _status: '' })));
     };
 
@@ -98,23 +95,22 @@ window.SyPropMng = {
     });
 
     /* ── 선택 노드 ── */
-    const selectedPath = ref('');
-    const selectNode = (path) => { selectedPath.value = path; };
+        const selectNode = (path) => { uiState.selectedPath = path; };
 
     /* ── 그리드에 표시할 행: 선택 노드의 path로 시작하는 모든 항목 ── */
     const cfGridRows = computed(() => {
-      const sp = selectedPath.value;
+      const sp = uiState.selectedPath;
       let arr = cfFilteredBySite.value;
       if (sp) arr = arr.filter(r => (r.dispPath || '').startsWith(sp));
-      const k = kw.value.trim().toLowerCase();
+      const k = searchParam.kw.trim().toLowerCase();
       if (k) arr = arr.filter(r =>
         (r.dispPath||'').toLowerCase().includes(k) ||
         (r.propKey||'').toLowerCase().includes(k) ||
         (r.propLabel||'').toLowerCase().includes(k) ||
         (r.propValue||'').toString().toLowerCase().includes(k)
       );
-      if (useFlt.value)  arr = arr.filter(r => r.useYn === useFlt.value);
-      if (typeFlt.value) arr = arr.filter(r => r.propType === typeFlt.value);
+      if (searchParam.useFlt)  arr = arr.filter(r => r.useYn === searchParam.useFlt);
+      if (searchParam.typeFlt) arr = arr.filter(r => r.propType === searchParam.typeFlt);
       return arr.filter(r => r._status !== 'D');
     });
 
@@ -135,9 +131,9 @@ window.SyPropMng = {
     };
     const addRow = () => {
       const newRow = reactive({
-        propId: _newId.value--,
+        propId: uiState._newId--,
         siteId: cfSiteId.value || 1,
-        dispPath: selectedPath.value || 'new.prop',
+        dispPath: uiState.selectedPath || 'new.prop',
         propKey: 'new_key',
         propLabel: '신규 프로퍼티',
         propValue: '',
@@ -200,8 +196,8 @@ window.SyPropMng = {
     };
 
     const onReset = () => {
-      kw.value = ''; useFlt.value = ''; typeFlt.value = '';
-      selectedPath.value = '';
+      searchParam.kw = ''; searchParam.useFlt = ''; searchParam.typeFlt = '';
+      uiState.selectedPath = '';
       reload();
     };
 
@@ -222,7 +218,7 @@ window.SyPropMng = {
     return {
       uiState, codes,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      kw, useFlt, typeFlt, TYPES, cfTree, expanded, toggleNode, expandAll, collapseAll,
+      searchParam, TYPES, cfTree, expanded, toggleNode, expandAll, collapseAll,
       selectedPath, selectNode, cfGridRows, cfPagedRows, cfDirtyRows,
       pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange,
       onChange, addRow, delRow, cancelRow, handleSave, onReset, exportCsv,
@@ -236,12 +232,12 @@ window.SyPropMng = {
   <!-- 검색 바 -->
   <div class="card" style="padding:12px;margin-bottom:12px;">
     <div class="search-bar">
-      <input class="form-control" v-model="kw" placeholder="표시경로 / 키 / 값 / 라벨 검색" style="min-width:280px;flex:1;max-width:420px;">
-      <select class="form-control" v-model="typeFlt" style="width:120px;">
+      <input class="form-control" v-model="searchParam.kw" placeholder="표시경로 / 키 / 값 / 라벨 검색" style="min-width:280px;flex:1;max-width:420px;">
+      <select class="form-control" v-model="searchParam.typeFlt" style="width:120px;">
         <option value="">전체 타입</option>
         <option v-for="t in TYPES" :key="t" :value="t">{{ t }}</option>
       </select>
-      <select class="form-control" v-model="useFlt" style="width:130px;">
+      <select class="form-control" v-model="searchParam.useFlt" style="width:130px;">
         <option value="">사용여부 전체</option>
         <option value="Y">사용</option>
         <option value="N">미사용</option>

@@ -4,7 +4,7 @@ window.XsSample14 = {
   components: { 'category-select-modal': window.CategorySelectModal },
   setup() {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: today, activeTab: 'grid1', dragSrc: null, dragSrcList: null, dropZoneIdx: -1, spanPopupIdx: -1, popoverKey: null, popoverWidget: null, popoverArea: null, popoverPanel: null, viewportMode: 'desktop', previewTime: new Date(});;
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -27,21 +27,13 @@ window.XsSample14 = {
     });
     const { ref, reactive, computed , watch } = Vue;
     const today = new Date().toISOString().slice(0, 10);
-    const previewDate = ref(today);
-    const previewTime = ref(new Date().toTimeString().slice(0, 5));
+        const previewTime = ref(new Date().toTimeString().slice(0, 5));
     const selectedAreas = reactive(new Set());
     const expandedAreas = reactive(new Set());
     const checkedPanels  = reactive(new Set());
     const checkedWidgets = reactive(new Set()); // key: dispId_wi
     const selectedCatIds = reactive(new Set());
-    const uiState = reactive({
-      showAreaDrop: false,
-      showCatModal: false,
-      searchStatus: null,
-      searchCondition: null,
-      searchAuthRequired: null,
-      searchAuthGrade: null
-    });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: today, activeTab: 'grid1', dragSrc: null, dragSrcList: null, dropZoneIdx: -1, spanPopupIdx: -1, popoverKey: null, popoverWidget: null, popoverArea: null, popoverPanel: null, viewportMode: 'desktop'});
     const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
     const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
     const cfCatBtnLabel = computed(() => {
@@ -89,9 +81,9 @@ window.XsSample14 = {
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
     const isInRange = (panel) => {
-      const d = previewDate.value;
+      const d = uiState.previewDate;
       if (!d) return true;
-      const dt = `${d} ${previewTime.value || '00:00'}`;
+      const dt = `${d} ${uiState.previewTime || '00:00'}`;
       if (panel.dispStartDate && dt < `${panel.dispStartDate} ${panel.dispStartTime || '00:00'}`) return false;
       if (panel.dispEndDate   && dt > `${panel.dispEndDate}   ${panel.dispEndTime   || '23:59'}`) return false;
       return true;
@@ -185,13 +177,12 @@ window.XsSample14 = {
     const selectAllAreas = () => { cfAllAreas.value.forEach(a => selectedAreas.add(a.codeValue)); };
     const clearAllAreas  = () => { selectedAreas.clear(); };
     const resetDate = () => {
-      previewDate.value = today;
-      previewTime.value = new Date().toTimeString().slice(0, 5);
+      uiState.previewDate = today;
+      uiState.previewTime = new Date().toTimeString().slice(0, 5);
     };
     /* 드래그&드롭 — 탭별 미리보기 */
     const TABS      = ['grid1', 'grid2', 'grid3', 'grid4', 'dashboard'];
-    const activeTab = ref('grid1');
-    const GRID_COLS = { grid1: 1, grid2: 2, grid3: 3, grid4: 4 };
+        const GRID_COLS = { grid1: 1, grid2: 2, grid3: 3, grid4: 4 };
     // grid1~4 — N열 셀 배열 (초기 2행)
     const mkCells = (n) => Array.from({ length: n * 2 }, () => ({ widget: null }));
     const gridCells = reactive({ grid1: mkCells(1), grid2: mkCells(2), grid3: mkCells(3), grid4: mkCells(4) });
@@ -241,7 +232,7 @@ window.XsSample14 = {
     };
     const onDragEnd = () => { uiState.dragSrc = null; uiState.dragSrcList = null; uiState.dropZoneIdx = -1; };
     /* ── span 팝업 ── */
-    const spanPopupIdx = ref(-1); // 'tab_ci' 형태 키
+     // 'tab_ci' 형태 키
     const toggleSpanPopup = (e, tab, ci) => {
       e.stopPropagation();
       const key = tab + '_' + ci;
@@ -369,8 +360,7 @@ window.XsSample14 = {
     };
     /* 위젯 정보 팝오버 */
     const popoverKey    = ref(null);
-    const popoverWidget = ref(null);
-    const popoverArea   = ref(null);
+        const popoverArea   = ref(null);
     const popoverPanel  = ref(null);
     const popoverPos    = reactive({ top: 0, left: 0 });
     const showWidgetInfo = (w, p, area, key, evt) => {
@@ -386,8 +376,7 @@ window.XsSample14 = {
     };
     const closePopover = () => { uiState.popoverKey = null; };
     /* ── 반응형 뷰포트 ── */
-    const viewportMode = ref('desktop');
-    /* auto-fill 기반 반응형: 뷰포트 너비 제약이 걸리면 자동으로 컬럼 축소 */
+        /* auto-fill 기반 반응형: 뷰포트 너비 제약이 걸리면 자동으로 컬럼 축소 */
     const cfAutoGridCols = computed(() => {
       const map = {
         grid1: 'repeat(1,1fr)',
@@ -403,7 +392,7 @@ window.XsSample14 = {
       return null;
     });
     /* 실제 컨텐츠 보기 토글 */
-    const uiState = reactive({ showRealContent: false, copied: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: today, activeTab: 'grid1', dragSrc: null, dragSrcList: null, dropZoneIdx: -1, spanPopupIdx: -1, popoverKey: null, popoverWidget: null, popoverArea: null, popoverPanel: null, viewportMode: 'desktop'});
     /* 초기화 */
     initExpand();
     return {

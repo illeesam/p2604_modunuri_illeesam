@@ -6,7 +6,7 @@ window.OdOrderMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const orders = reactive([]);
     const members = reactive([]);
-    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status'});
     const codes = reactive({ order_statuses: [], payment_methods: [], dliv_statuses: [] });
 
     // onMounted에서 API 로드
@@ -92,20 +92,19 @@ window.OdOrderMng = {
     });
 
     /* 하단 상세 */
-    const selectedId = ref(null);
-    const openMode = ref('view'); // 'view' | 'edit'
-    const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
-    const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
-    const closeDetail = () => { selectedId.value = null; };
+    const uiStateDetail = reactive({ selectedId: null: 'view' });
+    const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
+    const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
+    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
+    const closeDetail = () => { uiStateDetail.selectedId = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'odOrderMng') { selectedId.value = null; return; }
-      if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
+      if (pg === 'odOrderMng') { uiStateDetail.selectedId = null; return; }
+      if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
+    const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
+    const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
     const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(orders, o => {
       const kw = searchParam.kw.trim().toLowerCase();
@@ -151,7 +150,7 @@ window.OdOrderMng = {
       if (!Array.isArray(orders)) return;
       const idx = orders.findIndex(x => x.orderId === o.orderId);
       if (idx !== -1) orders.splice(idx, 1);
-      if (selectedId.value === o.orderId) selectedId.value = null;
+      if (uiStateDetail.selectedId === o.orderId) uiStateDetail.selectedId = null;
       try {
         const res = await window.boApi.delete(`/bo/ec/od/order/${o.orderId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -196,8 +195,7 @@ window.OdOrderMng = {
     const REQ_TARGETS = ['주문','상품','배송','추가결재'];
     const DEFAULT_TMPL = '[결재요청]\n요청대상: {target} - {targetNm}\n요청금액: {amount}원\n내용: {reason}\n\n위 건에 대한 추가결재 부탁드립니다.';
     /* 변경작업 모달 */
-    const bulkTab = ref('status');
-    const bulkForm = reactive({
+        const bulkForm = reactive({
       status:'', payMethod:'', apprAction:'', apprComment:'',
       apprToUserId:'', apprToNm:'', apprToPhone:'', apprToEmail:'',
       reqTarget:'주문', reqTargetNm:'', reqAmount:0, reqReason:'', tmplMsg: DEFAULT_TMPL,
@@ -225,7 +223,7 @@ window.OdOrderMng = {
       .replace('{reason}', bulkForm.reqReason || '-'));
     const openBulk = () => {
       if (!checked.size) { props.showToast('항목을 선택하세요.', 'error'); return; }
-      bulkTab.value = 'status';
+      uiState.bulkTab = 'status';
       Object.assign(bulkForm, {
         status:'', payMethod:'', apprAction:'', apprComment:'',
         apprToUserId:'', apprToNm:'', apprToPhone:'', apprToEmail:'',
@@ -239,16 +237,16 @@ window.OdOrderMng = {
       const ids = Array.from(checked);
       const selected = window.safeArrayUtils.safeFilter(orders, o => ids.includes(o.orderId));
       let rows = [];
-      if (bulkTab.value === 'status') {
+      if (uiState.bulkTab === 'status') {
         if (!bulkForm.status) return '';
         rows = selected.map(o => `- [${o.orderId} / ${o.userNm}] [주문관리] 주문상태 변경: ${o.status || '-'} → ${bulkForm.status}`);
-      } else if (bulkTab.value === 'payMethod') {
+      } else if (uiState.bulkTab === 'payMethod') {
         if (!bulkForm.payMethod) return '';
         rows = selected.map(o => `- [${o.orderId} / ${o.userNm}] [주문관리] 결제수단 변경: ${o.payMethod || '-'} → ${bulkForm.payMethod}`);
-      } else if (bulkTab.value === 'approval') {
+      } else if (uiState.bulkTab === 'approval') {
         if (!bulkForm.apprAction) return '';
         rows = selected.map(o => `- [${o.orderId} / ${o.userNm}] [주문관리] 결재처리: ${bulkForm.apprAction}${bulkForm.apprComment ? ' / '+bulkForm.apprComment : ''}`);
-      } else if (bulkTab.value === 'approvalReq') {
+      } else if (uiState.bulkTab === 'approvalReq') {
         if (!bulkForm.apprToUserId) return '';
         rows = selected.map(o => `- [${o.orderId} / ${o.userNm}] [주문관리] 추가결재요청 → ${bulkForm.apprToNm}(${bulkForm.apprToUserId}) / 대상:${bulkForm.reqTarget}-${bulkForm.reqTargetNm} / 금액:${Number(bulkForm.reqAmount||0).toLocaleString()}원`);
       }
@@ -263,15 +261,15 @@ window.OdOrderMng = {
         payMethod:  { field:'payMethod',    label:'결제수단',     path:'orders/bulk-payMethod' },
         approval:   { field:'apprAction',   label:'결재처리',     path:'orders/bulk-approval' },
         approvalReq:{ field:'apprToUserId', label:'추가결재요청', path:'orders/bulk-approvalReq' },
-      }[bulkTab.value];
+      }[uiState.bulkTab];
       const val = bulkForm[cfg.field];
       if (!val) { props.showToast(`${cfg.label} 입력값을 확인하세요.`, 'error'); return; }
       const ok = await props.showConfirm(`일괄 ${cfg.label}`, `선택한 ${ids.length}건에 대해 ${cfg.label} 작업을 진행하시겠습니까?`);
       if (!ok) return;
-      if (bulkTab.value === 'status')    window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) o.status = bulkForm.status; });
-      if (bulkTab.value === 'payMethod') window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) o.payMethod = bulkForm.payMethod; });
-      if (bulkTab.value === 'approval')  window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) { o.apprStatus = bulkForm.apprAction; o.apprComment = bulkForm.apprComment; } });
-      if (bulkTab.value === 'approvalReq') window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) {
+      if (uiState.bulkTab === 'status')    window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) o.status = bulkForm.status; });
+      if (uiState.bulkTab === 'payMethod') window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) o.payMethod = bulkForm.payMethod; });
+      if (uiState.bulkTab === 'approval')  window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) { o.apprStatus = bulkForm.apprAction; o.apprComment = bulkForm.apprComment; } });
+      if (uiState.bulkTab === 'approvalReq') window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) {
         o.apprToUserId = bulkForm.apprToUserId; o.apprToNm = bulkForm.apprToNm;
         o.reqTarget = bulkForm.reqTarget; o.reqTargetNm = bulkForm.reqTargetNm;
         o.reqAmount = Number(bulkForm.reqAmount||0); o.reqReason = bulkForm.reqReason;
@@ -290,7 +288,7 @@ window.OdOrderMng = {
       }
     };
 
-    return { orders, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, APPROVAL_ACTIONS, REQ_TARGETS, bulkTab, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { uiStateDetail, orders, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, APPROVAL_ACTIONS, REQ_TARGETS, bulkTab, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>

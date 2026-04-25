@@ -8,7 +8,7 @@ window.PdBundleMng = {
     const products = reactive([]);
     const brands = reactive([]);
     const bundles = reactive([]);
-    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: null, editBundleId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, pickerOpen: false, pickerSearch: '', dragIdx: null, dragoverIdx: null});
     const codes = reactive({
       product_statuses: [],
       bundle_types: [],
@@ -63,8 +63,7 @@ window.PdBundleMng = {
       nm: ''
       error: null,
       error: null,
-      error: null,
-    });
+      error: null,, dtlMode: null, catPickerOpen: false, catDragIdx: null, pickerOpen: false, dragIdx: null});;
     const searchParamOrg = reactive({
       nm: ''
     });
@@ -79,7 +78,7 @@ window.PdBundleMng = {
 
     /* ── Dtl 모드: null=닫힘 | 'new' | 'edit' ── */
     const dtlMode      = ref(null);
-    const editBundleId = ref(null);  // 'edit' 시 bundleProdId
+      // 'edit' 시 bundleProdId
 
     /* ── 신규등록 폼 (pd_prod 기본정보) ── */
     const newForm = reactive({
@@ -92,8 +91,7 @@ window.PdBundleMng = {
     /* ── 카테고리 N개 (pd_category_prod) — 신규/편집 공통 ── */
     const dtlCategories  = reactive([]);  // [{ categoryId, categoryNm, depth }]
     const catPickerOpen   = ref(false);
-    const catPickerSearch = ref('');
-    const cfCatPickerList   = computed(() => {
+        const cfCatPickerList   = computed(() => {
       const q    = catPickerSearch.value.trim().toLowerCase();
       const used = new Set(dtlCategories.map(c => String(c.categoryId)));
       return (categories || []).filter(c =>
@@ -103,25 +101,24 @@ window.PdBundleMng = {
 
     /* 카테고리 드래그 */
     const catDragIdx     = ref(null);
-    const catDragoverIdx = ref(null);
-    const onCatDragStart = idx => { catDragIdx.value = idx; };
-    const onCatDragOver  = idx => { catDragoverIdx.value = idx; };
+        const onCatDragStart = idx => { uiState.catDragIdx = idx; };
+    const onCatDragOver  = idx => { uiState.catDragoverIdx = idx; };
     const onCatDrop = () => {
-      if (catDragIdx.value === null || catDragIdx.value === catDragoverIdx.value) {
-        catDragIdx.value = catDragoverIdx.value = null; return;
+      if (uiState.catDragIdx === null || uiState.catDragIdx === uiState.catDragoverIdx) {
+        uiState.catDragIdx = uiState.catDragoverIdx = null; return;
       }
       const arr = [...dtlCategories];
-      const [moved] = arr.splice(catDragIdx.value, 1);
-      arr.splice(catDragoverIdx.value, 0, moved);
+      const [moved] = arr.splice(uiState.catDragIdx, 1);
+      arr.splice(uiState.catDragoverIdx, 0, moved);
       dtlCategories.splice(0, dtlCategories.length, ...arr);
-      catDragIdx.value = catDragoverIdx.value = null;
+      uiState.catDragIdx = uiState.catDragoverIdx = null;
     };
 
     const addCategory = cat => {
       const id = cat.categoryId;
       if (window.safeArrayUtils.safeSome(dtlCategories, c => String(c.categoryId) === String(id))) return;
       dtlCategories.push({ categoryId: id, categoryNm: cat.categoryNm || String(id), depth: cat.depth || 1 });
-      catPickerOpen.value = false; catPickerSearch.value = '';
+      uiState.catPickerOpen = false; uiState.catPickerSearch = '';
     };
     const removeCategory = idx => dtlCategories.splice(idx, 1);
 
@@ -140,12 +137,10 @@ window.PdBundleMng = {
 
     /* ── 구성품 추가 피커 ── */
     const pickerOpen   = ref(false);
-    const pickerSearch = ref('');
-
+    
     /* ── 드래그 정렬 ── */
     const dragIdx     = ref(null);
-    const dragoverIdx = ref(null);
-
+    
     /* ── helpers ── */
     const getProd     = id => (products || []).find(p => p.productId === id);
     const getProdNm   = id => { const p = getProd(id); return p ? (p.prodNm || p.productName || '상품#' + id) : '상품#' + id; };
@@ -244,8 +239,8 @@ window.PdBundleMng = {
 
     /* ── 신규등록 열기 ── */
     const openNew = () => {
-      dtlMode.value = 'new';
-      editBundleId.value = null;
+      uiState.dtlMode = 'new';
+      uiState.editBundleId = null;
       Object.assign(newForm, { prodNm: '', brandId: '', vendorId: '', listPrice: 0, salePrice: 0, prodStatusCd: 'DRAFT' });
       Object.keys(newErrors).forEach(k => delete newErrors[k]);
       dtlCategories.length = 0;
@@ -254,8 +249,8 @@ window.PdBundleMng = {
 
     /* ── 편집 열기 ── */
     const openDtl = bundleProdId => {
-      dtlMode.value = 'edit';
-      editBundleId.value = bundleProdId;
+      uiState.dtlMode = 'edit';
+      uiState.editBundleId = bundleProdId;
       const src = (bundles)
         .filter(b => b.bundleProdId === bundleProdId)
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
@@ -274,11 +269,11 @@ window.PdBundleMng = {
       dtlCategories.splice(0, dtlCategories.length, ..._cats);
     };
 
-    const closeDtl = () => { dtlMode.value = null; editBundleId.value = null; dtlItems.length = 0; };
+    const closeDtl = () => { uiState.dtlMode = null; uiState.editBundleId = null; dtlItems.length = 0; };
 
     /* ── 편집 모드에서 표시할 묶음상품명 ── */
-    const cfDtlProdNm = computed(() => dtlMode.value === 'new' ? (newForm.prodNm || '(신규 묶음상품)') : getProdNm(editBundleId.value));
-    const cfDtlBundleId = computed(() => dtlMode.value === 'edit' ? editBundleId.value : null);
+    const cfDtlProdNm = computed(() => uiState.dtlMode === 'new' ? (newForm.prodNm || '(신규 묶음상품)') : getProdNm(uiState.editBundleId));
+    const cfDtlBundleId = computed(() => uiState.dtlMode === 'edit' ? uiState.editBundleId : null);
 
     /* ── 안분율 ── */
     const cfDtlRateSum  = computed(() => dtlItems.reduce((s, b) => s + (parseFloat(b.priceRate) || 0), 0));
@@ -286,7 +281,7 @@ window.PdBundleMng = {
     const cfDtlRateDiff = computed(() => parseFloat((100 - cfDtlRateSum.value).toFixed(2)));
 
     /* ── 피커 목록 ── */
-    const cfCurrentBundleId = computed(() => dtlMode.value === 'edit' ? editBundleId.value : -1);
+    const cfCurrentBundleId = computed(() => uiState.dtlMode === 'edit' ? uiState.editBundleId : -1);
     const cfPickerList = computed(() => {
       const q    = pickerSearch.value.trim().toLowerCase();
       const used = dtlItems.map(d => d.itemProdId);
@@ -302,34 +297,34 @@ window.PdBundleMng = {
       const maxSort = dtlItems.length ? Math.max(...dtlItems.map(d => d.sortOrd)) : 0;
       dtlItems.push({
         _id: _seq++, bundleItemId: null,
-        bundleProdId: editBundleId.value,
+        bundleProdId: uiState.editBundleId,
         itemProdId: prod.productId, itemSkuId: null,
         itemQty: 1, priceRate: 0, sortOrd: maxSort + 1, useYn: 'Y',
       });
-      pickerOpen.value = false; pickerSearch.value = '';
+      uiState.pickerOpen = false; uiState.pickerSearch = '';
     };
     const removeItem = idx => dtlItems.splice(idx, 1);
 
     /* ── 드래그 ── */
-    const onDragStart = idx => { dragIdx.value = idx; };
-    const onDragOver  = idx => { dragoverIdx.value = idx; };
+    const onDragStart = idx => { uiState.dragIdx = idx; };
+    const onDragOver  = idx => { uiState.dragoverIdx = idx; };
     const onDrop = () => {
-      if (dragIdx.value === null || dragIdx.value === dragoverIdx.value) {
-        dragIdx.value = dragoverIdx.value = null; return;
+      if (uiState.dragIdx === null || uiState.dragIdx === uiState.dragoverIdx) {
+        uiState.dragIdx = uiState.dragoverIdx = null; return;
       }
       const arr = [...dtlItems];
-      const [moved] = arr.splice(dragIdx.value, 1);
-      arr.splice(dragoverIdx.value, 0, moved);
+      const [moved] = arr.splice(uiState.dragIdx, 1);
+      arr.splice(uiState.dragoverIdx, 0, moved);
       window.safeArrayUtils.safeForEach(arr, (item, i) => { item.sortOrd = i + 1; });
       dtlItems.splice(0, dtlItems.length, ...arr);
-      dragIdx.value = dragoverIdx.value = null;
+      uiState.dragIdx = uiState.dragoverIdx = null;
     };
 
     /* ── 저장 ── */
     const handleSave = async () => {
       /* 유효성 */
       Object.keys(newErrors).forEach(k => delete newErrors[k]);
-      if (dtlMode.value === 'new') {
+      if (uiState.dtlMode === 'new') {
         if (!newForm.prodNm.trim())   { newErrors.prodNm = '묶음상품명을 입력해주세요.'; }
         if (!newForm.salePrice || newForm.salePrice <= 0) { newErrors.salePrice = '판매가를 입력해주세요.'; }
         if (Object.keys(newErrors).length) { props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
@@ -339,11 +334,11 @@ window.PdBundleMng = {
         return;
       }
 
-      const isNewBundle = dtlMode.value === 'new';
+      const isNewBundle = uiState.dtlMode === 'new';
       const newProdId = isNewBundle
         ? (Math.max(0, ...(products || []).map(p => p.productId)) + 1)
         : null;
-      const bundleProdId = isNewBundle ? newProdId : editBundleId.value;
+      const bundleProdId = isNewBundle ? newProdId : uiState.editBundleId;
 
       const ok = await props.showConfirm(isNewBundle ? '등록' : '저장', isNewBundle ? '묶음상품을 등록하시겠습니까?' : '구성품 설정을 저장하시겠습니까?');
       if (!ok) return;
@@ -386,7 +381,7 @@ window.PdBundleMng = {
         newCategoryProds.push({ categoryProdId: `CP_${bundleProdId}_${i}`, siteId: '1', categoryId: cat.categoryId, prodId: bundleProdId, sortOrd: i + 1 });
       });
       categoryProds.splice(0, categoryProds.length, ...newCategoryProds);
-      if (isNewBundle) { dtlMode.value = 'edit'; editBundleId.value = newProdId; }
+      if (isNewBundle) { uiState.dtlMode = 'edit'; uiState.editBundleId = newProdId; }
       try {
         const res = await (isNewBundle ? window.boApi.post('/bo/ec/pd/prod-bundle', { prod: { ...newForm, prodTypeCd: 'BUNDLE' }, items: dtlItems }) : window.boApi.put(`/bo/ec/pd/prod-bundle/${bundleProdId}/items`, { items: dtlItems }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -404,7 +399,7 @@ window.PdBundleMng = {
       const ok = await props.showConfirm('삭제', '묶음상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
       if (!ok) return;
       bundles = (bundles).filter(b => b.bundleProdId !== bundleProdId);
-      if (editBundleId.value === bundleProdId) closeDtl();
+      if (uiState.editBundleId === bundleProdId) closeDtl();
       try {
         const res = await window.boApi.delete(`/bo/ec/pd/prod-bundle/${bundleProdId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });

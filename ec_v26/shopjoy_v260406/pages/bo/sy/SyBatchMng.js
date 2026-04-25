@@ -5,7 +5,7 @@ window.SyBatchMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const batches = reactive([]);
-    const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false, selectedPath: null, focusedIdx: null});
     const codes = reactive({ batch_status: [] });
 
     // onMounted에서 API 로드
@@ -40,10 +40,9 @@ window.SyBatchMng = {
 
 
     /* ── 좌측 표시경로 트리 ── */
-    const selectedPath = ref(null);
-    const expanded = reactive(new Set(['']));
+        const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
-    const selectNode = (path) => { selectedPath.value = path; };
+    const selectNode = (path) => { uiState.selectedPath = path; };
     const cfTree = computed(() => window.boCmUtil.buildPathTree('sy_batch'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
@@ -99,8 +98,7 @@ window.SyBatchMng = {
     /* ── CRUD 그리드 ── */
     const gridRows = reactive([]);
     let _tempId = -1;
-    const focusedIdx = ref(null);
-    const pager = reactive({ page: 1, size: 10 });
+        const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
@@ -113,7 +111,7 @@ window.SyBatchMng = {
     });
 
     const handleLoadGrid = () => {
-      gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
+      gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
       batches
         .filter(b => {
           const kw = applied.kw.trim().toLowerCase();
@@ -146,7 +144,7 @@ window.SyBatchMng = {
       onSearch();
     };
 
-    const setFocused = (idx) => { focusedIdx.value = idx; };
+    const setFocused = (idx) => { uiState.focusedIdx = idx; };
 
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
@@ -154,7 +152,7 @@ window.SyBatchMng = {
     };
 
     const addRow = () => {
-      const ref = focusedIdx.value !== null ? gridRows[focusedIdx.value] : null;
+      const ref = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
       const newRow = {
         batchId: _tempId--, batchNm: '', batchCode: '',
         cron: ref ? ref.cron : '0 0 * * *',
@@ -162,9 +160,9 @@ window.SyBatchMng = {
         lastRun: '-', nextRun: '-', runCount: 0, runStatus: '대기',
         _row_status: 'I', _row_check: false, _orig: null,
       };
-      const insertAt = focusedIdx.value !== null ? focusedIdx.value + 1 : gridRows.length;
+      const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(insertAt, 0, newRow);
-      focusedIdx.value = insertAt;
+      uiState.focusedIdx = insertAt;
       pager.page = Math.ceil((insertAt + 1) / pager.size);
     };
 
@@ -172,7 +170,7 @@ window.SyBatchMng = {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
         gridRows.splice(idx, 1);
-        if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= idx ? 1 : 0));
+        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
       } else { row._row_status = 'D'; }
     };
 
@@ -180,7 +178,7 @@ window.SyBatchMng = {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
         gridRows.splice(idx, 1);
-        if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= idx ? 1 : 0));
+        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
       } else {
         if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
         row._row_status = 'N';

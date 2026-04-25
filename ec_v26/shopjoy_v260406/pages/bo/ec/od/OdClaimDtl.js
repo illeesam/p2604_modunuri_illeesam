@@ -7,7 +7,7 @@ window.OdClaimDtl = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const claims = reactive([]);
     const orders = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: window._odClaimDtlState.activeTab || 'info', viewMode2: window._odClaimDtlState.viewMode || 'tab'});
     const codes = reactive({ claim_statuses: [] });
 
     // onMounted에서 API 로드
@@ -128,11 +128,9 @@ window.OdClaimDtl = {
       }
     };
 
-    const activeTab = ref(window._odClaimDtlState.activeTab || 'info');
-    watch(activeTab, v => { window._odClaimDtlState.activeTab = v; });
-    const viewMode2 = ref(window._odClaimDtlState.viewMode || 'tab');
-    watch(viewMode2, v => { window._odClaimDtlState.viewMode = v; });
-    const showTab = (id) => viewMode2.value !== 'tab' || activeTab.value === id;
+        watch(activeTab, v => { window._odClaimDtlState.activeTab = v; });
+        watch(viewMode2, v => { window._odClaimDtlState.viewMode = v; });
+    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.activeTab === id;
     const claimItems = reactive([]);
     const sampleClaimItems = () => {
       const base = form.prodNm || '클레임상품';

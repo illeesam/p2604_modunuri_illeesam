@@ -5,7 +5,7 @@ window.SySiteMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const sites = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null});
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -41,10 +41,9 @@ window.SySiteMng = {
 
 
     /* ── 좌측 표시경로 트리 ── */
-    const selectedPath = ref(null);
-    const expanded = reactive(new Set(['']));
+        const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
-    const selectNode = (path) => { selectedPath.value = path; };
+    const selectNode = (path) => { uiState.selectedPath = path; };
     const cfTree = computed(() => window.boCmUtil.buildPathTree('sy_site'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
@@ -176,7 +175,7 @@ window.SySiteMng = {
       if (!ok) return;
       const idx = sites.findIndex(x => x.siteId === s.siteId);
       if (idx !== -1) sites.splice(idx, 1);
-      if (selectedId.value === s.siteId) selectedId.value = null;
+      if (uiStateDetail.selectedId === s.siteId) uiStateDetail.selectedId = null;
       try {
         const res = await window.boApi.delete(`/bo/sy/site/${s.siteId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -194,14 +193,14 @@ window.SySiteMng = {
     watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
-    return { sites, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { uiStateDetail, sites, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange,
       searchKw, searchType, searchStatus, cfTypeOptions,
       pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums,
       onSearch, onReset, setPage, onSizeChange,
       fnStatusBadge, fnTypeBadge, handleDelete,
-      selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey,
+       cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey,
       exportExcel,
     };
   },

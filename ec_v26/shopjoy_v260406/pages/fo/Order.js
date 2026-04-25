@@ -4,7 +4,7 @@ window.Order = {
   props: ['navigate', 'config', 'cart', 'instantOrder', 'cartIds', 'showToast', 'showAlert', 'clearCart'],
   setup(props) {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, view: 'order', resultData: null, selectedShipCoupon: null, cashBalance: 0, cashInput: 0});;
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -33,8 +33,7 @@ window.Order = {
 
     /* ── 뷰 상태 ── */
     const view       = ref('order');
-    const resultData = ref(null);
-
+    
     /* ── 쿠폰 로드 ── */
     const allCoupons  = reactive([]);
     const handleLoadCoupons = async () => {
@@ -86,18 +85,16 @@ window.Order = {
     };
 
     /* ── 배송비 쿠폰 팝업 ── */
-    const uiState = reactive({ shipCouponPopup: false, submitting: false });
-    const selectedShipCoupon = ref(null);
-    const applyShipCoupon = c => { selectedShipCoupon.value = c; uiState.shipCouponPopup = false; };
-    const removeShipCoupon = () => { selectedShipCoupon.value = null; };
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, view: 'order', resultData: null, selectedShipCoupon: null, cashBalance: 0, cashInput: 0});
+        const applyShipCoupon = c => { uiState.selectedShipCoupon = c; uiState.shipCouponPopup = false; };
+    const removeShipCoupon = () => { uiState.selectedShipCoupon = null; };
 
     /* ── 캐쉬 ── */
-    const cashBalance = ref(0);
-    const cashInput   = ref(0);
+        const cashInput   = ref(0);
     const handleLoadCash = async () => {
       try {
         const res = await window.foApi.get('/fo/my/cash/info');
-        cashBalance.value = res.data?.data?.balance || 0;
+        uiState.cashBalance = res.data?.data?.balance || 0;
       } catch (e) {}
     };
 
@@ -120,8 +117,8 @@ window.Order = {
     /* 배송비: 기본 0원, 배송비 쿠폰은 표시용 */
     const cfShippingFee = computed(() => 0);
     const cfAppliedCash = computed(() => {
-      const v = parseInt(String(cashInput.value).replace(/[^0-9]/g, ''), 10) || 0;
-      return Math.min(v, cashBalance.value, Math.max(0, cfCartTotal.value - cfTotalCouponDiscount.value));
+      const v = parseInt(String(uiState.cashInput).replace(/[^0-9]/g, ''), 10) || 0;
+      return Math.min(v, uiState.cashBalance, Math.max(0, cfCartTotal.value - cfTotalCouponDiscount.value));
     });
     const cfFinalPrice = computed(() =>
       Math.max(0, cfCartTotal.value - cfTotalCouponDiscount.value - cfAppliedCash.value)
@@ -183,17 +180,17 @@ window.Order = {
             coupon:   selectedCoupons[idx]?.name || null,
             discount: calcCouponDiscount(selectedCoupons[idx], i),
           })),
-          shippingCoupon:     selectedShipCoupon.value?.name || null,
+          shippingCoupon:     uiState.selectedShipCoupon?.name || null,
           cartTotal:          cfCartTotal.value,
           couponDiscount:     cfTotalCouponDiscount.value,
           cashUsed:           cfAppliedCash.value,
           finalPrice:         cfFinalPrice.value,
         };
         if (window.foApi) await window.foApi.post('/fo/order/create', payload).catch(() => {});
-        resultData.value = payload;
-        view.value = 'result';
+        uiState.resultData = payload;
+        uiState.view = 'result';
         if (!props.instantOrder) props.clearCart(); // 바로구매는 장바구니 건드리지 않음
-        cashBalance.value = Math.max(0, cashBalance.value - cfAppliedCash.value);
+        uiState.cashBalance = Math.max(0, uiState.cashBalance - cfAppliedCash.value);
       } finally { uiState.submitting = false; }
     };
 

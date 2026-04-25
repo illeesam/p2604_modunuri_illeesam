@@ -5,7 +5,7 @@ window.StStatusMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, activeTab: 'vendor', dateRange: '이번달', dateStart: '', dateEnd: '', vendorSearchKw: '', orderSearchKw: '', orderSearchStatus: '', claimSearchType: '', claimSearchStatus: '', promoSearchKw: '', promoSearchType: '', settleSearchMonth: ''});;
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -30,8 +30,7 @@ window.StStatusMng = {
     });
 
     /* ── 탭 ── */
-    const activeTab = ref('vendor');
-    const TABS = [
+        const TABS = [
       { id: 'vendor',    label: '업체별현황' },
       { id: 'order',     label: '주문별현황' },
       { id: 'claim',     label: '클레임별현황' },
@@ -41,18 +40,16 @@ window.StStatusMng = {
 
     /* ── 공통 날짜 필터 ── */
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const dateRange = ref('이번달');
-    const dateStart = ref('');
-    const dateEnd   = ref('');
+            const dateEnd   = ref('');
     const onDateRangeChange = () => {
-      if (dateRange.value) {
-        const r = window.boCmUtil.getDateRange(dateRange.value);
-        dateStart.value = r ? r.from : '';
-        dateEnd.value   = r ? r.to   : '';
+      if (uiState.dateRange) {
+        const r = window.boCmUtil.getDateRange(uiState.dateRange);
+        uiState.dateStart = r ? r.from : '';
+        uiState.dateEnd   = r ? r.to   : '';
       }
     };
     /* 초기 날짜 설정 */
-    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
+    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     /* ── 원본 데이터 ── */
     const orderList = reactive([]);
@@ -88,8 +85,8 @@ window.StStatusMng = {
 
     const inRange = (dateStr) => {
       const d = String(dateStr || '').slice(0, 10);
-      if (dateStart.value && d < dateStart.value) return false;
-      if (dateEnd.value   && d > dateEnd.value)   return false;
+      if (uiState.dateStart && d < uiState.dateStart) return false;
+      if (uiState.dateEnd   && d > uiState.dateEnd)   return false;
       return true;
     };
 
@@ -111,7 +108,7 @@ window.StStatusMng = {
         const netSales = sales - refund;
         const comm     = Math.round(netSales * COMM_RATE);
         return { vendorId: v.vendorId, vendorNm: v.vendorNm, orderCnt: vOrders.length, sales, refund, netSales, comm, settle: netSales - comm };
-      }).filter(r => !vendorSearchKw.value || r.vendorNm.includes(vendorSearchKw.value));
+      }).filter(r => !uiState.vendorSearchKw || r.vendorNm.includes(uiState.vendorSearchKw));
     });
     const cfVendorTotal = computed(() => cfVendorRows.value.length);
     const cfVendorPages = computed(() => Math.max(1, Math.ceil(cfVendorTotal.value / vendorPager.size)));
@@ -122,14 +119,13 @@ window.StStatusMng = {
      * 2. 주문별현황
      * ════════════════════════════════════════════════ */
     const orderSearchKw  = ref('');
-    const orderSearchStatus = ref('');
-    const orderPager     = reactive({ page: 1, size: 10 });
+        const orderPager     = reactive({ page: 1, size: 10 });
 
     const cfOrderRows = computed(() => {
-      const kw = orderSearchKw.value.trim().toLowerCase();
+      const kw = uiState.orderSearchKw.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(cfOrders, o => {
         if (!inRange(o.orderDate)) return false;
-        if (orderSearchStatus.value && o.status !== orderSearchStatus.value) return false;
+        if (uiState.orderSearchStatus && o.status !== uiState.orderSearchStatus) return false;
         if (kw && !o.orderId.toLowerCase().includes(kw) && !o.userNm.toLowerCase().includes(kw) && !o.prodNm.toLowerCase().includes(kw)) return false;
         return true;
       }).map(o => {
@@ -152,14 +148,13 @@ window.StStatusMng = {
      * 3. 클레임별현황
      * ════════════════════════════════════════════════ */
     const claimSearchType   = ref('');
-    const claimSearchStatus = ref('');
-    const claimPager        = reactive({ page: 1, size: 10 });
+        const claimPager        = reactive({ page: 1, size: 10 });
 
     const cfClaimRows = computed(() => {
       return window.safeArrayUtils.safeFilter(cfClaims, c => {
         if (!inRange(c.requestDate)) return false;
-        if (claimSearchType.value   && c.type   !== claimSearchType.value)   return false;
-        if (claimSearchStatus.value && c.status !== claimSearchStatus.value) return false;
+        if (uiState.claimSearchType   && c.type   !== uiState.claimSearchType)   return false;
+        if (uiState.claimSearchStatus && c.status !== uiState.claimSearchStatus) return false;
         return true;
       }).map(c => {
         const isCompleted = ['환불완료','취소완료','교환완료'].includes(c.status);
@@ -183,11 +178,10 @@ window.StStatusMng = {
      * 4. 프로모션별현황
      * ════════════════════════════════════════════════ */
     const promoSearchKw   = ref('');
-    const promoSearchType = ref('');
-    const promoPager      = reactive({ page: 1, size: 10 });
+        const promoPager      = reactive({ page: 1, size: 10 });
 
     const cfPromoRows = computed(() => {
-      const kw = promoSearchKw.value.trim().toLowerCase();
+      const kw = uiState.promoSearchKw.trim().toLowerCase();
       const couponRows = cfCoupons.value.map(c => {
         const discountAmt = c.discountType === 'amount' ? c.discountValue * c.useCount
           : c.discountType === 'rate' ? Math.round(50000 * (c.discountValue / 100) * c.useCount) // 평균 주문금액 가정
@@ -204,7 +198,7 @@ window.StStatusMng = {
       ];
       const allRows = [...couponRows, ...cacheRows];
       return window.safeArrayUtils.safeFilter(allRows, r => {
-        if (promoSearchType.value && r.promoType !== promoSearchType.value) return false;
+        if (uiState.promoSearchType && r.promoType !== uiState.promoSearchType) return false;
         if (kw && !r.promoNm.toLowerCase().includes(kw) && !r.promoType.toLowerCase().includes(kw)) return false;
         return true;
       });
@@ -221,8 +215,7 @@ window.StStatusMng = {
     /* ════════════════════════════════════════════════
      * 5. 정산별현황 (월별 요약)
      * ════════════════════════════════════════════════ */
-    const settleSearchMonth = ref('');
-    const settlePager       = reactive({ page: 1, size: 10 });
+        const settlePager       = reactive({ page: 1, size: 10 });
 
     const cfSettleRows = computed(() => {
       const monthMap = {};
@@ -242,7 +235,7 @@ window.StStatusMng = {
         const promo = Math.round(net * 0.03); // 프로모션 비용 가정 3%
         const settle = net - comm - promo;
         return { ...r, net, comm, promo, settle, statusCd: settle > 0 ? '정산예정' : '마감' };
-      }).filter(r => !settleSearchMonth.value || r.month.includes(settleSearchMonth.value));
+      }).filter(r => !uiState.settleSearchMonth || r.month.includes(uiState.settleSearchMonth));
     });
     const cfSettleTotal    = computed(() => cfSettleRows.value.length);
     const cfSettlePages    = computed(() => Math.max(1, Math.ceil(cfSettleTotal.value / settlePager.size)));
@@ -261,8 +254,8 @@ window.StStatusMng = {
 
     const onSearch = () => { vendorPager.page = 1; orderPager.page = 1; claimPager.page = 1; promoPager.page = 1; settlePager.page = 1; };
     const onReset  = () => {
-      vendorSearchKw.value = ''; orderSearchKw.value = ''; orderSearchStatus.value = '';
-      claimSearchType.value = ''; claimSearchStatus.value = ''; promoSearchKw.value = ''; promoSearchType.value = ''; settleSearchMonth.value = '';
+      uiState.vendorSearchKw = ''; uiState.orderSearchKw = ''; uiState.orderSearchStatus = '';
+      uiState.claimSearchType = ''; uiState.claimSearchStatus = ''; uiState.promoSearchKw = ''; uiState.promoSearchType = ''; uiState.settleSearchMonth = '';
       onSearch();
     };
 
@@ -280,7 +273,7 @@ window.StStatusMng = {
     const onSettleSizeChange = () => { settlePager.page = 1; };
 
     const exportTab = () => {
-      const tab = window.safeArrayUtils.safeFind(TABS, t => t.id === activeTab.value);
+      const tab = window.safeArrayUtils.safeFind(TABS, t => t.id === uiState.activeTab);
       props.showToast && props.showToast(`${tab.label} 데이터를 Excel로 내보냅니다.`, 'info');
     };
 

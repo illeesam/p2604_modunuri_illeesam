@@ -5,13 +5,11 @@ window.ZdStore = {
   name: 'ZdStore',
   props: ['navigate', 'adminData', 'showToast'],
   setup(props) {
+    const uiState = reactive({"storeInfo: '', selectedStore: null, viewMode: 'col5'"});
     const { ref, computed, reactive, onMounted } = Vue;
 
-    const storeInfo = ref('');
-    const selectedStore = ref(null);
-    const openStores = reactive([]);
-    const viewMode = ref('col5');
-    const editedStoreInfo = reactive({});
+            const openStores = reactive([]);
+        const editedStoreInfo = reactive({});
 
     const storeList = computed(() => {
       const stores = [];
@@ -36,7 +34,7 @@ window.ZdStore = {
     });
 
     const selectStore = (storeName) => {
-      selectedStore.value = storeName;
+      uiState.selectedStore = storeName;
       if (!openStores.find(s => s === storeName)) {
         openStores.push(storeName);
       }
@@ -55,26 +53,26 @@ window.ZdStore = {
         if (storeFunc) {
           const store = storeFunc();
           const jsonStr = JSON.stringify(store.$state, null, 2);
-          storeInfo.value = jsonStr;
+          uiState.storeInfo = jsonStr;
           editedStoreInfo[storeName] = jsonStr;
         }
       } catch (e) {
-        storeInfo.value = `Error: ${e.message}`;
+        uiState.storeInfo = `Error: ${e.message}`;
       }
     };
 
     const closeTab = (storeName) => {
       const idx = openStores.indexOf(storeName);
       if (idx !== -1) openStores.splice(idx, 1);
-      if (selectedStore.value === storeName) {
-        selectedStore.value = openStores[Math.max(0, idx - 1)] || null;
-        if (selectedStore.value) loadStoreData(selectedStore.value);
+      if (uiState.selectedStore === storeName) {
+        uiState.selectedStore = openStores[Math.max(0, idx - 1)] || null;
+        if (uiState.selectedStore) loadStoreData(uiState.selectedStore);
       }
     };
 
     const copyToClipboard = () => {
       try {
-        navigator.clipboard.writeText(storeInfo.value);
+        navigator.clipboard.writeText(uiState.storeInfo);
         props.showToast('클립보드에 복사되었습니다.', 'success');
       } catch (e) {
         props.showToast('복사 실패: ' + e.message, 'error');
@@ -82,13 +80,13 @@ window.ZdStore = {
     };
 
     const clearStore = () => {
-      if (!selectedStore.value) return;
+      if (!uiState.selectedStore) return;
       try {
-        const storeFunc = window[selectedStore.value];
+        const storeFunc = window[uiState.selectedStore];
         if (storeFunc && storeFunc().clear) {
           storeFunc().clear();
           props.showToast('스토어가 초기화되었습니다.', 'success');
-          selectStore(selectedStore.value);
+          selectStore(uiState.selectedStore);
         }
       } catch (e) {
         props.showToast('초기화 실패: ' + e.message, 'error');
@@ -96,16 +94,16 @@ window.ZdStore = {
     };
 
     const saveStore = () => {
-      if (!selectedStore.value) return;
+      if (!uiState.selectedStore) return;
       try {
-        const jsonStr = editedStoreInfo[selectedStore.value];
+        const jsonStr = editedStoreInfo[uiState.selectedStore];
         const newState = JSON.parse(jsonStr);
-        const storeFunc = window[selectedStore.value];
+        const storeFunc = window[uiState.selectedStore];
         if (storeFunc) {
           const store = storeFunc();
           Object.assign(store.$state, newState);
           props.showToast('스토어가 저장되었습니다.', 'success');
-          loadStoreData(selectedStore.value);
+          loadStoreData(uiState.selectedStore);
         }
       } catch (e) {
         props.showToast('저장 실패: ' + e.message, 'error');
@@ -134,8 +132,8 @@ window.ZdStore = {
             // 항상 응답 데이터 그대로 textarea에 표시
             const jsonStr = JSON.stringify(responseData, null, 2);
             editedStoreInfo[storeName] = jsonStr;
-            selectedStore.value = storeName;
-            storeInfo.value = jsonStr;
+            uiState.selectedStore = storeName;
+            uiState.storeInfo = jsonStr;
 
             // 스토어도 동시에 업데이트
             const storeFunc = window[storeName];
@@ -158,7 +156,7 @@ window.ZdStore = {
 
     onMounted(() => {
       loadAllStoreData();
-      if (storeList.length > 0 && !selectedStore.value) {
+      if (storeList.length > 0 && !uiState.selectedStore) {
         selectStore(storeList[0].name);
       }
     });

@@ -4,7 +4,7 @@ window.StConfigMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch } = Vue;
-    const uiState = reactive({ descOpen: false, isNew: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ descOpen: false, isNew: false, error: null, isPageCodeLoad: false, selectedId: null});
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -35,23 +35,22 @@ window.StConfigMng = {
       { configId: 4, siteId: 1, siteNm: 'ShopJoy 01', vendorType: '위탁업체', commRate: 8,  settleCycle: '월정산', settleDay: 10, minSettleAmt: 10000, taxYn: 'N', autoCloseYn: 'Y', useYn: 'N', remark: '위탁 판매 기준 (미사용)' },
     ]);
 
-    const selectedId = ref(null);
-    const form = reactive({});
+        const form = reactive({});
     const errors = reactive({});
 
     const openEdit = (c) => {
       Object.assign(form, { ...c });
-      selectedId.value = c.configId;
+      uiState.selectedId = c.configId;
       uiState.isNew = false;
       Object.keys(errors).forEach(k => delete errors[k]);
     };
     const openNew = () => {
       Object.assign(form, { configId: null, siteNm: 'ShopJoy 01', vendorType: '', commRate: 10, settleCycle: '월정산', settleDay: 10, minSettleAmt: 10000, taxYn: 'Y', autoCloseYn: 'Y', useYn: 'Y', remark: '' });
-      selectedId.value = '__new__';
+      uiState.selectedId = '__new__';
       uiState.isNew = true;
       Object.keys(errors).forEach(k => delete errors[k]);
     };
-    const closeForm = () => { selectedId.value = null; };
+    const closeForm = () => { uiState.selectedId = null; };
 
     const validate = () => {
       Object.keys(errors).forEach(k => delete errors[k]);
@@ -83,7 +82,7 @@ window.StConfigMng = {
     const handleDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.vendorType}] 정산기준을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = configs.findIndex(x => x.configId === c.configId); if (idx !== -1) configs.splice(idx, 1); if (selectedId.value === c.configId) closeForm();
+      const idx = configs.findIndex(x => x.configId === c.configId); if (idx !== -1) configs.splice(idx, 1); if (uiState.selectedId === c.configId) closeForm();
       try {
         const res = await window.boApi.delete(`/bo/ec/st/config/${c.configId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });

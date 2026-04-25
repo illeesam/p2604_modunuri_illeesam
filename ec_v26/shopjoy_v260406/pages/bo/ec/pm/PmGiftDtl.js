@@ -5,9 +5,8 @@ window.PmGiftDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const giftList = ref([]);
-    const gifts = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false });
+        const gifts = reactive([]);
+    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, giftList: [], tab: window._pmGiftDtlState.tab || 'info', viewMode2: window._pmGiftDtlState.viewMode || 'tab'});
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -19,7 +18,7 @@ window.PmGiftDtl = {
         });
         const list = res.data?.data?.list || [];
         gifts.splice(0, gifts.length, ...list);
-        giftList.value = list;
+        uiState.giftList = list;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -30,11 +29,9 @@ window.PmGiftDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-    const tab = ref(window._pmGiftDtlState.tab || 'info');
-    watch(tab, v => { window._pmGiftDtlState.tab = v; });
-    const viewMode2 = ref(window._pmGiftDtlState.viewMode || 'tab');
-    watch(viewMode2, v => { window._pmGiftDtlState.viewMode = v; });
-    const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
+        watch(tab, v => { window._pmGiftDtlState.tab = v; });
+        watch(viewMode2, v => { window._pmGiftDtlState.viewMode = v; });
+    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -125,7 +122,7 @@ window.PmGiftDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (!giftList.value) giftList.value = [];
+      if (!uiState.giftList) uiState.giftList = [];
       if (cfIsNew.value) {
         giftList.value.push({
           ...form,
@@ -134,7 +131,7 @@ window.PmGiftDtl = {
         });
       } else {
         const idx = giftList.value.findIndex(x => x.giftId === props.editId);
-        if (idx !== -1) Object.assign(giftList.value[idx], { ...form });
+        if (idx !== -1) Object.assign(uiState.giftList[idx], { ...form });
       }
       try {
         const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/gift`, { ...form }) : window.boApi.put(`/bo/ec/pm/gift/${form.giftId}`, { ...form }));

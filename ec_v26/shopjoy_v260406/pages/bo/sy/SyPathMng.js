@@ -6,7 +6,7 @@ window.SyPathMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
-    const uiState = reactive({ isPageCodeLoad: false });
+    const uiState = reactive({ isPageCodeLoad: false, selectedBiz: 'sy_brand', selectedPathId: null});
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -30,9 +30,7 @@ window.SyPathMng = {
     });
 
     /* ── 검색 상태 ── */
-    const kw       = ref('');
-    const useFlt   = ref('');
-    const bizFlt   = ref('');
+    const searchParam = reactive({ kw: '', useFlt: '', bizFlt: '' });
 
     /* ── biz_cd 옵션 (공통코드 등록 항목) ── */
     const BIZ_OPTIONS = reactive([]);
@@ -69,11 +67,9 @@ window.SyPathMng = {
     onMounted(() => { handleFetchData(); });
 
     /* ── 트리 (선택된 biz_cd로 빌드) ── */
-    const selectedBiz = ref('sy_brand');
-    const selectedPathId = ref(null);
-
+        
     const cfTree = computed(() => {
-      const list = rows.filter(r => r._status !== 'D' && r.bizCd === selectedBiz.value);
+      const list = rows.filter(r => r._status !== 'D' && r.bizCd === uiState.selectedBiz);
       const byParent = {};
       list.forEach(r => {
         const pk = r.parentPathId == null ? 'null' : r.parentPathId;
@@ -82,13 +78,13 @@ window.SyPathMng = {
       const build = (parentKey) => (byParent[parentKey] || [])
         .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0))
         .map(r => ({ ...r, children: build(r.pathId) }));
-      const root = { pathId: null, pathLabel: '전체 ('+ bizLabel(selectedBiz.value) +')', children: build('null'), count: list.length };
+      const root = { pathId: null, pathLabel: '전체 ('+ bizLabel(uiState.selectedBiz) +')', children: build('null'), count: list.length };
       return root;
     });
 
     const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
-    const selectNode = (id) => { selectedPathId.value = id; };
+    const selectNode = (id) => { uiState.selectedPathId = id; };
     const expandAll = () => {
       expanded.clear(); expanded.add(null);
       const walk = (n) => { expanded.add(n.pathId); (n.children||[]).forEach(walk); };
@@ -99,13 +95,13 @@ window.SyPathMng = {
     /* ── 그리드 (검색 + biz + 트리 선택 적용) ── */
     const cfGridRows = computed(() => {
       let arr = rows.filter(r => r._status !== 'D');
-      arr = arr.filter(r => r.bizCd === selectedBiz.value);
-      const k = kw.value.trim().toLowerCase();
+      arr = arr.filter(r => r.bizCd === uiState.selectedBiz);
+      const k = searchParam.kw.trim().toLowerCase();
       if (k) arr = arr.filter(r => (r.pathLabel||'').toLowerCase().includes(k) || (r.remark||'').toLowerCase().includes(k));
-      if (useFlt.value) arr = arr.filter(r => r.useYn === useFlt.value);
-      if (selectedPathId.value !== null) {
+      if (searchParam.useFlt) arr = arr.filter(r => r.useYn === searchParam.useFlt);
+      if (uiState.selectedPathId !== null) {
         /* 선택 노드와 그 하위 모두 */
-        const descendants = new Set([selectedPathId.value]);
+        const descendants = new Set([uiState.selectedPathId]);
         let added = true;
         while (added) {
           added = false;
@@ -129,7 +125,7 @@ window.SyPathMng = {
     const onSizeChange = () => { pager.page = 1; };
     const cfPagedRows = computed(() => { const s = (pager.page-1)*pager.size; return cfGridRows.value.slice(s, s+pager.size); });
     watch(() => cfGridRows.value.length, () => { if (pager.page > cfTotalPages.value) pager.page = Math.max(1, cfTotalPages.value); });
-    watch(selectedBiz, () => { selectedPathId.value = null; pager.page = 1; });
+    watch(selectedBiz, () => { uiState.selectedPathId = null; pager.page = 1; });
     watch(selectedPathId, () => { pager.page = 1; });
 
     /* ── CRUD ── */
@@ -140,8 +136,8 @@ window.SyPathMng = {
     const addRow = () => {
       rows.push(reactive({
         pathId: _newId--,
-        bizCd: selectedBiz.value,
-        parentPathId: selectedPathId.value,
+        bizCd: uiState.selectedBiz,
+        parentPathId: uiState.selectedPathId,
         pathLabel: '신규경로',
         sortOrd: 99,
         useYn: 'Y',
@@ -185,7 +181,7 @@ window.SyPathMng = {
       reload();
     };
     const onReset = () => {
-      kw.value = ''; useFlt.value = ''; selectedPathId.value = null;
+      searchParam.kw = ''; searchParam.useFlt = ''; uiState.selectedPathId = null;
       reload();
     };
 
@@ -251,7 +247,7 @@ window.SyPathMng = {
 
     return {
       uiState, codes,
-      kw, useFlt, bizFlt, BIZ_OPTIONS, bizLabel,
+      searchParam, BIZ_OPTIONS, bizLabel,
       selectedBiz, selectedPathId, cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
       cfGridRows, cfPagedRows, cfDirtyRows,
       pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange,
@@ -271,8 +267,8 @@ window.SyPathMng = {
       <select class="form-control" v-model="selectedBiz" style="width:200px;">
         <option v-for="b in BIZ_OPTIONS" :key="b.codeValue" :value="b.codeValue">{{ b.codeLabel }} ({{ b.codeValue }})</option>
       </select>
-      <input class="form-control" v-model="kw" placeholder="라벨 / 비고 검색" style="min-width:200px;flex:1;max-width:320px;" />
-      <select class="form-control" v-model="useFlt" style="width:130px;">
+      <input class="form-control" v-model="searchParam.kw" placeholder="라벨 / 비고 검색" style="min-width:200px;flex:1;max-width:320px;" />
+      <select class="form-control" v-model="searchParam.useFlt" style="width:130px;">
         <option value="">사용여부 전체</option>
         <option value="Y">사용</option>
         <option value="N">미사용</option>

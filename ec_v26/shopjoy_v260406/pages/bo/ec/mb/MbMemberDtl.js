@@ -5,7 +5,7 @@ window.MbMemberDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const members = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, memoEl: null});
     const codes = reactive({ member_grades: [], member_statuses: [] });
 
     const isAppReady = computed(() => {
@@ -57,8 +57,7 @@ window.MbMemberDtl = {
     });
     const errors = reactive({});
 
-    const memoEl = ref(null);
-    let _qMemo = null;
+        let _qMemo = null;
 
     const schema = yup.object({
       email: yup.string().required('이메일을 입력해주세요.').email('올바른 이메일 형식이 아닙니다.'),
@@ -71,8 +70,8 @@ window.MbMemberDtl = {
         if (m) Object.assign(form, { ...m });
       }
       await nextTick();
-      if (memoEl.value) {
-        _qMemo = new Quill(memoEl.value, {
+      if (uiState.memoEl) {
+        _qMemo = new Quill(uiState.memoEl, {
           theme: 'snow',
           placeholder: '관리자 메모',
           modules: { toolbar: [['bold','italic','underline'],[{color:[]}],[{list:'ordered'},{list:'bullet'}],['link','clean']] }

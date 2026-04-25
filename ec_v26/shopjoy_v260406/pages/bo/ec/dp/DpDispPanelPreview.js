@@ -144,7 +144,7 @@ window.DpDispPanelPreview = {
     const codes = reactive({ disp_widget_types: [] });
     const widgetLibs = reactive([]);
     const displays = reactive([]);
-    const uiState = reactive({ isPageCodeLoad: false });
+    const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null});
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
     // App 초기화 준비 상태
@@ -221,8 +221,7 @@ window.DpDispPanelPreview = {
       filterStatus: '활성',
       filterVisibility: '',
       filterDispEnv: 'PROD',
-      kw: '',
-    });
+      kw: '',, dashCanvas: null});
 
     const searchParamOrg = reactive({
       previewDate: today,
@@ -265,8 +264,7 @@ window.DpDispPanelPreview = {
     });
 
     /* ── 트리 선택 ── */
-    const selectedLibId = ref(null);
-    const onTreeSelect  = (lib) => { selectedLibId.value = lib.libId; };
+        const onTreeSelect  = (lib) => { uiState.selectedLibId = lib.libId; };
 
     /* ── 트리 상태 ── */
     /* ── 패널 트리: prefix > 영역명 > 패널명 ── */
@@ -459,14 +457,13 @@ window.DpDispPanelPreview = {
 
     /* ── 대시보드: 자유 배치 + 크기 조절 ── */
     const dashItems  = reactive([]); // { id, lib, x, y, w, h }
-    const dashCanvas = ref(null);
-
+    
     const onDashDragOver = (e) => { e.preventDefault(); uiState.dashDragOver = true; };
     const onDashDragLeave = () => { uiState.dashDragOver = false; };
     const onDashDrop = (e) => {
       e.preventDefault(); uiState.dashDragOver = false;
-      if (!dashCanvas.value) return;
-      const rect = dashCanvas.value.getBoundingClientRect();
+      if (!searchParam.dashCanvas) return;
+      const rect = searchParam.dashCanvas.getBoundingClientRect();
 
       /* ── 노드 일괄 배치 ── */
       const nodeLibs = window._dragWidgetLibs;

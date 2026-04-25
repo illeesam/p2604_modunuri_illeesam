@@ -5,7 +5,7 @@ window.CmBlogMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const blogs = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null});
     const codes = reactive({ blog_display_statuses: [] });
 
     // onMounted에서 API 로드
@@ -180,8 +180,8 @@ window.CmBlogMng = {
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { blogs, uiState, codes, searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
-             selectedId, cfSelectedRow, detailModal, openDetail, openNew, closeDetail, handleSave, handleDelete, toggleUse, fnYnBadge, PAGE_SIZES, onSizeChange };
+    return { uiStateDetail, blogs, uiState, codes, searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
+              cfSelectedRow, detailModal, openDetail, openNew, closeDetail, handleSave, handleDelete, toggleUse, fnYnBadge, PAGE_SIZES, onSizeChange };
   },
   template: `
 <div>

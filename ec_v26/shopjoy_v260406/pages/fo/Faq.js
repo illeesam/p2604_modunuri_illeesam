@@ -36,7 +36,7 @@ window.Faq = {
   `,
   setup() {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, openFaq: null});
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -58,7 +58,6 @@ window.Faq = {
       }
     });
     const { ref , watch } = Vue;
-    const openFaq = ref(null);
-    return { openFaq , uiState, codes };
+        return { openFaq , uiState, codes };
   }
 };

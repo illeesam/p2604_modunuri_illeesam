@@ -5,7 +5,7 @@ window.MbMemGradeMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const grades = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, focusedIdx: null});
     const codes = reactive({ member_grades: [] });
 
     // onMounted에서 API 로드
@@ -72,8 +72,7 @@ window.MbMemGradeMng = {
 
     const gridRows   = reactive([]);
     let   _tempId    = -1;
-    const focusedIdx = ref(null);
-  const searchParam = reactive({
+      const searchParam = reactive({
     kw: '',
     use: ''
   });
@@ -90,7 +89,7 @@ window.MbMemGradeMng = {
 
     const addRow = () => {
       gridRows.unshift({ gradeId: _tempId--, siteId: 1, gradeCd: '', gradeNm: '', gradeRank: gridRows.length + 1, minPurchaseAmt: 0, saveRate: 1.00, useYn: 'Y', _row_status: 'N' });
-      focusedIdx.value = 0;
+      uiState.focusedIdx = 0;
     };
     const onCellChange = (idx) => { if (gridRows[idx]._row_status !== 'N') gridRows[idx]._row_status = 'U'; };
     const handleDeleteRow    = async (idx) => {

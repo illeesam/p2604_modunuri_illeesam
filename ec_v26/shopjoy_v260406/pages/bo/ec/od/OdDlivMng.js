@@ -6,7 +6,7 @@ window.OdDlivMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const deliveries = reactive([]);
     const members = reactive([]);
-    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status'});
     const codes = reactive({ order_statuses: [], dliv_statuses: [], dliv_types: [], payment_methods: [] });
 
     // onMounted에서 API 로드
@@ -93,23 +93,22 @@ window.OdDlivMng = {
     });
 
     /* 하단 상세 */
-    const selectedId = ref(null);
-    const openMode = ref('view'); // 'view' | 'edit'
-    const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
-    const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
-    const closeDetail = () => { selectedId.value = null; };
+    const uiStateDetail = reactive({ selectedId: null: 'view' });
+    const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
+    const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
+    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
+    const closeDetail = () => { uiStateDetail.selectedId = null; };
 
     /* DlivDtl 에 넘길 navigate: 'odDlivMng' 이동 요청 → 패널 닫기로 인터셉트 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'odDlivMng') { selectedId.value = null; return; }
-      if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
+      if (pg === 'odDlivMng') { uiStateDetail.selectedId = null; return; }
+      if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
 
-    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
+    const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
+    const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
     /* 목록 */
     const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(deliveries, d => {
@@ -153,7 +152,7 @@ window.OdDlivMng = {
       if (!Array.isArray(deliveries)) return;
       const idx = deliveries.findIndex(x => x.dlivId === d.dlivId);
       if (idx !== -1) deliveries.splice(idx, 1);
-      if (selectedId.value === d.dlivId) selectedId.value = null;
+      if (uiStateDetail.selectedId === d.dlivId) uiStateDetail.selectedId = null;
       try {
         const res = await window.boApi.delete(`/bo/ec/od/dliv/${d.dlivId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -184,8 +183,7 @@ window.OdDlivMng = {
     const APPROVAL_ACTIONS = ['승인','반려','보류'];
     const REQ_TARGETS = ['주문','상품','배송','추가결재'];
     const DEFAULT_TMPL = '[결재요청]\n요청대상: {target} - {targetNm}\n요청금액: {amount}원\n내용: {reason}\n\n위 건에 대한 추가결재 부탁드립니다.';
-    const bulkTab = ref('status');
-    const bulkForm = reactive({
+        const bulkForm = reactive({
       status:'', courier:'', trackingNo:'', apprAction:'', apprComment:'',
       apprToUserId:'', apprToNm:'', apprToPhone:'', apprToEmail:'',
       reqTarget:'배송', reqTargetNm:'', reqAmount:0, reqReason:'', tmplMsg: DEFAULT_TMPL,
@@ -213,7 +211,7 @@ window.OdDlivMng = {
       .replace('{reason}', bulkForm.reqReason || '-'));
     const openBulk = () => {
       if (!checked.size) { props.showToast('항목을 선택하세요.', 'error'); return; }
-      bulkTab.value = 'status';
+      uiState.bulkTab = 'status';
       Object.assign(bulkForm, {
         status:'', courier:'', trackingNo:'', apprAction:'', apprComment:'',
         apprToUserId:'', apprToNm:'', apprToPhone:'', apprToEmail:'',
@@ -227,10 +225,10 @@ window.OdDlivMng = {
       const ids = Array.from(checked);
       const selected = window.safeArrayUtils.safeFilter(deliveries, d => ids.includes(d.dlivId));
       let rows = [];
-      if (bulkTab.value === 'status') {
+      if (uiState.bulkTab === 'status') {
         if (!bulkForm.status) return '';
         rows = selected.map(d => `- [${d.dlivId} / ${d.receiver || d.userNm}] [배송관리] 배송상태 변경: ${d.status || '-'} → ${bulkForm.status}`);
-      } else if (bulkTab.value === 'courier') {
+      } else if (uiState.bulkTab === 'courier') {
         if (!bulkForm.courier && !bulkForm.trackingNo) return '';
         rows = selected.map(d => {
           const parts = [];
@@ -238,10 +236,10 @@ window.OdDlivMng = {
           if (bulkForm.trackingNo) parts.push(`운송장: ${d.trackingNo || '-'} → ${bulkForm.trackingNo}`);
           return `- [${d.dlivId} / ${d.receiver || d.userNm}] [배송관리] 택배정보 변경: ${parts.join(', ')}`;
         });
-      } else if (bulkTab.value === 'approval') {
+      } else if (uiState.bulkTab === 'approval') {
         if (!bulkForm.apprAction) return '';
         rows = selected.map(d => `- [${d.dlivId} / ${d.receiver || d.userNm}] [배송관리] 결재처리: ${bulkForm.apprAction}${bulkForm.apprComment ? ' / '+bulkForm.apprComment : ''}`);
-      } else if (bulkTab.value === 'approvalReq') {
+      } else if (uiState.bulkTab === 'approvalReq') {
         if (!bulkForm.apprToUserId) return '';
         rows = selected.map(d => `- [${d.dlivId} / ${d.receiver || d.userNm}] [배송관리] 추가결재요청 → ${bulkForm.apprToNm}(${bulkForm.apprToUserId}) / 대상:${bulkForm.reqTarget}-${bulkForm.reqTargetNm} / 금액:${Number(bulkForm.reqAmount||0).toLocaleString()}원`);
       }
@@ -251,7 +249,7 @@ window.OdDlivMng = {
     const saveBulk = async () => {
       const ids = Array.from(checked);
       if (!ids.length) { props.showToast('항목을 선택하세요.', 'error'); uiState.bulkOpen = false; return; }
-      if (bulkTab.value === 'status') {
+      if (uiState.bulkTab === 'status') {
         if (!bulkForm.status) { props.showToast('변경할 배송상태를 선택하세요.', 'error'); return; }
         const ok = await props.showConfirm('일괄 배송상태 변경', `선택한 ${ids.length}건을 [${bulkForm.status}] 상태로 변경하시겠습니까?`);
         if (!ok) return;
@@ -267,7 +265,7 @@ window.OdDlivMng = {
           if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
           if (props.showToast) props.showToast(errMsg, 'error', 0);
         }
-      } else if (bulkTab.value === 'courier') {
+      } else if (uiState.bulkTab === 'courier') {
         if (!bulkForm.courier && !bulkForm.trackingNo) { props.showToast('택배사 또는 운송장번호를 입력하세요.', 'error'); return; }
         const ok = await props.showConfirm('일괄 택배정보 변경', `선택한 ${ids.length}건의 택배정보를 변경하시겠습니까?`);
         if (!ok) return;
@@ -288,7 +286,7 @@ window.OdDlivMng = {
           if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
           if (props.showToast) props.showToast(errMsg, 'error', 0);
         }
-      } else if (bulkTab.value === 'approval') {
+      } else if (uiState.bulkTab === 'approval') {
         if (!bulkForm.apprAction) { props.showToast('결재처리 구분을 선택하세요.', 'error'); return; }
         const ok = await props.showConfirm('일괄 결재처리', `선택한 ${ids.length}건을 [${bulkForm.apprAction}] 처리하시겠습니까?`);
         if (!ok) return;
@@ -304,7 +302,7 @@ window.OdDlivMng = {
           if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
           if (props.showToast) props.showToast(errMsg, 'error', 0);
         }
-      } else if (bulkTab.value === 'approvalReq') {
+      } else if (uiState.bulkTab === 'approvalReq') {
         if (!bulkForm.apprToUserId) { props.showToast('추가결재자(회원)를 선택하세요.', 'error'); return; }
         const ok = await props.showConfirm('일괄 추가결재요청', `선택한 ${ids.length}건을 [${bulkForm.apprToNm}](으)로 추가결재요청 하시겠습니까?`);
         if (!ok) return;
@@ -327,7 +325,7 @@ window.OdDlivMng = {
       }
     };
 
-    return { deliveries, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkTab, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { uiStateDetail, deliveries, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkTab, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>

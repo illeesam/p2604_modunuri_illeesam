@@ -6,7 +6,7 @@ window.XsStore = {
   props: ['navigate', 'showToast'],
   setup(props) {
     const { ref, computed, reactive, onMounted, watch } = Vue;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, storeInfo: '', selectedStore: null, viewMode: 'col5'});
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -28,11 +28,8 @@ window.XsStore = {
       }
     });
 
-    const storeInfo = ref('');
-    const selectedStore = ref(null);
-    const openStores = reactive([]);
-    const viewMode = ref('col5');
-    const editedStoreInfo = reactive({});
+            const openStores = reactive([]);
+        const editedStoreInfo = reactive({});
 
     const cfStoreList = computed(() => {
       const stores = [];
@@ -49,7 +46,7 @@ window.XsStore = {
     });
 
     const selectStore = (storeName) => {
-      selectedStore.value = storeName;
+      uiState.selectedStore = storeName;
       if (!openStores.find(s => s === storeName)) {
         openStores.push(storeName);
       }
@@ -68,26 +65,26 @@ window.XsStore = {
         if (storeFunc) {
           const store = storeFunc();
           const jsonStr = JSON.stringify(store.$state, null, 2);
-          storeInfo.value = jsonStr;
+          uiState.storeInfo = jsonStr;
           editedStoreInfo[storeName] = jsonStr;
         }
       } catch (e) {
-        storeInfo.value = `Error: ${e.message}`;
+        uiState.storeInfo = `Error: ${e.message}`;
       }
     };
 
     const closeTab = (storeName) => {
       const idx = openStores.indexOf(storeName);
       if (idx !== -1) openStores.splice(idx, 1);
-      if (selectedStore.value === storeName) {
-        selectedStore.value = openStores[Math.max(0, idx - 1)] || null;
-        if (selectedStore.value) loadStoreData(selectedStore.value);
+      if (uiState.selectedStore === storeName) {
+        uiState.selectedStore = openStores[Math.max(0, idx - 1)] || null;
+        if (uiState.selectedStore) loadStoreData(uiState.selectedStore);
       }
     };
 
     const copyToClipboard = () => {
       try {
-        navigator.clipboard.writeText(storeInfo.value);
+        navigator.clipboard.writeText(uiState.storeInfo);
         props.showToast('클립보드에 복사되었습니다.', 'success');
       } catch (e) {
         props.showToast('복사 실패: ' + e.message, 'error');
@@ -95,13 +92,13 @@ window.XsStore = {
     };
 
     const clearStore = () => {
-      if (!selectedStore.value) return;
+      if (!uiState.selectedStore) return;
       try {
-        const storeFunc = window[selectedStore.value];
+        const storeFunc = window[uiState.selectedStore];
         if (storeFunc && storeFunc().clear) {
           storeFunc().clear();
           props.showToast('스토어가 초기화되었습니다.', 'success');
-          selectStore(selectedStore.value);
+          selectStore(uiState.selectedStore);
         }
       } catch (e) {
         props.showToast('초기화 실패: ' + e.message, 'error');
@@ -109,16 +106,16 @@ window.XsStore = {
     };
 
     const saveStore = () => {
-      if (!selectedStore.value) return;
+      if (!uiState.selectedStore) return;
       try {
-        const jsonStr = editedStoreInfo[selectedStore.value];
+        const jsonStr = editedStoreInfo[uiState.selectedStore];
         const newState = JSON.parse(jsonStr);
-        const storeFunc = window[selectedStore.value];
+        const storeFunc = window[uiState.selectedStore];
         if (storeFunc) {
           const store = storeFunc();
           Object.assign(store.$state, newState);
           props.showToast('스토어가 저장되었습니다.', 'success');
-          loadStoreData(selectedStore.value);
+          loadStoreData(uiState.selectedStore);
         }
       } catch (e) {
         props.showToast('저장 실패: ' + e.message, 'error');
@@ -148,8 +145,8 @@ window.XsStore = {
               Object.assign(storeInst.$state, Object.values(responseData)[0]);
               const jsonStr = JSON.stringify(storeInst.$state, null, 2);
               editedStoreInfo[storeName] = jsonStr;
-              selectedStore.value = storeName;
-              storeInfo.value = jsonStr;
+              uiState.selectedStore = storeName;
+              uiState.storeInfo = jsonStr;
               props.showToast('조회되었습니다.', 'success');
             }
           }
@@ -161,7 +158,7 @@ window.XsStore = {
 
     onMounted(() => {
       loadAllStoreData();
-      if (cfStoreList.value.length > 0 && !selectedStore.value) {
+      if (cfStoreList.value.length > 0 && !uiState.selectedStore) {
         selectStore(cfStoreList.value[0].name);
       }
     });

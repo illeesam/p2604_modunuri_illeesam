@@ -6,7 +6,7 @@ window.SyAttachMng = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const attaches = reactive([]);
     const attachGrps = reactive([]);
-    const uiState = reactive({ fileEditMode: false, grpEditMode: false, loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ fileEditMode: false, grpEditMode: false, loading: false, error: null, isPageCodeLoad: false, selectedGrpId: null, grpEditId: null, fileEditId: null});
     const codes = reactive({ attach_type: [] });
 
     // onMounted에서 API 로드
@@ -52,10 +52,10 @@ window.SyAttachMng = {
         fnLoadCodes();
       }
     });
-    const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
+    const searchParam = reactive({ dateRange: '', dateStart: '', dateEnd: '' });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
@@ -68,29 +68,27 @@ window.SyAttachMng = {
     };
 
     /* ── 첨부그룹 ── */
-    const selectedGrpId = ref(null);
-    const grpForm = reactive({ grpNm: '', grpCode: '', description: '', maxCount: 10, maxSizeMb: 5, allowExt: 'jpg,png', status: '활성' });
-    const grpEditId = ref(null);
-
-    const selectGrp = (id) => { selectedGrpId.value = selectedGrpId.value === id ? null : id; uiState.grpEditMode = false; };
+        const grpForm = reactive({ grpNm: '', grpCode: '', description: '', maxCount: 10, maxSizeMb: 5, allowExt: 'jpg,png', status: '활성' });
+    
+    const selectGrp = (id) => { uiState.selectedGrpId = uiState.selectedGrpId === id ? null : id; uiState.grpEditMode = false; };
 
     const openGrpNew = () => {
-      grpEditId.value = null; uiState.grpEditMode = true;
+      uiState.grpEditId = null; uiState.grpEditMode = true;
       Object.assign(grpForm, { grpNm: '', grpCode: '', description: '', maxCount: 10, maxSizeMb: 5, allowExt: 'jpg,png', status: '활성' });
     };
     const openGrpEdit = (g) => {
-      grpEditId.value = g.attachGrpId; uiState.grpEditMode = true;
+      uiState.grpEditId = g.attachGrpId; uiState.grpEditMode = true;
       Object.assign(grpForm, { ...g });
     };
     const handleSaveGrp = () => {
       if (!grpForm.grpNm || !grpForm.grpCode) { props.showToast('그룹명과 코드는 필수입니다.', 'error'); return; }
-      if (grpEditId.value === null) {
+      if (uiState.grpEditId === null) {
         if (!Array.isArray(attachGrps)) return;
         attachGrps.push({ ...grpForm, attachGrpId: nextId.value(attachGrps, 'attachGrpId'), regDate: new Date().toISOString().slice(0, 10) });
         props.showToast('그룹이 등록되었습니다.');
       } else {
         if (!Array.isArray(attachGrps)) return;
-        const idx = attachGrps.findIndex(x => x.attachGrpId === grpEditId.value);
+        const idx = attachGrps.findIndex(x => x.attachGrpId === uiState.grpEditId);
         if (idx !== -1) Object.assign(attachGrps[idx], grpForm);
         props.showToast('저장되었습니다.');
       }
@@ -101,22 +99,21 @@ window.SyAttachMng = {
       if (!ok) return;
       const idx = attachGrps.findIndex(x => x.attachGrpId === g.attachGrpId);
       if (idx !== -1) attachGrps.splice(idx, 1);
-      if (selectedGrpId.value === g.attachGrpId) selectedGrpId.value = null;
+      if (uiState.selectedGrpId === g.attachGrpId) uiState.selectedGrpId = null;
       props.showToast('삭제되었습니다.');
     };
 
     /* ── 첨부파일 ── */
-    const searchKw = ref('');
+    Object.assign(searchParam, { kw: '' });
     const fileForm = reactive({ attachGrpId: null, fileNm: '', fileSize: 0, fileExt: '', url: '', refId: '', memo: '' });
-    const fileEditId = ref(null);
-
+    
     const applied = reactive({ kw: '', dateStart: '', dateEnd: '' });
 
     const cfFilteredFiles = computed(() => {
       const items = attaches || [];
       if (!Array.isArray(items)) return [];
       return items.filter(a => {
-        if (selectedGrpId.value && a.attachGrpId !== selectedGrpId.value) return false;
+        if (uiState.selectedGrpId && a.attachGrpId !== uiState.selectedGrpId) return false;
         const kw = applied.kw.trim().toLowerCase();
         if (kw && !a.fileNm.toLowerCase().includes(kw) && !a.refId.toLowerCase().includes(kw)) return false;
         const _d = String(a.regDate || '').slice(0, 10);
@@ -128,33 +125,33 @@ window.SyAttachMng = {
 
     const onSearch = () => {
       Object.assign(applied, {
-        kw: searchKw.value,
-        dateStart: searchDateStart.value,
-        dateEnd: searchDateEnd.value,
+        kw: searchParam.kw,
+        dateStart: searchParam.dateStart,
+        dateEnd: searchParam.dateEnd,
       });
     };
     const onReset = () => {
-      searchKw.value = '';
-      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
+      searchParam.kw = '';
+      searchParam.dateStart = ''; searchParam.dateEnd = ''; searchParam.dateRange = '';
       Object.assign(applied, { kw: '', dateStart: '', dateEnd: '' });
     };
 
     const openFileNew = () => {
-      fileEditId.value = null; uiState.fileEditMode = true;
-      Object.assign(fileForm, { attachGrpId: selectedGrpId.value, fileNm: '', fileSize: 0, fileExt: '', url: '', refId: '', memo: '' });
+      uiState.fileEditId = null; uiState.fileEditMode = true;
+      Object.assign(fileForm, { attachGrpId: uiState.selectedGrpId, fileNm: '', fileSize: 0, fileExt: '', url: '', refId: '', memo: '' });
     };
     const openFileEdit = (a) => {
-      fileEditId.value = a.attachId; uiState.fileEditMode = true;
+      uiState.fileEditId = a.attachId; uiState.fileEditMode = true;
       Object.assign(fileForm, { ...a });
     };
     const handleSaveFile = () => {
       if (!fileForm.fileNm || !fileForm.attachGrpId) { props.showToast('그룹과 파일명은 필수입니다.', 'error'); return; }
       const grp = (Array.isArray(attachGrps) ? attachGrps : []).find(g => g.attachGrpId === fileForm.attachGrpId);
-      if (fileEditId.value === null) {
+      if (uiState.fileEditId === null) {
         attaches.push({ ...fileForm, attachId: nextId.value(attaches, 'attachId'), attachGrpNm: grp?.grpNm || '', regDate: new Date().toISOString().slice(0, 10) });
         props.showToast('파일이 등록되었습니다.');
       } else {
-        const idx = (Array.isArray(attaches) ? attaches : []).findIndex(x => x.attachId === fileEditId.value);
+        const idx = (Array.isArray(attaches) ? attaches : []).findIndex(x => x.attachId === uiState.fileEditId);
         if (idx !== -1) Object.assign(attaches[idx], { ...fileForm, attachGrpNm: grp?.grpNm || '' });
         props.showToast('저장되었습니다.');
       }
@@ -178,10 +175,10 @@ window.SyAttachMng = {
 
     const cfTotal = computed(() => cfFilteredFiles.value.length);
 
-    return { attaches, uiState, codes, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm,
+    return { attaches, uiState, codes, searchParam, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm,
       attachGrps, grpForm, cfTotal,
       selectedGrpId, grpForm, grpEditId, uiState, selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
-      searchKw, fileForm, fileEditId, uiState, applied, cfFilteredFiles, onSearch, onReset, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
+      searchParam, fileForm, fileEditId, uiState, applied, cfFilteredFiles, onSearch, onReset, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
       fnFmtSize, fnStatusBadge,
     };
   },
@@ -270,8 +267,8 @@ window.SyAttachMng = {
             </span>
           </b>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input v-model="searchKw" placeholder="파일명 / RefID 검색" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:160px;" />
-            <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" /><select v-model="searchDateRange" @change="onDateRangeChange" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+            <input v-model="searchParam.kw" placeholder="파일명 / RefID 검색" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:160px;" />
+            <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" /><select v-model="searchParam.dateRange" @change="onDateRangeChange" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
             <div class="search-actions">
               <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
               <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

@@ -7,7 +7,7 @@ window.PdReviewMng = {
     const products = reactive([]);
     const members = reactive([]);
     const reviews = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null});
     const codes = reactive({
       review_statuses: [],
     });
@@ -94,9 +94,9 @@ window.PdReviewMng = {
     const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const cfSelectedRow = computed(() => (reviews||[]).find(r => r.reviewId === selectedId.value) || null);
+    const cfSelectedRow = computed(() => (reviews||[]).find(r => r.reviewId === uiStateDetail.selectedId) || null);
 
-    const openDetail = (row) => { selectedId.value = selectedId.value === row.reviewId ? null : row.reviewId; };
+    const openDetail = (row) => { uiStateDetail.selectedId = uiStateDetail.selectedId === row.reviewId ? null : row.reviewId; };
     const changeStatus = async (row, newStatus) => {
       const ok = await props.showConfirm('상태변경', `[${row.reviewTitle}] 상태를 [${STATUS_LABEL[newStatus]}]로 변경하시겠습니까?`);
       if (!ok) return;
@@ -132,8 +132,8 @@ window.PdReviewMng = {
     const onSizeChange = () => { pager.page = 1; };
     const starStr  = r => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r));
 
-    return { reviews, uiState, uiState, searchKw, searchStatus, searchRating, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
-             selectedId, cfSelectedRow, openDetail, changeStatus, fnStatusBadge, STATUS_LIST, STATUS_LABEL, getProdNm, getMemNm, starStr , PAGE_SIZES , onSizeChange };
+    return { uiStateDetail, reviews, uiState, uiState, searchKw, searchStatus, searchRating, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
+              cfSelectedRow, openDetail, changeStatus, fnStatusBadge, STATUS_LIST, STATUS_LABEL, getProdNm, getMemNm, starStr , PAGE_SIZES , onSizeChange };
   },
   template: `
 <div>

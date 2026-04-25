@@ -6,7 +6,7 @@ window.XsLocalStorage = {
   props: ['navigate', 'showToast'],
   setup(props) {
     const { ref, reactive, computed, onMounted, onUnmounted, watch } = Vue;
-    const uiStateGlobal = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiStateGlobal = reactive({ loading: false, error: null, isPageCodeLoad: false, filterKey: '', editingKey: null, editingValue: '', valueColWidth: 65, startX: 0, startWidth: 0});
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -29,14 +29,8 @@ window.XsLocalStorage = {
     });
 
     const storageData = reactive([]);
-    const filterKey = ref('');
-    const editingKey = ref(null);
-    const editingValue = ref('');
-    const valueColWidth = ref(65);
-    const uiState = reactive({ isResizing: false });
-    const startX = ref(0);
-    const startWidth = ref(0);
-
+                    const uiState = reactive({ isResizing: false });
+        
     const loadStorageData = () => {
       const data = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -50,7 +44,7 @@ window.XsLocalStorage = {
 
     const cfFilteredData = computed(() => {
       const data = Array.isArray(storageData) ? storageData : [];
-      if (!filterKey.value) return data;
+      if (!uiStateGlobal.filterKey) return data;
       return data.filter(item => item.key.toLowerCase().includes(filterKey.value.toLowerCase()));
     });
 
@@ -64,17 +58,17 @@ window.XsLocalStorage = {
     };
 
     const startEdit = (key, value) => {
-      editingKey.value = key;
-      editingValue.value = value;
+      uiStateGlobal.editingKey = key;
+      uiStateGlobal.editingValue = value;
     };
 
     const saveEdit = (key) => {
       if (!key) return;
       try {
-        localStorage.setItem(key, editingValue.value);
+        localStorage.setItem(key, uiStateGlobal.editingValue);
         props.showToast('저장되었습니다.', 'success');
-        editingKey.value = null;
-        editingValue.value = '';
+        uiStateGlobal.editingKey = null;
+        uiStateGlobal.editingValue = '';
         loadStorageData();
       } catch (e) {
         props.showToast('저장 실패: ' + e.message, 'error');
@@ -82,8 +76,8 @@ window.XsLocalStorage = {
     };
 
     const cancelEdit = () => {
-      editingKey.value = null;
-      editingValue.value = '';
+      uiStateGlobal.editingKey = null;
+      uiStateGlobal.editingValue = '';
     };
 
     const handleDelete = (key) => {
@@ -118,18 +112,18 @@ window.XsLocalStorage = {
 
     const startResize = (e) => {
       uiState.isResizing = true;
-      startX.value = e.clientX;
-      startWidth.value = valueColWidth.value;
+      uiStateGlobal.startX = e.clientX;
+      uiStateGlobal.startWidth = uiStateGlobal.valueColWidth;
     };
 
     const handleMouseMove = (e) => {
       if (!uiState.isResizing) return;
-      const delta = e.clientX - startX.value;
-      const newWidth = Math.max(30, startWidth.value + (delta / window.innerWidth * 100));
+      const delta = e.clientX - uiStateGlobal.startX;
+      const newWidth = Math.max(30, uiStateGlobal.startWidth + (delta / window.innerWidth * 100));
       const keyWidth = 25;
       const actionWidth = 10;
       const maxValue = 100 - keyWidth - actionWidth;
-      valueColWidth.value = Math.min(maxValue, newWidth);
+      uiStateGlobal.valueColWidth = Math.min(maxValue, newWidth);
     };
 
     const stopResize = () => {

@@ -6,7 +6,7 @@ window.SyI18nMng = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const i18nKeys = reactive([]);
     const i18nMsgs = reactive([]);
-    const uiState = reactive({ isPageCodeLoad: false });
+    const uiState = reactive({ isPageCodeLoad: false, selectedId: null});
     const codes = reactive({ lang_code: [] });
 
     const handleFetchData = async () => {
@@ -44,9 +44,7 @@ window.SyI18nMng = {
       }
     });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const searchKw    = ref('');
-    const searchScope = ref('');
-    const searchUse   = ref('');
+    const searchParam = reactive({ kw: '', scope: '', use: '' });
     const applied     = reactive({ kw: '', scope: '', use: '' });
     const pager       = reactive({ page: 1, size: 20 });
     const selectedId  = ref(null);
@@ -70,19 +68,19 @@ window.SyI18nMng = {
     const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const cfSelectedKey = computed(() => (i18nKeys||[]).find(k => k.i18nId === selectedId.value) || null);
+    const cfSelectedKey = computed(() => (i18nKeys||[]).find(k => k.i18nId === uiState.selectedId) || null);
     const cfSelectedMsgs = computed(() => {
       if (!cfSelectedKey.value) return {};
       const msgs = {};
       LANGS.forEach(lang => { msgs[lang] = ''; });
-      (i18nMsgs||[]).filter(m => m.i18nId === selectedId.value).forEach(m => { msgs[m.langCd] = m.i18nMsg; });
+      (i18nMsgs||[]).filter(m => m.i18nId === uiState.selectedId).forEach(m => { msgs[m.langCd] = m.i18nMsg; });
       return msgs;
     });
     const msgForm = reactive({});
 
     const openDetail = (key) => {
-      if (selectedId.value === key.i18nId) { selectedId.value = null; return; }
-      selectedId.value = key.i18nId;
+      if (uiState.selectedId === key.i18nId) { uiState.selectedId = null; return; }
+      uiState.selectedId = key.i18nId;
       const msgs = {};
       LANGS.forEach(lang => { msgs[lang] = ''; });
       (i18nMsgs||[]).filter(m => m.i18nId === key.i18nId).forEach(m => { msgs[m.langCd] = m.i18nMsg; });
@@ -113,13 +111,13 @@ window.SyI18nMng = {
       const m = (i18nMsgs||[]).find(m => m.i18nId === i18nId && m.langCd === lang);
       return m ? m.i18nMsg : '';
     };
-    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, scope: searchScope.value, use: searchUse.value }); pager.page = 1; };
-    const onReset  = () => { searchKw.value = ''; searchScope.value = ''; searchUse.value = ''; Object.assign(applied, { kw: '', scope: '', use: '' }); pager.page = 1; };
+    const onSearch = () => { Object.assign(applied, { kw: searchParam.kw, scope: searchParam.scope, use: searchParam.use }); pager.page = 1; };
+    const onReset  = () => { searchParam.kw = ''; searchParam.scope = ''; searchParam.use = ''; Object.assign(applied, { kw: '', scope: '', use: '' }); pager.page = 1; };
     const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { uiState, codes, searchKw, searchScope, searchUse, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
+    return { uiState, codes, searchParam, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
              selectedId, cfSelectedKey, cfSelectedMsgs, msgForm, openDetail, saveMsgs, getLangMsg,
              SCOPES, LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, PAGE_SIZES, onSizeChange };
   },
@@ -129,13 +127,13 @@ window.SyI18nMng = {
     <div class="card">
       <div class="search-bar">
         <label class="search-label">키/설명</label>
-        <input class="form-control" v-model="searchKw" @keyup.enter="onSearch" placeholder="키 또는 설명 검색">
+        <input class="form-control" v-model="searchParam.kw" @keyup.enter="onSearch" placeholder="키 또는 설명 검색">
         <label class="search-label">범위</label>
-        <select class="form-control" v-model="searchScope">
+        <select class="form-control" v-model="searchParam.scope">
           <option value="">전체</option><option v-for="s in SCOPES" :key="s" :value="s">{{ s }}</option>
         </select>
         <label class="search-label">사용여부</label>
-        <select class="form-control" v-model="searchUse"><option value="">전체</option><option value="Y">Y</option><option value="N">N</option></select>
+        <select class="form-control" v-model="searchParam.use"><option value="">전체</option><option value="Y">Y</option><option value="N">N</option></select>
         <div class="search-actions">
           <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
           <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

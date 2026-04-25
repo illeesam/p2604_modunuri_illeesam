@@ -7,7 +7,7 @@ window.Login = {
     const { ref, reactive, watch, computed, onMounted } = Vue;
 
     /* ── UI 상태 ── */
-    const uiState = reactive({ snsPhoneVerified: false, loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ snsPhoneVerified: false, loading: false, error: null, isPageCodeLoad: false, step: 'login', snsProvider: null, loginErr: '', signupErr: '', _ec: '', _pc: '', snsNickname: '', snsPhoneCode: '', snsPhoneCodeSent: false, _spc: '', snsErr: ''});;
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -31,15 +31,14 @@ window.Login = {
 
     // login | terms | signup | sns-signup
     const step       = ref('login');
-    const snsProvider = ref(null); // sns 회원가입 시 provider 저장
+     // sns 회원가입 시 provider 저장
 
     /* ── 로그인 ── */
     const form     = reactive({ email: 'user1@demo.com', password: 'demo1234' });
-    const loginErr = ref('');
-
+    
     const doLogin = async () => {
-      loginErr.value = '';
-      if (!form.email || !form.password) { loginErr.value = '이메일과 비밀번호를 입력하세요.'; return; }
+      uiState.loginErr = '';
+      if (!form.email || !form.password) { uiState.loginErr = '이메일과 비밀번호를 입력하세요.'; return; }
       const r = await window.foAuth.login(form.email, form.password);
       if (r.ok) {
         const userNm = window.foAuth.state.user?.authNm || window.foAuth.state.user?.memberNm || '사용자';
@@ -56,7 +55,7 @@ window.Login = {
         }
 
         emit('close');
-      } else { loginErr.value = r.msg; }
+      } else { uiState.loginErr = r.msg; }
     };
 
     /* 소셜 로그인 (기존 회원) vs 소셜 회원가입 분기 */
@@ -69,8 +68,8 @@ window.Login = {
 
     /* 소셜 회원가입 버튼 → 약관 → sns-signup 폼 */
     const startSnsSignup = provider => {
-      snsProvider.value = provider;
-      step.value = 'terms';
+      uiState.snsProvider = provider;
+      uiState.step = 'terms';
     };
 
     /* ── 약관 ── */
@@ -80,7 +79,7 @@ window.Login = {
       terms.all = terms.t1 && terms.t2 && terms.t3 && terms.t4;
     });
     const goNextFromTerms = () => {
-      step.value = snsProvider.value ? 'sns-signup' : 'signup';
+      uiState.step = uiState.snsProvider ? 'sns-signup' : 'signup';
     };
 
     /* ── 공통 회원가입 필드 ── */
@@ -93,31 +92,29 @@ window.Login = {
       birthdate: '', gender: '',
     });
     const sf       = _initSf();
-    const signupErr = ref('');
-    const _ec = ref(''); const _pc = ref('');
-
+         
     /* 이메일 인증 */
     const sendEmailCode = () => {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sf.email)) { signupErr.value = '올바른 이메일을 입력하세요.'; return; }
-      _ec.value = String(Math.floor(100000 + Math.random() * 900000));
-      sf.emailSent = true; sf.emailVerified = false; signupErr.value = '';
-      props.showToast('인증코드: ' + _ec.value + '  (데모용)', 'info');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sf.email)) { uiState.signupErr = '올바른 이메일을 입력하세요.'; return; }
+      uiState._ec = String(Math.floor(100000 + Math.random() * 900000));
+      sf.emailSent = true; sf.emailVerified = false; uiState.signupErr = '';
+      props.showToast('인증코드: ' + uiState._ec + '  (데모용)', 'info');
     };
     const verifyEmail = () => {
-      if (sf.emailCode === _ec.value) { sf.emailVerified = true; signupErr.value = ''; props.showToast('이메일 인증 완료!', 'success'); }
-      else signupErr.value = '인증코드가 올바르지 않습니다.';
+      if (sf.emailCode === uiState._ec) { sf.emailVerified = true; uiState.signupErr = ''; props.showToast('이메일 인증 완료!', 'success'); }
+      else uiState.signupErr = '인증코드가 올바르지 않습니다.';
     };
 
     /* 휴대폰 인증 */
     const sendPhoneCode = () => {
-      if (!/^010[-]?\d{4}[-]?\d{4}$/.test(sf.phone.replace(/\s/g, ''))) { signupErr.value = '올바른 휴대폰 번호를 입력하세요. (010-0000-0000)'; return; }
-      _pc.value = String(Math.floor(100000 + Math.random() * 900000));
-      sf.phoneSent = true; sf.phoneVerified = false; signupErr.value = '';
-      props.showToast('인증코드: ' + _pc.value + '  (데모용)', 'info');
+      if (!/^010[-]?\d{4}[-]?\d{4}$/.test(sf.phone.replace(/\s/g, ''))) { uiState.signupErr = '올바른 휴대폰 번호를 입력하세요. (010-0000-0000)'; return; }
+      uiState._pc = String(Math.floor(100000 + Math.random() * 900000));
+      sf.phoneSent = true; sf.phoneVerified = false; uiState.signupErr = '';
+      props.showToast('인증코드: ' + uiState._pc + '  (데모용)', 'info');
     };
     const verifyPhone = () => {
-      if (sf.phoneCode === _pc.value) { sf.phoneVerified = true; signupErr.value = ''; props.showToast('휴대폰 인증 완료!', 'success'); }
-      else signupErr.value = '인증코드가 올바르지 않습니다.';
+      if (sf.phoneCode === uiState._pc) { sf.phoneVerified = true; uiState.signupErr = ''; props.showToast('휴대폰 인증 완료!', 'success'); }
+      else uiState.signupErr = '인증코드가 올바르지 않습니다.';
     };
 
     /* 카카오 주소 검색 */
@@ -130,12 +127,12 @@ window.Login = {
 
     /* ── 일반 회원가입 제출 ── */
     const doSignup = async () => {
-      signupErr.value = '';
-      if (!sf.memberNm.trim())      { signupErr.value = '이름을 입력하세요.'; return; }
-      if (!sf.emailVerified)    { signupErr.value = '이메일 인증이 필요합니다.'; return; }
-      if (!sf.phoneVerified)    { signupErr.value = '휴대폰 인증이 필요합니다.'; return; }
-      if (sf.password.length < 6){ signupErr.value = '비밀번호는 6자 이상이어야 합니다.'; return; }
-      if (sf.password !== sf.password2){ signupErr.value = '비밀번호가 일치하지 않습니다.'; return; }
+      uiState.signupErr = '';
+      if (!sf.memberNm.trim())      { uiState.signupErr = '이름을 입력하세요.'; return; }
+      if (!sf.emailVerified)    { uiState.signupErr = '이메일 인증이 필요합니다.'; return; }
+      if (!sf.phoneVerified)    { uiState.signupErr = '휴대폰 인증이 필요합니다.'; return; }
+      if (sf.password.length < 6){ uiState.signupErr = '비밀번호는 6자 이상이어야 합니다.'; return; }
+      if (sf.password !== sf.password2){ uiState.signupErr = '비밀번호가 일치하지 않습니다.'; return; }
       const passwordHash = window.CryptoJS ? CryptoJS.SHA256(sf.password).toString() : sf.password;
       const r = await window.foAuth.signup(sf.memberNm, sf.email, sf.phone, {
         password: passwordHash,
@@ -146,30 +143,26 @@ window.Login = {
         props.showToast('회원가입이 완료되었습니다!', 'success');
         emit('close');
       } else {
-        signupErr.value = r.msg || '회원가입 실패';
+        uiState.signupErr = r.msg || '회원가입 실패';
       }
     };
 
     /* ── SNS 회원가입 제출 ── */
-    const snsNickname = ref('');
-    const snsPhone    = ref('');
-    const snsPhoneCode = ref(''); const snsPhoneCodeSent = ref(false);
-    const _spc = ref('');
-    const snsErr = ref('');
-
+        const snsPhone    = ref('');
+             
     const providerLabel = p => ({ google: 'Google', kakao: '카카오', naver: '네이버' }[p] || p);
     const providerColor = p => ({ google: '#fff', kakao: '#FEE500', naver: '#03C75A' }[p] || '#fff');
     const providerTextColor = p => ({ google: '#333', kakao: '#3C1E1E', naver: '#fff' }[p] || '#333');
 
     const sendSnsPhoneCode = () => {
-      if (!/^010[-]?\d{4}[-]?\d{4}$/.test(snsPhone.value.replace(/\s/g, ''))) { snsErr.value = '올바른 휴대폰 번호를 입력하세요.'; return; }
-      _spc.value = String(Math.floor(100000 + Math.random() * 900000));
-      snsPhoneCodeSent.value = true; uiState.snsPhoneVerified = false; snsErr.value = '';
-      props.showToast('인증코드: ' + _spc.value + '  (데모용)', 'info');
+      if (!/^010[-]?\d{4}[-]?\d{4}$/.test(uiState.snsPhone.replace(/\s/g, ''))) { uiState.snsErr = '올바른 휴대폰 번호를 입력하세요.'; return; }
+      uiState._spc = String(Math.floor(100000 + Math.random() * 900000));
+      uiState.snsPhoneCodeSent = true; uiState.snsPhoneVerified = false; uiState.snsErr = '';
+      props.showToast('인증코드: ' + uiState._spc + '  (데모용)', 'info');
     };
     const verifySnsPhone = () => {
-      if (snsPhoneCode.value === _spc.value) { uiState.snsPhoneVerified = true; snsErr.value = ''; props.showToast('휴대폰 인증 완료!', 'success'); }
-      else snsErr.value = '인증코드가 올바르지 않습니다.';
+      if (uiState.snsPhoneCode === uiState._spc) { uiState.snsPhoneVerified = true; uiState.snsErr = ''; props.showToast('휴대폰 인증 완료!', 'success'); }
+      else uiState.snsErr = '인증코드가 올바르지 않습니다.';
     };
 
     /* SNS 선택 정보 */
@@ -182,20 +175,20 @@ window.Login = {
     };
 
     const doSnsSignup = async () => {
-      snsErr.value = '';
-      if (!snsNickname.value.trim()) { snsErr.value = '이름/닉네임을 입력하세요.'; return; }
-      if (!uiState.snsPhoneVerified)   { snsErr.value = '휴대폰 인증이 필요합니다.'; return; }
+      uiState.snsErr = '';
+      if (!snsNickname.value.trim()) { uiState.snsErr = '이름/닉네임을 입력하세요.'; return; }
+      if (!uiState.snsPhoneVerified)   { uiState.snsErr = '휴대폰 인증이 필요합니다.'; return; }
       const demos = { google: 'google.sns@gmail.com', kakao: 'kakao.sns@kakao.com', naver: 'naver.sns@naver.com' };
-      const r = await window.foAuth.signup(snsNickname.value, demos[snsProvider.value] || 'sns@demo.com', snsPhone.value, {
-        provider: snsProvider.value,
+      const r = await window.foAuth.signup(uiState.snsNickname, demos[uiState.snsProvider] || 'sns@demo.com', uiState.snsPhone, {
+        provider: uiState.snsProvider,
         postcode: snsSf.postcode, address: snsSf.address, addressDetail: snsSf.addressDetail,
         birthdate: snsSf.birthdate, gender: snsSf.gender,
       });
       if (r.ok) {
-        props.showToast(snsNickname.value + '님, 환영합니다!', 'success');
+        props.showToast(uiState.snsNickname + '님, 환영합니다!', 'success');
         emit('close');
       } else {
-        snsErr.value = r.msg || '회원가입 실패';
+        uiState.snsErr = r.msg || '회원가입 실패';
       }
     };
 

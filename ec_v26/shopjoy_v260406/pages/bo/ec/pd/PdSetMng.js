@@ -8,7 +8,7 @@ window.PdSetMng = {
     const products = reactive([]);
     const brands = reactive([]);
     const sets = reactive([]);
-    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: null, editSetId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, dragIdx: null, dragoverIdx: null, pickerOpen: false, pickerSearch: ''});
     const codes = reactive({
       product_statuses: [],
     });
@@ -60,8 +60,7 @@ window.PdSetMng = {
     const searchParam = reactive({
       error: null,
       nm: ''
-      error: null,
-    });
+      error: null,, dtlMode: null, editSetId: null, catPickerOpen: false, catDragIdx: null, dragIdx: null, pickerOpen: false});;
     const searchParamOrg = reactive({
       nm: ''
     });
@@ -89,8 +88,7 @@ window.PdSetMng = {
     /* ── 카테고리 N개 ── */
     const dtlCategories   = reactive([]);
     const catPickerOpen   = ref(false);
-    const catPickerSearch = ref('');
-    const cfCatPickerList   = computed(() => {
+        const cfCatPickerList   = computed(() => {
       const q    = catPickerSearch.value.trim().toLowerCase();
       const used = new Set(dtlCategories.map(c => String(c.categoryId)));
       return (categories || []).filter(c =>
@@ -99,23 +97,22 @@ window.PdSetMng = {
     });
 
     const catDragIdx     = ref(null);
-    const catDragoverIdx = ref(null);
-    const onCatDragStart = idx => { catDragIdx.value = idx; };
-    const onCatDragOver  = idx => { catDragoverIdx.value = idx; };
+        const onCatDragStart = idx => { uiState.catDragIdx = idx; };
+    const onCatDragOver  = idx => { uiState.catDragoverIdx = idx; };
     const onCatDrop = () => {
-      if (catDragIdx.value === null || catDragIdx.value === catDragoverIdx.value) {
-        catDragIdx.value = catDragoverIdx.value = null; return;
+      if (uiState.catDragIdx === null || uiState.catDragIdx === uiState.catDragoverIdx) {
+        uiState.catDragIdx = uiState.catDragoverIdx = null; return;
       }
       const arr = [...dtlCategories];
-      const [moved] = arr.splice(catDragIdx.value, 1);
-      arr.splice(catDragoverIdx.value, 0, moved);
+      const [moved] = arr.splice(uiState.catDragIdx, 1);
+      arr.splice(uiState.catDragoverIdx, 0, moved);
       dtlCategories.splice(0, dtlCategories.length, ...arr);
-      catDragIdx.value = catDragoverIdx.value = null;
+      uiState.catDragIdx = uiState.catDragoverIdx = null;
     };
     const addCategory    = cat => {
       if (window.safeArrayUtils.safeSome(dtlCategories, c => String(c.categoryId) === String(cat.categoryId))) return;
       dtlCategories.push({ categoryId: cat.categoryId, categoryNm: cat.categoryNm, depth: cat.depth || 1 });
-      catPickerOpen.value = false; catPickerSearch.value = '';
+      uiState.catPickerOpen = false; uiState.catPickerSearch = '';
     };
     const removeCategory = idx => dtlCategories.splice(idx, 1);
     const getCategoryNm  = id => { const c = (categories||[]).find(c=>c.categoryId==id); return c ? c.categoryNm : String(id); };
@@ -127,29 +124,27 @@ window.PdSetMng = {
 
     /* ── 드래그 ── */
     const dragIdx     = ref(null);
-    const dragoverIdx = ref(null);
-    const onDragStart = idx => { dragIdx.value = idx; };
-    const onDragOver  = idx => { dragoverIdx.value = idx; };
+        const onDragStart = idx => { uiState.dragIdx = idx; };
+    const onDragOver  = idx => { uiState.dragoverIdx = idx; };
     const onDrop = () => {
-      if (dragIdx.value === null || dragIdx.value === dragoverIdx.value) {
-        dragIdx.value = dragoverIdx.value = null; return;
+      if (uiState.dragIdx === null || uiState.dragIdx === uiState.dragoverIdx) {
+        uiState.dragIdx = uiState.dragoverIdx = null; return;
       }
       const arr = [...dtlItems];
-      const [moved] = arr.splice(dragIdx.value, 1);
-      arr.splice(dragoverIdx.value, 0, moved);
+      const [moved] = arr.splice(uiState.dragIdx, 1);
+      arr.splice(uiState.dragoverIdx, 0, moved);
       window.safeArrayUtils.safeForEach(arr, (item, i) => { item.sortOrd = i + 1; });
       dtlItems.splice(0, dtlItems.length, ...arr);
-      dragIdx.value = dragoverIdx.value = null;
+      uiState.dragIdx = uiState.dragoverIdx = null;
     };
 
     /* ── 상품 피커 ── */
     const pickerOpen   = ref(false);
-    const pickerSearch = ref('');
-    const cfPickerList   = computed(() => {
+        const cfPickerList   = computed(() => {
       const q    = pickerSearch.value.trim().toLowerCase();
       const used = new Set(dtlItems.map(d => d.itemProdId).filter(Boolean));
       return (products || []).filter(p => {
-        if (p.productId === editSetId.value) return false;
+        if (p.productId === uiState.editSetId) return false;
         if (used.has(p.productId)) return false;
         if (!q) return true;
         return String(p.productId).includes(q) || (p.prodNm || '').toLowerCase().includes(q);
@@ -206,8 +201,8 @@ window.PdSetMng = {
 
     /* ── 신규 열기 ── */
     const openNew = () => {
-      dtlMode.value = 'new';
-      editSetId.value = null;
+      uiState.dtlMode = 'new';
+      uiState.editSetId = null;
       Object.assign(newForm, { prodNm: '', brandId: '', vendorId: '', listPrice: 0, salePrice: 0, stock: 0, prodStatusCd: 'DRAFT' });
       Object.keys(newErrors).forEach(k => delete newErrors[k]);
       dtlCategories.length = 0;
@@ -216,8 +211,8 @@ window.PdSetMng = {
 
     /* ── 편집 열기 ── */
     const openDtl = setProdId => {
-      dtlMode.value = 'edit';
-      editSetId.value = setProdId;
+      uiState.dtlMode = 'edit';
+      uiState.editSetId = setProdId;
       const src = (setItems)
         .filter(s => s.setProdId === setProdId)
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
@@ -241,16 +236,16 @@ window.PdSetMng = {
       dtlCategories.splice(0, dtlCategories.length, ..._catArr);
     };
 
-    const closeDtl = () => { dtlMode.value = null; editSetId.value = null; dtlItems.length = 0; };
+    const closeDtl = () => { uiState.dtlMode = null; uiState.editSetId = null; dtlItems.length = 0; };
 
-    const cfDtlProdNm = computed(() => dtlMode.value === 'new' ? (newForm.prodNm || '(신규 세트상품)') : getProdNm(editSetId.value));
+    const cfDtlProdNm = computed(() => uiState.dtlMode === 'new' ? (newForm.prodNm || '(신규 세트상품)') : getProdNm(uiState.editSetId));
 
     /* ── 구성품 추가 (연결상품) ── */
     const addItemFromProd = prod => {
       const maxSort = dtlItems.length ? Math.max(...dtlItems.map(d => d.sortOrd)) : 0;
       dtlItems.push({
         _id: _seq++, setItemId: null,
-        setProdId:  editSetId.value,
+        setProdId:  uiState.editSetId,
         itemProdId: prod.productId,
         itemSkuId:  null,
         itemNm:     prod.prodNm || prod.productName || '',
@@ -259,7 +254,7 @@ window.PdSetMng = {
         sortOrd:    maxSort + 1,
         useYn:      'Y',
       });
-      pickerOpen.value = false; pickerSearch.value = '';
+      uiState.pickerOpen = false; uiState.pickerSearch = '';
     };
 
     /* ── 구성품 추가 (비상품 — 직접입력) ── */
@@ -267,7 +262,7 @@ window.PdSetMng = {
       const maxSort = dtlItems.length ? Math.max(...dtlItems.map(d => d.sortOrd)) : 0;
       dtlItems.push({
         _id: _seq++, setItemId: null,
-        setProdId:  editSetId.value,
+        setProdId:  uiState.editSetId,
         itemProdId: null,
         itemSkuId:  null,
         itemNm:     '',
@@ -283,7 +278,7 @@ window.PdSetMng = {
     /* ── 저장 ── */
     const handleSave = async () => {
       Object.keys(newErrors).forEach(k => delete newErrors[k]);
-      if (dtlMode.value === 'new') {
+      if (uiState.dtlMode === 'new') {
         if (!newForm.prodNm.trim()) newErrors.prodNm = '세트상품명을 입력해주세요.';
         if (!newForm.salePrice || newForm.salePrice <= 0) newErrors.salePrice = '판매가를 입력해주세요.';
         if (Object.keys(newErrors).length) { props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
@@ -291,9 +286,9 @@ window.PdSetMng = {
       const hasBlankNm = window.safeArrayUtils.safeSome(dtlItems, d => !d.itemNm.trim());
       if (hasBlankNm) { props.showToast('구성품 표시명을 모두 입력해주세요.', 'error'); return; }
 
-      const isNewSet  = dtlMode.value === 'new';
+      const isNewSet  = uiState.dtlMode === 'new';
       const newProdId = isNewSet ? (Math.max(0, ...(products || []).map(p => p.productId)) + 1) : null;
-      const setProdId = isNewSet ? newProdId : editSetId.value;
+      const setProdId = isNewSet ? newProdId : uiState.editSetId;
 
       const ok = await props.showConfirm(isNewSet ? '등록' : '저장', isNewSet ? '세트상품을 등록하시겠습니까?' : '구성품 설정을 저장하시겠습니까?');
       if (!ok) return;
@@ -330,7 +325,7 @@ window.PdSetMng = {
       window.safeArrayUtils.safeForEach(dtlCategories, (cat, i) => {
         categoryProds.push({ categoryProdId: `CP_SET_${setProdId}_${i}`, siteId: '1', categoryId: cat.categoryId, prodId: setProdId, sortOrd: i + 1 });
       });
-      if (isNewSet) { dtlMode.value = 'edit'; editSetId.value = newProdId; }
+      if (isNewSet) { uiState.dtlMode = 'edit'; uiState.editSetId = newProdId; }
       try {
         const res = await (isNewSet ? window.boApi.post('/bo/ec/pd/prod-set', { prod: { ...newForm, prodTypeCd: 'SET' }, items: dtlItems }) : window.boApi.put(`/bo/ec/pd/prod-set/${setProdId}/items`, { items: dtlItems }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -348,7 +343,7 @@ window.PdSetMng = {
       const ok = await props.showConfirm('삭제', '세트상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
       if (!ok) return;
       setItems.value = (setItems).filter(s => s.setProdId !== setProdId);
-      if (editSetId.value === setProdId) closeDtl();
+      if (uiState.editSetId === setProdId) closeDtl();
       try {
         const res = await window.boApi.delete(`/bo/ec/pd/prod-set/${setProdId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -362,8 +357,9 @@ window.PdSetMng = {
     };
 
   const searchParam = reactive({
-    nm: ''
-  });
+      error: null,
+      nm: ''
+      error: null,, dtlMode: null, editSetId: null, catPickerOpen: false, catDragIdx: null, dragIdx: null, pickerOpen: false});
   const searchParamOrg = reactive({
     nm: ''
   });

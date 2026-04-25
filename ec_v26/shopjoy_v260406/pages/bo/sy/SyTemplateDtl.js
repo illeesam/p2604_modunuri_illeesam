@@ -6,11 +6,10 @@ window.SyTemplateDtl = {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, watch, nextTick } = Vue;
 
     const templates = reactive([]);
-    const loading = ref(false);
-
+    
     // onMounted에서 API 로드
     const handleLoadData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/template/page', {
           params: { pageNo: 1, pageSize: 10000 }
@@ -22,7 +21,7 @@ window.SyTemplateDtl = {
         uiState.error = err.message;
         if (props.showToast) props.showToast('SyTemplate 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
@@ -35,12 +34,11 @@ window.SyTemplateDtl = {
 
     /* ── Quill (메일, 시스템알림) ── */
     const cfUseHtmlEditor = computed(() => ['메일템플릿', '시스템알림'].includes(form.templateTypeCd));
-    const quillEditorEl = ref(null);
-    let _quill = null;
+        let _quill = null;
 
     const initQuill = () => {
-      if (!quillEditorEl.value || _quill) return;
-      _quill = new Quill(quillEditorEl.value, {
+      if (!uiState.quillEditorEl || _quill) return;
+      _quill = new Quill(uiState.quillEditorEl, {
         theme: 'snow',
         placeholder: '내용을 입력하세요...',
         modules: {
@@ -126,7 +124,7 @@ window.SyTemplateDtl = {
     const cfIsLongContent = computed(() => ['MMS템플릿'].includes(form.templateTypeCd));
 
     /* 미리보기 / 발송 모달 */
-    const uiState = reactive({ previewOpen: false, sendOpen: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ previewOpen: false, sendOpen: false, error: null, isPageCodeLoad: false, loading: false, quillEditorEl: null});
     const codes = reactive({});
 
     return { templates, loading, uiState, cfIsNew, form, errors, handleSave, TEMPLATE_TYPES, cfNeedSubject, cfIsLongContent,

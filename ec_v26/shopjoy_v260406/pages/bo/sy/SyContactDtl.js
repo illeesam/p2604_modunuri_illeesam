@@ -7,7 +7,7 @@ window.SyContactDtl = {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
 
     const contacts = reactive([]);
-    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false, tab: window._syContactDtlState.tab || 'content', viewMode2: window._syContactDtlState.viewMode || 'tab', contentEl: null, answerEl: null});
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -29,11 +29,9 @@ window.SyContactDtl = {
     };
     const cfIsNew = computed(() => !props.editId);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const tab = ref(window._syContactDtlState.tab || 'content');
-    watch(tab, v => { window._syContactDtlState.tab = v; });
-    const viewMode2 = ref(window._syContactDtlState.viewMode || 'tab');
-    watch(viewMode2, v => { window._syContactDtlState.viewMode = v; });
-    const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
+        watch(tab, v => { window._syContactDtlState.tab = v; });
+        watch(viewMode2, v => { window._syContactDtlState.viewMode = v; });
+    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -65,10 +63,8 @@ window.SyContactDtl = {
     });
     const errors = reactive({});
 
-    const contentEl = ref(null);
-    let _qContent = null;
-    const answerEl = ref(null);
-    let _qAnswer = null;
+        let _qContent = null;
+        let _qAnswer = null;
 
     const schema = yup.object({
       title: yup.string().required('제목을 입력해주세요.'),
@@ -80,12 +76,12 @@ window.SyContactDtl = {
         const c = contacts.find(x => x.inquiryId === props.editId);
         if (c) Object.assign(form, { ...c });
         // 답변 있으면 답변 탭 기본 선택
-        if (form.answer) tab.value = 'answer';
+        if (form.answer) uiState.tab = 'answer';
       }
       await nextTick();
       const fullToolbar = [[{header:[1,2,3,false]}],['bold','italic','underline'],[{color:[]},{background:[]}],[{list:'ordered'},{list:'bullet'}],['link','blockquote','clean']];
-      if (contentEl.value) {
-        _qContent = new Quill(contentEl.value, {
+      if (uiState.contentEl) {
+        _qContent = new Quill(uiState.contentEl, {
           theme: 'snow',
           placeholder: '내용을 입력하세요...',
           modules: { toolbar: fullToolbar }
@@ -93,8 +89,8 @@ window.SyContactDtl = {
         if (form.content) _qContent.root.innerHTML = form.content;
         _qContent.on('text-change', () => { form.content = _qContent.root.innerHTML; });
       }
-      if (answerEl.value) {
-        _qAnswer = new Quill(answerEl.value, {
+      if (uiState.answerEl) {
+        _qAnswer = new Quill(uiState.answerEl, {
           theme: 'snow',
           placeholder: '고객에게 전달할 답변을 입력하세요.',
           modules: { toolbar: fullToolbar }

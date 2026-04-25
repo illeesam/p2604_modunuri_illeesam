@@ -6,7 +6,7 @@ window.OdDlivDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
     const deliveries = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._odDlivDtlState.tab || 'info', viewMode2: window._odDlivDtlState.viewMode || 'tab', memoEl: null});
     const codes = reactive({ dliv_statuses: [] });
     const claims = reactive([]);
     const orders = reactive([]);
@@ -56,11 +56,9 @@ window.OdDlivDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-    const tab = ref(window._odDlivDtlState.tab || 'info');
-    watch(tab, v => { window._odDlivDtlState.tab = v; });
-    const viewMode2 = ref(window._odDlivDtlState.viewMode || 'tab');
-    watch(viewMode2, v => { window._odDlivDtlState.viewMode = v; });
-    const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
+        watch(tab, v => { window._odDlivDtlState.tab = v; });
+        watch(viewMode2, v => { window._odDlivDtlState.viewMode = v; });
+    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const form = reactive({
       dlivId: '', orderId: '', userId: '', userNm: '', receiver: '',
@@ -68,8 +66,7 @@ window.OdDlivDtl = {
     });
     const errors = reactive({});
 
-    const memoEl = ref(null);
-    let _qMemo = null;
+        let _qMemo = null;
 
     const schema = yup.object({
       dlivId: yup.string().required('배송ID를 입력해주세요.'),
@@ -87,8 +84,8 @@ window.OdDlivDtl = {
         }
       }
       await nextTick();
-      if (memoEl.value) {
-        _qMemo = new Quill(memoEl.value, {
+      if (uiState.memoEl) {
+        _qMemo = new Quill(uiState.memoEl, {
           theme: 'snow',
           placeholder: '내용을 입력하세요...',
           modules: { toolbar: [['bold','italic','underline'],[{color:[]}],[{list:'ordered'},{list:'bullet'}],['link','clean']] }

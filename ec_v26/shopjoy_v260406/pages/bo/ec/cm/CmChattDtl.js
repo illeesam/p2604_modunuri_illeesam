@@ -6,7 +6,7 @@ window.CmChattDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const chatts = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._cmChattDtlState.tab || 'chat', viewMode2: window._cmChattDtlState.viewMode || 'tab', replyText: '', searchUserId: ''});
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -47,15 +47,11 @@ window.CmChattDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-    const tab = ref(window._cmChattDtlState.tab || 'chat');
-    watch(tab, v => { window._cmChattDtlState.tab = v; });
-    const viewMode2 = ref(window._cmChattDtlState.viewMode || 'tab');
-    watch(viewMode2, v => { window._cmChattDtlState.viewMode = v; });
-    const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
+        watch(tab, v => { window._cmChattDtlState.tab = v; });
+        watch(viewMode2, v => { window._cmChattDtlState.viewMode = v; });
+    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
-    const chat = ref(null);
-    const replyText = ref('');
-    const msgBoxRef = ref(null);
+            const msgBoxRef = ref(null);
 
     /* 채팅 내 참조 모달 (상품/주문/클레임) */
     const refModal = reactive({ show: false, type: '', id: null, data: null });
@@ -89,17 +85,17 @@ window.CmChattDtl = {
     onMounted(() => {
       handleFetchData();
       if (!cfIsNew.value) {
-        chat.value = window.safeArrayUtils.safeFind(chatts, c => c.chatId === props.editId) || null;
-        if (chat.value) chat.value.unread = 0;
+        uiState.chat = window.safeArrayUtils.safeFind(chatts, c => c.chatId === props.editId) || null;
+        if (uiState.chat) chat.value.unread = 0;
         scrollToBottom();
       } else {
-        tab.value = 'new';
+        uiState.tab = 'new';
       }
     });
 
     /* 회원의 다른 채팅 이력 */
     const cfMemberChats = computed(() => {
-      if (!chat.value) return [];
+      if (!uiState.chat) return [];
       return window.safeArrayUtils.safeFilter(chats, c => c.userId === chat.value.userId && c.chatId !== chat.value.chatId);
     });
 
@@ -114,16 +110,16 @@ window.CmChattDtl = {
 
     const sendReply = () => {
       if (!replyText.value.trim()) return;
-      if (!chat.value) return;
+      if (!uiState.chat) return;
       chat.value.messages.push({ from: 'cs', text: replyText.value.trim(), time: new Date().toTimeString().slice(0, 5) });
       chat.value.lastMsg = replyText.value.trim();
-      replyText.value = '';
+      uiState.replyText = '';
       scrollToBottom();
       props.showToast('답변을 전송했습니다.');
     };
 
     const closeChat = () => {
-      if (!chat.value) return;
+      if (!uiState.chat) return;
       chat.value.status = '종료';
       props.showToast('채팅이 종료되었습니다.');
     };
@@ -166,12 +162,11 @@ window.CmChattDtl = {
     };
 
     /* 회원 채팅 목록 조회 (신규 탭) */
-    const searchUserId = ref('');
-    const cfUserChats = computed(() => {
-      if (!searchUserId.value) return [];
-      return window.safeArrayUtils.safeFilter(chats, c => String(c.userId) === String(searchUserId.value));
+        const cfUserChats = computed(() => {
+      if (!uiState.searchUserId) return [];
+      return window.safeArrayUtils.safeFilter(chats, c => String(c.userId) === String(uiState.searchUserId));
     });
-    const cfSearchUser = computed(() => getMember.value(Number(searchUserId.value)));
+    const cfSearchUser = computed(() => getMember.value(Number(uiState.searchUserId)));
 
     return { cfIsNew, tab, viewMode2, showTab, chat, replyText, sendReply, closeChat, msgBoxRef,
       hasRef, refLabel, openMsgRef, refModal, closeRefModal,

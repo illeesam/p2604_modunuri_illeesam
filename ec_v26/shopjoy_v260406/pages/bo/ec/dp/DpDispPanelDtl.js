@@ -5,7 +5,7 @@ window.DpDispPanelDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const panels = reactive([]);
-    const uiState = reactive({ htmlSourceMode: false, libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false, isPageCodeLoad: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ htmlSourceMode: false, libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false, isPageCodeLoad: false, error: null, isPageCodeLoad: false, tab: 'info', previewMode: 'default', previewPaneWidth: 520, libPickMode: 'copy', htmlDescEl: null, htmlContentEl: null});
     const codes = reactive({ layout_types: [], disp_widget_types: [] });
     const displays = reactive([]);
     const events = reactive([]);
@@ -63,33 +63,30 @@ window.DpDispPanelDtl = {
     const fnPathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfIsNew = computed(() => !props.editId);
-    const tab = ref('info');
-    const previewMode = ref('default');
-    const PREVIEW_MODES = [
+            const PREVIEW_MODES = [
       { value: 'default', label: '기본',   width: 480  },
       { value: 'pc',      label: 'PC',     width: 1200 },
       { value: 'tablet',  label: '태블릿', width: 768  },
       { value: 'mobile',  label: '모바일', width: 375  },
     ];
     const cfPreviewFrameWidth = computed(() => {
-      const m = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === previewMode.value);
+      const m = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === uiState.previewMode);
       return (m?.width || 480) + 'px';
       error: null,
       error: null,
     });
     /* 패널 폭(스플리터 드래그 반영). 모드 변경 시 자동 갱신 */
-    const previewPaneWidth = ref(520);
-    watch(previewMode, (m) => {
+        watch(previewMode, (m) => {
       const info = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === m);
-      previewPaneWidth.value = (info?.width || 480) + 40;
+      uiState.previewPaneWidth = (info?.width || 480) + 40;
     });
     /* 스플리터 드래그 */
     const onSplitDrag = (e) => {
       e.preventDefault();
       const startX = e.clientX;
-      const startW = previewPaneWidth.value;
+      const startW = uiState.previewPaneWidth;
       const onMove = (ev) => {
-        previewPaneWidth.value = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
+        uiState.previewPaneWidth = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
       };
       const onUp = () => {
         window.removeEventListener('mousemove', onMove);
@@ -180,7 +177,7 @@ window.DpDispPanelDtl = {
     const cfTabRowMap  = computed(() => { const m = {}; window.safeArrayUtils.safeForEach(rows, (_, i) => { m['tab'+(i+1)] = i; }); return m; });
     const cfRowTabKeys = computed(() => rows.map((_, i) => 'tab'+(i+1)));
 
-    const cfActiveRowIdx = computed(() => { const idx = cfTabRowMap.value[tab.value]; return idx !== undefined ? idx : null; });
+    const cfActiveRowIdx = computed(() => { const idx = cfTabRowMap.value[uiState.tab]; return idx !== undefined ? idx : null; });
     const cfActiveRow    = computed(() => (cfActiveRowIdx.value !== null && cfActiveRowIdx.value !== undefined) ? rows[cfActiveRowIdx.value] : null);
 
     /* ── 위젯 위아래 이동 (탭순서 = 노출순서 sortOrder 자동 갱신) ── */
@@ -195,7 +192,7 @@ window.DpDispPanelDtl = {
       Object.assign(rows[target], a);
       /* 탭 순서(1~5)를 sortOrder에 반영 */
       window.safeArrayUtils.safeForEach(rows, (r, i) => { r.sortOrder = i + 1; });
-      tab.value = cfRowTabKeys.value[target];
+      uiState.tab = cfRowTabKeys.value[target];
     };
 
     const cfAreas = computed(() =>
@@ -375,8 +372,7 @@ window.DpDispPanelDtl = {
 
     /* ── Quill 에디터 ── */
     const htmlDescEl    = ref(null);
-    const htmlContentEl = ref(null);
-    let quillDesc    = null;
+        let quillDesc    = null;
     let quillContent = null;
 
     const toggleHtmlSource = async () => {
@@ -410,8 +406,8 @@ window.DpDispPanelDtl = {
     };
 
     const initQuillDesc = () => {
-      if (props.viewMode || !htmlDescEl.value || quillDesc) return;
-      quillDesc = new Quill(htmlDescEl.value, QUILL_OPTS);
+      if (props.viewMode || !uiState.htmlDescEl || quillDesc) return;
+      quillDesc = new Quill(uiState.htmlDescEl, QUILL_OPTS);
       quillDesc.root.innerHTML = form.htmlDesc || '';
       quillDesc.on('text-change', () => { form.htmlDesc = quillDesc.root.innerHTML; });
     };
@@ -427,9 +423,9 @@ window.DpDispPanelDtl = {
     };
 
     const initQuillContent = () => {
-      if (props.viewMode || !htmlContentEl.value) return;
+      if (props.viewMode || !uiState.htmlContentEl) return;
       if (!quillContent) {
-        quillContent = new Quill(htmlContentEl.value, QUILL_OPTS);
+        quillContent = new Quill(uiState.htmlContentEl, QUILL_OPTS);
       }
       bindQuillContent();
     };
@@ -602,7 +598,7 @@ window.DpDispPanelDtl = {
       if (rows.length >= MAX_WIDGETS) { props.showToast(`위젯은 최대 ${MAX_WIDGETS}개까지 추가할 수 있습니다.`, 'error'); return; }
       rows.push(makeRowData({ sortOrder: rows.length + 1 }));
       const newKey = 'tab' + rows.length;
-      tab.value = newKey;
+      uiState.tab = newKey;
       expandedSections.add(newKey);
     };
     const removeWidget = (idx) => {
@@ -612,7 +608,7 @@ window.DpDispPanelDtl = {
       window.safeArrayUtils.safeForEach(rows, (r, i) => { r.sortOrder = i + 1; });
       expandedSections.delete('tab' + (rows.length + 1));
       if (currentIdx !== null && currentIdx >= rows.length) {
-        tab.value = 'tab' + rows.length;
+        uiState.tab = 'tab' + rows.length;
       }
     };
 
@@ -684,15 +680,14 @@ window.DpDispPanelDtl = {
     };
 
     /* ── 위젯Lib 선택 팝업 (활성 row에 복사/참조) ── */
-    const libPickMode = ref('copy');
-    const openLibPick = (mode) => {
+        const openLibPick = (mode) => {
       if (!cfActiveRow.value) return;
-      libPickMode.value = mode; uiState.libPickOpen = true;
+      uiState.libPickMode = mode; uiState.libPickOpen = true;
     };
     const onLibPicked = (lib) => {
       uiState.libPickOpen = false;
       if (!cfActiveRow.value) return;
-      if (libPickMode.value === 'copy') {
+      if (uiState.libPickMode === 'copy') {
         const r = cfActiveRow.value;
         const preserve = { widgetNm: r.widgetNm, sortOrder: r.sortOrder };
         Object.assign(r, { ...lib, ...preserve });

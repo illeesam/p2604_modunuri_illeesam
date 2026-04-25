@@ -9,7 +9,7 @@ window.OdOrderDtl = {
     const vendors = reactive([]);
     const deliveries = reactive([]);
     const claims = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: window._odOrderDtlState?.activeTab || 'info', viewMode2: window._odOrderDtlState.viewMode || 'tab', memoEl: null});
     const codes = reactive({ claim_statuses: [] });
 
     // onMounted에서 API 로드
@@ -75,8 +75,7 @@ window.OdOrderDtl = {
     }[s] || 'badge-gray');
     const errors = reactive({});
 
-    const memoEl = ref(null);
-    let _qMemo = null;
+        let _qMemo = null;
 
     const schema = yup.object({
       orderId: yup.string().required('주문ID를 입력해주세요.'),
@@ -101,8 +100,8 @@ window.OdOrderDtl = {
         }
       }
       await nextTick();
-      if (memoEl.value) {
-        _qMemo = new Quill(memoEl.value, {
+      if (uiState.memoEl) {
+        _qMemo = new Quill(uiState.memoEl, {
           theme: 'snow',
           placeholder: '내용을 입력하세요...',
           modules: { toolbar: [['bold','italic','underline'],[{color:[]}],[{list:'ordered'},{list:'bullet'}],['link','clean']] }
@@ -152,8 +151,7 @@ window.OdOrderDtl = {
       }
     };
 
-    const activeTab = ref(window._odOrderDtlState?.activeTab || 'info');
-    watch(activeTab, (newVal) => { window._odOrderDtlState.activeTab = newVal; });
+        watch(activeTab, (newVal) => { window._odOrderDtlState.activeTab = newVal; });
     /* 주문 항목 (샘플 데이터) */
     const orderItems = reactive([]);
     const sampleOrderItems = () => {
@@ -242,9 +240,9 @@ window.OdOrderDtl = {
       }
       return rows;
     });
-    const viewMode2 = ref(window._odOrderDtlState.viewMode || 'tab'); // 'tab' | '2col' | '1col'
+     // 'tab' | '2col' | '1col'
     watch(viewMode2, v => { window._odOrderDtlState.viewMode = v; });
-    const showTab = (id) => viewMode2.value !== 'tab' || activeTab.value === id;
+    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.activeTab === id;
     const expandedItems = reactive(new Set());
     const toggleExpand = (i) => { const s = new Set(expandedItems); if (s.has(i)) s.delete(i); else s.add(i); expandedItems = s; };
     const isExpanded = (i) => expandedItems.has(i);

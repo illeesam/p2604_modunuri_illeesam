@@ -5,7 +5,7 @@ window.SyBizMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const bizs = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, formMode: ''});
     const codes = reactive({ vendor_status: [] });
 
     // onMounted에서 API 로드
@@ -25,10 +25,9 @@ window.SyBizMng = {
       }
     };
     /* 좌측 표시경로 트리 */
-    const selectedPath = ref(null);
-    const expanded = reactive(new Set([null]));
+        const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
-    const selectNode = (id) => { selectedPath.value = id; };
+    const selectNode = (id) => { uiState.selectedPath = id; };
     const cfTree = computed(() => window.boCmUtil.buildPathTree('sy_biz'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
@@ -60,12 +59,10 @@ window.SyBizMng = {
         fnLoadCodes();
       }
     });
-    const cfAllowedPathIds = computed(() => selectedPath.value == null ? null : window.boCmUtil.getPathDescendants('sy_biz', selectedPath.value));
+    const cfAllowedPathIds = computed(() => uiState.selectedPath == null ? null : window.boCmUtil.getPathDescendants('sy_biz', uiState.selectedPath));
 
     /* 검색 */
-    const kw = ref('');
-    const statusFlt = ref('');
-    const vendorTypeFlt = ref('');
+    const searchParam = reactive({ kw: '', statusFlt: '', vendorTypeFlt: '' });
     const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['CS','콜센터업체'],['SITE','사이트운영업체'],['PROG','유지보수업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
     const STATUS = [['ACTIVE','운영중'],['SUSPENDED','중지'],['TERMINATED','종료']];
     const BIZ_CLASS = ['법인','개인','면세','간이','공공'];
@@ -74,10 +71,10 @@ window.SyBizMng = {
       const items = bizs || [];
       if (!Array.isArray(items)) return [];
       return items.filter(b => {
-        const k = kw.value.trim().toLowerCase();
+        const k = searchParam.kw.trim().toLowerCase();
         if (k && !(b.bizNo||'').includes(k) && !(b.bizNm||'').toLowerCase().includes(k) && !(b.ceoNm||'').toLowerCase().includes(k)) return false;
-        if (statusFlt.value && b.statusCd !== statusFlt.value) return false;
-        if (vendorTypeFlt.value && b.vendorTypeCd !== vendorTypeFlt.value) return false;
+        if (searchParam.statusFlt && b.statusCd !== searchParam.statusFlt) return false;
+        if (searchParam.vendorTypeFlt && b.vendorTypeCd !== searchParam.vendorTypeFlt) return false;
         if (cfAllowedPathIds.value && !cfAllowedPathIds.value.has(b.pathId)) return false;
         return true;
       });
@@ -95,10 +92,10 @@ window.SyBizMng = {
 
     const onSearch = () => { pager.page = 1; };
     const onReset = () => {
-      kw.value = '';
-      statusFlt.value = '';
-      vendorTypeFlt.value = '';
-      selectedPath.value = null;
+      searchParam.kw = '';
+      searchParam.statusFlt = '';
+      searchParam.vendorTypeFlt = '';
+      uiState.selectedPath = null;
       pager.page = 1;
     };
 
@@ -113,7 +110,7 @@ window.SyBizMng = {
     const fnStatusLabel = (s) => ({ ACTIVE:'운영중', SUSPENDED:'중지', TERMINATED:'종료' }[s] || s);
 
     /* ── 인라인 폼 (신규/수정) ── */
-    const formMode = ref('');  // '' | 'new' | 'edit'
+      // '' | 'new' | 'edit'
     const formData = reactive({});
     const blankForm = () => ({
       bizId: null, bizNo: '', bizNm: '', bizNmEn: '', ceoNm: '',
@@ -123,15 +120,15 @@ window.SyBizMng = {
       bankNm: '', bankAccount: '', bankHolder: '',
       openDate: '', contractDate: '', statusCd: 'ACTIVE', remark: '',
     });
-    const openNew = () => { Object.assign(formData, blankForm()); formMode.value = 'new'; };
-    const openEdit = (b) => { Object.assign(formData, b); formMode.value = 'edit'; };
-    const closeForm = () => { formMode.value = ''; };
+    const openNew = () => { Object.assign(formData, blankForm()); uiState.formMode = 'new'; };
+    const openEdit = (b) => { Object.assign(formData, b); uiState.formMode = 'edit'; };
+    const closeForm = () => { uiState.formMode = ''; };
     const handleSaveForm = async () => {
       if (!formData.bizNo || !formData.bizNm) {
         if (window.boToast) window.boToast('사업자번호와 상호는 필수입니다.', 'error');
         return;
       }
-      if (formMode.value === 'new') {
+      if (uiState.formMode === 'new') {
         const newId = (bizs.reduce((m,x) => Math.max(m, x.bizId || 0), 0) || 0) + 1;
         bizs.push({ ...formData, bizId: newId });
         if (window.boToast) window.boToast('신규 업체가 등록되었습니다.', 'success');
@@ -149,7 +146,7 @@ window.SyBizMng = {
     const onPathPicked = (pathId) => { formData.pathId = pathId; };
 
     return { bizs, uiState, codes, selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
-      kw, statusFlt, vendorTypeFlt, STATUS, BIZ_CLASS, VENDOR_TYPES,
+      searchParam, STATUS, BIZ_CLASS, VENDOR_TYPES,
       cfFiltered, cfPagedRows, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange,
       pathLabel, fnVendorTypeLabel, fnVendorTypeBadge, fnRoleCatLabel, fnRoleCatColor, fnStatusBadge, fnStatusLabel,
       onSearch, onReset,
@@ -163,12 +160,12 @@ window.SyBizMng = {
 
   <div class="card">
     <div class="search-bar">
-      <input class="form-control" v-model="kw" placeholder="사업자번호 / 상호 / 대표자 검색" style="min-width:240px;flex:1;max-width:380px;" />
-      <select class="form-control" v-model="vendorTypeFlt" style="width:140px;">
+      <input class="form-control" v-model="searchParam.kw" placeholder="사업자번호 / 상호 / 대표자 검색" style="min-width:240px;flex:1;max-width:380px;" />
+      <select class="form-control" v-model="searchParam.vendorTypeFlt" style="width:140px;">
         <option value="">업체유형 전체</option>
         <option v-for="v in VENDOR_TYPES" :key="v[0]" :value="v[0]">{{ v[1] }}</option>
       </select>
-      <select class="form-control" v-model="statusFlt" style="width:120px;">
+      <select class="form-control" v-model="searchParam.statusFlt" style="width:120px;">
         <option value="">상태 전체</option>
         <option v-for="s in STATUS" :key="s[0]" :value="s[0]">{{ s[1] }}</option>
       </select>

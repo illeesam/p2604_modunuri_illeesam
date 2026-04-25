@@ -4,7 +4,7 @@ window.StErpGenMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, slipType: '정산', targetMon: new Date(});;
     const codes = reactive({
       erp_statuses: [],
     });
@@ -53,11 +53,11 @@ window.StErpGenMng = {
 
     const cfPreviewRows = computed(() => {
       return cfVendors.value.map(v => {
-        const vOrders = window.safeArrayUtils.safeFilter(cfOrders, o => o.vendorId === v.vendorId && o.status !== '취소됨' && o.orderDate.startsWith(targetMon.value));
+        const vOrders = window.safeArrayUtils.safeFilter(cfOrders, o => o.vendorId === v.vendorId && o.status !== '취소됨' && o.orderDate.startsWith(uiState.targetMon));
         const sales   = vOrders.reduce((s, o) => s + o.totalPrice, 0);
         const comm    = Math.round(sales * 0.10);
         const settle  = sales - comm;
-        return { vendorNm: v.vendorNm, debit: '미지급금', credit: '현금', debitAmt: settle, creditAmt: settle, description: `${targetMon.value} ${v.vendorNm} 정산지급` };
+        return { vendorNm: v.vendorNm, debit: '미지급금', credit: '현금', debitAmt: settle, creditAmt: settle, description: `${uiState.targetMon} ${v.vendorNm} 정산지급` };
       }).filter(r => r.debitAmt > 0);
     });
 
@@ -68,16 +68,16 @@ window.StErpGenMng = {
 
     const doGenerate = async () => {
       if (!cfPreviewRows.value.length) { props.showToast('생성할 전표 데이터가 없습니다.', 'error'); return; }
-      const ok = await props.showConfirm('ERP 전표생성', `${targetMon.value} ${slipType.value} 전표를 생성하시겠습니까?`);
+      const ok = await props.showConfirm('ERP 전표생성', `${uiState.targetMon} ${uiState.slipType} 전표를 생성하시겠습니까?`);
       if (!ok) return;
       genHistory.unshift({
-        genId: 'GEN-' + targetMon.value, genMon: targetMon.value, slipType: slipType.value,
+        genId: 'GEN-' + uiState.targetMon, genMon: uiState.targetMon, slipType: uiState.slipType,
         slipCnt: cfPreviewRows.value.length,
         totalAmt: cfPreviewRows.value.reduce((s, r) => s + r.debitAmt, 0),
         genDate: new Date().toISOString().slice(0,10), status: '생성완료', regUserNm: '관리자',
       });
       try {
-        const res = await window.boApi.post('/bo/ec/st/erp/gen', { targetMon: targetMon.value, slipType: slipType.value, rows: cfPreviewRows.value });
+        const res = await window.boApi.post('/bo/ec/st/erp/gen', { targetMon: uiState.targetMon, slipType: uiState.slipType, rows: cfPreviewRows.value });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('ERP 전표가 생성되었습니다.', 'success');
       } catch (err) {

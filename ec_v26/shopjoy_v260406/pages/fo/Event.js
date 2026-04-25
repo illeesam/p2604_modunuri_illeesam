@@ -4,7 +4,7 @@ window.Event = {
   props: ['navigate', 'config'],
   setup(props) {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'ongoing', sortBy: 'latest'});;
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -27,7 +27,7 @@ window.Event = {
     });
     const { ref, reactive, computed , watch } = Vue;
 
-    const activeTab = ref('ongoing'); // ongoing | ended
+     // ongoing | ended
     const sortBy    = ref('latest');  // latest | deadline
 
     const events = reactive([
@@ -91,9 +91,9 @@ window.Event = {
 
     const cfFilteredEvents = computed(() => {
       let list = events.filter(e =>
-        activeTab.value === 'ongoing' ? e.status === 'ongoing' : e.status === 'ended'
+        uiState.activeTab === 'ongoing' ? e.status === 'ongoing' : e.status === 'ended'
       );
-      if (sortBy.value === 'deadline') {
+      if (uiState.sortBy === 'deadline') {
         list = [...list].sort((a, b) => a.endDate.localeCompare(b.endDate));
       }
       return list;

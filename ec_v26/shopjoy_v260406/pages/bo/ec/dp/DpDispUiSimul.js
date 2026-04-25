@@ -32,16 +32,14 @@ window.DpDispUiSimul = {
       mainTab: 'preview', // 'preview' | 'struct' | 'source'
       viewMode: 'card',   // 'list' | 'card' | 'expand'
       showDesc: true,
-      showAreaDrop: false,
-    });
+      showAreaDrop: false,, sourceCopied: false, structLayoutType: 'grid', structColCount: 1, structViewport: 'desktop', structShowReal: false, structDashDragOver: false, structSpanPopupIdx: -1, structDragOverIdx: -1, dispUiLayerOpen: true, dispUiModalOpen: false, dispUiAreaErr: false, dispUiSiteModalOpen: false, dispUiSiteSearch: '', dispUiMemberModalOpen: false, dispUiMemberSearch: '', dispUiAreaDrop: false, otherMenuOpen: false});
 
     /* ── 검색/필터 조건 ── */
     const searchParam = reactive({
       previewDate: today,
       previewTime: new Date().toTimeString().slice(0, 5),
       status: '활성',
-      visibility: '',
-    });
+      visibility: '',, structColCount: 1, dispUiAreaErr: false, dispUiSiteSearch: '', dispUiMemberSearch: ''});;
     const searchParamOrg = reactive({
       previewDate: today,
       previewTime: new Date().toTimeString().slice(0, 5),
@@ -262,8 +260,7 @@ window.DpDispUiSimul = {
     /* ─────────────────────────────────────────
        Tab3: 소스 구조
     ───────────────────────────────────────── */
-    const sourceCopied = ref(false);
-
+    
     const WIDGET_EXTRA_ATTRS = {
       image_banner:    ['imageUrl','linkUrl','altText'],
       product_slider:  ['productIds','displayCnt','autoPlay'],
@@ -422,8 +419,8 @@ window.DpDispUiSimul = {
 
     const copySource = () => {
       navigator.clipboard?.writeText(cfSourceText.value).then(() => {
-        sourceCopied.value = true;
-        setTimeout(() => { sourceCopied.value = false; }, 2000);
+        uiState.sourceCopied = true;
+        setTimeout(() => { uiState.sourceCopied = false; }, 2000);
       });
     };
 
@@ -437,18 +434,18 @@ window.DpDispUiSimul = {
        구조 탭 우측 그리드 (드래그-드롭 + span)
     ───────────────────────────────────────── */
     /* ── 캔버스 레이아웃 설정 ── */
-    const structLayoutType = ref('grid');   // 'grid' | 'dashboard'
+       // 'grid' | 'dashboard'
     const structColCount   = ref(1);        // 1 ~ 32
     const sMakeInit = (cols) => Array(cols * 2).fill(null);
     const structSlots = reactive([...sMakeInit(1)]);
     const cfStructCurrentSlots = computed(() => structSlots);
     const structAutoExpand = () => {
-      const cols = structColCount.value;
+      const cols = uiState.structColCount;
       if (structSlots.slice(structSlots.length - cols).some(Boolean))
         for (let i = 0; i < cols; i++) structSlots.push(null);
     };
     const cfStructGridCols = computed(() => {
-      const n = structColCount.value;
+      const n = uiState.structColCount;
       if (n <= 1) return 'repeat(1,1fr)';
       if (n === 2) return 'repeat(auto-fill,minmax(max(calc(50% - 5px),260px),1fr))';
       if (n === 3) return 'repeat(auto-fill,minmax(max(calc(33.333% - 6px),190px),1fr))';
@@ -459,17 +456,15 @@ window.DpDispUiSimul = {
     const applyAreaLayout = (area) => {
       const lt = area.layoutType || 'grid';
       const gc = area.gridCols   || 1;
-      structLayoutType.value = lt;
+      uiState.structLayoutType = lt;
       if (lt === 'grid') {
-        structColCount.value = gc;
+        uiState.structColCount = gc;
         structSlots.splice(0, structSlots.length, ...sMakeInit(gc));
       }
     };
 
     /* ── 뷰포트 모드 (grid 탭 전용) ── */
-    const structViewport = ref('desktop');
-    const structShowReal = ref(false);
-    const STRUCT_VIEWPORT = {
+            const STRUCT_VIEWPORT = {
       desktop: { label:'🖥 PC',     width: null   },
       tablet:  { label:'📟 태블릿', width:'768px' },
       mobile:  { label:'📱 모바일', width:'375px' },
@@ -477,11 +472,10 @@ window.DpDispUiSimul = {
 
     /* ── dashboard 자유배치 ── */
     const structDashItems = reactive([]);
-    const structDashDragOver = ref(false);
-    const onStructDashDragOver  = (e) => { e.preventDefault(); structDashDragOver.value = true; };
-    const onStructDashDragLeave = () => { structDashDragOver.value = false; };
+        const onStructDashDragOver  = (e) => { e.preventDefault(); uiState.structDashDragOver = true; };
+    const onStructDashDragLeave = () => { uiState.structDashDragOver = false; };
     const onStructDashDrop = (e) => {
-      e.preventDefault(); structDashDragOver.value = false;
+      e.preventDefault(); uiState.structDashDragOver = false;
       const widgets = window._dragAreaWidgets;
       if (!widgets) return;
       window._dragAreaWidgets = null;
@@ -520,18 +514,16 @@ window.DpDispUiSimul = {
     };
 
     /* ── span 팝업 ── */
-    const structSpanPopupIdx = ref(-1);
-    const toggleStructSpanPopup = (e, idx) => {
+        const toggleStructSpanPopup = (e, idx) => {
       e.stopPropagation();
-      structSpanPopupIdx.value = structSpanPopupIdx.value === idx ? -1 : idx;
+      uiState.structSpanPopupIdx = uiState.structSpanPopupIdx === idx ? -1 : idx;
     };
-    const closeStructSpanPopup = () => { structSpanPopupIdx.value = -1; };
+    const closeStructSpanPopup = () => { uiState.structSpanPopupIdx = -1; };
 
-    const structDragOverIdx = ref(-1);
-    const onStructDragOver  = (e, idx) => { e.preventDefault(); structDragOverIdx.value = idx; };
-    const onStructDragLeave = () => { structDragOverIdx.value = -1; };
+        const onStructDragOver  = (e, idx) => { e.preventDefault(); uiState.structDragOverIdx = idx; };
+    const onStructDragLeave = () => { uiState.structDragOverIdx = -1; };
     const onStructDrop = (e, idx) => {
-      e.preventDefault(); structDragOverIdx.value = -1;
+      e.preventDefault(); uiState.structDragOverIdx = -1;
       const widgets = window._dragAreaWidgets;
       if (!widgets) return;
       window._dragAreaWidgets = null;
@@ -539,7 +531,7 @@ window.DpDispUiSimul = {
         props.showToast(`위젯이 ${widgets.length}개로 40개를 초과합니다. 배치할 수 없습니다.`, 'error');
         return;
       }
-      const cols = structColCount.value;
+      const cols = uiState.structColCount;
       let placed = 0, i = idx;
       while (placed < widgets.length) {
         if (i >= structSlots.length) for (let c = 0; c < cols; c++) structSlots.push(null);
@@ -551,13 +543,13 @@ window.DpDispUiSimul = {
     const removeStructSlot = (idx) => { structSlots.splice(idx, 1, null); };
     const setStructSpan = (idx, axis, delta) => {
       const slot = structSlots[idx]; if (!slot) return;
-      const maxCol = structColCount.value;
+      const maxCol = uiState.structColCount;
       if (axis === 'col') slot.colSpan = Math.max(1, Math.min(maxCol, (slot.colSpan||1) + delta));
       if (axis === 'row') slot.rowSpan = Math.max(1, Math.min(4,      (slot.rowSpan||1) + delta));
     };
     const cfStructPlacedCount = computed(() => window.safeArrayUtils.safeFilter(structSlots, Boolean).length);
     const resetStructGrid = () => {
-      structSlots.splice(0, structSlots.length, ...sMakeInit(structColCount.value));
+      structSlots.splice(0, structSlots.length, ...sMakeInit(uiState.structColCount));
     };
 
     /* ── 노드 드래그 (영역 / 패널) ── */
@@ -577,9 +569,7 @@ window.DpDispUiSimul = {
     const onAreaDragEnd = () => { window._dragAreaWidgets = null; };
 
     /* ── Ui미리보기 레이어 ── */
-    const dispUiLayerOpen = ref(true);
-    const dispUiModalOpen = ref(false);
-    const dispUiAreaErr   = ref(false);
+            const dispUiAreaErr   = ref(false);
 
     /* 독립적인 조회 폼 (메인 필터와 별개) */
     const dispUiForm = reactive({
@@ -592,10 +582,9 @@ window.DpDispUiSimul = {
     const dispUiViewOpts = reactive({ content: true, struct: true, source: true });
 
     /* 사이트 모달 */
-    const dispUiSiteModalOpen = ref(false);
-    const dispUiSiteSearch    = ref('');
+        const dispUiSiteSearch    = ref('');
     const cfDispUiSiteList = computed(() => {
-      const kw = dispUiSiteSearch.value.trim().toLowerCase();
+      const kw = searchParam.dispUiSiteSearch.trim().toLowerCase();
       return (Array.isArray(sites) ? sites : []).filter(s =>
         !kw || s.siteNm.toLowerCase().includes(kw) || (s.domain||'').toLowerCase().includes(kw)
       );
@@ -603,14 +592,13 @@ window.DpDispUiSimul = {
     const selectDispUiSite = (site) => {
       dispUiForm.siteId = String(site.siteId);
       dispUiForm.siteNm = site.siteNm;
-      dispUiSiteModalOpen.value = false;
+      uiState.dispUiSiteModalOpen = false;
     };
 
     /* 회원 모달 */
-    const dispUiMemberModalOpen = ref(false);
-    const dispUiMemberSearch    = ref('');
+        const dispUiMemberSearch    = ref('');
     const cfDispUiMemberList = computed(() => {
-      const kw = dispUiMemberSearch.value.trim().toLowerCase();
+      const kw = searchParam.dispUiMemberSearch.trim().toLowerCase();
       return (Array.isArray(members) ? members : []).filter(m =>
         !kw || (m.memberNm||'').toLowerCase().includes(kw) || (m.email||'').toLowerCase().includes(kw)
       ).slice(0, 30);
@@ -618,7 +606,7 @@ window.DpDispUiSimul = {
     const selectDispUiMember = (m) => {
       dispUiForm.memberId = String(m.userId);
       dispUiForm.memberNm = m.memberNm || m.email;
-      dispUiMemberModalOpen.value = false;
+      uiState.dispUiMemberModalOpen = false;
     };
 
     /* 초기화 */
@@ -638,8 +626,7 @@ window.DpDispUiSimul = {
     };
 
     /* DispUi 영역 드롭다운 (메인 필터와 동일한 UX) */
-    const dispUiAreaDrop = ref(false);
-    const cfDispUiAreaBtnLabel = computed(() => {
+        const cfDispUiAreaBtnLabel = computed(() => {
       const sz = dispUiForm.areas.length;
       return sz === 0 ? '전체 영역' : `${sz}개 영역 선택`;
     });
@@ -647,19 +634,19 @@ window.DpDispUiSimul = {
       const i = dispUiForm.areas.indexOf(code);
       if (i !== -1) dispUiForm.areas.splice(i, 1);
       else dispUiForm.areas.push(code);
-      dispUiAreaErr.value = false;
+      uiState.dispUiAreaErr = false;
     };
     const dispUiSelectAllAreas = () => {
       window.safeArrayUtils.safeForEach(cfAllAreaListRaw.value, a => {
         if (!dispUiForm.areas.includes(a.codeValue)) dispUiForm.areas.push(a.codeValue);
       });
-      dispUiAreaErr.value = false;
+      uiState.dispUiAreaErr = false;
     };
     const dispUiClearAllAreas = () => { dispUiForm.areas.splice(0); };
 
     /* 레이어 열기 – 처음 열 때 현재 필터값 복사 */
     const openDispUiLayer = () => {
-      if (!dispUiLayerOpen.value) {
+      if (!uiState.dispUiLayerOpen) {
         dispUiForm.areas        = [...selectedAreas];
         dispUiForm.date         = searchParam.previewDate;
         dispUiForm.time         = searchParam.previewTime;
@@ -671,11 +658,11 @@ window.DpDispUiSimul = {
         dispUiForm.siteNm   = site?.siteNm || '';
         dispUiForm.memberId = '';
         dispUiForm.memberNm = '';
-        dispUiSiteSearch.value   = '';
-        dispUiMemberSearch.value = '';
-        dispUiAreaDrop.value = false;
+        uiState.dispUiSiteSearch   = '';
+        uiState.dispUiMemberSearch = '';
+        uiState.dispUiAreaDrop = false;
       }
-      dispUiLayerOpen.value = !dispUiLayerOpen.value;
+      uiState.dispUiLayerOpen = !uiState.dispUiLayerOpen;
     };
 
     const cfDispUiParamObj = computed(() => {
@@ -699,14 +686,14 @@ window.DpDispUiSimul = {
     );
 
     const _validateDispUi = () => {
-      if (dispUiForm.areas.length === 0) { dispUiAreaErr.value = true; return false; }
-      dispUiAreaErr.value = false;
+      if (dispUiForm.areas.length === 0) { uiState.dispUiAreaErr = true; return false; }
+      uiState.dispUiAreaErr = false;
       return true;
     };
 
     const openDispUiModal = () => {
       if (!_validateDispUi()) return;
-      dispUiModalOpen.value = true;
+      uiState.dispUiModalOpen = true;
       /* 레이어 닫지 않음 */
     };
 
@@ -748,16 +735,15 @@ window.DpDispUiSimul = {
       '/disp-bo-ui.html#page=dispUi05',
       '/disp-bo-ui.html#page=dispUi06',
     ];
-    const otherMenuOpen = ref(false);
-    const openDispUiOther = () => { otherMenuOpen.value = !otherMenuOpen.value; };
-    const closeOtherMenu = () => { otherMenuOpen.value = false; };
+        const openDispUiOther = () => { uiState.otherMenuOpen = !uiState.otherMenuOpen; };
+    const closeOtherMenu = () => { uiState.otherMenuOpen = false; };
     const pickOtherPage = (url) => {
       const base = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '');
       window.open(
         base + url,
         '_blank', 'width=1440,height=900,scrollbars=yes,resizable=yes'
       );
-      otherMenuOpen.value = false;
+      uiState.otherMenuOpen = false;
     };
 
     const openDispUiPopup = (scope) => {

@@ -6,7 +6,7 @@ window.SyBbsDtl = {
     const { reactive, computed, onMounted, ref, onBeforeUnmount } = Vue;
 
     const bbss = reactive([]);
-    const uiState = reactive({ loading: false, showBbmDetail: false, error: null, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, showBbmDetail: false, error: null, error: null, isPageCodeLoad: false, selectedBbm: null, showBbmModal: false});;
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -30,8 +30,7 @@ window.SyBbsDtl = {
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
     /* ── 선택된 게시판 정보 ── */
-    const selectedBbm = ref(null);
-
+    
     /* ── 폼 ── */
     const form = reactive({
       bbsId: null, bbmId: null, title: '', authorNm: '', statusCd: '게시',
@@ -48,9 +47,9 @@ window.SyBbsDtl = {
     const showBbmModal  = ref(false);
 
     const onBbmSelect = (b) => {
-      showBbmModal.value = false;
-      if (selectedBbm.value && selectedBbm.value.bbmId === b.bbmId) return;
-      selectedBbm.value = b;
+      uiState.showBbmModal = false;
+      if (uiState.selectedBbm && selectedBbm.value.bbmId === b.bbmId) return;
+      uiState.selectedBbm = b;
       form.bbmId = b.bbmId;
       /* 게시판 변경 시 레이아웃 초기화 */
       form.title       = '';
@@ -73,8 +72,8 @@ window.SyBbsDtl = {
     };
 
     /* 게시판 contentType 에 따른 내용 입력 방식 */
-    const cfContentType = computed(() => selectedBbm.value?.contentType || 'textarea');
-    const cfAllowAttach = computed(() => selectedBbm.value?.allowAttach || '불가');
+    const cfContentType = computed(() => uiState.selectedBbm?.contentType || 'textarea');
+    const cfAllowAttach = computed(() => uiState.selectedBbm?.allowAttach || '불가');
 
     /* ── 초기화 ── */
     onMounted(() => {
@@ -83,7 +82,7 @@ window.SyBbsDtl = {
         const b = bbss.find(x => x.bbsId === props.editId);
         if (b) {
           Object.assign(form, { ...b });
-          selectedBbm.value = bbms.value.find(m => m.bbmId === b.bbmId) || null;
+          uiState.selectedBbm = bbms.value.find(m => m.bbmId === b.bbmId) || null;
         }
       }
       /* htmleditor 초기화는 selectedBbm 결정 후 — viewMode 일 때는 초기화 불필요 */

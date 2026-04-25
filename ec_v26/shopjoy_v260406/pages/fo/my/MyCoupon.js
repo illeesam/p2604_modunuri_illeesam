@@ -4,7 +4,7 @@ window.MyCoupon = {
   props: ['navigate', 'cartCount', 'showToast'],
   setup(props) {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'unused'});
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -33,7 +33,7 @@ window.MyCoupon = {
     const paginate = myStore.paginate;
 
     /* ── 탭: 미사용 | 사용 ── */
-    const activeTab = ref('unused'); // 'unused' | 'used'
+     // 'unused' | 'used'
 
     /* ── 날짜 필터 ── */
     const { inRange, onDateSearch } = window.myDateFilterHelper();
@@ -41,7 +41,7 @@ window.MyCoupon = {
     /* ── 탭 + 날짜 필터 적용 목록 ── */
     const cfDateFilteredCoupons = computed(() =>
       coupons.value
-        .filter(c => activeTab.value === 'unused' ? !c.used : c.used)
+        .filter(c => uiState.activeTab === 'unused' ? !c.used : c.used)
         .filter(c => inRange(c.regDate))
     );
 
@@ -62,7 +62,7 @@ window.MyCoupon = {
       props.showToast('쿠폰이 등록되었습니다!', 'success');
     };
 
-    const onTabChange = tab => { activeTab.value = tab; couponPager.page = 1; };
+    const onTabChange = tab => { uiState.activeTab = tab; couponPager.page = 1; };
 
     const handleFetchData = async () => {
       await myStore.handleLoadCoupons();

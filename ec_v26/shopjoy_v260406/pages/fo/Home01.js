@@ -228,7 +228,7 @@ window.Home01 = {
   `,
   setup(props) {
     const { computed, ref, onMounted, onBeforeUnmount, reactive, watch } = Vue;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cartModalMode: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cartModalMode: false, quickViewProduct: null, bannerIdx: 0});
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -276,8 +276,7 @@ window.Home01 = {
     );
 
     /* ── 빠른보기 모달 ── */
-    const quickViewProduct = ref(null);
-
+    
     /* ── 홈 그리드 반응형 CSS 주입 ── */
     /* max-width 컨테이너가 최대 열 수를 자연 제한:
        카테고리 max-width:820px  / minmax(240px) → 최대 3열, 좁아지면 2→1열
@@ -291,15 +290,14 @@ window.Home01 = {
     });
 
     /* ── 배너 슬라이더 ── */
-    const bannerIdx = ref(0);
-    const banners = [
+        const banners = [
       { img: 'assets/cdn/prod/img/slider/slider-1.jpg', title: '나만의 스타일을', sub: '완성하세요', desc: '트렌디한 의류를 합리적인 가격으로. 색상과 사이즈를 직접 선택해 나만의 스타일을 만들어보세요.' },
       { img: 'assets/cdn/prod/img/slider/slider-2.jpg', title: '2026 S/S', sub: '신상품 컬렉션', desc: '올 봄·여름 시즌을 빛낼 새로운 컬렉션이 도착했습니다. 지금 만나보세요.' },
       { img: 'assets/cdn/prod/img/slider/slider-3.jpg', title: '특별한 혜택', sub: '시즌 세일 진행중', desc: '인기 상품 최대 50% 할인! 한정 수량으로 준비된 특별 혜택을 놓치지 마세요.' },
     ];
     let bannerTimer = null;
-    const startBannerTimer = () => { bannerTimer = setInterval(() => { bannerIdx.value = (bannerIdx.value + 1) % banners.length; }, 20000); };
-    const setBanner = (i) => { bannerIdx.value = i; clearInterval(bannerTimer); startBannerTimer(); };
+    const startBannerTimer = () => { bannerTimer = setInterval(() => { uiState.bannerIdx = (uiState.bannerIdx + 1) % banners.length; }, 20000); };
+    const setBanner = (i) => { uiState.bannerIdx = i; clearInterval(bannerTimer); startBannerTimer(); };
     onMounted(() => {
       if (!document.getElementById('home-grid-styles')) {
         const s = document.createElement('style');

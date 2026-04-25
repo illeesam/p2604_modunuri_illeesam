@@ -6,7 +6,7 @@ window.PmCouponDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const coupons = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCouponDtlState.tab || 'info', viewMode2: window._pmCouponDtlState.viewMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null, memoEl: null});
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -27,11 +27,9 @@ window.PmCouponDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-    const tab = ref(window._pmCouponDtlState.tab || 'info');
-    watch(tab, v => { window._pmCouponDtlState.tab = v; });
-    const viewMode2 = ref(window._pmCouponDtlState.viewMode || 'tab');
-    watch(viewMode2, v => { window._pmCouponDtlState.viewMode = v; });
-    const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
+        watch(tab, v => { window._pmCouponDtlState.tab = v; });
+        watch(viewMode2, v => { window._pmCouponDtlState.viewMode = v; });
+    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -73,8 +71,7 @@ window.PmCouponDtl = {
     });
     const errors = reactive({});
 
-    const memoEl = ref(null);
-    let _qMemo = null;
+        let _qMemo = null;
 
     const _today = new Date();
     const _pad = n => String(n).padStart(2, '0');
@@ -96,8 +93,8 @@ window.PmCouponDtl = {
       if (!form.startDate) form.startDate = DEFAULT_START;
       if (!form.endDate) form.endDate = DEFAULT_END;
       await nextTick();
-      if (memoEl.value && typeof Quill !== 'undefined') {
-        _qMemo = new Quill(memoEl.value, {
+      if (uiState.memoEl && typeof Quill !== 'undefined') {
+        _qMemo = new Quill(uiState.memoEl, {
           theme: 'snow',
           placeholder: '쿠폰 관련 메모를 입력하세요...',
           modules: { toolbar: [['bold','italic','underline'],[{color:[]}],[{list:'ordered'},{list:'bullet'}],['link','clean']] }
@@ -135,16 +132,13 @@ window.PmCouponDtl = {
     });
 
     /* 미리보기 형태 */
-    const previewTab = ref('barcode');
-    const barcodeContainer = ref(null);
-    const qrcodeContainer = ref(null);
-    const onPreviewTabChange = (pt) => {
-      previewTab.value = pt;
+                const onPreviewTabChange = (pt) => {
+      uiState.previewTab = pt;
       Vue.nextTick(() => {
-        if (pt === 'barcode' && barcodeContainer.value && typeof JsBarcode !== 'undefined') {
+        if (pt === 'barcode' && uiState.barcodeContainer && typeof JsBarcode !== 'undefined') {
           try {
             barcodeContainer.value.innerHTML = '';
-            JsBarcode(barcodeContainer.value, form.couponCode || 'SAMPLE', {
+            JsBarcode(uiState.barcodeContainer, form.couponCode || 'SAMPLE', {
               format: 'CODE128',
               width: 2,
               height: 60,
@@ -152,10 +146,10 @@ window.PmCouponDtl = {
             });
           } catch(e) {}
         }
-        if (pt === 'qrcode' && qrcodeContainer.value && typeof QRCode !== 'undefined') {
+        if (pt === 'qrcode' && uiState.qrcodeContainer && typeof QRCode !== 'undefined') {
           qrcodeContainer.value.innerHTML = '';
           try {
-            new QRCode(qrcodeContainer.value, {
+            new QRCode(uiState.qrcodeContainer, {
               text: form.couponCode ? `https://shopjoy.com/coupon/${form.couponCode}` : 'https://shopjoy.com/coupon/sample',
               width: 150,
               height: 150,
@@ -168,10 +162,10 @@ window.PmCouponDtl = {
     };
 
     const renderBarcode = () => {
-      if (barcodeContainer.value && typeof JsBarcode !== 'undefined') {
+      if (uiState.barcodeContainer && typeof JsBarcode !== 'undefined') {
         try {
           barcodeContainer.value.innerHTML = '';
-          JsBarcode(barcodeContainer.value, form.couponCode || 'SAMPLE', {
+          JsBarcode(uiState.barcodeContainer, form.couponCode || 'SAMPLE', {
             format: 'CODE128',
             width: 2,
             height: 60,
@@ -181,10 +175,10 @@ window.PmCouponDtl = {
       }
     };
     const renderQRCode = () => {
-      if (qrcodeContainer.value && typeof QRCode !== 'undefined') {
+      if (uiState.qrcodeContainer && typeof QRCode !== 'undefined') {
         try {
           qrcodeContainer.value.innerHTML = '';
-          new QRCode(qrcodeContainer.value, {
+          new QRCode(uiState.qrcodeContainer, {
             text: form.couponCode ? `https://shopjoy.com/coupon/${form.couponCode}` : 'https://shopjoy.com/coupon/sample',
             width: 150,
             height: 150,
@@ -195,7 +189,7 @@ window.PmCouponDtl = {
       }
     };
     const onTabChange = (newTab) => {
-      tab.value = newTab;
+      uiState.tab = newTab;
       if (newTab === 'preview') {
         Vue.nextTick(() => {
           renderBarcode();

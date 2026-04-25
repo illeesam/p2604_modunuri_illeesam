@@ -6,7 +6,7 @@ window.PmCacheDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const caches = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCacheDtlState.tab || 'info', viewMode2: window._pmCacheDtlState.viewMode || 'tab'});
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -27,11 +27,9 @@ window.PmCacheDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-    const tab = ref(window._pmCacheDtlState.tab || 'info');
-    watch(tab, v => { window._pmCacheDtlState.tab = v; });
-    const viewMode2 = ref(window._pmCacheDtlState.viewMode || 'tab');
-    watch(viewMode2, v => { window._pmCacheDtlState.viewMode = v; });
-    const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
+        watch(tab, v => { window._pmCacheDtlState.tab = v; });
+        watch(viewMode2, v => { window._pmCacheDtlState.viewMode = v; });
+    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();

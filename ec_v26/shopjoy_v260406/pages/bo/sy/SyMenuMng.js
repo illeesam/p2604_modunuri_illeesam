@@ -5,7 +5,7 @@ window.SyMenuMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const menus = reactive([]);
-    const uiState = reactive({ checkAll: false, loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ checkAll: false, loading: false, error: null, isPageCodeLoad: false, selectedTreeId: null, focusedIdx: null});
     const codes = reactive({ menu_type: [], menu_status: [] });
 
     // onMounted에서 API 로드
@@ -26,10 +26,9 @@ window.SyMenuMng = {
       }
     };
     /* 좌측 메뉴 트리 */
-    const selectedTreeId = ref(null);
-    const expanded = reactive(new Set([null]));
+        const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
-    const selectNode = (id) => { selectedTreeId.value = id; };
+    const selectNode = (id) => { uiState.selectedTreeId = id; };
     const cfTree = computed(() => window.boCmUtil.buildMenuTree());
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
@@ -65,8 +64,8 @@ window.SyMenuMng = {
     });
 
     const cfAllowedTreeIds = computed(() => {
-      if (selectedTreeId.value == null) return null;
-      return window.boCmUtil.collectDescendantIds(menus, 'menuId', 'parentId', selectedTreeId.value);
+      if (uiState.selectedTreeId == null) return null;
+      return window.boCmUtil.collectDescendantIds(menus, 'menuId', 'parentId', uiState.selectedTreeId);
     });
     watch(selectedTreeId, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
 
@@ -89,8 +88,7 @@ window.SyMenuMng = {
     /* ── CRUD 그리드 ── */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
-    const focusedIdx = ref(null);
-
+    
     /* ── 페이징 ── */
     const pager      = reactive({ page: 1, size: 20 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -124,7 +122,7 @@ window.SyMenuMng = {
     });
 
     const handleLoadGrid = () => {
-      gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
+      gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
       const filtered = menus.filter(m => {
         if (cfAllowedTreeIds.value && !cfAllowedTreeIds.value.has(m.menuId)) return false;
         const kw = searchParam.kw.trim().toLowerCase();
@@ -154,7 +152,7 @@ window.SyMenuMng = {
       handleLoadGrid();
     };
 
-    const setFocused = (realIdx) => { focusedIdx.value = realIdx; };
+    const setFocused = (realIdx) => { uiState.focusedIdx = realIdx; };
 
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
@@ -163,7 +161,7 @@ window.SyMenuMng = {
     };
 
     const addRow = () => {
-      const ref = focusedIdx.value !== null ? gridRows[focusedIdx.value] : null;
+      const ref = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
       const newRow = {
         menuId: _tempId--, menuCode: '', menuNm: '', parentId: ref ? ref.parentId : null,
         menuUrl: '', menuType: ref ? ref.menuType : '페이지',
@@ -171,9 +169,9 @@ window.SyMenuMng = {
         useYn: 'Y', remark: '',
         _depth: ref ? ref._depth : 0, _row_status: 'I', _row_check: false, _orig: null,
       };
-      const insertAt = focusedIdx.value !== null ? focusedIdx.value + 1 : gridRows.length;
+      const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(insertAt, 0, newRow);
-      focusedIdx.value = insertAt;
+      uiState.focusedIdx = insertAt;
       pager.page = Math.ceil((insertAt + 1) / pager.size);
     };
 
@@ -181,7 +179,7 @@ window.SyMenuMng = {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') {
         gridRows.splice(realIdx, 1);
-        if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= realIdx ? 1 : 0));
+        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= realIdx ? 1 : 0));
       } else { row._row_status = 'D'; }
     };
 
@@ -189,7 +187,7 @@ window.SyMenuMng = {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') {
         gridRows.splice(realIdx, 1);
-        if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= realIdx ? 1 : 0));
+        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= realIdx ? 1 : 0));
       } else {
         if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
         row._row_status = 'N';

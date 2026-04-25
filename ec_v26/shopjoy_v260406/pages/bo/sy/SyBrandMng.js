@@ -5,7 +5,7 @@ window.SyBrandMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const brands = reactive([]);
-    const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false, selectedPath: null, focusedIdx: null, dragSrc: null});
     const codes = reactive({ brand_status: [] });
 
     // 현재 환경이 local인지 확인
@@ -50,12 +50,10 @@ window.SyBrandMng = {
 
 
     /* 트리 선택 path (loadGrid 보다 먼저 선언) */
-    const selectedPath = ref(null);
-
+    
     /* ── 검색 ── */
     const searchParam = reactive({
-      kw: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
-    });
+      kw: '', useYn: '', dateRange: '', dateStart: '', dateEnd: '', dragSrc: null});;
     const searchParamOrg = reactive({
       kw: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
     });
@@ -71,8 +69,7 @@ window.SyBrandMng = {
     /* ── CRUD 그리드 ── */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
-    const focusedIdx = ref(null);
-
+    
     /* ── 페이징 ── */
     const pager      = reactive({ page: 1, size: 20 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -111,7 +108,7 @@ window.SyBrandMng = {
     });
 
     const handleLoadGrid = () => {
-      gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
+      gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
       (brands || [])
         .filter(b => {
           const kw = searchParam.kw.trim().toLowerCase();
@@ -119,7 +116,7 @@ window.SyBrandMng = {
                  && !b.brandNm?.toLowerCase().includes(kw)
                  && !b.brandEnNm?.toLowerCase().includes(kw)) return false;
           if (searchParam.useYn && b.useYn !== searchParam.useYn) return false;
-          if (selectedPath.value != null) { const _desc = window.boCmUtil.getPathDescendants('sy_brand', selectedPath.value); if (_desc && !_desc.has(b.pathId)) return false; }
+          if (uiState.selectedPath != null) { const _desc = window.boCmUtil.getPathDescendants('sy_brand', uiState.selectedPath); if (_desc && !_desc.has(b.pathId)) return false; }
           const d = String(b.regDate || '').slice(0, 10);
           if (searchParam.dateStart && d < searchParam.dateStart) return false;
           if (searchParam.dateEnd   && d > searchParam.dateEnd)   return false;
@@ -140,7 +137,7 @@ window.SyBrandMng = {
       handleLoadGrid();
     };
 
-    const setFocused = (idx) => { focusedIdx.value = idx; };
+    const setFocused = (idx) => { uiState.focusedIdx = idx; };
 
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
@@ -151,13 +148,13 @@ window.SyBrandMng = {
     const addRow = () => {
       const newRow = {
         brandId: _tempId--, brandCode: '', brandNm: '', brandEnNm: '',
-        dispPath: selectedPath.value || 'fashion.misc',
+        dispPath: uiState.selectedPath || 'fashion.misc',
         logoUrl: '', sortOrd: gridRows.length + 1, useYn: 'Y', remark: '',
         _row_status: 'I', _row_check: false, _orig: null,
       };
-      const insertAt = focusedIdx.value !== null ? focusedIdx.value + 1 : gridRows.length;
+      const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(insertAt, 0, newRow);
-      focusedIdx.value = insertAt;
+      uiState.focusedIdx = insertAt;
       pager.page = Math.ceil((insertAt + 1) / pager.size);
     };
 
@@ -165,7 +162,7 @@ window.SyBrandMng = {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
         gridRows.splice(idx, 1);
-        if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= idx ? 1 : 0));
+        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
       } else {
         row._row_status = 'D';
       }
@@ -175,7 +172,7 @@ window.SyBrandMng = {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
         gridRows.splice(idx, 1);
-        if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= idx ? 1 : 0));
+        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
       } else {
         if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
         row._row_status = 'N';
@@ -251,18 +248,18 @@ window.SyBrandMng = {
 
     /* ── 드래그 ── */
     const dragSrc   = ref(null);
-    const onDragStart = (idx) => { dragSrc.value = idx; uiState.dragMoved = false; };
+    const onDragStart = (idx) => { uiState.dragSrc = idx; uiState.dragMoved = false; };
     const onDragOver  = (e, idx) => {
       e.preventDefault();
-      if (dragSrc.value === null || dragSrc.value === idx) return;
-      const moved = gridRows.splice(dragSrc.value, 1)[0];
+      if (uiState.dragSrc === null || uiState.dragSrc === idx) return;
+      const moved = gridRows.splice(uiState.dragSrc, 1)[0];
       gridRows.splice(idx, 0, moved);
-      dragSrc.value = idx;
+      uiState.dragSrc = idx;
       uiState.dragMoved = true;
     };
     const onDragEnd = () => {
       if (uiState.dragMoved) props.showToast('정렬정보가 저장되었습니다.');
-      dragSrc.value = null; uiState.dragMoved = false;
+      uiState.dragSrc = null; uiState.dragMoved = false;
     };
 
     /* ── 전체 체크 ── */
@@ -294,7 +291,7 @@ window.SyBrandMng = {
     /* ── 좌측 표시경로 트리 (브랜드의 dispPath 기반) ── */
     const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
-    const selectNode = (path) => { selectedPath.value = path; };
+    const selectNode = (path) => { uiState.selectedPath = path; };
     const cfTree = computed(() => window.boCmUtil.buildPathTree('sy_brand'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };

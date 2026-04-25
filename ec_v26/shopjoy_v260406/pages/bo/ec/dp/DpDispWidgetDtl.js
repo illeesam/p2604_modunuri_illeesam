@@ -6,7 +6,7 @@ window.DpDispWidgetDtl = {
   setup(props, { emit }) {
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const codes = reactive({ disp_widget_types: [] });
-    const uiState = reactive({ isPageCodeLoad: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ isPageCodeLoad: false, error: null, isPageCodeLoad: false, previewMode: 'default', previewPaneWidth: 460, libPickMode: 'copy', htmlContentEl: null});
 
     // App 초기화 준비 상태
     const isAppReady = computed(() => {
@@ -288,7 +288,7 @@ window.DpDispWidgetDtl = {
       });
       return JSON.stringify(obj, null, 2);
     });
-    const uiState = reactive({ htmlSourceMode: false, jsonCopied: false, libPickOpen: false, showComponentTooltip: false });
+    const uiState = reactive({ isPageCodeLoad: false, error: null, isPageCodeLoad: false, previewMode: 'default', previewPaneWidth: 460, libPickMode: 'copy', htmlContentEl: null});
     const copyJson = () => {
       navigator.clipboard?.writeText(cfSampleJson.value).then(() => {
         uiState.jsonCopied = true;
@@ -297,28 +297,26 @@ window.DpDispWidgetDtl = {
     };
 
     /* ── 디바이스 모드 + 스플리터 ── */
-    const previewMode = ref('default');
-    const PREVIEW_MODES = [
+        const PREVIEW_MODES = [
       { value: 'default', label: '기본',   width: 420  },
       { value: 'pc',      label: 'PC',     width: 1200 },
       { value: 'tablet',  label: '태블릿', width: 768  },
       { value: 'mobile',  label: '모바일', width: 375  },
     ];
     const cfPreviewFrameWidth = computed(() => {
-      const m = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === previewMode.value);
+      const m = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === uiState.previewMode);
       return (m?.width || 420) + 'px';
     });
-    const previewPaneWidth = ref(460);
-    watch(previewMode, (m) => {
+        watch(previewMode, (m) => {
       const info = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === m);
-      previewPaneWidth.value = (info?.width || 420) + 40;
+      uiState.previewPaneWidth = (info?.width || 420) + 40;
     });
     const onSplitDrag = (e) => {
       e.preventDefault();
       const startX = e.clientX;
-      const startW = previewPaneWidth.value;
+      const startW = uiState.previewPaneWidth;
       const onMove = (ev) => {
-        previewPaneWidth.value = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
+        uiState.previewPaneWidth = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
       };
       const onUp = () => {
         window.removeEventListener('mousemove', onMove);
@@ -359,8 +357,8 @@ window.DpDispWidgetDtl = {
     };
 
     const initQuill = () => {
-      if (!htmlContentEl.value || quillInst) return;
-      quillInst = new Quill(htmlContentEl.value, QUILL_OPTS);
+      if (!uiState.htmlContentEl || quillInst) return;
+      quillInst = new Quill(uiState.htmlContentEl, QUILL_OPTS);
       quillInst.root.innerHTML = form.htmlContent || '';
       quillInst.on('text-change', () => { form.htmlContent = quillInst.root.innerHTML; });
     };
@@ -452,11 +450,11 @@ window.DpDispWidgetDtl = {
     };
 
     /* ── 위젯Lib 선택 팝업 ── */
-    const libPickMode = ref('copy'); /* 'copy' | 'ref' */
-    const openLibPick = (mode) => { libPickMode.value = mode; uiState.libPickOpen = true; };
+     /* 'copy' | 'ref' */
+    const openLibPick = (mode) => { uiState.libPickMode = mode; uiState.libPickOpen = true; };
     const onLibPicked = (lib) => {
       uiState.libPickOpen = false;
-      if (libPickMode.value === 'copy') {
+      if (uiState.libPickMode === 'copy') {
         const preserve = { libId: form.libId, libCode: form.libCode, regDate: form.regDate };
         Object.assign(form, { ...lib, ...preserve });
         props.showToast && props.showToast(`[${lib.name}] 내용을 복사했습니다.`, 'info');

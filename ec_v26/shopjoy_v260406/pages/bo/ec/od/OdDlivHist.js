@@ -6,7 +6,7 @@ window.OdDlivHist = {
   setup(props) {
     const { ref, computed } = Vue;
     const deliveries = reactive([]);
-    const uiState = reactive({ loading: false });
+    const uiState = reactive({ loading: false, botTab: window._ecDlivHistState.tab || 'order', viewMode2: 'tab'});
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -26,11 +26,9 @@ window.OdDlivHist = {
       }
     };
     onMounted(() => { handleFetchData(); });
-    const botTab = ref(window._ecDlivHistState.tab || 'order');
-    watch(botTab, v => { window._ecDlivHistState.tab = v; });
-    const viewMode2 = ref('tab');
-    
-    const showTab = (id) => viewMode2.value !== 'tab' || botTab.value === id;
+        watch(botTab, v => { window._ecDlivHistState.tab = v; });
+        
+    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.botTab === id;
     const cfRelatedOrder  = computed(() => getOrder.value(props.orderId));
     const cfRelatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.orderId === props.orderId));
     return { deliveries, uiState; botTab, cfRelatedOrder, cfRelatedClaims, viewMode2, showTab };

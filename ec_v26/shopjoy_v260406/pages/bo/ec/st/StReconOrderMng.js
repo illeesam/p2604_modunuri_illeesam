@@ -5,7 +5,7 @@ window.StReconOrderMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({
       order_statuses: [],
     });
@@ -32,13 +32,11 @@ window.StReconOrderMng = {
       }
     });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const dateRange = ref('이번달');
-    const dateStart = ref('');
-    const dateEnd   = ref('');
+            const dateEnd   = ref('');
     const handleDateRangeChange = () => {
-      if (dateRange.value) { const r = window.boCmUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
+      if (uiState.dateRange) { const r = window.boCmUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
-    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
+    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     const orderList = reactive([]);
     const vendorList = reactive([]);
@@ -61,8 +59,7 @@ window.StReconOrderMng = {
 
   const searchParam = reactive({
     kw: '',
-    diff: ''
-  });
+    diff: '', dateEnd: ''});;
   const searchParamOrg = reactive({
     kw: '',
     diff: ''
@@ -72,8 +69,8 @@ window.StReconOrderMng = {
     const cfRows = computed(() => {
       const kw = searchKw.value.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(cfOrders, o => {
-        if (dateStart.value && o.orderDate.slice(0,10) < dateStart.value) return false;
-        if (dateEnd.value   && o.orderDate.slice(0,10) > dateEnd.value)   return false;
+        if (uiState.dateStart && o.orderDate.slice(0,10) < uiState.dateStart) return false;
+        if (uiState.dateEnd   && o.orderDate.slice(0,10) > uiState.dateEnd)   return false;
         if (kw && !o.orderId.toLowerCase().includes(kw) && !o.userNm.toLowerCase().includes(kw)) return false;
         return true;
       }).map(o => {

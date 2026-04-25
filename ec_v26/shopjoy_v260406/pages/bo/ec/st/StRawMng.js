@@ -4,7 +4,7 @@ window.StRawMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -29,13 +29,11 @@ window.StRawMng = {
     });
 
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const dateRange = ref('이번달');
-    const dateStart = ref('');
-    const dateEnd   = ref('');
+            const dateEnd   = ref('');
     const handleDateRangeChange = () => {
-      if (dateRange.value) { const r = window.boCmUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
+      if (uiState.dateRange) { const r = window.boCmUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
-    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
+    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     // 검색 필드
   const searchParam = reactive({
@@ -51,8 +49,7 @@ window.StRawMng = {
     orderStatus: '',
     amtFrom: '',
     amtTo: '',
-    moreOpen: ''
-  });
+    moreOpen: '', dateEnd: ''});;
   const searchParamOrg = reactive({
     kw: '',
     type: '',
@@ -191,8 +188,8 @@ window.StRawMng = {
       const amtFrom = searchAmtFrom.value !== '' ? Number(searchAmtFrom.value) : null;
       const amtTo   = searchAmtTo.value   !== '' ? Number(searchAmtTo.value)   : null;
       return window.safeArrayUtils.safeFilter(cfRawList, r => {
-        if (dateStart.value        && r.txDate < dateStart.value)               return false;
-        if (dateEnd.value          && r.txDate > dateEnd.value)                 return false;
+        if (uiState.dateStart        && r.txDate < uiState.dateStart)               return false;
+        if (uiState.dateEnd          && r.txDate > uiState.dateEnd)                 return false;
         if (searchType.value       && r.sourceType !== searchType.value)        return false;
         if (searchStatus.value     && r.rawStatusCd !== searchStatus.value)     return false;
         if (searchVendorType.value && r.vendorTypeCd !== searchVendorType.value) return false;

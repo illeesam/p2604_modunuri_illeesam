@@ -7,7 +7,7 @@ window.PmSaveDtl = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const saves = reactive([]);
     const saveList = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmSaveDtlState.tab || 'info', viewMode2: window._pmSaveDtlState.viewMode || 'tab'});
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -28,11 +28,9 @@ window.PmSaveDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-    const tab = ref(window._pmSaveDtlState.tab || 'info');
-    watch(tab, v => { window._pmSaveDtlState.tab = v; });
-    const viewMode2 = ref(window._pmSaveDtlState.viewMode || 'tab');
-    watch(viewMode2, v => { window._pmSaveDtlState.viewMode = v; });
-    const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
+        watch(tab, v => { window._pmSaveDtlState.tab = v; });
+        watch(viewMode2, v => { window._pmSaveDtlState.viewMode = v; });
+    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();

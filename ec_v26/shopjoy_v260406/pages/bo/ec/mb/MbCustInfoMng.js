@@ -68,7 +68,7 @@
     const { reactive, ref, computed, watch, onMounted } = Vue;
 
     const custInfos = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, customer: null});
     const codes = reactive({
       member_statuses: [],
       member_grades: [],
@@ -145,53 +145,52 @@
       });
 
       /* ── 현재 고객 ── */
-      const customer = ref(null);
-
+      
       /* 날짜 필터 헬퍼 */
       const filtered = (list, dateField) =>
         list.filter(r => inRange(r[dateField], cfDateFrom.value, cfDateTo.value));
 
       /* ── 파생 데이터 (computed) ── */
       const cfCustOrders = computed(() =>
-        !customer.value ? [] : filtered(
+        !uiState.customer ? [] : filtered(
           window.safeArrayUtils.safeFilter(orders, o => o.userId === customer.value.userId), 'orderDate')
       );
       const cfCustClaims = computed(() =>
-        !customer.value ? [] : filtered(
+        !uiState.customer ? [] : filtered(
           window.safeArrayUtils.safeFilter(claims, c => c.userId === customer.value.userId), 'requestDate')
       );
       const cfCustDeliveries = computed(() =>
-        !customer.value ? [] : filtered(
+        !uiState.customer ? [] : filtered(
           window.safeArrayUtils.safeFilter(deliveries, d => d.userId === customer.value.userId), 'regDate')
       );
       const cfCustCache = computed(() =>
-        !customer.value ? [] : filtered(
+        !uiState.customer ? [] : filtered(
           window.safeArrayUtils.safeFilter(cacheList, c => c.userId === customer.value.userId), 'date')
       );
       const cfCustContacts = computed(() =>
-        !customer.value ? [] : filtered(
+        !uiState.customer ? [] : filtered(
           window.safeArrayUtils.safeFilter(contacts, c => c.userId === customer.value.userId), 'date')
       );
       const cfCustChats = computed(() =>
-        !customer.value ? [] : filtered(
+        !uiState.customer ? [] : filtered(
           window.safeArrayUtils.safeFilter(chats, c => c.userId === customer.value.userId), 'date')
       );
       const cfCustLoginHist = computed(() =>
-        !customer.value ? [] : filtered(
+        !uiState.customer ? [] : filtered(
           (loginHistory || []).filter(l => l.userId === customer.value.userId), 'loginDate')
       );
       const cfCustCouponUsage = computed(() =>
-        !customer.value ? [] : filtered(
+        !uiState.customer ? [] : filtered(
           (couponUsage || []).filter(u => u.userId === customer.value.userId), 'usedDate')
       );
       const cfCustSendHist = computed(() =>
-        !customer.value ? [] : filtered(
+        !uiState.customer ? [] : filtered(
           (sendHistory || []).filter(s => s.userId === customer.value.userId), 'sendDate')
       );
 
       /* 캐쉬 잔액 = 전체(필터 미적용) 마지막 레코드 */
       const cfCustCacheBalance = computed(() => {
-        if (!customer.value) return 0;
+        if (!uiState.customer) return 0;
         const all = window.safeArrayUtils.safeFilter(cacheList, c => c.userId === customer.value.userId);
         if (!all.length) return 0;
         return all.slice().sort((a, b) => a.cacheId - b.cacheId).at(-1)?.balance ?? 0;
@@ -211,7 +210,7 @@
           : [...members.value];
       };
       const selectMember = (m) => {
-        customer.value = m;
+        uiState.customer = m;
         memberModal.show = false;
         searchInput.value = '';
       };

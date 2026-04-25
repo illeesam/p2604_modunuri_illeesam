@@ -5,7 +5,7 @@ window.DpDispWidgetLibMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const widgetLibs = reactive([]);
-    const uiState = reactive({ loading: false, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, isPageCodeLoad: false, selectedTreeKey: ''});
     const codes = reactive({ disp_widget_types: [] });
 
     // App 초기화 준비 상태
@@ -102,7 +102,7 @@ window.DpDispWidgetLibMng = {
     });
 
     /* ── 표시경로 ── */
-    const selectedTreeKey = ref('');   /* '' = 전체, 'top' or 'top>sub' */
+       /* '' = 전체, 'top' or 'top>sub' */
     const cfTree = computed(() => {
       const map = {};
       const addToPath = (lib, pathStr) => {
@@ -134,7 +134,7 @@ window.DpDispWidgetLibMng = {
       else openNodes.add(key);
     };
     const isOpen = (key) => openNodes.has(key);
-    const selectTree = (key) => { selectedTreeKey.value = selectedTreeKey.value === key ? '' : key; pager.page = 1; };
+    const selectTree = (key) => { uiState.selectedTreeKey = uiState.selectedTreeKey === key ? '' : key; pager.page = 1; };
     const expandAll = () => {
       window.safeArrayUtils.safeForEach(cfTree, n => { openNodes.add(n.label); });
     };
@@ -142,7 +142,7 @@ window.DpDispWidgetLibMng = {
 
     /* 트리 선택까지 반영한 최종 리스트 */
     const cfFiltered = computed(() => {
-      const key = selectedTreeKey.value;
+      const key = uiState.selectedTreeKey;
       let list = cfSearchedLibs.value;
       if (key) {
         const [top, sub] = key.split('>').map(s => s.trim());
@@ -175,272 +175,3 @@ window.DpDispWidgetLibMng = {
     });
 
     /* ── 하단 인라인 Dtl ── */
-    const selectedId = ref(null);
-    const openMode   = ref('view');
-    const handleLoadDetail  = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
-    const openNew     = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
-    const closeDetail = () => { selectedId.value = null; };
-    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const cfDetailKey    = computed(() => `${selectedId.value}_${openMode.value}`);
-
-    const handleDelete = async (d) => {
-      const ok = await props.showConfirm('삭제', `[${d.name}]을 삭제하시겠습니까?`);
-      if (!ok) return;
-      const list = widgetLibs || [];
-      const idx = list.findIndex(x => x.libId === d.libId);
-      if (idx !== -1) list.splice(idx, 1);
-      if (selectedId.value === d.libId) selectedId.value = null;
-      try {
-        const res = await window.boApi.delete(`/bo/ec/dp/widget-lib/${d.libId}`);
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
-      }
-    };
-
-    const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'dpDispWidgetLibMng') { selectedId.value = null; return; }
-      props.navigate(pg, opts);
-    };
-
-    /* 내용 요약 */
-    const contentSummary = (d) => {
-      if (d.widgetType === 'image_banner')   return d.imageUrl   ? d.imageUrl.split('/').pop().slice(0, 25)   : '-';
-      if (d.widgetType === 'product_slider' || d.widgetType === 'product') return d.productIds ? '상품: ' + d.productIds.slice(0, 20) : '-';
-      if (d.widgetType === 'text_banner')    return d.textContent ? d.textContent.replace(/<[^>]+>/g,'').slice(0, 25) + '…' : '-';
-      if (d.widgetType === 'info_card')      return d.infoTitle  || '-';
-      if (d.widgetType === 'coupon')         return d.couponCode || '-';
-      if (d.widgetType === 'html_editor')    return d.htmlContent ? d.htmlContent.replace(/<[^>]+>/g,'').slice(0, 25) + '…' : '-';
-      if (d.widgetType.startsWith('chart_')) return d.chartTitle || '-';
-      if (d.widgetType === 'popup')          return d.popupWidth ? `${d.popupWidth}×${d.popupHeight}` : '-';
-      if (d.widgetType === 'event_banner')   return d.eventId ? '이벤트#' + d.eventId : '-';
-      if (d.widgetType === 'cache_banner')   return d.cacheDesc || '-';
-      return '-';
-    };
-
-    const fnStatusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
-
-    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
-    return { widgetLibs, uiState; pathLabel,
-      codes, wTypeLabel, wIcon, handleDelete,
-      searchParam, searchParamOrg, pager, PAGE_SIZES,
-      cfFiltered, cfTotalCount, cfPageList, cfTotalPages, cfPageNumbers,
-      cfTree, cfSearchedLibs, openNodes, toggleNode, isOpen, selectedTreeKey, selectTree, expandAll, collapseAll,
-      onSearch, onReset,
-      selectedId, openMode, cfDetailEditId, cfDetailKey,
-      cfSiteNm,
-      handleLoadDetail, openNew, closeDetail, inlineNavigate,
-      contentSummary, fnStatusCls,
-       setPage, onSizeChange,
-    };
-  },
-  template: /* html */`
-<div>
-  <div class="page-title">
-    전시위젯Lib
-    <span style="font-size:13px;font-weight:400;color:#888;">위젯Lib 단독으로 전시되지 않으며 패널item, 위젯에 자료를 제공 및 참조되어 표시됩니다.</span>
-  </div>
-
-  <!-- 검색 필터 -->
-  <div class="card" style="padding:14px 18px;margin-bottom:14px;">
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
-      <div class="form-group" style="margin:0;min-width:180px;flex:1;">
-        <label class="form-label">검색어</label>
-        <input v-model="searchParam.kw" class="form-control" placeholder="이름·설명·태그" @keyup.enter="() => onSearch?.()" style="margin:0;" />
-      </div>
-      <div class="form-group" style="margin:0;width:160px;">
-        <label class="form-label">위젯 유형</label>
-        <select v-model="searchParam.type" class="form-control" style="margin:0;">
-          <option value="">전체</option>
-          <option v-for="t in codes.disp_widget_types" :key="t?.codeValue" :value="t.codeValue">{{ t.codeLabel }}</option>
-        </select>
-      </div>
-      <div class="form-group" style="margin:0;width:110px;">
-        <label class="form-label">상태</label>
-        <select v-model="searchParam.status" class="form-control" style="margin:0;">
-          <option value="">전체</option>
-          <option value="활성">활성</option>
-          <option value="비활성">비활성</option>
-        </select>
-      </div>
-      <button @click="onSearch" class="btn btn-primary" style="height:36px;padding:0 20px;">조회</button>
-      <button @click="onReset"  class="btn btn-outline" style="height:36px;padding:0 16px;">초기화</button>
-      <button @click="openNew"  class="btn btn-primary" style="height:36px;padding:0 18px;margin-left:auto;">+ 신규등록</button>
-    </div>
-  </div>
-
-  <!-- 본문: 좌측 트리 + 우측 목록 -->
-  <div style="display:flex;gap:12px;align-items:flex-start;">
-
-  <!-- 좌측 표시경로 -->
-  <div class="card" style="width:240px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid #f0f0f0;margin-bottom:8px;">
-      <span style="font-size:12px;font-weight:700;color:#555;">표시경로</span>
-      <span style="font-size:10px;color:#aaa;">{{ cfTree.length }}그룹</span>
-    </div>
-    <!-- 전체펼치기 / 전체닫기 -->
-    <div style="display:flex;gap:4px;margin-bottom:8px;">
-      <button @click="expandAll"
-        style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">
-        ▼ 전체펼치기
-      </button>
-      <button @click="collapseAll"
-        style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">
-        ▶ 전체닫기
-      </button>
-    </div>
-    <!-- Root 노드 -->
-    <div @click="toggleNode('__root__'); selectTree('')"
-      :style="{
-        display:'flex',alignItems:'center',justifyContent:'space-between',
-        padding:'7px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',
-        background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',
-        color: selectedTreeKey==='' ? '#1565c0' : '#222',
-        fontWeight: 700,
-        border: '1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec'),
-      }">
-      <span>{{ isOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
-      <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ cfTotalCount }}</span>
-    </div>
-    <!-- 트리 노드 (root 하위로 들여쓰기) -->
-    <div v-if="isOpen('__root__')" style="padding-left:12px;">
-      <div v-for="node in cfTree" :key="node?.label">
-        <div @click="toggleNode(node.label); selectTree(node.label)"
-          :style="{
-            display:'flex',alignItems:'center',justifyContent:'space-between',
-            padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'2px',
-            background: selectedTreeKey===node.label ? '#e3f2fd' : 'transparent',
-            color: selectedTreeKey===node.label ? '#1565c0' : '#333',
-            fontWeight: selectedTreeKey===node.label ? 700 : 500,
-          }">
-          <span>{{ isOpen(node.label) ? '▼' : '▶' }} {{ node.label }}</span>
-          <span style="font-size:10px;background:#f0f2f5;color:#666;border-radius:10px;padding:1px 7px;">{{ node.count }}</span>
-        </div>
-        <div v-if="isOpen(node.label)" style="padding-left:16px;">
-          <div v-for="sub in node.children" :key="sub?.label"
-            @click.stop="selectTree(node.label+'>'+sub.label)"
-            :style="{
-              display:'flex',alignItems:'center',justifyContent:'space-between',
-              padding:'4px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'11px',marginBottom:'2px',
-              background: selectedTreeKey===(node.label+'>'+sub.label) ? '#e3f2fd' : 'transparent',
-              color: selectedTreeKey===(node.label+'>'+sub.label) ? '#1565c0' : '#666',
-              fontWeight: selectedTreeKey===(node.label+'>'+sub.label) ? 700 : 500,
-            }">
-            <span>▸
-              <span style="font-size:9px;background:#f3e5f5;color:#6a1b9a;border-radius:6px;padding:1px 6px;margin-right:4px;font-weight:600;">(위젯Lib)</span>
-              {{ sub.label }}
-            </span>
-            <span style="font-size:10px;background:#f0f2f5;color:#888;border-radius:10px;padding:1px 7px;">{{ sub.count }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div v-if="!cfTree.length" style="padding:20px 8px;text-align:center;color:#ccc;font-size:11px;">위젯이 없습니다.</div>
-  </div>
-
-  <!-- 우측 목록 -->
-  <div style="flex:1;min-width:0;">
-  <!-- 목록 -->
-  <div class="card" style="padding:0;">
-    <div style="padding:12px 18px;border-bottom:1px solid #f0f0f0;">
-      <span style="font-size:13px;color:#555;">총 <b>{{ cfTotalCount }}</b>건</span>
-    </div>
-
-    <table class="bo-table">
-      <thead>
-        <tr>
-          <th style="width:56px;">ID</th>
-          <th>위젯 정보</th>
-          <th style="width:120px;text-align:right;">관리</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="cfPageList.length===0">
-          <td colspan="3" style="text-align:center;padding:30px;color:#ccc;">등록된 위젯 리소스가 없습니다.</td>
-        </tr>
-        <tr v-for="(d, idx) in cfPageList" :key="d?.libId"
-          :style="selectedId===d.libId ? 'background:#fff8f8;' : ''">
-          <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">#{{ String(d.libId).padStart(4,'0') }}</td>
-          <td style="padding:10px 12px;">
-            <div style="margin-bottom:6px;">
-              <span style="font-size:15px;margin-right:4px;">{{ wIcon(d.widgetType) }}</span>
-              <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">{{ wTypeLabel(d.widgetType) }}</span>
-              <span class="title-link" @click="handleLoadDetail(d.libId)"
-                :style="'font-size:14px;font-weight:700;margin-left:8px;'+(selectedId===d.libId?'color:#e8587a;':'color:#222;')">{{ d.name }}</span>
-              <span class="badge" :class="fnStatusCls(d.status)" style="font-size:11px;margin-left:8px;">{{ d.status }}</span>
-            </div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
-              <span><b style="color:#888;">내용:</b> {{ contentSummary(d) || '-' }}</span>
-              <span><b style="color:#888;">타이틀:</b>
-                {{ d.titleYn==='Y' ? (d.title || '표시') : '미표시' }}
-              </span>
-              <span><b style="color:#888;">표시경로:</b>
-                <span v-if="d.displayPath" style="display:inline-block;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:8px;padding:1px 7px;margin-left:3px;font-family:monospace;">{{ d.displayPath }}</span>
-                <template v-else-if="d.usedPaths && d.usedPaths.length">
-                  <span v-for="(p,pi) in d.usedPaths" :key="pi"
-                    style="display:inline-block;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ p }}</span>
-                </template>
-                <span v-else style="color:#ccc;">미등록</span>
-              </span>
-              <span><b style="color:#888;">적용수:</b>
-                <span style="background:#dbeafe;color:#1d4ed8;border-radius:10px;padding:1px 8px;font-weight:700;margin-left:3px;">{{ (d.usedPaths||[]).length }}</span>
-              </span>
-              <span v-if="d.tags"><b style="color:#888;">태그:</b> {{ d.tags }}</span>
-              <span><b style="color:#888;">등록일:</b> {{ d.regDate || '-' }}</span>
-              <span><b style="color:#888;">사이트:</b>
-                <span style="background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:0 6px;margin-left:3px;">{{ cfSiteNm }}</span>
-              </span>
-            </div>
-          </td>
-          <td style="vertical-align:top;padding-top:10px;">
-            <div class="actions" style="justify-content:flex-end;">
-              <button @click.stop="handleLoadDetail(d.libId)" class="btn btn-blue btn-sm">수정</button>
-              <button @click.stop="handleDelete(d)" class="btn btn-danger btn-sm">삭제</button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- 페이저 -->
-    <div class="pagination">
-         <div></div>
-         <div class="pager">
-           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in cfPageNumbers" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
-         </div>
-         <div class="pager-right">
-           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
-           </select>
-         </div>
-       </div>
-  </div>
-
-  </div><!-- /우측 목록 -->
-  </div><!-- /본문 flex -->
-
-  <!-- 인라인 상세 -->
-  <div v-if="selectedId !== null" style="margin-top:16px;">
-    <dp-disp-widget-lib-dtl
-      :key="cfDetailKey"
-      :navigate="inlineNavigate"
-      :show-ref-modal="showRefModal"
-      :show-toast="showToast"
-      :show-confirm="showConfirm"
-      :set-api-res="setApiRes"
-      :edit-id="cfDetailEditId"
-      @close="closeDetail"
-    />
-  </div>
-</div>
-`
-};

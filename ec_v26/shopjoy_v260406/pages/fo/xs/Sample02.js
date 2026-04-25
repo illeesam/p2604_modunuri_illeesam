@@ -7,7 +7,7 @@ window.XsSample02 = {
   name: 'XsSample02',
   setup() {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dragSrc: null, focusedIdx: null, visibleCount: 10});
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -42,15 +42,14 @@ window.XsSample02 = {
     };
 
     /* ── 검색 ── */
-    const searchParam = reactive({ kw: '', category: '', status: '' });
+    const searchParam = reactive({ kw: '', category: '', status: '', visibleCount: 10});;
     const searchParamOrg = reactive({ kw: '', category: '', status: '' });
 
     /* ── CRUD Grid ── */
     const allData    = reactive([]);
     const gridRows   = reactive([]);
     let   _tempId    = -1;
-    const focusedIdx = ref(null);
-    const EDIT_FIELDS = ['productNm', 'category', 'price', 'stock', 'status'];
+        const EDIT_FIELDS = ['productNm', 'category', 'price', 'stock', 'status'];
 
     const toRow = d => ({
       productId: d.sample1Id,
@@ -72,9 +71,9 @@ window.XsSample02 = {
     /* ── 무한스크롤 (IntersectionObserver) ── */
     const visibleCount  = ref(10);
     const sentinelEl    = ref(null);   // 템플릿 ref: "더 불러오기" 요소
-    const cfVisibleRows   = computed(() => gridRows.slice(0, visibleCount.value));
-    const cfHasMore       = computed(() => visibleCount.value < gridRows.length);
-    const handleLoadMore      = () => { visibleCount.value = Math.min(visibleCount.value + 10, gridRows.length); };
+    const cfVisibleRows   = computed(() => gridRows.slice(0, uiState.visibleCount));
+    const cfHasMore       = computed(() => uiState.visibleCount < gridRows.length);
+    const handleLoadMore      = () => { uiState.visibleCount = Math.min(uiState.visibleCount + 10, gridRows.length); };
 
     let _observer = null;
     const setupObserver = () => {
@@ -86,7 +85,7 @@ window.XsSample02 = {
     };
 
     const handleLoadGrid = () => {
-      gridRows.splice(0); focusedIdx.value = null; visibleCount.value = 10;
+      gridRows.splice(0); uiState.focusedIdx = null; uiState.visibleCount = 10;
       allData.filter(d => {
         const kw = searchParam.kw.toLowerCase();
         if (kw && !String(d.productNm || '').toLowerCase().includes(kw)) return false;
@@ -117,26 +116,26 @@ window.XsSample02 = {
     const onSearch = () => { handleLoadGrid(); Vue.nextTick(setupObserver); };
     const onReset  = () => { Object.assign(searchParam, searchParamOrg); handleLoadGrid(); Vue.nextTick(setupObserver); };
 
-    const setFocused   = idx => { focusedIdx.value = idx; };
+    const setFocused   = idx => { uiState.focusedIdx = idx; };
     const onCellChange = row => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
       row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._orig[f])) ? 'U' : 'N';
     };
 
     const addRow = () => {
-      const at = focusedIdx.value !== null ? focusedIdx.value + 1 : Math.min(visibleCount.value, gridRows.length);
+      const at = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : Math.min(uiState.visibleCount, gridRows.length);
       gridRows.splice(at, 0, { productId: _tempId--, productNm: '', category: '상의', price: 0, stock: 0, status: '판매중', regDate: '', _row_status: 'I', _row_check: false, _orig: null });
-      focusedIdx.value = at;
+      uiState.focusedIdx = at;
       // 새 행이 보이도록 visibleCount 확장
-      if (at >= visibleCount.value) visibleCount.value = at + 1;
+      if (at >= uiState.visibleCount) uiState.visibleCount = at + 1;
     };
 
     const deleteRow = idx => {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
         gridRows.splice(idx, 1);
-        if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= idx ? 1 : 0));
-        if (idx < visibleCount.value) visibleCount.value = Math.max(10, visibleCount.value - 1);
+        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
+        if (idx < uiState.visibleCount) uiState.visibleCount = Math.max(10, uiState.visibleCount - 1);
       } else { row._row_status = 'D'; }
     };
 
@@ -144,8 +143,8 @@ window.XsSample02 = {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
         gridRows.splice(idx, 1);
-        if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= idx ? 1 : 0));
-        if (idx < visibleCount.value) visibleCount.value = Math.max(10, visibleCount.value - 1);
+        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
+        if (idx < uiState.visibleCount) uiState.visibleCount = Math.max(10, uiState.visibleCount - 1);
       } else { if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; }
     };
 
@@ -186,16 +185,16 @@ window.XsSample02 = {
     };
 
     /* ── Drag & UI State ── */
-    const dragSrc = ref(null);
-    const uiState = reactive({ dragMoved: false, checkAll: false });
-    const onDragStart = idx => { dragSrc.value = idx; uiState.dragMoved = false; };
+    
+    const uiState = reactive({ dragMoved: false, checkAll: false, dragSrc: null });
+    const onDragStart = idx => { uiState.dragSrc = idx; uiState.dragMoved = false; };
     const onDragOver  = (e, idx) => {
       e.preventDefault();
-      if (dragSrc.value === null || dragSrc.value === idx) return;
-      const m = gridRows.splice(dragSrc.value, 1)[0]; gridRows.splice(idx, 0, m);
-      dragSrc.value = idx; uiState.dragMoved = true;
+      if (uiState.dragSrc === null || uiState.dragSrc === idx) return;
+      const m = gridRows.splice(uiState.1)[0]; gridRows.splice(idx, 0, m);
+      uiState.dragSrc = idx; uiState.dragMoved = true;
     };
-    const onDragEnd = () => { if (uiState.dragMoved) showToast('정렬이 변경되었습니다.'); dragSrc.value = null; uiState.dragMoved = false; };
+    const onDragEnd = () => { if (uiState.dragMoved) showToast('정렬이 변경되었습니다.'); uiState.dragSrc = null; uiState.dragMoved = false; };
 
     const toggleCheckAll = () => { cfVisibleRows.value.forEach(r => { r._row_check = uiState.checkAll; }); };
 
@@ -210,7 +209,7 @@ window.XsSample02 = {
       gridRows, cfVisibleRows, cfTotal, visibleCount, cfHasMore, loadMore: handleLoadMore, sentinelEl,
       focusedIdx, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
-      dragSrc, onDragStart, onDragOver, onDragEnd,
+      onDragStart, onDragOver, onDragEnd,
       uiState, toggleCheckAll, fnStatusBadge, rowBg,
     , uiState, codes };
   },

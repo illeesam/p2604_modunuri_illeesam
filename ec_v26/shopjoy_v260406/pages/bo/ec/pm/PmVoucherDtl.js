@@ -7,7 +7,7 @@ window.PmVoucherDtl = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const vouchers = reactive([]);
     const voucherList = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmVoucherDtlState.tab || 'info', viewMode2: window._pmVoucherDtlState.viewMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null, snsMsg: ''});
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -28,11 +28,9 @@ window.PmVoucherDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-    const tab = ref(window._pmVoucherDtlState.tab || 'info');
-    watch(tab, v => { window._pmVoucherDtlState.tab = v; });
-    const viewMode2 = ref(window._pmVoucherDtlState.viewMode || 'tab');
-    watch(viewMode2, v => { window._pmVoucherDtlState.viewMode = v; });
-    const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
+        watch(tab, v => { window._pmVoucherDtlState.tab = v; });
+        watch(viewMode2, v => { window._pmVoucherDtlState.viewMode = v; });
+    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -103,14 +101,11 @@ window.PmVoucherDtl = {
     });
 
     /* 미리보기 형태 */
-    const previewTab = ref('barcode');
-    const barcodeContainer = ref(null);
-    const qrcodeContainer = ref(null);
-    const renderBarcode = () => {
-      if (barcodeContainer.value && typeof JsBarcode !== 'undefined') {
+                const renderBarcode = () => {
+      if (uiState.barcodeContainer && typeof JsBarcode !== 'undefined') {
         try {
           barcodeContainer.value.innerHTML = '';
-          JsBarcode(barcodeContainer.value, form.voucherId ? `V${form.voucherId}${_pad(form.soldQty || 0)}` : 'SAMPLE', {
+          JsBarcode(uiState.barcodeContainer, form.voucherId ? `V${form.voucherId}${_pad(form.soldQty || 0)}` : 'SAMPLE', {
             format: 'CODE128',
             width: 2,
             height: 60,
@@ -120,10 +115,10 @@ window.PmVoucherDtl = {
       }
     };
     const renderQRCode = () => {
-      if (qrcodeContainer.value && typeof QRCode !== 'undefined') {
+      if (uiState.qrcodeContainer && typeof QRCode !== 'undefined') {
         try {
           qrcodeContainer.value.innerHTML = '';
-          new QRCode(qrcodeContainer.value, {
+          new QRCode(uiState.qrcodeContainer, {
             text: form.voucherId ? `https://shopjoy.com/voucher/${form.voucherId}` : 'https://shopjoy.com/voucher/sample',
             width: 150,
             height: 150,
@@ -134,7 +129,7 @@ window.PmVoucherDtl = {
       }
     };
     const onTabChange = (newTab) => {
-      tab.value = newTab;
+      uiState.tab = newTab;
       if (newTab === 'preview') {
         Vue.nextTick(() => {
           renderBarcode();
@@ -143,7 +138,7 @@ window.PmVoucherDtl = {
       }
     };
     const onPreviewTabChange = (pt) => {
-      previewTab.value = pt;
+      uiState.previewTab = pt;
     };
 
     const cfSelectedVendorNm = computed(() => {
@@ -158,9 +153,8 @@ window.PmVoucherDtl = {
 
     /* SNS 전송 */
     const snsModal = reactive({ show: false, channel: 'kakao' });
-    const snsMsg = ref('');
-    const openSnsModal = (ch) => {
-      snsMsg.value = `${form.voucherNm}\n액면가: ${(form.voucherAmt||0).toLocaleString()}원\n판매가: ${(form.salePrice||0).toLocaleString()}원`;
+        const openSnsModal = (ch) => {
+      uiState.snsMsg = `${form.voucherNm}\n액면가: ${(form.voucherAmt||0).toLocaleString()}원\n판매가: ${(form.salePrice||0).toLocaleString()}원`;
       snsModal.show = true;
       snsModal.channel = ch;
     };
@@ -169,7 +163,7 @@ window.PmVoucherDtl = {
       if (!ok) return;
       snsModal.show = false;
       try {
-        const res = await window.boApi.post(`/bo/ec/pm/voucher/${form.voucherId}/send-sns`, { channel: snsModal.channel, message: snsMsg.value });
+        const res = await window.boApi.post(`/bo/ec/pm/voucher/${form.voucherId}/send-sns`, { channel: snsModal.channel, message: uiState.snsMsg });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('SNS전송되었습니다.', 'success');
       } catch (err) {

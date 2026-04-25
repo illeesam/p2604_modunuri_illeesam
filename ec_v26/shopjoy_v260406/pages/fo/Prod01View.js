@@ -4,7 +4,7 @@ window.Prod01View = {
   props: ['navigate', 'config', 'product', 'addToCart', 'showToast', 'showAlert', 'toggleLike', 'isLiked'],
   setup(props) {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', detailSecRef: null, sizeSecRef: null, reviewSecRef: null, styleSecRef: null, reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixed: false, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy', photoFromGrid: false});;
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -28,12 +28,10 @@ window.Prod01View = {
     const { ref, computed, onMounted, onBeforeUnmount, watch } = Vue;
 
     /* ── 이미지 갤러리 ── */
-    const selectedImg = ref(0);
-    const uiState = reactive({ zoomOpen: false, photoPopupOpen: false, showBottomBar: false, showSizeGuide: false });
+        const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', detailSecRef: null, sizeSecRef: null, reviewSecRef: null, styleSecRef: null, reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixed: false, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy', photoFromGrid: false});
 
     /* ── 구매 옵션 ── */
-    const selectedColor = ref(null);
-    const selectedSize  = ref(null);
+        const selectedSize  = ref(null);
     const qty           = ref(1);
     const colorError    = ref('');
     const sizeError     = ref('');
@@ -48,16 +46,12 @@ window.Prod01View = {
     const activeTab    = ref('detail');
     const tabBarRef    = ref(null);
     const buyBtnRef    = ref(null);
-    const detailSecRef = ref(null);
-    const sizeSecRef   = ref(null);
-    const reviewSecRef = ref(null);
-    const styleSecRef  = ref(null);
+        const sizeSecRef   = ref(null);
+        const styleSecRef  = ref(null);
 
     /* ── 상품평 ── */
     const reviewFilter   = ref('최신순');
-    const selectedReview = ref(null);
-    const photoGridPage = ref(1);
-    const photoGridPageSize = 12;
+            const photoGridPageSize = 12;
 
     /* ── 사이즈 가이드 ── */
     const sizeGuideRows = [
@@ -102,7 +96,7 @@ window.Prod01View = {
       const p = props.product;
       if (!p) return [];
       const opt1s = p.opt1s || [];
-      const colorIdx = opt1s.findIndex(c => c.name === selectedColor.value?.name);
+      const colorIdx = opt1s.findIndex(c => c.name === uiState.selectedColor?.name);
       return _buildColorImages(p, Math.max(0, colorIdx));
     });
 
@@ -152,9 +146,9 @@ window.Prod01View = {
 
     const cfFilteredReviews = computed(() => {
       const list = [...cfMockReviews.value];
-      if (reviewFilter.value === '별점높은순') return list.sort((a, b) => b.rating - a.rating);
-      if (reviewFilter.value === '별점낮은순') return list.sort((a, b) => a.rating - b.rating);
-      if (reviewFilter.value === '도움순')     return list.sort((a, b) => b.helpful - a.helpful);
+      if (uiState.reviewFilter === '별점높은순') return list.sort((a, b) => b.rating - a.rating);
+      if (uiState.reviewFilter === '별점낮은순') return list.sort((a, b) => a.rating - b.rating);
+      if (uiState.reviewFilter === '도움순')     return list.sort((a, b) => b.helpful - a.helpful);
       return list;
     });
 
@@ -193,18 +187,16 @@ window.Prod01View = {
 
     const tabFixed     = ref(false);
     const tabFixedTop  = ref(0);
-    const tabFixedLeft = ref(0);
-    const tabFixedW    = ref(0);
-    const tabPlaceholderH = ref(0);
-    let tabNaturalScrollTop = 0;   // 탭바가 fixed 되기 직전의 scrollTop
+        const tabFixedW    = ref(0);
+        let tabNaturalScrollTop = 0;   // 탭바가 fixed 되기 직전의 scrollTop
 
     const updateTabFixedPos = () => {
       const main = getScrollEl();
       if (!main.getBoundingClientRect) return;
       const r = main.getBoundingClientRect();
-      tabFixedTop.value  = r.top;
-      tabFixedLeft.value = r.left;
-      tabFixedW.value    = r.width;
+      uiState.tabFixedTop  = r.top;
+      uiState.tabFixedLeft = r.left;
+      uiState.tabFixedW    = r.width;
     };
 
     const scrollToTab = (tabId) => {
@@ -215,11 +207,11 @@ window.Prod01View = {
       const mainRect = main.getBoundingClientRect ? main.getBoundingClientRect() : { top: 0 };
       const barH = tabBarRef.value?.offsetHeight || 44;
       /* 탭바 fixed 시: mainRect.top + barH 만큼 오프셋 필요 */
-      const offset = tabFixed.value ? barH + 8 : barH + 8;
+      const offset = uiState.tabFixed ? barH + 8 : barH + 8;
       const elTop = el.getBoundingClientRect().top - mainRect.top;
       const top = main.scrollTop + elTop - offset;
       main.scrollTo({ top, behavior: 'smooth' });
-      activeTab.value = tabId;
+      uiState.activeTab = tabId;
     };
 
     const onScroll = () => {
@@ -230,16 +222,16 @@ window.Prod01View = {
       const mainTop = main.getBoundingClientRect().top;
 
       /* ── fixed 전환 ── */
-      if (!tabFixed.value) {
+      if (!uiState.tabFixed) {
         if (bar.getBoundingClientRect().top <= mainTop) {
-          tabPlaceholderH.value = bar.offsetHeight;
+          uiState.tabPlaceholderH = bar.offsetHeight;
           tabNaturalScrollTop   = main.scrollTop;
           updateTabFixedPos();
-          tabFixed.value = true;
+          uiState.tabFixed = true;
         }
       } else {
         if (main.scrollTop < tabNaturalScrollTop) {
-          tabFixed.value = false;
+          uiState.tabFixed = false;
         }
       }
 
@@ -249,8 +241,8 @@ window.Prod01View = {
 
       /* ── 활성 탭 ── */
       const barH = bar.offsetHeight || 44;
-      const anchor = tabFixed.value
-        ? tabFixedTop.value + barH + 20   /* fixed: 탭바 하단 기준 */
+      const anchor = uiState.tabFixed
+        ? uiState.tabFixedTop + barH + 20   /* fixed: 탭바 하단 기준 */
         : bar.getBoundingClientRect().bottom + 10;
       const sections = [
         { id: 'style',  ref: styleSecRef },
@@ -260,7 +252,7 @@ window.Prod01View = {
       ];
       for (const s of sections) {
         if (s.ref.value && s.ref.value.getBoundingClientRect().top <= anchor) {
-          activeTab.value = s.id;
+          uiState.activeTab = s.id;
           break;
         }
       }
@@ -272,12 +264,12 @@ window.Prod01View = {
 
     /* ── 모달 공통 닫기 (ESC / 뒤로가기) ── */
     const anyModalOpen = () =>
-      uiState.zoomOpen || uiState.photoPopupOpen || !!selectedReview.value ||
+      uiState.zoomOpen || uiState.photoPopupOpen || !!uiState.selectedReview ||
       uiState.showSizeGuide || uiState.quickBuyOpen;
     const closeAllModals = () => {
       uiState.zoomOpen = false;
       uiState.photoPopupOpen = false;
-      selectedReview.value = null;
+      uiState.selectedReview = null;
       uiState.showSizeGuide = false;
       uiState.quickBuyOpen = false;
     };
@@ -303,7 +295,7 @@ window.Prod01View = {
       window.addEventListener('popstate', onPopState);
       /* 품절/중지 아닌 첫 색상 자동 선택 */
       const firstAvail = (props.product?.opt1s || []).find(c => colorStatus(c) === 'ok');
-      if (firstAvail) selectedColor.value = firstAvail;
+      if (firstAvail) uiState.selectedColor = firstAvail;
     });
     onBeforeUnmount(() => {
       const main = getScrollEl();
@@ -313,13 +305,13 @@ window.Prod01View = {
     });
 
     watch(() => props.product, (p) => {
-      selectedColor.value = (p?.opt1s || []).find(c => colorStatus(c) === 'ok') || null;
-      selectedSize.value  = null;
-      qty.value           = 1;
-      selectedImg.value   = 0;
-      activeTab.value     = 'detail';
+      uiState.selectedColor = (p?.opt1s || []).find(c => colorStatus(c) === 'ok') || null;
+      uiState.selectedSize  = null;
+      uiState.qty           = 1;
+      uiState.selectedImg   = 0;
+      uiState.activeTab     = 'detail';
       quickBuyOpen.value  = false;
-      tabFixed.value      = false;
+      uiState.tabFixed      = false;
       getScrollEl().scrollTo(0, 0);
     });
 
@@ -373,8 +365,8 @@ window.Prod01View = {
 
     /* 선택된 색상+사이즈의 최종 단가 */
     const cfSelectedUnitPrice = computed(() => {
-      const colorDelta = selectedColor.value?.priceDelta || 0;
-      const sizeDelta  = getSizeDelta(selectedSize.value);
+      const colorDelta = uiState.selectedColor?.priceDelta || 0;
+      const sizeDelta  = getSizeDelta(uiState.selectedSize);
       return cfBasePrice.value + colorDelta + sizeDelta;
     });
 
@@ -399,17 +391,17 @@ window.Prod01View = {
       const p = props.product;
       if (!p || !cfBasePrice.value) return p?.price || '';
 
-      const colorDelta = selectedColor.value?.priceDelta || 0;
-      const sizeDelta  = getSizeDelta(selectedSize.value);
+      const colorDelta = uiState.selectedColor?.priceDelta || 0;
+      const sizeDelta  = getSizeDelta(uiState.selectedSize);
       const hasSizeDelta = Object.keys(p.opt2Prices || {}).length > 0;
 
       /* 색상+사이즈 모두 선택 */
-      if (selectedColor.value && selectedSize.value) {
+      if (uiState.selectedColor && uiState.selectedSize) {
         return (cfBasePrice.value + colorDelta + sizeDelta).toLocaleString('ko-KR') + '원';
       }
 
       /* 색상만 선택 */
-      if (selectedColor.value) {
+      if (uiState.selectedColor) {
         const colorPrice = cfBasePrice.value + colorDelta;
         if (hasSizeDelta) {
           const maxSD = Math.max(...Object.values(p.opt2Prices));
@@ -429,7 +421,7 @@ window.Prod01View = {
     const cfQuickBuyTotal = computed(() => {
       if (!props.product) return '';
       if (!cfSelectedUnitPrice.value) return props.product.price;
-      const total = cfSelectedUnitPrice.value * qty.value;
+      const total = cfSelectedUnitPrice.value * uiState.qty;
       return total.toLocaleString('ko-KR') + '원';
     });
 
@@ -437,33 +429,33 @@ window.Prod01View = {
     const selectColor = c => {
       const st = colorStatus(c);
       if (st === 'stop' || st === 'soldout') return;
-      selectedColor.value = c; colorError.value = ''; selectedImg.value = 0;
+      uiState.selectedColor = c; uiState.colorError = ''; uiState.selectedImg = 0;
     };
     const selectSize  = s => {
       const st = sizeStatus(s);
       if (st === 'stop' || st === 'soldout') return;
-      selectedSize.value = s; sizeError.value = '';
+      uiState.selectedSize = s; uiState.sizeError = '';
     };
 
     const validate = () => {
       let ok = true;
-      if (!selectedColor.value) { colorError.value = '색상을 선택해주세요.'; ok = false; }
+      if (!uiState.selectedColor) { uiState.colorError = '색상을 선택해주세요.'; ok = false; }
       /* 사이즈 FREE 또는 미설정이면 자동 선택 */
       const sizes = props.product?.opt2s || [];
-      if (!selectedSize.value) {
-        if (sizes.length === 1 && sizes[0] === 'FREE') { selectedSize.value = 'FREE'; }
-        else if (sizes.length === 0) { selectedSize.value = 'FREE'; }
-        else { sizeError.value = '사이즈를 선택해주세요.'; ok = false; }
+      if (!uiState.selectedSize) {
+        if (sizes.length === 1 && sizes[0] === 'FREE') { uiState.selectedSize = 'FREE'; }
+        else if (sizes.length === 0) { uiState.selectedSize = 'FREE'; }
+        else { uiState.sizeError = '사이즈를 선택해주세요.'; ok = false; }
       }
       return ok;
     };
 
     const handleAddToCart = () => {
       if (!validate()) return;
-      props.addToCart(props.product, selectedColor.value, selectedSize.value, qty.value);
-      selectedColor.value = props.product?.opt1s?.[0] || null;
-      selectedSize.value  = null;
-      qty.value = 1;
+      props.addToCart(props.product, uiState.selectedColor, uiState.selectedSize, uiState.qty);
+      uiState.selectedColor = props.product?.opt1s?.[0] || null;
+      uiState.selectedSize  = null;
+      uiState.qty = 1;
     };
 
     /* 바로구매: 현재 상품 정보를 파라메터로 전달 (장바구니 미변경) */
@@ -473,9 +465,9 @@ window.Prod01View = {
       props.navigate('order', {
         instantOrder: {
           product: props.product,
-          color: selectedColor.value,
-          size: selectedSize.value,
-          qty: qty.value,
+          color: uiState.selectedColor,
+          size: uiState.selectedSize,
+          qty: uiState.qty,
         }
       });
     };
@@ -483,62 +475,61 @@ window.Prod01View = {
     /* 드로어 장바구니 담기 */
     const execCartFromDrawer = () => {
       if (!validate()) return;
-      props.addToCart(props.product, selectedColor.value, selectedSize.value, qty.value);
+      props.addToCart(props.product, uiState.selectedColor, uiState.selectedSize, uiState.qty);
       uiState.quickBuyOpen = false;
-      selectedColor.value = props.product?.opt1s?.[0] || null;
-      selectedSize.value  = null;
-      qty.value = 1;
+      uiState.selectedColor = props.product?.opt1s?.[0] || null;
+      uiState.selectedSize  = null;
+      uiState.qty = 1;
     };
 
     /* 메인 패널 "바로 구매하기" → 바로구매 실행 */
     const handleBuyNow = () => execBuyNow();
 
     /* 하단 바 "바로구매" → 드로어 열기 */
-    const openQuickBuy  = () => { drawerMode.value = 'buy';  uiState.quickBuyOpen = true; };
-    const openCartDrawer = () => { drawerMode.value = 'cart'; uiState.quickBuyOpen = true; };
+    const openQuickBuy  = () => { uiState.drawerMode = 'buy';  uiState.quickBuyOpen = true; };
+    const openCartDrawer = () => { uiState.drawerMode = 'cart'; uiState.quickBuyOpen = true; };
 
     /* ── 포토 리뷰 진입 경로 (grid=모아보기에서, list=리뷰목록에서) ── */
-    const photoFromGrid = ref(false);
-    const openPhotoFromGrid = (r) => { selectedReview.value = r; photoFromGrid.value = true;  photoPopupOpen.value = false; };
-    const openPhotoFromList = (r) => { selectedReview.value = r; photoFromGrid.value = false; };
+        const openPhotoFromGrid = (r) => { uiState.selectedReview = r; uiState.photoFromGrid = true;  photoPopupOpen.value = false; };
+    const openPhotoFromList = (r) => { uiState.selectedReview = r; uiState.photoFromGrid = false; };
     const closePhotoDetail  = () => {
-      selectedReview.value = null;
-      if (photoFromGrid.value) photoPopupOpen.value = true;
-      photoFromGrid.value = false;
+      uiState.selectedReview = null;
+      if (uiState.photoFromGrid) photoPopupOpen.value = true;
+      uiState.photoFromGrid = false;
     };
 
     /* ── 포토 리뷰 좌/우 이동 ── */
     const photoNavPrev = () => {
       const list = cfReviewsWithPhoto.value;
       if (!list.length) return;
-      const idx = list.findIndex(r => r.id === selectedReview.value?.id);
-      selectedReview.value = list[(idx - 1 + list.length) % list.length];
+      const idx = list.findIndex(r => r.id === uiState.selectedReview?.id);
+      uiState.selectedReview = list[(idx - 1 + list.length) % list.length];
     };
     const photoNavNext = () => {
       const list = cfReviewsWithPhoto.value;
       if (!list.length) return;
-      const idx = list.findIndex(r => r.id === selectedReview.value?.id);
-      selectedReview.value = list[(idx + 1) % list.length];
+      const idx = list.findIndex(r => r.id === uiState.selectedReview?.id);
+      uiState.selectedReview = list[(idx + 1) % list.length];
     };
     const cfPhotoNavIdx = computed(() => {
       const list = cfReviewsWithPhoto.value;
-      return list.findIndex(r => r.id === selectedReview.value?.id);
+      return list.findIndex(r => r.id === uiState.selectedReview?.id);
     });
     const cfPhotoGridPageCount = computed(() =>
       Math.max(1, Math.ceil(cfReviewsWithPhoto.value.length / photoGridPageSize))
     );
     const cfPhotoGridItems = computed(() => {
-      const start = (photoGridPage.value - 1) * photoGridPageSize;
+      const start = (uiState.photoGridPage - 1) * photoGridPageSize;
       return cfReviewsWithPhoto.value.slice(start, start + photoGridPageSize);
     });
     const photoGridPrev = () => {
-      photoGridPage.value = photoGridPage.value > 1
-        ? photoGridPage.value - 1
+      uiState.photoGridPage = uiState.photoGridPage > 1
+        ? uiState.photoGridPage - 1
         : cfPhotoGridPageCount.value;
     };
     const photoGridNext = () => {
-      photoGridPage.value = photoGridPage.value < cfPhotoGridPageCount.value
-        ? photoGridPage.value + 1
+      uiState.photoGridPage = uiState.photoGridPage < cfPhotoGridPageCount.value
+        ? uiState.photoGridPage + 1
         : 1;
     };
 

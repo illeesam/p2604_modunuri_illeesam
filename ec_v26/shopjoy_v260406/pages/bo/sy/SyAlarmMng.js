@@ -5,7 +5,7 @@ window.SyAlarmMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const alarms = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null});
     const codes = reactive({ alarm_type: [], alarm_status: [] });
 
     // onMounted에서 API 로드
@@ -40,10 +40,9 @@ window.SyAlarmMng = {
 
 
     /* ── 좌측 표시경로 트리 ── */
-    const selectedPath = ref(null);
-    const expanded = reactive(new Set(['']));
+        const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
-    const selectNode = (path) => { selectedPath.value = path; };
+    const selectNode = (path) => { uiState.selectedPath = path; };
     const cfTree = computed(() => window.boCmUtil.buildPathTree('sy_alarm'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };

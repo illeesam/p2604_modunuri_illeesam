@@ -4,7 +4,7 @@ window.BlogView = {
   props: ['navigate', 'config', 'editId'],
   setup(props) {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, commentText: ''});
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -74,14 +74,14 @@ window.BlogView = {
     const localComments = reactive([]);
     const cfAllComments   = computed(() => [...(cfPost.value.comments || []), ...localComments]);
     const addComment    = () => {
-      const t = commentText.value.trim();
+      const t = searchParam.commentText.trim();
       if (!t) return;
       localComments.push({ id: Date.now(), author: '홍길동', date: new Date().toISOString().slice(0,10).replace(/-/g,'.'), text: t });
-      commentText.value = '';
+      uiState.commentText = '';
     };
 
     /* 사이드바 */
-    const searchParam = reactive({ kw: '' });
+    const searchParam = reactive({ kw: '', commentText: ''});;
     const searchParamOrg = reactive({ kw: '' });
     const cfLatestPosts = computed(() => posts.filter(p => p.id !== cfPostId.value).slice(0, 3));
     const categories  = [

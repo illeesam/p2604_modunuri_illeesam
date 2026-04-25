@@ -6,7 +6,7 @@ window.SyBatchHist = {
     const { ref, reactive, computed, onMounted } = Vue;
     const batches = reactive([]);
     const batchLogs = reactive([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, searchBatchId: '', searchStatus: '', expandedId: null});;
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -29,8 +29,7 @@ window.SyBatchHist = {
     };
     onMounted(() => { handleFetchData(); });
 
-    const searchBatchId = ref('');
-    const searchStatus  = ref('');
+        const searchStatus  = ref('');
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
@@ -42,8 +41,8 @@ window.SyBatchHist = {
       const logs = [...(batchLogs || [])];
       logs.sort((a, b) => (b.runAt > a.runAt ? 1 : -1));
       return logs.filter(l => {
-        if (searchBatchId.value && l.batchId !== Number(searchBatchId.value)) return false;
-        if (searchStatus.value && l.runStatus !== searchStatus.value) return false;
+        if (uiState.searchBatchId && l.batchId !== Number(uiState.searchBatchId)) return false;
+        if (uiState.searchStatus && l.runStatus !== uiState.searchStatus) return false;
         return true;
       error: null,
       });
@@ -63,9 +62,8 @@ window.SyBatchHist = {
     const onFilter     = () => { pager.page = 1; };
 
     /* ── 메시지 상세 토글 ── */
-    const expandedId = ref(null);
-    const toggleExpand = (logId) => {
-      expandedId.value = expandedId.value === logId ? null : logId;
+        const toggleExpand = (logId) => {
+      uiState.expandedId = uiState.expandedId === logId ? null : logId;
     };
 
     const fnRunBadge = s => ({ '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' }[s] || 'badge-gray');

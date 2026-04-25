@@ -5,7 +5,7 @@ window.SyDeptMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const depts = reactive([]);
-    const uiState = reactive({ checkAll: false, loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ checkAll: false, loading: false, error: null, isPageCodeLoad: false, selectedTreeId: null, focusedIdx: null});
     const codes = reactive({ dept_status: [] });
 
     // onMounted에서 API 로드
@@ -26,10 +26,9 @@ window.SyDeptMng = {
       }
     };
     /* 좌측 부서 트리 */
-    const selectedTreeId = ref(null);
-    const expanded = reactive(new Set([null]));
+        const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
-    const selectNode = (id) => { selectedTreeId.value = id; };
+    const selectNode = (id) => { uiState.selectedTreeId = id; };
     const cfTree = computed(() => window.boCmUtil.buildDeptTree());
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
@@ -64,8 +63,8 @@ window.SyDeptMng = {
     });
 
     const cfAllowedTreeIds = computed(() => {
-      if (selectedTreeId.value == null) return null;
-      return window.boCmUtil.collectDescendantIds(depts, 'deptId', 'parentId', selectedTreeId.value);
+      if (uiState.selectedTreeId == null) return null;
+      return window.boCmUtil.collectDescendantIds(depts, 'deptId', 'parentId', uiState.selectedTreeId);
     });
     watch(selectedTreeId, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
 
@@ -82,8 +81,7 @@ window.SyDeptMng = {
     /* ── CRUD 그리드 ── */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
-    const focusedIdx = ref(null);
-
+    
     const EDIT_FIELDS = ['deptCode', 'deptNm', 'parentId', 'deptTypeCd', 'sortOrd', 'useYn', 'remark'];
     const DEPT_TYPES  = ['경영', '운영', '기술', '마케팅', 'CS', '물류', '재무', '인사', '법무', '기타'];
 
@@ -122,7 +120,7 @@ window.SyDeptMng = {
     });
 
     const handleLoadGrid = () => {
-      gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
+      gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
       const filtered = depts.filter(d => {
         if (cfAllowedTreeIds.value && !cfAllowedTreeIds.value.has(d.deptId)) return false;
         const kw = searchParam.kw.trim().toLowerCase();
@@ -146,7 +144,7 @@ window.SyDeptMng = {
       handleLoadGrid();
     };
 
-    const setFocused = (realIdx) => { focusedIdx.value = realIdx; };
+    const setFocused = (realIdx) => { uiState.focusedIdx = realIdx; };
 
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
@@ -155,7 +153,7 @@ window.SyDeptMng = {
     };
 
     const addRow = () => {
-      const ref = focusedIdx.value !== null ? gridRows[focusedIdx.value] : null;
+      const ref = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
       const newRow = {
         deptId: _tempId--, deptCode: '', deptNm: '', parentId: ref ? ref.parentId : null,
         deptTypeCd: ref ? ref.deptTypeCd : '운영',
@@ -163,9 +161,9 @@ window.SyDeptMng = {
         useYn: 'Y', remark: '',
         _depth: ref ? ref._depth : 0, _row_status: 'I', _row_check: false, _orig: null,
       };
-      const insertAt = focusedIdx.value !== null ? focusedIdx.value + 1 : gridRows.length;
+      const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(insertAt, 0, newRow);
-      focusedIdx.value = insertAt;
+      uiState.focusedIdx = insertAt;
       pager.page = Math.ceil((insertAt + 1) / pager.size);
     };
 
@@ -173,7 +171,7 @@ window.SyDeptMng = {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') {
         gridRows.splice(realIdx, 1);
-        if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= realIdx ? 1 : 0));
+        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= realIdx ? 1 : 0));
       } else { row._row_status = 'D'; }
     };
 
@@ -181,7 +179,7 @@ window.SyDeptMng = {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') {
         gridRows.splice(realIdx, 1);
-        if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= realIdx ? 1 : 0));
+        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= realIdx ? 1 : 0));
       } else {
         if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
         row._row_status = 'N';

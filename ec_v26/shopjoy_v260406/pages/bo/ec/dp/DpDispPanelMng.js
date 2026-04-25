@@ -5,7 +5,7 @@ window.DpDispPanelMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const panels = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cardPreviewItem: null, panelDragSrc: null, panelDragOverIdx: -1, widgetDragPanel: null, widgetDragSrcWi: null, widgetDragOverWi: null, selectedTreeKey: ''});
     const displays = reactive([]);
     const codes = reactive({
       layout_types: [],
@@ -84,20 +84,19 @@ window.DpDispPanelMng = {
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     /* 하단 상세 */
-    const selectedId = ref(null);
-    const openMode = ref('view'); // 'view' | 'edit'
-    const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
-    const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
-    const closeDetail = () => { selectedId.value = null; };
+    const uiStateDetail = reactive({ selectedId: null: 'view' });
+    const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
+    const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
+    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
+    const closeDetail = () => { uiStateDetail.selectedId = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'dpDispPanelMng') { selectedId.value = null; return; }
-      if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
+      if (pg === 'dpDispPanelMng') { uiStateDetail.selectedId = null; return; }
+      if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
+    const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
+    const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
     /* 패널미리보기 */
     const previewDisp = (d) => {
@@ -155,8 +154,8 @@ window.DpDispPanelMng = {
       if (applied.visibility && !window.visibilityUtil.has(d.visibilityTargets, applied.visibility)) return false;
       if (applied.layoutType && (d.layoutType || 'grid') !== applied.layoutType) return false;
       /* 트리 선택 필터 */
-      if (selectedTreeKey.value) {
-        const k = selectedTreeKey.value;
+      if (uiState.selectedTreeKey) {
+        const k = uiState.selectedTreeKey;
         if (k.startsWith('panel_')) {
           if (d.dispId !== k.slice(6)) return false;
         } else {
@@ -263,7 +262,7 @@ window.DpDispPanelMng = {
       if (!ok) return;
       const idx = displays.findIndex(x => x.dispId === d.dispId);
       if (idx !== -1) displays.splice(idx, 1);
-      if (selectedId.value === d.dispId) selectedId.value = null;
+      if (uiStateDetail.selectedId === d.dispId) uiStateDetail.selectedId = null;
       try {
         const res = await window.boApi.delete(`/bo/ec/dp/panel/${d.dispId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -307,75 +306,71 @@ window.DpDispPanelMng = {
     const fnWLabel = (t) => WIDGET_TYPE_LABELS[t] || t || '-';
 
     /* 패널미리보기 (카드) */
-    const cardPreviewItem = ref(null);
-    const openCardPreview = (d) => { cardPreviewItem.value = d; };
-    const closeCardPreview = () => { cardPreviewItem.value = null; };
+        const openCardPreview = (d) => { uiState.cardPreviewItem = d; };
+    const closeCardPreview = () => { uiState.cardPreviewItem = null; };
 
     /* ── 패널 드래그 정렬 ── */
     const panelDragSrc    = ref(null);
-    const panelDragOverIdx = ref(-1);
-    const onPanelDragStart = (e, pageIdx) => {
-      panelDragSrc.value = pageIdx;
+        const onPanelDragStart = (e, pageIdx) => {
+      uiState.panelDragSrc = pageIdx;
       e.dataTransfer.effectAllowed = 'move';
     };
     const onPanelDragOver = (e, pageIdx) => {
       e.preventDefault();
-      if (panelDragSrc.value === null || panelDragSrc.value === pageIdx) return;
-      panelDragOverIdx.value = pageIdx;
+      if (uiState.panelDragSrc === null || uiState.panelDragSrc === pageIdx) return;
+      uiState.panelDragOverIdx = pageIdx;
     };
-    const onPanelDragLeave = () => { panelDragOverIdx.value = -1; };
+    const onPanelDragLeave = () => { uiState.panelDragOverIdx = -1; };
     const onPanelDrop = (e, pageIdx) => {
-      e.preventDefault(); panelDragOverIdx.value = -1;
-      const src = panelDragSrc.value;
-      if (src === null || src === pageIdx) { panelDragSrc.value = null; return; }
+      e.preventDefault(); uiState.panelDragOverIdx = -1;
+      const src = uiState.panelDragSrc;
+      if (src === null || src === pageIdx) { uiState.panelDragSrc = null; return; }
       const srcId = cfPageList.value[src]?.dispId;
       const tgtId = cfPageList.value[pageIdx]?.dispId;
-      if (!srcId || !tgtId) { panelDragSrc.value = null; return; }
+      if (!srcId || !tgtId) { uiState.panelDragSrc = null; return; }
       const arr = displays;
       const si = arr.findIndex(x => x.dispId === srcId);
       const ti = arr.findIndex(x => x.dispId === tgtId);
-      if (si === -1 || ti === -1) { panelDragSrc.value = null; return; }
+      if (si === -1 || ti === -1) { uiState.panelDragSrc = null; return; }
       const moved = arr.splice(si, 1)[0];
       arr.splice(ti, 0, moved);
       window.safeArrayUtils.safeForEach(arr, (x, i) => { x.sortOrder = i + 1; });
       props.showToast('패널 순서가 변경되었습니다.', 'info');
-      panelDragSrc.value = null;
+      uiState.panelDragSrc = null;
     };
-    const onPanelDragEnd = () => { panelDragSrc.value = null; panelDragOverIdx.value = -1; };
+    const onPanelDragEnd = () => { uiState.panelDragSrc = null; uiState.panelDragOverIdx = -1; };
 
     /* ── 위젯 드래그 정렬 ── */
     const widgetDragPanel  = ref(null);
     const widgetDragSrcWi  = ref(null);
-    const widgetDragOverWi = ref(null);
-    const onWidgetDragStart = (e, dispId, wi) => {
+        const onWidgetDragStart = (e, dispId, wi) => {
       e.stopPropagation();
-      widgetDragPanel.value = dispId; widgetDragSrcWi.value = wi;
+      uiState.widgetDragPanel = dispId; uiState.widgetDragSrcWi = wi;
       e.dataTransfer.effectAllowed = 'move';
     };
     const onWidgetDragOver = (e, dispId, wi) => {
       e.preventDefault(); e.stopPropagation();
-      if (widgetDragPanel.value !== dispId) return;
-      widgetDragOverWi.value = wi;
+      if (uiState.widgetDragPanel !== dispId) return;
+      uiState.widgetDragOverWi = wi;
     };
-    const onWidgetDragLeave = (e) => { e.stopPropagation(); widgetDragOverWi.value = null; };
+    const onWidgetDragLeave = (e) => { e.stopPropagation(); uiState.widgetDragOverWi = null; };
     const onWidgetDrop = (e, dispId, wi) => {
       e.preventDefault(); e.stopPropagation();
-      widgetDragOverWi.value = null;
-      if (widgetDragPanel.value !== dispId) return;
-      const src = widgetDragSrcWi.value;
-      if (src === null || src === wi) { widgetDragPanel.value = null; widgetDragSrcWi.value = null; return; }
+      uiState.widgetDragOverWi = null;
+      if (uiState.widgetDragPanel !== dispId) return;
+      const src = uiState.widgetDragSrcWi;
+      if (src === null || src === wi) { uiState.widgetDragPanel = null; uiState.widgetDragSrcWi = null; return; }
       const panel = window.safeArrayUtils.safeFind(displays, x => x.dispId === dispId);
       if (!panel?.rows) return;
       const moved = panel.rows.splice(src, 1)[0];
       panel.rows.splice(wi, 0, moved);
       window.safeArrayUtils.safeForEach(panel.rows, (r, i) => { r.sortOrder = i + 1; });
-      widgetDragPanel.value = null; widgetDragSrcWi.value = null;
+      uiState.widgetDragPanel = null; uiState.widgetDragSrcWi = null;
     };
-    const onWidgetDragEnd = () => { widgetDragPanel.value = null; widgetDragSrcWi.value = null; widgetDragOverWi.value = null; };
+    const onWidgetDragEnd = () => { uiState.widgetDragPanel = null; uiState.widgetDragSrcWi = null; uiState.widgetDragOverWi = null; };
 
     /* ── 표시경로 (영역별 그룹) ── */
-    const selectedTreeKey = ref('');
-  const searchParam = reactive({
+      const searchParam = reactive({
     kw: '',
     dateRange: '',
     dateStart: '',
@@ -385,8 +380,7 @@ window.DpDispPanelMng = {
     dispDate: '',
     dispTime: '',
     visibility: '',
-    layoutType: ''
-  });
+    layoutType: '', widgetDragSrcWi: null});;
   const searchParamOrg = reactive({
     kw: '',
     dateRange: '',
@@ -402,7 +396,7 @@ window.DpDispPanelMng = {
     const treeOpen = reactive(new Set(['__root__']));
     const toggleTree = (k) => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
     const isTreeOpen = (k) => treeOpen.has(k);
-    const selectTree = (k) => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
+    const selectTree = (k) => { uiState.selectedTreeKey = uiState.selectedTreeKey === k ? '' : k; pager.page = 1; };
     const expandAll  = () => {
       treeOpen.add('__root__');
       window.safeArrayUtils.safeForEach(cfPanelTree.value, n => {
@@ -443,8 +437,8 @@ window.DpDispPanelMng = {
       }));
     });
 
-    return { panels, uiState, fnPathLabel, displays, codes,
-      codes, cfPanelTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchParam, searchParamOrg, searchDateRange, VISIBILITY_OPTS, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
+    return { uiStateDetail, panels, uiState, fnPathLabel, displays, codes,
+      codes, cfPanelTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchParam, searchParamOrg, searchDateRange, VISIBILITY_OPTS, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
   },
   template: /* html */`
 <div>

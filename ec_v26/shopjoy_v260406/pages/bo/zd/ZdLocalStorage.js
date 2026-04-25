@@ -8,14 +8,8 @@ window.ZdLocalStorage = {
     const { ref, reactive, computed, onMounted, onUnmounted } = Vue;
 
     const storageData = reactive([]);
-    const filterKey = ref('');
-    const editingKey = ref(null);
-    const editingValue = ref('');
-    const valueColWidth = ref(65);
-    const uiState = reactive({ isResizing: false });
-    const startX = ref(0);
-    const startWidth = ref(0);
-
+                    const uiState = reactive({ isResizing: false, filterKey: '', editingKey: null, editingValue: '', valueColWidth: 65, startX: 0, startWidth: 0});
+        
     const loadStorageData = () => {
       const data = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -27,7 +21,7 @@ window.ZdLocalStorage = {
     };
 
     const filteredData = computed(() => {
-      if (!filterKey.value) return storageData;
+      if (!uiState.filterKey) return storageData;
       return storageData.filter(item => item.key.toLowerCase().includes(filterKey.value.toLowerCase()));
     });
 
@@ -41,17 +35,17 @@ window.ZdLocalStorage = {
     };
 
     const startEdit = (key, value) => {
-      editingKey.value = key;
-      editingValue.value = value;
+      uiState.editingKey = key;
+      uiState.editingValue = value;
     };
 
     const saveEdit = (key) => {
       if (!key) return;
       try {
-        localStorage.setItem(key, editingValue.value);
+        localStorage.setItem(key, uiState.editingValue);
         props.showToast('저장되었습니다.', 'success');
-        editingKey.value = null;
-        editingValue.value = '';
+        uiState.editingKey = null;
+        uiState.editingValue = '';
         loadStorageData();
       } catch (e) {
         props.showToast('저장 실패: ' + e.message, 'error');
@@ -59,8 +53,8 @@ window.ZdLocalStorage = {
     };
 
     const cancelEdit = () => {
-      editingKey.value = null;
-      editingValue.value = '';
+      uiState.editingKey = null;
+      uiState.editingValue = '';
     };
 
     const deleteItem = (key) => {
@@ -95,18 +89,18 @@ window.ZdLocalStorage = {
 
     const startResize = (e) => {
       uiState.isResizing = true;
-      startX.value = e.clientX;
-      startWidth.value = valueColWidth.value;
+      uiState.startX = e.clientX;
+      uiState.startWidth = uiState.valueColWidth;
     };
 
     const handleMouseMove = (e) => {
       if (!uiState.isResizing) return;
-      const delta = e.clientX - startX.value;
-      const newWidth = Math.max(30, startWidth.value + (delta / window.innerWidth * 100));
+      const delta = e.clientX - uiState.startX;
+      const newWidth = Math.max(30, uiState.startWidth + (delta / window.innerWidth * 100));
       const keyWidth = 25;
       const actionWidth = 10;
       const maxValue = 100 - keyWidth - actionWidth;
-      valueColWidth.value = Math.min(maxValue, newWidth);
+      uiState.valueColWidth = Math.min(maxValue, newWidth);
     };
 
     const stopResize = () => {

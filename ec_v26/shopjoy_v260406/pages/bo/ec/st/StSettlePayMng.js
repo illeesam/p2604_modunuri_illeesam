@@ -5,7 +5,7 @@ window.StSettlePayMng = {
   setup(props) {
     const { ref, reactive, computed, watch } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({
       settle_pay_statuses: [],
     });
@@ -33,13 +33,11 @@ window.StSettlePayMng = {
     });
 
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const dateRange = ref('이번달');
-    const dateStart = ref('');
-    const dateEnd   = ref('');
+            const dateEnd   = ref('');
     const handleDateRangeChange = () => {
-      if (dateRange.value) { const r = window.boCmUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
+      if (uiState.dateRange) { const r = window.boCmUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
-    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
+    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     const payList = reactive([
       { payId: 'PAY-2026-009', payDate: '2026-04-10', vendorId: 1, vendorNm: '패션스타일 주식회사', closeMon: '2026-03', settleAmt: 300000, payAmt: 300000, bankNm: '국민은행', bankAccount: '123-45-678901', bankHolder: '패션스타일', payStatus: '지급완료', regUserNm: '이관리자' },
@@ -54,8 +52,7 @@ window.StSettlePayMng = {
 
   const searchParam = reactive({
     kw: '',
-    status: ''
-  });
+    status: '', dateEnd: ''});;
   const searchParamOrg = reactive({
     kw: '',
     status: ''
@@ -66,8 +63,8 @@ window.StSettlePayMng = {
     const cfFiltered = computed(() => {
       const kw = searchKw.value.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(payList, r => {
-        if (dateStart.value && r.payDate < dateStart.value) return false;
-        if (dateEnd.value   && r.payDate > dateEnd.value)   return false;
+        if (uiState.dateStart && r.payDate < uiState.dateStart) return false;
+        if (uiState.dateEnd   && r.payDate > uiState.dateEnd)   return false;
         if (searchStatus.value && r.payStatus !== searchStatus.value) return false;
         if (kw && !r.payId.toLowerCase().includes(kw) && !r.vendorNm.toLowerCase().includes(kw)) return false;
         return true;

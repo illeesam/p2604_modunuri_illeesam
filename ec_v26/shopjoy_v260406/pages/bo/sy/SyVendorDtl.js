@@ -6,7 +6,7 @@ window.SyVendorDtl = {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
 
     const vendors = reactive([]);
-    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false, memoEl: null});
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -39,8 +39,7 @@ window.SyVendorDtl = {
     const errors = reactive({});
     const addrDetailRef = ref(null);
 
-    const memoEl = ref(null);
-    let _qMemo = null;
+        let _qMemo = null;
 
     const schema = yup.object({
       vendorNm: yup.string().required('업체명을 입력해주세요.'),
@@ -53,8 +52,8 @@ window.SyVendorDtl = {
         if (v) Object.assign(form, { ...v });
       }
       await nextTick();
-      if (memoEl.value) {
-        _qMemo = new Quill(memoEl.value, {
+      if (uiState.memoEl) {
+        _qMemo = new Quill(uiState.memoEl, {
           theme: 'snow',
           placeholder: '내용을 입력하세요...',
           modules: { toolbar: [['bold','italic','underline'],[{color:[]}],[{list:'ordered'},{list:'bullet'}],['link','clean']] }

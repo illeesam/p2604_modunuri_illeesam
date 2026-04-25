@@ -6,7 +6,7 @@ window.DpDispAreaDtl = {
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const codes = reactive({ disp_areas: [], layout_types: [] });
     const areas = reactive([]);
-    const uiState = reactive({ loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, isPageCodeLoad: false, pickKw: '', activeTab: 'base', expanded: false, previewMode: 'default', previewPaneWidth: 520, htmlDescEl: null});;
 
     // App 초기화 준비 상태
     const isAppReady = computed(() => {
@@ -139,14 +139,14 @@ window.DpDispAreaDtl = {
     const pickSel  = reactive(new Set());
     const cfAvailablePanels = computed(() => {
       const all = (displays || []);
-      const kw  = pickKw.value.trim().toLowerCase();
+      const kw  = uiState.pickKw.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(all, p => {
         if (p.area === form.codeValue) return false; /* 이미 포함된 것 제외 */
         if (kw && !p.name.toLowerCase().includes(kw) && !(p.area||'').toLowerCase().includes(kw)) return false;
         return true;
       }).sort((a, b) => (a.name||'').localeCompare(b.name||''));
     });
-    const openPick  = () => { uiState.pickOpen = true; pickKw.value = ''; pickSel = new Set(); };
+    const openPick  = () => { uiState.pickOpen = true; uiState.pickKw = ''; pickSel = new Set(); };
     const movePanel = (idx, dir) => {
       const arr = cfRelatedPanels.value;
       const target = idx + dir;
@@ -195,9 +195,9 @@ window.DpDispAreaDtl = {
     };
 
     /* ── 탭 상태 ── */
-    const activeTab = ref('base');          /* 'base' | 'panel_<dispId>' */
+              /* 'base' | 'panel_<dispId>' */
     const expanded  = ref(false);           /* 우측 미리보기 펼치기 */
-    const previewMode = ref('default');     /* 'default' | 'pc' | 'tablet' | 'mobile' */
+         /* 'default' | 'pc' | 'tablet' | 'mobile' */
     const PREVIEW_MODES = [
       { value: 'default', label: '기본',   width: 480  },
       { value: 'pc',      label: 'PC',     width: 1200 },
@@ -205,20 +205,19 @@ window.DpDispAreaDtl = {
       { value: 'mobile',  label: '모바일', width: 375  },
     ];
     const cfPreviewFrameWidth = computed(() => {
-      const m = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === previewMode.value);
+      const m = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === uiState.previewMode);
       return (m?.width || 480) + 'px';
     });
-    const previewPaneWidth = ref(520);
-    watch(previewMode, (m) => {
+        watch(previewMode, (m) => {
       const info = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === m);
-      previewPaneWidth.value = (info?.width || 480) + 40;
+      uiState.previewPaneWidth = (info?.width || 480) + 40;
     });
     const onSplitDrag = (e) => {
       e.preventDefault();
       const startX = e.clientX;
-      const startW = previewPaneWidth.value;
+      const startW = uiState.previewPaneWidth;
       const onMove = (ev) => {
-        previewPaneWidth.value = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
+        uiState.previewPaneWidth = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
       };
       const onUp = () => {
         window.removeEventListener('mousemove', onMove);
@@ -227,7 +226,7 @@ window.DpDispAreaDtl = {
       window.addEventListener('mousemove', onMove);
       window.addEventListener('mouseup', onUp);
     };
-    const selectTab = (key) => { activeTab.value = key; };
+    const selectTab = (key) => { uiState.activeTab = key; };
     const cfActivePanel = computed(() => {
       if (!activeTab.value.startsWith('panel_')) return null;
       const id = Number(activeTab.value.replace('panel_', ''));
@@ -351,8 +350,7 @@ window.DpDispAreaDtl = {
     };
 
     /* ── Quill (영역코멘트) ── */
-    const htmlDescEl = ref(null);
-    let quillDesc = null;
+        let quillDesc = null;
     const QUILL_OPTS = {
       theme: 'snow',
       modules: { toolbar: [
@@ -365,8 +363,8 @@ window.DpDispAreaDtl = {
       ]},
     };
     const initQuillDesc = () => {
-      if (!htmlDescEl.value || quillDesc) return;
-      quillDesc = new Quill(htmlDescEl.value, QUILL_OPTS);
+      if (!uiState.htmlDescEl || quillDesc) return;
+      quillDesc = new Quill(uiState.htmlDescEl, QUILL_OPTS);
       quillDesc.root.innerHTML = form.htmlDesc || '';
       quillDesc.on('text-change', () => { form.htmlDesc = quillDesc.root.innerHTML; });
     };

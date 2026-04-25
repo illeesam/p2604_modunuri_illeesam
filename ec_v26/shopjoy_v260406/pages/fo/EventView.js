@@ -4,7 +4,7 @@ window.EventView = {
   props: ['navigate', 'config', 'editId'],
   setup(props) {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 0});
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -164,14 +164,13 @@ window.EventView = {
 
     const cfEventId  = computed(() => Number(props.editId) || 1);
     const cfEvent    = computed(() => events.find(e => e.id === cfEventId.value) || events[0]);
-    const activeTab = ref(0);
-
+    
     /* 탭 변경 시 0으로 리셋 */
-    const setTab = (i) => { activeTab.value = i; };
+    const setTab = (i) => { uiState.activeTab = i; };
 
     /* 현재 탭 상품 ID 목록 → 이미지/이름 생성 */
     const cfTabProducts = computed(() => {
-      const set = cfEvent.value.productSets[activeTab.value] || [];
+      const set = cfEvent.value.productSets[uiState.activeTab] || [];
       return set.map(id => ({
         id,
         name: `ShopJoy 2026 S/S No.${id}`,

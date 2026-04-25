@@ -7,7 +7,7 @@ window.PmPlanDtl = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const products = reactive([]);
     const plans = reactive([]);
-    const uiState = reactive({ loading: false, showProdPopup: false, showVendorModal: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, showProdPopup: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._ecPlanDtlState.tab || 'info', viewMode2: window._ecPlanDtlState.viewMode || 'tab', activeContentTab: 1, prodSearch: ''});
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -30,11 +30,9 @@ window.PmPlanDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-    const tab = ref(window._ecPlanDtlState.tab || 'info');
-    watch(tab, v => { window._ecPlanDtlState.tab = v; });
-    const viewMode2 = ref(window._ecPlanDtlState.viewMode || 'tab');
-    watch(viewMode2, v => { window._ecPlanDtlState.viewMode = v; });
-    const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
+        watch(tab, v => { window._ecPlanDtlState.tab = v; });
+        watch(viewMode2, v => { window._ecPlanDtlState.viewMode = v; });
+    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -107,8 +105,7 @@ window.PmPlanDtl = {
 
     /* Quill 인스턴스 4개 (배너+콘텐츠3) */
     const quillers = {};
-    const activeContentTab = ref(1);
-
+    
     const initQuill = (id, key) => {
       const el = document.getElementById(id);
       if (!el || typeof Quill === 'undefined') return;
@@ -140,7 +137,7 @@ window.PmPlanDtl = {
     };
 
     const onTabChange = (newTab) => {
-      tab.value = newTab;
+      uiState.tab = newTab;
       if (newTab === 'banner') {
         setTimeout(() => { initQuill('quill-banner', 'bannerImage'); }, 50);
       } else if (newTab === 'content') {
@@ -165,8 +162,7 @@ window.PmPlanDtl = {
     onUnmounted(() => { Object.keys(quillers).forEach(k => { delete quillers[k]; }); });
 
     /* 대상 상품 팝업 */
-    const prodSearch = ref('');
-    const cfFilteredProds = computed(() => window.safeArrayUtils.safeFilter(products, p => {
+        const cfFilteredProds = computed(() => window.safeArrayUtils.safeFilter(products, p => {
       const kw = prodSearch.value.trim().toLowerCase();
       return !kw || p.prodNm.toLowerCase().includes(kw);
     }));

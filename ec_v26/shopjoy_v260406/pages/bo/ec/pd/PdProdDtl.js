@@ -9,7 +9,7 @@ window.PdProdDtl = {
     const boUsers = reactive([]);
     const categories = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, isPageCodeLoad: false, topTab: window._pdProdDtlState.tab || 'info', viewMode2: window._pdProdDtlState.viewMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearch: ''});;
     const codes = reactive([]);
 
     const isAppReady = computed(() => {
@@ -58,11 +58,9 @@ window.PdProdDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-    const topTab = ref(window._pdProdDtlState.tab || 'info');
-    watch(topTab, v => { window._pdProdDtlState.tab = v; });
-    const viewMode2 = ref(window._pdProdDtlState.viewMode || 'tab');
-    watch(viewMode2, v => { window._pdProdDtlState.viewMode = v; });
-    const showTab = id => viewMode2.value !== 'tab' || topTab.value === id;
+        watch(topTab, v => { window._pdProdDtlState.tab = v; });
+        watch(viewMode2, v => { window._pdProdDtlState.viewMode = v; });
+    const showTab = id => uiState.viewMode2 !== 'tab' || uiState.topTab === id;
 
     // ── form: pd_prod 전체 필드
     const form = reactive({
@@ -91,25 +89,24 @@ window.PdProdDtl = {
     });
 
     // ── 옵션 설정
-    const useOpt = ref(true);
-    let _optSeq = 1, _itemSeq = 100;
+        let _optSeq = 1, _itemSeq = 100;
     const optGroups = reactive([]); // [{_id, grpNm, typeCd, inputTypeCd, level, items:[{_id, nm, val, valCodeId, parentOptItemId, sortOrd, useYn}]}]
     const skus = reactive([]);      // [{_id, _optKey, _nm1, _nm2, skuCode, addPrice, stock, useYn}]
     // ── 옵션 공통코드 ([] 기반 — OPT_TYPE 2레벨 트리)
-    const prodOptCategoryTypeCd = ref(''); // OPT_TYPE 1레벨 (의류/신발/가방/커스텀)
+     // OPT_TYPE 1레벨 (의류/신발/가방/커스텀)
     const cfOptTypeLevel1Codes = computed(() =>
       (codes||[]).filter(c => c.codeGrp==='OPT_TYPE' && c.useYn==='Y' && !c.parentCodeValue && c.codeValue!=='NONE')
         .sort((a,b) => a.sortOrd - b.sortOrd)
     );
     const cfOptTypeCodes = computed(() => {
-      if (!prodOptCategoryTypeCd.value) return [];
-      return (codes||[]).filter(c => c.codeGrp==='OPT_TYPE' && c.useYn==='Y' && c.parentCodeValue===prodOptCategoryTypeCd.value)
+      if (!uiState.prodOptCategoryTypeCd) return [];
+      return (codes||[]).filter(c => c.codeGrp==='OPT_TYPE' && c.useYn==='Y' && c.parentCodeValue===uiState.prodOptCategoryTypeCd)
         .sort((a,b) => a.sortOrd - b.sortOrd);
     });
     const cfOptInputTypeCodes = computed(() => (codes||[]).filter(c => c.codeGrp==='OPT_INPUT_TYPE' && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd));
     const getOptValCodes    = (typeCd) => (codes||[]).filter(c => c.codeGrp==='OPT_VAL' && c.parentCodeValue===typeCd && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd);
 
-    const clearOpt = () => { optGroups.length = 0; skus.length = 0; prodOptCategoryTypeCd.value = ''; };
+    const clearOpt = () => { optGroups.length = 0; skus.length = 0; uiState.prodOptCategoryTypeCd = ''; };
 
     const onCategoryChange = () => {
       optGroups.length = 0;
@@ -120,7 +117,7 @@ window.PdProdDtl = {
     };
 
     const addOptGroup = () => {
-      if (!prodOptCategoryTypeCd.value) { props.showToast('옵션 카테고리를 먼저 선택해주세요.', 'error'); return; }
+      if (!uiState.prodOptCategoryTypeCd) { props.showToast('옵션 카테고리를 먼저 선택해주세요.', 'error'); return; }
       if (optGroups.length >= 2) { props.showToast('옵션은 최대 2단까지 가능합니다.', 'error'); return; }
       const defaultTypeCd = cfOptTypeCodes.value[optGroups.length]?.codeValue || '';
       optGroups.push({ _id: _optSeq++, grpNm: '', typeCd: defaultTypeCd, inputTypeCd: 'SELECT', level: optGroups.length + 1, items: [] });
@@ -138,16 +135,15 @@ window.PdProdDtl = {
     // ── 옵션 아이템 드래그 정렬
     const dragOptGrpId       = ref(null);
     const dragOptItemIdx     = ref(null);
-    const dragoverOptItemIdx = ref(null);
-    const onOptItemDragStart = (grp, idx) => { dragOptGrpId.value = grp._id; dragOptItemIdx.value = idx; };
-    const onOptItemDragOver  = (grp, idx) => { if (dragOptGrpId.value === grp._id) dragoverOptItemIdx.value = idx; };
+        const onOptItemDragStart = (grp, idx) => { uiState.dragOptGrpId = grp._id; uiState.dragOptItemIdx = idx; };
+    const onOptItemDragOver  = (grp, idx) => { if (uiState.dragOptGrpId === grp._id) uiState.dragoverOptItemIdx = idx; };
     const onOptItemDrop      = (grp) => {
-      if (dragOptItemIdx.value === null || dragOptItemIdx.value === dragoverOptItemIdx.value) { dragOptGrpId.value = null; dragOptItemIdx.value = null; dragoverOptItemIdx.value = null; return; }
+      if (uiState.dragOptItemIdx === null || uiState.dragOptItemIdx === uiState.dragoverOptItemIdx) { uiState.dragOptGrpId = null; uiState.dragOptItemIdx = null; uiState.dragoverOptItemIdx = null; return; }
       const items = [...grp.items];
-      const [moved] = items.splice(dragOptItemIdx.value, 1);
-      items.splice(dragoverOptItemIdx.value, 0, moved);
+      const [moved] = items.splice(uiState.dragOptItemIdx, 1);
+      items.splice(uiState.dragoverOptItemIdx, 0, moved);
       grp.items = items;
-      dragOptGrpId.value = null; dragOptItemIdx.value = null; dragoverOptItemIdx.value = null;
+      uiState.dragOptGrpId = null; uiState.dragOptItemIdx = null; uiState.dragoverOptItemIdx = null;
       generateSkus();
     };
 
@@ -180,17 +176,17 @@ window.PdProdDtl = {
     // ── SKU 필터 (1단/2단/재고)
     const skuFilter1     = ref('');
     const skuFilter2     = ref('');
-    const skuFilterStock = ref(''); // '' | 'in' | 'out'
+     // '' | 'in' | 'out'
     const cfSkuFilter1Options = computed(() => [...new Set(skus.map(s => s._nm1).filter(Boolean))]);
     const cfSkuFilter2Options = computed(() => {
-      const base = skuFilter1.value ? skus.filter(s => s._nm1 === skuFilter1.value) : skus;
+      const base = uiState.skuFilter1 ? skus.filter(s => s._nm1 === uiState.skuFilter1) : skus;
       return [...new Set(base.map(s => s._nm2).filter(Boolean))];
     });
     const cfSkusFiltered = computed(() => window.safeArrayUtils.safeFilter(skus, s => {
-      if (skuFilter1.value     && s._nm1 !== skuFilter1.value) return false;
-      if (skuFilter2.value     && s._nm2 !== skuFilter2.value) return false;
-      if (skuFilterStock.value === 'in'  && (s.stock || 0) <= 0) return false;
-      if (skuFilterStock.value === 'out' && (s.stock || 0) >  0) return false;
+      if (uiState.skuFilter1     && s._nm1 !== uiState.skuFilter1) return false;
+      if (uiState.skuFilter2     && s._nm2 !== uiState.skuFilter2) return false;
+      if (uiState.skuFilterStock === 'in'  && (s.stock || 0) <= 0) return false;
+      if (uiState.skuFilterStock === 'out' && (s.stock || 0) >  0) return false;
       return true;
     }));
 
@@ -215,18 +211,16 @@ window.PdProdDtl = {
     };
 
     // ── 이미지 드래그 정렬
-    const dragImgIdx = ref(null);
-    const dragoverImgIdx = ref(null);
-    const onImgDragStart = (idx) => { dragImgIdx.value = idx; };
-    const onImgDragOver  = (idx) => { dragoverImgIdx.value = idx; };
+            const onImgDragStart = (idx) => { uiState.dragImgIdx = idx; };
+    const onImgDragOver  = (idx) => { uiState.dragoverImgIdx = idx; };
     const onImgDrop = () => {
-      if (dragImgIdx.value === null || dragImgIdx.value === dragoverImgIdx.value) { dragImgIdx.value = null; dragoverImgIdx.value = null; return; }
+      if (uiState.dragImgIdx === null || uiState.dragImgIdx === uiState.dragoverImgIdx) { uiState.dragImgIdx = null; uiState.dragoverImgIdx = null; return; }
       const items = [...images];
-      const [moved] = items.splice(dragImgIdx.value, 1);
-      items.splice(dragoverImgIdx.value, 0, moved);
+      const [moved] = items.splice(uiState.dragImgIdx, 1);
+      items.splice(uiState.dragoverImgIdx, 0, moved);
       images.splice(0, images.length, ...items);
-      dragImgIdx.value = null;
-      dragoverImgIdx.value = null;
+      uiState.dragImgIdx = null;
+      uiState.dragoverImgIdx = null;
     };
 
     // ── 상품설명 블록 (contentBlocks)
@@ -259,22 +253,18 @@ window.PdProdDtl = {
       reader.onload = ev => { block.content = ev.target.result; block.fileName = file.name; };
       reader.readAsDataURL(file); e.target.value = '';
     };
-    const dragBlockIdx = ref(null);
-    const dragoverBlockIdx = ref(null);
-    const onBlockDragStart = (idx) => { dragBlockIdx.value = idx; };
-    const onBlockDragOver  = (idx) => { dragoverBlockIdx.value = idx; };
+            const onBlockDragStart = (idx) => { uiState.dragBlockIdx = idx; };
+    const onBlockDragOver  = (idx) => { uiState.dragoverBlockIdx = idx; };
     const onBlockDrop = () => {
-      if (dragBlockIdx.value === null || dragBlockIdx.value === dragoverBlockIdx.value) { dragBlockIdx.value = null; dragoverBlockIdx.value = null; return; }
+      if (uiState.dragBlockIdx === null || uiState.dragBlockIdx === uiState.dragoverBlockIdx) { uiState.dragBlockIdx = null; uiState.dragoverBlockIdx = null; return; }
       const items = [...contentBlocks];
-      const [moved] = items.splice(dragBlockIdx.value, 1);
-      items.splice(dragoverBlockIdx.value, 0, moved);
+      const [moved] = items.splice(uiState.dragBlockIdx, 1);
+      items.splice(uiState.dragoverBlockIdx, 0, moved);
       contentBlocks.splice(0, contentBlocks.length, ...items);
-      dragBlockIdx.value = null; dragoverBlockIdx.value = null;
+      uiState.dragBlockIdx = null; uiState.dragoverBlockIdx = null;
     };
     // ── 스플릿 패널 + 미리보기
-    const splitPct = ref(65);
-    const previewDevice = ref('pc');
-    const contentSplitRef = ref(null);
+            const contentSplitRef = ref(null);
     const onDividerMousedown = (e) => { uiState.isDraggingDivider = true; e.preventDefault(); };
     let _divMoveH = null, _divUpH = null;
 
@@ -295,51 +285,47 @@ window.PdProdDtl = {
 
     // 상품 추가 피커 모달
     const prodPickerOpen   = ref(''); // '' | 'rel' | 'code'
-    const prodPickerSearch = ref('');
-    const cfProdPickerList   = computed(() => {
+        const cfProdPickerList   = computed(() => {
       const q    = prodPickerSearch.value.trim().toLowerCase();
       const all  = products;
-      const used = (prodPickerOpen.value === 'rel' ? relProds : codeProds).map(r => r.productId);
+      const used = (uiState.prodPickerOpen === 'rel' ? relProds : codeProds).map(r => r.productId);
       return window.safeArrayUtils.safeFilter(all, p => {
         if (used.includes(p.productId)) return false;
         if (!q) return true;
         return String(p.productId).includes(q) || (p.prodNm||'').toLowerCase().includes(q) || (p.category||'').toLowerCase().includes(q);
       });
     });
-    const openProdPicker = (type) => { prodPickerSearch.value = ''; prodPickerOpen.value = type; };
+    const openProdPicker = (type) => { uiState.prodPickerSearch = ''; uiState.prodPickerOpen = type; };
     const selectProdItem = (p) => {
       const row = { _id: _relSeq++, productId: p.productId, prodNm: p.prodNm, category: p.category||'', price: p.price||0, stock: p.stock||0, status: p.status||'' };
-      if (prodPickerOpen.value === 'rel') relProds.push(row);
+      if (uiState.prodPickerOpen === 'rel') relProds.push(row);
       else                                codeProds.push(row);
-      prodPickerOpen.value = '';
+      uiState.prodPickerOpen = '';
     };
     const removeRelProd  = (idx) => relProds.splice(idx, 1);
     const removeCodeProd = (idx) => codeProds.splice(idx, 1);
 
     // 드래그 정렬 — 연관상품
-    const dragRelIdx = ref(null); const dragoverRelIdx = ref(null);
-    const onRelDragStart = (idx) => { dragRelIdx.value = idx; };
-    const onRelDragOver  = (idx) => { dragoverRelIdx.value = idx; };
+         const onRelDragStart = (idx) => { uiState.dragRelIdx = idx; };
+    const onRelDragOver  = (idx) => { uiState.dragoverRelIdx = idx; };
     const onRelDrop = () => {
-      if (dragRelIdx.value === null || dragRelIdx.value === dragoverRelIdx.value) { dragRelIdx.value = null; dragoverRelIdx.value = null; return; }
-      const items = [...relProds]; const [m] = items.splice(dragRelIdx.value, 1); items.splice(dragoverRelIdx.value, 0, m);
-      relProds.splice(0, relProds.length, ...items); dragRelIdx.value = null; dragoverRelIdx.value = null;
+      if (uiState.dragRelIdx === null || uiState.dragRelIdx === uiState.dragoverRelIdx) { uiState.dragRelIdx = null; uiState.dragoverRelIdx = null; return; }
+      const items = [...relProds]; const [m] = items.splice(uiState.dragRelIdx, 1); items.splice(uiState.dragoverRelIdx, 0, m);
+      relProds.splice(0, relProds.length, ...items); uiState.dragRelIdx = null; uiState.dragoverRelIdx = null;
     };
     // 드래그 정렬 — 코드상품
-    const dragCodeIdx = ref(null); const dragoverCodeIdx = ref(null);
-    const onCodeDragStart = (idx) => { dragCodeIdx.value = idx; };
-    const onCodeDragOver  = (idx) => { dragoverCodeIdx.value = idx; };
+         const onCodeDragStart = (idx) => { uiState.dragCodeIdx = idx; };
+    const onCodeDragOver  = (idx) => { uiState.dragoverCodeIdx = idx; };
     const onCodeDrop = () => {
-      if (dragCodeIdx.value === null || dragCodeIdx.value === dragoverCodeIdx.value) { dragCodeIdx.value = null; dragoverCodeIdx.value = null; return; }
-      const items = [...codeProds]; const [m] = items.splice(dragCodeIdx.value, 1); items.splice(dragoverCodeIdx.value, 0, m);
-      codeProds.splice(0, codeProds.length, ...items); dragCodeIdx.value = null; dragoverCodeIdx.value = null;
+      if (uiState.dragCodeIdx === null || uiState.dragCodeIdx === uiState.dragoverCodeIdx) { uiState.dragCodeIdx = null; uiState.dragoverCodeIdx = null; return; }
+      const items = [...codeProds]; const [m] = items.splice(uiState.dragCodeIdx, 1); items.splice(uiState.dragoverCodeIdx, 0, m);
+      codeProds.splice(0, codeProds.length, ...items); uiState.dragCodeIdx = null; uiState.dragoverCodeIdx = null;
     };
 
     // ── 카테고리 N개 목록 (pd_category_prod)
     const prodCategories = reactive([]); // [{ categoryId, categoryNm, depth }]
     const catPickerOpen   = ref(false);
-    const catPickerSearch = ref('');
-    const catDragIdx      = ref(null);
+        const catDragIdx      = ref(null);
     const catDragoverIdx  = ref(null);
     const cfCatPickerList = computed(() => {
       const q = catPickerSearch.value.trim().toLowerCase();
@@ -364,15 +350,15 @@ window.PdProdDtl = {
       const id = cat.categoryId||cat.id;
       if (window.safeArrayUtils.safeSome(prodCategories, c => String(c.categoryId) === String(id))) return;
       prodCategories.push({ categoryId: id, categoryNm: cat.categoryNm||cat.nm||String(id), depth: cat.depth||cat.level||1 });
-      catPickerOpen.value = false; catPickerSearch.value = '';
+      uiState.catPickerOpen = false; uiState.catPickerSearch = '';
     };
     const removeCategory = (idx) => { prodCategories.splice(idx, 1); };
-    const onCatDragStart = (idx) => { catDragIdx.value = idx; };
-    const onCatDragOver  = (idx) => { catDragoverIdx.value = idx; };
+    const onCatDragStart = (idx) => { uiState.catDragIdx = idx; };
+    const onCatDragOver  = (idx) => { uiState.catDragoverIdx = idx; };
     const onCatDrop = () => {
-      if (catDragIdx.value === null || catDragIdx.value === catDragoverIdx.value) { catDragIdx.value = null; catDragoverIdx.value = null; return; }
-      const items = [...prodCategories]; const [m] = items.splice(catDragIdx.value, 1); items.splice(catDragoverIdx.value, 0, m);
-      prodCategories.splice(0, prodCategories.length, ...items); catDragIdx.value = null; catDragoverIdx.value = null;
+      if (uiState.catDragIdx === null || uiState.catDragIdx === uiState.catDragoverIdx) { uiState.catDragIdx = null; uiState.catDragoverIdx = null; return; }
+      const items = [...prodCategories]; const [m] = items.splice(uiState.catDragIdx, 1); items.splice(uiState.catDragoverIdx, 0, m);
+      prodCategories.splice(0, prodCategories.length, ...items); uiState.catDragIdx = null; uiState.catDragoverIdx = null;
     };
 
     // ── 판매계획
@@ -393,7 +379,7 @@ window.PdProdDtl = {
     const mdSearch    = ref('');
     const cfMdUserList  = computed(() => (boUsers||[]).filter(u => u.status==='활성'));
     const cfMdUserListFiltered = computed(() => {
-      const q = mdSearch.value.trim().toLowerCase();
+      const q = uiState.mdSearch.trim().toLowerCase();
       if (!q) return cfMdUserList.value;
       return window.safeArrayUtils.safeFilter(cfMdUserList, u => u.name.toLowerCase().includes(q) || (u.dept||'').toLowerCase().includes(q) || (u.role||'').toLowerCase().includes(q));
     });
@@ -401,7 +387,7 @@ window.PdProdDtl = {
       const u = cfMdUserList.window.safeArrayUtils.safeFind(value, u => u.boUserId === form.mdUserId);
       return u ? `${u.name} (${u.dept||''})` : '';
     });
-    const openMdModal  = () => { mdSearch.value = ''; uiState.mdModalOpen = true; };
+    const openMdModal  = () => { uiState.mdSearch = ''; uiState.mdModalOpen = true; };
     const selectMdUser = (u) => { form.mdUserId = u.boUserId; uiState.mdModalOpen = false; };
 
     const handleInitForm = async () => {
@@ -452,7 +438,7 @@ window.PdProdDtl = {
           if (p.images?.length) images.splice(0, images.length, ...p.images.map(img => ({ ...img, id: imgIdSeq++ })));
           else if (p.mainImage) images.splice(0, images.length, { id: imgIdSeq++, previewUrl: p.mainImage, isMain: true, optItemId1: '', optItemId2: '' });
           if (p.optGroups?.length) {
-            useOpt.value = true;
+            uiState.useOpt = true;
             optGroups.splice(0, optGroups.length, ...p.optGroups.map(g => ({ ...g, _id: _optSeq++, items: g.items.map(i => ({ ...i, _id: _itemSeq++ })) })));
             skus.splice(0, skus.length, ...(p.skus || []));
           }
@@ -496,7 +482,7 @@ window.PdProdDtl = {
         if (!uiState.isDraggingDivider || !contentSplitRef.value) return;
         const rect = contentSplitRef.value.getBoundingClientRect();
         const pct = ((e.clientX - rect.left) / rect.width) * 100;
-        splitPct.value = Math.max(25, Math.min(78, pct));
+        uiState.splitPct = Math.max(25, Math.min(78, pct));
       };
       _divUpH = () => { uiState.isDraggingDivider = false; };
       document.addEventListener('mousemove', _divMoveH);
@@ -520,11 +506,11 @@ window.PdProdDtl = {
       let savedProdId;
       if (cfIsNew.value) {
         savedProdId = nextId.value(products.value, 'productId');
-        products.value.push({ ...form, productId: savedProdId, price: form.listPrice, stock: useOpt.value ? cfTotalStock.value : form.prodStock, regDate: new Date().toISOString().slice(0, 10), images: imgData, mainImage: mainImg?.previewUrl || '' });
+        products.value.push({ ...form, productId: savedProdId, price: form.listPrice, stock: uiState.useOpt ? cfTotalStock.value : form.prodStock, regDate: new Date().toISOString().slice(0, 10), images: imgData, mainImage: mainImg?.previewUrl || '' });
       } else {
         savedProdId = props.editId;
         const idx = products.value.findIndex(x => x.productId == props.editId);
-        if (idx !== -1) Object.assign(products.value[idx], { ...form, price: form.listPrice, stock: useOpt.value ? cfTotalStock.value : form.prodStock, images: imgData, mainImage: mainImg?.previewUrl || '' });
+        if (idx !== -1) Object.assign(products.value[idx], { ...form, price: form.listPrice, stock: uiState.useOpt ? cfTotalStock.value : form.prodStock, images: imgData, mainImage: mainImg?.previewUrl || '' });
       }
       // categoryProds 동기화
       if (!categoryProds.value) categoryProds.value = [];

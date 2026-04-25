@@ -4,7 +4,7 @@ window.XsSample11 = {
   components: { 'category-select-modal': window.CategorySelectModal },
   setup() {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: today, viewMode: 'card', showDesc: true, previewTime: new Date(});;
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -27,11 +27,10 @@ window.XsSample11 = {
     });
     const { ref, reactive, computed , watch } = Vue;
     const today = new Date().toISOString().slice(0, 10);
-    const previewDate = ref(today);
-    const previewTime = ref(new Date().toTimeString().slice(0, 5));
+        const previewTime = ref(new Date().toTimeString().slice(0, 5));
     const viewMode    = ref('card');   // 'list' | 'card' | 'expand'
     const showDesc    = ref(true);
-    const uiState = reactive({ showAreaDrop: false, showCatModal: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: today, viewMode: 'card', showDesc: true});
     const selectedAreas = reactive(new Set());
     /* 카테고리 선택 */
     const selectedCatIds = reactive(new Set());
@@ -92,13 +91,13 @@ window.XsSample11 = {
     const clearAllAreas  = () => { selectedAreas.clear(); };
     const cfAreaBtnLabel   = computed(() => selectedAreas.size === 0 ? '전체 영역' : `${selectedAreas.size}개 선택`);
     const resetDate = () => {
-      previewDate.value = today;
-      previewTime.value = new Date().toTimeString().slice(0, 5);
+      uiState.previewDate = today;
+      uiState.previewTime = new Date().toTimeString().slice(0, 5);
     };
     const isInRange = (panel) => {
-      const d = previewDate.value;
+      const d = uiState.previewDate;
       if (!d) return true;
-      const dt = `${d} ${previewTime.value || '00:00'}`;
+      const dt = `${d} ${uiState.previewTime || '00:00'}`;
       if (panel.dispStartDate && dt < `${panel.dispStartDate} ${panel.dispStartTime || '00:00'}`) return false;
       if (panel.dispEndDate   && dt > `${panel.dispEndDate}   ${panel.dispEndTime   || '23:59'}`) return false;
       return true;

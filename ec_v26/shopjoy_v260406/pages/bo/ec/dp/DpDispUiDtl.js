@@ -6,7 +6,7 @@ window.DpDispUiDtl = {
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const codes = reactive({ disp_ui_types: [] });
     const displays = reactive([]);
-    const uiState = reactive({ expanded: false, loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ expanded: false, loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, isPageCodeLoad: false, activeTab: 'base', previewMode: 'default', previewPaneWidth: 520, pickKw: '', htmlDescEl: null});;
 
     // App 초기화 준비 상태
     const isAppReady = computed(() => {
@@ -116,8 +116,7 @@ window.DpDispUiDtl = {
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
     );
 
-    const activeTab = ref('base');
-    const selectTab = (k) => { activeTab.value = k; };
+        const selectTab = (k) => { uiState.activeTab = k; };
     const cfActiveArea = computed(() => {
       if (!activeTab.value.startsWith('area_')) return null;
       const id = Number(activeTab.value.replace('area_', ''));
@@ -131,28 +130,26 @@ window.DpDispUiDtl = {
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
     /* 디바이스 모드 + 스플리터 */
-    const previewMode = ref('default');
-    const PREVIEW_MODES = [
+        const PREVIEW_MODES = [
       { value: 'default', label: '기본',   width: 480  },
       { value: 'pc',      label: 'PC',     width: 1200 },
       { value: 'tablet',  label: '태블릿', width: 768  },
       { value: 'mobile',  label: '모바일', width: 375  },
     ];
     const cfPreviewFrameWidth = computed(() => {
-      const m = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === previewMode.value);
+      const m = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === uiState.previewMode);
       return (m?.width || 480) + 'px';
     });
-    const previewPaneWidth = ref(520);
-    watch(previewMode, (m) => {
+        watch(previewMode, (m) => {
       const info = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === m);
-      previewPaneWidth.value = (info?.width || 480) + 40;
+      uiState.previewPaneWidth = (info?.width || 480) + 40;
     });
     const onSplitDrag = (e) => {
       e.preventDefault();
       const startX = e.clientX;
-      const startW = previewPaneWidth.value;
+      const startW = uiState.previewPaneWidth;
       const onMove = (ev) => {
-        previewPaneWidth.value = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
+        uiState.previewPaneWidth = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
       };
       const onUp = () => {
         window.removeEventListener('mousemove', onMove);
@@ -167,14 +164,14 @@ window.DpDispUiDtl = {
     const pickSel  = reactive(new Set());
     const cfAvailableAreas = computed(() => {
       const all = (codes || []).filter(c => c.codeGrp === 'DISP_AREA');
-      const kw  = pickKw.value.trim().toLowerCase();
+      const kw  = uiState.pickKw.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(all, a => {
         if (a.uiCode === form.codeValue) return false;
         if (kw && !(a.codeLabel||'').toLowerCase().includes(kw) && !(a.codeValue||'').toLowerCase().includes(kw)) return false;
         return true;
       }).sort((a, b) => (a.codeLabel||'').localeCompare(b.codeLabel||''));
     });
-    const openPick  = () => { uiState.pickOpen = true; pickKw.value = ''; pickSel = new Set(); };
+    const openPick  = () => { uiState.pickOpen = true; uiState.pickKw = ''; pickSel = new Set(); };
     const onAreaPicked = (a) => {
       if (!form.codeValue) { props.showToast && props.showToast('UI코드를 먼저 입력하세요.', 'error'); return; }
       a.uiCode = form.codeValue;
@@ -314,8 +311,7 @@ window.DpDispUiDtl = {
     const doCancel = () => { props.navigate('dpDispUiMng'); };
 
     /* ── Quill (UI코멘트) ── */
-    const htmlDescEl = ref(null);
-    let quillDesc = null;
+        let quillDesc = null;
     const QUILL_OPTS = {
       theme: 'snow',
       modules: { toolbar: [
@@ -328,8 +324,8 @@ window.DpDispUiDtl = {
       ]},
     };
     const initQuillDesc = () => {
-      if (!htmlDescEl.value || quillDesc) return;
-      quillDesc = new Quill(htmlDescEl.value, QUILL_OPTS);
+      if (!uiState.htmlDescEl || quillDesc) return;
+      quillDesc = new Quill(uiState.htmlDescEl, QUILL_OPTS);
       quillDesc.root.innerHTML = form.htmlDesc || '';
       quillDesc.on('text-change', () => { form.htmlDesc = quillDesc.root.innerHTML; });
     };

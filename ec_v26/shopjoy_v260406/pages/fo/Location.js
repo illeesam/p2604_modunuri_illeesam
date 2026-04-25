@@ -4,7 +4,7 @@ window.Location = {
   props: ['navigate', 'config'],
   setup() {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, mapProvider: 'kakao', mapSrc: ''});;
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -33,9 +33,9 @@ window.Location = {
     const ADDR_ENC = encodeURIComponent(ADDR);
 
     /* 지도 iframe src — 카카오 → 구글 → OSM 순 */
-    const mapProvider = ref('kakao');   // 현재 사용 중인 제공자
+       // 현재 사용 중인 제공자
     const mapSrc      = ref('');
-    const uiState     = reactive({ mapError: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, mapProvider: 'kakao', mapSrc: ''});
 
     /* 제공자별 embed URL */
     const PROVIDERS = {
@@ -51,9 +51,9 @@ window.Location = {
 
     /* iframe 에러 → 다음 제공자로 fallback */
     const onMapError = () => {
-      if (mapProvider.value === 'google') {
-        mapProvider.value = 'osm';
-        mapSrc.value = PROVIDERS.osm;
+      if (uiState.mapProvider === 'google') {
+        uiState.mapProvider = 'osm';
+        uiState.mapSrc = PROVIDERS.osm;
       } else {
         uiState.mapError = true;
       }
@@ -78,18 +78,18 @@ window.Location = {
               position: new kakao.maps.LatLng(LAT, LNG),
               title: 'ShopJoy 본사',
             });
-            mapProvider.value = 'kakao_sdk';
+            uiState.mapProvider = 'kakao_sdk';
           });
         };
         s.onerror = () => {
-          mapProvider.value = 'google';
-          mapSrc.value = PROVIDERS.google;
+          uiState.mapProvider = 'google';
+          uiState.mapSrc = PROVIDERS.google;
         };
         document.head.appendChild(s);
       } else {
         /* API key 없음 → Google embed */
-        mapProvider.value = 'google';
-        mapSrc.value = PROVIDERS.google;
+        uiState.mapProvider = 'google';
+        uiState.mapSrc = PROVIDERS.google;
       }
     });
 

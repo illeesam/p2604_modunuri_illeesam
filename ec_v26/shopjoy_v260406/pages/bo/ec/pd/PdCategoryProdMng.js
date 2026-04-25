@@ -7,7 +7,7 @@ window.PdCategoryProdMng = {
     const categories = reactive([]);
     const products = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, viewMode: window._ecCategoryProdState.viewMode || 'tab', activeTypeCd: 'NORMAL'});
     const codes = reactive({
       product_statuses: [],
     });
@@ -36,8 +36,7 @@ window.PdCategoryProdMng = {
 
     /* ── 뷰모드 영속화 ── */
     if (!window._ecCategoryProdState) window._ecCategoryProdState = { viewMode: 'tab' };
-    const viewMode = ref(window._ecCategoryProdState.viewMode || 'tab');
-    watch(viewMode, v => { window._ecCategoryProdState.viewMode = v; });
+        watch(viewMode, v => { window._ecCategoryProdState.viewMode = v; });
 
     /* ── 진열 유형 탭 ── */
     const TYPE_TABS = [
@@ -48,8 +47,7 @@ window.PdCategoryProdMng = {
       { cd: 'BANNER',    nm: '배너상품' },
       { cd: 'HOT_DEAL',  nm: '핫딜상품' },
     ];
-    const activeTypeCd = ref('NORMAL');
-
+    
     /* ── 강조 옵션 ── */
     const EMPHASIS_OPTS = [
       { cd: 'BOLD',       nm: '볼드',      icon: 'B' },

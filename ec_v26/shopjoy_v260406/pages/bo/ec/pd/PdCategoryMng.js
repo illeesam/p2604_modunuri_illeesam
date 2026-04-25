@@ -5,7 +5,7 @@ window.PdCategoryMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const categories = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedCatId: null, focusedIdx: null});
     const codes = reactive({
       category_depths: [],
       product_statuses: [],
@@ -69,9 +69,8 @@ window.PdCategoryMng = {
     const collapseAll = () => { expandedSet.clear(); };
 
     /* ── 선택된 카테고리 (좌측 트리 클릭) ── */
-    const selectedCatId = ref(null);
-    const selectNode = id => {
-      selectedCatId.value = (selectedCatId.value === id) ? null : id;
+        const selectNode = id => {
+      uiState.selectedCatId = (uiState.selectedCatId === id) ? null : id;
     };
     watch(selectedCatId, () => handleLoadGrid());
 
@@ -97,8 +96,7 @@ window.PdCategoryMng = {
     /* ── 그리드 ── */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
-    const focusedIdx = ref(null);
-    const pager      = reactive({ page: 1, size: 10 });
+        const pager      = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status'];
 
@@ -126,15 +124,15 @@ window.PdCategoryMng = {
     });
 
     const handleLoadGrid = () => {
-      gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
+      gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
       const filtered = window.safeArrayUtils.safeFilter(categories, c => {
         const kw = searchParam.kw.trim().toLowerCase();
         if (kw && !(c.categoryNm || '').toLowerCase().includes(kw)) return false;
         if (searchParam.depth  && String(c.depth) !== searchParam.depth) return false;
         if (searchParam.status && c.status !== searchParam.status) return false;
         // 트리에서 선택된 경우: 해당 카테고리 + 직계 자식만
-        if (selectedCatId.value !== null)
-          return c.categoryId === selectedCatId.value || c.parentId === selectedCatId.value;
+        if (uiState.selectedCatId !== null)
+          return c.categoryId === uiState.selectedCatId || c.parentId === uiState.selectedCatId;
         return true;
       });
       buildTreeRows(filtered).forEach(c => gridRows.push(makeRow(c)));

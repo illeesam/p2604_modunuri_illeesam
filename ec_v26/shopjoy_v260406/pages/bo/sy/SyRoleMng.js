@@ -5,20 +5,18 @@ window.SyRoleMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const roles = reactive([]);
-    const loading = ref(false);
-
+    
     /* ===== UI State ===== */
     const uiState = reactive({
       checkAll: false,
       error: null,
       userSelectOpen: false,
-      isPageCodeLoad: false,
-    });
+      isPageCodeLoad: false,, loading: false, selectedPath: null, focusedIdx: null, selectedRoleId: null, menuSearchKw: ''});
     const codes = reactive({ role_status: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/role/page', {
           params: { pageNo: 1, pageSize: 10000 }
@@ -30,7 +28,7 @@ window.SyRoleMng = {
         uiState.error = err.message;
         if (props.showToast) props.showToast('SyRole 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     /* ── 표시경로 선택 모달 (sy_path) ── */
@@ -48,10 +46,9 @@ window.SyRoleMng = {
 
 
     /* ── 좌측 표시경로 트리 ── */
-    const selectedPath = ref(null);
-    const expanded = reactive(new Set(['']));
+        const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
-    const selectNode = (path) => { selectedPath.value = path; };
+    const selectNode = (path) => { uiState.selectedPath = path; };
     const cfTree = computed(() => {
       const t = window.boCmUtil.buildRoleTree();
       const rolesById = Object.fromEntries((roles || []).map(r => [r.roleId, r]));
@@ -77,8 +74,8 @@ window.SyRoleMng = {
     });
     /* 선택 권한 + 자손 roleId Set */
     const cfAllowedRoleIds = computed(() => {
-      if (selectedPath.value == null) return null;
-      return window.boCmUtil.collectDescendantIds(roles, 'roleId', 'parentId', selectedPath.value);
+      if (uiState.selectedPath == null) return null;
+      return window.boCmUtil.collectDescendantIds(roles, 'roleId', 'parentId', uiState.selectedPath);
     });
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
@@ -172,9 +169,7 @@ window.SyRoleMng = {
     /* ── CRUD 그리드 ── */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
-    const focusedIdx = ref(null);
-    const selectedRoleId = ref(null);
-
+        
     /* ── 페이징 ── */
     const pager      = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -213,7 +208,7 @@ window.SyRoleMng = {
     };
 
     const handleLoadGrid = () => {
-      gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
+      gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
       const filtered = roles.filter(r => {
         const kw = searchParam.kw.trim().toLowerCase();
         if (kw && !r.roleCode.toLowerCase().includes(kw) && !r.roleNm.toLowerCase().includes(kw)) return false;
@@ -251,9 +246,9 @@ window.SyRoleMng = {
     };
 
     const setFocused = (realIdx) => {
-      focusedIdx.value = realIdx;
+      uiState.focusedIdx = realIdx;
       const row = gridRows[realIdx];
-      selectedRoleId.value = row && row.roleId > 0 ? row.roleId : null;
+      uiState.selectedRoleId = row && row.roleId > 0 ? row.roleId : null;
     };
 
     const onCellChange = (row) => {
@@ -266,7 +261,7 @@ window.SyRoleMng = {
     };
 
     const addRow = () => {
-      const ref = focusedIdx.value !== null ? gridRows[focusedIdx.value] : null;
+      const ref = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
       const newRow = {
         roleId: _tempId--, roleCode: '', roleNm: '', parentId: ref ? ref.parentId : null,
         roleType: ref ? ref.roleType : '업무',
@@ -274,10 +269,10 @@ window.SyRoleMng = {
         useYn: 'Y', restrictPerm: '없음', roleCat: [], remark: '',
         _depth: ref ? ref._depth : 0, _row_status: 'I', _row_check: false, _orig: null,
       };
-      const insertAt = focusedIdx.value !== null ? focusedIdx.value + 1 : gridRows.length;
+      const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(insertAt, 0, newRow);
-      focusedIdx.value = insertAt;
-      selectedRoleId.value = null;
+      uiState.focusedIdx = insertAt;
+      uiState.selectedRoleId = null;
       pager.page = Math.ceil((insertAt + 1) / pager.size);
     };
 
@@ -285,7 +280,7 @@ window.SyRoleMng = {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') {
         gridRows.splice(realIdx, 1);
-        if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= realIdx ? 1 : 0));
+        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= realIdx ? 1 : 0));
       } else { row._row_status = 'D'; }
     };
 
@@ -293,7 +288,7 @@ window.SyRoleMng = {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') {
         gridRows.splice(realIdx, 1);
-        if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= realIdx ? 1 : 0));
+        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= realIdx ? 1 : 0));
       } else {
         if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
         row._row_status = 'N';
@@ -370,8 +365,7 @@ window.SyRoleMng = {
     };
 
     /* ── 하단: 메뉴 배분 ── */
-    const menuSearchKw = ref('');
-    const buildMenuTree = (items, parentId, depth) => {
+        const buildMenuTree = (items, parentId, depth) => {
       return items
         .filter(m => (m.parentId || null) === (parentId || null) && m.useYn === 'Y')
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
@@ -389,71 +383,71 @@ window.SyRoleMng = {
     });
 
     const cfRoleMenuIds = computed(() => {
-      if (!selectedRoleId.value) return new Set();
-      return new Set(roleMenus.value.filter(x => x.roleId === selectedRoleId.value).map(x => x.menuId));
+      if (!uiState.selectedRoleId) return new Set();
+      return new Set(roleMenus.value.filter(x => x.roleId === uiState.selectedRoleId).map(x => x.menuId));
     });
 
     const getMenuPerm = (menuId) => {
-      if (!selectedRoleId.value) return '없음';
-      const entry = roleMenus.value.find(x => x.roleId === selectedRoleId.value && x.menuId === menuId);
+      if (!uiState.selectedRoleId) return '없음';
+      const entry = roleMenus.value.find(x => x.roleId === uiState.selectedRoleId && x.menuId === menuId);
       return entry ? (entry.permLevel || '읽기') : '없음';
     };
     const setMenuPerm = (menuId, level) => {
-      if (!selectedRoleId.value) return;
-      const idx = roleMenus.value.findIndex(x => x.roleId === selectedRoleId.value && x.menuId === menuId);
+      if (!uiState.selectedRoleId) return;
+      const idx = roleMenus.value.findIndex(x => x.roleId === uiState.selectedRoleId && x.menuId === menuId);
       if (level === '없음') {
         if (idx !== -1) roleMenus.value.splice(idx, 1);
       } else {
         if (idx !== -1) roleMenus.value[idx].permLevel = level;
-        else roleMenus.value.push({ roleId: selectedRoleId.value, menuId, permLevel: level });
+        else roleMenus.value.push({ roleId: uiState.selectedRoleId, menuId, permLevel: level });
       }
     };
     const setAllMenuPerm = (level) => {
-      if (!selectedRoleId.value) return;
+      if (!uiState.selectedRoleId) return;
       if (level === '없음') {
-        roleMenus.value = roleMenus.value.filter(x => x.roleId !== selectedRoleId.value);
+        roleMenus.value = roleMenus.value.filter(x => x.roleId !== uiState.selectedRoleId);
       } else {
         cfMenuTree.value.forEach(m => {
-          const idx = roleMenus.value.findIndex(x => x.roleId === selectedRoleId.value && x.menuId === m.menuId);
+          const idx = roleMenus.value.findIndex(x => x.roleId === uiState.selectedRoleId && x.menuId === m.menuId);
           if (idx !== -1) roleMenus.value[idx].permLevel = level;
-          else roleMenus.value.push({ roleId: selectedRoleId.value, menuId: m.menuId, permLevel: level });
+          else roleMenus.value.push({ roleId: uiState.selectedRoleId, menuId: m.menuId, permLevel: level });
         });
       }
     };
     const isMenuChecked = (menuId) => getMenuPerm(menuId) !== '없음';
     const toggleAllMenus = (check) => { setAllMenuPerm(check ? '읽기' : '없음'); };
     const cfMenuAllChecked = computed(() => {
-      if (!selectedRoleId.value || !cfMenuTree.value.length) return false;
+      if (!uiState.selectedRoleId || !cfMenuTree.value.length) return false;
       return cfMenuTree.value.every(m => getMenuPerm(m.menuId) !== '없음');
     });
 
     /* ── 하단: 대상사용자 (모달 선택) ── */
     const cfRoleUsersList = computed(() => {
-      if (!selectedRoleId.value) return [];
+      if (!uiState.selectedRoleId) return [];
       return roleUsers.value
-        .filter(x => x.roleId === selectedRoleId.value)
+        .filter(x => x.roleId === uiState.selectedRoleId)
         .map(x => boUsers.value.find(u => u.boUserId === x.boUserId))
         .filter(Boolean);
     });
 
     const onUserSelect = (users) => {
-      if (!selectedRoleId.value) return;
+      if (!uiState.selectedRoleId) return;
       users.forEach(u => {
-        const already = roleUsers.value.some(x => x.roleId === selectedRoleId.value && x.boUserId === u.boUserId);
-        if (!already) roleUsers.value.push({ roleId: selectedRoleId.value, boUserId: u.boUserId });
+        const already = roleUsers.value.some(x => x.roleId === uiState.selectedRoleId && x.boUserId === u.boUserId);
+        if (!already) roleUsers.value.push({ roleId: uiState.selectedRoleId, boUserId: u.boUserId });
       });
       uiState.userSelectOpen = false;
     };
 
     const removeUser = (boUserId) => {
-      if (!selectedRoleId.value) return;
-      const idx = roleUsers.value.findIndex(x => x.roleId === selectedRoleId.value && x.boUserId === boUserId);
+      if (!uiState.selectedRoleId) return;
+      const idx = roleUsers.value.findIndex(x => x.roleId === uiState.selectedRoleId && x.boUserId === boUserId);
       if (idx !== -1) roleUsers.value.splice(idx, 1);
     };
 
     const cfSelectedRoleNm = computed(() => {
-      if (!selectedRoleId.value) return '';
-      const r = roles.find(x => x.roleId === selectedRoleId.value);
+      if (!uiState.selectedRoleId) return '';
+      const r = roles.find(x => x.roleId === uiState.selectedRoleId);
       return r ? r.roleNm : '';
     });
 

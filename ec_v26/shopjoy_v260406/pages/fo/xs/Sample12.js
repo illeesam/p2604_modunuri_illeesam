@@ -4,7 +4,7 @@ window.XsSample12 = {
   components: { 'category-select-modal': window.CategorySelectModal },
   setup() {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: today, previewTime: new Date(});;
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -27,8 +27,7 @@ window.XsSample12 = {
     });
     const { ref, reactive, computed , watch } = Vue;
     const today = new Date().toISOString().slice(0, 10);
-    const previewDate = ref(today);
-    const previewTime = ref(new Date().toTimeString().slice(0, 5));
+        const previewTime = ref(new Date().toTimeString().slice(0, 5));
     const uiState = reactive({ showAreaDrop: false, showCatModal: false });
     const selectedAreas = reactive(new Set());
     const expandedAreas = reactive(new Set());
@@ -83,9 +82,9 @@ window.XsSample12 = {
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
     const isInRange = (panel) => {
-      const d = previewDate.value;
+      const d = uiState.previewDate;
       if (!d) return true;
-      const dt = `${d} ${previewTime.value || '00:00'}`;
+      const dt = `${d} ${uiState.previewTime || '00:00'}`;
       if (panel.dispStartDate && dt < `${panel.dispStartDate} ${panel.dispStartTime || '00:00'}`) return false;
       if (panel.dispEndDate   && dt > `${panel.dispEndDate}   ${panel.dispEndTime   || '23:59'}`) return false;
       return true;
@@ -179,8 +178,8 @@ window.XsSample12 = {
     const selectAllAreas = () => { cfAllAreas.value.forEach(a => selectedAreas.add(a.codeValue)); };
     const clearAllAreas  = () => { selectedAreas.clear(); };
     const resetDate = () => {
-      previewDate.value = today;
-      previewTime.value = new Date().toTimeString().slice(0, 5);
+      uiState.previewDate = today;
+      uiState.previewTime = new Date().toTimeString().slice(0, 5);
     };
     /* 초기화 */
     initExpand();

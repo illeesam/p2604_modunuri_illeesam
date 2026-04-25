@@ -6,8 +6,7 @@ window.SyUserMng = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const users = reactive([]);
     const depts = reactive([]);
-    const boUsers = ref([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+        const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, boUsers: [], selectedDeptId: null});
     const codes = reactive({ user_status: [] });
 
     // onMounted에서 API 로드
@@ -18,7 +17,7 @@ window.SyUserMng = {
           window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 10000 } }),
           window.boApi.get('/bo/sy/dept/page', { params: { pageNo: 1, pageSize: 10000 } }),
         ]);
-        boUsers.value = resUsers.data?.data?.list || [];
+        uiState.boUsers = resUsers.data?.data?.list || [];
         depts.splice(0, depts.length, ...(resDepts.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
@@ -30,10 +29,9 @@ window.SyUserMng = {
       }
     };
     /* 좌측 부서 트리 */
-    const selectedDeptId = ref(null);
-    const expanded = reactive(new Set([null]));
+        const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
-    const selectNode = (id) => { selectedDeptId.value = id; };
+    const selectNode = (id) => { uiState.selectedDeptId = id; };
     const cfTree = computed(() => window.boCmUtil.buildDeptTree());
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
@@ -76,8 +74,8 @@ window.SyUserMng = {
     });
     /* 선택 부서 + 자손의 dept 이름 Set */
     const cfAllowedDeptNms = computed(() => {
-      if (selectedDeptId.value == null) return null;
-      const desc = window.boCmUtil.collectDescendantIds(depts, 'deptId', 'parentId', selectedDeptId.value);
+      if (uiState.selectedDeptId == null) return null;
+      const desc = window.boCmUtil.collectDescendantIds(depts, 'deptId', 'parentId', uiState.selectedDeptId);
       if (!desc) return null;
       return new Set((depts || []).filter(d => desc.has(d.deptId)).map(d => d.deptNm));
     });
@@ -94,20 +92,19 @@ window.SyUserMng = {
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
-    const selectedId = ref(null);
-    const openMode = ref('view'); // 'view' | 'edit'
-    const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
-    const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
-    const closeDetail = () => { selectedId.value = null; };
+    const uiStateDetail = reactive({ selectedId: null: 'view' });
+    const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
+    const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
+    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
+    const closeDetail = () => { uiStateDetail.selectedId = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'syUserMng') { selectedId.value = null; return; }
-      if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
+      if (pg === 'syUserMng') { uiStateDetail.selectedId = null; return; }
+      if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
+    const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
+    const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
     const cfFiltered = computed(() => boUsers.value.filter(u => {
       if (cfAllowedDeptNms.value && !cfAllowedDeptNms.value.has(u.dept)) return false;
@@ -147,7 +144,7 @@ window.SyUserMng = {
       if (!ok) return;
       const idx = boUsers.value.findIndex(x => x.boUserId === u.boUserId);
       if (idx !== -1) boUsers.value.splice(idx, 1);
-      if (selectedId.value === u.boUserId) selectedId.value = null;
+      if (uiStateDetail.selectedId === u.boUserId) uiStateDetail.selectedId = null;
       try {
         const res = await window.boApi.delete(`/bo/sy/user/${u.boUserId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -162,7 +159,7 @@ window.SyUserMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'boUserId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'권한',key:'role'},{label:'부서',key:'dept'},{label:'상태',key:'statusCd'},{label:'최종로그인',key:'lastLogin'}], '사용자목록.csv');
 
-    return { users, uiState, codes, selectedDeptId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, users, uiState, codes, selectedDeptId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>

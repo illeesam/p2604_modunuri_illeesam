@@ -5,7 +5,7 @@ window.StReconClaimMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({
       claim_statuses: [],
     });
@@ -32,13 +32,11 @@ window.StReconClaimMng = {
       }
     });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const dateRange = ref('이번달');
-    const dateStart = ref('');
-    const dateEnd   = ref('');
+            const dateEnd   = ref('');
     const handleDateRangeChange = () => {
-      if (dateRange.value) { const r = window.boCmUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
+      if (uiState.dateRange) { const r = window.boCmUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
-    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
+    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     const claimsList = reactive([]);
 
@@ -53,8 +51,7 @@ window.StReconClaimMng = {
     Object.assign(searchParamOrg, searchParam); });
 
   const searchParam = reactive({
-    diff: ''
-  });
+    diff: '', dateEnd: ''});;
   const searchParamOrg = reactive({
     diff: ''
   });
@@ -62,8 +59,8 @@ window.StReconClaimMng = {
 
     const cfRows = computed(() => {
       return window.safeArrayUtils.safeFilter(claimsList, c => {
-        if (dateStart.value && c.requestDate.slice(0,10) < dateStart.value) return false;
-        if (dateEnd.value   && c.requestDate.slice(0,10) > dateEnd.value)   return false;
+        if (uiState.dateStart && c.requestDate.slice(0,10) < uiState.dateStart) return false;
+        if (uiState.dateEnd   && c.requestDate.slice(0,10) > uiState.dateEnd)   return false;
         return true;
       }).map(c => {
         const refundAmt  = c.refundAmount || 0;

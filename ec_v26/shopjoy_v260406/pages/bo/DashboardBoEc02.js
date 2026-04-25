@@ -92,7 +92,7 @@
       };
 
       /* ── UI 상태 ── */
-      const uiState = reactive({ filterExpand: false });
+      const uiState = reactive({ filterExpand: false, activeTab: 'sales', viewMode: '4col'});;
       const activeTab    = ref('sales');
       const viewMode     = ref('4col'); // tab | 1col | 2col | 3col | 4col
       const TABS = [
@@ -120,10 +120,10 @@
         { key: '4col', icon: '▭▭▭▭', label: '4열' },
       ];
       const cfGridCols = computed(() => {
-        if (viewMode.value === 'tab') return '1fr';
-        return 'repeat(' + parseInt(viewMode.value) + ',minmax(0,1fr))';
+        if (uiState.viewMode === 'tab') return '1fr';
+        return 'repeat(' + parseInt(uiState.viewMode) + ',minmax(0,1fr))';
       });
-      const showPanel = (key) => viewMode.value === 'tab' ? activeTab.value === key : true;
+      const showPanel = (key) => uiState.viewMode === 'tab' ? uiState.activeTab === key : true;
 
       /* ── 보조 대시보드 (원본 KPI 섹션) ── */
       const cfTotalSales    = computed(() => cfMonthlySales.value.reduce((a,b)=>a+b,0));

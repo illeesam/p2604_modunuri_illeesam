@@ -5,7 +5,7 @@ window.SyBbmMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const bbms = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null});
     const codes = reactive({ bbm_type: [], bbm_status: [] });
 
     // onMounted에서 API 로드
@@ -26,10 +26,9 @@ window.SyBbmMng = {
       }
     };
     /* 표시경로 트리/픽커 (sy_path biz_cd=sy_bbm) */
-    const selectedPath = ref(null);
-    const expanded = reactive(new Set([null]));
+        const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
-    const selectNode = (id) => { selectedPath.value = id; };
+    const selectNode = (id) => { uiState.selectedPath = id; };
     const cfTree = computed(() => window.boCmUtil.buildPathTree('sy_bbm'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
@@ -103,8 +102,8 @@ window.SyBbmMng = {
       if (kw && !b.bbmNm.toLowerCase().includes(kw) && !b.bbmCode.toLowerCase().includes(kw)) return false;
       if (searchParam.type && b.bbmType !== searchParam.type) return false;
       if (searchParam.useYn && b.useYn !== searchParam.useYn) return false;
-      if (selectedPath.value != null) {
-        const _desc = window.boCmUtil.getPathDescendants('sy_bbm', selectedPath.value);
+      if (uiState.selectedPath != null) {
+        const _desc = window.boCmUtil.getPathDescendants('sy_bbm', uiState.selectedPath);
         if (_desc && !_desc.has(b.pathId)) return false;
       }
       return true;

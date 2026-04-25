@@ -5,9 +5,8 @@ window.PmDiscntDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const discntList = ref([]);
-    const discounts = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false });
+        const discounts = reactive([]);
+    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, discntList: [], tab: window._pmDiscntDtlState.tab || 'info', viewMode2: window._pmDiscntDtlState.viewMode || 'tab'});
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -19,7 +18,7 @@ window.PmDiscntDtl = {
         });
         const list = res.data?.data?.list || [];
         discounts.splice(0, discounts.length, ...list);
-        discntList.value = list;
+        uiState.discntList = list;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -30,11 +29,9 @@ window.PmDiscntDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-    const tab = ref(window._pmDiscntDtlState.tab || 'info');
-    watch(tab, v => { window._pmDiscntDtlState.tab = v; });
-    const viewMode2 = ref(window._pmDiscntDtlState.viewMode || 'tab');
-    watch(viewMode2, v => { window._pmDiscntDtlState.viewMode = v; });
-    const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
+        watch(tab, v => { window._pmDiscntDtlState.tab = v; });
+        watch(viewMode2, v => { window._pmDiscntDtlState.viewMode = v; });
+    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -108,7 +105,7 @@ window.PmDiscntDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (!discntList.value) discntList.value = [];
+      if (!uiState.discntList) uiState.discntList = [];
       if (cfIsNew.value) {
         discntList.value.push({
           ...form,
@@ -117,7 +114,7 @@ window.PmDiscntDtl = {
         });
       } else {
         const idx = discntList.value.findIndex(x => x.discntId === props.editId);
-        if (idx !== -1) Object.assign(discntList.value[idx], { ...form });
+        if (idx !== -1) Object.assign(uiState.discntList[idx], { ...form });
       }
       try {
         const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }) : window.boApi.put(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }));

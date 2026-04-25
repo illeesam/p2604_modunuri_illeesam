@@ -5,7 +5,7 @@ window.StErpReconMng = {
   setup(props) {
     const { ref, reactive, computed, watch } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({
       erp_recon_statuses: [],
     });
@@ -32,13 +32,11 @@ window.StErpReconMng = {
       }
     });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const dateRange = ref('이번달');
-    const dateStart = ref('');
-    const dateEnd   = ref('');
+            const dateEnd   = ref('');
     const handleDateRangeChange = () => {
-      if (dateRange.value) { const r = window.boCmUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
+      if (uiState.dateRange) { const r = window.boCmUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
-    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
+    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     const reconList = reactive([
       { reconId: 'ERECON-001', reconDate: '2026-04-12', slipId: 'ERP-2026-0411-001', slipType: '정산',    sysAmt: 300000, erpAmt: 300000, diff: 0,     diffStatus: '일치',  remark: '' },
@@ -52,8 +50,7 @@ window.StErpReconMng = {
 
   const searchParam = reactive({
     diff: '',
-    type: ''
-  });
+    type: '', dateEnd: ''});;
   const searchParamOrg = reactive({
     diff: '',
     type: ''
@@ -62,8 +59,8 @@ window.StErpReconMng = {
 
     const cfFiltered = computed(() => {
       return window.safeArrayUtils.safeFilter(reconList, r => {
-        if (dateStart.value && r.reconDate < dateStart.value) return false;
-        if (dateEnd.value   && r.reconDate > dateEnd.value)   return false;
+        if (uiState.dateStart && r.reconDate < uiState.dateStart) return false;
+        if (uiState.dateEnd   && r.reconDate > uiState.dateEnd)   return false;
         if (searchDiff.value && r.diffStatus !== searchDiff.value) return false;
         if (searchType.value && r.slipType   !== searchType.value) return false;
         return true;

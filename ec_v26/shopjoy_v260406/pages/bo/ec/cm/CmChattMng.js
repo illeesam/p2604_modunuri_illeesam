@@ -60,8 +60,7 @@ window.CmChattMng = {
     });
 
     /* 하단 상세 */
-    const selectedId = ref(null);
-    const openMode = ref('view');
+    const uiStateDetail = reactive({ selectedId: null, openMode: 'view' }); // 'view' | 'edit'
   const searchParam = reactive({
     kw: '',
     dateRange: '',
@@ -75,19 +74,19 @@ window.CmChattMng = {
     dateStart: '',
     dateEnd: '',
     status: ''
-  }); // 'view' | 'edit'
-    const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
-    const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
-    const closeDetail = () => { selectedId.value = null; };
+  });
+    const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
+    const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
+    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
+    const closeDetail = () => { uiStateDetail.selectedId = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'cmChattMng') { selectedId.value = null; return; }
-      if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
+      if (pg === 'cmChattMng') { uiStateDetail.selectedId = null; return; }
+      if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
+    const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
+    const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
     const cfSorted = computed(() => [...chatts].sort((a, b) => b.date.localeCompare(a.date)));
 
@@ -136,7 +135,7 @@ window.CmChattMng = {
       if (!ok) return;
       const idx = chats.value.findIndex(x => x.chatId === c.chatId);
       if (idx !== -1) chats.value.splice(idx, 1);
-      if (selectedId.value === c.chatId) selectedId.value = null;
+      if (uiStateDetail.selectedId === c.chatId) uiStateDetail.selectedId = null;
       try {
         const res = await window.boApi.delete(`/bo/ec/cm/chatt/${c.chatId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -151,7 +150,7 @@ window.CmChattMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'채팅ID',key:'chattId'},{label:'회원명',key:'userNm'},{label:'상태',key:'status'},{label:'마지막메시지',key:'lastMessage'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
 
-    return { chatts, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { chatts, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, uiStateDetail, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -181,10 +180,10 @@ window.CmChattMng = {
       </tr></thead>
       <tbody>
         <tr v-if="cfPageList.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="c in cfPageList" :key="c?.chatId" :style="selectedId===c.chatId?'background:#fff8f9;':''">
+        <tr v-for="c in cfPageList" :key="c?.chatId" :style="uiStateDetail.selectedId===c.chatId?'background:#fff8f9;':''">
           <td>{{ c.chatId }}</td>
           <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
-          <td><span class="title-link" @click="handleLoadDetail(c.chatId)" :style="selectedId===c.chatId?'color:#e8587a;font-weight:700;':''">{{ c.subject }}<span v-if="selectedId===c.chatId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="handleLoadDetail(c.chatId)" :style="uiStateDetail.selectedId===c.chatId?'color:#e8587a;font-weight:700;':''">{{ c.subject }}<span v-if="uiStateDetail.selectedId===c.chatId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#888;">{{ c.lastMsg || '-' }}</td>
           <td>{{ c.messages.length }}개</td>
           <td>
@@ -219,12 +218,12 @@ window.CmChattMng = {
   </div>
 
   <!-- 하단 상세: ChattDtl 임베드 -->
-  <div v-if="selectedId" style="margin-top:4px;">
+  <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
     <cm-chatt-dtl
-      :key="selectedId"
+      :key="uiStateDetail.selectedId"
       :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"

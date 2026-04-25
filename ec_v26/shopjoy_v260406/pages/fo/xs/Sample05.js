@@ -7,7 +7,7 @@ window.XsSample05 = {
   name: 'XsSample05',
   setup() {
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dragSrc: null, focusedIdx: null});
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -40,8 +40,7 @@ window.XsSample05 = {
     const allData    = reactive([]);
     const gridRows   = reactive([]);
     let   _tempId    = -1;
-    const focusedIdx = ref(null);
-    const EDIT_FIELDS = ['title', 'author', 'category', 'status'];
+        const EDIT_FIELDS = ['title', 'author', 'category', 'status'];
     const toRow = d => ({ boardId: d.sample1Id, title: d.cdNm || '', author: d.col01 || '', category: d.col02 || '공지', viewCnt: Number(d.col03) || 0, status: d.useYn === 'Y' ? '공개' : '비공개', regDate: d.regDt || '' });
     const toPayload = r => ({ cdGrp: CD_GRP, cdNm: r.title, col01: r.author, col02: r.category, col03: String(r.viewCnt || 0), useYn: r.status === '공개' ? 'Y' : 'N' });
     const makeRow = d => ({ ...d, _row_status: 'N', _row_check: false, _orig: { title: d.title, author: d.author, category: d.category, status: d.status } });
@@ -54,7 +53,7 @@ window.XsSample05 = {
     const setPage    = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const getRealIdx = i => (pager.page - 1) * pager.size + i;
     const handleLoadGrid = () => {
-      gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
+      gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
       allData.filter(d => {
         const kw = searchParam.kw.toLowerCase();
         if (kw && !['title', 'author'].some(f => String(d[f] || '').toLowerCase().includes(kw))) return false;
@@ -77,15 +76,15 @@ window.XsSample05 = {
     });
     const onSearch = () => { handleLoadGrid(); };
     const onReset  = () => { Object.assign(searchParam, searchParamOrg); handleLoadGrid(); };
-    const setFocused   = idx => { focusedIdx.value = idx; };
+    const setFocused   = idx => { uiState.focusedIdx = idx; };
     const onCellChange = row => { if (row._row_status === 'I' || row._row_status === 'D') return; row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._orig[f])) ? 'U' : 'N'; };
     const addRow = () => {
-      const at = focusedIdx.value !== null ? focusedIdx.value + 1 : gridRows.length;
+      const at = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(at, 0, { boardId: _tempId--, title: '', author: '', category: '공지', viewCnt: 0, status: '공개', regDate: '', _row_status: 'I', _row_check: false, _orig: null });
-      focusedIdx.value = at; pager.page = Math.ceil((at + 1) / pager.size);
+      uiState.focusedIdx = at; pager.page = Math.ceil((at + 1) / pager.size);
     };
-    const deleteRow = idx => { const row = gridRows[idx]; if (row._row_status === 'I') { gridRows.splice(idx, 1); if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= idx ? 1 : 0)); } else row._row_status = 'D'; };
-    const cancelRow = idx => { const row = gridRows[idx]; if (row._row_status === 'I') { gridRows.splice(idx, 1); if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= idx ? 1 : 0)); } else { if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; } };
+    const deleteRow = idx => { const row = gridRows[idx]; if (row._row_status === 'I') { gridRows.splice(idx, 1); if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); } else row._row_status = 'D'; };
+    const cancelRow = idx => { const row = gridRows[idx]; if (row._row_status === 'I') { gridRows.splice(idx, 1); if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); } else { if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; } };
     const deleteRows    = () => { for (let i = gridRows.length - 1; i >= 0; i--) { if (!gridRows[i]._row_check) continue; if (gridRows[i]._row_status === 'I') gridRows.splice(i, 1); else gridRows[i]._row_status = 'D'; } };
     const cancelChecked = () => { const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.boardId)); if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; } for (let i = gridRows.length - 1; i >= 0; i--) { const row = gridRows[i]; if (!ids.has(row.boardId)) continue; if (row._row_status === 'N') continue; if (row._row_status === 'I') gridRows.splice(i, 1); else { if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; } } };
     const handleSave = async () => {
@@ -105,11 +104,11 @@ window.XsSample05 = {
         handleLoadGrid();
       } catch (e) { showToast('저장 실패: ' + (e.response?.data?.message || e.message || e), 'error'); }
     };
-    const dragSrc = ref(null);
-    const uiState = reactive({ dragMoved: false, checkAll: false });
-    const onDragStart = idx => { dragSrc.value = idx; uiState.dragMoved = false; };
-    const onDragOver  = (e, idx) => { e.preventDefault(); if (dragSrc.value === null || dragSrc.value === idx) return; const m = gridRows.splice(dragSrc.value, 1)[0]; gridRows.splice(idx, 0, m); dragSrc.value = idx; uiState.dragMoved = true; };
-    const onDragEnd   = () => { if (uiState.dragMoved) showToast('정렬이 변경되었습니다.'); dragSrc.value = null; uiState.dragMoved = false; };
+    
+    const uiState = reactive({ dragMoved: false, checkAll: false, dragSrc: null });
+    const onDragStart = idx => { uiState.dragSrc = idx; uiState.dragMoved = false; };
+    const onDragOver  = (e, idx) => { e.preventDefault(); if (uiState.dragSrc === null || uiState.dragSrc === idx) return; const m = gridRows.splice(uiState.1)[0]; gridRows.splice(idx, 0, m); uiState.dragSrc = idx; uiState.dragMoved = true; };
+    const onDragEnd   = () => { if (uiState.dragMoved) showToast('정렬이 변경되었습니다.'); uiState.dragSrc = null; uiState.dragMoved = false; };
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
     const fnStatusBadge = s => ({ N: 'background:#f0f0f0;color:#666;', I: 'background:#dbeafe;color:#1e40af;', U: 'background:#fef3c7;color:#92400e;', D: 'background:#fee2e2;color:#991b1b;' }[s] || '');
     const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
@@ -118,7 +117,7 @@ window.XsSample05 = {
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, getRealIdx,
       focusedIdx, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
-      dragSrc, onDragStart, onDragOver, onDragEnd,
+      onDragStart, onDragOver, onDragEnd,
       uiState, toggleCheckAll, fnStatusBadge, rowBg,
     , uiState, codes };
   },
