@@ -3,6 +3,7 @@ window.BlogEdit = {
   name: 'BlogEdit',
   props: ['navigate', 'config', 'editId', 'showToast'],
   setup(props) {
+    const { ref, computed, reactive, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
@@ -25,7 +26,6 @@ window.BlogEdit = {
         fnLoadCodes();
       }
     });
-    const { ref, computed, reactive, onMounted , watch } = Vue;
 
     const cfIsEdit = computed(() => !!props.editId);
     const form = reactive({

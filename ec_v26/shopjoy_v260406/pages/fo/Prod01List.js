@@ -7,7 +7,7 @@ window.Prod01List = {
     const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
 
     const PAGE_SIZE   = 12;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, searchText: '', priceMin: '', priceMax: '', currentPage: 1, mobileCount: PAGE_SIZE, uiState.isMobile: window.innerWidth < 768 });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, searchText: '', priceMin: '', priceMax: '', currentPage: 1, mobileCount: PAGE_SIZE, isMobile: window.innerWidth < 768 });
     const codes = reactive({});
 
     const isAppReady = computed(() => {

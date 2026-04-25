@@ -4,6 +4,7 @@ window.Cart = {
   props: ['navigate', 'config', 'cart', 'cartCount', 'removeFromCart', 'updateCartQty', 'showConfirm', 'clearCart'],
   emits: [],
   setup(props) {
+    const { computed, ref, reactive, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
@@ -26,7 +27,6 @@ window.Cart = {
         fnLoadCodes();
       }
     });
-    const { computed, ref, reactive , watch } = Vue;
 
     /* ── 체크박스 ── */
     const checkedIdxs = reactive(new Set());

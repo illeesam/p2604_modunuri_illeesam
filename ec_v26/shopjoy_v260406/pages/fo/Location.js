@@ -3,7 +3,7 @@ window.Location = {
   name: 'Location',
   props: ['navigate', 'config'],
   setup() {
-
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, mapProvider: 'kakao', mapSrc: '' });
     const codes = reactive({});
 
@@ -25,7 +25,6 @@ window.Location = {
         fnLoadCodes();
       }
     });
-    const { ref, reactive, onMounted , watch } = Vue;
 
     const LAT  = 37.4407;
     const LNG  = 127.1468;

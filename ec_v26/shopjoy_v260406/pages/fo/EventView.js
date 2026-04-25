@@ -3,6 +3,7 @@ window.EventView = {
   name: 'EventView',
   props: ['navigate', 'config', 'editId'],
   setup(props) {
+    const { ref, reactive, computed, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 0});
     const codes = reactive({});
@@ -25,7 +26,6 @@ window.EventView = {
         fnLoadCodes();
       }
     });
-    const { ref, computed , watch } = Vue;
 
     /* ── 이벤트 데이터 ── */
     const events = [

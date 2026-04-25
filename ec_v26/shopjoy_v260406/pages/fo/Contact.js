@@ -77,11 +77,11 @@ window.Contact = {
       <div class="card" style="padding:24px;">
         <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:4px;color:var(--text-primary);">❓ 자주 묻는 질문</h3>
         <div v-for="(faq, idx) in config.faqs.slice(0,3)" :key="idx" class="faq-item">
-          <button class="faq-question" @click="openFaq=(openFaq===('c'+idx)?null:('c'+idx))">
+          <button class="faq-question" @click="uiState.openFaq=(uiState.uiState.openFaq===('c'+idx)?null:('c'+idx))">
             <span>{{ faq.q }}</span>
-            <span class="chevron" :class="{open: openFaq===('c'+idx)}">▼</span>
+            <span class="chevron" :class="{open: uiState.openFaq===('c'+idx)}">▼</span>
           </button>
-          <div v-show="openFaq===('c'+idx)" class="faq-answer">{{ faq.a }}</div>
+          <div v-show="uiState.openFaq===('c'+idx)" class="faq-answer">{{ faq.a }}</div>
         </div>
         <button class="btn-outline btn-sm" @click="navigate('faq')" style="margin-top:12px;width:100%;">전체 FAQ 보기</button>
       </div>
@@ -148,6 +148,6 @@ window.Contact = {
       Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
     };
 
-    return { form, errors, openFaq, clearErr, handleSubmit, cfInquiryCodes , uiState, codes };
+    return { form, errors, clearErr, handleSubmit, cfInquiryCodes, uiState, codes };
   }
 };

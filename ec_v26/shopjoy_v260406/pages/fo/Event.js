@@ -3,6 +3,7 @@ window.Event = {
   name: 'Event',
   props: ['navigate', 'config'],
   setup(props) {
+    const { ref, reactive, computed, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'ongoing', sortBy: 'latest'});;
     const codes = reactive({});
@@ -25,7 +26,6 @@ window.Event = {
         fnLoadCodes();
       }
     });
-    const { ref, reactive, computed , watch } = Vue;
 
      // ongoing | ended
     const sortBy    = ref('latest');  // latest | deadline

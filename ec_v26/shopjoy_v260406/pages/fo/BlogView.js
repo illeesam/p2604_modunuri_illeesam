@@ -3,6 +3,7 @@ window.BlogView = {
   name: 'BlogView',
   props: ['navigate', 'config', 'editId'],
   setup(props) {
+    const { ref, reactive, computed, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, commentText: ''});
     const codes = reactive({});
@@ -25,7 +26,6 @@ window.BlogView = {
         fnLoadCodes();
       }
     });
-    const { ref, reactive, computed, onMounted , watch } = Vue;
 
     const posts = [
       { id: 1, title: 'Anteposuerit litterarum formas.', category: 'Fashion', author: '김민지', date: '2026.04.10', readTime: '5분',
