@@ -271,8 +271,8 @@ window.PdCategoryProdMng = {
 
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b'];
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
-    const depthColor  = d => DEPTH_COLORS[d % 4];
-    const depthBullet = d => DEPTH_BULLETS[Math.min(d, 3)];
+    const fnDepthColor  = d => DEPTH_COLORS[d % 4];
+    const fnDepthBullet = d => DEPTH_BULLETS[Math.min(d, 3)];
 
     return {
       viewMode, TYPE_TABS, activeTypeCd, cfTypeCountMap,
@@ -286,7 +286,7 @@ window.PdCategoryProdMng = {
       dragIdx, dragoverIdx, onDragStart, onDragOver, onDrop,
       pickerOpen, pickerSearch, cfPickerList, addProd,
       onSave, getProd, getProdNm,
-      depthColor, depthBullet,
+      fnDepthColor, fnDepthBullet,
     };
   },
 
@@ -334,7 +334,7 @@ window.PdCategoryProdMng = {
             {{ isExpanded(cat.categoryId) ? '▼' : '▶' }}
           </span>
           <span v-else style="width:14px;flex-shrink:0"></span>
-          <span :style="{ fontSize:'11px', fontWeight:700, color:depthColor(cat._depth) }">{{ depthBullet(cat._depth) }}</span>
+          <span :style="{ fontSize:'11px', fontWeight:700, color:fnDepthColor(cat._depth) }">{{ fnDepthBullet(cat._depth) }}</span>
           <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ cat.categoryNm }}</span>
           <span v-if="totalProdCount(cat.categoryId) > 0"
                 style="font-size:10px;background:#1677ff;color:#fff;border-radius:8px;padding:0 5px;flex-shrink:0">
@@ -358,8 +358,8 @@ window.PdCategoryProdMng = {
         <!-- 카테고리명 + 저장/추가 버튼 -->
         <div class="toolbar" style="margin-bottom:0">
           <span class="list-title">
-            <span :style="{ color: depthColor((cfSelectedCat?.depth||1)-1), fontWeight:700, marginRight:'4px' }">
-              {{ depthBullet((cfSelectedCat?.depth||1)-1) }}
+            <span :style="{ color: fnDepthColor((cfSelectedCat?.depth||1)-1), fontWeight:700, marginRight:'4px' }">
+              {{ fnDepthBullet((cfSelectedCat?.depth||1)-1) }}
             </span>
             {{ cfSelectedCat?.categoryNm }}
             <span v-if="!cfIsLeafCat" style="font-size:11px;color:#aaa;margin-left:6px">(하위 포함)</span>

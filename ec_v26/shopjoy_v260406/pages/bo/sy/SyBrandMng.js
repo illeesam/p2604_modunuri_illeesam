@@ -9,7 +9,7 @@ window.SyBrandMng = {
     const error = ref(null);
 
     // 현재 환경이 local인지 확인
-    const isLocalMode = computed(() => {
+    const cfIsLocalMode = computed(() => {
       try {
         const appStore = window.useBoAppStore?.();
         return appStore?.active === 'local';
@@ -104,7 +104,7 @@ window.SyBrandMng = {
 
     loadGrid();
 
-    const total = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
+    const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
     const onSearch = () => {
       Object.assign(applied, { kw: searchKw.value, useYn: searchUseYn.value,
@@ -180,7 +180,7 @@ window.SyBrandMng = {
       }
     };
 
-    const doSave = async () => {
+    const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I');
       const uRows = gridRows.filter(r => r._row_status === 'U');
       const dRows = gridRows.filter(r => r._row_status === 'D');
@@ -248,11 +248,11 @@ window.SyBrandMng = {
     const checkAll = ref(false);
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = checkAll.value; }); };
 
-    const statusClass  = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
-    const pagedRows    = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
-    const totalPages   = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
-    const pageNums     = computed(() => { const c = pager.page, l = totalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setPage      = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const fnStatusClass  = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
+    const cfPagedRows    = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
+    const cfTotalPages   = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
+    const cfPageNums     = computed(() => { const c = pager.page, l = cfTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
+    const setPage      = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
     const exportExcel = () => window.boCmUtil.exportCsv(
@@ -275,12 +275,12 @@ window.SyBrandMng = {
     const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { selectedPath.value = path; };
-    const tree = computed(() => window.boCmUtil.buildPathTree('sy_brand'));
-    const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
+    const cfTree = computed(() => window.boCmUtil.buildPathTree('sy_brand'));
+    const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
-      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
     watch(selectedPath, () => loadGrid());
@@ -288,12 +288,12 @@ window.SyBrandMng = {
     return { brands, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchKw, searchUseYn, searchDateRange, searchDateStart, searchDateEnd,
       DATE_RANGE_OPTIONS, onDateRangeChange, applied,
-      gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
-      focusedIdx, setFocused, onSearch, onReset, onCellChange, isLocalMode,
-      addRow, deleteRow, cancelRow, cancelChecked, deleteRows, doSave,
+      gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
+      focusedIdx, setFocused, onSearch, onReset, onCellChange, cfIsLocalMode,
+      addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       dragSrc, onDragStart, onDragOver, onDragEnd,
-      checkAll, toggleCheckAll, statusClass, exportExcel,
-      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
+      checkAll, toggleCheckAll, fnStatusClass, exportExcel,
+      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
     };
   },
   template: /* html */`
@@ -335,7 +335,7 @@ window.SyBrandMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedPath"
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPath"
           :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
@@ -347,14 +347,14 @@ window.SyBrandMng = {
         <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
         브랜드목록
         <span v-if="selectedPath" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ selectedPath }}</span>
-        <span class="list-count">{{ total }}건</span>
+        <span class="list-count">{{ cfTotal }}건</span>
       </span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
         <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
         <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
-        <button class="btn btn-primary btn-sm" @click="doSave">저장</button>
+        <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
       </div>
     </div>
 
@@ -362,16 +362,16 @@ window.SyBrandMng = {
       <thead>
         <tr>
           <th class="col-drag"></th>
-          <th class="col-id" :title="isLocalMode ? 'ID' : ''">ID</th>
-          <th class="col-status" :title="isLocalMode ? '상태' : ''">상태</th>
-          <th class="col-check" :title="isLocalMode ? '체크' : ''"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
-          <th style="min-width:140px;" :title="isLocalMode ? '표시경로' : ''"​>표시경로 <span style="font-size:10px;color:#aaa;font-weight:400;">(예: aa.bb.cc)</span></th>
-          <th style="min-width:110px;" :title="isLocalMode ? '브랜드코드' : ''">브랜드코드</th>
-          <th style="min-width:130px;" :title="isLocalMode ? '브랜드명' : ''">브랜드명</th>
-          <th style="min-width:130px;" :title="isLocalMode ? '영문명' : ''">영문명</th>
-          <th style="min-width:200px;" :title="isLocalMode ? '로고 URL' : ''">로고 URL</th>
-          <th class="col-ord" :title="isLocalMode ? '순서' : ''">순서</th>
-          <th class="col-use" :title="isLocalMode ? '사용여부' : ''">사용여부</th>
+          <th class="col-id" :title="cfIsLocalMode ? 'ID' : ''">ID</th>
+          <th class="col-status" :title="cfIsLocalMode ? '상태' : ''">상태</th>
+          <th class="col-check" :title="cfIsLocalMode ? '체크' : ''"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
+          <th style="min-width:140px;" :title="cfIsLocalMode ? '표시경로' : ''"​>표시경로 <span style="font-size:10px;color:#aaa;font-weight:400;">(예: aa.bb.cc)</span></th>
+          <th style="min-width:110px;" :title="cfIsLocalMode ? '브랜드코드' : ''">브랜드코드</th>
+          <th style="min-width:130px;" :title="cfIsLocalMode ? '브랜드명' : ''">브랜드명</th>
+          <th style="min-width:130px;" :title="cfIsLocalMode ? '영문명' : ''">영문명</th>
+          <th style="min-width:200px;" :title="cfIsLocalMode ? '로고 URL' : ''">로고 URL</th>
+          <th class="col-ord" :title="cfIsLocalMode ? '순서' : ''">순서</th>
+          <th class="col-use" :title="cfIsLocalMode ? '사용여부' : ''">사용여부</th>
           <th class="col-act-cancel"></th>
           <th class="col-act-delete"></th>
         </tr>
@@ -380,7 +380,7 @@ window.SyBrandMng = {
         <tr v-if="gridRows.length===0">
           <td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <tr v-for="(row, idx) in pagedRows" :key="row.brandId"
+        <tr v-for="(row, idx) in cfPagedRows" :key="row.brandId"
           class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
           draggable="true"
           @click="setFocused(getRealIdx(idx))"
@@ -391,7 +391,7 @@ window.SyBrandMng = {
           <td class="drag-handle" title="드래그로 순서 변경">⠿</td>
           <td class="col-id-val">{{ row.brandId > 0 ? row.brandId : 'NEW' }}</td>
           <td class="col-status-val">
-            <span class="badge badge-xs" :class="statusClass(row._row_status)">{{ row._row_status }}</span>
+            <span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span>
           </td>
           <td class="col-check-val">
             <input type="checkbox" v-model="row._row_check" />
@@ -408,23 +408,23 @@ window.SyBrandMng = {
           <td>
             <input class="grid-input grid-mono" v-model="row.brandCode"
               :disabled="row._row_status==='D'" @input="onCellChange(row)"
-              placeholder="BRAND_CODE" :title="isLocalMode ? '브랜드코드' : ''" />
+              placeholder="BRAND_CODE" :title="cfIsLocalMode ? '브랜드코드' : ''" />
           </td>
           <td>
             <input class="grid-input" v-model="row.brandNm"
               :disabled="row._row_status==='D'" @input="onCellChange(row)"
-              placeholder="브랜드명" :title="isLocalMode ? '브랜드명' : ''" />
+              placeholder="브랜드명" :title="cfIsLocalMode ? '브랜드명' : ''" />
           </td>
           <td>
             <input class="grid-input" v-model="row.brandEnNm"
               :disabled="row._row_status==='D'" @input="onCellChange(row)"
-              placeholder="Brand Name" :title="isLocalMode ? '영문명' : ''" />
+              placeholder="Brand Name" :title="cfIsLocalMode ? '영문명' : ''" />
           </td>
           <td>
             <div style="display:flex;align-items:center;gap:4px;">
               <input class="grid-input grid-mono" v-model="row.logoUrl"
                 :disabled="row._row_status==='D'" @input="onCellChange(row)"
-                placeholder="/images/brand/logo.png" style="flex:1;" :title="isLocalMode ? '로고 URL' : ''" />
+                placeholder="/images/brand/logo.png" style="flex:1;" :title="cfIsLocalMode ? '로고 URL' : ''" />
               <img v-if="row.logoUrl"
                 :src="row.logoUrl"
                 style="height:22px;max-width:44px;object-fit:contain;border-radius:3px;border:1px solid #e8e8e8;"
@@ -434,11 +434,11 @@ window.SyBrandMng = {
           </td>
           <td>
             <input class="grid-input grid-num" type="number" v-model.number="row.sortOrd"
-              :disabled="row._row_status==='D'" @input="onCellChange(row)" :title="isLocalMode ? '순서' : ''" />
+              :disabled="row._row_status==='D'" @input="onCellChange(row)" :title="cfIsLocalMode ? '순서' : ''" />
           </td>
           <td>
             <select class="grid-select" v-model="row.useYn"
-              :disabled="row._row_status==='D'" @change="onCellChange(row)" :title="isLocalMode ? '사용여부' : ''">
+              :disabled="row._row_status==='D'" @change="onCellChange(row)" :title="cfIsLocalMode ? '사용여부' : ''">
               <option value="Y">사용</option><option value="N">미사용</option>
             </select>
           </td>
@@ -459,9 +459,9 @@ window.SyBrandMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

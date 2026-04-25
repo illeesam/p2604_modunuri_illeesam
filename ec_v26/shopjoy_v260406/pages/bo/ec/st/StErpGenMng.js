@@ -12,7 +12,7 @@ window.StErpGenMng = {
     const orderList = reactive([]);
     const vendorList = reactive([]);
     const orders  = computed(() => orderList);
-    const vendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
+    const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
     const fetchData = async () => {
       try {
@@ -26,8 +26,8 @@ window.StErpGenMng = {
     };
     onMounted(() => { fetchData(); });
 
-    const previewRows = computed(() => {
-      return vendors.value.map(v => {
+    const cfPreviewRows = computed(() => {
+      return cfVendors.value.map(v => {
         const vOrders = window.safeArrayUtils.safeFilter(orders, o => o.vendorId === v.vendorId && o.status !== '취소됨' && o.orderDate.startsWith(targetMon.value));
         const sales   = vOrders.reduce((s, o) => s + o.totalPrice, 0);
         const comm    = Math.round(sales * 0.10);
@@ -42,17 +42,17 @@ window.StErpGenMng = {
     ]);
 
     const doGenerate = async () => {
-      if (!previewRows.value.length) { props.showToast('생성할 전표 데이터가 없습니다.', 'error'); return; }
+      if (!cfPreviewRows.value.length) { props.showToast('생성할 전표 데이터가 없습니다.', 'error'); return; }
       const ok = await props.showConfirm('ERP 전표생성', `${targetMon.value} ${slipType.value} 전표를 생성하시겠습니까?`);
       if (!ok) return;
       genHistory.unshift({
         genId: 'GEN-' + targetMon.value, genMon: targetMon.value, slipType: slipType.value,
-        slipCnt: previewRows.value.length,
-        totalAmt: previewRows.value.reduce((s, r) => s + r.debitAmt, 0),
+        slipCnt: cfPreviewRows.value.length,
+        totalAmt: cfPreviewRows.value.reduce((s, r) => s + r.debitAmt, 0),
         genDate: new Date().toISOString().slice(0,10), status: '생성완료', regUserNm: '관리자',
       });
       try {
-        const res = await window.boApi.post('/bo/ec/st/erp/gen', { targetMon: targetMon.value, slipType: slipType.value, rows: previewRows.value });
+        const res = await window.boApi.post('/bo/ec/st/erp/gen', { targetMon: targetMon.value, slipType: slipType.value, rows: cfPreviewRows.value });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('ERP 전표가 생성되었습니다.', 'success');
       } catch (err) {
@@ -62,10 +62,10 @@ window.StErpGenMng = {
       }
     };
 
-    const statusBadge = s => ({ '전송완료':'badge-green', '생성완료':'badge-blue', '오류':'badge-red' }[s] || 'badge-gray');
+    const fnStatusBadge = s => ({ '전송완료':'badge-green', '생성완료':'badge-blue', '오류':'badge-red' }[s] || 'badge-gray');
     const fmtW = n => Number(n||0).toLocaleString() + '원';
 
-    return { descOpen, targetMon, slipType, previewRows, genHistory, doGenerate, statusBadge, fmtW };
+    return { descOpen, targetMon, slipType, cfPreviewRows, genHistory, doGenerate, fnStatusBadge, fmtW };
   },
   template: /* html */`
 <div>
@@ -99,12 +99,12 @@ window.StErpGenMng = {
     </div>
 
     <!-- 미리보기 -->
-    <div v-if="previewRows.length" style="margin-top:16px">
-      <div style="font-weight:600;margin-bottom:8px;color:#555">전표 미리보기 ({{ previewRows.length }}건)</div>
+    <div v-if="cfPreviewRows.length" style="margin-top:16px">
+      <div style="font-weight:600;margin-bottom:8px;color:#555">전표 미리보기 ({{ cfPreviewRows.length }}건)</div>
       <table class="bo-table">
         <thead><tr><th>차변계정</th><th>대변계정</th><th>차변금액</th><th>대변금액</th><th>적요</th></tr></thead>
         <tbody>
-          <tr v-for="(r, idx) in previewRows" :key="Math.random()">
+          <tr v-for="(r, idx) in cfPreviewRows" :key="Math.random()">
             <td>{{ r.debit }}</td><td>{{ r.credit }}</td>
             <td style="font-weight:700;color:#3498db">{{ fmtW(r.debitAmt) }}</td>
             <td style="font-weight:700;color:#27ae60">{{ fmtW(r.creditAmt) }}</td>
@@ -128,7 +128,7 @@ window.StErpGenMng = {
           <td>{{ r.slipCnt }}건</td>
           <td style="font-weight:700">{{ fmtW(r.totalAmt) }}</td>
           <td>{{ r.genDate }}</td>
-          <td><span class="badge" :class="statusBadge(r.status)">{{ r.status }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td>
           <td>{{ r.regUserNm }}</td>
         </tr>
         <tr v-if="!genHistory.length"><td colspan="8" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>

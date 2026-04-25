@@ -30,7 +30,7 @@ window.StErpViewMng = {
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 10 });
 
-    const filtered = computed(() => {
+    const cfFiltered = computed(() => {
       const kw = searchKw.value.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(slips, r => {
         if (dateStart.value && r.slipDate < dateStart.value) return false;
@@ -41,10 +41,10 @@ window.StErpViewMng = {
         return true;
       });
     });
-    const total    = computed(() => filtered.value.length);
-    const totPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList = computed(() => filtered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    const pageNums = computed(() => { const c=pager.page,l=totPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfTotal  = computed(() => cfFiltered.value.length);
+    const cfTotPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
+    const cfPageNums = computed(() => { const c=pager.page,l=cfTotPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const doResend = async (r) => {
       const ok = await props.showConfirm('재전송', '전표를 ERP로 재전송하시겠습니까?');
@@ -61,15 +61,15 @@ window.StErpViewMng = {
       }
     };
 
-    const statusBadge = s => ({ '전송완료':'badge-green', '전송대기':'badge-blue', '오류':'badge-red' }[s] || 'badge-gray');
-    const typeBadge   = t => ({ '정산':'badge-blue', '수수료':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
+    const fnStatusBadge = s => ({ '전송완료':'badge-green', '전송대기':'badge-blue', '오류':'badge-red' }[s] || 'badge-gray');
+    const fnTypeBadge   = t => ({ '정산':'badge-blue', '수수료':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
     const fmtW = n => Number(n||0).toLocaleString() + '원';
     const onSearch = () => { pager.page = 1; };
     const onReset  = () => { searchKw.value = ''; searchType.value = ''; searchStatus.value = ''; dateRange.value = '이번달'; onDateRangeChange(); pager.page = 1; };
 
-    const setPage = n => { if (n >= 1 && n <= totPages.value) pager.page = n; };
+    const setPage = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    return { descOpen, DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, searchKw, searchType, searchStatus, pager, filtered, total, totPages, pageList, pageNums, doResend, statusBadge, typeBadge, fmtW, onSearch, onReset , PAGE_SIZES , setPage , onSizeChange };
+    return { descOpen, DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, searchKw, searchType, searchStatus, pager, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, doResend, fnStatusBadge, fnTypeBadge, fmtW, onSearch, onReset , PAGE_SIZES , setPage , onSizeChange };
   },
   template: /* html */`
 <div>
@@ -103,25 +103,25 @@ window.StErpViewMng = {
     </div>
   </div>
   <div class="card" style="margin-top:12px">
-    <div class="toolbar"><span class="list-count">총 {{ total }}건</span></div>
+    <div class="toolbar"><span class="list-count">총 {{ cfTotal }}건</span></div>
     <table class="bo-table">
       <thead><tr><th>전표ID</th><th>전표일자</th><th>유형</th><th>차변계정</th><th>대변계정</th><th>금액</th><th>적요</th><th>ERP전표번호</th><th>전송상태</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="r in pageList" :key="r?.slipId">
+        <tr v-for="r in cfPageList" :key="r?.slipId">
           <td style="font-size:11px">{{ r.slipId }}</td>
           <td>{{ r.slipDate }}</td>
-          <td><span class="badge" :class="typeBadge(r.slipType)">{{ r.slipType }}</span></td>
+          <td><span class="badge" :class="fnTypeBadge(r.slipType)">{{ r.slipType }}</span></td>
           <td>{{ r.debit }}</td>
           <td>{{ r.credit }}</td>
           <td style="font-weight:700">{{ fmtW(r.debitAmt) }}</td>
           <td style="font-size:12px;color:#555;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.description }}</td>
           <td style="font-size:11px;color:#888">{{ r.erpRef || '-' }}</td>
-          <td><span class="badge" :class="statusBadge(r.sendStatus)">{{ r.sendStatus }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(r.sendStatus)">{{ r.sendStatus }}</span></td>
           <td class="actions">
             <button v-if="r.sendStatus!=='전송완료'" class="btn btn-sm btn-blue" @click="doResend(r)">재전송</button>
           </td>
         </tr>
-        <tr v-if="!pageList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!cfPageList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">
@@ -129,9 +129,9 @@ window.StErpViewMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===totPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===totPages" @click="setPage(totPages)">»</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===cfTotPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===cfTotPages" @click="setPage(cfTotPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

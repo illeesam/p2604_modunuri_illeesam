@@ -1933,14 +1933,14 @@ window.DispPreviewModal = {
     const { computed } = Vue;
 
     /* mode=all: 해당 area의 활성 위젯 목록 */
-    const areaWidgets = computed(() =>
+    const cfAreaWidgets = computed(() =>
       props.widgets
         .filter(w => w.area === props.area && w.status === '활성')
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
     );
 
     /* mode=single: form 스냅샷에 status='활성' 강제 적용하여 렌더 */
-    const previewWidget = computed(() => ({ ...props.widget, status: '활성' }));
+    const cfPreviewWidget = computed(() => ({ ...props.widget, status: '활성' }));
 
     const WIDGET_LABEL = {
       image_banner: '이미지 배너', product_slider: '상품 슬라이더', product: '상품',
@@ -1949,9 +1949,9 @@ window.DispPreviewModal = {
       file: '파일', coupon: '쿠폰', html_editor: 'HTML 에디터',
       event_banner: '이벤트', cache_banner: '캐쉬', widget_embed: '위젯 임베드',
     };
-    const widgetLabel = computed(() => WIDGET_LABEL[props.widget?.widgetType] || props.widget?.widgetType || '');
+    const cfWidgetLabel = computed(() => WIDGET_LABEL[props.widget?.widgetType] || props.widget?.widgetType || '');
 
-    return { areaWidgets, previewWidget, widgetLabel };
+    return { cfAreaWidgets, cfPreviewWidget, cfWidgetLabel };
   },
   template: /* html */`
 <div v-if="show"
@@ -1965,7 +1965,7 @@ window.DispPreviewModal = {
       <div>
         <span style="font-size:14px;font-weight:700;color:#333;">👁 위젯미리보기</span>
         <span style="margin-left:8px;font-size:12px;color:#e8587a;font-weight:600;">{{ tabLabel }}</span>
-        <span v-if="mode==='single' && widgetLabel" style="margin-left:6px;font-size:11px;color:#aaa;">({{ widgetLabel }})</span>
+        <span v-if="mode==='single' && cfWidgetLabel" style="margin-left:6px;font-size:11px;color:#aaa;">({{ cfWidgetLabel }})</span>
         <span v-if="mode==='all' && area" style="margin-left:6px;font-size:11px;color:#aaa;">영역: {{ area }}</span>
       </div>
       <button @click="$emit('close')"
@@ -1977,13 +1977,13 @@ window.DispPreviewModal = {
 
       <!-- mode=all: 해당 area 전체 위젯 -->
       <template v-if="mode==='all'">
-        <div v-if="areaWidgets.length===0"
+        <div v-if="cfAreaWidgets.length===0"
           style="text-align:center;color:#bbb;padding:40px 0;font-size:13px;">
           <div style="font-size:32px;margin-bottom:8px;">📭</div>
           [{{ area }}] 영역에 활성 위젯이 없습니다.
         </div>
         <div v-else style="display:flex;flex-direction:column;gap:12px;">
-          <div v-for="w in areaWidgets" :key="w.dispId">
+          <div v-for="w in cfAreaWidgets" :key="w.dispId">
             <div style="font-size:10px;color:#bbb;margin-bottom:4px;font-family:monospace;">
               #{{ w.dispId }} {{ w.name }} · 순서{{ w.sortOrder }}
             </div>
@@ -2003,13 +2003,13 @@ window.DispPreviewModal = {
           현재 입력값 기준 실시간 위젯미리보기
         </div>
         <!-- widgetType 없으면 DispWidget 렌더 금지 (widgetType.startsWith 오류 방지) -->
-        <div v-if="previewWidget.widgetType"
+        <div v-if="cfPreviewWidget.widgetType"
           style="border:1px dashed #e0e0e0;border-radius:8px;padding:16px;background:#fafbff;">
           <disp-x04-widget
             :params="{ isLoggedIn: false, userGrade: '' }"
             :disp-dataset="{ displays: [], codes: [] }"
             :disp-opt="{ showBadges: true }"
-            :widget-item="previewWidget"
+            :widget-item="cfPreviewWidget"
           />
         </div>
         <div v-else
@@ -2113,16 +2113,16 @@ window.CategorySelectModal = {
 
     const kw = ref('');
 
-    const allCats = computed(() =>
+    const cfAllCats = computed(() =>
       ((window.dispDataset || {}).categories || [])
         .filter(c => c.status === '활성')
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
     );
 
     /* 루트/자식 */
-    const roots = computed(() => {
+    const cfRoots = computed(() => {
       const kwv = kw.value.trim().toLowerCase();
-      let list = allCats.value;
+      let list = cfAllCats.value;
       if (kwv) {
         const matchIds = new Set(list.filter(c => c.categoryNm.toLowerCase().includes(kwv)).map(c => c.categoryId));
         list = list.filter(c => matchIds.has(c.categoryId) || matchIds.has(c.parentId));
@@ -2132,7 +2132,7 @@ window.CategorySelectModal = {
 
     const childrenOf = (parentId) => {
       const kwv = kw.value.trim().toLowerCase();
-      let list = allCats.value.filter(c => c.parentId === parentId);
+      let list = cfAllCats.value.filter(c => c.parentId === parentId);
       if (kwv) list = list.filter(c => c.categoryNm.toLowerCase().includes(kwv));
       return list;
     };
@@ -2140,7 +2140,7 @@ window.CategorySelectModal = {
     /* 펼침 상태 — 루트는 기본 펼침 */
     const expanded = reactive(new Set());
     const toggleExpand = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
-    watchEffect(() => { roots.value.forEach(r => expanded.add(r.categoryId)); });
+    watchEffect(() => { cfRoots.value.forEach(r => expanded.add(r.categoryId)); });
 
     /* 선택 상태 (로컬 복사) */
     const localSel = reactive(new Set());
@@ -2149,14 +2149,14 @@ window.CategorySelectModal = {
     }, { immediate: true });
 
     /* 전체 선택 */
-    const allIds = computed(() => {
+    const cfAllIds = computed(() => {
       const ids = [];
-      roots.value.forEach(r => { ids.push(r.categoryId); childrenOf(r.categoryId).forEach(c => ids.push(c.categoryId)); });
+      cfRoots.value.forEach(r => { ids.push(r.categoryId); childrenOf(r.categoryId).forEach(c => ids.push(c.categoryId)); });
       return ids;
     });
-    const isAllOn  = computed(() => allIds.value.length > 0 && allIds.value.every(id => localSel.has(id)));
-    const isSomeOn = computed(() => !isAllOn.value && allIds.value.some(id => localSel.has(id)));
-    const toggleAll = () => { if (isAllOn.value) allIds.value.forEach(id => localSel.delete(id)); else allIds.value.forEach(id => localSel.add(id)); };
+    const isAllOn  = computed(() => cfAllIds.value.length > 0 && cfAllIds.value.every(id => localSel.has(id)));
+    const cfIsSomeOn = computed(() => !isAllOn.value && cfAllIds.value.some(id => localSel.has(id)));
+    const toggleAll = () => { if (isAllOn.value) cfAllIds.value.forEach(id => localSel.delete(id)); else cfAllIds.value.forEach(id => localSel.add(id)); };
 
     /* 루트 선택 (자식 포함) */
     const toggleRoot = (root) => {
@@ -2171,10 +2171,10 @@ window.CategorySelectModal = {
     /* 자식 선택 */
     const toggleChild = (id) => { if (localSel.has(id)) localSel.delete(id); else localSel.add(id); };
 
-    const reset = () => localSel.clear();
+    const onReset = () => localSel.clear();
     const apply = () => { emit('apply', [...localSel]); emit('close'); };
 
-    return { kw, roots, childrenOf, expanded, toggleExpand, localSel, toggleChild, toggleRoot, toggleAll, isRootFull, isRootPart, isAllOn, isSomeOn, reset, apply };
+    return { kw, cfRoots, childrenOf, expanded, toggleExpand, localSel, toggleChild, toggleRoot, toggleAll, isRootFull, isRootPart, isAllOn, cfIsSomeOn, onReset, apply };
   },
   template: /* html */`
 <div v-if="show" style="position:fixed;inset:0;background:rgba(0,0,0,0.42);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="$emit('close')">
@@ -2193,16 +2193,16 @@ window.CategorySelectModal = {
 
     <!-- 트리 목록 -->
     <div style="flex:1;overflow-y:auto;padding:4px 0;">
-      <div v-if="roots.length===0" style="text-align:center;padding:30px;font-size:12px;color:#bbb;">검색 결과 없음</div>
+      <div v-if="cfRoots.length===0" style="text-align:center;padding:30px;font-size:12px;color:#bbb;">검색 결과 없음</div>
 
       <!-- ① 전체 노드 -->
       <div @click="toggleAll"
         style="display:flex;align-items:center;gap:6px;padding:6px 12px;cursor:pointer;user-select:none;"
         :style="isAllOn?'background:#fff4f6;':''">
         <div style="width:14px;height:14px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
-          :style="isAllOn?'border-color:#e8587a;background:#e8587a;':isSomeOn?'border-color:#e8587a;background:#fce4ec;':'border-color:#aaa;background:#fff;'">
+          :style="isAllOn?'border-color:#e8587a;background:#e8587a;':cfIsSomeOn?'border-color:#e8587a;background:#fce4ec;':'border-color:#aaa;background:#fff;'">
           <span v-if="isAllOn"  style="color:#fff;font-size:9px;line-height:1;">✓</span>
-          <span v-else-if="isSomeOn" style="color:#e8587a;font-size:11px;font-weight:900;line-height:1;margin-top:-1px;">−</span>
+          <span v-else-if="cfIsSomeOn" style="color:#e8587a;font-size:11px;font-weight:900;line-height:1;margin-top:-1px;">−</span>
         </div>
         <span style="font-size:12px;font-weight:700;color:#333;">전체</span>
       </div>
@@ -2212,7 +2212,7 @@ window.CategorySelectModal = {
         <!-- 레벨1 세로선 (전체 → 루트들) -->
         <div style="position:absolute;left:19px;top:0;bottom:14px;width:1px;background:#d0d0d0;"></div>
 
-        <div v-for="root in roots" :key="root.categoryId">
+        <div v-for="root in cfRoots" :key="root.categoryId">
           <!-- 루트 행 -->
           <div style="display:flex;align-items:center;gap:4px;padding:5px 8px;cursor:pointer;user-select:none;"
             :style="isRootFull(root)?'background:#fff4f6;':isRootPart(root)?'background:#fffbf4;':''">
@@ -2265,7 +2265,7 @@ window.CategorySelectModal = {
     <!-- 하단 버튼 -->
     <div style="padding:9px 12px;border-top:1px solid #e0e0e0;display:flex;align-items:center;gap:8px;flex-shrink:0;">
       <span style="font-size:11px;color:#aaa;flex:1;">{{ localSel.size }}개 선택</span>
-      <button @click="reset" style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#666;cursor:pointer;">초기화</button>
+      <button @click="onReset" style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#666;cursor:pointer;">초기화</button>
       <button @click="apply" style="font-size:12px;padding:4px 16px;border:none;border-radius:6px;background:#e8587a;color:#fff;font-weight:700;cursor:pointer;">적용</button>
     </div>
   </div>
@@ -2864,9 +2864,9 @@ window.PanelPickModal = {
           <div class="pager">
             <button :disabled="pager.page===1" @click="pager.page=1">«</button>
             <button :disabled="pager.page===1" @click="pager.page--">‹</button>
-            <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
-            <button :disabled="pager.page===totalPages" @click="pager.page++">›</button>
-            <button :disabled="pager.page===totalPages" @click="pager.page=totalPages">»</button>
+            <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
+            <button :disabled="pager.page===cfTotalPages" @click="pager.page++">›</button>
+            <button :disabled="pager.page===cfTotalPages" @click="pager.page=cfTotalPages">»</button>
           </div>
           <div class="pager-right">
             <select class="size-select" v-model.number="pager.size" @change="pager.page=1">
@@ -2899,20 +2899,20 @@ window.WidgetLibPickModal = {
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
 
-    const filtered = computed(() => (props.widgetLibs || []).filter(d => {
+    const cfFiltered = computed(() => (props.widgetLibs || []).filter(d => {
       const kw = searchKw.value.trim().toLowerCase();
       if (kw && !(d.name||'').toLowerCase().includes(kw) && !(d.desc||'').toLowerCase().includes(kw) && !(d.tags||'').toLowerCase().includes(kw)) return false;
       if (searchType.value && d.widgetType !== searchType.value) return false;
       if (searchStatus.value && d.status !== searchStatus.value) return false;
       return true;
     }).sort((a,b) => b.libId - a.libId));
-    const total = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList = computed(() =>
-      filtered.value.slice((pager.page-1) * pager.size, pager.page * pager.size)
+    const cfTotal = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList = computed(() =>
+      cfFiltered.value.slice((pager.page-1) * pager.size, pager.page * pager.size)
     );
-    const pageNums = computed(() => {
-      const cur = pager.page, last = totalPages.value;
+    const cfPageNums = computed(() => {
+      const cur = pager.page, last = cfTotalPages.value;
       const s = Math.max(1, cur-2), e = Math.min(last, s+4);
       return Array.from({ length: e-s+1 }, (_, i) => s+i);
     });
@@ -2923,7 +2923,7 @@ window.WidgetLibPickModal = {
     const toggleTree = k => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
     const isTreeOpen = k => treeOpen.has(k);
     const selectTree = k => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
-    const tree = computed(() => {
+    const cfTree = computed(() => {
       const map = {};
       const add = (lib, p) => {
         const parts = p.split('>').map(x => x.trim()).filter(Boolean);
@@ -2933,7 +2933,7 @@ window.WidgetLibPickModal = {
         if (!map[top][rest]) map[top][rest] = [];
         map[top][rest].push(lib);
       };
-      filtered.value.forEach(lib => {
+      cfFiltered.value.forEach(lib => {
         if (!lib.usedPaths || !lib.usedPaths.length) add(lib, '(미등록) > (미등록)');
         else lib.usedPaths.forEach(p => add(lib, p));
       });
@@ -2957,8 +2957,8 @@ window.WidgetLibPickModal = {
 
     return {
       searchKw, searchType, searchStatus, WIDGET_TYPES,
-      pager, PAGE_SIZES, total, totalPages, pageList, pageNums,
-      tree, selectedTreeKey, toggleTree, isTreeOpen, selectTree,
+      pager, PAGE_SIZES, cfTotal, cfTotalPages, cfPageList, cfPageNums,
+      cfTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree,
       statusCls, onPick,
     };
   },
@@ -2995,10 +2995,10 @@ window.WidgetLibPickModal = {
         <div @click="toggleTree('__root__'); selectTree('')"
           :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',color: selectedTreeKey==='' ? '#1565c0' : '#222',fontWeight:700,border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec') }">
           <span>{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
-          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ total }}</span>
+          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ cfTotal }}</span>
         </div>
         <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
-          <div v-for="node in tree" :key="node.label">
+          <div v-for="node in cfTree" :key="node.label">
             <div @click="toggleTree(node.label); selectTree(node.label)"
               :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'5px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'2px',background: selectedTreeKey===node.label ? '#e3f2fd' : 'transparent',color: selectedTreeKey===node.label ? '#1565c0' : '#333',fontWeight: selectedTreeKey===node.label ? 700 : 500 }">
               <span>{{ isTreeOpen(node.label) ? '▼' : '▶' }} {{ node.label }}</span>
@@ -3010,7 +3010,7 @@ window.WidgetLibPickModal = {
 
       <!-- 목록 -->
       <div style="flex:1;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
-        <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;">총 <b>{{ total }}</b>건</div>
+        <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;">총 <b>{{ cfTotal }}</b>건</div>
         <div style="flex:1;overflow-y:auto;">
           <table class="bo-table" style="margin:0;">
             <thead>
@@ -3021,8 +3021,8 @@ window.WidgetLibPickModal = {
               </tr>
             </thead>
             <tbody>
-              <tr v-if="!pageList.length"><td colspan="3" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 데이터가 없습니다.</td></tr>
-              <tr v-for="d in pageList" :key="d.libId">
+              <tr v-if="!cfPageList.length"><td colspan="3" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 데이터가 없습니다.</td></tr>
+              <tr v-for="d in cfPageList" :key="d.libId">
                 <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">#{{ String(d.libId).padStart(4,'0') }}</td>
                 <td style="padding:10px 12px;">
                   <div style="margin-bottom:4px;">
@@ -3054,9 +3054,9 @@ window.WidgetLibPickModal = {
           <div class="pager">
             <button :disabled="pager.page===1" @click="pager.page=1">«</button>
             <button :disabled="pager.page===1" @click="pager.page--">‹</button>
-            <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
-            <button :disabled="pager.page===totalPages" @click="pager.page++">›</button>
-            <button :disabled="pager.page===totalPages" @click="pager.page=totalPages">»</button>
+            <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
+            <button :disabled="pager.page===cfTotalPages" @click="pager.page++">›</button>
+            <button :disabled="pager.page===cfTotalPages" @click="pager.page=cfTotalPages">»</button>
           </div>
           <div class="pager-right">
             <select class="size-select" v-model.number="pager.size" @change="pager.page=1">
@@ -3350,25 +3350,25 @@ window.BizPickModal = {
     /* 좌측 표시경로 트리 (sy_biz) */
     const selectedPathId = ref(null);
     const expanded = reactive(new Set([null]));
-    const tree = computed(() => window.boCmUtil.buildPathTree('sy_biz'));
+    const cfTree = computed(() => window.boCmUtil.buildPathTree('sy_biz'));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { selectedPathId.value = id; };
     Vue.onMounted(() => {
-      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
-    const allowedPathIds = computed(() => selectedPathId.value == null ? null : window.boCmUtil.getPathDescendants('sy_biz', selectedPathId.value));
+    const cfAllowedPathIds = computed(() => selectedPathId.value == null ? null : window.boCmUtil.getPathDescendants('sy_biz', selectedPathId.value));
 
-    const filtered = computed(() => bizs.filter(b => {
+    const cfFiltered = computed(() => bizs.filter(b => {
       const k = kw.value.trim().toLowerCase();
       if (k && !(b.bizNo||'').includes(k) && !(b.bizNm||'').toLowerCase().includes(k) && !(b.ceoNm||'').toLowerCase().includes(k)) return false;
       if (typeFlt.value && b.vendorTypeCd !== typeFlt.value) return false;
-      if (allowedPathIds.value && !allowedPathIds.value.has(b.pathId)) return false;
+      if (cfAllowedPathIds.value && !cfAllowedPathIds.value.has(b.pathId)) return false;
       return true;
     }));
     const pickAndClose = (b) => { emit('select', b); emit('close'); };
-    return { kw, typeFlt, VENDOR_TYPES, vtLabel, vtBadge, filtered, pickAndClose,
-             selectedPathId, expanded, tree, toggleNode, selectNode, onSearch, onReset };
+    return { kw, typeFlt, VENDOR_TYPES, vtLabel, vtBadge, cfFiltered, pickAndClose,
+             selectedPathId, expanded, cfTree, toggleNode, selectNode, onSearch, onReset };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -3396,7 +3396,7 @@ window.BizPickModal = {
       <!-- 좌측 표시경로 트리 -->
       <div style="border-right:1px solid #eef0f3;background:#fff;overflow:auto;padding:8px;">
         <div style="font-size:11px;font-weight:700;color:#666;margin-bottom:6px;padding:0 4px;">📂 표시경로</div>
-        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedPathId"
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPathId"
           :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
       <!-- 우측 사업자 목록 -->
@@ -3406,8 +3406,8 @@ window.BizPickModal = {
             <th>업체유형</th><th>사업자번호</th><th>상호</th><th>대표자</th><th></th>
           </tr></thead>
           <tbody>
-            <tr v-if="filtered.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">검색 결과가 없습니다.</td></tr>
-            <tr v-for="b in filtered" :key="b.bizId" @dblclick="pickAndClose(b)" style="cursor:pointer;">
+            <tr v-if="cfFiltered.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">검색 결과가 없습니다.</td></tr>
+            <tr v-for="b in cfFiltered" :key="b.bizId" @dblclick="pickAndClose(b)" style="cursor:pointer;">
               <td><span class="badge" :class="vtBadge(b.vendorTypeCd)" style="font-size:10px;">{{ vtLabel(b.vendorTypeCd) }}</span></td>
               <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;">{{ b.bizNo }}</code></td>
               <td style="font-weight:600;">{{ b.bizNm }}</td>
@@ -3445,15 +3445,15 @@ window.SimpleUserPickModal = {
     const onSearch = () => { fetchData(); };
     const onReset = () => { kw.value = ''; fetchData(); };
     Vue.onMounted(() => { fetchData(); });
-    const excl = computed(() => new Set(props.excludeIds || []));
-    const filtered = computed(() => boUsers.filter(u => {
-      if (excl.value.has(u.boUserId)) return false;
+    const cfExcl = computed(() => new Set(props.excludeIds || []));
+    const cfFiltered = computed(() => boUsers.filter(u => {
+      if (cfExcl.value.has(u.boUserId)) return false;
       const k = kw.value.trim().toLowerCase();
       if (k && !(u.name||'').toLowerCase().includes(k) && !(u.loginId||'').toLowerCase().includes(k) && !(u.email||'').toLowerCase().includes(k)) return false;
       return true;
     }));
     const pick = (u) => { emit('select', u); emit('close'); };
-    return { kw, filtered, pick, onSearch, onReset };
+    return { kw, cfFiltered, pick, onSearch, onReset };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -3477,8 +3477,8 @@ window.SimpleUserPickModal = {
       <table class="bo-table" style="background:#fff;">
         <thead><tr><th>이름</th><th>로그인ID</th><th>이메일</th><th>부서</th><th></th></tr></thead>
         <tbody>
-          <tr v-if="filtered.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">결과가 없습니다.</td></tr>
-          <tr v-for="u in filtered" :key="u.boUserId" @dblclick="pick(u)" style="cursor:pointer;">
+          <tr v-if="cfFiltered.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">결과가 없습니다.</td></tr>
+          <tr v-for="u in cfFiltered" :key="u.boUserId" @dblclick="pick(u)" style="cursor:pointer;">
             <td style="font-weight:600;">{{ u.name }}</td>
             <td><code style="font-size:11px;color:#2563eb;">{{ u.loginId }}</code></td>
             <td style="font-size:11.5px;color:#0369a1;">{{ u.email }}</td>

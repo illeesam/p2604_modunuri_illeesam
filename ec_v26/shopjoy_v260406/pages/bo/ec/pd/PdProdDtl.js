@@ -74,16 +74,16 @@ window.PdProdDtl = {
     const skus = reactive([]);      // [{_id, _optKey, _nm1, _nm2, skuCode, addPrice, stock, useYn}]
     // ── 옵션 공통코드 ([] 기반 — OPT_TYPE 2레벨 트리)
     const prodOptCategoryTypeCd = ref(''); // OPT_TYPE 1레벨 (의류/신발/가방/커스텀)
-    const optTypeLevel1Codes = computed(() =>
+    const cfOptTypeLevel1Codes = computed(() =>
       (codes||[]).filter(c => c.codeGrp==='OPT_TYPE' && c.useYn==='Y' && !c.parentCodeValue && c.codeValue!=='NONE')
         .sort((a,b) => a.sortOrd - b.sortOrd)
     );
-    const optTypeCodes = computed(() => {
+    const cfOptTypeCodes = computed(() => {
       if (!prodOptCategoryTypeCd.value) return [];
       return (codes||[]).filter(c => c.codeGrp==='OPT_TYPE' && c.useYn==='Y' && c.parentCodeValue===prodOptCategoryTypeCd.value)
         .sort((a,b) => a.sortOrd - b.sortOrd);
     });
-    const optInputTypeCodes = computed(() => (codes||[]).filter(c => c.codeGrp==='OPT_INPUT_TYPE' && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd));
+    const cfOptInputTypeCodes = computed(() => (codes||[]).filter(c => c.codeGrp==='OPT_INPUT_TYPE' && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd));
     const getOptValCodes    = (typeCd) => (codes||[]).filter(c => c.codeGrp==='OPT_VAL' && c.parentCodeValue===typeCd && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd);
 
     const clearOpt = () => { optGroups.length = 0; skus.length = 0; prodOptCategoryTypeCd.value = ''; };
@@ -91,7 +91,7 @@ window.PdProdDtl = {
     const onCategoryChange = () => {
       optGroups.length = 0;
       skus.length = 0;
-      optTypeCodes.value.slice(0, 2).forEach((tc, i) => {
+      cfOptTypeCodes.value.slice(0, 2).forEach((tc, i) => {
         optGroups.push({ _id: _optSeq++, grpNm: '', typeCd: tc.codeValue, inputTypeCd: 'SELECT', level: i + 1, items: [] });
       });
     };
@@ -99,7 +99,7 @@ window.PdProdDtl = {
     const addOptGroup = () => {
       if (!prodOptCategoryTypeCd.value) { props.showToast('옵션 카테고리를 먼저 선택해주세요.', 'error'); return; }
       if (optGroups.length >= 2) { props.showToast('옵션은 최대 2단까지 가능합니다.', 'error'); return; }
-      const defaultTypeCd = optTypeCodes.value[optGroups.length]?.codeValue || '';
+      const defaultTypeCd = cfOptTypeCodes.value[optGroups.length]?.codeValue || '';
       optGroups.push({ _id: _optSeq++, grpNm: '', typeCd: defaultTypeCd, inputTypeCd: 'SELECT', level: optGroups.length + 1, items: [] });
     };
     const removeOptGroup = (idx) => {
@@ -152,18 +152,18 @@ window.PdProdDtl = {
       }
       skus.splice(0, skus.length, ...newSkus);
     };
-    const totalStock = computed(() => window.safeArrayUtils.safeFilter(skus, s => s.useYn === 'Y').reduce((a, s) => a + (Number(s.stock) || 0), 0));
+    const cfTotalStock = computed(() => window.safeArrayUtils.safeFilter(skus, s => s.useYn === 'Y').reduce((a, s) => a + (Number(s.stock) || 0), 0));
 
     // ── SKU 필터 (1단/2단/재고)
     const skuFilter1     = ref('');
     const skuFilter2     = ref('');
     const skuFilterStock = ref(''); // '' | 'in' | 'out'
-    const skuFilter1Options = computed(() => [...new Set(skus.map(s => s._nm1).filter(Boolean))]);
-    const skuFilter2Options = computed(() => {
+    const cfSkuFilter1Options = computed(() => [...new Set(skus.map(s => s._nm1).filter(Boolean))]);
+    const cfSkuFilter2Options = computed(() => {
       const base = skuFilter1.value ? skus.filter(s => s._nm1 === skuFilter1.value) : skus;
       return [...new Set(base.map(s => s._nm2).filter(Boolean))];
     });
-    const skusFiltered = computed(() => window.safeArrayUtils.safeFilter(skus, s => {
+    const cfSkusFiltered = computed(() => window.safeArrayUtils.safeFilter(skus, s => {
       if (skuFilter1.value     && s._nm1 !== skuFilter1.value) return false;
       if (skuFilter2.value     && s._nm2 !== skuFilter2.value) return false;
       if (skuFilterStock.value === 'in'  && (s.stock || 0) <= 0) return false;
@@ -257,11 +257,11 @@ window.PdProdDtl = {
     let _divMoveH = null, _divUpH = null;
 
     // ── 계산값
-    const marginRateCalc = computed(() => {
+    const cfMarginRateCalc = computed(() => {
       if (!form.salePrice || !form.purchasePrice) return null;
       return ((form.salePrice - form.purchasePrice) / form.salePrice * 100).toFixed(2);
     });
-    const discountRate = computed(() => {
+    const cfDiscountRate = computed(() => {
       if (!form.listPrice || form.listPrice <= 0) return 0;
       return Math.round((1 - form.salePrice / form.listPrice) * 100);
     });
@@ -274,7 +274,7 @@ window.PdProdDtl = {
     // 상품 추가 피커 모달
     const prodPickerOpen   = ref(''); // '' | 'rel' | 'code'
     const prodPickerSearch = ref('');
-    const prodPickerList   = computed(() => {
+    const cfProdPickerList   = computed(() => {
       const q    = prodPickerSearch.value.trim().toLowerCase();
       const all  = products;
       const used = (prodPickerOpen.value === 'rel' ? relProds : codeProds).map(r => r.productId);
@@ -319,7 +319,7 @@ window.PdProdDtl = {
     const catPickerSearch = ref('');
     const catDragIdx      = ref(null);
     const catDragoverIdx  = ref(null);
-    const catPickerList = computed(() => {
+    const cfCatPickerList = computed(() => {
       const q = catPickerSearch.value.trim().toLowerCase();
       const already = new Set(prodCategories.map(c => String(c.categoryId)));
       return (categories||[])
@@ -356,10 +356,10 @@ window.PdProdDtl = {
     // ── 판매계획
     const salePlans = reactive([]);
     let planIdSeq = 1;
-    const planVisible = computed(() => window.safeArrayUtils.safeFilter(salePlans, r => r._row_status !== 'D'));
-    const planAllChecked = computed({
-      get: () => planVisible.value.length > 0 && window.safeArrayUtils.safeEvery(planVisible, r => r._checked),
-      set: v => window.safeArrayUtils.safeForEach(planVisible, r => { r._checked = v; }),
+    const cfPlanVisible = computed(() => window.safeArrayUtils.safeFilter(salePlans, r => r._row_status !== 'D'));
+    const cfPlanAllChecked = computed({
+      get: () => cfPlanVisible.value.length > 0 && window.safeArrayUtils.safeEvery(cfPlanVisible, r => r._checked),
+      set: v => window.safeArrayUtils.safeForEach(cfPlanVisible, r => { r._checked = v; }),
     });
     const addPlanRow = () => salePlans.unshift({ _id: planIdSeq++, _row_status: 'I', _checked: false, startDate: '', startTime: '00:00', endDate: '', endTime: '23:59', planStatus: '준비중', listPrice: form.listPrice || 0, salePrice: form.salePrice || 0, purchasePrice: form.purchasePrice || 0 });
     const onPlanChange = row => { if (row._row_status === 'N') row._row_status = 'U'; };
@@ -370,14 +370,14 @@ window.PdProdDtl = {
     // ── 담당MD 모달
     const mdModalOpen = ref(false);
     const mdSearch    = ref('');
-    const mdUserList  = computed(() => (boUsers||[]).filter(u => u.status==='활성'));
-    const mdUserListFiltered = computed(() => {
+    const cfMdUserList  = computed(() => (boUsers||[]).filter(u => u.status==='활성'));
+    const cfMdUserListFiltered = computed(() => {
       const q = mdSearch.value.trim().toLowerCase();
-      if (!q) return mdUserList.value;
-      return window.safeArrayUtils.safeFilter(mdUserList, u => u.name.toLowerCase().includes(q) || (u.dept||'').toLowerCase().includes(q) || (u.role||'').toLowerCase().includes(q));
+      if (!q) return cfMdUserList.value;
+      return window.safeArrayUtils.safeFilter(cfMdUserList, u => u.name.toLowerCase().includes(q) || (u.dept||'').toLowerCase().includes(q) || (u.role||'').toLowerCase().includes(q));
     });
-    const mdSelectedNm = computed(() => {
-      const u = mdUserList.window.safeArrayUtils.safeFind(value, u => u.boUserId === form.mdUserId);
+    const cfMdSelectedNm = computed(() => {
+      const u = cfMdUserList.window.safeArrayUtils.safeFind(value, u => u.boUserId === form.mdUserId);
       return u ? `${u.name} (${u.dept||''})` : '';
     });
     const openMdModal  = () => { mdSearch.value = ''; mdModalOpen.value = true; };
@@ -386,7 +386,7 @@ window.PdProdDtl = {
     const initForm = async () => {
       if (cfIsNew.value) {
         // 신규 등록: 기본값 본인 (목업에서는 첫 번째 활성 사용자)
-        form.mdUserId = mdUserList.window.safeArrayUtils.safeGet(value, 0)?.boUserId || '';
+        form.mdUserId = cfMdUserList.window.safeArrayUtils.safeGet(value, 0)?.boUserId || '';
       }
       if (!cfIsNew.value) {
         const p = getProduct.value(props.editId);
@@ -499,11 +499,11 @@ window.PdProdDtl = {
       let savedProdId;
       if (cfIsNew.value) {
         savedProdId = nextId.value(products.value, 'productId');
-        products.value.push({ ...form, productId: savedProdId, price: form.listPrice, stock: useOpt.value ? totalStock.value : form.prodStock, regDate: new Date().toISOString().slice(0, 10), images: imgData, mainImage: mainImg?.previewUrl || '' });
+        products.value.push({ ...form, productId: savedProdId, price: form.listPrice, stock: useOpt.value ? cfTotalStock.value : form.prodStock, regDate: new Date().toISOString().slice(0, 10), images: imgData, mainImage: mainImg?.previewUrl || '' });
       } else {
         savedProdId = props.editId;
         const idx = products.value.findIndex(x => x.productId == props.editId);
-        if (idx !== -1) Object.assign(products.value[idx], { ...form, price: form.listPrice, stock: useOpt.value ? totalStock.value : form.prodStock, images: imgData, mainImage: mainImg?.previewUrl || '' });
+        if (idx !== -1) Object.assign(products.value[idx], { ...form, price: form.listPrice, stock: useOpt.value ? cfTotalStock.value : form.prodStock, images: imgData, mainImage: mainImg?.previewUrl || '' });
       }
       // categoryProds 동기화
       if (!categoryProds.value) categoryProds.value = [];
@@ -524,22 +524,22 @@ window.PdProdDtl = {
     };
 
     return { products, loading, error, cfIsNew, topTab, viewMode2, showTab, form, errors, handleSave,
-      mdModalOpen, mdSearch, mdUserList, mdUserListFiltered, mdSelectedNm, openMdModal, selectMdUser,
-      useOpt, clearOpt, optGroups, skus, totalStock, generateSkus,
-      skuFilter1, skuFilter2, skuFilterStock, skuFilter1Options, skuFilter2Options, skusFiltered,
-      prodOptCategoryTypeCd, optTypeLevel1Codes, optTypeCodes, optInputTypeCodes, getOptValCodes,
+      mdModalOpen, mdSearch, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
+      useOpt, clearOpt, optGroups, skus, cfTotalStock, generateSkus,
+      skuFilter1, skuFilter2, skuFilterStock, cfSkuFilter1Options, cfSkuFilter2Options, cfSkusFiltered,
+      prodOptCategoryTypeCd, cfOptTypeLevel1Codes, cfOptTypeCodes, cfOptInputTypeCodes, getOptValCodes,
       onCategoryChange, addOptGroup, removeOptGroup, addOptItem, removeOptItem,
       dragOptGrpId, dragOptItemIdx, dragoverOptItemIdx, onOptItemDragStart, onOptItemDragOver, onOptItemDrop,
       images, addImageByUrl, onFileChange, setMain, removeImage, fileInputRef, triggerFileInput,
       dragImgIdx, dragoverImgIdx, onImgDragStart, onImgDragOver, onImgDrop,
-      prodCategories, catPickerOpen, catPickerSearch, catPickerList, addCategory, removeCategory,
+      prodCategories, catPickerOpen, catPickerSearch, cfCatPickerList, addCategory, removeCategory,
       catDragIdx, catDragoverIdx, onCatDragStart, onCatDragOver, onCatDrop,
-      relProds, codeProds, prodPickerOpen, prodPickerSearch, prodPickerList, openProdPicker, selectProdItem,
+      relProds, codeProds, prodPickerOpen, prodPickerSearch, cfProdPickerList, openProdPicker, selectProdItem,
       removeRelProd, removeCodeProd,
       dragRelIdx, dragoverRelIdx, onRelDragStart, onRelDragOver, onRelDrop,
       dragCodeIdx, dragoverCodeIdx, onCodeDragStart, onCodeDragOver, onCodeDrop,
-      salePlans, planVisible, planAllChecked, addPlanRow, onPlanChange, deletePlanChecked, planRowStyle,
-      marginRateCalc, discountRate,
+      salePlans, cfPlanVisible, cfPlanAllChecked, addPlanRow, onPlanChange, deletePlanChecked, planRowStyle,
+      cfMarginRateCalc, cfDiscountRate,
       contentBlocks, addContentBlock, removeContentBlock, onBlockFileChange,
       dragBlockIdx, dragoverBlockIdx, onBlockDragStart, onBlockDragOver, onBlockDrop,
       splitPct, previewDevice, isDraggingDivider, contentSplitRef, onDividerMousedown,
@@ -632,8 +632,8 @@ window.PdProdDtl = {
             <input class="form-control" v-model="catPickerSearch" placeholder="카테고리 검색..." style="font-size:13px;" />
           </div>
           <div style="overflow-y:auto;flex:1;padding:0 8px 12px;">
-            <div v-if="catPickerList.length===0" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">검색 결과 없음</div>
-            <div v-for="cat in catPickerList" :key="cat.categoryId||cat.id"
+            <div v-if="cfCatPickerList.length===0" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">검색 결과 없음</div>
+            <div v-for="cat in cfCatPickerList" :key="cat.categoryId||cat.id"
                  @click="addCategory(cat)"
                  style="padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;"
                  onmouseover="this.style.background='#f5f3ff'" onmouseout="this.style.background=''">
@@ -669,7 +669,7 @@ window.PdProdDtl = {
       <div class="form-group">
         <label class="form-label">담당MD (md_user_id)</label>
         <div style="display:flex;gap:6px;align-items:center;">
-          <input class="form-control" :value="mdSelectedNm||''" readonly placeholder="담당MD를 선택해주세요"
+          <input class="form-control" :value="cfMdSelectedNm||''" readonly placeholder="담당MD를 선택해주세요"
             style="flex:1;background:#fafafa;cursor:pointer;" @click="openMdModal" />
           <button class="btn btn-secondary btn-sm" type="button" @click="openMdModal" style="flex-shrink:0;">선택</button>
           <button v-if="form.mdUserId" class="btn btn-xs btn-danger" type="button" @click="form.mdUserId=''" style="flex-shrink:0;" title="초기화">✕</button>
@@ -706,7 +706,7 @@ window.PdProdDtl = {
                 <tr><th>이름</th><th>부서</th><th>역할</th></tr>
               </thead>
               <tbody>
-                <tr v-for="u in mdUserListFiltered" :key="u?.boUserId"
+                <tr v-for="u in cfMdUserListFiltered" :key="u?.boUserId"
                   style="cursor:pointer;"
                   :style="form.mdUserId===u.boUserId ? 'background:#fff0f4;font-weight:700;' : ''"
                   @click="selectMdUser(u)">
@@ -719,7 +719,7 @@ window.PdProdDtl = {
                   <td>{{ u.dept }}</td>
                   <td><span class="badge badge-gray" style="font-size:11px;">{{ u.role }}</span></td>
                 </tr>
-                <tr v-if="mdUserListFiltered.length===0">
+                <tr v-if="cfMdUserListFiltered.length===0">
                   <td colspan="3" style="text-align:center;color:#bbb;padding:20px;">검색 결과가 없습니다.</td>
                 </tr>
               </tbody>
@@ -830,7 +830,7 @@ window.PdProdDtl = {
             style="width:170px;font-size:12px;"
             @change="onCategoryChange">
             <option value="">-- OPT_TYPE 1레벨 선택 --</option>
-            <option v-for="c in optTypeLevel1Codes" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+            <option v-for="c in cfOptTypeLevel1Codes" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
 
@@ -843,7 +843,7 @@ window.PdProdDtl = {
             <select class="form-control" v-model="grp.typeCd" style="width:140px;font-size:12px;"
               @change="grp.iwindow.safeArrayUtils.safeForEach(tems, i=>{i.val='';i.valCodeId='';})"
               <option value="">-- OPT_TYPE 2레벨 --</option>
-              <option v-for="c in optTypeCodes" :key="c?.codeId" :value="c.codeValue">{{ c.codeLabel }} ({{ c.codeValue }})</option>
+              <option v-for="c in cfOptTypeCodes" :key="c?.codeId" :value="c.codeValue">{{ c.codeLabel }} ({{ c.codeValue }})</option>
             </select>
             <span v-if="grp.typeCd" style="font-size:11px;color:#1677ff;">{{ getOptValCodes(grp.typeCd).length }}개 프리셋</span>
           </div>
@@ -878,11 +878,11 @@ window.PdProdDtl = {
         <!-- 차원 설정 행 (typeCd는 위 "옵션사용" 행에서 관리) -->
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
           <span class="badge badge-blue" style="flex-shrink:0;font-size:12px;">{{ grp.level }}단</span>
-          <span v-if="grp.typeCd" class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ window.safeArrayUtils.safeFind(optTypeCodes, c=>c.codeValue===grp.typeCd)?.codeLabel||grp.typeCd }}</span>
+          <span v-if="grp.typeCd" class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ window.safeArrayUtils.safeFind(cfOptTypeCodes, c=>c.codeValue===grp.typeCd)?.codeLabel||grp.typeCd }}</span>
           <input class="form-control" v-model="grp.grpNm" placeholder="옵션명 (예: 색상)"
             style="flex:1;min-width:100px;font-size:13px;" />
           <select class="form-control" v-model="grp.inputTypeCd" style="width:160px;font-size:12px;">
-            <option v-for="c in optInputTypeCodes" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+            <option v-for="c in cfOptInputTypeCodes" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
           <button class="btn btn-xs btn-danger" @click="removeOptGroup(gi)">삭제</button>
         </div>
@@ -1389,7 +1389,7 @@ window.PdProdDtl = {
                 <tr><th style="width:46px;">ID</th><th>상품명</th><th style="width:80px;">카테고리</th><th style="width:90px;">가격</th><th style="width:60px;">재고</th><th style="width:60px;">상태</th></tr>
               </thead>
               <tbody>
-                <tr v-for="p in prodPickerList" :key="p?.productId"
+                <tr v-for="p in cfProdPickerList" :key="p?.productId"
                   style="cursor:pointer;"
                   @mouseenter="$event.currentTarget.style.background='#f9f9f9'"
                   @mouseleave="$event.currentTarget.style.background=''"
@@ -1401,7 +1401,7 @@ window.PdProdDtl = {
                   <td style="text-align:right;">{{ p.stock }}개</td>
                   <td><span class="badge" :class="p.status==='판매중'?'badge-green':'badge-gray'" style="font-size:10px;">{{ p.status }}</span></td>
                 </tr>
-                <tr v-if="prodPickerList.length===0">
+                <tr v-if="cfProdPickerList.length===0">
                   <td colspan="6" style="text-align:center;color:#bbb;padding:20px;">검색 결과가 없습니다.</td>
                 </tr>
               </tbody>
@@ -1428,8 +1428,8 @@ window.PdProdDtl = {
       <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;flex-shrink:0;">
           SKU별 가격·재고 <span style="color:#888;font-weight:400;font-size:11px;">(pd_prod_sku)</span>
-          <span class="badge badge-blue" style="margin-left:6px;">{{ window.safeArrayUtils.safeFilter(skusFiltered, s=>s.useYn==='Y').length }}개 활성</span>
-          <span v-if="skusFiltered.length < skus.length" class="badge badge-orange" style="margin-left:4px;font-size:10px;">필터 {{ skusFiltered.length }}/{{ skus.length }}</span>
+          <span class="badge badge-blue" style="margin-left:6px;">{{ window.safeArrayUtils.safeFilter(cfSkusFiltered, s=>s.useYn==='Y').length }}개 활성</span>
+          <span v-if="cfSkusFiltered.length < skus.length" class="badge badge-orange" style="margin-left:4px;font-size:10px;">필터 {{ cfSkusFiltered.length }}/{{ skus.length }}</span>
         </div>
         <!-- 필터 영역 -->
         <div style="display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end;flex-wrap:wrap;">
@@ -1439,7 +1439,7 @@ window.PdProdDtl = {
             <select v-model="skuFilter1" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;"
               @change="skuFilter2=''">
               <option value="">전체</option>
-              <option v-for="v in skuFilter1Options" :key="Math.random()" :value="v">{{ v }}</option>
+              <option v-for="v in cfSkuFilter1Options" :key="Math.random()" :value="v">{{ v }}</option>
             </select>
           </div>
           <!-- 2단 필터 (2단 옵션 있을 때만) -->
@@ -1447,7 +1447,7 @@ window.PdProdDtl = {
             <span class="badge badge-blue" style="font-size:11px;flex-shrink:0;">{{ optGroups[1]?.grpNm||'2단' }}</span>
             <select v-model="skuFilter2" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;">
               <option value="">전체</option>
-              <option v-for="v in skuFilter2Options" :key="Math.random()" :value="v">{{ v }}</option>
+              <option v-for="v in cfSkuFilter2Options" :key="Math.random()" :value="v">{{ v }}</option>
             </select>
           </div>
           <!-- 재고 필터 -->
@@ -1462,7 +1462,7 @@ window.PdProdDtl = {
           <!-- 필터 초기화 -->
           <button v-if="skuFilter1||skuFilter2||skuFilterStock" class="btn btn-xs btn-secondary"
             @click="skuFilter1='';skuFilter2='';skuFilterStock=''">✕ 초기화</button>
-          <span style="font-size:12px;color:#555;margin-left:4px;">총 재고: <strong>{{ totalStock }}</strong>개</span>
+          <span style="font-size:12px;color:#555;margin-left:4px;">총 재고: <strong>{{ cfTotalStock }}</strong>개</span>
           <button class="btn btn-sm btn-secondary" @click="generateSkus">🔄 SKU 재생성</button>
         </div>
       </div>
@@ -1482,7 +1482,7 @@ window.PdProdDtl = {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="sku in skusFiltered" :key="sku?._id"
+            <tr v-for="sku in cfSkusFiltered" :key="sku?._id"
               :style="sku.useYn==='N' ? 'opacity:0.45;background:#f5f5f5;' : (sku.statusCd==='SOLD_OUT'||sku.stock===0 ? 'background:#fffbe6;' : sku.statusCd==='SUSPENDED'?'background:#fff1f0;':'')">
               <td><span class="badge badge-gray" style="font-size:11px;">{{ sku._nm1 }}</span></td>
               <td v-if="optGroups.length>1">
@@ -1525,7 +1525,7 @@ window.PdProdDtl = {
                 옵션설정 탭에서 옵션 값 입력 후 [🔄 SKU 재생성]을 눌러주세요.
               </td>
             </tr>
-            <tr v-else-if="skusFiltered.length===0">
+            <tr v-else-if="cfSkusFiltered.length===0">
               <td :colspan="optGroups.length>1?9:8" style="text-align:center;color:#f5a623;padding:12px;font-size:12px;">
                 필터 조건에 맞는 SKU가 없습니다. <button class="btn btn-xs btn-secondary" @click="skuFilter1='';skuFilter2='';skuFilterStock=''">필터 초기화</button>
               </td>
@@ -1574,8 +1574,8 @@ window.PdProdDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">마진율 (margin_rate)</label>
-        <div class="form-control" :style="{ background:'#f5f5f5', color: marginRateCalc ? '#389e0d' : '#bbb' }">
-          {{ marginRateCalc ? marginRateCalc + '%' : '(매입가 입력 시 자동 계산)' }}
+        <div class="form-control" :style="{ background:'#f5f5f5', color: cfMarginRateCalc ? '#389e0d' : '#bbb' }">
+          {{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '(매입가 입력 시 자동 계산)' }}
         </div>
       </div>
     </div>
@@ -1593,11 +1593,11 @@ window.PdProdDtl = {
           <div style="font-size:11px;color:#888;margin-top:2px;">판매가</div>
         </div>
         <div>
-          <div style="font-size:18px;font-weight:700;color:#f5222d;">{{ discountRate }}%</div>
+          <div style="font-size:18px;font-weight:700;color:#f5222d;">{{ cfDiscountRate }}%</div>
           <div style="font-size:11px;color:#888;margin-top:2px;">할인율</div>
         </div>
         <div>
-          <div style="font-size:18px;font-weight:700;color:#52c41a;">{{ marginRateCalc ? marginRateCalc + '%' : '-' }}</div>
+          <div style="font-size:18px;font-weight:700;color:#52c41a;">{{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '-' }}</div>
           <div style="font-size:11px;color:#888;margin-top:2px;">마진율</div>
         </div>
       </div>
@@ -1611,7 +1611,7 @@ window.PdProdDtl = {
     <!-- 판매계획 -->
     <div style="margin-top:24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-size:13px;font-weight:700;">판매계획 <span style="font-size:12px;font-weight:400;color:#888;">{{ planVisible.length }}건</span></div>
+        <div style="font-size:13px;font-weight:700;">판매계획 <span style="font-size:12px;font-weight:400;color:#888;">{{ cfPlanVisible.length }}건</span></div>
         <div style="display:flex;gap:6px;">
           <button class="btn btn-sm btn-danger"    @click="deletePlanChecked">체크삭제</button>
           <button class="btn btn-sm btn-secondary" @click="addPlanRow">행추가</button>
@@ -1621,7 +1621,7 @@ window.PdProdDtl = {
         <table class="bo-table" style="min-width:860px;font-size:12px;">
           <thead>
             <tr>
-              <th style="width:36px;"><input type="checkbox" :checked="planAllChecked" @change="e=>planAllChecked=e.target.checked" /></th>
+              <th style="width:36px;"><input type="checkbox" :checked="cfPlanAllChecked" @change="e=>cfPlanAllChecked=e.target.checked" /></th>
               <th style="width:140px;">시작일시</th>
               <th style="width:140px;">종료일시</th>
               <th style="width:80px;">상태</th>
@@ -1631,7 +1631,7 @@ window.PdProdDtl = {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(row, idx) in planVisible" :key="row?._id" :style="planRowStyle(row._row_status)">
+            <tr v-for="(row, idx) in cfPlanVisible" :key="row?._id" :style="planRowStyle(row._row_status)">
               <td style="text-align:center;"><input type="checkbox" v-model="row._checked" /></td>
               <td>
                 <div style="display:flex;gap:2px;">
@@ -1654,7 +1654,7 @@ window.PdProdDtl = {
               <td><input type="number" v-model.number="row.salePrice"     @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" /></td>
               <td><input type="number" v-model.number="row.purchasePrice" @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" /></td>
             </tr>
-            <tr v-if="planVisible.length===0">
+            <tr v-if="cfPlanVisible.length===0">
               <td colspan="7" style="text-align:center;color:#aaa;padding:16px;">[행추가]로 판매계획을 추가하세요.</td>
             </tr>
           </tbody>

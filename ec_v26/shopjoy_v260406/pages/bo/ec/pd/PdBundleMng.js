@@ -123,7 +123,7 @@ window.PdBundleMng = {
       (bundles)
         .filter(b => b.bundleProdId === bundleProdId)
         .reduce((s, b) => s + (b.priceRate || 0), 0);
-    const rateSumBadge = id => Math.abs(rateSum(id) - 100) < 0.01 ? 'badge-green' : 'badge-red';
+    const fnRateSumBadge = id => Math.abs(rateSum(id) - 100) < 0.01 ? 'badge-green' : 'badge-red';
 
     /* ── 묶음상품 목록 ── */
     const bundleList = reactive([]);
@@ -367,7 +367,7 @@ window.PdBundleMng = {
     return {
       descOpen, bundles, loading, error, bundleList,
       searchNm, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList,
-      onSearch, onReset, rateSum, rateSumBadge, getProdNm, getProdPrice,
+      onSearch, onReset, rateSum, fnRateSumBadge, getProdNm, getProdPrice,
       getCategoryNm, getCategoryDepth, getBrandNm,
       categories, products, brands, categoryProds,
       dtlCategories, catPickerOpen, catPickerSearch, cfCatPickerList,
@@ -447,7 +447,7 @@ window.PdBundleMng = {
             </td>
             <td style="text-align:center">{{ g.itemCount }}개</td>
             <td style="text-align:center">
-              <span :class="['badge', rateSumBadge(g.bundleProdId)]" style="font-size:12px">
+              <span :class="['badge', fnRateSumBadge(g.bundleProdId)]" style="font-size:12px">
                 합계 {{ rateSum(g.bundleProdId).toFixed(1) }}%
               </span>
             </td>

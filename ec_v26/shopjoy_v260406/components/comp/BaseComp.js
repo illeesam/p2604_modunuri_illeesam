@@ -34,14 +34,14 @@ window.BaseAttachGrp = {
     const { computed, ref } = Vue;
 
     /* 현재 그룹의 파일 목록 */
-    const files = computed(() =>
+    const cfFiles = computed(() =>
       props.modelValue
         ? props.boData.attaches.filter(a => a.attachGrpId === props.modelValue)
         : []
     );
 
     /* 허용 확장자 accept 문자열 변환 */
-    const acceptAttr = computed(() => {
+    const cfAcceptAttr = computed(() => {
       if (!props.allowExt || props.allowExt === '*') return '*';
       return props.allowExt.split(',').map(e => '.' + e.trim()).join(',');
     });
@@ -49,7 +49,7 @@ window.BaseAttachGrp = {
     const fileInputRef = ref(null);
 
     const openPicker = () => {
-      if (files.value.length >= props.maxCount) {
+      if (cfFiles.value.length >= props.maxCount) {
         props.showToast(`최대 ${props.maxCount}개까지 첨부 가능합니다.`, 'warning');
         return;
       }
@@ -62,7 +62,7 @@ window.BaseAttachGrp = {
 
       const maxBytes = props.maxSizeMb * 1024 * 1024;
       const allowed  = props.allowExt === '*' ? null : props.allowExt.split(',').map(x => x.trim().toLowerCase());
-      const remaining = props.maxCount - files.value.length;
+      const remaining = props.maxCount - cfFiles.value.length;
 
       /* grpId는 루프 바깥에서 초기화 — 다중 파일 시 동일 그룹 공유 */
       let grpId = props.modelValue;
@@ -120,36 +120,36 @@ window.BaseAttachGrp = {
       const idx = props.boData.attaches.findIndex(a => a.attachId === attachId);
       if (idx !== -1) props.boData.attaches.splice(idx, 1);
       /* 그룹 내 파일이 모두 삭제되면 grpId 초기화 */
-      if (files.value.length === 0) emit('update:modelValue', null);
+      if (cfFiles.value.length === 0) emit('update:modelValue', null);
     };
 
-    const fmtSize = (bytes) => {
+    const fnFmtSize = (bytes) => {
       if (!bytes) return '0 B';
       if (bytes < 1024) return bytes + ' B';
       if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
       return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     };
 
-    const extIcon = (ext) => {
+    const fnExtIcon = (ext) => {
       const map = { pdf: '📄', xlsx: '📊', xls: '📊', docx: '📝', doc: '📝', pptx: '📑', ppt: '📑', zip: '🗜️', jpg: '🖼️', jpeg: '🖼️', png: '🖼️', gif: '🖼️', webp: '🖼️', svg: '🖼️', mp4: '🎬', mov: '🎬', mp3: '🎵' };
       return map[ext?.toLowerCase()] || '📎';
     };
 
-    return { files, acceptAttr, fileInputRef, openPicker, onFileChange, removeFile, fmtSize, extIcon };
+    return { cfFiles, cfAcceptAttr, fileInputRef, openPicker, onFileChange, removeFile, fnFmtSize, fnExtIcon };
   },
   template: /* html */`
 <div style="border:1px solid #e8e8e8;border-radius:8px;background:#fafafa;padding:12px 14px;">
-  <input ref="fileInputRef" type="file" :accept="acceptAttr" multiple style="display:none;" @change="onFileChange" />
+  <input ref="fileInputRef" type="file" :accept="cfAcceptAttr" multiple style="display:none;" @change="onFileChange" />
 
   <!-- 파일 목록 -->
-  <div v-if="files.length" style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;">
-    <div v-for="f in files" :key="f.attachId"
+  <div v-if="cfFiles.length" style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;">
+    <div v-for="f in cfFiles" :key="f.attachId"
       style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#fff;border:1px solid #f0f0f0;border-radius:6px;transition:background .1s;"
       @mouseenter="e=>e.currentTarget.style.background='#fff8f9'"
       @mouseleave="e=>e.currentTarget.style.background='#fff'">
-      <span style="font-size:15px;flex-shrink:0;line-height:1;">{{ extIcon(f.fileExt) }}</span>
+      <span style="font-size:15px;flex-shrink:0;line-height:1;">{{ fnExtIcon(f.fileExt) }}</span>
       <span style="flex:1;font-size:12px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;" :title="f.fileNm">{{ f.fileNm }}</span>
-      <span style="font-size:11px;color:#bbb;flex-shrink:0;white-space:nowrap;">{{ fmtSize(f.fileSize) }}</span>
+      <span style="font-size:11px;color:#bbb;flex-shrink:0;white-space:nowrap;">{{ fnFmtSize(f.fileSize) }}</span>
       <button @click.stop="removeFile(f.attachId)" title="삭제"
         style="flex-shrink:0;width:18px;height:18px;border:none;background:#f0f0f0;border-radius:50%;cursor:pointer;font-size:10px;color:#888;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1;transition:background .1s;"
         @mouseenter="e=>e.currentTarget.style.background='#fde8e8'"
@@ -169,7 +169,7 @@ window.BaseAttachGrp = {
       📎 파일첨부
     </button>
     <span style="font-size:11px;color:#bbb;">
-      {{ files.length }} / {{ maxCount }}개
+      {{ cfFiles.length }} / {{ maxCount }}개
       <span style="margin:0 4px;color:#e8e8e8;">|</span>
       최대 {{ maxSizeMb }}MB
       <span v-if="allowExt!=='*'"><span style="margin:0 4px;color:#e8e8e8;">|</span>{{ allowExt }}</span>

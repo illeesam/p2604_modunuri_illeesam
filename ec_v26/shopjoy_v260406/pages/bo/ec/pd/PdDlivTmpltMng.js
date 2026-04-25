@@ -93,14 +93,14 @@ window.PdDlivTmpltMng = {
     const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
-    const methodBadge = v => ({ COURIER:'badge-blue', DIRECT:'badge-orange', PICKUP:'badge-green' }[v] || 'badge-gray');
+    const fnMethodBadge = v => ({ COURIER:'badge-blue', DIRECT:'badge-orange', PICKUP:'badge-green' }[v] || 'badge-gray');
 
     const descOpen = ref(false);
 
     return { descOpen,
              searchKw, searchMethod, searchUse, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
              selectedId, form, isNew, openDetail, openNew, closeDetail, handleSave, handleDelete,
-             fnYnBadge, methodBadge, DLIV_METHODS, DLIV_PAY_TYPES, COURIERS, METHOD_LABELS, PAY_LABELS , PAGE_SIZES , onSizeChange };
+             fnYnBadge, fnMethodBadge, DLIV_METHODS, DLIV_PAY_TYPES, COURIERS, METHOD_LABELS, PAY_LABELS , PAGE_SIZES , onSizeChange };
   },
   template: `
 <div>
@@ -151,7 +151,7 @@ window.PdDlivTmpltMng = {
         <tbody>
           <tr v-for="row in cfPageList" :key="row?.dlivTmpltId" :class="{active:selectedId===row.dlivTmpltId}" @click="openDetail(row)" style="cursor:pointer">
             <td><span class="title-link">{{ row.dlivTmpltNm }}</span></td>
-            <td><span :class="['badge',methodBadge(row.dlivMethodCd)]">{{ row.dlivMethodCd }}</span></td>
+            <td><span :class="['badge',fnMethodBadge(row.dlivMethodCd)]">{{ row.dlivMethodCd }}</span></td>
             <td><span class="badge badge-gray">{{ row.dlivPayTypeCd }}</span></td>
             <td style="text-align:right">{{ (row.dlivCost||0).toLocaleString() }}원</td>
             <td style="text-align:right">{{ row.freeDlivMinAmt ? (row.freeDlivMinAmt).toLocaleString()+'원 이상' : '무조건 유료' }}</td>

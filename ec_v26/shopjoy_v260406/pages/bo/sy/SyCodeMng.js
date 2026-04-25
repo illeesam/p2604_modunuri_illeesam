@@ -202,7 +202,7 @@ window.SyCodeMng = {
 
     loadGrid();
 
-    const total = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
+    const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
     /* 상세 조회 */
     const selectedCodeId = ref(null);
@@ -357,7 +357,7 @@ window.SyCodeMng = {
     };
 
     /* ── 저장 ── */
-    const doSave = async () => {
+    const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I');
       const uRows = gridRows.filter(r => r._row_status === 'U');
       const dRows = gridRows.filter(r => r._row_status === 'D');
@@ -427,13 +427,13 @@ window.SyCodeMng = {
       gridRows.forEach(r => { r._row_check = checkAll.value; });
     };
 
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
-    const statusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
-    const pagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
-    const totalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
-    const pageNums   = computed(() => { const c = pager.page, l = totalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setPage    = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const cfPagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
+    const cfPageNums   = computed(() => { const c = pager.page, l = cfTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
+    const setPage    = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
     const exportExcel = () => window.boCmUtil.exportCsv(
@@ -490,14 +490,14 @@ window.SyCodeMng = {
     });
 
     return {
-      siteNm,
+      cfSiteNm,
       searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange,
       searchKw, searchGrp, searchUseYn, grpOptions, applied,
-      gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
-      addRow, deleteRow, cancelRow, cancelChecked, deleteRows, doSave,
+      addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       dragSrc, onDragStart, onDragOver, onDragEnd,
-      checkAll, toggleCheckAll, statusClass,
+      checkAll, toggleCheckAll, fnStatusClass,
       exportExcel,
       codeGroups,
       grpRows, grpDirty, addGrp, delGrp, cancelGrp, saveGrp, onGrpChange,
@@ -592,7 +592,7 @@ window.SyCodeMng = {
             :class="['status-'+g._row_status, selectedGrp===g.codeGrp ? 'focused' : '']"
             style="cursor:pointer;"
             @click="onGrpRowClick(g)">
-            <td class="col-status-val"><span class="badge badge-xs" :class="statusClass(g._row_status)">{{ g._row_status }}</span></td>
+            <td class="col-status-val"><span class="badge badge-xs" :class="fnStatusClass(g._row_status)">{{ g._row_status }}</span></td>
             <td>
               <div :style="{padding:'5px 6px 5px 10px', border:'1px solid #e5e7eb', borderRadius:'5px', fontSize:'12px', minHeight:'26px',
                             background:'#f5f5f7',
@@ -657,14 +657,14 @@ window.SyCodeMng = {
         <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>코드목록
         <span v-if="selectedGrp" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ selectedGrp }}</span>
         <span v-else-if="grpSelectedPath" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ grpSelectedPath }}</span>
-        <span class="list-count">{{ total }}건</span>
+        <span class="list-count">{{ cfTotal }}건</span>
       </span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
         <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
         <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
-        <button class="btn btn-primary btn-sm" @click="doSave">저장</button>
+        <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
       </div>
     </div>
 
@@ -703,7 +703,7 @@ window.SyCodeMng = {
         <tr v-if="gridRows.length===0">
           <td :colspan="isTreeTypeGrp ? 13 : 12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <tr v-for="(row, idx) in pagedRows" :key="row.codeId"
+        <tr v-for="(row, idx) in cfPagedRows" :key="row.codeId"
           class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
           draggable="true"
           @click="setFocused(getRealIdx(idx))"
@@ -715,7 +715,7 @@ window.SyCodeMng = {
           <td class="drag-handle" title="드래그로 순서 변경">⠿</td>
           <td class="col-id-val">{{ row.codeId > 0 ? row.codeId : 'NEW' }}</td>
           <td class="col-status-val">
-            <span class="badge badge-xs" :class="statusClass(row._row_status)">{{ row._row_status }}</span>
+            <span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span>
           </td>
           <td class="col-check-val">
             <input type="checkbox" v-model="row._row_check" />
@@ -736,7 +736,7 @@ window.SyCodeMng = {
             </select>
           </td>
           <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
+          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
           <td class="col-act-cancel-val">
             <button v-if="['U','I','D'].includes(row._row_status)"
               class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>
@@ -754,9 +754,9 @@ window.SyCodeMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -772,7 +772,7 @@ window.SyCodeMng = {
         <div style="display:flex;gap:6px;">
           <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
           <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
-          <button class="btn btn-primary btn-sm" @click="doSave">저장</button>
+          <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
         </div>
       </div>
       <table class="bo-table crud-grid" style="margin-top:0;">
@@ -831,7 +831,7 @@ window.SyCodeMng = {
               </select>
             </td>
             <td><input class="grid-input" v-model="row.node.code.remark" :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" /></td>
-            <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
+            <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
             <td class="col-act-cancel-val">
               <button v-if="['U','I','D'].includes(row.node.code._row_status)"
                 class="btn btn-secondary btn-xs" @click.stop="cancelRow(gridRows.indexOf(row.node.code))">취소</button>

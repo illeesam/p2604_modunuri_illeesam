@@ -39,7 +39,7 @@ window.DpDispPanelDtl = {
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const isNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.editId);
     const tab = ref('info');
     const showComponentTooltip = ref(false);
     const previewMode = ref('default');
@@ -49,7 +49,7 @@ window.DpDispPanelDtl = {
       { value: 'tablet',  label: '태블릿', width: 768  },
       { value: 'mobile',  label: '모바일', width: 375  },
     ];
-    const previewFrameWidth = computed(() => {
+    const cfPreviewFrameWidth = computed(() => {
       const m = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === previewMode.value);
       return (m?.width || 480) + 'px';
     });
@@ -154,19 +154,19 @@ window.DpDispPanelDtl = {
     ]);
     const MAX_WIDGETS = 10;
 
-    const TAB_LABELS   = computed(() => [
+    const cfTabLabels   = computed(() => [
       { key: 'info', label: '패널기본정보' },
       ...rows.map((_, i) => ({ key: 'tab'+(i+1), label: '전시항목 '+(i+1) })),
     ]);
-    const TAB_ROW_MAP  = computed(() => { const m = {}; window.safeArrayUtils.safeForEach(rows, (_, i) => { m['tab'+(i+1)] = i; }); return m; });
-    const ROW_TAB_KEYS = computed(() => rows.map((_, i) => 'tab'+(i+1)));
+    const cfTabRowMap  = computed(() => { const m = {}; window.safeArrayUtils.safeForEach(rows, (_, i) => { m['tab'+(i+1)] = i; }); return m; });
+    const cfRowTabKeys = computed(() => rows.map((_, i) => 'tab'+(i+1)));
 
-    const activeRowIdx = computed(() => { const idx = TAB_ROW_MAP.value[tab.value]; return idx !== undefined ? idx : null; });
-    const activeRow    = computed(() => (activeRowIdx.value !== null && activeRowIdx.value !== undefined) ? rows[activeRowIdx.value] : null);
+    const cfActiveRowIdx = computed(() => { const idx = cfTabRowMap.value[tab.value]; return idx !== undefined ? idx : null; });
+    const cfActiveRow    = computed(() => (cfActiveRowIdx.value !== null && cfActiveRowIdx.value !== undefined) ? rows[cfActiveRowIdx.value] : null);
 
     /* ── 위젯 위아래 이동 (탭순서 = 노출순서 sortOrder 자동 갱신) ── */
     const moveRow = (dir) => {
-      const idx = activeRowIdx.value;
+      const idx = cfActiveRowIdx.value;
       if (idx === null) return;
       const target = idx + dir;
       if (target < 0 || target >= rows.length) return;
@@ -176,7 +176,7 @@ window.DpDispPanelDtl = {
       Object.assign(rows[target], a);
       /* 탭 순서(1~5)를 sortOrder에 반영 */
       window.safeArrayUtils.safeForEach(rows, (r, i) => { r.sortOrder = i + 1; });
-      tab.value = ROW_TAB_KEYS.value[target];
+      tab.value = cfRowTabKeys.value[target];
     };
 
     const WIDGET_TYPES = [
@@ -209,103 +209,103 @@ window.DpDispPanelDtl = {
       { value: 'widget_embed',  label: '위젯' },
     ];
 
-    const AREAS = computed(() =>
+    const cfAreas = computed(() =>
       (Array.isArray(codes) ? codes : [])
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
 
-    const isChart       = computed(() => activeRow.value?.widgetType?.startsWith('chart_'));
-    const isProduct     = computed(() => ['product_slider','product'].includes(activeRow.value?.widgetType));
-    const isImage       = computed(() => activeRow.value?.widgetType === 'image_banner');
-    const isText        = computed(() => activeRow.value?.widgetType === 'text_banner');
-    const isInfo        = computed(() => activeRow.value?.widgetType === 'info_card');
-    const isPopup       = computed(() => activeRow.value?.widgetType === 'popup');
-    const isFile        = computed(() => activeRow.value?.widgetType === 'file');
-    const isFileList    = computed(() => activeRow.value?.widgetType === 'file_list');
-    const isCoupon      = computed(() => activeRow.value?.widgetType === 'coupon');
-    const isHtmlEditor  = computed(() => activeRow.value?.widgetType === 'html_editor');
-    const isTextarea      = computed(() => activeRow.value?.widgetType === 'textarea');
-    const isMarkdown      = computed(() => activeRow.value?.widgetType === 'markdown');
-    const isBarcode       = computed(() => activeRow.value?.widgetType === 'barcode');
-    const isQrcode        = computed(() => activeRow.value?.widgetType === 'qrcode');
-    const isBarcodeQr     = computed(() => activeRow.value?.widgetType === 'barcode_qrcode');
-    const isCodeWidget    = computed(() => isBarcode.value || isQrcode.value || isBarcodeQr.value);
-    const isVideoPlayer   = computed(() => activeRow.value?.widgetType === 'video_player');
-    const isCountdown     = computed(() => activeRow.value?.widgetType === 'countdown');
-    const isPayment       = computed(() => activeRow.value?.widgetType === 'payment_widget');
-    const isApproval      = computed(() => activeRow.value?.widgetType === 'approval_widget');
-    const isMapWidget     = computed(() => activeRow.value?.widgetType === 'map_widget');
-    const isEventBanner   = computed(() => activeRow.value?.widgetType === 'event_banner');
-    const isCacheBanner = computed(() => activeRow.value?.widgetType === 'cache_banner');
-    const isWidgetEmbed = computed(() => activeRow.value?.widgetType === 'widget_embed');
-    const isCondProduct = computed(() => activeRow.value?.widgetType === 'cond_product');
+    const cfIsChart       = computed(() => cfActiveRow.value?.widgetType?.startsWith('chart_'));
+    const cfIsProduct     = computed(() => ['product_slider','product'].includes(cfActiveRow.value?.widgetType));
+    const cfIsImage       = computed(() => cfActiveRow.value?.widgetType === 'image_banner');
+    const cfIsText        = computed(() => cfActiveRow.value?.widgetType === 'text_banner');
+    const cfIsInfo        = computed(() => cfActiveRow.value?.widgetType === 'info_card');
+    const cfIsPopup       = computed(() => cfActiveRow.value?.widgetType === 'popup');
+    const cfIsFile        = computed(() => cfActiveRow.value?.widgetType === 'file');
+    const cfIsFileList    = computed(() => cfActiveRow.value?.widgetType === 'file_list');
+    const cfIsCoupon      = computed(() => cfActiveRow.value?.widgetType === 'coupon');
+    const cfIsHtmlEditor  = computed(() => cfActiveRow.value?.widgetType === 'html_editor');
+    const cfIsTextarea      = computed(() => cfActiveRow.value?.widgetType === 'textarea');
+    const cfIsMarkdown      = computed(() => cfActiveRow.value?.widgetType === 'markdown');
+    const cfIsBarcode       = computed(() => cfActiveRow.value?.widgetType === 'barcode');
+    const cfIsQrcode        = computed(() => cfActiveRow.value?.widgetType === 'qrcode');
+    const cfIsBarcodeQr     = computed(() => cfActiveRow.value?.widgetType === 'barcode_qrcode');
+    const cfIsCodeWidget    = computed(() => cfIsBarcode.value || cfIsQrcode.value || cfIsBarcodeQr.value);
+    const cfIsVideoPlayer   = computed(() => cfActiveRow.value?.widgetType === 'video_player');
+    const cfIsCountdown     = computed(() => cfActiveRow.value?.widgetType === 'countdown');
+    const cfIsPayment       = computed(() => cfActiveRow.value?.widgetType === 'payment_widget');
+    const cfIsApproval      = computed(() => cfActiveRow.value?.widgetType === 'approval_widget');
+    const cfIsMapWidget     = computed(() => cfActiveRow.value?.widgetType === 'map_widget');
+    const cfIsEventBanner   = computed(() => cfActiveRow.value?.widgetType === 'event_banner');
+    const cfIsCacheBanner = computed(() => cfActiveRow.value?.widgetType === 'cache_banner');
+    const cfIsWidgetEmbed = computed(() => cfActiveRow.value?.widgetType === 'widget_embed');
+    const cfIsCondProduct = computed(() => cfActiveRow.value?.widgetType === 'cond_product');
 
     /* ── 파일목록 헬퍼 ── */
-    const fileListItems = computed(() => {
-      try { return JSON.parse(activeRow.value?.fileListJson || '[]'); }
+    const cfFileListItems = computed(() => {
+      try { return JSON.parse(cfActiveRow.value?.fileListJson || '[]'); }
       catch { return []; }
     });
     const _saveFileList = (items) => {
-      if (activeRow.value) activeRow.value.fileListJson = JSON.stringify(items);
+      if (cfActiveRow.value) cfActiveRow.value.fileListJson = JSON.stringify(items);
     };
-    const addFileItem    = () => _saveFileList([...fileListItems.value, { name: '', url: '' }]);
-    const removeFileItem = (idx) => _saveFileList(window.safeArrayUtils.safeFilter(fileListItems, (_, i) => i !== idx));
+    const addFileItem    = () => _saveFileList([...cfFileListItems.value, { name: '', url: '' }]);
+    const removeFileItem = (idx) => _saveFileList(window.safeArrayUtils.safeFilter(cfFileListItems, (_, i) => i !== idx));
     const updateFileItem = (idx, field, val) =>
-      _saveFileList(fileListItems.value.map((item, i) => i === idx ? { ...item, [field]: val } : item));
+      _saveFileList(cfFileListItems.value.map((item, i) => i === idx ? { ...item, [field]: val } : item));
 
-    /* displayRows — html_editor는 Quill로 별도 렌더하므로 제외 */
-    const displayRows = computed(() => {
-      if (!activeRow.value) return [];
-      if (isImage.value)       return [
+    /* cfDisplayRows — html_editor는 Quill로 별도 렌더하므로 제외 */
+    const cfDisplayRows = computed(() => {
+      if (!cfActiveRow.value) return [];
+      if (cfIsImage.value)       return [
         { key: 'imageUrl', label: '이미지 URL',  type: 'input', ph: 'https://...' },
         { key: 'altText',  label: 'Alt 텍스트',  type: 'input', ph: '' },
         { key: 'linkUrl',  label: '링크 URL',    type: 'input', ph: 'https://...' },
       ];
-      if (isProduct.value)     return [
+      if (cfIsProduct.value)     return [
         { key: 'productIds', label: '상품 ID 목록', type: 'input', ph: '1, 2, 3, ...' },
       ];
-      if (isChart.value)       return [
+      if (cfIsChart.value)       return [
         { key: 'chartTitle',  label: '차트 제목',        type: 'input',  ph: '' },
         { key: 'chartType',   label: '차트 유형',        type: 'select', options: [{v:'bar',l:'Bar'},{v:'line',l:'Line'},{v:'pie',l:'Pie'}] },
         { key: 'chartLabels', label: '라벨 (쉼표 구분)', type: 'input',  ph: '1월, 2월, 3월' },
         { key: 'chartValues', label: '값 (쉼표 구분)',   type: 'input',  ph: '100, 200, 150' },
       ];
-      if (isText.value)        return [
+      if (cfIsText.value)        return [
         { key: 'textContent', label: '텍스트 내용', type: 'textarea', ph: '' },
         { key: 'bgColor',     label: '배경색',      type: 'color',   ph: '' },
         { key: 'textColor',   label: '글자색',      type: 'color',   ph: '' },
       ];
-      if (isInfo.value)        return [
+      if (cfIsInfo.value)        return [
         { key: 'infoTitle', label: '카드 제목', type: 'input',    ph: '' },
         { key: 'infoBody',  label: '카드 내용', type: 'textarea', ph: '' },
       ];
-      if (isPopup.value)       return [
+      if (cfIsPopup.value)       return [
         { key: 'popupWidth',  label: '팝업 너비 (px)',  type: 'number', ph: '' },
         { key: 'popupHeight', label: '팝업 높이 (px)',  type: 'number', ph: '' },
         { key: 'imageUrl',    label: '팝업 이미지 URL', type: 'input',  ph: 'https://...' },
         { key: 'linkUrl',     label: '링크 URL',        type: 'input',  ph: '' },
       ];
-      if (isFile.value)        return [
+      if (cfIsFile.value)        return [
         { key: 'fileUrl',   label: '파일 URL',    type: 'input', ph: 'https://... 또는 /files/...' },
         { key: 'fileLabel', label: '표시 레이블', type: 'input', ph: '다운로드' },
       ];
-      if (isCoupon.value)      return [
+      if (cfIsCoupon.value)      return [
         { key: 'couponCode', label: '쿠폰 코드', type: 'input', ph: 'COUPON_CODE' },
         { key: 'couponDesc', label: '쿠폰 설명', type: 'input', ph: '쿠폰 안내 문구' },
       ];
-      if (isHtmlEditor.value)  return [];   /* Quill로 별도 처리 */
-      if (isTextarea.value)    return [
+      if (cfIsHtmlEditor.value)  return [];   /* Quill로 별도 처리 */
+      if (cfIsTextarea.value)    return [
         { key: 'textareaContent', label: '텍스트 내용', type: 'textarea', ph: '텍스트를 입력하세요...' },
       ];
-      if (isMarkdown.value)    return [
+      if (cfIsMarkdown.value)    return [
         { key: 'markdownContent', label: 'Markdown 내용', type: 'code', ph: '# 제목\n\n내용을 입력하세요...' },
       ];
-      if (isCodeWidget.value) {
+      if (cfIsCodeWidget.value) {
         const rows = [
           { key: 'codeValue', label: '코드 값', type: 'input', ph: 'COUPON-2026-001234' },
         ];
-        if (isBarcode.value || isBarcodeQr.value) rows.push(
+        if (cfIsBarcode.value || cfIsBarcodeQr.value) rows.push(
           { key: 'codeFormat', label: '바코드 형식', type: 'select', options: [
             {v:'CODE128',l:'CODE128 (범용)'},{v:'EAN13',l:'EAN-13'},{v:'EAN8',l:'EAN-8'},
             {v:'UPC',l:'UPC-A'},{v:'CODE39',l:'CODE39'},{v:'ITF14',l:'ITF-14'},
@@ -313,7 +313,7 @@ window.DpDispPanelDtl = {
           { key: 'codeHeight', label: '바코드 높이 (px)', type: 'number', ph: '60' },
           { key: 'showCodeLabel', label: '코드값 텍스트', type: 'select', options: [{v:true,l:'표시'},{v:false,l:'숨김'}] },
         );
-        if (isQrcode.value || isBarcodeQr.value) rows.push(
+        if (cfIsQrcode.value || cfIsBarcodeQr.value) rows.push(
           { key: 'qrSize', label: 'QR 크기 (px)', type: 'number', ph: '120' },
           { key: 'qrErrorLevel', label: '오류 정정 수준', type: 'select', options: [
             {v:'L',l:'L – 7%'},{v:'M',l:'M – 15%'},{v:'Q',l:'Q – 25%'},{v:'H',l:'H – 30%'},
@@ -321,8 +321,8 @@ window.DpDispPanelDtl = {
         );
         return rows;
       }
-      if (isFileList.value)    return [];   /* 파일목록 별도 처리 */
-      if (isCondProduct.value) return [
+      if (cfIsFileList.value)    return [];   /* 파일목록 별도 처리 */
+      if (cfIsCondProduct.value) return [
         { key: 'condSite',     label: '사이트 조건',   type: 'input',  ph: '사이트 코드 (비워두면 전체)' },
         { key: 'condUser',     label: '사용자 조건',   type: 'select',
           options: [{v:'',l:'전체'},{v:'login',l:'로그인'},{v:'nologin',l:'비로그인'},{v:'VIP',l:'VIP'},{v:'우수',l:'우수'},{v:'일반',l:'일반'}] },
@@ -332,32 +332,32 @@ window.DpDispPanelDtl = {
           options: [{v:'newest',l:'최신순'},{v:'popular',l:'인기순'},{v:'price_asc',l:'가격 낮은순'},{v:'price_desc',l:'가격 높은순'},{v:'discount',l:'할인율순'}] },
         { key: 'condLimit',    label: '표시 개수',     type: 'number', ph: '8' },
       ];
-      if (isVideoPlayer.value) return [
+      if (cfIsVideoPlayer.value) return [
         { key: 'videoUrl',      label: '동영상 URL',  type: 'input',  ph: 'https://youtube.com/watch?v=...' },
         { key: 'videoType',     label: '동영상 유형', type: 'select', options: [{v:'youtube',l:'YouTube'},{v:'vimeo',l:'Vimeo'},{v:'direct',l:'직접 URL (mp4)'}] },
         { key: 'videoAutoplay', label: '자동재생',    type: 'select', options: [{v:false,l:'사용 안 함'},{v:true,l:'사용 (음소거 필요)'}] },
         { key: 'videoControls', label: '컨트롤바',    type: 'select', options: [{v:true,l:'표시'},{v:false,l:'숨김'}] },
       ];
-      if (isCountdown.value) return [
+      if (cfIsCountdown.value) return [
         { key: 'countdownTarget',     label: '목표 일시',    type: 'input', ph: '2026-12-31 23:59:59' },
         { key: 'countdownTitle',      label: '타이틀',       type: 'input', ph: '이벤트 종료까지' },
         { key: 'countdownExpiredMsg', label: '종료 메시지',  type: 'input', ph: '이벤트가 종료되었습니다.' },
         { key: 'countdownBgColor',    label: '배경색',       type: 'color' },
         { key: 'countdownTextColor',  label: '글자색',       type: 'color' },
       ];
-      if (isPayment.value) return [
+      if (cfIsPayment.value) return [
         { key: 'payAmount',      label: '결제 금액',          type: 'number', ph: '0' },
         { key: 'payCurrency',    label: '통화',               type: 'select', options: [{v:'KRW',l:'원 (KRW)'},{v:'USD',l:'달러 (USD)'}] },
         { key: 'payMethods',     label: '결제수단 (쉼표 구분)', type: 'input', ph: 'card,kakao,naver,toss,bank' },
         { key: 'payButtonLabel', label: '버튼 텍스트',         type: 'input', ph: '결제하기' },
         { key: 'payButtonColor', label: '버튼 색상',           type: 'color' },
       ];
-      if (isApproval.value) return [
+      if (cfIsApproval.value) return [
         { key: 'approvalDocType', label: '문서 유형', type: 'select', options: [{v:'구매승인',l:'구매승인'},{v:'지출결의',l:'지출결의'},{v:'휴가신청',l:'휴가신청'},{v:'기안',l:'기안'},{v:'품의서',l:'품의서'}] },
         { key: 'approvalTitle',   label: '결재 제목',    type: 'input', ph: '' },
         { key: 'approvalLine',    label: '결재선 (JSON)', type: 'code',  ph: '[{"role":"담당자","name":"홍길동"},{"role":"팀장","name":""}]' },
       ];
-      if (isMapWidget.value) return [
+      if (cfIsMapWidget.value) return [
         { key: 'mapType',        label: '지도 유형', type: 'select', options: [{v:'google',l:'Google Maps'},{v:'kakao',l:'카카오맵'},{v:'naver',l:'네이버지도'}] },
         { key: 'mapAddress',     label: '주소',      type: 'input',  ph: '서울시 강남구 테헤란로 123' },
         { key: 'mapLat',         label: '위도 (lat)', type: 'input', ph: '37.5005' },
@@ -365,21 +365,21 @@ window.DpDispPanelDtl = {
         { key: 'mapZoom',        label: '줌 레벨',   type: 'number', ph: '14' },
         { key: 'mapMarkerLabel', label: '마커 라벨', type: 'input',  ph: '우리 매장' },
       ];
-      if (isEventBanner.value) return [
+      if (cfIsEventBanner.value) return [
         { key: 'eventId', label: '이벤트 ID', type: 'event', ph: '' },
       ];
-      if (isCacheBanner.value) return [
+      if (cfIsCacheBanner.value) return [
         { key: 'cacheDesc',   label: '안내 문구',          type: 'input',  ph: '지금 충전하면 10% 보너스!' },
         { key: 'cacheAmount', label: '기본 충전 금액(원)', type: 'number', ph: '' },
       ];
-      if (isWidgetEmbed.value) return [
+      if (cfIsWidgetEmbed.value) return [
         { key: 'embedCode', label: '임베드 코드', type: 'code', ph: '<iframe ...></iframe>' },
       ];
       return [];
     });
 
-    const relatedEvent = computed(() => {
-      const eid = activeRow.value?.eventId;
+    const cfRelatedEvent = computed(() => {
+      const eid = cfActiveRow.value?.eventId;
       if (!eid) return null;
       return (Array.isArray(events) ? events : []).find(e => String(e.eventId) === String(eid)) || null;
     });
@@ -449,7 +449,7 @@ window.DpDispPanelDtl = {
     const initForm = async () => {
       await nextTick();
       /* 기존 데이터 로드 */
-      if (!isNew.value) {
+      if (!cfIsNew.value) {
         const d = displays.window.safeArrayUtils.safeFind(value, x => x.dispId === props.editId);
         if (d) {
           form.dispId        = d.dispId;
@@ -493,7 +493,7 @@ window.DpDispPanelDtl = {
       await nextTick();
       if (newTab === 'info') {
         initQuillDesc();
-      } else if (isHtmlEditor.value) {
+      } else if (cfIsHtmlEditor.value) {
         initQuillContent();
       }
     });

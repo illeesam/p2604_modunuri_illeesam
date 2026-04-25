@@ -194,7 +194,7 @@ window.PmVoucherDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ isNew ? '상품권 등록' : '상품권 수정' }}<span v-if="!isNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.voucherId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '상품권 등록' : '상품권 수정' }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.voucherId }}</span></div>
 
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;justify-content:flex-end;">
     <div class="tab-view-modes">
@@ -314,7 +314,7 @@ window.PmVoucherDtl = {
       </div>
     </div>
     <div class="form-actions">
-      <button @click="save" class="btn btn-primary">{{ isNew ? '등록' : '저장' }}</button>
+      <button @click="handleSave" class="btn btn-primary">{{ cfIsNew ? '등록' : '저장' }}</button>
       <button @click="navigate('pmVoucherMng')" class="btn btn-secondary">취소</button>
     </div>
   </div>

@@ -44,12 +44,12 @@ window.SyBatchMng = {
     const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { selectedPath.value = path; };
-    const tree = computed(() => window.boCmUtil.buildPathTree('sy_batch'));
-    const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
+    const cfTree = computed(() => window.boCmUtil.buildPathTree('sy_batch'));
+    const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
-      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 
@@ -98,7 +98,7 @@ window.SyBatchMng = {
     };
     loadGrid();
 
-    const total = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
+    const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
     const onSearch = () => {
       Object.assign(applied, { kw: searchKw.value, status: searchStatus.value, runStatus: searchRunStatus.value, dateStart: searchDateStart.value, dateEnd: searchDateEnd.value });
@@ -171,7 +171,7 @@ window.SyBatchMng = {
       }
     };
 
-    const doSave = async () => {
+    const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I');
       const uRows = gridRows.filter(r => r._row_status === 'U');
       const dRows = gridRows.filter(r => r._row_status === 'D');
@@ -242,7 +242,7 @@ window.SyBatchMng = {
       cronPicker.preview = `${cronPicker.minute} ${cronPicker.hour} ${cronPicker.day} ${cronPicker.month} ${cronPicker.weekday}`;
     };
 
-    const cronPresetLabel = computed(() => {
+    const cfCronPresetLabel = computed(() => {
       const m = CRON_PRESETS.find(p => p.value === cronPicker.preview);
       return m ? m.label : '';
     });
@@ -299,7 +299,7 @@ window.SyBatchMng = {
       return '';
     };
 
-    const cronDesc = computed(() => cronToKorean(cronPicker.preview));
+    const cfCronDesc = computed(() => cronToKorean(cronPicker.preview));
 
     const openCronPicker = (realIdx) => {
       const row = gridRows[realIdx];
@@ -346,15 +346,15 @@ window.SyBatchMng = {
     const checkAll = ref(false);
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = checkAll.value; }); };
 
-    const statusBadge  = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
-    const runBadge     = s => ({ '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' }[s] || 'badge-gray');
-    const statusClass  = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
-    const siteNm     = computed(() => window.boCmUtil.getSiteNm());
+    const fnStatusBadge  = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
+    const fnRunBadge     = s => ({ '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' }[s] || 'badge-gray');
+    const fnStatusClass  = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
+    const cfSiteNm     = computed(() => window.boCmUtil.getSiteNm());
 
-    const pagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
-    const totalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
-    const pageNums   = computed(() => { const c = pager.page, l = totalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setPage    = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const cfPagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
+    const cfPageNums   = computed(() => { const c = pager.page, l = cfTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
+    const setPage    = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
     const exportExcel = () => window.boCmUtil.exportCsv(
@@ -367,15 +367,15 @@ window.SyBatchMng = {
 
 
     return { batches, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
-      siteNm, searchKw, searchStatus, searchRunStatus, searchDateRange, searchDateStart, searchDateEnd,
+      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
+      cfSiteNm, searchKw, searchStatus, searchRunStatus, searchDateRange, searchDateStart, searchDateEnd,
       DATE_RANGE_OPTIONS, onDateRangeChange, applied,
-      gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
-      addRow, deleteRow, cancelRow, cancelChecked, deleteRows, doSave, runNow,
-      CRON_PRESETS, CRON_FIELDS, cronPicker, openCronPicker, applyCronPreset, applyCron, updateCronPreview, cronPresetLabel, cronDesc,
+      addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave, runNow,
+      CRON_PRESETS, CRON_FIELDS, cronPicker, openCronPicker, applyCronPreset, applyCron, updateCronPreview, cfCronPresetLabel, cfCronDesc,
       dragSrc, onDragStart, onDragOver, onDragEnd,
-      checkAll, toggleCheckAll, statusBadge, runBadge, statusClass,
+      checkAll, toggleCheckAll, fnStatusBadge, fnRunBadge, fnStatusClass,
       exportExcel,
     };
   },
@@ -420,20 +420,20 @@ window.SyBatchMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
     <div>
 <!-- CRUD 그리드 -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>배치목록 <span class="list-count">{{ total }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>배치목록 <span class="list-count">{{ cfTotal }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
         <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
         <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
-        <button class="btn btn-primary btn-sm" @click="doSave">저장</button>
+        <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
       </div>
     </div>
 
@@ -463,7 +463,7 @@ window.SyBatchMng = {
         <tr v-if="gridRows.length===0">
           <td colspan="16" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <tr v-for="(row, idx) in pagedRows" :key="row.batchId"
+        <tr v-for="(row, idx) in cfPagedRows" :key="row.batchId"
           class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
           draggable="true"
           @click="setFocused(getRealIdx(idx))"
@@ -481,7 +481,7 @@ window.SyBatchMng = {
             </td>
           <td class="drag-handle" title="드래그로 순서 변경">⠿</td>
           <td class="col-id-val">{{ row.batchId > 0 ? row.batchId : 'NEW' }}</td>
-          <td class="col-status-val"><span class="badge badge-xs" :class="statusClass(row._row_status)">{{ row._row_status }}</span></td>
+          <td class="col-status-val"><span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span></td>
           <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
           <td><input class="grid-input" v-model="row.batchNm" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="배치명" /></td>
           <td><input class="grid-input grid-mono" v-model="row.batchCode" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="BATCH_CODE" style="text-transform:uppercase;" /></td>
@@ -498,8 +498,8 @@ window.SyBatchMng = {
           </td>
           <td><input class="grid-input" v-model="row.description" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="설명" /></td>
           <td style="font-size:11px;color:#555;text-align:center;white-space:nowrap;">{{ row.lastRun }}</td>
-          <td style="text-align:center;"><span class="badge badge-xs" :class="runBadge(row.runStatus)">{{ row.runStatus }}</span></td>
-          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
+          <td style="text-align:center;"><span class="badge badge-xs" :class="fnRunBadge(row.runStatus)">{{ row.runStatus }}</span></td>
+          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
           <td style="text-align:center;">
             <button v-if="row._row_status!=='I' && row._row_status!=='D'" class="btn btn-secondary btn-xs" title="즉시실행" @click.stop="runNow(row)">▶</button>
           </td>
@@ -519,9 +519,9 @@ window.SyBatchMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -587,7 +587,7 @@ window.SyBatchMng = {
         <div style="background:#f0f8ff;border:1px solid #dbeafe;border-radius:6px;padding:10px 16px;display:flex;align-items:center;gap:12px;">
           <span style="font-size:11px;color:#888;flex-shrink:0;">결과</span>
           <code style="font-size:16px;color:#2563eb;font-weight:700;letter-spacing:2px;">{{ cronPicker.preview }}</code>
-          <span v-if="cronDesc" style="font-size:11px;color:#e8587a;margin-left:auto;font-weight:600;">{{ cronDesc }}</span>
+          <span v-if="cfCronDesc" style="font-size:11px;color:#e8587a;margin-left:auto;font-weight:600;">{{ cfCronDesc }}</span>
         </div>
       </div>
 

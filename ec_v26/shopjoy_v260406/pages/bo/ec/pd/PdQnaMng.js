@@ -40,7 +40,7 @@ window.PdQnaMng = {
     const answForm   = reactive({ content: '' });
 
     const TYPE_LABELS = { SIZE:'사이즈', QUALITY:'소재/품질', DLIV:'배송', ETC:'기타' };
-    const typeBadge   = t => ({ SIZE:'badge-blue', QUALITY:'badge-green', DLIV:'badge-orange', ETC:'badge-gray' }[t] || 'badge-gray');
+    const fnTypeBadge = t => ({ SIZE:'badge-blue', QUALITY:'badge-green', DLIV:'badge-orange', ETC:'badge-gray' }[t] || 'badge-gray');
 
     const getProdNm = id => { const p = (products||[]).find(p => p.productId === id); return p ? p.productName : id; };
     const getMemNm  = id => { const m = (members||[]).find(m => m.userId === id); return m ? m.name : id; };
@@ -65,7 +65,7 @@ window.PdQnaMng = {
       answForm.content = row.answContent || '';
       selectedId.value = row.qnaId;
     };
-    const doAnswer = async () => {
+    const handleAnswer = async () => {
       if (!selectedRow.value) return;
       if (!answForm.content.trim()) { props.showToast('답변 내용을 입력하세요.', 'error'); return; }
       const ok = await props.showConfirm('답변저장', '답변을 저장하시겠습니까?');
@@ -89,7 +89,7 @@ window.PdQnaMng = {
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-red';
 
     return { qnas, loading, error, searchKw, searchAnsw, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
-             selectedId, selectedRow, answForm, openDetail, doAnswer, typeBadge, fnYnBadge, TYPE_LABELS, getProdNm, getMemNm , PAGE_SIZES , onSizeChange };
+             selectedId, selectedRow, answForm, openDetail, handleAnswer, fnTypeBadge, fnYnBadge, TYPE_LABELS, getProdNm, getMemNm , PAGE_SIZES , onSizeChange };
   },
   template: `
 <div>
@@ -126,7 +126,7 @@ window.PdQnaMng = {
             <td><span class="title-link">{{ row.scrtYn==='Y' ? '🔒 비밀글' : row.qnaTitle }}</span></td>
             <td style="font-size:12px;color:#666">{{ getProdNm(row.prodId) }}</td>
             <td style="font-size:12px">{{ getMemNm(row.memberId) }}</td>
-            <td style="text-align:center"><span :class="['badge',typeBadge(row.qnaTypeCd)]">{{ TYPE_LABELS[row.qnaTypeCd]||row.qnaTypeCd }}</span></td>
+            <td style="text-align:center"><span :class="['badge',fnTypeBadge(row.qnaTypeCd)]">{{ TYPE_LABELS[row.qnaTypeCd]||row.qnaTypeCd }}</span></td>
             <td style="text-align:center"><span :class="['badge',row.scrtYn==='Y'?'badge-orange':'badge-gray']">{{ row.scrtYn }}</span></td>
             <td style="text-align:center"><span :class="['badge',fnYnBadge(row.answYn)]">{{ row.answYn==='Y'?'답변완료':'미답변' }}</span></td>
             <td style="font-size:12px">{{ row.regDate }}</td>
@@ -158,7 +158,7 @@ window.PdQnaMng = {
         <div style="font-weight:600;margin-bottom:6px;color:#e8587a">답변 작성</div>
         <textarea class="form-control" rows="4" v-model="answForm.content" placeholder="답변 내용을 입력하세요."></textarea>
         <div v-if="selectedRow.answDate" style="font-size:12px;color:#888;margin-top:4px">최근 답변: {{ selectedRow.answDate }}</div>
-        <div style="margin-top:8px"><button class="btn btn-primary btn-sm" @click="doAnswer">답변 저장</button></div>
+        <div style="margin-top:8px"><button class="btn btn-primary btn-sm" @click="handleAnswer">답변 저장</button></div>
       </div>
     </div>
 </div>`

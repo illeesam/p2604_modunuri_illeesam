@@ -695,7 +695,7 @@ window.DpDispAreaDtl = {
           </div>
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🔒 공개대상 (하나라도 해당하면 노출)</div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
-            <label v-for="opt in visibilityOptions" :key="opt?.codeValue"
+            <label v-for="opt in cfVisibilityOptions" :key="opt?.codeValue"
               :style="{
                 display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'16px',
                 border:'1px solid '+(hasPanelVisibility(opt.codeValue)?'#1565c0':'#ddd'),
@@ -789,11 +789,11 @@ window.DpDispAreaDtl = {
         </div>
       </div>
       <!-- 패널 탭: disp-x03-panel 로 선택 패널 렌더 -->
-      <div v-else-if="activePanel" style="max-height:560px;overflow-y:auto;">
+      <div v-else-if="cfActivePanel" style="max-height:560px;overflow-y:auto;">
         <disp-x03-panel
           :params="{ date: form.regDate || '', time: '00:00', status: '활성' }"
           :disp-opt="{ layout:'vertical', showBadges:false }"
-          :panel-item="activePanel"
+          :panel-item="cfActivePanel"
           :show-header="true" />
       </div>
       <div v-else style="padding:20px 8px;text-align:center;color:#bbb;font-size:11px;">

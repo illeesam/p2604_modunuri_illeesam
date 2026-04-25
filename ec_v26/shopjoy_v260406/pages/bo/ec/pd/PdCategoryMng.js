@@ -288,9 +288,9 @@ window.PdCategoryMng = {
 
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
-    const depthBullet   = d => DEPTH_BULLETS[Math.min(d, 3)];
-    const depthColor    = d => DEPTH_COLORS[d % 5];
-    const statusClass   = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
+    const fnDepthBullet = d => DEPTH_BULLETS[Math.min(d, 3)];
+    const fnDepthColor  = d => DEPTH_COLORS[d % 5];
+    const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
     const descOpen = ref(false);
     return {
@@ -304,7 +304,7 @@ window.PdCategoryMng = {
       checkAll, toggleCheckAll, parentNm,
       catPickerModal, cfCatPickerList, openParentModal, onParentSelect,
       dragRowIdx, dragoverRowIdx, onRowDragStart, onRowDragOver, onRowDrop,
-      depthBullet, depthColor, statusClass,
+      fnDepthBullet, fnDepthColor, fnStatusClass,
     };
   },
 
@@ -375,7 +375,7 @@ window.PdCategoryMng = {
             {{ isExpanded(cat.categoryId) ? '▼' : '▶' }}
           </span>
           <span v-else style="display:inline-block;width:16px"></span>
-          <span :style="{ fontSize:'11px', fontWeight:600, color:depthColor(cat._depth), marginRight:'5px' }">{{ depthBullet(cat._depth) }}</span>
+          <span :style="{ fontSize:'11px', fontWeight:600, color:fnDepthColor(cat._depth), marginRight:'5px' }">{{ fnDepthBullet(cat._depth) }}</span>
           <span style="font-size:12px">{{ cat.categoryNm }}</span>
           <span v-if="cat.status==='비활성'" style="font-size:10px;color:#bbb;margin-left:4px">(비활성)</span>
         </div>
@@ -448,7 +448,7 @@ window.PdCategoryMng = {
 
             <!-- 행 상태 뱃지 -->
             <td style="text-align:center">
-              <span class="badge badge-xs" :class="statusClass(row._row_status)">{{ row._row_status }}</span>
+              <span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span>
             </td>
 
             <!-- 체크박스 -->
@@ -458,8 +458,8 @@ window.PdCategoryMng = {
             <td style="padding:3px 6px">
               <div style="display:flex;align-items:center">
                 <span :style="{ marginLeft:(row._depth*12)+'px', marginRight:'5px', fontWeight:700,
-                                fontSize: row._depth===0?'8px':'11px', flexShrink:0, color:depthColor(row._depth) }">
-                  {{ depthBullet(row._depth) }}
+                                fontSize: row._depth===0?'8px':'11px', flexShrink:0, color:fnDepthColor(row._depth) }">
+                  {{ fnDepthBullet(row._depth) }}
                 </span>
                 <input class="grid-input" v-model="row.categoryNm" :disabled="row._row_status==='D'"
                        @input="onCellChange(row)" style="flex:1" placeholder="카테고리명">
@@ -559,7 +559,7 @@ window.PdCategoryMng = {
                :style="{ paddingLeft: (c.depth * 14 + 12) + 'px' }"
                @mouseenter="$event.target.style.background='#f5f5f5'" @mouseleave="$event.target.style.background=''"
                @click="onParentSelect(c)">
-            <span :style="{ fontSize:'11px', fontWeight:700, color:depthColor((c.depth||1)-1) }">{{ depthBullet((c.depth||1)-1) }}</span>
+            <span :style="{ fontSize:'11px', fontWeight:700, color:fnDepthColor((c.depth||1)-1) }">{{ fnDepthBullet((c.depth||1)-1) }}</span>
             <span>{{ c.categoryNm }}</span>
             <span style="font-size:11px;color:#aaa;margin-left:auto">depth {{ c.depth }}</span>
           </div>
