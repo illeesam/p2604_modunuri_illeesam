@@ -8,7 +8,7 @@ window.PdBundleMng = {
     const products = reactive([]);
     const brands = reactive([]);
     const bundles = reactive([]);
-    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: null, editBundleId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, pickerOpen: false, pickerSearch: '', dragIdx: null, dragoverIdx: null});
+    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: null, editBundleId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, pickerOpen: false, pickerSearch: '', dragIdx: null, dragoverIdx: null });
     const codes = reactive({
       product_statuses: [],
       bundle_types: [],
@@ -61,9 +61,7 @@ window.PdBundleMng = {
     /* ── 검색 파라미터 ── */
     const searchParam = reactive({
       nm: ''
-      error: null,
-      error: null,
-      error: null,, dtlMode: null, catPickerOpen: false, catDragIdx: null, pickerOpen: false, dragIdx: null});;
+    });
     const searchParamOrg = reactive({
       nm: ''
     });
@@ -76,9 +74,7 @@ window.PdBundleMng = {
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const pager    = reactive({ page: 1, size: 10 });
 
-    /* ── Dtl 모드: null=닫힘 | 'new' | 'edit' ── */
-    const dtlMode      = ref(null);
-      // 'edit' 시 bundleProdId
+    // 'edit' 시 bundleId는 uiState.editBundleId 사용
 
     /* ── 신규등록 폼 (pd_prod 기본정보) ── */
     const newForm = reactive({
@@ -90,9 +86,8 @@ window.PdBundleMng = {
 
     /* ── 카테고리 N개 (pd_category_prod) — 신규/편집 공통 ── */
     const dtlCategories  = reactive([]);  // [{ categoryId, categoryNm, depth }]
-    const catPickerOpen   = ref(false);
-        const cfCatPickerList   = computed(() => {
-      const q    = catPickerSearch.value.trim().toLowerCase();
+    const cfCatPickerList   = computed(() => {
+      const q    = uiState.catPickerSearch.trim().toLowerCase();
       const used = new Set(dtlCategories.map(c => String(c.categoryId)));
       return (categories || []).filter(c =>
         !used.has(String(c.categoryId)) && (!q || (c.categoryNm || '').toLowerCase().includes(q))
@@ -100,8 +95,7 @@ window.PdBundleMng = {
     });
 
     /* 카테고리 드래그 */
-    const catDragIdx     = ref(null);
-        const onCatDragStart = idx => { uiState.catDragIdx = idx; };
+    const onCatDragStart = idx => { uiState.catDragIdx = idx; };
     const onCatDragOver  = idx => { uiState.catDragoverIdx = idx; };
     const onCatDrop = () => {
       if (uiState.catDragIdx === null || uiState.catDragIdx === uiState.catDragoverIdx) {
@@ -419,14 +413,14 @@ window.PdBundleMng = {
       onSearch, onReset, rateSum, fnRateSumBadge, getProdNm, getProdPrice,
       getCategoryNm, getCategoryDepth, getBrandNm,
       categories, products, brands, categoryProds,
-      dtlCategories, catPickerOpen, catPickerSearch, cfCatPickerList,
-      addCategory, removeCategory, catDragIdx, catDragoverIdx, onCatDragStart, onCatDragOver, onCatDrop,
-      dtlMode, editBundleId, newForm, newErrors,
+      dtlCategories, cfCatPickerList,
+      addCategory, removeCategory, onCatDragStart, onCatDragOver, onCatDrop,
+      newForm, newErrors,
       dtlItems, cfDtlRateSum, cfDtlRateOk, cfDtlRateDiff, cfDtlProdNm, cfDtlBundleId,
       openNew, openDtl, closeDtl, handleSave, handleDelete,
       addItem, removeItem,
-      pickerOpen, pickerSearch, cfPickerList,
-      dragIdx, dragoverIdx, onDragStart, onDragOver, onDrop,
+      cfPickerList,
+      onDragStart, onDragOver, onDrop,
       PAGE_SIZES, onSizeChange };
   },
 

@@ -6,7 +6,7 @@ window.SyBatchHist = {
     const { ref, reactive, computed, onMounted } = Vue;
     const batches = reactive([]);
     const batchLogs = reactive([]);
-    const uiState = reactive({ loading: false, error: null, searchBatchId: '', searchStatus: '', expandedId: null});;
+    const uiState = reactive({ loading: false, error: null, searchBatchId: '', searchStatus: '', expandedId: null });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -29,7 +29,6 @@ window.SyBatchHist = {
     };
     onMounted(() => { handleFetchData(); });
 
-        const searchStatus  = ref('');
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
@@ -44,9 +43,7 @@ window.SyBatchHist = {
         if (uiState.searchBatchId && l.batchId !== Number(uiState.searchBatchId)) return false;
         if (uiState.searchStatus && l.runStatus !== uiState.searchStatus) return false;
         return true;
-      error: null,
       });
-      error: null,
     });
 
     const cfTotal      = computed(() => cfFiltered.value.length);
@@ -74,7 +71,7 @@ window.SyBatchHist = {
       return `${Math.floor(sec / 60)}분 ${sec % 60}초`;
     };
 
-    return { batches, uiState, uiState, searchBatchId, searchStatus, cfBatchOptions,
+    return { batches, uiState, cfBatchOptions,
       cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, pager, PAGE_SIZES,
       setPage, onSizeChange, onFilter,
       expandedId, toggleExpand,
@@ -90,11 +87,11 @@ window.SyBatchHist = {
       <span class="list-count" style="margin-left:4px;">{{ cfTotal }}건</span>
     </div>
     <div style="display:flex;gap:6px;align-items:center;">
-      <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:160px;" v-model="searchBatchId" @change="onFilter">
+      <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:160px;" v-model="uiState.searchBatchId" @change="onFilter">
         <option value="">배치 전체</option>
         <option v-for="b in cfBatchOptions" :key="b.batchId" :value="b.batchId">{{ b.label }}</option>
       </select>
-      <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:90px;" v-model="searchStatus" @change="onFilter">
+      <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:90px;" v-model="uiState.searchStatus" @change="onFilter">
         <option value="">상태 전체</option>
         <option>성공</option><option>실패</option><option>실행중</option><option>대기</option>
       </select>

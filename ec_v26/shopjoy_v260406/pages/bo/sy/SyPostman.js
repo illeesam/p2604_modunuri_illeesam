@@ -9,7 +9,8 @@ window.SyPostman = {
     const uiState = reactive({
       treeLoaded: false,
       settingsOpen: false,
-      histResSending: false,, treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0});;
+      histResSending: false, treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0,
+    });
 
     /* ===== Tree (JSON 로딩) ===== */
     const treeRoot   = reactive([]);

@@ -8,7 +8,7 @@ window.PdSetMng = {
     const products = reactive([]);
     const brands = reactive([]);
     const sets = reactive([]);
-    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: null, editSetId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, dragIdx: null, dragoverIdx: null, pickerOpen: false, pickerSearch: ''});
+    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: null, editSetId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, dragIdx: null, dragoverIdx: null, pickerOpen: false, pickerSearch: '' });
     const codes = reactive({
       product_statuses: [],
     });
@@ -58,9 +58,8 @@ window.PdSetMng = {
     };
     /* ── 검색 파라미터 ── */
     const searchParam = reactive({
-      error: null,
       nm: ''
-      error: null,, dtlMode: null, editSetId: null, catPickerOpen: false, catDragIdx: null, dragIdx: null, pickerOpen: false});;
+    });
     const searchParamOrg = reactive({
       nm: ''
     });
@@ -73,9 +72,6 @@ window.PdSetMng = {
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const pager    = reactive({ page: 1, size: 10 });
 
-    /* ── Dtl 모드 ── */
-    const dtlMode    = ref(null);   // null | 'new' | 'edit'
-    const editSetId  = ref(null);
 
     /* ── 신규등록 폼 ── */
     const newForm = reactive({
@@ -87,17 +83,15 @@ window.PdSetMng = {
 
     /* ── 카테고리 N개 ── */
     const dtlCategories   = reactive([]);
-    const catPickerOpen   = ref(false);
-        const cfCatPickerList   = computed(() => {
-      const q    = catPickerSearch.value.trim().toLowerCase();
+    const cfCatPickerList   = computed(() => {
+      const q    = uiState.catPickerSearch.trim().toLowerCase();
       const used = new Set(dtlCategories.map(c => String(c.categoryId)));
       return (categories || []).filter(c =>
         !used.has(String(c.categoryId)) && (!q || (c.categoryNm || '').toLowerCase().includes(q))
       );
     });
 
-    const catDragIdx     = ref(null);
-        const onCatDragStart = idx => { uiState.catDragIdx = idx; };
+    const onCatDragStart = idx => { uiState.catDragIdx = idx; };
     const onCatDragOver  = idx => { uiState.catDragoverIdx = idx; };
     const onCatDrop = () => {
       if (uiState.catDragIdx === null || uiState.catDragIdx === uiState.catDragoverIdx) {
@@ -356,26 +350,19 @@ window.PdSetMng = {
       }
     };
 
-  const searchParam = reactive({
-      error: null,
-      nm: ''
-      error: null,, dtlMode: null, editSetId: null, catPickerOpen: false, catDragIdx: null, dragIdx: null, pickerOpen: false});
-  const searchParamOrg = reactive({
-    nm: ''
-  });
 
     return {
       uiState,
       searchNm, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList,
       onSearch, onReset, getProdNm, getProd, getBrandNm,
       getCategoryNm, getCategoryDepth,
-      dtlCategories, catPickerOpen, catPickerSearch, cfCatPickerList,
-      addCategory, removeCategory, catDragIdx, catDragoverIdx, onCatDragStart, onCatDragOver, onCatDrop,
-      dtlMode, editSetId, newForm, newErrors, cfDtlProdNm,
+      dtlCategories, cfCatPickerList,
+      addCategory, removeCategory, onCatDragStart, onCatDragOver, onCatDrop,
+      newForm, newErrors, cfDtlProdNm,
       dtlItems, openNew, openDtl, closeDtl, handleSave, handleDelete,
       addItemFromProd, addItemBlank, removeItem,
-      pickerOpen, pickerSearch, cfPickerList,
-      dragIdx, dragoverIdx, onDragStart, onDragOver, onDrop,
+      cfPickerList,
+      onDragStart, onDragOver, onDrop,
       PAGE_SIZES, onSizeChange };
   },
 

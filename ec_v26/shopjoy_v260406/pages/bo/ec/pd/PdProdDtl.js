@@ -9,7 +9,7 @@ window.PdProdDtl = {
     const boUsers = reactive([]);
     const categories = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, isPageCodeLoad: false, topTab: window._pdProdDtlState.tab || 'info', viewMode2: window._pdProdDtlState.viewMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearch: ''});;
+    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, isPageCodeLoad: false, topTab: window._pdProdDtlState.tab || 'info', viewMode2: window._pdProdDtlState.viewMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearch: '' });
     const codes = reactive([]);
 
     const isAppReady = computed(() => {
@@ -133,9 +133,7 @@ window.PdProdDtl = {
     const removeOptItem = (grp, idx) => { grp.items.splice(idx, 1); generateSkus(); };
 
     // ── 옵션 아이템 드래그 정렬
-    const dragOptGrpId       = ref(null);
-    const dragOptItemIdx     = ref(null);
-        const onOptItemDragStart = (grp, idx) => { uiState.dragOptGrpId = grp._id; uiState.dragOptItemIdx = idx; };
+    const onOptItemDragStart = (grp, idx) => { uiState.dragOptGrpId = grp._id; uiState.dragOptItemIdx = idx; };
     const onOptItemDragOver  = (grp, idx) => { if (uiState.dragOptGrpId === grp._id) uiState.dragoverOptItemIdx = idx; };
     const onOptItemDrop      = (grp) => {
       if (uiState.dragOptItemIdx === null || uiState.dragOptItemIdx === uiState.dragoverOptItemIdx) { uiState.dragOptGrpId = null; uiState.dragOptItemIdx = null; uiState.dragoverOptItemIdx = null; return; }
@@ -531,26 +529,26 @@ window.PdProdDtl = {
       }
     };
 
-    return { cfIsNew, topTab, viewMode2, showTab, form, errors, handleSave,
-      uiState, mdSearch, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
-      useOpt, clearOpt, optGroups, skus, cfTotalStock, generateSkus,
-      skuFilter1, skuFilter2, skuFilterStock, cfSkuFilter1Options, cfSkuFilter2Options, cfSkusFiltered,
-      prodOptCategoryTypeCd, cfOptTypeLevel1Codes, cfOptTypeCodes, cfOptInputTypeCodes, getOptValCodes,
+    return { cfIsNew, showTab, form, errors, handleSave,
+      uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
+      clearOpt, optGroups, skus, cfTotalStock, generateSkus,
+      cfSkuFilter1Options, cfSkuFilter2Options, cfSkusFiltered,
+      cfOptTypeLevel1Codes, cfOptTypeCodes, cfOptInputTypeCodes, getOptValCodes,
       onCategoryChange, addOptGroup, removeOptGroup, addOptItem, removeOptItem,
-      dragOptGrpId, dragOptItemIdx, dragoverOptItemIdx, onOptItemDragStart, onOptItemDragOver, onOptItemDrop,
+      onOptItemDragStart, onOptItemDragOver, onOptItemDrop,
       images, addImageByUrl, onFileChange, setMain, removeImage, fileInputRef, triggerFileInput,
-      dragImgIdx, dragoverImgIdx, onImgDragStart, onImgDragOver, onImgDrop,
-      prodCategories, catPickerOpen, catPickerSearch, cfCatPickerList, addCategory, removeCategory,
-      catDragIdx, catDragoverIdx, onCatDragStart, onCatDragOver, onCatDrop,
-      relProds, codeProds, prodPickerOpen, prodPickerSearch, cfProdPickerList, openProdPicker, selectProdItem,
+      onImgDragStart, onImgDragOver, onImgDrop,
+      prodCategories, cfCatPickerList, addCategory, removeCategory,
+      onCatDragStart, onCatDragOver, onCatDrop,
+      relProds, codeProds, cfProdPickerList, openProdPicker, selectProdItem,
       removeRelProd, removeCodeProd,
-      dragRelIdx, dragoverRelIdx, onRelDragStart, onRelDragOver, onRelDrop,
-      dragCodeIdx, dragoverCodeIdx, onCodeDragStart, onCodeDragOver, onCodeDrop,
+      onRelDragStart, onRelDragOver, onRelDrop,
+      onCodeDragStart, onCodeDragOver, onCodeDrop,
       salePlans, cfPlanVisible, cfPlanAllChecked, addPlanRow, onPlanChange, deletePlanChecked, planRowStyle,
       cfMarginRateCalc, cfDiscountRate,
       contentBlocks, addContentBlock, removeContentBlock, onBlockFileChange,
-      dragBlockIdx, dragoverBlockIdx, onBlockDragStart, onBlockDragOver, onBlockDrop,
-      splitPct, previewDevice, uiState, contentSplitRef, onDividerMousedown,
+      onBlockDragStart, onBlockDragOver, onBlockDrop,
+      contentSplitRef, onDividerMousedown,
     };
   },
   template: /* html */`
