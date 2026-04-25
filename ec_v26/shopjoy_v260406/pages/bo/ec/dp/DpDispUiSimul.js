@@ -8,7 +8,7 @@ window.DpDispUiSimul = {
     const displays = reactive([]);
     const sites = reactive([]);
     const members = reactive([]);
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const fetchData = async () => {
       try {
@@ -74,13 +74,13 @@ window.DpDispUiSimul = {
     const wIcon  = (t) => WIDGET_ICONS[t] || '▪';
 
     /* ── 화면영역 코드 ── */
-    const allAreaListRaw = computed(() =>
+    const cfAllAreaListRaw = computed(() =>
       (Array.isArray(codes) ? codes : [])
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
-    const areaList = computed(() => {
-      const all = allAreaListRaw.value;
+    const cfAreaList = computed(() => {
+      const all = cfAllAreaListRaw.value;
       if (selectedAreas.size === 0) return all;
       return window.safeArrayUtils.safeFilter(all, c => selectedAreas.has(c.codeValue));
     });

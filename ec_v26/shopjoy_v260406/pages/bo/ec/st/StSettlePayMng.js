@@ -32,7 +32,7 @@ window.StSettlePayMng = {
     const pager = reactive({ page: 1, size: 10 });
     const selected = reactive(new Set());
 
-    const filtered = computed(() => {
+    const cfFiltered = computed(() => {
       const kw = searchKw.value.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(payList, r => {
         if (dateStart.value && r.payDate < dateStart.value) return false;
@@ -42,15 +42,15 @@ window.StSettlePayMng = {
         return true;
       });
     });
-    const total    = computed(() => filtered.value.length);
-    const totPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList = computed(() => filtered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    const pageNums = computed(() => { const c=pager.page,l=totPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfTotal    = computed(() => cfFiltered.value.length);
+    const cfTotPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
+    const cfPageNums = computed(() => { const c=pager.page,l=cfTotPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const summary = computed(() => ({
-      total:  filtered.value.reduce((s, r) => s + r.settleAmt, 0),
-      paid:   window.safeArrayUtils.safeFilter(filtered, r => r.payStatus === '지급완료').reduce((s, r) => s + r.payAmt, 0),
-      pending:window.safeArrayUtils.safeFilter(filtered, r => r.payStatus === '지급대기').reduce((s, r) => s + r.settleAmt, 0),
+    const cfSummary = computed(() => ({
+      total:  cfFiltered.value.reduce((s, r) => s + r.settleAmt, 0),
+      paid:   window.safeArrayUtils.safeFilter(cfFiltered, r => r.payStatus === '지급완료').reduce((s, r) => s + r.payAmt, 0),
+      pending:window.safeArrayUtils.safeFilter(cfFiltered, r => r.payStatus === '지급대기').reduce((s, r) => s + r.settleAmt, 0),
     }));
 
     const doPay = async (r) => {
@@ -68,14 +68,14 @@ window.StSettlePayMng = {
       }
     };
 
-    const statusBadge = s => ({ '지급완료':'badge-green', '지급대기':'badge-blue', '지급보류':'badge-orange', '지급오류':'badge-red' }[s] || 'badge-gray');
+    const fnStatusBadge = s => ({ '지급완료':'badge-green', '지급대기':'badge-blue', '지급보류':'badge-orange', '지급오류':'badge-red' }[s] || 'badge-gray');
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
     const onSearch = () => { pager.page = 1; };
     const onReset  = () => { searchKw.value = ''; searchStatus.value = ''; dateRange.value = '이번달'; onDateRangeChange(); pager.page = 1; };
 
-    const setPage = n => { if (n >= 1 && n <= totPages.value) pager.page = n; };
+    const setPage = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    return { descOpen, DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, searchKw, searchStatus, pager, filtered, total, totPages, pageList, pageNums, summary, doPay, statusBadge, fmtW, onSearch, onReset , PAGE_SIZES , setPage , onSizeChange };
+    return { descOpen, DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, searchKw, searchStatus, pager, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, cfSummary, doPay, fnStatusBadge, fmtW, onSearch, onReset , PAGE_SIZES , setPage , onSizeChange };
   },
   template: /* html */`
 <div>
@@ -109,22 +109,22 @@ window.StSettlePayMng = {
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:12px;background:#f8f9fa">
         <div style="font-size:11px;color:#888">총 정산액</div>
-        <div style="font-size:18px;font-weight:700;color:#333">{{ fmtW(summary.total) }}</div>
+        <div style="font-size:18px;font-weight:700;color:#333">{{ fmtW(cfSummary.total) }}</div>
       </div>
       <div class="card" style="text-align:center;padding:12px;background:#f0fff4">
         <div style="font-size:11px;color:#888">지급완료</div>
-        <div style="font-size:18px;font-weight:700;color:#27ae60">{{ fmtW(summary.paid) }}</div>
+        <div style="font-size:18px;font-weight:700;color:#27ae60">{{ fmtW(cfSummary.paid) }}</div>
       </div>
       <div class="card" style="text-align:center;padding:12px;background:#f0f4ff">
         <div style="font-size:11px;color:#888">지급대기</div>
-        <div style="font-size:18px;font-weight:700;color:#3498db">{{ fmtW(summary.pending) }}</div>
+        <div style="font-size:18px;font-weight:700;color:#3498db">{{ fmtW(cfSummary.pending) }}</div>
       </div>
     </div>
-    <div class="toolbar"><span class="list-count">총 {{ total }}건</span></div>
+    <div class="toolbar"><span class="list-count">총 {{ cfTotal }}건</span></div>
     <table class="bo-table">
       <thead><tr><th>지급ID</th><th>지급일</th><th>업체명</th><th>정산월</th><th>정산액</th><th>지급액</th><th>은행</th><th>계좌번호</th><th>예금주</th><th>상태</th><th>담당자</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="r in pageList" :key="r?.payId">
+        <tr v-for="r in cfPageList" :key="r?.payId">
           <td>{{ r.payId }}</td>
           <td>{{ r.payDate }}</td>
           <td><strong>{{ r.vendorNm }}</strong></td>
@@ -134,13 +134,13 @@ window.StSettlePayMng = {
           <td>{{ r.bankNm }}</td>
           <td style="font-size:12px;color:#666">{{ r.bankAccount }}</td>
           <td>{{ r.bankHolder }}</td>
-          <td><span class="badge" :class="statusBadge(r.payStatus)">{{ r.payStatus }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(r.payStatus)">{{ r.payStatus }}</span></td>
           <td>{{ r.regUserNm }}</td>
           <td class="actions">
             <button v-if="r.payStatus==='지급대기'" class="btn btn-sm btn-green" @click="doPay(r)">지급처리</button>
           </td>
         </tr>
-        <tr v-if="!pageList.length"><td colspan="12" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!cfPageList.length"><td colspan="12" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">
@@ -148,9 +148,9 @@ window.StSettlePayMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===totPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===totPages" @click="setPage(totPages)">»</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===cfTotPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===cfTotPages" @click="setPage(cfTotPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

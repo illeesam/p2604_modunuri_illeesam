@@ -45,12 +45,12 @@ window.SySiteMng = {
     const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { selectedPath.value = path; };
-    const tree = computed(() => window.boCmUtil.buildPathTree('sy_site'));
-    const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(tree.value); };
+    const cfTree = computed(() => window.boCmUtil.buildPathTree('sy_site'));
+    const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
-      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
     const searchKw     = ref('');
@@ -76,15 +76,15 @@ window.SySiteMng = {
       if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
+    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const typeOptions = computed(() => [...new Set(sites.map(s => s.siteType))].sort());
+    const cfTypeOptions = computed(() => [...new Set(sites.map(s => s.siteType))].sort());
 
     const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
 
-    const filtered = computed(() => sites.filter(s => {
+    const cfFiltered = computed(() => sites.filter(s => {
       const kw = applied.kw.trim().toLowerCase();
       if (kw && !s.siteNm.toLowerCase().includes(kw) && !s.domain.toLowerCase().includes(kw) && !s.siteCode.toLowerCase().includes(kw)) return false;
       if (applied.type   && s.siteType  !== applied.type)   return false;
@@ -94,17 +94,17 @@ window.SySiteMng = {
       if (applied.dateEnd && _d > applied.dateEnd) return false;
       return true;
     }));
-    const total      = computed(() => filtered.value.length);
-    const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList   = computed(() => filtered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const pageNums   = computed(() => {
-      const cur = pager.page, last = totalPages.value;
+    const cfTotal      = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums   = computed(() => {
+      const cur = pager.page, last = cfTotalPages.value;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
 
-    const statusBadge = s => ({ '운영중': 'badge-green', '점검중': 'badge-orange', '비활성': 'badge-gray' }[s] || 'badge-gray');
-    const typeBadge   = t => ({
+    const fnStatusBadge = s => ({ '운영중': 'badge-green', '점검중': 'badge-orange', '비활성': 'badge-gray' }[s] || 'badge-gray');
+    const fnTypeBadge   = t => ({
       '이커머스': 'badge-red', '숙박공유': 'badge-blue', '전문가연결': 'badge-purple',
       'IT매칭': 'badge-blue', '부동산': 'badge-orange', '교육': 'badge-green',
       '중고거래': 'badge-orange', '영화예매': 'badge-red', '음식배달': 'badge-orange',
@@ -129,10 +129,10 @@ window.SySiteMng = {
       Object.assign(applied, { kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
       pager.page = 1;
     };
-    const setPage     = n  => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const setPage     = n  => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
-    const doDelete = async (s) => {
+    const handleDelete = async (s) => {
       const ok = await props.showConfirm('삭제', `[${s.siteCode}] ${s.siteNm} 사이트를 삭제하시겠습니까?`);
       if (!ok) return;
       const idx = sites.findIndex(x => x.siteId === s.siteId);
@@ -149,19 +149,19 @@ window.SySiteMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(filtered.value, [{label:'ID',key:'siteId'},{label:'사이트코드',key:'siteCode'},{label:'사이트명',key:'siteNm'},{label:'도메인',key:'domain'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '사이트목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'siteId'},{label:'사이트코드',key:'siteCode'},{label:'사이트명',key:'siteNm'},{label:'도메인',key:'domain'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '사이트목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
     watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
     return { sites, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
+      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange,
-      searchKw, searchType, searchStatus, typeOptions,
-      pager, PAGE_SIZES, applied, filtered, total, totalPages, pageList, pageNums,
+      searchKw, searchType, searchStatus, cfTypeOptions,
+      pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums,
       onSearch, onReset, setPage, onSizeChange,
-      statusBadge, typeBadge, doDelete,
-      selectedId, detailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, isViewMode, detailKey,
+      fnStatusBadge, fnTypeBadge, handleDelete,
+      selectedId, cfDetailEditId, loadView, loadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey,
       exportExcel,
     };
   },
@@ -172,7 +172,7 @@ window.SySiteMng = {
       <input v-model="searchKw" placeholder="사이트코드 / 사이트명 / 도메인 검색" />
       <select v-model="searchType">
         <option value="">유형 전체</option>
-        <option v-for="t in typeOptions" :key="t">{{ t }}</option>
+        <option v-for="t in cfTypeOptions" :key="t">{{ t }}</option>
       </select>
       <select v-model="searchStatus">
         <option value="">상태 전체</option><option>운영중</option><option>점검중</option><option>비활성</option>
@@ -197,13 +197,13 @@ window.SySiteMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
     <div>
 <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사이트목록 <span class="list-count">{{ total }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사이트목록 <span class="list-count">{{ cfTotal }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -215,11 +215,11 @@ window.SySiteMng = {
         <th>사이트코드</th><th>유형</th><th>사이트명</th><th>도메인</th><th>대표이메일</th><th>대표전화</th><th>대표자</th><th>등록일</th><th>상태</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="pageList.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="s in pageList" :key="s.siteId" :style="selectedId===s.siteId?'background:#fff8f9;':''">
+        <tr v-if="cfPageList.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="s in cfPageList" :key="s.siteId" :style="selectedId===s.siteId?'background:#fff8f9;':''">
           <td style="font-size:12px;"><div style="display:flex;align-items:center;gap:6px;"><span style="flex:1;padding:4px 6px;background:#f3f4f6;border-radius:4px;color:#666;font-weight:500;">{{ pathLabel(s.pathId) || '미설정' }}</span><button type="button" @click="openPathPick(s)" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;hover:background:#eef2ff;">🔍</button></div></td>
           <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;">{{ s.siteCode }}</code></td>
-          <td><span class="badge" :class="typeBadge(s.siteType)" style="font-size:10px;">{{ s.siteType }}</span></td>
+          <td><span class="badge" :class="fnTypeBadge(s.siteType)" style="font-size:10px;">{{ s.siteType }}</span></td>
           <td>
             <span class="title-link" @click="loadDetail(s.siteId)" :style="selectedId===s.siteId?'color:#e8587a;font-weight:700;':''">
               {{ s.siteNm }}<span v-if="selectedId===s.siteId" style="font-size:10px;margin-left:3px;">▼</span>
@@ -231,10 +231,10 @@ window.SySiteMng = {
           <td style="font-size:12px;">{{ s.phone }}</td>
           <td style="font-size:12px;">{{ s.ceo }}</td>
           <td style="font-size:12px;">{{ s.regDate }}</td>
-          <td><span class="badge" :class="statusBadge(s.statusCd)">{{ s.statusCd }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(s.statusCd)">{{ s.statusCd }}</span></td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="loadDetail(s.siteId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="doDelete(s)">삭제</button>
+            <button class="btn btn-danger btn-sm" @click="handleDelete(s)">삭제</button>
           </div></td>
         </tr>
       </tbody>
@@ -244,9 +244,9 @@ window.SySiteMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -260,7 +260,7 @@ window.SySiteMng = {
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <sy-site-dtl :key="selectedId" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="detailEditId" />
+    <sy-site-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="cfDetailEditId" />
   </div>
 </div></div>
 

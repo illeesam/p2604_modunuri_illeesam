@@ -40,7 +40,7 @@ window.StConfigMng = {
       return Object.keys(errors).length === 0;
     };
 
-    const doSave = async () => {
+    const handleSave = async () => {
       if (!validate()) { props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const ok = await props.showConfirm('저장', '정산기준을 저장하시겠습니까?');
       if (!ok) return;
@@ -58,7 +58,7 @@ window.StConfigMng = {
       }
     };
 
-    const doDelete = async (c) => {
+    const handleDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.vendorType}] 정산기준을 삭제하시겠습니까?`);
       if (!ok) return;
       const idx = configs.findIndex(x => x.configId === c.configId); if (idx !== -1) configs.splice(idx, 1); if (selectedId.value === c.configId) closeForm();
@@ -73,9 +73,9 @@ window.StConfigMng = {
       }
     };
 
-    const cycleBadge = s => ({ '월정산': 'badge-blue', '주정산': 'badge-green', '일정산': 'badge-orange' }[s] || 'badge-gray');
+    const fnCycleBadge = s => ({ '월정산': 'badge-blue', '주정산': 'badge-green', '일정산': 'badge-orange' }[s] || 'badge-gray');
 
-    return { descOpen, configs, selectedId, form, errors, isNew, openEdit, openNew, closeForm, doSave, doDelete, cycleBadge };
+    return { descOpen, configs, selectedId, form, errors, isNew, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge };
   },
   template: /* html */`
 <div>
@@ -101,7 +101,7 @@ window.StConfigMng = {
           <td>{{ c.siteNm }}</td>
           <td><strong>{{ c.vendorType }}</strong></td>
           <td><strong>{{ c.commRate }}%</strong></td>
-          <td><span class="badge" :class="cycleBadge(c.settleCycle)">{{ c.settleCycle }}</span></td>
+          <td><span class="badge" :class="fnCycleBadge(c.settleCycle)">{{ c.settleCycle }}</span></td>
           <td>매월 {{ c.settleDay }}일</td>
           <td>{{ Number(c.minSettleAmt).toLocaleString() }}원</td>
           <td><span class="badge" :class="c.taxYn==='Y'?'badge-green':'badge-gray'">{{ c.taxYn==='Y'?'발행':'미발행' }}</span></td>
@@ -110,7 +110,7 @@ window.StConfigMng = {
           <td style="color:#888;font-size:12px">{{ c.remark }}</td>
           <td class="actions">
             <button class="btn btn-sm btn-primary" @click="openEdit(c)">수정</button>
-            <button class="btn btn-sm btn-danger"  @click="doDelete(c)">삭제</button>
+            <button class="btn btn-sm btn-danger"  @click="handleDelete(c)">삭제</button>
           </td>
         </tr>
       </tbody>
@@ -166,7 +166,7 @@ window.StConfigMng = {
       <input class="form-control" v-model="form.remark" placeholder="비고 입력" />
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" @click="doSave">저장</button>
+      <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="closeForm">취소</button>
     </div>
   </div>

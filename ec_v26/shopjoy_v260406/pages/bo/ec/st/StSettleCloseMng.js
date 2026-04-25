@@ -23,7 +23,7 @@ window.StSettleCloseMng = {
       } catch (_) {}
     };
     onMounted(() => { fetchData(); });
-    const vendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
+    const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
     const closeList = reactive([
       { closeId: 'CLS-2026-03', closeMon: '2026-03', sales: 556600, refund: 174000, net: 382600, comm: 38260, promo: 11478, settle: 332862, status: '마감완료', closeDate: '2026-04-10', regUserNm: '이관리자' },
@@ -33,28 +33,28 @@ window.StSettleCloseMng = {
 
     // 이번달 집계
     const thisMonth = new Date().toISOString().slice(0, 7);
-    const thisMonthOrders = computed(() => window.safeArrayUtils.safeFilter(orders, o => o.orderDate.startsWith(thisMonth) && o.status !== '취소됨'));
-    const thisMonthSales  = computed(() => thisMonthOrders.value.reduce((s, o) => s + o.totalPrice, 0));
-    const thisMonthRefund = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.requestDate.startsWith(thisMonth) && ['환불완료','취소완료'].includes(c.status)).reduce((s, c) => s + c.refundAmount, 0));
-    const thisMonthNet    = computed(() => thisMonthSales.value - thisMonthRefund.value);
+    const cfThisMonthOrders = computed(() => window.safeArrayUtils.safeFilter(orders, o => o.orderDate.startsWith(thisMonth) && o.status !== '취소됨'));
+    const thisMonthSales  = computed(() => cfThisMonthOrders.value.reduce((s, o) => s + o.totalPrice, 0));
+    const cfThisMonthRefund = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.requestDate.startsWith(thisMonth) && ['환불완료','취소완료'].includes(c.status)).reduce((s, c) => s + c.refundAmount, 0));
+    const thisMonthNet    = computed(() => thisMonthSales.value - cfThisMonthRefund.value);
     const thisMonthComm   = computed(() => Math.round(thisMonthNet.value * 0.10));
     const thisMonthPromo  = computed(() => Math.round(thisMonthNet.value * 0.03));
-    const thisMonthSettle = computed(() => thisMonthNet.value - thisMonthComm.value - thisMonthPromo.value);
+    const cfThisMonthSettle = computed(() => thisMonthNet.value - thisMonthComm.value - thisMonthPromo.value);
 
-    const alreadyClosed = computed(() => window.safeArrayUtils.safeSome(closeList, c => c.closeMon === thisMonth));
+    const cfAlreadyClosed = computed(() => window.safeArrayUtils.safeSome(closeList, c => c.closeMon === thisMonth));
 
     const doClose = async () => {
-      if (alreadyClosed.value) { props.showToast('이미 마감된 월입니다.', 'error'); return; }
+      if (cfAlreadyClosed.value) { props.showToast('이미 마감된 월입니다.', 'error'); return; }
       const ok = await props.showConfirm('정산마감', `${thisMonth} 정산을 마감하시겠습니까?\n마감 후에는 수정이 제한됩니다.`);
       if (!ok) return;
       closeList.unshift({
         closeId: 'CLS-' + thisMonth, closeMon: thisMonth,
-        sales: thisMonthSales.value, refund: thisMonthRefund.value, net: thisMonthNet.value,
-        comm: thisMonthComm.value, promo: thisMonthPromo.value, settle: thisMonthSettle.value,
+        sales: thisMonthSales.value, refund: cfThisMonthRefund.value, net: thisMonthNet.value,
+        comm: thisMonthComm.value, promo: thisMonthPromo.value, settle: cfThisMonthSettle.value,
         status: '마감완료', closeDate: new Date().toISOString().slice(0,10), regUserNm: '관리자',
       });
       try {
-        const res = await window.boApi.post('/bo/ec/st/close', { closeMon: thisMonth, sales: thisMonthSales.value, refund: thisMonthRefund.value, net: thisMonthNet.value, comm: thisMonthComm.value, promo: thisMonthPromo.value, settle: thisMonthSettle.value });
+        const res = await window.boApi.post('/bo/ec/st/close', { closeMon: thisMonth, sales: thisMonthSales.value, refund: cfThisMonthRefund.value, net: thisMonthNet.value, comm: thisMonthComm.value, promo: thisMonthPromo.value, settle: cfThisMonthSettle.value });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('정산마감이 완료되었습니다.', 'success');
       } catch (err) {
@@ -79,10 +79,10 @@ window.StSettleCloseMng = {
       }
     };
 
-    const statusBadge = s => ({ '마감완료':'badge-green', '마감예정':'badge-blue', '마감취소':'badge-red' }[s] || 'badge-gray');
+    const fnStatusBadge = s => ({ '마감완료':'badge-green', '마감예정':'badge-blue', '마감취소':'badge-red' }[s] || 'badge-gray');
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
 
-    return { descOpen, closeList, thisMonth, thisMonthSales, thisMonthRefund, thisMonthNet, thisMonthComm, thisMonthPromo, thisMonthSettle, alreadyClosed, doClose, doReopen, statusBadge, fmtW };
+    return { descOpen, closeList, thisMonth, thisMonthSales, cfThisMonthRefund, thisMonthNet, thisMonthComm, thisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW };
   },
   template: /* html */`
 <div>
@@ -106,7 +106,7 @@ window.StSettleCloseMng = {
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#fff8f8">
         <div style="font-size:11px;color:#888">환불액</div>
-        <div style="font-size:16px;font-weight:700;color:#e74c3c">{{ fmtW(thisMonthRefund) }}</div>
+        <div style="font-size:16px;font-weight:700;color:#e74c3c">{{ fmtW(cfThisMonthRefund) }}</div>
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#f8f9fa">
         <div style="font-size:11px;color:#888">순매출</div>
@@ -122,11 +122,11 @@ window.StSettleCloseMng = {
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#f0fff4">
         <div style="font-size:11px;color:#888">정산예정액</div>
-        <div style="font-size:16px;font-weight:700;color:#27ae60">{{ fmtW(thisMonthSettle) }}</div>
+        <div style="font-size:16px;font-weight:700;color:#27ae60">{{ fmtW(cfThisMonthSettle) }}</div>
       </div>
     </div>
     <div style="text-align:right">
-      <button v-if="!alreadyClosed" class="btn btn-primary" @click="doClose">📋 {{ thisMonth }} 정산마감 실행</button>
+      <button v-if="!cfAlreadyClosed" class="btn btn-primary" @click="doClose">📋 {{ thisMonth }} 정산마감 실행</button>
       <span v-else class="badge badge-green" style="font-size:13px;padding:8px 16px">✓ 마감완료</span>
     </div>
   </div>
@@ -147,7 +147,7 @@ window.StSettleCloseMng = {
           <td style="color:#9b59b6">{{ fmtW(r.promo) }}</td>
           <td style="color:#27ae60;font-weight:700">{{ fmtW(r.settle) }}</td>
           <td>{{ r.closeDate }}</td>
-          <td><span class="badge" :class="statusBadge(r.status)">{{ r.status }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td>
           <td>{{ r.regUserNm }}</td>
           <td class="actions">
             <button v-if="r.status==='마감완료'" class="btn btn-sm btn-secondary" @click="doReopen(r)">마감취소</button>

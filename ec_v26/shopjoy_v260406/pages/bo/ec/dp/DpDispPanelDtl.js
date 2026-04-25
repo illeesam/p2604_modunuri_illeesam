@@ -450,7 +450,7 @@ window.DpDispPanelDtl = {
       await nextTick();
       /* 기존 데이터 로드 */
       if (!cfIsNew.value) {
-        const d = displays.window.safeArrayUtils.safeFind(value, x => x.dispId === props.editId);
+        const d = displays.find(x => x.dispId === props.editId);
         if (d) {
           form.dispId        = d.dispId;
           form.dispCode      = d.dispCode      || '';
@@ -472,7 +472,7 @@ window.DpDispPanelDtl = {
           form.panelVisibilityTargets= d.panelVisibilityTargets|| '^PUBLIC^';
           if (d.rows && d.rows.length) {
             rows.splice(0, rows.length, ...d.rows.map((r, i) => makeRowData({ sortOrder: i+1, ...r })));
-            d.rwindow.safeArrayUtils.safeForEach(ows, (_, i) => expandedSections.add('tab'+(i+1)));
+            d.rows.forEach((_, i) => expandedSections.add('tab'+(i+1)));
           } else {
             Object.assign(window.safeArrayUtils.safeGet(rows, 0), { ...d });
           }
@@ -1069,7 +1069,7 @@ window.DpDispPanelDtl = {
             <!-- 공개대상 -->
             <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🔒 공개대상 (하나라도 해당하면 노출)</div>
             <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
-              <label v-for="opt in visibilityOptions" :key="opt?.codeValue"
+              <label v-for="opt in cfVisibilityOptions" :key="opt?.codeValue"
                 :style="{
                   display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'16px',
                   border:'1px solid '+(hasVisibility(opt.codeValue)?'#1565c0':'#ddd'),
@@ -1125,7 +1125,7 @@ window.DpDispPanelDtl = {
             </div>
 
             <!-- HTML 에디터 (Quill) -->
-            <div v-if="isHtmlEditor" style="margin-bottom:20px;">
+            <div v-if="cfIsHtmlEditor" style="margin-bottom:20px;">
               <div v-if="viewMode"
                 style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;">
                 <span v-if="cfActiveRow.htmlContent" v-html="cfActiveRow.htmlContent"></span>
@@ -1146,10 +1146,10 @@ window.DpDispPanelDtl = {
             </div>
 
             <!-- 파일목록 -->
-            <div v-else-if="isFileList" style="margin-bottom:20px;">
+            <div v-else-if="cfIsFileList" style="margin-bottom:20px;">
               <div v-if="viewMode">
-                <div v-if="fileListItems.length===0" style="color:#bbb;padding:12px 0;font-size:13px;">첨부파일 없음</div>
-                <div v-for="(f, i) in fileListItems" :key="Math.random()"
+                <div v-if="cfFileListItems.length===0" style="color:#bbb;padding:12px 0;font-size:13px;">첨부파일 없음</div>
+                <div v-for="(f, i) in cfFileListItems" :key="Math.random()"
                   style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #e8e8e8;border-radius:6px;margin-bottom:6px;background:#fafafa;">
                   <span style="font-size:16px;">📎</span>
                   <a v-if="f.url" :href="f.url" target="_blank"
@@ -1170,12 +1170,12 @@ window.DpDispPanelDtl = {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-if="fileListItems.length===0">
+                    <tr v-if="cfFileListItems.length===0">
                       <td colspan="4" style="text-align:center;color:#bbb;padding:16px;font-size:13px;">
                         첨부파일이 없습니다. 아래 [+ 파일 추가] 버튼을 클릭하세요.
                       </td>
                     </tr>
-                    <tr v-for="(f, i) in fileListItems" :key="Math.random()">
+                    <tr v-for="(f, i) in cfFileListItems" :key="Math.random()">
                       <td style="text-align:center;color:#aaa;font-size:12px;">{{ i+1 }}</td>
                       <td style="padding:4px 6px;">
                         <input class="form-control" :value="f.name"
@@ -1202,13 +1202,13 @@ window.DpDispPanelDtl = {
             </div>
 
             <!-- 일반 표현 설정 테이블 (조건상품 포함) -->
-            <div v-else-if="displayRows.length===0" style="color:#bbb;text-align:center;padding:20px 0 24px;font-size:13px;">
+            <div v-else-if="cfDisplayRows.length===0" style="color:#bbb;text-align:center;padding:20px 0 24px;font-size:13px;">
               위젯 유형을 선택하면 표현 설정 항목이 표시됩니다.
             </div>
             <table v-else class="bo-table" style="margin-bottom:20px;">
               <thead><tr><th style="width:180px;">항목</th><th>값</th></tr></thead>
               <tbody>
-                <tr v-for="row in displayRows" :key="row?.key">
+                <tr v-for="row in cfDisplayRows" :key="row?.key">
                   <td style="font-weight:500;color:#555;vertical-align:middle;">{{ row.label }}</td>
                   <td style="padding:6px 8px;">
                     <input v-if="row.type==='input'" class="form-control" v-model="cfActiveRow[row.key]" :placeholder="row.ph" style="margin:0;" :readonly="viewMode" />
@@ -1229,28 +1229,28 @@ window.DpDispPanelDtl = {
                         <input class="form-control" v-model="cfActiveRow.eventId" placeholder="이벤트 ID" style="margin:0;max-width:160px;" :readonly="viewMode" />
                         <span v-if="cfActiveRow.eventId" class="ref-link" @click="showRefModal('event', Number(cfActiveRow.eventId))">보기</span>
                       </div>
-                      <div v-if="relatedEvent" style="margin-top:6px;padding:8px 12px;background:#e6f4ff;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px;">
-                        <b>{{ relatedEvent.title }}</b>
-                        <span class="badge badge-green">{{ relatedEvent.status }}</span>
-                        <span style="color:#888;">{{ relatedEvent.startDate }} ~ {{ relatedEvent.endDate }}</span>
+                      <div v-if="cfRelatedEvent" style="margin-top:6px;padding:8px 12px;background:#e6f4ff;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px;">
+                        <b>{{ cfRelatedEvent.title }}</b>
+                        <span class="badge badge-green">{{ cfRelatedEvent.status }}</span>
+                        <span style="color:#888;">{{ cfRelatedEvent.startDate }} ~ {{ cfRelatedEvent.endDate }}</span>
                       </div>
                       <div v-else-if="cfActiveRow.eventId" style="margin-top:6px;font-size:12px;color:#aaa;">해당 이벤트를 찾을 수 없습니다.</div>
                     </div>
                   </td>
                 </tr>
-                <tr v-if="isText && activeRow.textContent">
+                <tr v-if="cfIsText && cfActiveRow.textContent">
                   <td style="font-weight:500;color:#555;">미리보기</td>
-                  <td style="padding:6px 8px;"><div style="padding:14px;border-radius:6px;font-size:13px;" :style="{background:activeRow.bgColor,color:activeRow.textColor}">{{ activeRow.textContent }}</div></td>
+                  <td style="padding:6px 8px;"><div style="padding:14px;border-radius:6px;font-size:13px;" :style="{background:cfActiveRow.bgColor,color:cfActiveRow.textColor}">{{ cfActiveRow.textContent }}</div></td>
                 </tr>
-                <tr v-if="isImage && activeRow.imageUrl">
+                <tr v-if="cfIsImage && cfActiveRow.imageUrl">
                   <td style="font-weight:500;color:#555;">이미지 미리보기</td>
-                  <td style="padding:6px 8px;"><img :src="activeRow.imageUrl" style="max-height:120px;border-radius:6px;border:1px solid #e8e8e8;" @error="$event.target.style.display='none'" /></td>
+                  <td style="padding:6px 8px;"><img :src="cfActiveRow.imageUrl" style="max-height:120px;border-radius:6px;border:1px solid #e8e8e8;" @error="$event.target.style.display='none'" /></td>
                 </tr>
-                <tr v-if="isProduct && activeRow.productIds">
+                <tr v-if="cfIsProduct && cfActiveRow.productIds">
                   <td style="font-weight:500;color:#555;">상품 링크</td>
                   <td style="padding:6px 8px;">
                     <div style="display:flex;flex-wrap:wrap;gap:6px;">
-                      <span v-for="pid in activeRow.productIds.split(',').map(s=>s.trim()).filter(Boolean)" :key="pid"
+                      <span v-for="pid in cfActiveRow.productIds.split(',').map(s=>s.trim()).filter(Boolean)" :key="pid"
                         class="ref-link" @click="showRefModal('product', Number(pid))"
                         style="padding:2px 10px;background:#e6f4ff;border-radius:12px;font-size:12px;cursor:pointer;">상품 #{{ pid }}</span>
                     </div>
@@ -1346,7 +1346,7 @@ window.DpDispPanelDtl = {
         <!-- 위젯미리보기 내용 (디바이스 프레임) -->
         <div style="flex:1;overflow:auto;padding:10px;">
         <div :style="{
-          width: previewFrameWidth, margin:'0 auto', border:'1px solid #d0d7de', borderRadius:'8px',
+          width: cfPreviewFrameWidth, margin:'0 auto', border:'1px solid #d0d7de', borderRadius:'8px',
           background:'#fff', padding:'8px', transition:'width .2s',
           display:'flex', flexDirection:'column', gap:'10px',
         }">
@@ -1377,7 +1377,7 @@ window.DpDispPanelDtl = {
 
     <!-- ═══════════════════ 펼치기(아코디언) 모드 ═══════════════════ -->
     <div v-else>
-      <div v-for="(t, tIdx) in TAB_LABELS" :key="'va_'+t.key" style="margin-bottom:4px;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
+      <div v-for="(t, tIdx) in cfTabLabels" :key="'va_'+t.key" style="margin-bottom:4px;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
 
         <!-- 섹션 헤더 -->
         <div @click="toggleSection(t.key)"
@@ -1389,14 +1389,14 @@ window.DpDispPanelDtl = {
             </span>
             <!-- 위젯 이동 버튼: 위젯 섹션이 열려 있을 때만 표시 -->
             <template v-if="t.key !== 'info' && isSectionExpanded(t.key)">
-              <button @click.stop="moveRowAt(TAB_ROW_MAP[t.key], -1)" :disabled="TAB_ROW_MAP[t.key]===0"
+              <button @click.stop="moveRowAt(cfTabRowMap[t.key], -1)" :disabled="cfTabRowMap[t.key]===0"
                 style="font-size:10px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 6px;color:#888;"
-                :style="TAB_ROW_MAP[t.key]===0?'opacity:0.3;cursor:default;':''">▲</button>
-              <button @click.stop="moveRowAt(TAB_ROW_MAP[t.key], 1)" :disabled="TAB_ROW_MAP[t.key]===rows.length-1"
+                :style="cfTabRowMap[t.key]===0?'opacity:0.3;cursor:default;':''">▲</button>
+              <button @click.stop="moveRowAt(cfTabRowMap[t.key], 1)" :disabled="cfTabRowMap[t.key]===rows.length-1"
                 style="font-size:10px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 6px;color:#888;"
-                :style="TAB_ROW_MAP[t.key]===rows.length-1?'opacity:0.3;cursor:default;':''">▼</button>
+                :style="cfTabRowMap[t.key]===rows.length-1?'opacity:0.3;cursor:default;':''">▼</button>
               <!-- 삭제 버튼 (위젯2부터) -->
-              <button v-if="tIdx >= 2" @click.stop="removeWidget(TAB_ROW_MAP[t.key])"
+              <button v-if="tIdx >= 2" @click.stop="removeWidget(cfTabRowMap[t.key])"
                 style="font-size:11px;padding:1px 7px;border:1px solid #fca5a5;border-radius:4px;background:#fff0f0;color:#dc2626;cursor:pointer;">✕</button>
             </template>
           </div>
@@ -1442,7 +1442,7 @@ window.DpDispPanelDtl = {
                 <div style="padding:8px 10px;border:1px solid #e4e4e4;border-radius:6px;background:#fafbfc;min-height:34px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
                   <span v-if="form.area" style="font-size:11px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:10px;padding:2px 10px;">
                     <code style="font-size:10px;background:transparent;">{{ form.area }}</code>
-                    &nbsp;{{ currentAreaLabel }}
+                    &nbsp;{{ cfCurrentAreaLabel }}
                   </span>
                   <span v-else style="font-size:11px;color:#bbb;">영역에 포함되지 않음</span>
                 </div>
@@ -1489,7 +1489,7 @@ window.DpDispPanelDtl = {
 
           <!-- ── 위젯 1~5: 각 섹션이 독립 row 바인딩 ── -->
           <!-- v-for 단일 아이템 트릭으로 r 로컬 변수 생성 -->
-          <template v-else-if="t.key !== 'info'" v-for="r in [rows[TAB_ROW_MAP[t.key]]]" :key="'r_'+t.key">
+          <template v-else-if="t.key !== 'info'" v-for="r in [rows[cfTabRowMap[t.key]]]" :key="'r_'+t.key">
             <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">📐 위젯 설정</div>
             <div class="form-row" style="margin-bottom:16px;">
               <div class="form-group">
@@ -1650,9 +1650,9 @@ window.DpDispPanelDtl = {
       </div><!-- /v-for 섹션 -->
       <!-- 위젯 추가 버튼 (펼치기 모드) -->
       <div v-if="rows.length < MAX_WIDGETS" style="margin-top:6px;">
-        <button @click="!isNew && addWidget()" :disabled="isNew"
-          :title="isNew ? '저장 후 전시항목을 추가할 수 있습니다.' : ''"
-          :style="isNew ? 'width:100%;padding:9px 0;border:1.5px dashed #e0e0e0;border-radius:8px;background:#f5f5f5;cursor:not-allowed;font-size:13px;color:#bbb;' : 'width:100%;padding:9px 0;border:1.5px dashed #d0d0d0;border-radius:8px;background:#fafafa;cursor:pointer;font-size:13px;color:#888;'">
+        <button @click="!cfIsNew && addWidget()" :disabled="cfIsNew"
+          :title="cfIsNew ? '저장 후 전시항목을 추가할 수 있습니다.' : ''"
+          :style="cfIsNew ? 'width:100%;padding:9px 0;border:1.5px dashed #e0e0e0;border-radius:8px;background:#f5f5f5;cursor:not-allowed;font-size:13px;color:#bbb;' : 'width:100%;padding:9px 0;border:1.5px dashed #d0d0d0;border-radius:8px;background:#fafafa;cursor:pointer;font-size:13px;color:#888;'">
           + 위젯 추가
         </button>
       </div>
@@ -1667,7 +1667,7 @@ window.DpDispPanelDtl = {
     :tab-label="preview.tabLabel"
     :area="form.area"
     :widgets="[]"
-    :widget="previewWidget"
+    :widget="cfPreviewWidget"
     @close="closePreview"
   />
 
@@ -1686,7 +1686,7 @@ window.DpDispPanelDtl = {
         <!-- 영역 + 상태 배지 -->
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
           <code style="font-size:11px;background:#f0f2f5;color:#555;padding:3px 8px;border-radius:4px;letter-spacing:.3px;">{{ form.area }}</code>
-          <span style="font-size:12px;background:#e8f4fd;color:#1565c0;border-radius:10px;padding:2px 10px;">{{ currentAreaLabel }}</span>
+          <span style="font-size:12px;background:#e8f4fd;color:#1565c0;border-radius:10px;padding:2px 10px;">{{ cfCurrentAreaLabel }}</span>
           <span class="badge" :class="form.status==='활성'?'badge-green':'badge-gray'" style="font-size:12px;">{{ form.status }}</span>
         </div>
         <!-- 패널명 -->

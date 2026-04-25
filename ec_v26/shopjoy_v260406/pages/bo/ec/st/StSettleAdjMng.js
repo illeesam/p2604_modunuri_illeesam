@@ -40,7 +40,7 @@ window.StSettleAdjMng = {
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 10 });
 
-    const filtered = computed(() => {
+    const cfFiltered = computed(() => {
       const kw = searchKw.value.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(adjList, r => {
         if (dateStart.value && r.adjDate < dateStart.value) return false;
@@ -51,10 +51,10 @@ window.StSettleAdjMng = {
         return true;
       });
     });
-    const total    = computed(() => filtered.value.length);
-    const totPages = computed(() => Math.max(1, Math.ceil(total.value / pager.size)));
-    const pageList = computed(() => filtered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    const pageNums = computed(() => { const c=pager.page,l=totPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfTotal    = computed(() => cfFiltered.value.length);
+    const cfTotPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
+    const cfPageList = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
+    const cfPageNums = computed(() => { const c=pager.page,l=cfTotPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const selectedId = ref(null);
     const form = reactive({});
@@ -76,7 +76,7 @@ window.StSettleAdjMng = {
     const openEdit = (r) => { Object.assign(form, {...r}); selectedId.value = r.adjId; isNew.value = false; Object.keys(errors).forEach(k => delete errors[k]); };
     const closeForm = () => { selectedId.value = null; };
 
-    const doSave = async () => {
+    const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try { await schema.validate(form, { abortEarly: false }); }
       catch (err) { err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
@@ -98,7 +98,7 @@ window.StSettleAdjMng = {
       }
     };
 
-    const doDelete = async (r) => {
+    const handleDelete = async (r) => {
       const ok = await props.showConfirm('삭제', `[${r.adjId}] 정산조정을 삭제하시겠습니까?`);
       if (!ok) return;
       const idx = adjList.findIndex(x => x.adjId === r.adjId); if (idx !== -1) adjList.splice(idx, 1); if (selectedId.value === r.adjId) closeForm();
@@ -128,16 +128,16 @@ window.StSettleAdjMng = {
       }
     };
 
-    const aprvBadge = s => ({ '승인':'badge-green', '대기':'badge-blue', '반려':'badge-red' }[s] || 'badge-gray');
-    const typeBadge = t => ({ '매출조정':'badge-blue', '수수료조정':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
+    const fnAprvBadge = s => ({ '승인':'badge-green', '대기':'badge-blue', '반려':'badge-red' }[s] || 'badge-gray');
+    const fnTypeBadge = t => ({ '매출조정':'badge-blue', '수수료조정':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
     const fmtW = n => (n >= 0 ? '' : '-') + Math.abs(Number(n)).toLocaleString() + '원';
 
     const onSearch = () => { pager.page = 1; };
     const onReset  = () => { searchKw.value = ''; searchType.value = ''; searchStatus.value = ''; dateRange.value = '이번달'; onDateRangeChange(); pager.page = 1; };
 
-    const setPage = n => { if (n >= 1 && n <= totPages.value) pager.page = n; };
+    const setPage = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    return { descOpen, DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, vendors, searchKw, searchType, searchStatus, pager, filtered, total, totPages, pageList, pageNums, selectedId, form, errors, isNew, openNew, openEdit, closeForm, doSave, doDelete, doApprove, aprvBadge, typeBadge, fmtW, onSearch, onReset , PAGE_SIZES , setPage , onSizeChange };
+    return { descOpen, DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange, cfVendors, searchKw, searchType, searchStatus, pager, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, selectedId, form, errors, isNew, openNew, openEdit, closeForm, handleSave, handleDelete, doApprove, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset , PAGE_SIZES , setPage , onSizeChange };
   },
   template: /* html */`
 <div>
@@ -174,28 +174,28 @@ window.StSettleAdjMng = {
   </div>
   <div class="card" style="margin-top:12px">
     <div class="toolbar">
-      <span class="list-count">총 {{ total }}건</span>
+      <span class="list-count">총 {{ cfTotal }}건</span>
       <div style="margin-left:auto"><button class="btn btn-primary" @click="openNew">+ 조정 추가</button></div>
     </div>
     <table class="bo-table">
       <thead><tr><th>조정ID</th><th>조정일자</th><th>업체명</th><th>유형</th><th>조정금액</th><th>사유</th><th>승인상태</th><th>등록자</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="r in pageList" :key="r?.adjId" :class="{selected: selectedId===r.adjId}">
+        <tr v-for="r in cfPageList" :key="r?.adjId" :class="{selected: selectedId===r.adjId}">
           <td>{{ r.adjId }}</td>
           <td>{{ r.adjDate }}</td>
           <td>{{ r.vendorNm }}</td>
-          <td><span class="badge" :class="typeBadge(r.adjType)">{{ r.adjType }}</span></td>
+          <td><span class="badge" :class="fnTypeBadge(r.adjType)">{{ r.adjType }}</span></td>
           <td :style="r.adjAmt<0?'color:#e74c3c;font-weight:700':'color:#27ae60;font-weight:700'">{{ fmtW(r.adjAmt) }}</td>
           <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.reason }}</td>
-          <td><span class="badge" :class="aprvBadge(r.aprvStatus)">{{ r.aprvStatus }}</span></td>
+          <td><span class="badge" :class="fnAprvBadge(r.aprvStatus)">{{ r.aprvStatus }}</span></td>
           <td>{{ r.regUserNm }}</td>
           <td class="actions">
             <button v-if="r.aprvStatus==='대기'" class="btn btn-sm btn-green" @click="doApprove(r)">승인</button>
             <button class="btn btn-sm btn-primary" @click="openEdit(r)">수정</button>
-            <button class="btn btn-sm btn-danger"  @click="doDelete(r)">삭제</button>
+            <button class="btn btn-sm btn-danger"  @click="handleDelete(r)">삭제</button>
           </td>
         </tr>
-        <tr v-if="!pageList.length"><td colspan="9" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!cfPageList.length"><td colspan="9" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">
@@ -203,9 +203,9 @@ window.StSettleAdjMng = {
          <div class="pager">
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in pageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===totPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===totPages" @click="setPage(totPages)">»</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.page===cfTotPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===cfTotPages" @click="setPage(cfTotPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -223,7 +223,7 @@ window.StSettleAdjMng = {
         <label class="form-label">업체 <span style="color:red">*</span></label>
         <select class="form-control" :class="{'is-invalid':errors.vendorId}" v-model.number="form.vendorId">
           <option value="">선택</option>
-          <option v-for="v in vendors" :key="v?.vendorId" :value="v.vendorId">{{ v.vendorNm }}</option>
+          <option v-for="v in cfVendors" :key="v?.vendorId" :value="v.vendorId">{{ v.vendorNm }}</option>
         </select>
         <div v-if="errors.vendorId" class="field-error">{{ errors.vendorId }}</div>
       </div>
@@ -250,7 +250,7 @@ window.StSettleAdjMng = {
       <div v-if="errors.reason" class="field-error">{{ errors.reason }}</div>
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" @click="doSave">저장</button>
+      <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="closeForm">취소</button>
     </div>
   </div>

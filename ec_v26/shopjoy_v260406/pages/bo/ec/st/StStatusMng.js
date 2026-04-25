@@ -58,7 +58,7 @@ window.StStatusMng = {
     onMounted(() => { fetchData(); });
     const orders   = computed(() => orderList);
     const claims   = computed(() => claimList);
-    const vendors  = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
+    const cfVendors  = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
     const coupons  = computed(() => couponList);
     const cacheList= computed(() => cacheDataList);
 
@@ -77,9 +77,9 @@ window.StStatusMng = {
     const vendorSearchKw  = ref('');
     const vendorPager     = reactive({ page: 1, size: 10 });
 
-    const vendorRows = computed(() => {
+    const cfVendorRows = computed(() => {
       const filteredOrders = window.safeArrayUtils.safeFilter(orders, o => inRange(o.orderDate) && o.status !== '취소됨');
-      return vendors.value.map(v => {
+      return cfVendors.value.map(v => {
         const vOrders = window.safeArrayUtils.safeFilter(filteredOrders, o => o.vendorId === v.vendorId);
         const sales   = vOrders.reduce((s, o) => s + (o.totalPrice || 0), 0);
         const refund  = claims.value
@@ -91,10 +91,10 @@ window.StStatusMng = {
         return { vendorId: v.vendorId, vendorNm: v.vendorNm, orderCnt: vOrders.length, sales, refund, netSales, comm, settle: netSales - comm };
       }).filter(r => !vendorSearchKw.value || r.vendorNm.includes(vendorSearchKw.value));
     });
-    const vendorTotal = computed(() => vendorRows.value.length);
-    const vendorPages = computed(() => Math.max(1, Math.ceil(vendorTotal.value / vendorPager.size)));
-    const vendorPageList = computed(() => vendorRows.value.slice((vendorPager.page - 1) * vendorPager.size, vendorPager.page * vendorPager.size));
-    const vendorSummary  = computed(() => vendorRows.value.reduce((a, r) => ({ sales: a.sales + r.sales, refund: a.refund + r.refund, comm: a.comm + r.comm, settle: a.settle + r.settle }), { sales: 0, refund: 0, comm: 0, settle: 0 }));
+    const cfVendorTotal = computed(() => cfVendorRows.value.length);
+    const cfVendorPages = computed(() => Math.max(1, Math.ceil(cfVendorTotal.value / vendorPager.size)));
+    const cfVendorPageList = computed(() => cfVendorRows.value.slice((vendorPager.page - 1) * vendorPager.size, vendorPager.page * vendorPager.size));
+    const vendorSummary  = computed(() => cfVendorRows.value.reduce((a, r) => ({ sales: a.sales + r.sales, refund: a.refund + r.refund, comm: a.comm + r.comm, settle: a.settle + r.settle }), { sales: 0, refund: 0, comm: 0, settle: 0 }));
 
     /* ════════════════════════════════════════════════
      * 2. 주문별현황
@@ -103,7 +103,7 @@ window.StStatusMng = {
     const orderSearchStatus = ref('');
     const orderPager     = reactive({ page: 1, size: 10 });
 
-    const orderRows = computed(() => {
+    const cfOrderRows = computed(() => {
       const kw = orderSearchKw.value.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(orders, o => {
         if (!inRange(o.orderDate)) return false;
@@ -111,18 +111,18 @@ window.StStatusMng = {
         if (kw && !o.orderId.toLowerCase().includes(kw) && !o.userNm.toLowerCase().includes(kw) && !o.prodNm.toLowerCase().includes(kw)) return false;
         return true;
       }).map(o => {
-        const vendor = vendors.window.safeArrayUtils.safeFind(value, v => v.vendorId === o.vendorId);
+        const vendor = cfVendors.window.safeArrayUtils.safeFind(value, v => v.vendorId === o.vendorId);
         const isCancelled = o.status === '취소됨';
         const comm   = isCancelled ? 0 : Math.round((o.totalPrice || 0) * COMM_RATE);
         const settle = isCancelled ? 0 : (o.totalPrice || 0) - comm;
         return { ...o, vendorNm: vendor ? vendor.vendorNm : '-', comm, settle, isCancelled };
       });
     });
-    const orderTotal = computed(() => orderRows.value.length);
-    const orderPages = computed(() => Math.max(1, Math.ceil(orderTotal.value / orderPager.size)));
-    const orderPageList = computed(() => orderRows.value.slice((orderPager.page - 1) * orderPager.size, orderPager.page * orderPager.size));
+    const cfOrderTotal = computed(() => cfOrderRows.value.length);
+    const cfOrderPages = computed(() => Math.max(1, Math.ceil(cfOrderTotal.value / orderPager.size)));
+    const cfOrderPageList = computed(() => cfOrderRows.value.slice((orderPager.page - 1) * orderPager.size, orderPager.page * orderPager.size));
     const orderSummary  = computed(() => {
-      const valid = window.safeArrayUtils.safeFilter(orderRows, r => !r.isCancelled);
+      const valid = window.safeArrayUtils.safeFilter(cfOrderRows, r => !r.isCancelled);
       return { cnt: valid.length, sales: valid.reduce((s, r) => s + r.totalPrice, 0), comm: valid.reduce((s, r) => s + r.comm, 0), settle: valid.reduce((s, r) => s + r.settle, 0) };
     });
 
@@ -133,7 +133,7 @@ window.StStatusMng = {
     const claimSearchStatus = ref('');
     const claimPager        = reactive({ page: 1, size: 10 });
 
-    const claimRows = computed(() => {
+    const cfClaimRows = computed(() => {
       return window.safeArrayUtils.safeFilter(claims, c => {
         if (!inRange(c.requestDate)) return false;
         if (claimSearchType.value   && c.type   !== claimSearchType.value)   return false;
@@ -145,16 +145,16 @@ window.StStatusMng = {
         return { ...c, isCompleted, settleImpact };
       });
     });
-    const claimTotal = computed(() => claimRows.value.length);
-    const claimPages = computed(() => Math.max(1, Math.ceil(claimTotal.value / claimPager.size)));
-    const claimPageList = computed(() => claimRows.value.slice((claimPager.page - 1) * claimPager.size, claimPager.page * claimPager.size));
+    const cfClaimTotal = computed(() => cfClaimRows.value.length);
+    const cfClaimPages = computed(() => Math.max(1, Math.ceil(cfClaimTotal.value / claimPager.size)));
+    const cfClaimPageList = computed(() => cfClaimRows.value.slice((claimPager.page - 1) * claimPager.size, claimPager.page * claimPager.size));
     const claimSummary  = computed(() => ({
-      cnt:     claimRows.value.length,
-      refund:  claimRows.value.reduce((s, r) => s + (r.refundAmount || 0), 0),
-      impact:  claimRows.value.reduce((s, r) => s + r.settleImpact, 0),
-      cancel:  window.safeArrayUtils.safeFilter(claimRows, r => r.type === '취소').length,
-      return_: window.safeArrayUtils.safeFilter(claimRows, r => r.type === '반품').length,
-      exchange:window.safeArrayUtils.safeFilter(claimRows, r => r.type === '교환').length,
+      cnt:     cfClaimRows.value.length,
+      refund:  cfClaimRows.value.reduce((s, r) => s + (r.refundAmount || 0), 0),
+      impact:  cfClaimRows.value.reduce((s, r) => s + r.settleImpact, 0),
+      cancel:  window.safeArrayUtils.safeFilter(cfClaimRows, r => r.type === '취소').length,
+      return_: window.safeArrayUtils.safeFilter(cfClaimRows, r => r.type === '반품').length,
+      exchange:window.safeArrayUtils.safeFilter(cfClaimRows, r => r.type === '교환').length,
     }));
 
     /* ════════════════════════════════════════════════

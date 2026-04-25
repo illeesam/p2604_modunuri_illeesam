@@ -34,15 +34,15 @@ window.SyUserMng = {
     const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { selectedDeptId.value = id; };
-    const tree = computed(() => window.boCmUtil.buildDeptTree());
-    const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(tree.value); };
+    const cfTree = computed(() => window.boCmUtil.buildDeptTree());
+    const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     onMounted(() => {
-      const initSet = window.boCmUtil.collectExpandedToDepth(tree.value, 2);
+      const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
     /* 선택 부서 + 자손의 dept 이름 Set */
-    const allowedDeptNms = computed(() => {
+    const cfAllowedDeptNms = computed(() => {
       if (selectedDeptId.value == null) return null;
       const desc = window.boCmUtil.collectDescendantIds(depts, 'deptId', 'parentId', selectedDeptId.value);
       if (!desc) return null;
@@ -56,7 +56,7 @@ window.SyUserMng = {
       if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
-    const siteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const searchRole = ref('');
     const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 10 });
@@ -73,9 +73,9 @@ window.SyUserMng = {
       if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const detailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const isViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const detailKey = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
+    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
+    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
     const applied = reactive({ kw: '', role: '', status: '', dateStart: '', dateEnd: '' });
 

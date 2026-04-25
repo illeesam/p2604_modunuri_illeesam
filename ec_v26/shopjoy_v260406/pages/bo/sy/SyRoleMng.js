@@ -114,7 +114,7 @@ window.SyRoleMng = {
     window.boCmUtil.__roleCatLabel = (code) => (ROLE_CATS.find(x=>x[0]===code) || [,code])[1];
     window.boCmUtil.__roleCatColor = (code) => ROLE_CAT_COLOR[code] || '#9ca3af';
     const PERM_COLORS = { '없음': '#9ca3af', '읽기': '#2563eb', '쓰기': '#16a34a', '관리': '#f59e0b', '차단': '#e8587a' };
-    const permColor   = (p) => PERM_COLORS[p] || '#9ca3af';
+    const fnPermColor   = (p) => PERM_COLORS[p] || '#9ca3af';
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
     const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
@@ -182,7 +182,7 @@ window.SyRoleMng = {
           const cats = window.boCmUtil.__roleCatOf ? window.boCmUtil.__roleCatOf(r.roleId) : [];
           if (!cats.includes(applied.cat)) return false;
         }
-        if (allowedRoleIds.value && !allowedRoleIds.value.has(r.roleId)) return false;
+        if (cfAllowedRoleIds.value && !cfAllowedRoleIds.value.has(r.roleId)) return false;
         if (treeCatFilter.value) {
           const cats = window.boCmUtil.__roleCatOf ? window.boCmUtil.__roleCatOf(r.roleId) : [];
           if (!cats.includes(treeCatFilter.value)) return false;
@@ -194,11 +194,11 @@ window.SyRoleMng = {
 
     loadGrid();
 
-    const total = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
-    const pagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
-    const totalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
-    const pageNums   = computed(() => { const c = pager.page, l = totalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setPage    = n => { if (n >= 1 && n <= totalPages.value) pager.page = n; };
+    const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
+    const cfPagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
+    const cfPageNums   = computed(() => { const c = pager.page, l = cfTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
+    const setPage    = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
     const onSearch = () => {
@@ -283,7 +283,7 @@ window.SyRoleMng = {
       }
     };
 
-    const doSave = async () => {
+    const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I');
       const uRows = gridRows.filter(r => r._row_status === 'U');
       const dRows = gridRows.filter(r => r._row_status === 'D');
@@ -316,7 +316,7 @@ window.SyRoleMng = {
 
     const checkAll = ref(false);
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = checkAll.value; }); };
-    const statusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
+    const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
     const parentNm = (parentId) => {
       if (!parentId) return '';
@@ -343,14 +343,14 @@ window.SyRoleMng = {
       nodes.forEach(n => { result.push(n); flatMenuTree(n._kids, result); });
       return result;
     };
-    const menuTree = computed(() => {
+    const cfMenuTree = computed(() => {
       const kw = menuSearchKw.value.trim().toLowerCase();
       const all = menus.value;
       const list = kw ? all.filter(m => m.menuNm.toLowerCase().includes(kw) || m.menuCode.toLowerCase().includes(kw)) : all;
       return flatMenuTree(buildMenuTree(list, null, 0));
     });
 
-    const roleMenuIds = computed(() => {
+    const cfRoleMenuIds = computed(() => {
       if (!selectedRoleId.value) return new Set();
       return new Set(roleMenus.value.filter(x => x.roleId === selectedRoleId.value).map(x => x.menuId));
     });
@@ -375,7 +375,7 @@ window.SyRoleMng = {
       if (level === '없음') {
         roleMenus.value = roleMenus.value.filter(x => x.roleId !== selectedRoleId.value);
       } else {
-        menuTree.value.forEach(m => {
+        cfMenuTree.value.forEach(m => {
           const idx = roleMenus.value.findIndex(x => x.roleId === selectedRoleId.value && x.menuId === m.menuId);
           if (idx !== -1) roleMenus.value[idx].permLevel = level;
           else roleMenus.value.push({ roleId: selectedRoleId.value, menuId: m.menuId, permLevel: level });
@@ -384,15 +384,15 @@ window.SyRoleMng = {
     };
     const isMenuChecked = (menuId) => getMenuPerm(menuId) !== '없음';
     const toggleAllMenus = (check) => { setAllMenuPerm(check ? '읽기' : '없음'); };
-    const menuAllChecked = computed(() => {
-      if (!selectedRoleId.value || !menuTree.value.length) return false;
-      return menuTree.value.every(m => getMenuPerm(m.menuId) !== '없음');
+    const cfMenuAllChecked = computed(() => {
+      if (!selectedRoleId.value || !cfMenuTree.value.length) return false;
+      return cfMenuTree.value.every(m => getMenuPerm(m.menuId) !== '없음');
     });
 
     /* ── 하단: 대상사용자 (모달 선택) ── */
     const userSelectOpen = ref(false);
 
-    const roleUsersList = computed(() => {
+    const cfRoleUsersList = computed(() => {
       if (!selectedRoleId.value) return [];
       return roleUsers.value
         .filter(x => x.roleId === selectedRoleId.value)
@@ -415,7 +415,7 @@ window.SyRoleMng = {
       if (idx !== -1) roleUsers.value.splice(idx, 1);
     };
 
-    const selectedRoleNm = computed(() => {
+    const cfSelectedRoleNm = computed(() => {
       if (!selectedRoleId.value) return '';
       const r = roles.find(x => x.roleId === selectedRoleId.value);
       return r ? r.roleNm : '';
@@ -433,17 +433,17 @@ window.SyRoleMng = {
 
     return {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, tree,
-      siteNm, ROLE_TYPES, PERM_LEVELS, ROLE_CATS, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, treeCatFilter, permColor, depthBullet, depthColor, statusClass,
+      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
+      cfSiteNm, ROLE_TYPES, PERM_LEVELS, ROLE_CATS, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, treeCatFilter, fnPermColor, depthBullet, depthColor, fnStatusClass,
       searchKw, searchType, searchUseYn, searchCat, applied, onSearch, onReset,
-      gridRows, pagedRows, total, pager, PAGE_SIZES, totalPages, pageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onCellChange,
-      addRow, deleteRow, cancelRow, cancelChecked, deleteRows, doSave,
+      addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       checkAll, toggleCheckAll, parentNm,
       roleTreeModal, openParentModal, onParentSelect,
-      selectedRoleId, selectedRoleNm,
-      menuSearchKw, menuTree, getMenuPerm, setMenuPerm, setAllMenuPerm, isMenuChecked, toggleAllMenus, menuAllChecked,
-      userSelectOpen, roleUsersList, onUserSelect, removeUser,
+      selectedRoleId, cfSelectedRoleNm,
+      menuSearchKw, cfMenuTree, getMenuPerm, setMenuPerm, setAllMenuPerm, isMenuChecked, toggleAllMenus, cfMenuAllChecked,
+      userSelectOpen, cfRoleUsersList, onUserSelect, removeUser,
       exportExcel,
     };
   },
@@ -485,20 +485,20 @@ window.SyRoleMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="tree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
     <div>
 <!-- CRUD 그리드 -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>역할목록 <span class="list-count">{{ total }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>역할목록 <span class="list-count">{{ cfTotal }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
         <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
         <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
-        <button class="btn btn-primary btn-sm" @click="doSave">저장</button>
+        <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
       </div>
     </div>
 
@@ -524,11 +524,11 @@ window.SyRoleMng = {
         <tr v-if="gridRows.length===0">
           <td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <tr v-for="(row, idx) in pagedRows" :key="row.roleId"
+        <tr v-for="(row, idx) in cfPagedRows" :key="row.roleId"
           class="crud-row" :class="['status-'+row._row_status, focusedIdx===getRealIdx(idx) ? 'focused' : '']"
           @click="setFocused(getRealIdx(idx))">
           <td class="col-id-val">{{ row.roleId > 0 ? row.roleId : 'NEW' }}</td>
-          <td class="col-status-val"><span class="badge badge-xs" :class="statusClass(row._row_status)">{{ row._row_status }}</span></td>
+          <td class="col-status-val"><span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span></td>
           <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
           <td><input class="grid-input grid-mono" v-model="row.roleCode" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
 
@@ -571,7 +571,7 @@ window.SyRoleMng = {
             </select>
           </td>
           <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
+          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
           <td class="col-act-cancel-val">
             <button v-if="['U','I','D'].includes(row._row_status)"
               class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>
@@ -589,9 +589,9 @@ window.SyRoleMng = {
       <div class="pager">
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in pageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===totalPages" @click="setPage(totalPages)">»</button>
+        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -610,17 +610,17 @@ window.SyRoleMng = {
         <div class="toolbar" style="flex-wrap:wrap;gap:6px;">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
             <b style="font-size:13px;">메뉴 접근권한</b>
-            <span v-if="selectedRoleNm" style="font-size:12px;color:#e8587a;">— {{ selectedRoleNm }}</span>
+            <span v-if="cfSelectedRoleNm" style="font-size:12px;color:#e8587a;">— {{ cfSelectedRoleNm }}</span>
             <span v-else style="font-size:12px;color:#bbb;">역할을 선택하면 메뉴를 배분할 수 있습니다</span>
           </div>
           <div v-if="selectedRoleId" style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
             <label style="font-size:12px;color:#555;cursor:pointer;display:flex;align-items:center;gap:4px;margin-right:4px;white-space:nowrap;">
-              <input type="checkbox" :checked="menuAllChecked" @change="e => toggleAllMenus(e.target.checked)" />
+              <input type="checkbox" :checked="cfMenuAllChecked" @change="e => toggleAllMenus(e.target.checked)" />
               전체선택
             </label>
             <button v-for="p in PERM_LEVELS" :key="p"
               class="btn btn-xs"
-              :style="{ background: permColor(p), borderColor: permColor(p), color:'#fff', fontWeight:'600', fontSize:'11px', padding:'2px 8px' }"
+              :style="{ background: fnPermColor(p), borderColor: fnPermColor(p), color:'#fff', fontWeight:'600', fontSize:'11px', padding:'2px 8px' }"
               @click="setAllMenuPerm(p)">{{ p }}</button>
           </div>
         </div>
@@ -633,8 +633,8 @@ window.SyRoleMng = {
 
         <!-- 메뉴 트리 목록 -->
         <div v-if="selectedRoleId" style="max-height:340px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px;">
-          <div v-if="!menuTree.length" style="text-align:center;color:#bbb;padding:20px;font-size:13px;">메뉴가 없습니다.</div>
-          <div v-for="m in menuTree" :key="m.menuId"
+          <div v-if="!cfMenuTree.length" style="text-align:center;color:#bbb;padding:20px;font-size:13px;">메뉴가 없습니다.</div>
+          <div v-for="m in cfMenuTree" :key="m.menuId"
             style="display:flex;align-items:center;padding:6px 10px;border-bottom:1px solid #f8f8f8;transition:background .1s;"
             :style="{ background: isMenuChecked(m.menuId) ? '#fff8f9' : '' }">
             <!-- 블릿 트리 들여쓰기 -->
@@ -650,7 +650,7 @@ window.SyRoleMng = {
               <button v-for="p in PERM_LEVELS" :key="p"
                 style="font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid;cursor:pointer;font-weight:600;transition:all .1s;"
                 :style="getMenuPerm(m.menuId)===p
-                  ? { background: permColor(p), borderColor: permColor(p), color:'#fff' }
+                  ? { background: fnPermColor(p), borderColor: fnPermColor(p), color:'#fff' }
                   : { background:'#f5f5f5', borderColor:'#e0e0e0', color:'#999' }"
                 @click="setMenuPerm(m.menuId, p)">{{ p }}</button>
             </div>
@@ -668,7 +668,7 @@ window.SyRoleMng = {
         <div class="toolbar">
           <div>
             <b style="font-size:13px;">대상사용자</b>
-            <span v-if="selectedRoleNm" style="font-size:12px;color:#e8587a;margin-left:8px;">— {{ selectedRoleNm }}</span>
+            <span v-if="cfSelectedRoleNm" style="font-size:12px;color:#e8587a;margin-left:8px;">— {{ cfSelectedRoleNm }}</span>
             <span v-else style="font-size:12px;color:#bbb;margin-left:8px;">역할을 선택하면 사용자를 추가할 수 있습니다</span>
           </div>
           <button v-if="selectedRoleId" class="btn btn-primary btn-sm"
@@ -677,13 +677,13 @@ window.SyRoleMng = {
 
         <!-- 선택된 사용자 목록 -->
         <div v-if="selectedRoleId">
-          <div v-if="!roleUsersList.length"
+          <div v-if="!cfRoleUsersList.length"
             style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;border:1px dashed #e0e0e0;border-radius:6px;">
             추가된 사용자가 없습니다.<br>
             <span style="font-size:12px;">[사용자 추가] 버튼으로 추가하세요.</span>
           </div>
           <div v-else style="display:flex;flex-direction:column;gap:6px;padding-top:4px;">
-            <div v-for="u in roleUsersList" :key="u.boUserId"
+            <div v-for="u in cfRoleUsersList" :key="u.boUserId"
               style="display:flex;align-items:center;padding:9px 14px;background:#fafafa;border:1px solid #f0f0f0;border-radius:6px;transition:background .1s;"
               @mouseenter="$event.currentTarget.style.background='#fff0f4'"
               @mouseleave="$event.currentTarget.style.background='#fafafa'">
