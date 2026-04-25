@@ -3,6 +3,7 @@ window.MyClaim = {
   name: 'MyClaim',
   props: ['navigate', 'config', 'cartCount', 'showToast', 'showConfirm'],
   setup(props) {
+    const { ref, reactive, computed, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
@@ -25,7 +26,6 @@ window.MyClaim = {
         fnLoadCodes();
       }
     });
-    const { reactive, computed, onMounted , watch } = Vue;
     const myStore = window.useFoMyStore();
     const { claims, claimFilter, cfFilteredClaims, orders } = Pinia.storeToRefs(myStore);
     const filteredClaims = cfFilteredClaims;
@@ -34,14 +34,13 @@ window.MyClaim = {
     const paginate = myStore.paginate;
 
     const { inRange, onDateSearch } = window.myDateFilterHelper();
-    const { ref: _r, computed: _c } = Vue;
-    const claimStatusFilter = _r([]);
+    const claimStatusFilter = ref([]);
     const toggleClaimStatus = (step) => {
       const idx = claimStatusFilter.value.indexOf(step);
       if (idx === -1) claimStatusFilter.value.push(step);
       else claimStatusFilter.value.splice(idx, 1);
     };
-    const cfDateFilteredClaims = _c(() => filteredClaims.value
+    const cfDateFilteredClaims = computed(() => filteredClaims.value
       .filter(c => inRange(c.requestDate))
       .filter(c => !claimStatusFilter.value.length || claimStatusFilter.value.includes(c.status))
     );

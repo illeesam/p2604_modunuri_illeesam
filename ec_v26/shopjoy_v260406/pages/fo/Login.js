@@ -29,9 +29,7 @@ window.Login = {
       }
     });
 
-    // login | terms | signup | sns-signup
-    const step       = ref('login');
-     // sns 회원가입 시 provider 저장
+    // login | terms | signup | sns-signup  → uiState.step 사용
 
     /* ── 로그인 ── */
     const form     = reactive({ email: 'user1@demo.com', password: 'demo1234' });
@@ -155,7 +153,7 @@ window.Login = {
     const providerTextColor = p => ({ google: '#333', kakao: '#3C1E1E', naver: '#fff' }[p] || '#333');
 
     const sendSnsPhoneCode = () => {
-      if (!/^010[-]?\d{4}[-]?\d{4}$/.test(uiState.snsPhone.replace(/\s/g, ''))) { uiState.snsErr = '올바른 휴대폰 번호를 입력하세요.'; return; }
+      if (!/^010[-]?\d{4}[-]?\d{4}$/.test(snsPhone.value.replace(/\s/g, ''))) { uiState.snsErr = '올바른 휴대폰 번호를 입력하세요.'; return; }
       uiState._spc = String(Math.floor(100000 + Math.random() * 900000));
       uiState.snsPhoneCodeSent = true; uiState.snsPhoneVerified = false; uiState.snsErr = '';
       props.showToast('인증코드: ' + uiState._spc + '  (데모용)', 'info');
@@ -176,7 +174,7 @@ window.Login = {
 
     const doSnsSignup = async () => {
       uiState.snsErr = '';
-      if (!snsNickname.value.trim()) { uiState.snsErr = '이름/닉네임을 입력하세요.'; return; }
+      if (!uiState.snsNickname.trim()) { uiState.snsErr = '이름/닉네임을 입력하세요.'; return; }
       if (!uiState.snsPhoneVerified)   { uiState.snsErr = '휴대폰 인증이 필요합니다.'; return; }
       const demos = { google: 'google.sns@gmail.com', kakao: 'kakao.sns@kakao.com', naver: 'naver.sns@naver.com' };
       const r = await window.foAuth.signup(uiState.snsNickname, demos[uiState.snsProvider] || 'sns@demo.com', uiState.snsPhone, {
@@ -196,10 +194,10 @@ window.Login = {
     const IS = 'width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;';
 
     return {
-      step, snsProvider, form, loginErr, doLogin, doSocial, startSnsSignup,
+      uiState, form, doLogin, doSocial, startSnsSignup,
       terms, toggleAll, goNextFromTerms,
-      sf, signupErr, sendEmailCode, verifyEmail, sendPhoneCode, verifyPhone, doSignup, openKakaoAddr,
-      snsNickname, snsPhone, snsPhoneCode, snsPhoneCodeSent, uiState, snsErr,
+      sf, sendEmailCode, verifyEmail, sendPhoneCode, verifyPhone, doSignup, openKakaoAddr,
+      snsPhone,
       sendSnsPhoneCode, verifySnsPhone, doSnsSignup, snsSf, openKakaoAddrSns,
       providerLabel, providerColor, providerTextColor, IS, codes,
     };
@@ -211,7 +209,7 @@ window.Login = {
     <button @click="$emit('close')" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>
 
     <!-- ════ 로그인 ════ -->
-    <template v-if="step==='login'">
+    <template v-if="uiState.step==='login'">
       <div style="text-align:center;margin-bottom:24px;">
         <div style="font-size:2rem;">👗</div>
         <div style="font-size:1.3rem;font-weight:800;color:var(--text-primary);margin-top:6px;">로그인</div>
@@ -220,7 +218,7 @@ window.Login = {
       <div style="display:flex;flex-direction:column;gap:12px;">
         <input v-model="form.email" type="email" placeholder="이메일" @keyup.enter="doLogin" :style="IS">
         <input v-model="form.password" type="password" placeholder="비밀번호" @keyup.enter="doLogin" :style="IS">
-        <div v-if="loginErr" style="color:#e8587a;font-size:0.82rem;text-align:center;">{{ loginErr }}</div>
+        <div v-if="uiState.loginErr" style="color:#e8587a;font-size:0.82rem;text-align:center;">{{ uiState.loginErr }}</div>
         <button @click="doLogin" :disabled="foAuth.state.loading" class="btn-blue" style="width:100%;padding:12px;">
           {{ foAuth.state.loading ? '로그인 중...' : '로그인' }}
         </button>
@@ -248,7 +246,7 @@ window.Login = {
         <span style="font-size:0.85rem;color:var(--text-muted);">아직 회원이 아니신가요?</span>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
-        <button @click="snsProvider=null; step='terms'" class="btn-outline" style="width:100%;padding:10px;font-size:0.85rem;font-weight:700;">
+        <button @click="uiState.snsProvider=null; uiState.step='terms'" class="btn-outline" style="width:100%;padding:10px;font-size:0.85rem;font-weight:700;">
           📧 이메일로 회원가입
         </button>
         <div style="display:flex;gap:8px;">
@@ -269,11 +267,11 @@ window.Login = {
     </template>
 
     <!-- ════ 약관 ════ -->
-    <template v-else-if="step==='terms'">
+    <template v-else-if="uiState.step==='terms'">
       <div style="text-align:center;margin-bottom:20px;">
-        <div v-if="snsProvider" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;margin-bottom:10px;"
-          :style="'background:'+providerColor(snsProvider)+';color:'+providerTextColor(snsProvider)+';font-size:0.82rem;font-weight:700;'">
-          {{ providerLabel(snsProvider) }}로 가입
+        <div v-if="uiState.snsProvider" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;margin-bottom:10px;"
+          :style="'background:'+providerColor(uiState.snsProvider)+';color:'+providerTextColor(uiState.snsProvider)+';font-size:0.82rem;font-weight:700;'">
+          {{ providerLabel(uiState.snsProvider) }}로 가입
         </div>
         <div style="font-size:1.3rem;font-weight:800;color:var(--text-primary);">이용약관 동의</div>
         <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">서비스 이용을 위해 약관에 동의해 주세요</div>
@@ -298,7 +296,7 @@ window.Login = {
         </label>
       </div>
       <div style="display:flex;gap:10px;margin-top:24px;">
-        <button @click="snsProvider=null; step='login'" class="btn-outline" style="flex:1;padding:12px;">이전</button>
+        <button @click="uiState.snsProvider=null; uiState.step='login'" class="btn-outline" style="flex:1;padding:12px;">이전</button>
         <button @click="goNextFromTerms" :disabled="!(terms.t1&&terms.t2&&terms.t3)"
           class="btn-blue" style="flex:2;padding:12px;"
           :style="!(terms.t1&&terms.t2&&terms.t3)?'opacity:0.5;cursor:not-allowed;':''">다음</button>
@@ -306,7 +304,7 @@ window.Login = {
     </template>
 
     <!-- ════ 이메일 회원가입 ════ -->
-    <template v-else-if="step==='signup'">
+    <template v-else-if="uiState.step==='signup'">
       <div style="text-align:center;margin-bottom:16px;">
         <div style="font-size:1.3rem;font-weight:800;color:var(--text-primary);">회원가입</div>
         <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">정보를 입력하고 인증을 완료해 주세요</div>
@@ -399,19 +397,19 @@ window.Login = {
         </div>
       </div>
 
-      <div v-if="signupErr" style="color:#e8587a;font-size:0.82rem;text-align:center;margin-bottom:10px;">{{ signupErr }}</div>
+      <div v-if="uiState.signupErr" style="color:#e8587a;font-size:0.82rem;text-align:center;margin-bottom:10px;">{{ uiState.signupErr }}</div>
       <div style="display:flex;gap:10px;">
-        <button @click="step='terms'" class="btn-outline" style="flex:1;padding:12px;">이전</button>
+        <button @click="uiState.step='terms'" class="btn-outline" style="flex:1;padding:12px;">이전</button>
         <button @click="doSignup" class="btn-blue" style="flex:2;padding:12px;">가입 완료</button>
       </div>
     </template>
 
     <!-- ════ SNS 회원가입 추가 정보 ════ -->
-    <template v-else-if="step==='sns-signup'">
+    <template v-else-if="uiState.step==='sns-signup'">
       <div style="text-align:center;margin-bottom:16px;">
         <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:20px;margin-bottom:10px;"
-          :style="'background:'+providerColor(snsProvider)+';color:'+providerTextColor(snsProvider)+';font-size:0.85rem;font-weight:700;'">
-          {{ providerLabel(snsProvider) }}로 가입
+          :style="'background:'+providerColor(uiState.snsProvider)+';color:'+providerTextColor(uiState.snsProvider)+';font-size:0.85rem;font-weight:700;'">
+          {{ providerLabel(uiState.snsProvider) }}로 가입
         </div>
         <div style="font-size:1.2rem;font-weight:800;color:var(--text-primary);">추가 정보 입력</div>
         <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">가입 완료를 위해 추가 정보를 입력하세요</div>
@@ -420,7 +418,7 @@ window.Login = {
       <!-- 필수 -->
       <div style="font-size:0.78rem;font-weight:700;color:var(--blue);margin-bottom:8px;padding:6px 10px;background:var(--blue-dim);border-radius:6px;">필수 정보</div>
       <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:16px;">
-        <input v-model="snsNickname" type="text" placeholder="이름 / 닉네임 *" :style="IS">
+        <input v-model="uiState.snsNickname" type="text" placeholder="이름 / 닉네임 *" :style="IS">
         <!-- 휴대폰 인증 -->
         <div>
           <div style="display:flex;gap:8px;">
@@ -432,8 +430,8 @@ window.Login = {
               {{ uiState.snsPhoneVerified ? '✓ 인증됨' : '코드 발송' }}
             </button>
           </div>
-          <div v-if="snsPhoneCodeSent && !uiState.snsPhoneVerified" style="display:flex;gap:8px;margin-top:8px;">
-            <input v-model="snsPhoneCode" type="text" placeholder="인증코드 6자리"
+          <div v-if="uiState.snsPhoneCodeSent && !uiState.snsPhoneVerified" style="display:flex;gap:8px;margin-top:8px;">
+            <input v-model="uiState.snsPhoneCode" type="text" placeholder="인증코드 6자리"
               style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
             <button @click="verifySnsPhone" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">확인</button>
           </div>
@@ -479,9 +477,9 @@ window.Login = {
         </div>
       </div>
 
-      <div v-if="snsErr" style="color:#e8587a;font-size:0.82rem;text-align:center;margin-bottom:10px;">{{ snsErr }}</div>
+      <div v-if="uiState.snsErr" style="color:#e8587a;font-size:0.82rem;text-align:center;margin-bottom:10px;">{{ uiState.snsErr }}</div>
       <div style="display:flex;gap:10px;">
-        <button @click="step='terms'" class="btn-outline" style="flex:1;padding:12px;">이전</button>
+        <button @click="uiState.step='terms'" class="btn-outline" style="flex:1;padding:12px;">이전</button>
         <button @click="doSnsSignup" class="btn-blue" style="flex:2;padding:12px;">가입 완료</button>
       </div>
     </template>

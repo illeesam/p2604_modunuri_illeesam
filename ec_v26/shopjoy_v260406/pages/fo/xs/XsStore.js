@@ -164,7 +164,7 @@ window.XsStore = {
     });
 
     return {
-      cfStoreList, selectedStore, storeInfo, selectStore, copyToClipboard, clearStore, openStores, viewMode, closeTab, editedStoreInfo, saveStore, loadAllStoreData, refreshStoreData, codes
+      cfStoreList, selectStore, copyToClipboard, clearStore, openStores, closeTab, editedStoreInfo, saveStore, loadAllStoreData, refreshStoreData, uiState, codes
     };
   },
   template: `

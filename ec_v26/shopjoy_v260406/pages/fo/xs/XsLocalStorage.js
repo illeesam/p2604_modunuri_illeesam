@@ -143,7 +143,7 @@ window.XsLocalStorage = {
     loadStorageData();
 
     return {
-      storageData, filterKey, cfFilteredData, editingKey, editingValue, valueColWidth, uiState,
+      storageData, cfFilteredData, uiStateGlobal,
       loadStorageData, copyValue, startEdit, saveEdit, cancelEdit, handleDelete, clearAllStorage, parseValue, startResize, codes
     };
   },

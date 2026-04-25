@@ -178,7 +178,7 @@
     };
 
     /* ── Likes (좋아요/위시리스트) ── */
-    const likes = reactive(new Set());
+    let likes = reactive(new Set());
     try {
       const savedLikes = localStorage.getItem('shopjoy_likes');
       if (savedLikes) likes = new Set(JSON.parse(savedLikes));

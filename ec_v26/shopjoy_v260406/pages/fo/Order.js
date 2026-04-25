@@ -189,7 +189,6 @@ window.Order = {
     };
 
     return {
-      view, resultData,
       cfOrderItems,
       form, errors, clearErr, uiState, handleSubmit, openKakaoAddr,
       parsePrice, fmt,
@@ -205,16 +204,16 @@ window.Order = {
 <div class="page-wrap">
 
   <!-- ══ 주문 결과 화면 ══ -->
-  <template v-if="view==='result' && resultData">
+  <template v-if="uiState.view==='result' && uiState.resultData">
     <div style="max-width:600px;margin:0 auto;padding:40px 20px;text-align:center;">
       <div style="font-size:4rem;margin-bottom:16px;">🎉</div>
       <h1 style="font-size:1.8rem;font-weight:900;color:var(--text-primary);margin-bottom:8px;">주문이 완료됐어요!</h1>
-      <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:4px;">주문번호: <strong style="color:var(--blue);">{{ resultData.orderId }}</strong></p>
+      <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:4px;">주문번호: <strong style="color:var(--blue);">{{ uiState.resultData.orderId }}</strong></p>
       <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:32px;">입금 확인 후 1~2 영업일 이내 발송됩니다.</p>
 
       <div class="card" style="padding:20px;text-align:left;margin-bottom:20px;">
         <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;">📦 주문 상품</div>
-        <div v-for="item in resultData.items" :key="item.productId"
+        <div v-for="item in uiState.resultData.items" :key="item.productId"
           style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
           <div style="width:40px;height:40px;border-radius:6px;overflow:hidden;flex-shrink:0;background:var(--bg-base);"><img v-if="item.image" :src="item.image" style="width:100%;height:100%;object-fit:cover;" /></div>
           <div style="flex:1;">
@@ -226,23 +225,23 @@ window.Order = {
         </div>
         <div style="margin-top:14px;display:flex;flex-direction:column;gap:6px;">
           <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--text-secondary);">
-            <span>상품금액</span><span>{{ fmt(resultData.cartTotal) }}</span>
+            <span>상품금액</span><span>{{ fmt(uiState.resultData.cartTotal) }}</span>
           </div>
-          <div v-if="resultData.couponDiscount>0" style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--blue);">
-            <span>쿠폰 할인</span><span>-{{ fmt(resultData.couponDiscount) }}</span>
+          <div v-if="uiState.resultData.couponDiscount>0" style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--blue);">
+            <span>쿠폰 할인</span><span>-{{ fmt(uiState.resultData.couponDiscount) }}</span>
           </div>
-          <div v-if="resultData.shippingCoupon" style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--blue);">
-            <span>배송비 쿠폰</span><span>🎟️ {{ resultData.shippingCoupon }}</span>
+          <div v-if="uiState.resultData.shippingCoupon" style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--blue);">
+            <span>배송비 쿠폰</span><span>🎟️ {{ uiState.resultData.shippingCoupon }}</span>
           </div>
-          <div v-if="resultData.cashUsed>0" style="display:flex;justify-content:space-between;font-size:0.85rem;color:#f97316;">
-            <span>캐쉬 사용</span><span>-{{ fmt(resultData.cashUsed) }}</span>
+          <div v-if="uiState.resultData.cashUsed>0" style="display:flex;justify-content:space-between;font-size:0.85rem;color:#f97316;">
+            <span>캐쉬 사용</span><span>-{{ fmt(uiState.resultData.cashUsed) }}</span>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--text-secondary);">
             <span>배송비</span><span style="color:#22c55e;">무료</span>
           </div>
           <div style="border-top:1px solid var(--border);padding-top:8px;display:flex;justify-content:space-between;font-size:1rem;font-weight:800;">
             <span style="color:var(--text-primary);">최종 결제금액</span>
-            <span style="color:var(--blue);">{{ fmt(resultData.finalPrice) }}</span>
+            <span style="color:var(--blue);">{{ fmt(uiState.resultData.finalPrice) }}</span>
           </div>
         </div>
       </div>
@@ -252,8 +251,8 @@ window.Order = {
         <div style="font-size:0.85rem;color:var(--text-secondary);line-height:1.8;">
           {{ config.bank.name }} {{ config.bank.account }}<br>
           예금주: {{ config.bank.holder }}<br>
-          <strong style="color:var(--blue);">입금액: {{ fmt(resultData.finalPrice) }}</strong><br>
-          입금자명: {{ resultData.form.name }}
+          <strong style="color:var(--blue);">입금액: {{ fmt(uiState.resultData.finalPrice) }}</strong><br>
+          입금자명: {{ uiState.resultData.form.name }}
         </div>
       </div>
 

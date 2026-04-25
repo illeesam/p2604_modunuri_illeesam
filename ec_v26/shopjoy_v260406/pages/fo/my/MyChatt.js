@@ -3,6 +3,7 @@ window.MyChatt = {
   name: 'MyChatt',
   props: ['navigate', 'cartCount'],
   setup(props) {
+    const { reactive, computed, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
@@ -25,7 +26,6 @@ window.MyChatt = {
         fnLoadCodes();
       }
     });
-    const { reactive, onMounted , watch } = Vue;
     const myStore = window.useFoMyStore();
     const { chats, expandedChat } = Pinia.storeToRefs(myStore);
 
@@ -33,8 +33,7 @@ window.MyChatt = {
     const paginate = myStore.paginate;
 
     const { inRange, onDateSearch } = window.myDateFilterHelper();
-    const { computed: _c } = Vue;
-    const cfDateFilteredChats = _c(() => chats.value.filter(c => inRange(c.date)));
+    const cfDateFilteredChats = computed(() => chats.value.filter(c => inRange(c.date)));
 
     onMounted(() => myStore.loadChats());
 

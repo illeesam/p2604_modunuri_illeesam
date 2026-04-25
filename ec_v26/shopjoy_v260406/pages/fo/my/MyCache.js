@@ -3,6 +3,7 @@ window.MyCache = {
   name: 'MyCache',
   props: ['navigate', 'cartCount', 'showToast'],
   setup(props) {
+    const { reactive, computed, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
@@ -25,7 +26,6 @@ window.MyCache = {
         fnLoadCodes();
       }
     });
-    const { reactive, onMounted , watch } = Vue;
     const myStore = window.useFoMyStore();
     const { cashBalance, cashHistory, chargeAmount } = Pinia.storeToRefs(myStore);
 
@@ -33,8 +33,7 @@ window.MyCache = {
     const paginate = myStore.paginate;
 
     const { inRange, onDateSearch } = window.myDateFilterHelper();
-    const { computed: _c } = Vue;
-    const cfDateFilteredHistory = _c(() => cashHistory.value.filter(h => inRange(h.date)));
+    const cfDateFilteredHistory = computed(() => cashHistory.value.filter(h => inRange(h.date)));
 
     const addCash = () => {
       const amount = parseInt(String(chargeAmount.value).replace(/,/g, ''), 10);

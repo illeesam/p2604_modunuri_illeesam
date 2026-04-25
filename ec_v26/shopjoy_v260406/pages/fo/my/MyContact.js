@@ -3,6 +3,7 @@ window.MyContact = {
   name: 'MyContact',
   props: ['navigate', 'cartCount', 'showToast', 'showConfirm'],
   setup(props) {
+    const { reactive, computed, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
@@ -25,7 +26,6 @@ window.MyContact = {
         fnLoadCodes();
       }
     });
-    const { reactive, onMounted , watch } = Vue;
     const myStore = window.useFoMyStore();
     const { inquiries, expandedInquiry } = Pinia.storeToRefs(myStore);
 
@@ -33,8 +33,7 @@ window.MyContact = {
     const paginate = myStore.paginate;
 
     const { inRange, onDateSearch } = window.myDateFilterHelper();
-    const { computed: _c } = Vue;
-    const cfDateFilteredInquiries = _c(() => inquiries.value.filter(q => inRange(q.date)));
+    const cfDateFilteredInquiries = computed(() => inquiries.value.filter(q => inRange(q.date)));
 
     const cancelInquiry = async id => {
       const ok = await props.showConfirm('문의 취소', '이 문의를 취소하시겠습니까?', 'warning');

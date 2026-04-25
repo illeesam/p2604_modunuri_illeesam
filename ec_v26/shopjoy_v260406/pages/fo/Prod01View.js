@@ -4,7 +4,7 @@ window.Prod01View = {
   props: ['navigate', 'config', 'product', 'addToCart', 'showToast', 'showAlert', 'toggleLike', 'isLiked'],
   setup(props) {
 
-    const { ref, computed, onMounted, onBeforeUnmount, watch } = Vue;
+    const { ref, reactive, computed, onMounted, onBeforeUnmount, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixed: false, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy', photoFromGrid: false });
     const codes = reactive({});
@@ -529,7 +529,6 @@ window.Prod01View = {
 
     return {
       uiState,
-      selectedImg, zoomOpen,
       showSizeGuide, photoPopupOpen,
       photoNavPrev, photoNavNext, cfPhotoNavIdx,
       cfPhotoGridPageCount, cfPhotoGridItems, photoGridPrev, photoGridNext,

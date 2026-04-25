@@ -102,7 +102,7 @@ window.Event = {
     const cfOngoingCount = computed(() => events.filter(e => e.status === 'ongoing').length);
     const cfEndedCount   = computed(() => events.filter(e => e.status === 'ended').length);
 
-    return { activeTab, sortBy, cfFilteredEvents, cfOngoingCount, cfEndedCount , uiState, codes };
+    return { cfFilteredEvents, cfOngoingCount, cfEndedCount, uiState, codes };
   },
   template: /* html */ `
 <div class="page-wrap">
@@ -126,39 +126,39 @@ window.Event = {
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:28px;">
     <!-- 탭 -->
     <div style="display:flex;gap:0;">
-      <button @click="activeTab='ongoing'"
+      <button @click="uiState.activeTab='ongoing'"
         :style="{
           padding:'12px 24px', background:'none', border:'none', cursor:'pointer',
-          fontSize:'0.88rem', fontWeight: activeTab==='ongoing' ? '700' : '500',
-          color: activeTab==='ongoing' ? 'var(--text-primary)' : 'var(--text-muted)',
-          borderBottom: activeTab==='ongoing' ? '2px solid var(--text-primary)' : '2px solid transparent',
+          fontSize:'0.88rem', fontWeight: uiState.activeTab==='ongoing' ? '700' : '500',
+          color: uiState.activeTab==='ongoing' ? 'var(--text-primary)' : 'var(--text-muted)',
+          borderBottom: uiState.activeTab==='ongoing' ? '2px solid var(--text-primary)' : '2px solid transparent',
           marginBottom: '-1px',
         }">진행중 ({{ cfOngoingCount }})</button>
-      <button @click="activeTab='ended'"
+      <button @click="uiState.activeTab='ended'"
         :style="{
           padding:'12px 24px', background:'none', border:'none', cursor:'pointer',
-          fontSize:'0.88rem', fontWeight: activeTab==='ended' ? '700' : '500',
-          color: activeTab==='ended' ? 'var(--text-primary)' : 'var(--text-muted)',
-          borderBottom: activeTab==='ended' ? '2px solid var(--text-primary)' : '2px solid transparent',
+          fontSize:'0.88rem', fontWeight: uiState.activeTab==='ended' ? '700' : '500',
+          color: uiState.activeTab==='ended' ? 'var(--text-primary)' : 'var(--text-muted)',
+          borderBottom: uiState.activeTab==='ended' ? '2px solid var(--text-primary)' : '2px solid transparent',
           marginBottom: '-1px',
         }">당첨자 발표</button>
     </div>
     <!-- 정렬 -->
     <div style="display:flex;gap:0;padding-bottom:2px;">
-      <button @click="sortBy='latest'"
+      <button @click="uiState.sortBy='latest'"
         :style="{
           padding:'6px 14px', background:'none', border:'none', cursor:'pointer',
           fontSize:'0.8rem',
-          color: sortBy==='latest' ? 'var(--text-primary)' : 'var(--text-muted)',
-          fontWeight: sortBy==='latest' ? '700' : '400',
+          color: uiState.sortBy==='latest' ? 'var(--text-primary)' : 'var(--text-muted)',
+          fontWeight: uiState.sortBy==='latest' ? '700' : '400',
           borderRight:'1px solid var(--border)',
         }">최근등록순</button>
-      <button @click="sortBy='deadline'"
+      <button @click="uiState.sortBy='deadline'"
         :style="{
           padding:'6px 14px', background:'none', border:'none', cursor:'pointer',
           fontSize:'0.8rem',
-          color: sortBy==='deadline' ? 'var(--text-primary)' : 'var(--text-muted)',
-          fontWeight: sortBy==='deadline' ? '700' : '400',
+          color: uiState.sortBy==='deadline' ? 'var(--text-primary)' : 'var(--text-muted)',
+          fontWeight: uiState.sortBy==='deadline' ? '700' : '400',
         }">마감임박순</button>
     </div>
   </div>
@@ -209,7 +209,7 @@ window.Event = {
   <!-- 빈 상태 -->
   <div v-if="cfFilteredEvents.length === 0" style="text-align:center;padding:clamp(32px,6vw,60px) 0;color:var(--text-muted);">
     <div style="font-size:2rem;margin-bottom:12px;">📭</div>
-    <div style="font-size:0.95rem;">{{ activeTab === 'ongoing' ? '진행 중인 이벤트가 없습니다.' : '종료된 이벤트가 없습니다.' }}</div>
+    <div style="font-size:0.95rem;">{{ uiState.activeTab === 'ongoing' ? '진행 중인 이벤트가 없습니다.' : '종료된 이벤트가 없습니다.' }}</div>
   </div>
 
 </div>
