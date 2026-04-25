@@ -133,7 +133,6 @@ window.PdSetMng = {
     };
 
     /* ── 상품 피커 ── */
-    const pickerOpen   = ref(false);
     const cfPickerList   = computed(() => {
       const q    = (uiState.pickerSearch || '').trim().toLowerCase();
       const used = new Set(dtlItems.map(d => d.itemProdId).filter(Boolean));
@@ -160,7 +159,7 @@ window.PdSetMng = {
             .filter(s => s.setProdId === id)
             .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
           const prod = getProd(id);
-          return { sets, uiState, uiState, setProdId: id, prodNm: getProdNm(id), prod, items, itemCount: items.length };
+          return { setProdId: id, prodNm: getProdNm(id), prod, items, itemCount: items.length };
         })
         .filter(g => !kw || g.prodNm.toLowerCase().includes(kw));
     });
@@ -373,8 +372,8 @@ window.PdSetMng = {
   <div class="page-title">세트상품관리</div>
   <div style="margin:-8px 0 16px;padding:10px 14px;background:#fff4ec;border-left:3px solid #e3803b;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
     <span><strong style="color:#bf5a1a">세트상품</strong>은 여러 구성품을 하나의 세트로 판매하는 방식입니다.</span>
-    <button @click="descOpen=!descOpen" style="margin-left:8px;font-size:12px;color:#e3803b;background:none;border:none;cursor:pointer;padding:0">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="descOpen" style="margin-top:6px">
+    <button @click="uiState.descOpen=!uiState.descOpen" style="margin-left:8px;font-size:12px;color:#e3803b;background:none;border:none;cursor:pointer;padding:0">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="uiState.descOpen" style="margin-top:6px">
       ✔ 안분율 없이 <strong>세트 전체 단일 가격</strong>으로 판매·정산합니다.<br>
       ✔ 클레임은 <strong>세트 전체 단위</strong>로만 가능합니다 (부분 취소·교환·반품 불가).<br>
       ✔ 구성품은 등록 상품 연결 없이 <strong>비상품 항목</strong>도 추가할 수 있습니다.<br>
@@ -415,7 +414,7 @@ window.PdSetMng = {
       </tr></thead>
       <tbody>
         <template v-for="g in cfPageList" :key="g?.setProdId">
-          <tr :style="(dtlMode==='edit' && editSetId===g.setProdId) ? 'background:#e6f4ff' : ''">
+          <tr :style="(uiState.dtlMode==='edit' && uiState.editSetId===g.setProdId) ? 'background:#e6f4ff' : ''">
             <td>
               <div style="display:flex;align-items:flex-start;gap:6px">
                 <span class="badge badge-orange" style="flex-shrink:0;margin-top:1px">세트</span>
@@ -476,17 +475,17 @@ window.PdSetMng = {
   </div>
 
   <!-- 신규등록 / 구성관리 (인라인 Dtl) -->
-  <div v-if="dtlMode !== null" class="card"
-       :style="dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #f59e0b'">
+  <div v-if="uiState.dtlMode !== null" class="card"
+       :style="uiState.dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #f59e0b'">
 
     <!-- Dtl 헤더 -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0">
       <div style="display:flex;align-items:center;gap:10px">
-        <span :class="['badge', dtlMode==='new' ? 'badge-green' : 'badge-orange']">
-          {{ dtlMode==='new' ? '신규' : '세트' }}
+        <span :class="['badge', uiState.dtlMode==='new' ? 'badge-green' : 'badge-orange']">
+          {{ uiState.dtlMode==='new' ? '신규' : '세트' }}
         </span>
         <strong style="font-size:15px">{{ cfDtlProdNm }}</strong>
-        <span style="font-size:12px;color:#aaa">{{ dtlMode==='new' ? '세트상품 등록' : '구성품 관리' }}</span>
+        <span style="font-size:12px;color:#aaa">{{ uiState.dtlMode==='new' ? '세트상품 등록' : '구성품 관리' }}</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:12px;color:#888;background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:3px 10px">
@@ -494,13 +493,13 @@ window.PdSetMng = {
         </span>
         <button class="btn btn-secondary btn-sm" @click="closeDtl">닫기</button>
         <button class="btn btn-primary btn-sm" @click="handleSave">
-          {{ dtlMode==='new' ? '등록' : '저장' }}
+          {{ uiState.dtlMode==='new' ? '등록' : '저장' }}
         </button>
       </div>
     </div>
 
     <!-- ① 기본정보 (신규 시만) -->
-    <div v-if="dtlMode==='new'" style="background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:16px 20px;margin-bottom:20px">
+    <div v-if="uiState.dtlMode==='new'" style="background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:16px 20px;margin-bottom:20px">
       <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:12px">세트상품 기본정보 (pd_prod)</div>
       <div class="form-row">
         <div class="form-group" style="flex:2">
@@ -564,7 +563,7 @@ window.PdSetMng = {
           <div v-if="dtlCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px">카테고리를 추가해주세요</div>
           <div v-for="(cat,idx) in dtlCategories" :key="cat?.categoryId"
                draggable="true" @dragstart="onCatDragStart(idx)" @dragover.prevent="onCatDragOver(idx)" @drop.prevent="onCatDrop()"
-               :style="catDragoverIdx===idx ? 'opacity:0.5' : ''"
+               :style="uiState.catDragoverIdx===idx ? 'opacity:0.5' : ''"
                style="display:flex;align-items:center;gap:4px;padding:2px 0">
             <span style="cursor:grab;color:#bbb;font-size:14px;flex-shrink:0">≡</span>
             <span v-if="idx===0" style="font-size:10px;background:#f9a8d4;color:#9d174d;padding:1px 5px;border-radius:10px;flex-shrink:0">대표</span>
@@ -572,7 +571,7 @@ window.PdSetMng = {
             <span style="font-size:13px;flex:1">{{ cat.categoryNm }}</span>
             <button type="button" @click="removeCategory(idx)" style="border:none;background:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0">✕</button>
           </div>
-          <button type="button" @click="catPickerOpen=true;catPickerSearch=''"
+          <button type="button" @click="uiState.catPickerOpen=true;uiState.catPickerSearch=''"
                   style="margin-top:4px;font-size:12px;color:#6366f1;border:1px dashed #a5b4fc;background:none;border-radius:4px;padding:2px 8px;cursor:pointer;width:100%">+ 카테고리 추가</button>
         </div>
       </div>
@@ -601,7 +600,7 @@ window.PdSetMng = {
             @dragstart="onDragStart(idx)"
             @dragover.prevent="onDragOver(idx)"
             @drop="onDrop()"
-            :style="dragoverIdx===idx ? 'background:#e6f4ff' : (item.useYn==='N' ? 'opacity:0.55' : '')">
+            :style="uiState.dragoverIdx===idx ? 'background:#e6f4ff' : (item.useYn==='N' ? 'opacity:0.55' : '')">
           <td style="text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none">≡</td>
           <td>
             <input class="form-control" v-model="item.itemNm" placeholder="표시명 입력"
@@ -648,7 +647,7 @@ window.PdSetMng = {
 
     <!-- 구성품 추가 버튼 -->
     <div style="margin-top:12px;display:flex;gap:8px">
-      <button class="btn btn-secondary btn-sm" @click="pickerOpen=true;pickerSearch=''">
+      <button class="btn btn-secondary btn-sm" @click="uiState.pickerOpen=true;uiState.pickerSearch=''">
         + 상품 구성품 추가
       </button>
       <button class="btn btn-secondary btn-sm" @click="addItemBlank">
@@ -658,15 +657,15 @@ window.PdSetMng = {
   </div>
 
   <!-- 상품 피커 모달 -->
-  <teleport to="body" v-if="pickerOpen">
+  <teleport to="body" v-if="uiState.pickerOpen">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
-         @click.self="pickerOpen=false">
+         @click.self="uiState.pickerOpen=false">
       <div style="background:#fff;border-radius:14px;padding:24px;width:580px;max-height:72vh;display:flex;flex-direction:column;box-shadow:0 8px 48px rgba(0,0,0,0.22)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
           <strong style="font-size:15px">구성품 상품 선택</strong>
-          <button class="btn btn-secondary btn-xs" @click="pickerOpen=false">닫기</button>
+          <button class="btn btn-secondary btn-xs" @click="uiState.pickerOpen=false">닫기</button>
         </div>
-        <input class="form-control" v-model="pickerSearch"
+        <input class="form-control" v-model="uiState.pickerSearch"
                placeholder="상품명 / ID 검색" style="margin-bottom:12px">
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
           <table class="bo-table" style="margin:0">
@@ -699,16 +698,16 @@ window.PdSetMng = {
 
   <!-- 카테고리 피커 모달 -->
   <teleport to="body">
-    <div v-if="catPickerOpen"
+    <div v-if="uiState.catPickerOpen"
          style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
-         @click.self="catPickerOpen=false">
+         @click.self="uiState.catPickerOpen=false">
       <div style="background:#fff;border-radius:12px;width:420px;max-height:520px;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.18)">
         <div style="padding:16px 20px 12px;border-bottom:1px solid #f0f0f0;background:linear-gradient(135deg,#fff0f4,#ffe4ec);border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between">
           <span style="font-weight:700;font-size:15px">카테고리 선택</span>
-          <button type="button" @click="catPickerOpen=false" style="border:none;background:none;font-size:18px;cursor:pointer;color:#888">✕</button>
+          <button type="button" @click="uiState.catPickerOpen=false" style="border:none;background:none;font-size:18px;cursor:pointer;color:#888">✕</button>
         </div>
         <div style="padding:10px 16px">
-          <input class="form-control" v-model="catPickerSearch" placeholder="카테고리 검색..." style="font-size:13px">
+          <input class="form-control" v-model="uiState.catPickerSearch" placeholder="카테고리 검색..." style="font-size:13px">
         </div>
         <div style="overflow-y:auto;flex:1;padding:0 8px 12px">
           <div v-if="cfCatPickerList.length===0" style="text-align:center;color:#aaa;padding:24px;font-size:13px">검색 결과 없음</div>

@@ -425,8 +425,8 @@ window.PdBundleMng = {
   <div class="page-title">묶음상품관리</div>
   <div style="margin:-8px 0 16px;padding:10px 14px;background:#f0f4ff;border-left:3px solid #6b7fe3;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
     <span><strong style="color:#3b4dbf">묶음상품</strong>은 여러 단품을 하나의 묶음으로 판매하는 방식입니다.</span>
-    <button @click="descOpen=!descOpen" style="margin-left:8px;font-size:12px;color:#6b7fe3;background:none;border:none;cursor:pointer;padding:0">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="descOpen" style="margin-top:6px">
+    <button @click="uiState.descOpen=!uiState.descOpen" style="margin-left:8px;font-size:12px;color:#6b7fe3;background:none;border:none;cursor:pointer;padding:0">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <div v-if="uiState.descOpen" style="margin-top:6px">
       ✔ 구성 상품별 <strong>안분율</strong>을 설정해 가격·정산을 개별 처리합니다.<br>
       ✔ 구성 상품 단위로 <strong>부분 취소·교환·반품</strong>이 가능합니다.<br>
       ✔ 재고는 각 구성 상품의 재고를 개별 차감합니다.<br>
@@ -467,7 +467,7 @@ window.PdBundleMng = {
       </tr></thead>
       <tbody>
         <template v-for="g in cfPageList" :key="g?.bundleProdId">
-          <tr :style="(dtlMode==='edit' && editBundleId===g.bundleProdId) ? 'background:#e6f4ff' : ''">
+          <tr :style="(uiState.dtlMode==='edit' && uiState.editBundleId===g.bundleProdId) ? 'background:#e6f4ff' : ''">
             <td>
               <div style="display:flex;align-items:flex-start;gap:6px">
                 <span class="badge badge-blue" style="flex-shrink:0;margin-top:1px">묶음</span>
@@ -530,17 +530,17 @@ window.PdBundleMng = {
   </div>
 
   <!-- 신규등록 / 구성관리 (인라인 Dtl) -->
-  <div v-if="dtlMode !== null" class="card"
-       :style="dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #1677ff'">
+  <div v-if="uiState.dtlMode !== null" class="card"
+       :style="uiState.dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #1677ff'">
 
     <!-- Dtl 헤더 -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0">
       <div style="display:flex;align-items:center;gap:10px">
-        <span :class="['badge', dtlMode==='new' ? 'badge-green' : 'badge-blue']">
-          {{ dtlMode==='new' ? '신규' : '묶음' }}
+        <span :class="['badge', uiState.dtlMode==='new' ? 'badge-green' : 'badge-blue']">
+          {{ uiState.dtlMode==='new' ? '신규' : '묶음' }}
         </span>
         <strong style="font-size:15px">{{ cfDtlProdNm }}</strong>
-        <span style="font-size:12px;color:#aaa">{{ dtlMode==='new' ? '묶음상품 등록' : '구성품 관리' }}</span>
+        <span style="font-size:12px;color:#aaa">{{ uiState.dtlMode==='new' ? '묶음상품 등록' : '구성품 관리' }}</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <span :class="['badge', cfDtlRateOk ? 'badge-green' : 'badge-red']"
@@ -551,13 +551,13 @@ window.PdBundleMng = {
         </span>
         <button class="btn btn-secondary btn-sm" @click="closeDtl">닫기</button>
         <button class="btn btn-primary btn-sm" @click="handleSave">
-          {{ dtlMode==='new' ? '등록' : '저장' }}
+          {{ uiState.dtlMode==='new' ? '등록' : '저장' }}
         </button>
       </div>
     </div>
 
     <!-- ① 기본정보 (신규 시만 표시) -->
-    <div v-if="dtlMode==='new'" style="background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:16px 20px;margin-bottom:20px">
+    <div v-if="uiState.dtlMode==='new'" style="background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:16px 20px;margin-bottom:20px">
       <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:12px">묶음상품 기본정보 (pd_prod)</div>
       <div class="form-row">
         <div class="form-group" style="flex:2">
@@ -619,7 +619,7 @@ window.PdBundleMng = {
           <div v-if="dtlCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px;">카테고리를 추가해주세요</div>
           <div v-for="(cat,idx) in dtlCategories" :key="cat?.categoryId"
                draggable="true" @dragstart="onCatDragStart(idx)" @dragover.prevent="onCatDragOver(idx)" @drop.prevent="onCatDrop()"
-               :style="catDragoverIdx===idx?'opacity:0.5;':''"
+               :style="uiState.catDragoverIdx===idx?'opacity:0.5;':''"
                style="display:flex;align-items:center;gap:4px;padding:2px 0;">
             <span style="cursor:grab;color:#bbb;font-size:14px;flex-shrink:0;">≡</span>
             <span v-if="idx===0" style="font-size:10px;background:#f9a8d4;color:#9d174d;padding:1px 5px;border-radius:10px;flex-shrink:0;">대표</span>
@@ -627,7 +627,7 @@ window.PdBundleMng = {
             <span style="font-size:13px;flex:1;">{{ cat.categoryNm }}</span>
             <button type="button" @click="removeCategory(idx)" style="border:none;background:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0;">✕</button>
           </div>
-          <button type="button" @click="catPickerOpen=true;catPickerSearch=''"
+          <button type="button" @click="uiState.catPickerOpen=true;uiState.catPickerSearch=''"
                   style="margin-top:4px;font-size:12px;color:#6366f1;border:1px dashed #a5b4fc;background:none;border-radius:4px;padding:2px 8px;cursor:pointer;width:100%;">+ 카테고리 추가</button>
         </div>
       </div>
@@ -655,7 +655,7 @@ window.PdBundleMng = {
             @dragstart="onDragStart(idx)"
             @dragover.prevent="onDragOver(idx)"
             @drop="onDrop()"
-            :style="dragoverIdx===idx ? 'background:#e6f4ff' : ''">
+            :style="uiState.dragoverIdx===idx ? 'background:#e6f4ff' : ''">
           <td style="text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none">≡</td>
           <td>
             <div style="display:flex;align-items:center;gap:6px">
@@ -704,7 +704,7 @@ window.PdBundleMng = {
 
     <!-- 구성품 추가 / 안분율 안내 -->
     <div style="margin-top:12px;display:flex;align-items:flex-start;gap:12px">
-      <button class="btn btn-secondary btn-sm" style="flex-shrink:0" @click="pickerOpen=true;pickerSearch=''">
+      <button class="btn btn-secondary btn-sm" style="flex-shrink:0" @click="uiState.pickerOpen=true;uiState.pickerSearch=''">
         + 구성품 추가
       </button>
       <div v-if="dtlItems.length" style="flex:1;padding:7px 14px;border-radius:6px;font-size:12px"
@@ -720,15 +720,15 @@ window.PdBundleMng = {
   </div>
 
   <!-- 구성품 Picker Modal -->
-  <teleport to="body" v-if="pickerOpen">
+  <teleport to="body" v-if="uiState.pickerOpen">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
-         @click.self="pickerOpen=false">
+         @click.self="uiState.pickerOpen=false">
       <div style="background:#fff;border-radius:14px;padding:24px;width:580px;max-height:72vh;display:flex;flex-direction:column;box-shadow:0 8px 48px rgba(0,0,0,0.22)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
           <strong style="font-size:15px">구성품 상품 선택</strong>
-          <button class="btn btn-secondary btn-xs" @click="pickerOpen=false">닫기</button>
+          <button class="btn btn-secondary btn-xs" @click="uiState.pickerOpen=false">닫기</button>
         </div>
-        <input class="form-control" v-model="pickerSearch"
+        <input class="form-control" v-model="uiState.pickerSearch"
                placeholder="상품명 / ID 검색" style="margin-bottom:12px">
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
           <table class="bo-table" style="margin:0">
@@ -761,14 +761,14 @@ window.PdBundleMng = {
 
   <!-- 카테고리 피커 모달 -->
   <teleport to="body">
-    <div v-if="catPickerOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center;" @click.self="catPickerOpen=false">
+    <div v-if="uiState.catPickerOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center;" @click.self="uiState.catPickerOpen=false">
       <div style="background:#fff;border-radius:12px;width:420px;max-height:520px;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
         <div style="padding:16px 20px 12px;border-bottom:1px solid #f0f0f0;background:linear-gradient(135deg,#fff0f4,#ffe4ec);border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
           <span style="font-weight:700;font-size:15px;">카테고리 선택</span>
-          <button type="button" @click="catPickerOpen=false" style="border:none;background:none;font-size:18px;cursor:pointer;color:#888;">✕</button>
+          <button type="button" @click="uiState.catPickerOpen=false" style="border:none;background:none;font-size:18px;cursor:pointer;color:#888;">✕</button>
         </div>
         <div style="padding:10px 16px;">
-          <input class="form-control" v-model="catPickerSearch" placeholder="카테고리 검색..." style="font-size:13px;" />
+          <input class="form-control" v-model="uiState.catPickerSearch" placeholder="카테고리 검색..." style="font-size:13px;" />
         </div>
         <div style="overflow-y:auto;flex:1;padding:0 8px 12px;">
           <div v-if="cfCatPickerList.length===0" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">검색 결과 없음</div>
