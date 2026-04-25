@@ -52,17 +52,24 @@ window.SyBatchMng = {
       handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
+      Object.assign(searchParamOrg, searchParam);
     });
 
 
     /* ── 검색 ── */
-    const searchKw = ref('');
-    const searchStatus = ref('');
-    const searchRunStatus = ref('');
-    const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
+    const searchParam = reactive({
+      kw: '', status: '', runStatus: '', dateRange: '', dateStart: '', dateEnd: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '', status: '', runStatus: '', dateRange: '', dateStart: '', dateEnd: ''
+    });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+    const handleDateRangeChange = () => {
+      if (searchParam.dateRange) {
+        const r = window.boCmUtil.getDateRange(searchParam.dateRange);
+        searchParam.dateStart = r ? r.from : '';
+        searchParam.dateEnd = r ? r.to : '';
+      }
     };
     const applied = reactive({ kw: '', status: '', runStatus: '', dateStart: '', dateEnd: '' });
 
@@ -102,14 +109,18 @@ window.SyBatchMng = {
     const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
     const onSearch = () => {
-      Object.assign(applied, { kw: searchKw.value, status: searchStatus.value, runStatus: searchRunStatus.value, dateStart: searchDateStart.value, dateEnd: searchDateEnd.value });
+      Object.assign(applied, {
+        kw: searchParam.kw,
+        status: searchParam.status,
+        runStatus: searchParam.runStatus,
+        dateStart: searchParam.dateStart,
+        dateEnd: searchParam.dateEnd
+      });
       handleLoadGrid();
     };
     const onReset = () => {
-      searchKw.value = ''; searchStatus.value = ''; searchRunStatus.value = '';
-      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
-      Object.assign(applied, { kw: '', status: '', runStatus: '', dateStart: '', dateEnd: '' });
-      handleLoadGrid();
+      Object.assign(searchParam, searchParamOrg);
+      onSearch();
     };
 
     const setFocused = (idx) => { focusedIdx.value = idx; };
@@ -369,8 +380,7 @@ window.SyBatchMng = {
 
     return { batches, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
-      cfSiteNm, searchKw, searchStatus, searchRunStatus, searchDateRange, searchDateStart, searchDateEnd,
-      DATE_RANGE_OPTIONS, onDateRangeChange, applied,
+      cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, applied,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave, runNow,
@@ -385,18 +395,18 @@ window.SyBatchMng = {
   <div class="page-title">배치스케즐관리</div>  <!-- 검색 -->
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="배치명 / 배치코드 검색" />
-      <select v-model="searchStatus">
+      <input v-model="searchParam.kw" placeholder="배치명 / 배치코드 검색" />
+      <select v-model="searchParam.status">
         <option value="">활성여부 전체</option><option>활성</option><option>비활성</option>
       </select>
-      <select v-model="searchRunStatus">
+      <select v-model="searchParam.runStatus">
         <option value="">실행상태 전체</option><option>성공</option><option>실패</option><option>실행중</option><option>대기</option>
       </select>
       <span class="search-label">등록일</span>
-      <input type="date" v-model="searchDateStart" class="date-range-input" />
+      <input type="date" v-model="searchParam.dateStart" class="date-range-input" />
       <span class="date-range-sep">~</span>
-      <input type="date" v-model="searchDateEnd" class="date-range-input" />
-      <select v-model="searchDateRange" @change="onDateRangeChange">
+      <input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
+      <select v-model="searchParam.dateRange" @change="handleDateRangeChange">
         <option value="">옵션선택</option>
         <option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>

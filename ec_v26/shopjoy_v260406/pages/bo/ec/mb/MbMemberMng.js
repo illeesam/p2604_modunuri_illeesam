@@ -25,17 +25,14 @@ window.MbMemberMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
-    const searchKw = ref('');
-    const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
+    onMounted(() => { handleFetchData();
+    Object.assign(searchParamOrg, searchParam); });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const onDateRangeChange = () => {
+    const handleDateRangeChange = () => {
       if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.page = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const searchGrade = ref('');
-    const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
@@ -82,24 +79,23 @@ window.MbMemberMng = {
 
     const fnGradeBadge = g => ({ 'VIP': 'badge-purple', '우수': 'badge-blue', '일반': 'badge-gray' }[g] || 'badge-gray');
     const fnStatusBadge = s => ({ '활성': 'badge-green', '정지': 'badge-red' }[s] || 'badge-gray');
-    const onSearch = () => {
-      Object.assign(applied, {
-        kw: searchKw.value,
-        grade: searchGrade.value,
-        status: searchStatus.value,
-        dateStart: searchDateStart.value,
-        dateEnd: searchDateEnd.value,
-      });
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
       pager.page = 1;
-    };
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
     const onReset = () => {
-      searchKw.value = '';
-      searchGrade.value = '';
-      searchStatus.value = '';
-      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
-      Object.assign(applied, { kw: '', grade: '', status: '', dateStart: '', dateEnd: '' });
-      pager.page = 1;
-    };
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
@@ -124,6 +120,22 @@ window.MbMemberMng = {
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'userId'},{label:'이름',key:'memberNm'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'등급',key:'gradeCd'},{label:'상태',key:'statusCd'},{label:'가입일',key:'joinDate'},{label:'주문수',key:'orderCount'},{label:'총구매액',key:'totalPurchase'}], '회원목록.csv');
 
     const descOpen = ref(false);
+  const searchParam = reactive({
+    kw: '',
+    dateRange: '',
+    dateStart: '',
+    dateEnd: '',
+    grade: '',
+    status: ''
+  });
+  const searchParamOrg = reactive({
+    kw: '',
+    dateRange: '',
+    dateStart: '',
+    dateEnd: '',
+    grade: '',
+    status: ''
+  });
     return { members, loading, error, descOpen, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchGrade, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnGradeBadge, fnStatusBadge, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
@@ -131,10 +143,10 @@ window.MbMemberMng = {
   <div class="page-title">회원관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="이름 / 이메일 / ID 검색" />
-      <select v-model="searchGrade"><option value="">등급 전체</option><option>VIP</option><option>우수</option><option>일반</option></select>
-      <select v-model="searchStatus"><option value="">상태 전체</option><option>활성</option><option>정지</option></select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
+      <input v-model="searchParam.kw" placeholder="이름 / 이메일 / ID 검색" />
+      <select v-model="searchParam.grade"><option value="">등급 전체</option><option>VIP</option><option>우수</option><option>일반</option></select>
+      <select v-model="searchParam.status"><option value="">상태 전체</option><option>활성</option><option>정지</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

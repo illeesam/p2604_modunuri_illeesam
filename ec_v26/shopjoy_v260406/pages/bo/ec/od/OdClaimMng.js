@@ -29,17 +29,40 @@ window.OdClaimMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
-    const searchKw = ref('');
-    const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
+
+    /* ── 검색 파라미터 ── */
+    const searchParam = reactive({
+      kw: '',
+      type: '',
+      status: '',
+      dateRange: '',
+      dateStart: '',
+      dateEnd: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '',
+      type: '',
+      status: '',
+      dateRange: '',
+      dateStart: '',
+      dateEnd: ''
+    });
+
+    onMounted(() => {
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
+    });
+
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+    const handleDateRangeChange = () => {
+      if (searchParam.dateRange) {
+        const r = window.boCmUtil.getDateRange(searchParam.dateRange);
+        searchParam.dateStart = r ? r.from : '';
+        searchParam.dateEnd = r ? r.to : '';
+      }
       pager.page = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const searchType = ref('');
-    const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
@@ -59,16 +82,14 @@ window.OdClaimMng = {
     const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
     const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
-
     const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(claims, c => {
-      const kw = applied.kw.trim().toLowerCase();
+      const kw = searchParam.kw.trim().toLowerCase();
       if (kw && !c.claimId.toLowerCase().includes(kw) && !c.userNm.toLowerCase().includes(kw) && !c.prodNm.toLowerCase().includes(kw)) return false;
-      if (applied.type && c.type !== applied.type) return false;
-      if (applied.status && c.status !== applied.status) return false;
+      if (searchParam.type && c.type !== searchParam.type) return false;
+      if (searchParam.status && c.status !== searchParam.status) return false;
       const _d = String(c.requestDate || '').slice(0, 10);
-      if (applied.dateStart && _d < applied.dateStart) return false;
-      if (applied.dateEnd && _d > applied.dateEnd) return false;
+      if (searchParam.dateStart && _d < searchParam.dateStart) return false;
+      if (searchParam.dateEnd && _d > searchParam.dateEnd) return false;
       return true;
     }));
     const cfTotal = computed(() => cfFiltered.value.length);
@@ -87,23 +108,13 @@ window.OdClaimMng = {
       '완료': 'badge-green', '거부': 'badge-red', '철회': 'badge-gray',
     }[s] || 'badge-gray');
     const onSearch = () => {
-      Object.assign(applied, {
-        kw: searchKw.value,
-        type: searchType.value,
-        status: searchStatus.value,
-        dateStart: searchDateStart.value,
-        dateEnd: searchDateEnd.value,
-      });
       pager.page = 1;
     };
     const onReset = () => {
-      searchKw.value = '';
-      searchType.value = '';
-      searchStatus.value = '';
-      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
-      Object.assign(applied, { kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
+      Object.assign(searchParam, searchParamOrg);
       pager.page = 1;
     };
+  
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
@@ -303,21 +314,21 @@ window.OdClaimMng = {
       }
     };
 
-    return { claims, members, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { claims, members, loading, error, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>
   <div class="page-title">클레임관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="클레임ID / 회원명 / 상품명 검색" />
-      <select v-model="searchType"><option value="">유형 전체</option><option>취소</option><option>반품</option><option>교환</option></select>
-      <select v-model="searchStatus">
+      <input v-model="searchParam.kw" placeholder="클레임ID / 회원명 / 상품명 검색" />
+      <select v-model="searchParam.type"><option value="">유형 전체</option><option>취소</option><option>반품</option><option>교환</option></select>
+      <select v-model="searchParam.status">
         <option value="">상태 전체</option>
         <option>신청</option><option>승인</option><option>수거중</option>
         <option>처리중</option><option>환불대기</option><option>완료</option><option>거부</option><option>철회</option>
       </select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

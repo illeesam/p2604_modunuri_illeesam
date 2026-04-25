@@ -192,27 +192,37 @@ window.DpDispWidgetLibPreview = {
     const wTypeLabel = (v) => window.safeArrayUtils.safeFind(WIDGET_TYPES, t => t.value === v)?.label || v;
 
     /* ── 조회 조건 ── */
-    const previewDate     = ref(today);
-    const previewTime     = ref(nowTime);
-    const filterType      = ref('');
-    const filterStatus    = ref('활성');
-    const filterCondition = ref('');
-    const filterAuthReq   = ref('');
-    const filterAuthGrade = ref('');
-    const searchKw        = ref('');
+    const searchParam = reactive({
+      previewDate: today,
+      previewTime: nowTime,
+      filterType: '',
+      filterStatus: '활성',
+      filterCondition: '',
+      filterAuthReq: '',
+      filterAuthGrade: '',
+      kw: '',
+    });
+
+    const searchParamOrg = reactive({
+      previewDate: today,
+      previewTime: nowTime,
+      filterType: '',
+      filterStatus: '활성',
+      filterCondition: '',
+      filterAuthReq: '',
+      filterAuthGrade: '',
+      kw: '',
+    });
 
     const onReset = () => {
-      previewDate.value = today; previewTime.value = nowTime;
-      filterType.value = ''; filterStatus.value = '활성';
-      filterCondition.value = ''; filterAuthReq.value = ''; filterAuthGrade.value = '';
-      searchKw.value = '';
+      Object.assign(searchParam, searchParamOrg);
     };
 
     const cfFilteredLibs = computed(() => {
-      const kw = searchKw.value.trim().toLowerCase();
+      const kw = searchParam.kw.trim().toLowerCase();
       return (Array.isArray(widgetLibs) ? widgetLibs : []).filter(lib => {
-        if (filterType.value   && lib.widgetType !== filterType.value) return false;
-        if (filterStatus.value && lib.status     !== filterStatus.value) return false;
+        if (searchParam.filterType   && lib.widgetType !== searchParam.filterType) return false;
+        if (searchParam.filterStatus && lib.status     !== searchParam.filterStatus) return false;
         if (kw && !lib.name.toLowerCase().includes(kw) &&
             !(lib.tags||'').toLowerCase().includes(kw) &&
             !(lib.desc||'').toLowerCase().includes(kw)) return false;

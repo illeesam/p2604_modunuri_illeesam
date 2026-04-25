@@ -37,6 +37,7 @@ window.SyMenuMng = {
       handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
+      Object.assign(searchParamOrg, searchParam);
     });
     const cfAllowedTreeIds = computed(() => {
       if (selectedTreeId.value == null) return null;
@@ -46,11 +47,17 @@ window.SyMenuMng = {
 
 
     /* ── 검색 ── */
-    const searchKw     = ref('');
-    const searchType   = ref('');
-    const searchUseYn  = ref('');
+    const searchParam = reactive({
+      kw: '',
+      type: '',
+      useYn: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '',
+      type: '',
+      useYn: ''
+    });
     const MENU_TYPES   = ['페이지', '폴더', '외부링크', '구분선'];
-    const applied = reactive({ kw: '', type: '', useYn: '' });
 
     /* ── CRUD 그리드 ── */
     const gridRows   = reactive([]);
@@ -92,10 +99,10 @@ window.SyMenuMng = {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       const filtered = menus.filter(m => {
         if (cfAllowedTreeIds.value && !cfAllowedTreeIds.value.has(m.menuId)) return false;
-        const kw = applied.kw.trim().toLowerCase();
+        const kw = searchParam.kw.trim().toLowerCase();
         if (kw && !m.menuCode.toLowerCase().includes(kw) && !m.menuNm.toLowerCase().includes(kw)) return false;
-        if (applied.type  && m.menuType !== applied.type)  return false;
-        if (applied.useYn && m.useYn    !== applied.useYn) return false;
+        if (searchParam.type  && m.menuType !== searchParam.type)  return false;
+        if (searchParam.useYn && m.useYn    !== searchParam.useYn) return false;
         return true;
       });
       buildTreeRows(filtered).forEach(m => gridRows.push(makeRow(m)));
@@ -112,12 +119,10 @@ window.SyMenuMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const onSearch = () => {
-      Object.assign(applied, { kw: searchKw.value, type: searchType.value, useYn: searchUseYn.value });
       handleLoadGrid();
     };
     const onReset = () => {
-      searchKw.value = ''; searchType.value = ''; searchUseYn.value = '';
-      Object.assign(applied, { kw: '', type: '', useYn: '' });
+      Object.assign(searchParam, searchParamOrg);
       handleLoadGrid();
     };
 
@@ -242,7 +247,7 @@ window.SyMenuMng = {
     );
 
     return { menus, loading, error, selectedTreeId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
-      searchKw, searchType, searchUseYn, MENU_TYPES, applied,
+      searchParam, searchParamOrg, MENU_TYPES,
       cfSiteNm,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
@@ -260,12 +265,12 @@ window.SyMenuMng = {
 
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="메뉴코드 / 메뉴명 검색" />
-      <select v-model="searchType">
+      <input v-model="searchParam.kw" placeholder="메뉴코드 / 메뉴명 검색" />
+      <select v-model="searchParam.type">
         <option value="">유형 전체</option>
         <option v-for="t in MENU_TYPES" :key="t">{{ t }}</option>
       </select>
-      <select v-model="searchUseYn">
+      <select v-model="searchParam.useYn">
         <option value="">사용여부 전체</option><option value="Y">사용</option><option value="N">미사용</option>
       </select>
       <div class="search-actions">

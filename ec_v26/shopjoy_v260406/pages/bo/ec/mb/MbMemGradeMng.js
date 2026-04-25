@@ -25,21 +25,19 @@ window.MbMemGradeMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleFetchData();
+    Object.assign(searchParamOrg, searchParam); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const GRADE_CODES = ['BASIC','SILVER','GOLD','VIP','VVIP','PLATINUM'];
 
-    const searchKw  = ref('');
-    const searchUse = ref('');
-    const applied   = reactive({ kw: '', use: '' });
     const pager     = reactive({ page: 1, size: 20 });
 
     const cfFiltered = computed(() => {
-      const kw = applied.kw.toLowerCase();
+      const kw = searchParam.kw.toLowerCase();
       if (!Array.isArray(grades)) return [];
       return grades.filter(g => {
         if (kw && !g.gradeNm.toLowerCase().includes(kw) && !g.gradeCd.toLowerCase().includes(kw)) return false;
-        if (applied.use && g.useYn !== applied.use) return false;
+        if (searchParam.use && g.useYn !== searchParam.use) return false;
         return true;
       });
     });
@@ -51,12 +49,20 @@ window.MbMemGradeMng = {
     const gridRows   = reactive([]);
     let   _tempId    = -1;
     const focusedIdx = ref(null);
+  const searchParam = reactive({
+    kw: '',
+    use: ''
+  });
+  const searchParamOrg = reactive({
+    kw: '',
+    use: ''
+  });
     const FIELDS     = ['gradeCd','gradeNm','gradeRank','minPurchaseAmt','saveRate','useYn'];
 
     const handleLoadGrid = () => {
       gridRows.splice(0, gridRows.length, ...cfPageList.value.map(g => ({ ...g, _row_status: null })));
     };
-    watch([() => pager.page, () => pager.size, applied], handleLoadGrid, { immediate: true });
+    watch([() => pager.page, () => pager.size, searchParam], handleLoadGrid, { immediate: true });
 
     const addRow = () => {
       gridRows.unshift({ gradeId: _tempId--, siteId: 1, gradeCd: '', gradeNm: '', gradeRank: gridRows.length + 1, minPurchaseAmt: 0, saveRate: 1.00, useYn: 'Y', _row_status: 'N' });
@@ -108,13 +114,28 @@ window.MbMemGradeMng = {
         break;
       }
     };
-    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, use: searchUse.value }); pager.page = 1; };
-    const onReset  = () => { searchKw.value = ''; searchUse.value = ''; Object.assign(applied, { kw: '', use: '' }); pager.page = 1; };
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
+      pager.page = 1;
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
+    const onReset = () => {
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  
     const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { grades, loading, error, searchKw, searchUse, pager, cfPageNums, cfTotalPages, setPage, cfTotal, onSearch, onReset,
+    return { grades, loading, error, searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, onSearch, onReset,
              gridRows, addRow, onCellChange, handleDeleteRow, handleSaveAll, focusedIdx, fnYnBadge, GRADE_CODES , PAGE_SIZES , onSizeChange };
   },
   template: `
@@ -123,9 +144,9 @@ window.MbMemGradeMng = {
     <div class="card">
       <div class="search-bar">
         <label class="search-label">등급명/코드</label>
-        <input class="form-control" v-model="searchKw" @keyup.enter="() => onSearch?.()" placeholder="등급명 또는 코드 검색">
+        <input class="form-control" v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="등급명 또는 코드 검색">
         <label class="search-label">사용여부</label>
-        <select class="form-control" v-model="searchUse">
+        <select class="form-control" v-model="searchParam.use">
           <option value="">전체</option><option value="Y">Y</option><option value="N">N</option>
         </select>
         <div class="search-actions">

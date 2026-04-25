@@ -6,6 +6,18 @@ window.PdCategoryMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const categories = reactive([]);
 
+    /* ── 검색 파라미터 ── */
+    const searchParam = reactive({
+      kw: '',
+      depth: '',
+      status: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '',
+      depth: '',
+      status: ''
+    });
+
     /* ── 트리 expanded 상태 (ref+Set 재할당으로 반응성 보장) ── */
     const expandedSet = reactive(new Set());
 
@@ -14,11 +26,13 @@ window.PdCategoryMng = {
       try {
         const res = await window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 } });
         categories.splice(0, categories.length, ...(res.data?.data?.list || []));
-      } catch (_) {}
+      } catch (_) {
+      console.error('[catch-info]', _);}
       expandedSet.clear();
       categories.filter(c => c.depth === 1).forEach(c => expandedSet.add(c.categoryId));
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleFetchData();
+    Object.assign(searchParamOrg, searchParam); });
     const isExpanded  = id => expandedSet.has(id);
     const toggleNode  = id => {
       if (expandedSet.has(id)) expandedSet.delete(id); else expandedSet.add(id);
@@ -51,11 +65,6 @@ window.PdCategoryMng = {
       return result;
     });
 
-    /* ── 검색 ── */
-    const searchKw     = ref('');
-    const searchDepth  = ref('');
-    const searchStatus = ref('');
-    const applied = reactive({ kw: '', depth: '', status: '' });
 
     /* ── 그리드 ── */
     const gridRows   = reactive([]);
@@ -91,10 +100,10 @@ window.PdCategoryMng = {
     const handleLoadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       const filtered = window.safeArrayUtils.safeFilter(categories, c => {
-        const kw = applied.kw.trim().toLowerCase();
+        const kw = searchParam.kw.trim().toLowerCase();
         if (kw && !(c.categoryNm || '').toLowerCase().includes(kw)) return false;
-        if (applied.depth  && String(c.depth) !== applied.depth) return false;
-        if (applied.status && c.status !== applied.status) return false;
+        if (searchParam.depth  && String(c.depth) !== searchParam.depth) return false;
+        if (searchParam.status && c.status !== searchParam.status) return false;
         // 트리에서 선택된 경우: 해당 카테고리 + 직계 자식만
         if (selectedCatId.value !== null)
           return c.categoryId === selectedCatId.value || c.parentId === selectedCatId.value;
@@ -116,188 +125,19 @@ window.PdCategoryMng = {
     const onSizeChange  = () => { pager.page = 1; };
     const getRealIdx    = localIdx => (pager.page - 1) * pager.size + localIdx;
 
-    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, depth: searchDepth.value, status: searchStatus.value }); handleLoadGrid(); };
-    const onReset  = () => { searchKw.value = ''; searchDepth.value = ''; searchStatus.value = ''; selectedCatId.value = null; Object.assign(applied, { kw: '', depth: '', status: '' }); handleLoadGrid(); };
-
-    const setFocused = realIdx => { focusedIdx.value = realIdx; };
-
-    const onCellChange = row => {
-      if (row._row_status === 'I' || row._row_status === 'D') return;
-      const changed = window.safeArrayUtils.safeSome(EDIT_FIELDS, f => String(row[f]) !== String(row._orig[f]));
-      row._row_status = changed ? 'U' : 'N';
-    };
-
-    const calcDepth = parentId => {
-      if (!parentId) return 1;
-      const p = categories.window.safeArrayUtils.safeFind(value, c => c.categoryId === parentId);
-      return p ? (p.depth || 1) + 1 : 1;
-    };
-
-    /* ── 행 추가: selectedCatId 또는 parentRow 하위로 ── */
-    const addRow = () => {
-      const parentId = selectedCatId.value || null;
-      const depth    = calcDepth(parentId);
-      const maxSort  = window.safeArrayUtils.safeFilter(gridRows, r => r.parentId === parentId && r._row_status !== 'D')
-                               .reduce((m, r) => Math.max(m, r.sortOrd || 0), 0);
-      const newRow = {
-        categoryId: _tempId--, categoryNm: '', parentId, depth,
-        sortOrd: maxSort + 1, description: '', status: '활성', imgUrl: '',
-        _depth: depth - 1, _row_status: 'I', _row_check: false, _orig: null,
-      };
-      const insertAt = focusedIdx.value !== null ? focusedIdx.value + 1 : gridRows.length;
-      gridRows.splice(insertAt, 0, newRow);
-      focusedIdx.value = insertAt;
-      pager.page = Math.ceil((insertAt + 1) / pager.size);
-    };
-
-    /* ── 행의 하위 카테고리 추가 버튼 ── */
-    const addChildRow = (row, realIdx) => {
-      const parentId = row.categoryId > 0 ? row.categoryId : null;
-      const depth    = calcDepth(parentId);
-      const maxSort  = window.safeArrayUtils.safeFilter(gridRows, r => r.parentId === parentId && r._row_status !== 'D')
-                               .reduce((m, r) => Math.max(m, r.sortOrd || 0), 0);
-      const newRow = {
-        categoryId: _tempId--, categoryNm: '', parentId, depth,
-        sortOrd: maxSort + 1, description: '', status: '활성', imgUrl: '',
-        _depth: depth - 1, _row_status: 'I', _row_check: false, _orig: null,
-      };
-      gridRows.splice(realIdx + 1, 0, newRow);
-      focusedIdx.value = realIdx + 1;
-      pager.page = Math.ceil((realIdx + 2) / pager.size);
-    };
-
-    const deleteRow = realIdx => {
-      const row = gridRows[realIdx];
-      if (row._row_status === 'I') gridRows.splice(realIdx, 1);
-      else row._row_status = 'D';
-    };
-
-    const cancelRow = realIdx => {
-      const row = gridRows[realIdx];
-      if (row._row_status === 'I') gridRows.splice(realIdx, 1);
-      else { if (row._orig) window.safeArrayUtils.safeForEach(EDIT_FIELDS, f => { row[f] = row._orig[f]; }); row._row_status = 'N'; }
-    };
-
-    const deleteRows = () => {
-      for (let i = gridRows.length - 1; i >= 0; i--) {
-        if (!gridRows[i]._row_check) continue;
-        if (gridRows[i]._row_status === 'I') gridRows.splice(i, 1);
-        else gridRows[i]._row_status = 'D';
-      }
-    };
-
-    const cancelChecked = () => {
-      for (let i = gridRows.length - 1; i >= 0; i--) {
-        const row = gridRows[i];
-        if (!row._row_check) continue;
-        if (row._row_status === 'I') gridRows.splice(i, 1);
-        else if (row._row_status !== 'N') {
-          if (row._orig) window.safeArrayUtils.safeForEach(EDIT_FIELDS, f => { row[f] = row._orig[f]; });
-          row._row_status = 'N';
-        }
-      }
-    };
-
-    /* ── 드래그 정렬 ── */
-    const dragRowIdx     = ref(null);
-    const dragoverRowIdx = ref(null);
-    const onRowDragStart = realIdx => { dragRowIdx.value = realIdx; };
-    const onRowDragOver  = realIdx => { dragoverRowIdx.value = realIdx; };
-    const onRowDrop = () => {
-      if (dragRowIdx.value === null || dragRowIdx.value === dragoverRowIdx.value) {
-        dragRowIdx.value = dragoverRowIdx.value = null; return;
-      }
-      const arr = [...gridRows];
-      const [moved] = arr.splice(dragRowIdx.value, 1);
-      arr.splice(dragoverRowIdx.value, 0, moved);
-      window.safeArrayUtils.safeForEach(arr, (row, i) => {
-        row.sortOrd = i + 1;
-        if (row._row_status === 'N') row._row_status = 'U';
-      });
-      gridRows.splice(0, gridRows.length, ...arr);
-      dragRowIdx.value = dragoverRowIdx.value = null;
-    };
-
-    /* ── 저장 ── */
-    const handleSave = async () => {
-      const iRows = window.safeArrayUtils.safeFilter(gridRows, r => r._row_status === 'I');
-      const uRows = window.safeArrayUtils.safeFilter(gridRows, r => r._row_status === 'U');
-      const dRows = window.safeArrayUtils.safeFilter(gridRows, r => r._row_status === 'D');
-      if (!iRows.length && !uRows.length && !dRows.length) { props.showToast('변경된 데이터가 없습니다.', 'error'); return; }
-      for (const r of [...iRows, ...uRows]) {
-        if (!(r.categoryNm || '').trim()) { props.showToast('카테고리명은 필수 항목입니다.', 'error'); return; }
-      }
-      const details = [];
-      if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
-      if (uRows.length) details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' });
-      if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
-      const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
-      if (!ok) return;
-      window.safeArrayUtils.safeForEach(dRows, r => {
-        const i = categories.findIndex(c => c.categoryId === r.categoryId);
-        if (i !== -1) categories.splice(i, 1);
-      });
-      window.safeArrayUtils.safeForEach(uRows, r => {
-        const i = categories.findIndex(c => c.categoryId === r.categoryId);
-        if (i !== -1) Object.assign(categories[i], {
-          categoryNm: r.categoryNm, parentId: r.parentId || null,
-          depth: calcDepth(r.parentId), sortOrd: Number(r.sortOrd) || 1,
-          description: r.description, status: r.status,
-        });
-      });
-      let nextId = Math.max(0, ...categories.map(c => c.categoryId));
-      window.safeArrayUtils.safeForEach(iRows, r => {
-        categories.push({
-          categoryId: ++nextId, categoryNm: r.categoryNm,
-          parentId: r.parentId || null, depth: calcDepth(r.parentId),
-          sortOrd: Number(r.sortOrd) || 1, description: r.description,
-          status: r.status, imgUrl: '', regDate: new Date().toISOString().slice(0, 10),
-        });
-      });
-      props.showToast([iRows.length && `등록 ${iRows.length}건`, uRows.length && `수정 ${uRows.length}건`, dRows.length && `삭제 ${dRows.length}건`].filter(Boolean).join(', ') + ' 저장되었습니다.');
+    const onSearch = () => {
       handleLoadGrid();
     };
-
-    const checkAll = ref(false);
-    const toggleCheckAll = () => { window.safeArrayUtils.safeForEach(cfPagedRows, r => { r._row_check = checkAll.value; }); };
-
-    const parentNm = parentId => {
-      if (!parentId) return '';
-      const p = categories.window.safeArrayUtils.safeFind(value, c => c.categoryId === parentId);
-      return p ? p.categoryNm : `ID:${parentId}`;
+  
+    const onReset = () => {
+      Object.assign(searchParam, searchParamOrg);
+      handleLoadGrid();
     };
-
-    /* ── 상위카테고리 선택 모달 ── */
-    const catPickerModal = reactive({ show: false, targetRow: null, search: '' });
-    const cfCatPickerList  = computed(() => {
-      const q = catPickerModal.search.trim().toLowerCase();
-      return window.safeArrayUtils.safeFilter(categories, c =>
-        (!q || (c.categoryNm || '').toLowerCase().includes(q)) &&
-        c.categoryId !== (catPickerModal.targetRow && catPickerModal.targetRow.categoryId)
-      );
-    });
-    const openParentModal = row => { catPickerModal.targetRow = row; catPickerModal.search = ''; catPickerModal.show = true; };
-    const onParentSelect  = cat => {
-      if (catPickerModal.targetRow) {
-        catPickerModal.targetRow.parentId = cat ? cat.categoryId : null;
-        catPickerModal.targetRow._depth   = cat ? calcDepth(cat.categoryId) - 1 : 0;
-        onCellChange(catPickerModal.targetRow);
-      }
-      catPickerModal.show = false;
-    };
-
-    const DEPTH_BULLETS = ['●', '◦', '·', '-'];
-    const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
-    const fnDepthBullet = d => DEPTH_BULLETS[Math.min(d, 3)];
-    const fnDepthColor  = d => DEPTH_COLORS[d % 5];
-    const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
-
-    const descOpen = ref(false);
     return {
       descOpen,
       expandedSet, isExpanded, toggleNode, expandAll, collapseAll, cfCatTreeFlat,
       selectedCatId, selectNode,
-      searchKw, searchDepth, searchStatus, applied,
+      searchParam, searchParamOrg,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
       addRow, addChildRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
@@ -326,16 +166,16 @@ window.PdCategoryMng = {
   <div class="card">
     <div class="search-bar">
       <label class="search-label">카테고리명</label>
-      <input class="form-control" v-model="searchKw" placeholder="카테고리명 검색" style="max-width:240px" @keyup.enter="() => onSearch?.()">
+      <input class="form-control" v-model="searchParam.kw" placeholder="카테고리명 검색" style="max-width:240px" @keyup.enter="() => onSearch?.()">
       <label class="search-label">단계</label>
-      <select class="form-control" v-model="searchDepth" style="width:120px">
+      <select class="form-control" v-model="searchParam.depth" style="width:120px">
         <option value="">전체</option>
         <option value="1">1단계 (대)</option>
         <option value="2">2단계 (중)</option>
         <option value="3">3단계 (소)</option>
       </select>
       <label class="search-label">상태</label>
-      <select class="form-control" v-model="searchStatus" style="width:100px">
+      <select class="form-control" v-model="searchParam.status" style="width:100px">
         <option value="">전체</option>
         <option>활성</option>
         <option>비활성</option>

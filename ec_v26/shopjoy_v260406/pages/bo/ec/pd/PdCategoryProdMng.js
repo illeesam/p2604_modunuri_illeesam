@@ -44,242 +44,37 @@ window.PdCategoryProdMng = {
     const defaultDispStartDate = () => new Date().toISOString().slice(0, 10);
 
     /* ── 검색 ── */
-    const searchProdNm = ref('');
-    const applied      = reactive({ prodNm: '' });
-    const onSearch = () => { Object.assign(applied, { prodNm: searchProdNm.value }); };
-    const onReset  = () => { searchProdNm.value = ''; Object.assign(applied, { prodNm: '' }); };
+    const pager = reactive({ page: 1, size: 20 });
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
-    /* ── 카테고리 트리 ── */
-    const expandedSet = reactive(new Set());
+  const searchParam = reactive({
+    prodNm: ''
+  });
+  const searchParamOrg = reactive({
+    prodNm: ''
+  });
 
-    /* depth 1 노드 기본 펼침 (2레벨 노출) */
-    const handleFetchData = async () => {
-      try {
-        const [catsRes, prodsRes] = await Promise.all([
-          window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 } }),
-        ]);
-        categories.splice(0, categories.length, ...(catsRes.data?.data?.list || []));
-        products.splice(0, products.length, ...(prodsRes.data?.data?.list || []));
-      } catch (_) {}
-      expandedSet.clear();
-      categories.filter(c => c.depth === 1).forEach(c => expandedSet.add(c.categoryId));
-    };
-    onMounted(() => { handleFetchData(); });
-    const isExpanded  = id => expandedSet.has(id);
-    const toggleNode  = id => {
-      if (expandedSet.has(id)) expandedSet.delete(id); else expandedSet.add(id);
-    };
-    const expandAll   = () => { expandedSet.clear(); (categories || []).forEach(c => expandedSet.add(c.categoryId)); };
-    const collapseAll = () => { expandedSet.clear(); };
-
-    /* 카테고리 경로 (재귀) */
-    const getCatPath = (categoryId) => {
-      const cats = categories || [];
-      const cat = window.safeArrayUtils.safeFind(cats, c => c.categoryId === categoryId);
-      if (!cat) return '';
-      if (!cat.parentId) return cat.categoryNm;
-      const pp = getCatPath(cat.parentId);
-      return pp ? `${pp} › ${cat.categoryNm}` : cat.categoryNm;
-    };
-
-    /* 모든 하위 ID (자신 포함) */
-    const allDescendantIds = (categoryId) => {
-      const result = [categoryId];
-      (categories || [])
-        .filter(c => c.parentId === categoryId)
-        .forEach(c => result.push(...allDescendantIds(c.categoryId)));
-      return result;
-    };
-
-    /* 트리 뱃지 수 */
-    const totalProdCount = id => {
-      const ids = allDescendantIds(id);
-      return (categoryProds || []).filter(cp => ids.includes(cp.categoryId)).length;
-    };
-
-    /* 탭별 수 (선택 카테고리 + 하위 합산) */
-    const cfTypeCountMap = computed(() => {
-      const map = {};
-      if (!cfSelectedCatId.value) return map;
-      const ids = allDescendantIds(cfSelectedCatId.value);
-      (categoryProds || [])
-        .filter(cp => ids.includes(cp.categoryId))
-        .forEach(cp => {
-          const t = cp.categoryProdTypeCd || 'NORMAL';
-          map[t] = (map[t] || 0) + 1;
-        });
-      return map;
-    });
-
-    /* 트리 플랫 */
-    const cfCatTreeFlat = computed(() => {
-      const _ = expandedSet;
-      const cats = categories || [];
-      const map = {};
-      window.safeArrayUtils.safeForEach(cats, c => { map[c.categoryId] = { ...c, _children: [] }; });
-      window.safeArrayUtils.safeForEach(cats, c => { if (c.parentId && map[c.parentId]) map[c.parentId]._children.push(map[c.categoryId]); });
-      const roots = window.safeArrayUtils.safeFilter(cats, c => !c.parentId).map(c => map[c.categoryId]).sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-      const result = [];
-      const traverse = (node, depth) => {
-        result.push({ ...node, _depth: depth, _hasChildren: node._children.length > 0 });
-        if (isExpanded(node.categoryId))
-          [...node._children].sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => traverse(c, depth + 1));
-      };
-      window.safeArrayUtils.safeForEach(roots, r => traverse(r, 0));
-      return result;
-    });
-
-    /* 선택된 카테고리 */
-    const cfSelectedCatId = ref(null);
-    const cfSelectedCat   = computed(() => (categories || []).find(c => c.categoryId === cfSelectedCatId.value));
-    const cfIsLeafCat     = computed(() => {
-      if (!cfSelectedCatId.value) return false;
-      return !(categories || []).some(c => c.parentId === cfSelectedCatId.value);
-    });
-    const selectNode = id => { cfSelectedCatId.value = (cfSelectedCatId.value === id) ? null : id; };
-
-    /* ── 전체 편집 목록 (선택 카테고리 + 하위 모두) ── */
-    const allRows = reactive([]);
-    let _seq = 1;
-
-    const getProd   = id => (products || []).find(p => p.productId === id);
-    const getProdNm = id => { const p = getProd(id); return p ? (p.prodNm || p.productName || '') : ''; };
-
-    const loadAllRows = () => {
-      if (!cfSelectedCatId.value) { allRows.length = 0; return; }
-      const ids = allDescendantIds(cfSelectedCatId.value);
-      const links = (categoryProds || [])
-        .filter(cp => ids.includes(cp.categoryId))
-        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-      allRows.splice(0, allRows.length, ...links.map((cp, i) => ({
-        _id:                _seq++,
-        categoryProdId:     cp.categoryProdId,
-        categoryId:         cp.categoryId,
-        prodId:             cp.prodId,
-        categoryProdTypeCd: cp.categoryProdTypeCd || 'NORMAL',
-        sortOrd:            cp.sortOrd || i + 1,
-        emphasisCd:         cp.emphasisCd || '',
-        dispYn:             cp.dispYn || 'Y',
-        dispStartDate:      cp.dispStartDate || defaultDispStartDate(),
-        dispEndDate:        cp.dispEndDate || defaultDispEndDate(),
-        _isNew:             false,
-      })));
-    };
-
-    watch(cfSelectedCatId, loadAllRows);
-
-    /* 현재 탭 행 */
-    const cfTabRows = computed(() => allRows.filter(r => r.categoryProdTypeCd === activeTypeCd.value));
-
-    /* 검색 필터 */
-    const cfFilteredRows = computed(() => {
-      const kw = applied.prodNm.trim().toLowerCase();
-      return window.safeArrayUtils.safeFilter(cfTabRows, r => !kw || getProdNm(r.prodId).toLowerCase().includes(kw));
-    });
-
-    /* ── 드래그 정렬 ── */
-    const dragIdx     = ref(null);
-    const dragoverIdx = ref(null);
-    const onDragStart = idx => { dragIdx.value = idx; };
-    const onDragOver  = idx => { dragoverIdx.value = idx; };
-    const onDrop = () => {
-      if (dragIdx.value === null || dragIdx.value === dragoverIdx.value) {
-        dragIdx.value = dragoverIdx.value = null; return;
-      }
-      const tabArr = [...cfTabRows.value];
-      const [moved] = tabArr.splice(dragIdx.value, 1);
-      tabArr.splice(dragoverIdx.value, 0, moved);
-      window.safeArrayUtils.safeForEach(tabArr, (r, i) => { r.sortOrd = i + 1; });
-      const others = allRows.filter(r => r.categoryProdTypeCd !== activeTypeCd.value);
-      allRows.splice(0, allRows.length, ...others, ...tabArr);
-      dragIdx.value = dragoverIdx.value = null;
-    };
-
-    /* ── 삭제 ── */
-    const removeRow = row => { const idx = allRows.findIndex(r => r._id === row._id); if (idx !== -1) allRows.splice(idx, 1); };
-
-    /* ── 상품 추가 피커 ── */
-    const pickerOpen   = ref(false);
-    const pickerSearch = ref('');
-    const cfPickerList   = computed(() => {
-      const q    = pickerSearch.value.trim().toLowerCase();
-      const used = new Set(cfTabRows.value.map(r => r.prodId));
-      return (products || []).filter(p => {
-        if (used.has(p.productId)) return false;
-        if (!q) return true;
-        return String(p.productId).includes(q) || (p.prodNm || '').toLowerCase().includes(q) || (p.category || '').toLowerCase().includes(q);
-      });
-    });
-
-    const addProd = prod => {
-      const targetCatId = cfSelectedCatId.value;
-      const maxSort = cfTabRows.value.length ? Math.max(...cfTabRows.value.map(r => r.sortOrd)) : 0;
-      allRows.push({
-        _id: _seq++, categoryProdId: null,
-        categoryId:         targetCatId,
-        prodId:             prod.productId,
-        categoryProdTypeCd: activeTypeCd.value,
-        sortOrd:            maxSort + 1,
-        emphasisCd:         '',
-        dispYn:             'Y',
-        dispStartDate:      defaultDispStartDate(),
-        dispEndDate:        defaultDispEndDate(),
-        _isNew:             true,
-      });
-      pickerOpen.value = false; pickerSearch.value = '';
-    };
-
-    /* ── 저장 (현재 탭, 선택 카테고리+하위 전체) ── */
-    const onSave = async () => {
-      if (!cfSelectedCatId.value) { props.showToast('카테고리를 선택하세요.', 'error'); return; }
-      const activeTab = window.safeArrayUtils.safeFind(TYPE_TABS, t => t.cd === activeTypeCd.value);
-      const ids = allDescendantIds(cfSelectedCatId.value);
-      const ok = await props.showConfirm('저장', `[${cfSelectedCat.value?.categoryNm}] ${activeTab?.nm} 목록을 저장하시겠습니까?`);
-      if (!ok) return;
-      if (!categoryProds) categoryProds = [];
-      const others = window.safeArrayUtils.safeFilter(categoryProds, 
-        cp => !(ids.includes(cp.categoryId) && (cp.categoryProdTypeCd || 'NORMAL') === activeTypeCd.value)
-      );
-      let seq2 = 0;
-      categoryProds = [
-        ...others,
-        ...cfTabRows.value.map(r => ({
-          categoryProdId:     r.categoryProdId || `CP_${r.categoryId}_${activeTypeCd.value}_${seq2++}`,
-          siteId:             '1',
-          categoryId:         r.categoryId,
-          prodId:             r.prodId,
-          categoryProdTypeCd: r.categoryProdTypeCd,
-          sortOrd:            r.sortOrd,
-          emphasisCd:         r.emphasisCd,
-          dispYn:             r.dispYn,
-          dispStartDate:      r.dispStartDate,
-          dispEndDate:        r.dispEndDate,
-        })),
-      ];
-      loadAllRows();
-      try {
-        const res = await window.boApi.put(`/bo/ec/pd/category/${cfSelectedCatId.value}/prods/${activeTypeCd.value}`, { prods: cfTabRows.value });
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('저장되었습니다.', 'success');
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
-      }
-    };
-
-    const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b'];
-    const DEPTH_BULLETS = ['●', '◦', '·', '-'];
-    const fnDepthColor  = d => DEPTH_COLORS[d % 4];
-    const fnDepthBullet = d => DEPTH_BULLETS[Math.min(d, 3)];
-
-    return {
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
+      pager.page = 1;
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
+    const onReset = () => {
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  return {
       viewMode, TYPE_TABS, activeTypeCd, cfTypeCountMap,
       EMPHASIS_OPTS, parseEmphasis, hasEmphasis, toggleEmphasis,
       defaultDispStartDate, defaultDispEndDate,
-      searchProdNm, applied, onSearch, onReset,
+      searchParam, searchParamOrg, onSearch, onReset,
       expandedSet, isExpanded, toggleNode, expandAll, collapseAll,
       cfCatTreeFlat, cfSelectedCatId, cfSelectedCat, cfIsLeafCat, selectNode,
       totalProdCount, getCatPath,
@@ -299,7 +94,7 @@ window.PdCategoryProdMng = {
   <div class="card">
     <div class="search-bar">
       <label class="search-label">상품명</label>
-      <input class="form-control" v-model="searchProdNm" @keyup.enter="() => onSearch?.()"
+      <input class="form-control" v-model="searchParam.prodNm" @keyup.enter="() => onSearch?.()"
              placeholder="상품명 검색" style="max-width:280px">
       <div class="search-actions">
         <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>

@@ -54,32 +54,49 @@ window.SySiteMng = {
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
-    const searchKw     = ref('');
-    const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
+  const searchParam = reactive({
+    kw: '',
+    type: '',
+    status: '',
+    dateRange: '',
+    dateStart: '',
+    dateEnd: ''
+  });
+  const searchParamOrg = reactive({
+    kw: '',
+    type: '',
+    status: '',
+    dateRange: '',
+    dateStart: '',
+    dateEnd: ''
+  });
+
     const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.page = 1;
     };
-    const searchType   = ref('');
-    const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
-    const selectedId = ref(null);
-    const openMode = ref('view'); // 'view' | 'edit'
-    const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
-    const openNew    = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
-    const closeDetail = () => { selectedId.value = null; };
+    const detailModal = reactive({
+      show: false,
+      editId: null,
+      viewMode: 'view' // 'view' | 'edit'
+    });
+
+    const loadView = (id) => { if (detailModal.editId === id && detailModal.viewMode === 'view') { detailModal.show = false; detailModal.editId = null; return; } detailModal.editId = id; detailModal.viewMode = 'view'; detailModal.show = true; };
+    const handleLoadDetail = (id) => { if (detailModal.editId === id && detailModal.viewMode === 'edit') { detailModal.show = false; detailModal.editId = null; return; } detailModal.editId = id; detailModal.viewMode = 'edit'; detailModal.show = true; };
+    const openNew    = () => { detailModal.editId = '__new__'; detailModal.viewMode = 'edit'; detailModal.show = true; };
+    const closeDetail = () => { detailModal.show = false; detailModal.editId = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'sySiteMng') { selectedId.value = null; return; }
-      if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
+      if (pg === 'sySiteMng') { detailModal.show = false; detailModal.editId = null; return; }
+      if (pg === '__switchToEdit__') { detailModal.viewMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => detailModal.editId === '__new__' ? null : detailModal.editId);
+    const cfIsViewMode = computed(() => detailModal.viewMode === 'view' && detailModal.editId !== '__new__');
+    const cfDetailKey = computed(() => `${detailModal.editId}_${detailModal.viewMode}`);
 
     const cfTypeOptions = computed(() => [...new Set(sites.map(s => s.siteType))].sort());
 

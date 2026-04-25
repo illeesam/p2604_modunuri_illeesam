@@ -10,7 +10,7 @@ window.StErpViewMng = {
     const dateRange = ref('이번달');
     const dateStart = ref('');
     const dateEnd   = ref('');
-    const onDateRangeChange = () => {
+    const handleDateRangeChange = () => {
       if (dateRange.value) { const r = window.boCmUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
@@ -25,9 +25,16 @@ window.StErpViewMng = {
       { slipId: 'ERP-2026-0310-003', slipDate: '2026-03-10', slipType: '반품조정', debit: '매출환불', credit: '미지급금', debitAmt: 22000,  creditAmt: 22000,  description: '반품 정산 재처리',            sendStatus: '오류',    erpRef: '' },
     ]);
 
-    const searchKw     = ref('');
-    const searchType   = ref('');
-    const searchStatus = ref('');
+  const searchParam = reactive({
+    kw: '',
+    type: '',
+    status: ''
+  });
+  const searchParamOrg = reactive({
+    kw: '',
+    type: '',
+    status: ''
+  });
     const pager = reactive({ page: 1, size: 10 });
 
     const cfFiltered = computed(() => {
@@ -65,8 +72,23 @@ window.StErpViewMng = {
     const fnStatusBadge = s => ({ '전송완료':'badge-green', '전송대기':'badge-blue', '오류':'badge-red' }[s] || 'badge-gray');
     const fnTypeBadge   = t => ({ '정산':'badge-blue', '수수료':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
     const fmtW = n => Number(n||0).toLocaleString() + '원';
-    const onSearch = () => { pager.page = 1; };
-    const onReset  = () => { searchKw.value = ''; searchType.value = ''; searchStatus.value = ''; dateRange.value = '이번달'; onDateRangeChange(); pager.page = 1; };
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
+      pager.page = 1;
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
+    const onReset = () => {
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  
 
     const setPage = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
@@ -90,13 +112,13 @@ window.StErpViewMng = {
         <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
       </select>
       <input type="date" v-model="dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="dateEnd" style="width:140px" />
-      <select v-model="searchType" style="width:120px">
+      <select v-model="searchParam.type" style="width:120px">
         <option value="">유형 전체</option><option>정산</option><option>수수료</option><option>반품조정</option>
       </select>
-      <select v-model="searchStatus" style="width:110px">
+      <select v-model="searchParam.status" style="width:110px">
         <option value="">상태 전체</option><option>전송완료</option><option>전송대기</option><option>오류</option>
       </select>
-      <input v-model="searchKw" placeholder="전표ID / 적요 검색" style="width:180px" @keyup.enter="() => onSearch?.()" />
+      <input v-model="searchParam.kw" placeholder="전표ID / 적요 검색" style="width:180px" @keyup.enter="() => onSearch?.()" />
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary" @click="onReset">초기화</button>

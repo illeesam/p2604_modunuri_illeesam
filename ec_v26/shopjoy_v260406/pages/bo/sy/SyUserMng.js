@@ -37,10 +37,19 @@ window.SyUserMng = {
     const cfTree = computed(() => window.boCmUtil.buildDeptTree());
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
+    /* 검색 파라미터 */
+    const searchParam = reactive({
+      kw: '', role: '', status: '', dateRange: '', dateStart: '', dateEnd: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '', role: '', status: '', dateRange: '', dateStart: '', dateEnd: ''
+    });
+
     onMounted(() => {
       handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
+      Object.assign(searchParamOrg, searchParam);
     });
     /* 선택 부서 + 자손의 dept 이름 Set */
     const cfAllowedDeptNms = computed(() => {
@@ -49,17 +58,16 @@ window.SyUserMng = {
       if (!desc) return null;
       return new Set((depts || []).filter(d => desc.has(d.deptId)).map(d => d.deptNm));
     });
-
-    const searchKw = ref('');
-    const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+    const handleDateRangeChange = () => {
+      if (searchParam.dateRange) {
+        const r = window.boCmUtil.getDateRange(searchParam.dateRange);
+        searchParam.dateStart = r ? r.from : '';
+        searchParam.dateEnd = r ? r.to : '';
+      }
       pager.page = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const searchRole = ref('');
-    const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
@@ -78,17 +86,15 @@ window.SyUserMng = {
     const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
     const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const applied = reactive({ kw: '', role: '', status: '', dateStart: '', dateEnd: '' });
-
     const cfFiltered = computed(() => boUsers.value.filter(u => {
       if (cfAllowedDeptNms.value && !cfAllowedDeptNms.value.has(u.dept)) return false;
-      const kw = applied.kw.trim().toLowerCase();
+      const kw = searchParam.kw.trim().toLowerCase();
       if (kw && !u.name.toLowerCase().includes(kw) && !u.loginId.toLowerCase().includes(kw) && !u.email.toLowerCase().includes(kw)) return false;
-      if (applied.role && u.role !== applied.role) return false;
-      if (applied.status && u.statusCd !== applied.status) return false;
+      if (searchParam.role && u.role !== searchParam.role) return false;
+      if (searchParam.status && u.statusCd !== searchParam.status) return false;
       const _d = String(u.regDate || '').slice(0, 10);
-      if (applied.dateStart && _d < applied.dateStart) return false;
-      if (applied.dateEnd && _d > applied.dateEnd) return false;
+      if (searchParam.dateStart && _d < searchParam.dateStart) return false;
+      if (searchParam.dateEnd && _d > searchParam.dateEnd) return false;
       return true;
     }));
     const cfTotal = computed(() => cfFiltered.value.length);
@@ -103,21 +109,10 @@ window.SyUserMng = {
     const fnRoleBadge = r => ({ '슈퍼관리자': 'badge-red', '관리자': 'badge-purple', '운영자': 'badge-blue' }[r] || 'badge-gray');
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
     const onSearch = () => {
-      Object.assign(applied, {
-        kw: searchKw.value,
-        role: searchRole.value,
-        status: searchStatus.value,
-        dateStart: searchDateStart.value,
-        dateEnd: searchDateEnd.value,
-      });
       pager.page = 1;
     };
     const onReset = () => {
-      searchKw.value = '';
-      searchRole.value = '';
-      searchStatus.value = '';
-      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
-      Object.assign(applied, { kw: '', role: '', status: '', dateStart: '', dateEnd: '' });
+      Object.assign(searchParam, searchParamOrg);
       pager.page = 1;
     };
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
@@ -144,7 +139,7 @@ window.SyUserMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'boUserId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'권한',key:'role'},{label:'부서',key:'dept'},{label:'상태',key:'statusCd'},{label:'최종로그인',key:'lastLogin'}], '사용자목록.csv');
 
-    return { users, loading, error, selectedDeptId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchRole, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { users, loading, error, selectedDeptId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -152,14 +147,14 @@ window.SyUserMng = {
 
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="이름 / 로그인ID / 이메일 검색" />
-      <select v-model="searchRole">
+      <input v-model="searchParam.kw" placeholder="이름 / 로그인ID / 이메일 검색" />
+      <select v-model="searchParam.role">
         <option value="">권한 전체</option><option>슈퍼관리자</option><option>관리자</option><option>운영자</option>
       </select>
-      <select v-model="searchStatus">
+      <select v-model="searchParam.status">
         <option value="">상태 전체</option><option>활성</option><option>비활성</option>
       </select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

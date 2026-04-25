@@ -1,4 +1,14 @@
-/* ShopJoy Admin - 전시위젯 목록 (UI용 배치 위젯) */
+/* ShopJoy Admin - 전시위젯 목록 (UI용
+  const searchParam = reactive({
+    kw: '',
+    type: '',
+    status: ''
+  });
+  const searchParamOrg = reactive({
+    kw: '',
+    type: '',
+    status: ''
+  }); 배치 위젯) */
 window.DpDispWidgetMng = {
   name: 'DpDispWidgetMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
@@ -28,7 +38,8 @@ window.DpDispWidgetMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleFetchData();
+    Object.assign(searchParamOrg, searchParam); });
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
@@ -77,157 +88,27 @@ window.DpDispWidgetMng = {
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
 
     /* ── 검색 ── */
-    const searchKw     = ref('');
-    const searchType   = ref('');
-    const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     const applied = reactive({ kw: '', type: '', status: '' });
-    const onSearch = () => {
-      applied.kw     = searchKw.value.trim().toLowerCase();
-      applied.type   = searchType.value;
-      applied.status = searchStatus.value;
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
       pager.page = 1;
-    };
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
     const onReset = () => {
-      searchKw.value = ''; searchType.value = ''; searchStatus.value = '';
-      Object.assign(applied, { kw: '', type: '', status: '' });
-      pager.page = 1;
-    };
-
-    /* 검색 필터만 적용한 리스트 (트리 그룹화용) */
-    const cfSearchedLibs = computed(() =>
-      (Array.isArray(widgetLibs) ? widgetLibs : []).filter(d => {
-        if (applied.kw && !d.name.toLowerCase().includes(applied.kw) && !(d.desc||'').toLowerCase().includes(applied.kw) && !(d.tags||'').toLowerCase().includes(applied.kw)) return false;
-        if (applied.type   && d.widgetType !== applied.type)   return false;
-        if (applied.status && d.status     !== applied.status) return false;
-        return true;
-      })
-    );
-
-    /* ── 표시경로 ── */
-    const selectedTreeKey = ref('');   /* '' = 전체, 'top' or 'top>sub' */
-    const cfTree = computed(() => {
-      const map = {};
-      const addToPath = (lib, pathStr) => {
-        const parts = pathStr.split('>').map(s => s.trim()).filter(Boolean);
-        if (!parts.length) return;
-        const top = window.safeArrayUtils.safeGet(parts, 0);
-        const rest = parts.slice(1).join(' > ') || '(루트)';
-        if (!map[top]) map[top] = {};
-        if (!map[top][rest]) map[top][rest] = [];
-        map[top][rest].push(lib);
-      };
-      window.safeArrayUtils.safeForEach(cfSearchedLibs, lib => {
-        if (!lib.usedPaths || !lib.usedPaths.length) addToPath(lib, '(미등록) > (미등록)');
-        else lib.uwindow.safeArrayUtils.safeForEach(sedPaths, p => addToPath(lib, p));
-      });
-      return Object.keys(map).sort().map(top => ({
-        label: top,
-        count: Object.values(map[top]).reduce((n, arr) => n + arr.length, 0),
-        children: Object.keys(map[top]).sort().map(sub => ({
-          label: sub,
-          libs: map[top][sub],
-          count: map[top][sub].length,
-        })),
-      }));
-    });
-    const openNodes = reactive(new Set(['__root__']));
-    const toggleNode = (key) => {
-      if (openNodes.has(key)) openNodes.delete(key);
-      else openNodes.add(key);
-    };
-    const isOpen = (key) => openNodes.has(key);
-    const selectTree = (key) => { selectedTreeKey.value = selectedTreeKey.value === key ? '' : key; pager.page = 1; };
-    const expandAll = () => {
-      window.safeArrayUtils.safeForEach(cfTree, n => { openNodes.add(n.label); });
-    };
-    const collapseAll = () => { openNodes.clear(); };
-
-    /* 트리 선택까지 반영한 최종 리스트 */
-    const cfFiltered = computed(() => {
-      const key = selectedTreeKey.value;
-      let list = cfSearchedLibs.value;
-      if (key) {
-        const [top, sub] = key.split('>').map(s => s.trim());
-        list = window.safeArrayUtils.safeFilter(list, lib => {
-          const paths = lib.usedPaths && lib.usedPaths.length
-            ? lib.usedPaths
-            : ['(미등록) > (미등록)'];
-          return window.safeArrayUtils.safeSome(paths, p => {
-            const parts = p.split('>').map(s => s.trim()).filter(Boolean);
-            if (window.safeArrayUtils.safeFirst(parts) !== top) return false;
-            if (!sub) return true;
-            const rest = parts.slice(1).join(' > ') || '(루트)';
-            return rest === sub;
-          });
-        });
-      }
-      return [...list].sort((a, b) => b.libId - a.libId);
-    });
-
-    const cfTotalCount  = computed(() => cfFiltered.value.length);
-    const cfPageList    = computed(() => {
-      const s = (pager.page - 1) * pager.size;
-      return cfFiltered.value.slice(s, s + pager.size);
-    });
-    const cfTotalPages  = computed(() => Math.max(1, Math.ceil(cfTotalCount.value / pager.size)));
-    const cfPageNumbers = computed(() => {
-      const pages = []; const cur = pager.page; const tot = cfTotalPages.value;
-      for (let i = Math.max(1, cur - 2); i <= Math.min(tot, cur + 2); i++) pages.push(i);
-      return pages;
-    });
-
-    /* ── 하단 인라인 Dtl ── */
-    const selectedId = ref(null);
-    const openMode   = ref('view');
-    const handleLoadDetail  = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
-    const openNew     = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
-    const closeDetail = () => { selectedId.value = null; };
-    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const cfDetailKey    = computed(() => `${selectedId.value}_${openMode.value}`);
-
-    const handleDelete = async (d) => {
-      const ok = await props.showConfirm('삭제', `[${d.name}]을 삭제하시겠습니까?`);
-      if (!ok) return;
-      const list = widgetLibs || [];
-      const idx = list.findIndex(x => x.libId === d.libId);
-      if (idx !== -1) list.splice(idx, 1);
-      if (selectedId.value === d.libId) selectedId.value = null;
-      try {
-        const res = await window.boApi.delete(`/bo/ec/dp/widget-lib/${d.libId}`);
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
-      }
-    };
-
-    const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'dpDispWidgetLibMng') { selectedId.value = null; return; }
-      props.navigate(pg, opts);
-    };
-
-    /* 내용 요약 */
-    const contentSummary = (d) => {
-      if (d.widgetType === 'image_banner')   return d.imageUrl   ? d.imageUrl.split('/').pop().slice(0, 25)   : '-';
-      if (d.widgetType === 'product_slider' || d.widgetType === 'product') return d.productIds ? '상품: ' + d.productIds.slice(0, 20) : '-';
-      if (d.widgetType === 'text_banner')    return d.textContent ? d.textContent.replace(/<[^>]+>/g,'').slice(0, 25) + '…' : '-';
-      if (d.widgetType === 'info_card')      return d.infoTitle  || '-';
-      if (d.widgetType === 'coupon')         return d.couponCode || '-';
-      if (d.widgetType === 'html_editor')    return d.htmlContent ? d.htmlContent.replace(/<[^>]+>/g,'').slice(0, 25) + '…' : '-';
-      if (d.widgetType.startsWith('chart_')) return d.chartTitle || '-';
-      if (d.widgetType === 'popup')          return d.popupWidth ? `${d.popupWidth}×${d.popupHeight}` : '-';
-      if (d.widgetType === 'event_banner')   return d.eventId ? '이벤트#' + d.eventId : '-';
-      if (d.widgetType === 'cache_banner')   return d.cacheDesc || '-';
-      return '-';
-    };
-
-    const fnStatusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  
 
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
@@ -258,18 +139,18 @@ window.DpDispWidgetMng = {
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
       <div class="form-group" style="margin:0;min-width:180px;flex:1;">
         <label class="form-label">검색어</label>
-        <input v-model="searchKw" class="form-control" placeholder="이름·설명·태그" @keyup.enter="() => onSearch?.()" style="margin:0;" />
+        <input v-model="searchParam.kw" class="form-control" placeholder="이름·설명·태그" @keyup.enter="() => onSearch?.()" style="margin:0;" />
       </div>
       <div class="form-group" style="margin:0;width:160px;">
         <label class="form-label">위젯 유형</label>
-        <select v-model="searchType" class="form-control" style="margin:0;">
+        <select v-model="searchParam.type" class="form-control" style="margin:0;">
           <option value="">전체</option>
           <option v-for="t in WIDGET_TYPES" :key="t?.value" :value="t.value">{{ t.label }}</option>
         </select>
       </div>
       <div class="form-group" style="margin:0;width:110px;">
         <label class="form-label">상태</label>
-        <select v-model="searchStatus" class="form-control" style="margin:0;">
+        <select v-model="searchParam.status" class="form-control" style="margin:0;">
           <option value="">전체</option>
           <option value="활성">활성</option>
           <option value="비활성">비활성</option>

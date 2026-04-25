@@ -81,14 +81,14 @@ window.OrderDetailModal = {
     siteNm() { return window.boCmUtil.getSiteNm(); },
   },
   methods: {
-    statusColor(s) {
+    fnStatusColor(s) {
       return ({
         '주문완료': '#3b82f6', '결제완료': '#8b5cf6',
         '배송준비중': '#f59e0b', '배송중': '#f97316',
         '배송완료': '#22c55e', '완료': '#6b7280', '취소됨': '#9ca3af',
       })[s] || '#9ca3af';
     },
-    statusLabel(s) { return s === '완료' ? '구매확정' : s; },
+    fnStatusLabel(s) { return s === '완료' ? '구매확정' : s; },
   },
   template: /* html */ `
 <div v-if="show"
@@ -114,7 +114,7 @@ window.OrderDetailModal = {
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:0.82rem;color:var(--text-muted);">{{ order.orderDate }}</span>
         <span style="font-size:0.78rem;font-weight:700;padding:4px 12px;border-radius:20px;color:#fff;"
-          :style="'background:' + statusColor(order.status)">{{ statusLabel(order.status) }}</span>
+          :style="'background:' + fnStatusColor(order.status)">{{ fnStatusLabel(order.status) }}</span>
       </div>
 
       <!-- 상품 목록 -->
@@ -199,7 +199,7 @@ window.ProductModal = {
     let toastTimer  = null;
 
     /* 내부 토스트 */
-    const fireToast = (msg) => {
+    const handleFireToast = (msg) => {
       toastMsg.value  = msg;
       toastShow.value = true;
       clearTimeout(toastTimer);
@@ -255,7 +255,7 @@ window.ProductModal = {
       if (!props.product) return;
       const wasLiked = props.isLiked && props.isLiked(props.product.productId);
       props.toggleLike && props.toggleLike(props.product.productId);
-      fireToast(wasLiked ? '위시리스트에서 제거했습니다.' : '위시리스트에 추가했습니다.');
+      handleFireToast(wasLiked ? '위시리스트에서 제거했습니다.' : '위시리스트에 추가했습니다.');
     };
 
     /* 옵션 에러 상태 */
@@ -263,17 +263,17 @@ window.ProductModal = {
     const errSize  = ref(false);
 
     /* 옵션 필수 검증 */
-    const needsColor = () => props.product?.opt1s?.length > 0;
-    const needsSize  = () => {
+    const cfNeedsColor = () => props.product?.opt1s?.length > 0;
+    const cfNeedsSize  = () => {
       const s = props.product?.opt2s;
       return s && s.length > 0 && !(s.length === 1 && s[0] === 'FREE');
     };
-    const validate = () => {
-      errColor.value = needsColor() && !selColor.value;
-      errSize.value  = needsSize()  && !selSize.value;
+    const handleValidate = () => {
+      errColor.value = cfNeedsColor() && !selColor.value;
+      errSize.value  = cfNeedsSize()  && !selSize.value;
       if (errColor.value || errSize.value) {
         const missing = [errColor.value && '색상', errSize.value && '사이즈'].filter(Boolean).join(', ');
-        fireToast(`${missing}을(를) 선택해주세요.`);
+        handleFireToast(`${missing}을(를) 선택해주세요.`);
         return false;
       }
       return true;
@@ -281,21 +281,21 @@ window.ProductModal = {
 
     /* 장바구니 추가 (검증 포함) */
     const handleCart = () => {
-      if (!validate()) return false;
+      if (!handleValidate()) return false;
       inCart.value = !inCart.value;
-      fireToast(inCart.value ? '장바구니에 추가했습니다.' : '장바구니에서 제거했습니다.');
+      handleFireToast(inCart.value ? '장바구니에 추가했습니다.' : '장바구니에서 제거했습니다.');
       return true;
     };
 
     /* 바로구매 검증 */
     const handleBuyNow = (navigateFn) => {
-      if (!validate()) return false;
+      if (!handleValidate()) return false;
       navigateFn && navigateFn('order', { instantOrder: { product: props.product, color: selColor.value, size: selSize.value, qty: qty.value } });
       return true;
     };
 
     return { selColor, selSize, qty, inCart, selThumb, cfThumbImgs, cfRating, cfStarStr,
-             toastMsg, toastShow, errColor, errSize, handleLike, handleCart, handleBuyNow };
+             toastMsg, toastShow, errColor, errSize, handleLike, handleCart, handleBuyNow, handleValidate };
   },
   template: /* html */ `
 <div v-if="show"
@@ -540,26 +540,28 @@ window.SiteSelectModal = {
   props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props) {
-    const { ref, computed, onMounted } = Vue;
+    const { reactive, computed, onMounted } = Vue;
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const kw = ref('');
-    const list = ref([]);
-    const loading = ref(false);
+    const modalState = reactive({
+      kw: '',
+      list: [],
+      loading: false
+    });
     const handleFetchData = async () => {
-      loading.value = true;
+      modalState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/site', { params: { pageSize: 10000 } });
-        list.value = res.data?.data || [];
-      } catch (e) { list.value = []; } finally { loading.value = false; }
+        modalState.list = res.data?.data || [];
+      } catch (e) { modalState.list = []; } finally { modalState.loading = false; }
     };
     onMounted(() => { handleFetchData(); });
-    const cfFiltered = computed(() => list.value.filter(s => {
-      if (!kw.value) return true;
-      const k = kw.value.toLowerCase();
+    const cfFiltered = computed(() => modalState.list.filter(s => {
+      if (!modalState.kw) return true;
+      const k = modalState.kw.toLowerCase();
       const siteNo = String(s.siteId).padStart(2,'0');
       return s.siteNm.toLowerCase().includes(k) || s.siteCode.toLowerCase().includes(k) || s.domain.toLowerCase().includes(k) || siteNo.includes(k);
     }));
-    return { cfSiteNm, kw, cfFiltered, loading };
+    return { cfSiteNm, ...modalState, cfFiltered };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -589,25 +591,27 @@ window.VendorSelectModal = {
   props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props) {
-    const { ref, computed, onMounted } = Vue;
+    const { reactive, computed, onMounted } = Vue;
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const kw = ref('');
-    const list = ref([]);
-    const loading = ref(false);
+    const modalState = reactive({
+      kw: '',
+      list: [],
+      loading: false
+    });
     const handleFetchData = async () => {
-      loading.value = true;
+      modalState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/vendor', { params: { pageSize: 10000 } });
-        list.value = res.data?.data || [];
-      } catch (e) { list.value = []; } finally { loading.value = false; }
+        modalState.list = res.data?.data || [];
+      } catch (e) { modalState.list = []; } finally { modalState.loading = false; }
     };
     onMounted(() => { handleFetchData(); });
-    const cfFiltered = computed(() => list.value.filter(v => {
-      if (!kw.value) return true;
-      const k = kw.value.toLowerCase();
+    const cfFiltered = computed(() => modalState.list.filter(v => {
+      if (!modalState.kw) return true;
+      const k = modalState.kw.toLowerCase();
       return v.vendorNm.toLowerCase().includes(k) || String(v.bizNo || '').includes(k);
     }));
-    return { cfSiteNm, kw, cfFiltered, loading };
+    return { cfSiteNm, ...modalState, cfFiltered };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -633,65 +637,65 @@ window.BoUserSelectModal = {
   props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, computed, reactive, onMounted } = Vue;
+    const { computed, reactive, onMounted } = Vue;
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    const depts = ref([]);
-    const users = ref([]);
-    const loading = ref(false);
+    const modalState = reactive({
+      depts: [],
+      users: [],
+      loading: false,
+      selectedDeptId: null,
+      deptKw: '',
+      userKw: '',
+      selectedIds: new Set()
+    });
     const handleFetchData = async () => {
-      loading.value = true;
+      modalState.loading = true;
       try {
         const [deptRes, userRes] = await Promise.all([
           window.boApi.get('/bo/sy/dept', { params: { pageSize: 10000 } }),
           window.boApi.get('/bo/sy/user', { params: { pageSize: 10000 } }),
         ]);
-        depts.value = deptRes.data?.data || [];
-        users.value = userRes.data?.data || [];
-      } catch (e) { depts.value = []; users.value = []; } finally { loading.value = false; }
+        modalState.depts = deptRes.data?.data || [];
+        modalState.users = userRes.data?.data || [];
+      } catch (e) { modalState.depts = []; modalState.users = []; } finally { modalState.loading = false; }
     };
     onMounted(() => { handleFetchData(); });
-
-    /* ── 부서 트리 (depth 1부터 시작, root는 별도 렌더) ── */
-    const selectedDeptId = ref(null);
-    const deptKw = ref('');
-    const buildDeptTree = (items, parentId, depth) =>
+    const fnBuildDeptTree = (items, parentId, depth) =>
       items.filter(d => (d.parentId || null) === (parentId || null) && d.useYn === 'Y')
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
-        .map(d => ({ ...d, _depth: depth, _kids: buildDeptTree(items, d.deptId, depth + 1) }));
-    const flattenDept = (nodes, result = []) => {
-      nodes.forEach(n => { result.push(n); flattenDept(n._kids, result); });
+        .map(d => ({ ...d, _depth: depth, _kids: fnBuildDeptTree(items, d.deptId, depth + 1) }));
+    const fnFlattenDept = (nodes, result = []) => {
+      nodes.forEach(n => { result.push(n); fnFlattenDept(n._kids, result); });
       return result;
     };
     const cfFlatDeptTree = computed(() => {
-      const kw = deptKw.value.trim().toLowerCase();
+      const kw = modalState.deptKw.trim().toLowerCase();
       const base = kw
-        ? depts.value.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(kw))
-        : depts.value;
-      return flattenDept(buildDeptTree(base, null, 1));
+        ? modalState.depts.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(kw))
+        : modalState.depts;
+      return fnFlattenDept(fnBuildDeptTree(base, null, 1));
     });
 
-    const getDescDeptIds = (deptId) => {
+    const fnGetDescDeptIds = (deptId) => {
       const ids = new Set();
       const queue = [deptId];
       while (queue.length) {
         const id = queue.shift();
         ids.add(id);
-        depts.value.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId));
+        modalState.depts.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId));
       }
       return ids;
     };
 
     /* ── 사용자 ── */
-    const userKw = ref('');
-    const selectedIds = reactive(new Set());
-    const cfTotalUsers = computed(() => users.value.length);
+    const cfTotalUsers = computed(() => modalState.users.length);
 
     const cfFiltered = computed(() => {
-      const k = userKw.value.trim().toLowerCase();
-      let list = users.value;
-      if (selectedDeptId.value !== null) {
-        const ids = getDescDeptIds(selectedDeptId.value);
+      const k = modalState.userKw.trim().toLowerCase();
+      let list = modalState.users;
+      if (modalState.selectedDeptId !== null) {
+        const ids = fnGetDescDeptIds(modalState.selectedDeptId);
         list = list.filter(u => ids.has(u.deptId));
       }
       if (k) list = list.filter(u =>
@@ -702,24 +706,24 @@ window.BoUserSelectModal = {
       return list;
     });
 
-    const isChecked = (u) => selectedIds.has(u.userId || u.boUserId);
-    const toggleUser = (u) => {
+    const fnIsChecked = (u) => modalState.selectedIds.has(u.userId || u.boUserId);
+    const handleToggleUser = (u) => {
       const id = u.userId || u.boUserId;
-      if (selectedIds.has(id)) selectedIds.delete(id);
-      else selectedIds.add(id);
+      if (modalState.selectedIds.has(id)) modalState.selectedIds.delete(id);
+      else modalState.selectedIds.add(id);
     };
-    const cfAllChecked = computed(() => cfFiltered.value.length > 0 && cfFiltered.value.every(u => selectedIds.has(u.userId || u.boUserId)));
-    const toggleAll = () => {
-      if (cfAllChecked.value) cfFiltered.value.forEach(u => selectedIds.delete(u.userId || u.boUserId));
-      else cfFiltered.value.forEach(u => selectedIds.add(u.userId || u.boUserId));
+    const cfAllChecked = computed(() => cfFiltered.value.length > 0 && cfFiltered.value.every(u => modalState.selectedIds.has(u.userId || u.boUserId)));
+    const handleToggleAll = () => {
+      if (cfAllChecked.value) cfFiltered.value.forEach(u => modalState.selectedIds.delete(u.userId || u.boUserId));
+      else cfFiltered.value.forEach(u => modalState.selectedIds.add(u.userId || u.boUserId));
     };
-    const cfSelectedCount = computed(() => selectedIds.size);
-    const confirm = () => {
-      const selected = users.value.filter(u => selectedIds.has(u.userId || u.boUserId));
+    const cfSelectedCount = computed(() => modalState.selectedIds.size);
+    const handleConfirm = () => {
+      const selected = modalState.users.filter(u => modalState.selectedIds.has(u.userId || u.boUserId));
       emit('select', selected);
     };
 
-    return { cfSiteNm, selectedDeptId, deptKw, cfFlatDeptTree, userKw, cfFiltered, cfTotalUsers, loading, isChecked, toggleUser, cfAllChecked, toggleAll, cfSelectedCount, confirm };
+    return { cfSiteNm, ...modalState, cfFlatDeptTree, cfFiltered, cfTotalUsers, fnIsChecked, handleToggleUser, cfAllChecked, handleToggleAll, cfSelectedCount, handleConfirm };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -797,7 +801,7 @@ window.BoUserSelectModal = {
         <!-- 전체선택 바 -->
         <div style="display:flex;align-items:center;padding:7px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:#fafafa;">
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;color:#374151;user-select:none;">
-            <input type="checkbox" :checked="cfAllChecked" @change="toggleAll" style="width:14px;height:14px;" />
+            <input type="checkbox" :checked="cfAllChecked" @change="handleToggleAll" style="width:14px;height:14px;" />
             전체선택
           </label>
           <span style="margin-left:auto;font-size:12px;color:#9ca3af;">
@@ -813,13 +817,13 @@ window.BoUserSelectModal = {
           </div>
           <div v-for="u in cfFiltered" :key="u.userId || u.boUserId"
             style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .1s;"
-            :style="isChecked(u)?'background:#fff5f7;':'' "
-            @click="toggleUser(u)">
-            <input type="checkbox" :checked="isChecked(u)" @click.stop="toggleUser(u)"
+            :style="fnIsChecked(u)?'background:#fff5f7;':'' "
+            @click="handleToggleUser(u)">
+            <input type="checkbox" :checked="fnIsChecked(u)" @click.stop="handleToggleUser(u)"
               style="width:15px;height:15px;flex-shrink:0;accent-color:#e8587a;cursor:pointer;" />
             <!-- 아바타 -->
             <div style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;transition:all .1s;"
-              :style="isChecked(u)?'background:#e8587a;color:#fff;':'background:#f3f4f6;color:#6b7280;'">
+              :style="fnIsChecked(u)?'background:#e8587a;color:#fff;':'background:#f3f4f6;color:#6b7280;'">
               {{ (u.userNm || u.name || '?').charAt(0) }}
             </div>
             <!-- 텍스트 -->
@@ -851,7 +855,7 @@ window.BoUserSelectModal = {
         <button :disabled="!cfSelectedCount"
           style="padding:8px 22px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;"
           :style="cfSelectedCount?'background:#e8587a;color:#fff;box-shadow:0 2px 8px rgba(232,88,122,0.35);':'background:#f3f4f6;color:#d1d5db;cursor:not-allowed;'"
-          @click="confirm">확인{{ cfSelectedCount?' ('+cfSelectedCount+'명)':'' }}</button>
+          @click="handleConfirm">확인{{ cfSelectedCount?' ('+cfSelectedCount+'명)':'' }}</button>
       </div>
     </div>
 
@@ -865,27 +869,29 @@ window.MemberSelectModal = {
   props: ['dispDataset'],
   emits: ['select', 'close'],
   setup(props) {
-    const { ref, computed, onMounted } = Vue;
+    const { reactive, computed, onMounted } = Vue;
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const kw = ref('');
-    const list = ref([]);
-    const loading = ref(false);
+    const modalState = reactive({
+      kw: '',
+      list: [],
+      loading: false
+    });
     const handleFetchData = async () => {
-      loading.value = true;
+      modalState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/mb/member', { params: { pageSize: 10000 } });
-        list.value = res.data?.data || [];
-      } catch (e) { list.value = []; } finally { loading.value = false; }
+        modalState.list = res.data?.data || [];
+      } catch (e) { modalState.list = []; } finally { modalState.loading = false; }
     };
     onMounted(() => { handleFetchData(); });
-    const cfFiltered = computed(() => list.value.filter(m => {
-      if (!kw.value) return true;
-      const k = kw.value.toLowerCase();
+    const cfFiltered = computed(() => modalState.list.filter(m => {
+      if (!modalState.kw) return true;
+      const k = modalState.kw.toLowerCase();
       return (m.memberNm || '').toLowerCase().includes(k) ||
              (m.memberEmail || m.email || '').toLowerCase().includes(k) ||
              String(m.memberId || m.userId || '').includes(k);
     }));
-    return { cfSiteNm, kw, cfFiltered, loading };
+    return { cfSiteNm, ...modalState, cfFiltered };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -989,13 +995,13 @@ window.BbmSelectModal = {
       const s = Math.max(1, page.value - 2), e = Math.min(cfTotalPages.value, s + 4);
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
-    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) page.value = n; };
+    const onSetPage = n => { if (n >= 1 && n <= cfTotalPages.value) page.value = n; };
 
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const fnTypeBadge = t => ({ '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' }[t] || 'badge-gray');
     const fnScopeBadge = s => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[s] || 'badge-gray');
 
-    return { cfSiteNm, kw, page, cfTotal, cfTotalPages, cfPageList, cfPageNums, setPage, fnTypeBadge, fnScopeBadge, loading };
+    return { cfSiteNm, kw, page, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSetPage, fnTypeBadge, fnScopeBadge, loading };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -1019,11 +1025,11 @@ window.BbmSelectModal = {
     </div>
     <!-- 페이징 -->
     <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
-      <button class="pager-btn" :disabled="page===1" @click="setPage(1)">«</button>
-      <button class="pager-btn" :disabled="page===1" @click="setPage(page-1)">‹</button>
-      <button v-for="n in cfPageNums" :key="n" class="pager-btn" :class="{active:page===n}" @click="setPage(n)">{{ n }}</button>
-      <button class="pager-btn" :disabled="page===cfTotalPages" @click="setPage(page+1)">›</button>
-      <button class="pager-btn" :disabled="page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+      <button class="pager-btn" :disabled="page===1" @click="onSetPage(1)">«</button>
+      <button class="pager-btn" :disabled="page===1" @click="onSetPage(page-1)">‹</button>
+      <button v-for="n in cfPageNums" :key="n" class="pager-btn" :class="{active:page===n}" @click="onSetPage(n)">{{ n }}</button>
+      <button class="pager-btn" :disabled="page===cfTotalPages" @click="onSetPage(page+1)">›</button>
+      <button class="pager-btn" :disabled="page===cfTotalPages" @click="onSetPage(cfTotalPages)">»</button>
     </div>
   </div>
 </div>`,
@@ -1047,7 +1053,7 @@ window.TemplatePreviewModal = {
     );
 
     /* 텍스트에 파라미터 치환 → HTML 반환 (미치환 변수는 빨간색 표시) */
-    const applyAndRender = (text) => {
+    const handleApplyAndRender = (text) => {
       if (!text) return '';
       let base = text;
       if (!cfIsHtml.value) {
@@ -1061,8 +1067,8 @@ window.TemplatePreviewModal = {
       );
     };
 
-    const cfRenderedSubject = computed(() => applyAndRender(props.tmpl?.subject || ''));
-    const cfRenderedContent = computed(() => applyAndRender(props.tmpl?.content || ''));
+    const cfRenderedSubject = computed(() => handleApplyAndRender(props.tmpl?.subject || ''));
+    const cfRenderedContent = computed(() => handleApplyAndRender(props.tmpl?.content || ''));
 
     const cfTypeBadge = computed(() => ({
       '메일템플릿': 'badge-blue', '문자템플릿': 'badge-green', 'MMS템플릿': 'badge-orange',
@@ -1167,17 +1173,17 @@ window.TemplateSendModal = {
     /* ── 부서 트리 (관리자 탭) ── */
     const selectedDeptId = ref(null);
     const deptKw = ref('');
-    const buildDeptTree = (items, parentId, depth) =>
+    const fnBuildDeptTree = (items, parentId, depth) =>
       items.filter(d => (d.parentId || null) === (parentId || null) && d.useYn === 'Y')
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
-        .map(d => ({ ...d, _depth: depth, _kids: buildDeptTree(items, d.deptId, depth + 1) }));
-    const flattenDept = (nodes, result = []) => { nodes.forEach(n => { result.push(n); flattenDept(n._kids, result); }); return result; };
+        .map(d => ({ ...d, _depth: depth, _kids: fnBuildDeptTree(items, d.deptId, depth + 1) }));
+    const fnFlattenDept = (nodes, result = []) => { nodes.forEach(n => { result.push(n); fnFlattenDept(n._kids, result); }); return result; };
     const cfFlatDeptTree = computed(() => {
       const k = deptKw.value.trim().toLowerCase();
       const base = k ? allDepts.value.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(k)) : allDepts.value;
-      return flattenDept(buildDeptTree(base, null, 1));
+      return fnFlattenDept(fnBuildDeptTree(base, null, 1));
     });
-    const getDescDeptIds = (deptId) => {
+    const fnGetDescDeptIds = (deptId) => {
       const ids = new Set();
       const queue = [deptId];
       while (queue.length) {
@@ -1204,7 +1210,7 @@ window.TemplateSendModal = {
       const k = kw.value.trim().toLowerCase();
       let list = allBoUsers.value;
       if (selectedDeptId.value !== null) {
-        const ids = getDescDeptIds(selectedDeptId.value);
+        const ids = fnGetDescDeptIds(selectedDeptId.value);
         list = list.filter(u => ids.has(u.deptId));
       }
       if (k) list = list.filter(u => (u.userNm || u.name || '').toLowerCase().includes(k) || (u.userEmail || u.email || '').toLowerCase().includes(k) || String(u.userId || u.boUserId || '').includes(k));
@@ -1212,14 +1218,14 @@ window.TemplateSendModal = {
     });
     const cfList = computed(() => targetType.value === 'member' ? cfMemberList.value : cfUserList.value);
 
-    const isSelected = (item) => selected.includes(getId(item));
-    const toggleSelect = (item) => {
+    const fnIsSelected = (item) => selected.includes(getId(item));
+    const handleToggleSelect = (item) => {
       const id = getId(item);
       const idx = selected.indexOf(id);
       if (idx === -1) selected.push(id); else selected.splice(idx, 1);
     };
     const cfAllChecked = computed(() => cfList.value.length > 0 && cfList.value.every(x => selected.includes(getId(x))));
-    const toggleAll = () => {
+    const handleToggleAll = () => {
       if (cfAllChecked.value) { selected.splice(0); }
       else { cfList.value.forEach(x => { const id = getId(x); if (!selected.includes(id)) selected.push(id); }); }
     };
@@ -1232,7 +1238,7 @@ window.TemplateSendModal = {
       '시스템알림': 'badge-red', '회원알림': 'badge-teal',
     }[props.tmpl?.templateType] || 'badge-gray'));
 
-    const gradeBadgeColor = g => ({ 'VIP': '#f59e0b', '우수': '#2563eb', '일반': '#6b7280' }[g] || '#6b7280');
+    const fnGradeBadgeColor = g => ({ 'VIP': '#f59e0b', '우수': '#2563eb', '일반': '#6b7280' }[g] || '#6b7280');
 
     const handleSend = async () => {
       if (!selected.length) { props.showToast('발송할 수신자를 선택하세요.', 'info'); return; }
@@ -1245,7 +1251,7 @@ window.TemplateSendModal = {
       emit('close');
     };
 
-    return { cfSiteNm, targetType, kw, cfList, selected, isSelected, toggleSelect, cfAllChecked, toggleAll, cfTypeBadge, gradeBadgeColor, handleSend,
+    return { cfSiteNm, targetType, kw, cfList, selected, fnIsSelected, handleToggleSelect, cfAllChecked, handleToggleAll, cfTypeBadge, fnGradeBadgeColor, handleSend,
              selectedDeptId, deptKw, cfFlatDeptTree, selectedGrade, MEMBER_GRADES };
   },
   template: /* html */`
@@ -1363,7 +1369,7 @@ window.TemplateSendModal = {
         </div>
         <div style="display:flex;align-items:center;padding:7px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:#fafafa;">
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;color:#374151;user-select:none;">
-            <input type="checkbox" :checked="cfAllChecked" @change="toggleAll" style="width:14px;height:14px;" /> 전체선택
+            <input type="checkbox" :checked="cfAllChecked" @change="handleToggleAll" style="width:14px;height:14px;" /> 전체선택
           </label>
           <span style="margin-left:auto;font-size:12px;color:#9ca3af;">총 <b style="color:#374151;">{{ cfList.length }}</b>명</span>
         </div>
@@ -1373,12 +1379,12 @@ window.TemplateSendModal = {
           </div>
           <div v-for="item in cfList" :key="item.userId||item.boUserId"
             style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .1s;"
-            :style="isSelected(item)?'background:#f0fff4;':''"
-            @click="toggleSelect(item)">
-            <input type="checkbox" :checked="isSelected(item)" @click.stop="toggleSelect(item)"
+            :style="fnIsSelected(item)?'background:#f0fff4;':''"
+            @click="handleToggleSelect(item)">
+            <input type="checkbox" :checked="fnIsSelected(item)" @click.stop="handleToggleSelect(item)"
               style="width:15px;height:15px;flex-shrink:0;accent-color:#52c41a;cursor:pointer;" />
             <div style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;transition:all .1s;"
-              :style="isSelected(item)?'background:#52c41a;color:#fff;':'background:#f3f4f6;color:#6b7280;'">
+              :style="fnIsSelected(item)?'background:#52c41a;color:#fff;':'background:#f3f4f6;color:#6b7280;'">
               {{ (targetType==='member' ? item.memberNm : item.name).charAt(0) }}
             </div>
             <div style="flex:1;min-width:0;">
@@ -1451,14 +1457,14 @@ window.RoleTreeModal = {
     };
     onMounted(() => { handleFetchData(); });
 
-    const buildTree = (items, parentId, depth) => {
+    const fnBuildTree = (items, parentId, depth) => {
       return items
         .filter(r => (r.parentId || null) === (parentId || null))
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
-        .map(r => ({ ...r, _depth: depth, _kids: buildTree(items, r.roleId, depth + 1) }));
+        .map(r => ({ ...r, _depth: depth, _kids: fnBuildTree(items, r.roleId, depth + 1) }));
     };
-    const flatten = (nodes, result = []) => {
-      nodes.forEach(n => { result.push(n); flatten(n._kids, result); });
+    const fnFlatten = (nodes, result = []) => {
+      nodes.forEach(n => { result.push(n); fnFlatten(n._kids, result); });
       return result;
     };
     const cfFlatTree = computed(() => {
@@ -1470,12 +1476,12 @@ window.RoleTreeModal = {
       const base = allRoles.value.filter(r => !excSet.has(r.roleId) && r.useYn === 'Y');
       const kwVal = kw.value.trim().toLowerCase();
       const list  = kwVal ? base.filter(r => r.roleNm.toLowerCase().includes(kwVal) || r.roleCode.toLowerCase().includes(kwVal)) : base;
-      return flatten(buildTree(list, null, 0));
+      return fnFlatten(fnBuildTree(list, null, 0));
     });
-    const select = (role) => emit('select', { roleId: role.roleId, roleNm: role.roleNm });
-    const selectNone = () => emit('select', { roleId: null, roleNm: '' });
+    const onSelect = (role) => emit('select', { roleId: role.roleId, roleNm: role.roleNm });
+    const onSelectNone = () => emit('select', { roleId: null, roleNm: '' });
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    return { cfSiteNm, kw, hoverId, cfFlatTree, select, selectNone };
+    return { cfSiteNm, kw, hoverId, cfFlatTree, onSelect, onSelectNone };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -1497,7 +1503,7 @@ window.RoleTreeModal = {
     <div style="flex:1;overflow-y:auto;">
       <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;transition:background .12s;"
         :style="{ background: hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
-        @mouseenter="hoverId='__none__'" @mouseleave="hoverId=null" @click="selectNone">
+        @mouseenter="hoverId='__none__'" @mouseleave="hoverId=null" @click="onSelectNone">
         <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">●</span>
         <div style="flex:1;"><span style="font-size:13px;font-weight:700;color:#1a1a2e;">상위없음</span><span style="font-size:11px;color:#aaa;margin-left:6px;">최상위 권한으로 등록</span></div>
         <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;" :style="{ opacity: hoverId==='__none__' ? 1 : 0 }">›</span>
@@ -1505,7 +1511,7 @@ window.RoleTreeModal = {
       <div v-for="r in cfFlatTree" :key="r.roleId"
         style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s;"
         :style="{ background: hoverId===r.roleId ? '#fff5f7' : '' }"
-        @mouseenter="hoverId=r.roleId" @mouseleave="hoverId=null" @click="select(r)">
+        @mouseenter="hoverId=r.roleId" @mouseleave="hoverId=null" @click="onSelect(r)">
         <span :style="{ marginLeft:(r._depth*14)+'px', marginRight:'7px', fontWeight:'700',
                         fontSize: r._depth===0?'7px':'12px', flexShrink:0,
                         color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(r._depth,3)] }">
@@ -1545,15 +1551,15 @@ window.MenuTreeModal = {
     };
     onMounted(() => { handleFetchData(); });
 
-    const buildTree = (items, parentId, depth) => {
+    const fnBuildTree = (items, parentId, depth) => {
       return items
         .filter(m => (m.parentId || null) === (parentId || null))
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
-        .map(m => ({ ...m, _depth: depth, _kids: buildTree(items, m.menuId, depth + 1) }));
+        .map(m => ({ ...m, _depth: depth, _kids: fnBuildTree(items, m.menuId, depth + 1) }));
     };
 
-    const flatten = (nodes, result = []) => {
-      nodes.forEach(n => { result.push(n); flatten(n._kids, result); });
+    const fnFlatten = (nodes, result = []) => {
+      nodes.forEach(n => { result.push(n); fnFlatten(n._kids, result); });
       return result;
     };
 
@@ -1571,14 +1577,14 @@ window.MenuTreeModal = {
       const list  = kwVal
         ? base.filter(m => m.menuNm.toLowerCase().includes(kwVal) || m.menuCode.toLowerCase().includes(kwVal))
         : base;
-      return flatten(buildTree(list, null, 0));
+      return fnFlatten(fnBuildTree(list, null, 0));
     });
 
-    const select = (menu) => emit('select', { menuId: menu.menuId, menuNm: menu.menuNm });
-    const selectNone = () => emit('select', { menuId: null, menuNm: '' });
+    const onSelect = (menu) => emit('select', { menuId: menu.menuId, menuNm: menu.menuNm });
+    const onSelectNone = () => emit('select', { menuId: null, menuNm: '' });
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    return { cfSiteNm, kw, hoverId, cfFlatTree, select, selectNone };
+    return { cfSiteNm, kw, hoverId, cfFlatTree, onSelect, onSelectNone };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -1611,7 +1617,7 @@ window.MenuTreeModal = {
                   border-bottom:2px solid #f0f0f0;transition:background .12s;"
         :style="{ background: hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
         @mouseenter="hoverId='__none__'" @mouseleave="hoverId=null"
-        @click="selectNone">
+        @click="onSelectNone">
         <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">●</span>
         <div style="flex:1;">
           <span style="font-size:13px;font-weight:700;color:#1a1a2e;">상위없음</span>
@@ -1627,7 +1633,7 @@ window.MenuTreeModal = {
                border-bottom:1px solid #f5f5f5;transition:background .1s;"
         :style="{ background: hoverId===m.menuId ? '#fff5f7' : '' }"
         @mouseenter="hoverId=m.menuId" @mouseleave="hoverId=null"
-        @click="select(m)">
+        @click="onSelect(m)">
 
         <!-- 블릿 들여쓰기 -->
         <span :style="{ marginLeft:(m._depth*14)+'px', marginRight:'7px', fontWeight:'700',
@@ -1713,7 +1719,7 @@ window.DeptTreeModal = {
     const selectNone = () => emit('select', { deptId: null, deptNm: '' });
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    return { cfSiteNm, kw, hoverId, cfFlatTree, select, selectNone };
+    return { cfSiteNm, kw, hoverId, cfFlatTree, onSelect, onSelectNone };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -1749,7 +1755,7 @@ window.DeptTreeModal = {
                   border-bottom:2px solid #f0f0f0;transition:background .12s;"
         :style="{ background: hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
         @mouseenter="hoverId='__none__'" @mouseleave="hoverId=null"
-        @click="selectNone">
+        @click="onSelectNone">
         <!-- accent bar -->
         <div style="width:4px;align-self:stretch;border-radius:3px;background:#e8587a;flex-shrink:0;opacity:0.7;"></div>
         <span style="font-size:20px;flex-shrink:0;line-height:1;">🏢</span>
@@ -1850,7 +1856,7 @@ window.CategoryTreeModal = {
     const select     = (cat) => emit('select', { categoryId: cat.categoryId, categoryNm: cat.categoryNm });
     const selectNone = () => emit('select', { categoryId: null, categoryNm: '' });
     const cfSiteNm   = computed(() => window.boCmUtil.getSiteNm());
-    return { cfSiteNm, kw, hoverId, cfFlatTree, select, selectNone };
+    return { cfSiteNm, kw, hoverId, cfFlatTree, onSelect, onSelectNone };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -1873,7 +1879,7 @@ window.CategoryTreeModal = {
       <!-- 최상위 선택 -->
       <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;transition:background .12s;"
         :style="{ background: hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
-        @mouseenter="hoverId='__none__'" @mouseleave="hoverId=null" @click="selectNone">
+        @mouseenter="hoverId='__none__'" @mouseleave="hoverId=null" @click="onSelectNone">
         <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">●</span>
         <div style="flex:1;"><span style="font-size:13px;font-weight:700;color:#1a1a2e;">상위없음</span><span style="font-size:11px;color:#aaa;margin-left:6px;">최상위 카테고리로 등록</span></div>
         <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;" :style="{ opacity: hoverId==='__none__' ? 1 : 0 }">›</span>
@@ -2196,7 +2202,7 @@ window.CategorySelectModal = {
       <div v-if="cfRoots.length===0" style="text-align:center;padding:30px;font-size:12px;color:#bbb;">검색 결과 없음</div>
 
       <!-- ① 전체 노드 -->
-      <div @click="toggleAll"
+      <div @click="handleToggleAll"
         style="display:flex;align-items:center;gap:6px;padding:6px 12px;cursor:pointer;user-select:none;"
         :style="isAllOn?'background:#fff4f6;':''">
         <div style="width:14px;height:14px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
@@ -3246,7 +3252,7 @@ window.PathPickModal = {
       <div style="display:flex;justify-content:flex-end;gap:8px;">
         <button @click="$emit('close')"
           style="padding:9px 20px;font-size:12.5px;font-weight:600;background:#fff;color:#6b7280;border:1px solid #d1d5db;border-radius:7px;cursor:pointer;">취소</button>
-        <button @click="confirm"
+        <button @click="handleConfirm"
           style="padding:9px 22px;font-size:12.5px;font-weight:700;background:linear-gradient(135deg,#e8587a,#d14165);color:#fff;border:none;border-radius:7px;cursor:pointer;box-shadow:0 2px 6px rgba(232,88,122,.25);">✓ 선택</button>
       </div>
     </div>

@@ -28,16 +28,38 @@ window.OdOrderMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
-    const searchKw = ref('');
-    const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
+
+    /* ── 검색 파라미터 ── */
+    const searchParam = reactive({
+      kw: '',
+      dateRange: '',
+      dateStart: '',
+      dateEnd: '',
+      status: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '',
+      dateRange: '',
+      dateStart: '',
+      dateEnd: '',
+      status: ''
+    });
+
+    onMounted(() => {
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
+    });
+
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+    const handleDateRangeChange = () => {
+      if (searchParam.dateRange) {
+        const r = window.boCmUtil.getDateRange(searchParam.dateRange);
+        searchParam.dateStart = r ? r.from : '';
+        searchParam.dateEnd = r ? r.to : '';
+      }
       pager.page = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
@@ -57,15 +79,13 @@ window.OdOrderMng = {
     const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
     const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const applied = reactive({ kw: '', status: '', dateStart: '', dateEnd: '' });
-
     const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(orders, o => {
-      const kw = applied.kw.trim().toLowerCase();
+      const kw = searchParam.kw.trim().toLowerCase();
       if (kw && !o.orderId.toLowerCase().includes(kw) && !o.userNm.toLowerCase().includes(kw) && !o.prodNm.toLowerCase().includes(kw)) return false;
-      if (applied.status && o.status !== applied.status) return false;
+      if (searchParam.status && o.status !== searchParam.status) return false;
       const _d = String(o.orderDate || '').slice(0, 10);
-      if (applied.dateStart && _d < applied.dateStart) return false;
-      if (applied.dateEnd && _d > applied.dateEnd) return false;
+      if (searchParam.dateStart && _d < searchParam.dateStart) return false;
+      if (searchParam.dateEnd && _d > searchParam.dateEnd) return false;
       return true;
     }));
     const cfTotal = computed(() => cfFiltered.value.length);
@@ -87,21 +107,13 @@ window.OdOrderMng = {
       '결제실패':'badge-red','환불중':'badge-orange','부분환불':'badge-orange','환불완료':'badge-purple',
     }[s] || 'badge-gray');
     const onSearch = () => {
-      Object.assign(applied, {
-        kw: searchKw.value,
-        status: searchStatus.value,
-        dateStart: searchDateStart.value,
-        dateEnd: searchDateEnd.value,
-      });
       pager.page = 1;
     };
     const onReset = () => {
-      searchKw.value = '';
-      searchStatus.value = '';
-      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
-      Object.assign(applied, { kw: '', status: '', dateStart: '', dateEnd: '' });
+      Object.assign(searchParam, searchParamOrg);
       pager.page = 1;
     };
+  
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
@@ -251,20 +263,20 @@ window.OdOrderMng = {
       }
     };
 
-    return { orders, members, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, ORDER_STATUS_OPTIONS, PAY_METHOD_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { orders, members, loading, error, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, ORDER_STATUS_OPTIONS, PAY_METHOD_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>
   <div class="page-title">주문관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="주문ID / 회원명 / 상품명 검색" />
-      <select v-model="searchStatus">
+      <input v-model="searchParam.kw" placeholder="주문ID / 회원명 / 상품명 검색" />
+      <select v-model="searchParam.status">
         <option value="">상태 전체</option>
         <option>입금대기</option><option>결제완료</option><option>상품준비중</option>
         <option>배송중</option><option>배송완료</option><option>구매확정</option><option>취소</option><option>자동취소</option>
       </select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

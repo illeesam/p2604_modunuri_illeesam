@@ -31,13 +31,19 @@ window.PdQnaMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleFetchData();
+    Object.assign(searchParamOrg, searchParam); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const searchKw   = ref('');
-    const searchAnsw = ref('');
-    const applied    = reactive({ kw: '', answ: '' });
     const pager      = reactive({ page: 1, size: 20 });
     const selectedId = ref(null);
+  const searchParam = reactive({
+    kw: '',
+    answ: ''
+  });
+  const searchParamOrg = reactive({
+    kw: '',
+    answ: ''
+  });
     const answForm   = reactive({ content: '' });
 
     const TYPE_LABELS = { SIZE:'사이즈', QUALITY:'소재/품질', DLIV:'배송', ETC:'기타' };
@@ -47,10 +53,10 @@ window.PdQnaMng = {
     const getMemNm  = id => { const m = (members||[]).find(m => m.userId === id); return m ? m.name : id; };
 
     const cfFiltered = computed(() => {
-      const kw = applied.kw.toLowerCase();
-      return (prodQnas).filter(q => {
+      const kw = searchParam.kw.toLowerCase();
+      return (qnas).filter(q => {
         if (kw && !q.qnaTitle.toLowerCase().includes(kw)) return false;
-        if (applied.answ && q.answYn !== applied.answ) return false;
+        if (searchParam.answ && q.answYn !== searchParam.answ) return false;
         return true;
       }).sort((a, b) => b.regDate > a.regDate ? 1 : -1);
     });
@@ -84,8 +90,23 @@ window.PdQnaMng = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
-    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, answ: searchAnsw.value }); pager.page = 1; };
-    const onReset  = () => { searchKw.value = ''; searchAnsw.value = ''; Object.assign(applied, { kw: '', answ: '' }); pager.page = 1; };
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
+      pager.page = 1;
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
+    const onReset = () => {
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  
     const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-red';
@@ -99,9 +120,9 @@ window.PdQnaMng = {
     <div class="card">
       <div class="search-bar">
         <label class="search-label">문의제목</label>
-        <input class="form-control" v-model="searchKw" @keyup.enter="() => onSearch?.()" placeholder="문의 제목 검색">
+        <input class="form-control" v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="문의 제목 검색">
         <label class="search-label">답변여부</label>
-        <select class="form-control" v-model="searchAnsw">
+        <select class="form-control" v-model="searchParam.answ">
           <option value="">전체</option><option value="Y">답변완료</option><option value="N">미답변</option>
         </select>
         <div class="search-actions">

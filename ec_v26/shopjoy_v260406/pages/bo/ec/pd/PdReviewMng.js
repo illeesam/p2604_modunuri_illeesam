@@ -31,14 +31,21 @@ window.PdReviewMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleFetchData();
+    Object.assign(searchParamOrg, searchParam); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const searchKw     = ref('');
-    const searchStatus = ref('');
-    const searchRating = ref('');
-    const applied      = reactive({ kw: '', status: '', rating: '' });
     const pager        = reactive({ page: 1, size: 20 });
     const selectedId   = ref(null);
+  const searchParam = reactive({
+    kw: '',
+    status: '',
+    rating: ''
+  });
+  const searchParamOrg = reactive({
+    kw: '',
+    status: '',
+    rating: ''
+  });
 
     const STATUS_LIST = ['ACTIVE','HIDDEN','DELETED'];
     const STATUS_LABEL = { ACTIVE:'공개', HIDDEN:'숨김', DELETED:'삭제' };
@@ -48,11 +55,11 @@ window.PdReviewMng = {
     const getMemNm  = id => { const m = (members||[]).find(m => m.userId === id); return m ? m.name : id; };
 
     const cfFiltered = computed(() => {
-      const kw = applied.kw.toLowerCase();
+      const kw = searchParam.kw.toLowerCase();
       return (reviews).filter(r => {
         if (kw && !r.reviewTitle.toLowerCase().includes(kw)) return false;
-        if (applied.status && r.reviewStatusCd !== applied.status) return false;
-        if (applied.rating) { const min = parseFloat(applied.rating); if (r.rating < min || r.rating >= min + 1) return false; }
+        if (searchParam.status && r.reviewStatusCd !== searchParam.status) return false;
+        if (searchParam.rating) { const min = parseFloat(searchParam.rating); if (r.rating < min || r.rating >= min + 1) return false; }
         return true;
       }).sort((a, b) => b.reviewDate > a.reviewDate ? 1 : -1);
     });
@@ -78,8 +85,23 @@ window.PdReviewMng = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
-    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, status: searchStatus.value, rating: searchRating.value }); pager.page = 1; };
-    const onReset  = () => { searchKw.value = ''; searchStatus.value = ''; searchRating.value = ''; Object.assign(applied, { kw: '', status: '', rating: '' }); pager.page = 1; };
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
+      pager.page = 1;
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
+    const onReset = () => {
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  
     const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const starStr  = r => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r));
@@ -93,13 +115,13 @@ window.PdReviewMng = {
     <div class="card">
       <div class="search-bar">
         <label class="search-label">리뷰제목</label>
-        <input class="form-control" v-model="searchKw" @keyup.enter="() => onSearch?.()" placeholder="리뷰 제목 검색">
+        <input class="form-control" v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="리뷰 제목 검색">
         <label class="search-label">상태</label>
-        <select class="form-control" v-model="searchStatus">
+        <select class="form-control" v-model="searchParam.status">
           <option value="">전체</option><option v-for="s in STATUS_LIST" :key="Math.random()" :value="s">{{ STATUS_LABEL[s] }}</option>
         </select>
         <label class="search-label">평점</label>
-        <select class="form-control" v-model="searchRating">
+        <select class="form-control" v-model="searchParam.rating">
           <option value="">전체</option><option value="5">5점</option><option value="4">4점대</option>
           <option value="3">3점대</option><option value="2">2점대</option><option value="1">1점대</option>
         </select>

@@ -3,10 +3,10 @@ window.Blog = {
   name: 'Blog',
   props: ['navigate', 'config'],
   setup(props) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
 
-    const searchText = ref('');
-    const selectedCat = ref('all');
+    const searchParam = reactive({ kw: '', cat: 'all' });
+    const searchParamOrg = reactive({ kw: '', cat: 'all' });
 
     const categories = [
       { id: 'all', name: '전체' },
@@ -37,10 +37,25 @@ window.Blog = {
         thumb: 'assets/cdn/prod/img/blog/blog-6.jpg', tags: ['아우터', '추천', '봄패션'], viewCount: 1890, commentCount: 9 },
     ]);
 
+    const onSearch = async () => {
+      try {
+        const params = { ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+        const res = await window.foApi.get('/fo/blog/list', { params });
+        posts.splice(0, posts.length, ...res.data);
+      } catch (e) {
+        // 폴백: 클라이언트 필터링
+      }
+    };
+
+    const onReset = () => {
+      Object.assign(searchParam, searchParamOrg);
+      onSearch();
+    };
+
     const cfFilteredPosts = computed(() => {
       let list = posts;
-      if (selectedCat.value !== 'all') list = list.filter(p => p.category === selectedCat.value);
-      const q = searchText.value.trim().toLowerCase();
+      if (searchParam.cat !== 'all') list = list.filter(p => p.category === searchParam.cat);
+      const q = searchParam.kw.trim().toLowerCase();
       if (q) list = list.filter(p => p.title.toLowerCase().includes(q) || p.excerpt.toLowerCase().includes(q) || (p.tags || []).some(t => t.includes(q)));
       return list;
     });
@@ -57,7 +72,11 @@ window.Blog = {
 
     const cfLatestPosts = computed(() => [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4));
 
-    return { searchText, selectedCat, categories, cfFilteredPosts, cfLatestPosts, postBg };
+    onMounted(() => {
+      Object.assign(searchParamOrg, searchParam);
+    });
+
+    return { searchParam, categories, cfFilteredPosts, cfLatestPosts, postBg, onSearch, onReset };
   },
   template: /* html */ `
 <div class="page-wrap">
@@ -79,12 +98,20 @@ window.Blog = {
   </div>
 
   <!-- 검색 -->
-  <div style="display:flex;justify-content:center;margin-bottom:32px;">
+  <div style="display:flex;justify-content:center;margin-bottom:32px;gap:8px;">
     <div style="position:relative;width:100%;max-width:480px;">
-      <input v-model="searchText" type="text" placeholder="검색어를 입력하세요..."
+      <input v-model="searchParam.kw" type="text" placeholder="검색어를 입력하세요..."
         style="width:100%;padding:12px 44px 12px 16px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;outline:none;background:var(--bg-card);color:var(--text-primary);" />
       <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:1rem;">🔍</span>
     </div>
+    <button @click="onSearch"
+      style="padding:12px 24px;background:var(--blue);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.88rem;white-space:nowrap;">
+      검색
+    </button>
+    <button @click="onReset"
+      style="padding:12px 24px;background:var(--bg-card);color:var(--text-secondary);border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-weight:600;font-size:0.88rem;white-space:nowrap;">
+      초기화
+    </button>
   </div>
 
   <!-- 레이아웃: 사이드바 + 본문 -->
@@ -97,12 +124,12 @@ window.Blog = {
         <h3 style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid var(--border);">Product Categories</h3>
         <ul style="list-style:none;padding:0;margin:0;">
           <li v-for="cat in categories" :key="cat.id"
-            @click="selectedCat=cat.id"
+            @click="searchParam.cat=cat.id;onSearch()"
             :style="{
               padding:'8px 0', cursor:'pointer', fontSize:'0.84rem',
-              color: selectedCat===cat.id ? 'var(--blue)' : 'var(--text-secondary)',
-              fontWeight: selectedCat===cat.id ? '700' : '400',
-              borderLeft: selectedCat===cat.id ? '2px solid var(--blue)' : '2px solid transparent',
+              color: searchParam.cat===cat.id ? 'var(--blue)' : 'var(--text-secondary)',
+              fontWeight: searchParam.cat===cat.id ? '700' : '400',
+              borderLeft: searchParam.cat===cat.id ? '2px solid var(--blue)' : '2px solid transparent',
               paddingLeft: '12px', transition:'all .15s',
             }">{{ cat.name }}</li>
         </ul>

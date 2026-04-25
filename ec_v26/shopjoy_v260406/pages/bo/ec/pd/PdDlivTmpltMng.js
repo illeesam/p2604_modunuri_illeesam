@@ -10,13 +10,12 @@ window.PdDlivTmpltMng = {
       try {
         const res = await window.boApi.get('/bo/ec/pd/dliv-tmplt/page', { params: { pageNo: 1, pageSize: 10000 } });
         dlivTmplts.splice(0, dlivTmplts.length, ...(res.data?.data?.list || []));
-      } catch (_) {}
+      } catch (_) {
+      console.error('[catch-info]', _);}
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleFetchData();
+    Object.assign(searchParamOrg, searchParam); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const searchKw     = ref('');
-    const searchMethod = ref('');
-    const searchUse    = ref('');
     const applied      = reactive({ kw: '', method: '', use: '' });
     const pager        = reactive({ page: 1, size: 20 });
     const selectedId   = ref(null);
@@ -90,14 +89,39 @@ window.PdDlivTmpltMng = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
-    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, method: searchMethod.value, use: searchUse.value }); pager.page = 1; };
-    const onReset  = () => { searchKw.value = ''; searchMethod.value = ''; searchUse.value = ''; Object.assign(applied, { kw: '', method: '', use: '' }); pager.page = 1; };
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
+      pager.page = 1;
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
+    const onReset = () => {
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  
     const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
     const fnMethodBadge = v => ({ COURIER:'badge-blue', DIRECT:'badge-orange', PICKUP:'badge-green' }[v] || 'badge-gray');
 
     const descOpen = ref(false);
+  const searchParam = reactive({
+    kw: '',
+    method: '',
+    use: ''
+  });
+  const searchParamOrg = reactive({
+    kw: '',
+    method: '',
+    use: ''
+  });
 
     return { descOpen,
              searchKw, searchMethod, searchUse, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
@@ -120,13 +144,13 @@ window.PdDlivTmpltMng = {
   <div class="card">
       <div class="search-bar">
         <label class="search-label">템플릿명</label>
-        <input class="form-control" v-model="searchKw" @keyup.enter="() => onSearch?.()" placeholder="템플릿명 검색">
+        <input class="form-control" v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="템플릿명 검색">
         <label class="search-label">배송방법</label>
-        <select class="form-control" v-model="searchMethod">
+        <select class="form-control" v-model="searchParam.method">
           <option value="">전체</option><option v-for="m in DLIV_METHODS" :key="Math.random()" :value="m">{{ m }}</option>
         </select>
         <label class="search-label">사용여부</label>
-        <select class="form-control" v-model="searchUse"><option value="">전체</option><option value="Y">Y</option><option value="N">N</option></select>
+        <select class="form-control" v-model="searchParam.use"><option value="">전체</option><option value="Y">Y</option><option value="N">N</option></select>
         <div class="search-actions">
           <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
           <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

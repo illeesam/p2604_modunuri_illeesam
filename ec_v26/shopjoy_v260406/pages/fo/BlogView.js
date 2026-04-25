@@ -3,7 +3,7 @@ window.BlogView = {
   name: 'BlogView',
   props: ['navigate', 'config', 'editId'],
   setup(props) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
 
     const posts = [
       { id: 1, title: 'Anteposuerit litterarum formas.', category: 'Fashion', author: '김민지', date: '2026.04.10', readTime: '5분',
@@ -59,7 +59,8 @@ window.BlogView = {
     };
 
     /* 사이드바 */
-    const searchText  = ref('');
+    const searchParam = reactive({ kw: '' });
+    const searchParamOrg = reactive({ kw: '' });
     const cfLatestPosts = computed(() => posts.filter(p => p.id !== cfPostId.value).slice(0, 3));
     const categories  = [
       { name: 'Fashion', count: 12 },
@@ -75,8 +76,23 @@ window.BlogView = {
     /* 관련 글 */
     const cfRelatedPosts = computed(() => posts.filter(p => p.id !== cfPostId.value).slice(0, 3));
 
+    const onSearch = async () => {
+      try {
+        const params = { ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+        // 실제 검색 API 호출
+      } catch (e) {}
+    };
+
+    const onReset = () => {
+      Object.assign(searchParam, searchParamOrg);
+    };
+
+    onMounted(() => {
+      Object.assign(searchParamOrg, searchParam);
+    });
+
     return { cfPost, cfBodyParagraphs, commentText, cfAllComments, addComment,
-             searchText, cfLatestPosts, categories, archives, cfRecentComments, cfRelatedPosts };
+             searchParam, cfLatestPosts, categories, archives, cfRecentComments, cfRelatedPosts, onSearch, onReset };
   },
   template: /* html */ `
 <div class="page-wrap" style="max-width:1100px;">
@@ -187,7 +203,7 @@ window.BlogView = {
       <!-- 검색 -->
       <div>
         <div style="position:relative;">
-          <input v-model="searchText" type="text" placeholder="Search..."
+          <input v-model="searchParam.kw" type="text" placeholder="Search..."
             style="width:100%;padding:10px 42px 10px 14px;border:1.5px solid var(--border);border-radius:4px;font-size:0.85rem;outline:none;background:var(--bg-card);color:var(--text-primary);box-sizing:border-box;" />
           <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);">🔍</span>
         </div>

@@ -62,42 +62,50 @@ window.SyBbsMng = {
     });
 
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const searchKw = ref(''); const searchBbmId = ref(''); const searchStatus = ref('');
-    const searchDateStart = ref(''); const searchDateEnd = ref(''); const searchDateRange = ref('');
+    const searchParam = reactive({
+      kw: '', bbmId: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '', bbmId: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
+    });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+    const handleDateRangeChange = () => {
+      if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.page = 1;
     };
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const selectedId = ref(null);
-    const openMode = ref('view'); // 'view' | 'edit'
-    const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
-    const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
-    const closeDetail = () => { selectedId.value = null; };
+
+    const detailModal = reactive({
+      show: false,
+      editId: null,
+      viewMode: 'view' // 'view' | 'edit'
+    });
+
+    const loadView = (id) => { if (detailModal.editId === id && detailModal.viewMode === 'view') { detailModal.show = false; detailModal.editId = null; return; } detailModal.editId = id; detailModal.viewMode = 'view'; detailModal.show = true; };
+    const handleLoadDetail = (id) => { if (detailModal.editId === id && detailModal.viewMode === 'edit') { detailModal.show = false; detailModal.editId = null; return; } detailModal.editId = id; detailModal.viewMode = 'edit'; detailModal.show = true; };
+    const openNew = () => { detailModal.editId = '__new__'; detailModal.viewMode = 'edit'; detailModal.show = true; };
+    const closeDetail = () => { detailModal.show = false; detailModal.editId = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'syBbsMng') { selectedId.value = null; return; }
-      if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
+      if (pg === 'syBbsMng') { detailModal.show = false; detailModal.editId = null; return; }
+      if (pg === '__switchToEdit__') { detailModal.viewMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => detailModal.editId === '__new__' ? null : detailModal.editId);
+    const cfIsViewMode = computed(() => detailModal.viewMode === 'view' && detailModal.editId !== '__new__');
+    const cfDetailKey = computed(() => `${detailModal.editId}_${detailModal.viewMode}`);
 
     const cfBbmOptions = computed(() => bbms.map(b => ({ value: b.bbmId, label: b.bbmNm })));
     const bbmNm = (bbmId) => { const b = bbms.find(x => x.bbmId === bbmId); return b ? b.bbmNm : bbmId; };
 
-    const applied = reactive({ kw: '', bbmId: '', status: '', dateStart: '', dateEnd: '' });
     const cfFiltered = computed(() => bbss.filter(b => {
-      const kw = applied.kw.trim().toLowerCase();
+      const kw = searchParam.kw.trim().toLowerCase();
       if (kw && !b.title.toLowerCase().includes(kw) && !String(b.authorNm || '').toLowerCase().includes(kw)) return false;
-      if (applied.bbmId && b.bbmId !== Number(applied.bbmId)) return false;
-      if (applied.status && b.statusCd !== applied.status) return false;
+      if (searchParam.bbmId && b.bbmId !== Number(searchParam.bbmId)) return false;
+      if (searchParam.status && b.statusCd !== searchParam.status) return false;
       const d = String(b.regDate || '').slice(0, 10);
-      if (applied.dateStart && d < applied.dateStart) return false;
-      if (applied.dateEnd && d > applied.dateEnd) return false;
+      if (searchParam.dateStart && d < searchParam.dateStart) return false;
+      if (searchParam.dateEnd && d > searchParam.dateEnd) return false;
       return true;
     }));
     const cfTotal = computed(() => cfFiltered.value.length);
@@ -109,8 +117,8 @@ window.SyBbsMng = {
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
     const fnStatusBadge = s => ({ '게시': 'badge-green', '임시': 'badge-gray', '삭제': 'badge-red', '비공개': 'badge-orange' }[s] || 'badge-gray');
-    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, bbmId: searchBbmId.value, status: searchStatus.value, dateStart: searchDateStart.value, dateEnd: searchDateEnd.value }); pager.page = 1; };
-    const onReset = () => { searchKw.value = ''; searchBbmId.value = ''; searchStatus.value = ''; searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = ''; Object.assign(applied, { kw: '', bbmId: '', status: '', dateStart: '', dateEnd: '' }); pager.page = 1; };
+    const onSearch = () => { pager.page = 1; };
+    const onReset = () => { Object.assign(searchParam, searchParamOrg); pager.page = 1; };
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const handleDelete = async (b) => {
@@ -118,7 +126,7 @@ window.SyBbsMng = {
       if (!ok) return;
       const idx = bbss.findIndex(x => x.bbsId === b.bbsId);
       if (idx !== -1) bbss.splice(idx, 1);
-      if (selectedId.value === b.bbsId) selectedId.value = null;
+      if (detailModal.editId === b.bbsId) { detailModal.show = false; detailModal.editId = null; }
       try {
         const res = await window.boApi.delete(`/bo/sy/bbs/${b.bbsId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -136,21 +144,21 @@ window.SyBbsMng = {
 
 
     return { bbss, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, cfSiteNm, searchKw, searchBbmId, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, cfBbmOptions, bbmNm, exportExcel };
+      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, cfBbmOptions, bbmNm, exportExcel };
   },
   template: /* html */`
 <div>
   <div class="page-title">게시글관리</div>  <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="제목 / 작성자 검색" />
-      <select v-model="searchBbmId">
+      <input v-model="searchParam.kw" placeholder="제목 / 작성자 검색" />
+      <select v-model="searchParam.bbmId">
         <option value="">게시판 전체</option>
         <option v-for="o in cfBbmOptions" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
-      <select v-model="searchStatus"><option value="">상태 전체</option><option>게시</option><option>임시</option><option>비공개</option><option>삭제</option></select>
+      <select v-model="searchParam.status"><option value="">상태 전체</option><option>게시</option><option>임시</option><option>비공개</option><option>삭제</option></select>
       <span class="search-label">등록일</span>
-      <input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" />
-      <select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
+      <select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -174,10 +182,10 @@ window.SyBbsMng = {
           <th>ID</th><th>게시판</th><th>제목</th><th>작성자</th><th>조회수</th><th>댓글</th><th>첨부그룹</th><th>상태</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
         <tr v-if="cfPageList.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="b in cfPageList" :key="b.bbsId" :style="selectedId===b.bbsId?'background:#fff8f9;':''">
+        <tr v-for="b in cfPageList" :key="b.bbsId" :style="detailModal.editId===b.bbsId?'background:#fff8f9;':''">
           <td>{{ b.bbsId }}</td>
           <td><span class="badge badge-gray">{{ bbmNm(b.bbmId) }}</span></td>
-          <td><span class="title-link" @click="handleLoadDetail(b.bbsId)" :style="selectedId===b.bbsId?'color:#e8587a;font-weight:700;':''">{{ b.title }}<span v-if="selectedId===b.bbsId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="handleLoadDetail(b.bbsId)" :style="detailModal.editId===b.bbsId?'color:#e8587a;font-weight:700;':''">{{ b.title }}<span v-if="detailModal.editId===b.bbsId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td>{{ b.authorNm }}</td>
           <td style="text-align:center;">{{ b.viewCount }}</td>
           <td style="text-align:center;">{{ b.commentCount }}</td>
@@ -208,11 +216,11 @@ window.SyBbsMng = {
       </div>
     </div>
   </div>
-  <div v-if="selectedId" style="margin-top:4px;">
+  <div v-if="detailModal.show" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <sy-bbs-dtl :key="selectedId" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="cfDetailEditId" />
+    <sy-bbs-dtl :key="detailModal.editId" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="cfDetailEditId" />
   </div>
 </div>
 `

@@ -59,8 +59,8 @@ window.SyRoleMng = {
         (n.children || []).forEach(enrich);
       };
       enrich(t);
-      if (treeCatFilter.value) {
-        const wantRootCode = ROOT_BY_CAT[treeCatFilter.value];
+      if (searchParam.treeCatFilter) {
+        const wantRootCode = ROOT_BY_CAT[searchParam.treeCatFilter];
         t.children = (t.children || []).filter(ch => ch._raw && ch._raw.roleCode === wantRootCode);
         const recount = (n) => { n.count = (n.children || []).reduce((s, c) => s + recount(c) + 1, 0); return n.count; };
         recount(t);
@@ -79,6 +79,7 @@ window.SyRoleMng = {
       handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
+      Object.assign(searchParamOrg, searchParam);
     });
 
     const cfSiteNm  = computed(() => window.boCmUtil.getSiteNm());
@@ -122,12 +123,20 @@ window.SyRoleMng = {
     const depthColor  = (d) => DEPTH_COLORS[d % 5];
 
     /* ── 검색 ── */
-    const searchKw    = ref('');
-    const searchType  = ref('');
-    const searchUseYn = ref('');
-    const searchCat   = ref('');
-    const treeCatFilter = ref('');
-    const applied = reactive({ kw: '', type: '', useYn: '', cat: '' });
+    const searchParam = reactive({
+      kw: '',
+      type: '',
+      useYn: '',
+      cat: '',
+      treeCatFilter: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '',
+      type: '',
+      useYn: '',
+      cat: '',
+      treeCatFilter: ''
+    });
 
     /* ── CRUD 그리드 ── */
     const gridRows   = reactive([]);
@@ -175,18 +184,18 @@ window.SyRoleMng = {
     const handleLoadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       const filtered = roles.filter(r => {
-        const kw = applied.kw.trim().toLowerCase();
+        const kw = searchParam.kw.trim().toLowerCase();
         if (kw && !r.roleCode.toLowerCase().includes(kw) && !r.roleNm.toLowerCase().includes(kw)) return false;
-        if (applied.type  && r.roleType !== applied.type)  return false;
-        if (applied.useYn && r.useYn    !== applied.useYn) return false;
-        if (applied.cat) {
+        if (searchParam.type  && r.roleType !== searchParam.type)  return false;
+        if (searchParam.useYn && r.useYn    !== searchParam.useYn) return false;
+        if (searchParam.cat) {
           const cats = window.boCmUtil.__roleCatOf ? window.boCmUtil.__roleCatOf(r.roleId) : [];
-          if (!cats.includes(applied.cat)) return false;
+          if (!cats.includes(searchParam.cat)) return false;
         }
         if (cfAllowedRoleIds.value && !cfAllowedRoleIds.value.has(r.roleId)) return false;
-        if (treeCatFilter.value) {
+        if (searchParam.treeCatFilter) {
           const cats = window.boCmUtil.__roleCatOf ? window.boCmUtil.__roleCatOf(r.roleId) : [];
-          if (!cats.includes(treeCatFilter.value)) return false;
+          if (!cats.includes(searchParam.treeCatFilter)) return false;
         }
         return true;
       });
@@ -203,12 +212,10 @@ window.SyRoleMng = {
     const onSizeChange = () => { pager.page = 1; };
 
     const onSearch = () => {
-      Object.assign(applied, { kw: searchKw.value, type: searchType.value, useYn: searchUseYn.value, cat: searchCat.value });
       handleLoadGrid();
     };
     const onReset = () => {
-      searchKw.value = ''; searchType.value = ''; searchUseYn.value = ''; searchCat.value = '';
-      Object.assign(applied, { kw: '', type: '', useYn: '', cat: '' });
+      Object.assign(searchParam, searchParamOrg);
       handleLoadGrid();
     };
 
@@ -429,14 +436,14 @@ window.SyRoleMng = {
     );
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
     watch(selectedPath, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
-    watch(treeCatFilter, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
+    watch(() => searchParam.treeCatFilter, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
 
 
     return {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
-      cfSiteNm, ROLE_TYPES, PERM_LEVELS, ROLE_CATS, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, treeCatFilter, fnPermColor, depthBullet, depthColor, fnStatusClass,
-      searchKw, searchType, searchUseYn, searchCat, applied, onSearch, onReset,
+      cfSiteNm, ROLE_TYPES, PERM_LEVELS, ROLE_CATS, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, fnPermColor, depthBullet, depthColor, fnStatusClass,
+      searchParam, searchParamOrg, onSearch, onReset,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
@@ -453,12 +460,12 @@ window.SyRoleMng = {
   <div class="page-title">역할관리</div>  <!-- 검색 -->
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="역할코드 / 역할명 검색" />
-      <select v-model="searchCat">
+      <input v-model="searchParam.kw" placeholder="역할코드 / 역할명 검색" />
+      <select v-model="searchParam.cat">
         <option value="">역할구분 전체</option>
         <option v-for="c in ROLE_CATS" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
       </select>
-      <select v-model="searchUseYn">
+      <select v-model="searchParam.useYn">
         <option value="">사용여부 전체</option><option value="Y">사용</option><option value="N">미사용</option>
       </select>
       <div class="search-actions">
@@ -477,7 +484,7 @@ window.SyRoleMng = {
   <div style="display:grid;grid-template-columns:20fr 80fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 역할</span></div>
-      <select v-model="treeCatFilter" style="width:100%;padding:4px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:5px;margin-bottom:8px;">
+      <select v-model="searchParam.treeCatFilter" style="width:100%;padding:4px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:5px;margin-bottom:8px;">
         <option value="">역할구분 전체</option>
         <option v-for="c in ROLE_CATS" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
       </select>

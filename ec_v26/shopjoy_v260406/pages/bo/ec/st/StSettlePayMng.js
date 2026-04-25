@@ -11,7 +11,7 @@ window.StSettlePayMng = {
     const dateRange = ref('이번달');
     const dateStart = ref('');
     const dateEnd   = ref('');
-    const onDateRangeChange = () => {
+    const handleDateRangeChange = () => {
       if (dateRange.value) { const r = window.boCmUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
@@ -27,8 +27,14 @@ window.StSettlePayMng = {
       { payId: 'PAY-2026-002', payDate: '2026-03-10', vendorId: 4, vendorNm: '럭셔리브랜드 Inc.',  closeMon: '2026-02', settleAmt: 38000,  payAmt: 38000,  bankNm: '우리은행', bankAccount: '111-22-333444', bankHolder: '럭셔리브랜드', payStatus: '지급완료', regUserNm: '이관리자' },
     ]);
 
-    const searchKw     = ref('');
-    const searchStatus = ref('');
+  const searchParam = reactive({
+    kw: '',
+    status: ''
+  });
+  const searchParamOrg = reactive({
+    kw: '',
+    status: ''
+  });
     const pager = reactive({ page: 1, size: 10 });
     const selected = reactive(new Set());
 
@@ -71,8 +77,23 @@ window.StSettlePayMng = {
 
     const fnStatusBadge = s => ({ '지급완료':'badge-green', '지급대기':'badge-blue', '지급보류':'badge-orange', '지급오류':'badge-red' }[s] || 'badge-gray');
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
-    const onSearch = () => { pager.page = 1; };
-    const onReset  = () => { searchKw.value = ''; searchStatus.value = ''; dateRange.value = '이번달'; onDateRangeChange(); pager.page = 1; };
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
+      pager.page = 1;
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
+    const onReset = () => {
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  
 
     const setPage = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
@@ -96,10 +117,10 @@ window.StSettlePayMng = {
         <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
       </select>
       <input type="date" v-model="dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="dateEnd" style="width:140px" />
-      <select v-model="searchStatus" style="width:120px">
+      <select v-model="searchParam.status" style="width:120px">
         <option value="">상태 전체</option><option>지급대기</option><option>지급완료</option><option>지급보류</option><option>지급오류</option>
       </select>
-      <input v-model="searchKw" placeholder="지급ID / 업체명" style="width:180px" @keyup.enter="() => onSearch?.()" />
+      <input v-model="searchParam.kw" placeholder="지급ID / 업체명" style="width:180px" @keyup.enter="() => onSearch?.()" />
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary" @click="onReset">초기화</button>

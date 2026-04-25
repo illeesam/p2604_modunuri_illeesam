@@ -25,23 +25,35 @@ window.PmCacheMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
-    const searchKw = ref('');
-    const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
+    onMounted(() => { handleFetchData();
+    Object.assign(searchParamOrg, searchParam); });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+    const handleDateRangeChange = () => {
+      if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.page = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const searchType = ref('');
     const viewMode = ref('list'); // 'list' | 'card'
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     /* 하단 상세 */
     const selectedId = ref(null);
-    const openMode = ref('view'); // 'view' | 'edit'
+    const openMode = ref('view');
+  const searchParam = reactive({
+    kw: '',
+    dateRange: '',
+    dateStart: '',
+    dateEnd: '',
+    type: ''
+  });
+  const searchParamOrg = reactive({
+    kw: '',
+    dateRange: '',
+    dateStart: '',
+    dateEnd: '',
+    type: ''
+  }); // 'view' | 'edit'
     const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
     const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
     const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
@@ -55,15 +67,13 @@ window.PmCacheMng = {
     const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
     const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const applied = reactive({ kw: '', type: '', dateStart: '', dateEnd: '' });
-
     const cfFiltered = computed(() => window.safeArrayUtils.safeFilter((caches || []), c => {
-      const kw = applied.kw.trim().toLowerCase();
+      const kw = searchParam.kw.trim().toLowerCase();
       if (kw && !c.userNm.toLowerCase().includes(kw) && !c.desc.toLowerCase().includes(kw) && !String(c.userId).includes(kw)) return false;
-      if (applied.type && c.type !== applied.type) return false;
+      if (searchParam.type && c.type !== searchParam.type) return false;
       const _d = String(c.date || '').slice(0, 10);
-      if (applied.dateStart && _d < applied.dateStart) return false;
-      if (applied.dateEnd && _d > applied.dateEnd) return false;
+      if (searchParam.dateStart && _d < searchParam.dateStart) return false;
+      if (searchParam.dateEnd && _d > searchParam.dateEnd) return false;
       return true;
     }));
     const cfTotal = computed(() => cfFiltered.value.length);
@@ -76,22 +86,23 @@ window.PmCacheMng = {
     });
 
     const fnTypeBadge = t => ({ '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' }[t] || 'badge-gray');
-    const onSearch = () => {
-      Object.assign(applied, {
-        kw: searchKw.value,
-        type: searchType.value,
-        dateStart: searchDateStart.value,
-        dateEnd: searchDateEnd.value,
-      });
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
       pager.page = 1;
-    };
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
     const onReset = () => {
-      searchKw.value = '';
-      searchType.value = '';
-      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
-      Object.assign(applied, { kw: '', type: '', dateStart: '', dateEnd: '' });
-      pager.page = 1;
-    };
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
@@ -122,9 +133,9 @@ window.PmCacheMng = {
   <div class="page-title">캐쉬관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="회원명 / 회원ID / 내용 검색" />
-      <select v-model="searchType"><option value="">유형 전체</option><option>충전</option><option>사용</option><option>환불</option><option>소멸</option></select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
+      <input v-model="searchParam.kw" placeholder="회원명 / 회원ID / 내용 검색" />
+      <select v-model="searchParam.type"><option value="">유형 전체</option><option>충전</option><option>사용</option><option>환불</option><option>소멸</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

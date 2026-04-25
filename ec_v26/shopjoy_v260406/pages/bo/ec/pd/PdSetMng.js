@@ -32,12 +32,20 @@ window.PdSetMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    /* ── 검색 파라미터 ── */
+    const searchParam = reactive({
+      nm: ''
+    });
+    const searchParamOrg = reactive({
+      nm: ''
+    });
 
-    /* ── 검색 ── */
-    const searchNm = ref('');
-    const applied  = reactive({ nm: '' });
+    onMounted(() => {
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
+    });
+
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const pager    = reactive({ page: 1, size: 10 });
 
     /* ── Dtl 모드 ── */
@@ -129,7 +137,7 @@ window.PdSetMng = {
 
     /* ── 세트상품 목록 ── */
     const cfSetList = computed(() => {
-      const kw = applied.nm.toLowerCase();
+      const kw = searchParam.nm.toLowerCase();
       const ids = [...new Set((setItems || []).map(s => s.setProdId))];
       return ids
         .map(id => {
@@ -150,8 +158,23 @@ window.PdSetMng = {
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
 
-    const onSearch = () => { Object.assign(applied, { nm: searchNm.value }); pager.page = 1; };
-    const onReset  = () => { searchNm.value = ''; Object.assign(applied, { nm: '' }); pager.page = 1; };
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
+      pager.page = 1;
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
+    const onReset = () => {
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  
     const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
@@ -313,6 +336,12 @@ window.PdSetMng = {
     };
 
     const descOpen = ref(false);
+  const searchParam = reactive({
+    nm: ''
+  });
+  const searchParamOrg = reactive({
+    nm: ''
+  });
 
     return {
       descOpen,
@@ -347,7 +376,7 @@ window.PdSetMng = {
   <div class="card">
     <div class="search-bar">
       <label class="search-label">세트상품명</label>
-      <input class="form-control" v-model="searchNm" @keyup.enter="() => onSearch?.()"
+      <input class="form-control" v-model="searchParam.nm" @keyup.enter="() => onSearch?.()"
              placeholder="세트상품명 검색" style="max-width:320px">
       <div class="search-actions">
         <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>

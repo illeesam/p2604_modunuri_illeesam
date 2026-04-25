@@ -27,7 +27,6 @@ window.SyCodeMng = {
       }
     };
     const cfGrpOptions  = computed(() => [...new Set(codes.map(c => c.codeGrp))].sort());
-    const applied     = reactive({ kw: '', grp: '', useYn: '', dateStart: '', dateEnd: '' });
 
     /* ── CRUD 그리드 데이터 ── */
     const gridRows   = reactive([]);
@@ -257,8 +256,6 @@ window.SyCodeMng = {
         codes.splice(0, codes.length, ...list);
         updateCodeGroups();
         loadGrp();
-        Object.assign(applied, { kw: searchParam.kw, grp: searchParam.grp, useYn: searchParam.useYn,
-                                  dateStart: searchParam.dateStart, dateEnd: searchParam.dateEnd });
         handleLoadGrid();
       } catch (err) {
         console.error('[catch-info]', err);
@@ -489,7 +486,7 @@ window.SyCodeMng = {
 
     return {
       cfSiteNm,
-      searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, cfGrpOptions, applied,
+      searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfGrpOptions,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,

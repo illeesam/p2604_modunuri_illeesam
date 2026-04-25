@@ -27,20 +27,29 @@ window.DpDispUiSimul = {
     /* ── 오늘 날짜 ── */
     const today = new Date().toISOString().slice(0, 10);
 
-    /* ── 메인 탭 ── */
-    const mainTab = ref('preview'); // 'preview' | 'struct' | 'source'
+    /* ── UI 상태 ── */
+    const uiState = reactive({
+      mainTab: 'preview', // 'preview' | 'struct' | 'source'
+      viewMode: 'card',   // 'list' | 'card' | 'expand'
+      showDesc: true,
+      showAreaDrop: false,
+    });
 
-    /* ── 공통 필터 ── */
-    const previewDate   = ref(today);
-    const previewTime   = ref(new Date().toTimeString().slice(0, 5)); // 'HH:MM'
-    const viewMode      = ref('card');   // 'list' | 'card' | 'expand'
-    const showDesc      = ref(true);
-    const showAreaDrop  = ref(false);
+    /* ── 검색/필터 조건 ── */
+    const searchParam = reactive({
+      previewDate: today,
+      previewTime: new Date().toTimeString().slice(0, 5),
+      status: '활성',
+      visibility: '',
+    });
+    const searchParamOrg = reactive({
+      previewDate: today,
+      previewTime: new Date().toTimeString().slice(0, 5),
+      status: '활성',
+      visibility: '',
+    });
+
     const selectedAreas = reactive(new Set());
-
-    /* ── 패널 검색 필터 ── */
-    const searchStatus     = ref('활성');
-    const searchVisibility = ref('');
     const VISIBILITY_OPTS  = [
       { value: '', label: '전체' },
       { value: 'PUBLIC',    label: '전체공개' },
@@ -96,9 +105,9 @@ window.DpDispUiSimul = {
 
     /* ── 날짜+시간 범위 판단 ── */
     const isDateInRange = (panel) => {
-      const d = previewDate.value;
+      const d = searchParam.previewDate;
       if (!d) return true;
-      const t  = previewTime.value || '00:00';
+      const t  = searchParam.previewTime || '00:00';
       const dt = `${d} ${t}`;
       if (panel.dispStartDate) {
         const ps = `${panel.dispStartDate} ${panel.dispStartTime || '00:00'}`;
@@ -113,9 +122,9 @@ window.DpDispUiSimul = {
 
     /* ── 공통 패널 필터 함수 ── */
     const panelFilter = (p) => {
-      if (searchStatus.value && p.status !== searchStatus.value) return false;
+      if (searchParam.status && p.status !== searchParam.status) return false;
       if (!isDateInRange(p)) return false;
-      if (searchVisibility.value && !window.visibilityUtil.has(p.visibilityTargets, searchVisibility.value)) return false;
+      if (searchParam.visibility && !window.visibilityUtil.has(p.visibilityTargets, searchParam.visibility)) return false;
       return true;
     };
 
@@ -128,9 +137,12 @@ window.DpDispUiSimul = {
     const cfTotalPanels = computed(() =>
       (Array.isArray(displays) ? displays : []).filter(p => panelFilter(p)).length
     );
+    const onReset = () => {
+      Object.assign(searchParam, searchParamOrg);
+    };
     const resetDate = () => {
-      previewDate.value = today;
-      previewTime.value = new Date().toTimeString().slice(0, 5);
+      searchParam.previewDate = today;
+      searchParam.previewTime = new Date().toTimeString().slice(0, 5);
     };
 
     /* ─────────────────────────────────────────
@@ -287,9 +299,9 @@ window.DpDispUiSimul = {
         lib:    '',
       }});
       lines.push({ type:'source-header', htype:'disp', data:{
-        datetime:     `${previewDate.value || '-'} ${previewTime.value || ''}`.trim(),
-        status:       searchStatus.value || '전체',
-        visibility:   searchVisibility.value ? (window.safeArrayUtils.safeFind(VISIBILITY_OPTS, o => o.value === searchVisibility.value)?.label || searchVisibility.value) : '전체',
+        datetime:     `${searchParam.previewDate || '-'} ${searchParam.previewTime || ''}`.trim(),
+        status:       searchParam.status || '전체',
+        visibility:   searchParam.visibility ? (window.safeArrayUtils.safeFind(VISIBILITY_OPTS, o => o.value === searchParam.visibility)?.label || searchParam.visibility) : '전체',
       }});
       lines.push({ type:'source-header', htype:'cond', data:{
         period:   '-',
@@ -417,7 +429,7 @@ window.DpDispUiSimul = {
 
     /* 탭 전환 시 초기화 */
     const switchTab = (tab) => {
-      mainTab.value = tab;
+      uiState.uiState.mainTab = tab;
       if (tab === 'struct') initExpandedAreas();
     };
 
@@ -649,10 +661,10 @@ window.DpDispUiSimul = {
     const openDispUiLayer = () => {
       if (!dispUiLayerOpen.value) {
         dispUiForm.areas        = [...selectedAreas];
-        dispUiForm.date         = previewDate.value;
-        dispUiForm.time         = previewTime.value;
-        dispUiForm.status       = searchStatus.value;
-        dispUiForm.visibility   = searchVisibility.value;
+        dispUiForm.date         = searchParam.previewDate;
+        dispUiForm.time         = searchParam.previewTime;
+        dispUiForm.status       = searchParam.status;
+        dispUiForm.visibility   = searchParam.visibility;
         const cf   = window.boCommonFilter || {};
         const site = (Array.isArray(sites) ? sites : []).find(s => s.siteId === cf.siteId);
         dispUiForm.siteId   = cf.siteId ? String(cf.siteId) : '';
@@ -702,14 +714,14 @@ window.DpDispUiSimul = {
 
     /* ── DispX02Area props ── */
     const cfFilterParams = computed(() => ({
-      status:       searchStatus.value,
-      visibilityTargets: searchVisibility.value ? '^' + searchVisibility.value + '^' : '',
-      date:         previewDate.value,
-      time:         previewTime.value,
+      status:       searchParam.status,
+      visibilityTargets: searchParam.visibility ? '^' + searchParam.visibility + '^' : '',
+      date:         searchParam.previewDate,
+      time:         searchParam.previewTime,
       isLoggedIn:   false,
       userGrade:    '',
     }));
-    const cfDispOpt = computed(() => ({ layout: viewMode.value, showBadges: true, mode: viewMode.value, showDesc: showDesc.value }));
+    const cfDispOpt = computed(() => ({ layout: uiState.viewMode, showBadges: true, mode: uiState.viewMode, showDesc: uiState.showDesc }));
     const areaInfo = (code) =>
       (Array.isArray(codes) ? codes : []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
 
@@ -773,12 +785,11 @@ window.DpDispUiSimul = {
 
     return {
       today, cfSiteNm,
-      mainTab, switchTab,
-      previewDate, viewMode, showDesc, showAreaDrop,
+      uiState, switchTab,
+      searchParam, searchParamOrg,
       selectedAreas, cfAllAreaListRaw, cfAreaList,
-      previewTime,
-      searchStatus, searchVisibility,
       VISIBILITY_OPTS,
+      onReset,
       toggleArea, selectAllAreas, clearAllAreas, cfAreaBtnLabel,
       panelsForArea, cfTotalPanels, resetDate, isDateInRange,
       cfFilterParams, cfDispOpt, areaInfo,
@@ -835,8 +846,8 @@ window.DpDispUiSimul = {
       <!-- 전시일시 -->
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:12px;font-weight:600;color:#555;">📅 전시일시</span>
-        <input type="date" v-model="previewDate" class="form-control" style="width:148px;margin:0;font-size:13px;" />
-        <input type="time" v-model="previewTime" class="form-control" style="width:145px;margin:0;font-size:13px;" />
+        <input type="date" v-model="searchParam.previewDate" class="form-control" style="width:148px;margin:0;font-size:13px;" />
+        <input type="time" v-model="searchParam.previewTime" class="form-control" style="width:145px;margin:0;font-size:13px;" />
         <button @click="resetDate" style="font-size:11px;padding:4px 10px;border:1px solid #d0d0d0;border-radius:10px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;">🕐 현재</button>
       </div>
       <div style="width:1px;height:28px;background:#e0e0e0;"></div>
@@ -844,7 +855,7 @@ window.DpDispUiSimul = {
       <!-- 상태 -->
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">상태</span>
-        <select v-model="searchStatus" class="form-control" style="width:90px;margin:0;font-size:12px;">
+        <select v-model="searchParam.status" class="form-control" style="width:90px;margin:0;font-size:12px;">
           <option value="">전체</option>
           <option value="활성">활성</option>
           <option value="비활성">비활성</option>
@@ -854,14 +865,14 @@ window.DpDispUiSimul = {
       <!-- 공개대상 -->
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">공개대상</span>
-        <select v-model="searchVisibility" class="form-control" style="width:100px;margin:0;font-size:12px;">
+        <select v-model="searchParam.visibility" class="form-control" style="width:100px;margin:0;font-size:12px;">
           <option v-for="o in VISIBILITY_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
       <div style="width:1px;height:28px;background:#e0e0e0;"></div>
 
       <!-- 보기모드 (Tab1에서만 활성) -->
-      <div style="display:flex;align-items:center;gap:6px;" :style="mainTab!=='preview' ? 'opacity:.4;pointer-events:none;' : ''">
+      <div style="display:flex;align-items:center;gap:6px;" :style="uiState.mainTab!=='preview' ? 'opacity:.4;pointer-events:none;' : ''">
         <span style="font-size:12px;font-weight:600;color:#555;">보기</span>
         <div style="display:flex;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
           <button @click="viewMode='list'" style="font-size:11px;padding:4px 11px;border:none;cursor:pointer;transition:all .15s;"
@@ -874,10 +885,10 @@ window.DpDispUiSimul = {
             :style="viewMode==='area_detail' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">⊟ 영역-위젯 상세보기</button>
         </div>
       </div>
-      <div style="width:1px;height:28px;background:#e0e0e0;" :style="mainTab!=='preview' ? 'opacity:.4;' : ''"></div>
+      <div style="width:1px;height:28px;background:#e0e0e0;" :style="uiState.mainTab!=='preview' ? 'opacity:.4;' : ''"></div>
 
       <!-- 설명보기 (Tab1에서만) -->
-      <button v-if="mainTab==='preview'" @click="showDesc=!showDesc"
+      <button v-if="uiState.uiState.mainTab==='preview'" @click="uiState.showDesc=!uiState.showDesc"
         style="font-size:11px;padding:4px 12px;border-radius:10px;border:1px solid #ddd;cursor:pointer;transition:all .15s;"
         :style="showDesc ? 'background:#e3f2fd;border-color:#90caf9;color:#1565c0;' : 'background:#fff;color:#999;'">
         {{ showDesc ? '📋 설명 숨기기' : '📋 설명 보기' }}
@@ -1203,17 +1214,17 @@ window.DpDispUiSimul = {
   <div style="display:flex;border:1px solid #e0e0e0;border-top:none;background:#f5f5f5;">
     <button @click="switchTab('preview')"
       style="flex:1;padding:10px 0;font-size:13px;font-weight:600;border:none;border-right:1px solid #e0e0e0;cursor:pointer;transition:all .15s;"
-      :style="mainTab==='preview' ? 'background:#fff;color:#e8587a;border-bottom:3px solid #e8587a;' : 'background:transparent;color:#888;border-bottom:3px solid transparent;'">
+      :style="uiState.mainTab==='preview' ? 'background:#fff;color:#e8587a;border-bottom:3px solid #e8587a;' : 'background:transparent;color:#888;border-bottom:3px solid transparent;'">
       🖼 영역미리보기
     </button>
     <button @click="switchTab('struct')"
       style="flex:1;padding:10px 0;font-size:13px;font-weight:600;border:none;border-right:1px solid #e0e0e0;cursor:pointer;transition:all .15s;"
-      :style="mainTab==='struct' ? 'background:#fff;color:#e8587a;border-bottom:3px solid #e8587a;' : 'background:transparent;color:#888;border-bottom:3px solid transparent;'">
+      :style="uiState.mainTab==='struct' ? 'background:#fff;color:#e8587a;border-bottom:3px solid #e8587a;' : 'background:transparent;color:#888;border-bottom:3px solid transparent;'">
       🌲 영역-위젯 구조 보기
     </button>
     <button @click="switchTab('source')"
       style="flex:1;padding:10px 0;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .15s;"
-      :style="mainTab==='source' ? 'background:#fff;color:#e8587a;border-bottom:3px solid #e8587a;' : 'background:transparent;color:#888;border-bottom:3px solid transparent;'">
+      :style="uiState.mainTab==='source' ? 'background:#fff;color:#e8587a;border-bottom:3px solid #e8587a;' : 'background:transparent;color:#888;border-bottom:3px solid transparent;'">
       &lt;/&gt; 영역-위젯 소스보기
     </button>
   </div>
@@ -1221,7 +1232,7 @@ window.DpDispUiSimul = {
   <!-- ═══════════════════════════════════════
        Tab1: 영역미리보기
   ═══════════════════════════════════════ -->
-  <div v-if="mainTab==='preview'">
+  <div v-if="uiState.mainTab==='preview'">
     <div v-if="!previewDate" style="text-align:center;padding:40px;color:#e8587a;font-size:14px;">기준 날짜를 선택해주세요.</div>
     <div v-else>
       <div v-for="area in cfAreaList" :key="area?.codeValue" style="margin-bottom:4px;">
@@ -1238,7 +1249,7 @@ window.DpDispUiSimul = {
   <!-- ═══════════════════════════════════════
        Tab2: 구조 선택 영역미리보기
   ═══════════════════════════════════════ -->
-  <div v-else-if="mainTab==='struct'" style="margin-top:4px;">
+  <div v-else-if="uiState.mainTab==='struct'" style="margin-top:4px;">
     <div style="display:flex;gap:12px;align-items:stretch;">
 
       <!-- 좌: 구조 트리 -->
@@ -1594,7 +1605,7 @@ window.DpDispUiSimul = {
   <!-- ═══════════════════════════════════════
        Tab3: 소스 구조
   ═══════════════════════════════════════ -->
-  <div v-else-if="mainTab==='source'" style="margin-top:4px;">
+  <div v-else-if="uiState.mainTab==='source'" style="margin-top:4px;">
     <div class="card" style="padding:0;overflow:hidden;">
 
       <!-- 소스 헤더 -->

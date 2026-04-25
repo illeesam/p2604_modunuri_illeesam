@@ -20,10 +20,8 @@ window.XsSample01 = {
     };
 
     /* ── 검색 ── */
-    const searchKw     = ref('');
-    const searchGrade  = ref('');
-    const searchStatus = ref('');
-    const applied = reactive({ kw: '', grade: '', status: '' });
+    const searchParam = reactive({ kw: '', grade: '', status: '' });
+    const searchParamOrg = reactive({ kw: '', grade: '', status: '' });
 
     /* ── CRUD Grid ── */
     const allData   = reactive([]);
@@ -72,10 +70,10 @@ window.XsSample01 = {
     const handleLoadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       allData.filter(d => {
-        const kw = applied.kw.toLowerCase();
+        const kw = searchParam.kw.toLowerCase();
         if (kw && !['memberNm', 'email', 'phone'].some(f => String(d[f] || '').toLowerCase().includes(kw))) return false;
-        if (applied.grade  && d.grade  !== applied.grade)  return false;
-        if (applied.status && d.status !== applied.status) return false;
+        if (searchParam.grade  && d.grade  !== searchParam.grade)  return false;
+        if (searchParam.status && d.status !== searchParam.status) return false;
         return true;
       }).forEach(d => gridRows.push(makeRow(d)));
     };
@@ -88,10 +86,13 @@ window.XsSample01 = {
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       handleLoadGrid();
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => {
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
+    });
 
-    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, grade: searchGrade.value, status: searchStatus.value }); handleLoadGrid(); };
-    const onReset  = () => { searchKw.value = ''; searchGrade.value = ''; searchStatus.value = ''; Object.assign(applied, { kw: '', grade: '', status: '' }); handleLoadGrid(); };
+    const onSearch = () => { handleLoadGrid(); };
+    const onReset  = () => { Object.assign(searchParam, searchParamOrg); handleLoadGrid(); };
 
     const setFocused = idx => { focusedIdx.value = idx; };
     const onCellChange = row => {
@@ -163,7 +164,7 @@ window.XsSample01 = {
     const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
 
     return {
-      toast, searchKw, searchGrade, searchStatus, onSearch, onReset,
+      toast, searchParam, onSearch, onReset,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, getRealIdx,
       focusedIdx, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
@@ -189,13 +190,13 @@ window.XsSample01 = {
   <!-- 검색 -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <input v-model="searchKw" placeholder="이름 / 이메일 / 전화번호 검색" @keyup.enter="onSearch"
+      <input v-model="searchParam.kw" placeholder="이름 / 이메일 / 전화번호 검색" @keyup.enter="onSearch"
         style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:220px;outline:none;" />
-      <select v-model="searchGrade" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
+      <select v-model="searchParam.grade" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
         <option value="">등급 전체</option>
         <option>일반</option><option>우수</option><option>VIP</option>
       </select>
-      <select v-model="searchStatus" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
+      <select v-model="searchParam.status" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
         <option value="">상태 전체</option><option>활성</option><option>비활성</option>
       </select>
       <button @click="onSearch" style="font-size:12px;padding:5px 14px;border:none;border-radius:6px;background:#e8587a;color:#fff;cursor:pointer;font-weight:600;">검색</button>

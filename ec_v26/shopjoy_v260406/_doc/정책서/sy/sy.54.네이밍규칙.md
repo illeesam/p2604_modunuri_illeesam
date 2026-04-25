@@ -314,6 +314,458 @@ const handleLoadGrid = () => {
 
 ---
 
+## ref vs reactive 사용 원칙
+
+### 핵심 규칙
+
+**`ref` 최소화, `reactive` 우선** — 관련된 상태들을 하나의 객체로 묶어 관리한다.
+
+### 1. 검색·필터 영역 (reactive 필수)
+
+**여러 검색 필드는 반드시 하나의 `reactive` 객체로 관리**
+
+```js
+// ✅ 올바른 패턴
+const searchParam = reactive({
+  kw: '',
+  type: '',
+  useYn: '',
+  dateStart: '',
+  dateEnd: ''
+});
+
+// ❌ 피할 패턴
+const searchKw = ref('');
+const searchType = ref('');
+const searchUseYn = ref('');
+// ... 일일이 ref 선언
+```
+
+### 2. 페이저 영역 (reactive)
+
+```js
+// ✅ 올바른 패턴
+const pager = reactive({
+  page: 1,
+  size: 20,
+  loading: false
+});
+
+// 사용
+const onSizeChange = () => { pager.page = 1; };
+const onSetPage = (n) => { if (n >= 1 && n <= cfTotalPages) pager.page = n; };
+
+// ❌ 피할 패턴
+const page = ref(1);
+const pageSize = ref(20);
+const loading = ref(false);
+```
+
+### 3. 모달 상태 (reactive 객체로 캡슐화)
+
+**모달의 모든 상태를 하나의 `reactive` 객체로 묶음**
+
+```js
+// ✅ 올바른 패턴
+const modalsState = reactive({
+  // 사이트 선택 모달
+  siteModal: { kw: '', list: [], loading: false },
+  // 사용자 선택 모달
+  userModal: { 
+    selectedDeptId: null, deptKw: '', selectedIds: new Set(), 
+    userKw: '', loading: false 
+  },
+  // 템플릿 발송 모달
+  templateSend: { 
+    targetType: 'member', kw: '', selected: [], loading: false 
+  }
+});
+
+// 사용: v-model="modalsState.siteModal.kw"
+// return { ...modalsState, ... }
+
+// ❌ 피할 패턴
+const siteModalKw = ref('');
+const siteModalList = ref([]);
+const siteModalLoading = ref(false);
+const userModalSelectedDeptId = ref(null);
+const userModalDeptKw = ref('');
+// ... 명명이 길어지고 관리 복잡
+```
+
+### 4. 폼·입력 영역 (reactive)
+
+```js
+// ✅ 올바른 패턴
+const form = reactive({
+  name: '',
+  email: '',
+  phone: '',
+  useYn: 'Y'
+});
+
+const formErrors = reactive({
+  name: '',
+  email: '',
+  phone: ''
+});
+
+// ❌ 피할 패턴
+const formName = ref('');
+const formEmail = ref('');
+const formPhone = ref('');
+const formUseYn = ref('Y');
+const errorName = ref('');
+const errorEmail = ref('');
+const errorPhone = ref('');
+```
+
+### 5. ref 사용 가능한 경우
+
+**단일 상태, 로딩/에러 플래그는 `ref` 가능**
+
+```js
+// ✅ ref 사용 가능
+const loading = ref(false);
+const error = ref(null);
+const selectedId = ref(null);
+const isOpen = ref(false);
+
+// 단, 관련된 상태들은 reactive로 묶기
+const modal = reactive({
+  isOpen: false,
+  selectedId: null,
+  data: null,
+  loading: false
+});
+```
+
+### 6. computed 프로퍼티 (항상 cf 접두어)
+
+```js
+// ✅ 올바른 패턴
+const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+const cfPageList = computed(() => 
+  cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size)
+);
+const cfTotalPages = computed(() => 
+  Math.max(1, Math.ceil(cfFiltered.value.length / pager.size))
+);
+```
+
+### 요약
+
+| 상황 | 패턴 | 예시 |
+|---|---|---|
+| 검색 조건 모음 | `reactive` | `searchParam`, `filterOptions` |
+| 페이저 상태 | `reactive` | `pager: { page, size, loading }` |
+| 모달 상태 | `reactive` | `modalsState: { modal1, modal2, ... }` |
+| 폼 데이터 | `reactive` | `form: { name, email, phone, ... }` |
+| 단일 값 | `ref` 가능 | `loading`, `error`, `selectedId` |
+| 파생 값 | `computed` | `cfFiltered`, `cfTotal`, `cfPageList` |
+
+---
+
+## 개별 항목 컨트롤 패턴 (Object.assign)
+
+### 리셋·초기화 (검색 필터, 폼)
+
+**`Object.assign`으로 일괄 복원**하여 개별 할당 제거
+
+```js
+// ✅ 올바른 패턴
+const searchParam = reactive({ kw: '', type: '', useYn: '' });
+const searchParamOrg = reactive({ kw: '', type: '', useYn: '' });
+
+onMounted(() => {
+  handleFetchData();
+  Object.assign(searchParamOrg, searchParam);  // 초기값 저장
+});
+
+const onReset = () => {
+  Object.assign(searchParam, searchParamOrg);  // 초기값으로 복원
+  onSearch();
+};
+
+// ❌ 피할 패턴
+const onReset = () => {
+  searchParam.kw = searchParamOrg.kw;
+  searchParam.type = searchParamOrg.type;
+  searchParam.useYn = searchParamOrg.useYn;
+  onSearch();
+};
+```
+
+### 선택 목록 관리 (Set, 배열)
+
+```js
+// ✅ 올바른 패턴 — Set을 reactive 객체 속성으로
+const modalState = reactive({
+  selectedIds: new Set(),
+  selectedItems: [],
+  loading: false
+});
+
+const handleToggleSelect = (item) => {
+  const id = item.id;
+  if (modalState.selectedIds.has(id)) {
+    modalState.selectedIds.delete(id);
+    modalState.selectedItems = modalState.selectedItems.filter(x => x.id !== id);
+  } else {
+    modalState.selectedIds.add(id);
+    modalState.selectedItems.push(item);
+  }
+};
+
+const handleToggleAll = () => {
+  if (cfAllChecked.value) {
+    modalState.selectedIds.clear();
+    modalState.selectedItems = [];
+  } else {
+    cfFiltered.value.forEach(item => {
+      modalState.selectedIds.add(item.id);
+      modalState.selectedItems.push(item);
+    });
+  }
+};
+
+// ❌ 피할 패턴
+const selectedIds = ref(new Set());   // ref 안에 Set 감싸기
+const selectedId1 = ref(null);
+const selectedId2 = ref(null);
+const selectedId3 = ref(null);
+// ... 일일이 ref 선언
+```
+
+### 폼 데이터 리셋
+
+```js
+// ✅ 올바른 패턴
+const form = reactive({ name: '', email: '', phone: '' });
+const formOrg = reactive({ name: '', email: '', phone: '' });
+
+const handleSave = async () => {
+  try {
+    await api.post('/resource', form);
+    Object.assign(formOrg, form);  // 저장 후 초기값 업데이트
+  } catch (err) {
+    Object.assign(form, formOrg);  // 실패 시 복원
+  }
+};
+
+const handleCancel = () => {
+  Object.assign(form, formOrg);  // 취소 시 복원
+};
+```
+
+### 중첩 객체 부분 업데이트
+
+```js
+// ✅ 올바른 패턴
+const userModals = reactive({
+  siteModal: { kw: '', list: [], loading: false },
+  userModal: { selectedDeptId: null, userKw: '', loading: false }
+});
+
+// 단일 모달만 초기화
+const resetSiteModal = () => {
+  Object.assign(userModals.siteModal, { kw: '', list: [], loading: false });
+};
+
+// 전체 모달 초기화
+const resetAllModals = () => {
+  Object.assign(userModals, {
+    siteModal: { kw: '', list: [], loading: false },
+    userModal: { selectedDeptId: null, userKw: '', loading: false }
+  });
+};
+```
+
+---
+
+## ref → reactive 리팩토링 가이드
+
+### 1단계: 검색 필터 영역 (우선순위: ⭐⭐⭐ 최우선)
+
+**패턴 식별**: `searchKw`, `searchType`, `searchStatus`, `searchCat` 등 search* 관련 변수들
+
+```js
+// ❌ 리팩토링 전
+const searchKw = ref('');
+const searchType = ref('');
+const searchStatus = ref('');
+const searchCat = ref('');
+
+// ✅ 리팩토링 후
+const searchParam = reactive({
+  kw: '',
+  type: '',
+  status: '',
+  cat: ''
+});
+```
+
+**영향 파일** (100개 파일):
+- `SyRoleMng.js`, `SyCodeMng.js`, `SyMenuMng.js`, `SyUserMng.js`
+- `PdCategoryMng.js`, `PdProdMng.js`, `PdTagMng.js`
+- `OdOrderMng.js`, `OdClaimMng.js`, `OdDlivMng.js`
+- 모든 Mng.js 파일
+
+### 2단계: 페이저·페이지네이션 (우선순위: ⭐⭐⭐)
+
+**패턴 식별**: `page`, `pageSize`, `size` 관련 변수들
+
+```js
+// ❌ 리팩토링 전
+const page = ref(1);
+const pageSize = ref(20);
+const loading = ref(false);
+
+// ✅ 리팩토링 후
+const pager = reactive({
+  page: 1,
+  size: 20,
+  loading: false
+});
+```
+
+### 3단계: 폼·입력 데이터 (우선순위: ⭐⭐⭐)
+
+**패턴 식별**: `form*`, `edit*` 관련 변수들 (Dtl 파일들)
+
+```js
+// ❌ 리팩토링 전
+const formName = ref('');
+const formEmail = ref('');
+const formPhone = ref('');
+const formUseYn = ref('Y');
+
+// ✅ 리팩토링 후
+const form = reactive({
+  name: '',
+  email: '',
+  phone: '',
+  useYn: 'Y'
+});
+const formErrors = reactive({
+  name: '',
+  email: '',
+  phone: ''
+});
+```
+
+**영향 파일** (Dtl.js 파일들):
+- `SyUserDtl.js`, `SySiteDtl.js`, `SyCodeDtl.js`
+- `PdProdDtl.js`, `PdCategoryDtl.js`
+- `OdOrderDtl.js`, `OdClaimDtl.js`
+- 모든 Dtl.js 파일
+
+### 4단계: 선택·체크 상태 (우선순위: ⭐⭐)
+
+**패턴 식별**: `selected*`, `checked*`, `focused*` 관련 변수들
+
+```js
+// ❌ 리팩토링 전
+const selectedId = ref(null);
+const selectedIds = ref([]);
+const focusedIdx = ref(null);
+const checkAll = ref(false);
+
+// ✅ 리팩토링 후
+const selection = reactive({
+  id: null,
+  ids: [],
+  focusedIdx: null,
+  checkAll: false
+});
+```
+
+### 5단계: 모달·드롭다운 (우선순위: ⭐⭐)
+
+**패턴 식별**: 모달 제어 변수들 (show, isOpen, expand 등)
+
+```js
+// ❌ 리팩토링 전
+const modalShow = ref(false);
+const expandedNodes = ref(new Set());
+const hoverId = ref(null);
+
+// ✅ 리팩토링 후
+const modal = reactive({
+  show: false,
+  expandedNodes: new Set(),
+  hoverId: null
+});
+```
+
+### 리팩토링 체크리스트
+
+각 파일별로 다음을 확인하세요:
+
+```
+[ ] 검색 필터 → searchParam으로 통합
+[ ] 페이저 → pager로 통합  
+[ ] 폼 데이터 → form으로 통합
+[ ] 폼 에러 → formErrors로 통합
+[ ] 선택 상태 → selection으로 통합
+[ ] 모달 상태 → modal로 통합
+[ ] 불가피한 단일 ref만 유지 (loading, error, isOpen 등)
+[ ] 템플릿의 v-model 바인딩 업데이트
+[ ] watch/computed 함수형으로 변경
+[ ] onMounted에서 Object.assign으로 초기값 저장
+[ ] onReset에서 Object.assign으로 복원
+```
+
+### 우선순위별 실행 계획
+
+#### Phase 1 (완료 ✅)
+- [x] `SyRoleMng.js` — 검색 필터 reactive 통합
+- [x] `BaseModal.js` 주요 모달들 — reactive 패턴 적용
+- [x] 정책서 업데이트 — ref vs reactive 원칙 + 리팩토링 가이드
+
+#### Phase 2 (다음 우선순위)
+
+**검색 필터 영역** (100개 파일 중 미적용 파일들):
+- `SyCodeMng.js` — 이미 searchParam 적용됨 ✅
+- `SyMenuMng.js` — search* 분리 필요
+- `SyUserMng.js` — search* 분리 필요
+- `PdCategoryMng.js` — search* 분리 필요
+- `PdProdMng.js` — search* 분리 필요
+- `OdOrderMng.js` — search* 분리 필요
+- 기타 Mng.js 파일들 (40개+)
+
+**폼·입력 영역** (모든 Dtl.js 파일):
+- `SyCodeDtl.js`, `SyUserDtl.js`, `SySiteDtl.js`
+- `PdProdDtl.js`, `PdCategoryDtl.js`
+- `OdOrderDtl.js`, `OdClaimDtl.js`
+- 기타 Dtl.js 파일들 (30개+)
+
+#### Phase 3 (모달, 선택 상태)
+- `components/modals/BaseModal.js` — 이미 reactive 모달 패턴 적용됨 ✅
+- 개별 모달 상태 (expandedNodes, hoverId 등)
+- 트리 선택 상태 (selectedPath, selectedId 등)
+
+---
+
+### 자동 리팩토링 스크립트 (향후)
+
+대량 리팩토링을 위한 bash 스크립트 템플릿:
+
+```bash
+# 1. search* ref 패턴 찾기
+grep -r "const search\w* = ref(" pages/bo/**/*.js
+
+# 2. form* ref 패턴 찾기
+grep -r "const form\w* = ref(" pages/bo/**/*Dtl.js
+
+# 3. 선택 상태 ref 패턴 찾기
+grep -r "const selected\w* = ref(" pages/bo/**/*.js
+```
+
+---
+
+---
+
 ## 관련 정책
 
 - `sy.51.프로그램설계정책.md` — 초기값·데이터 정렬·상세화면 ID 표시

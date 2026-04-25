@@ -97,10 +97,9 @@
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleFetchData();
+    Object.assign(searchParamOrg, searchParam); });
       /* ── 검색 상태 ── */
-      const searchMode   = ref('member');
-      const searchInput  = ref('');
       const memberModal  = reactive({ show: false, keyword: '', list: [] });
 
       /* ── 기간 필터 ── */
@@ -193,35 +192,18 @@
       };
 
       /* ── 검색 실행 ── */
-      const onSearch = () => {
-        if (searchMode.value === 'member') { openMemberModal(); return; }
-        const kw = searchInput.value.trim();
-        if (!kw) { props.showToast('검색어를 입력하세요.', 'error'); return; }
-        if (searchMode.value === 'order') {
-          const order = orders.window.safeArrayUtils.safeFind(value, o => o.orderId === kw);
-          if (!order) { props.showToast('해당 주문을 찾을 수 없습니다.', 'error'); return; }
-          const mem = members.window.safeArrayUtils.safeFind(value, m => m.userId === order.userId);
-          if (!mem) { props.showToast('주문의 회원 정보를 찾을 수 없습니다.', 'error'); return; }
-          customer.value = mem; searchInput.value = '';
-        } else if (searchMode.value === 'claim') {
-          const claim = claims.window.safeArrayUtils.safeFind(value, c => c.claimId === kw);
-          if (!claim) { props.showToast('해당 클레임을 찾을 수 없습니다.', 'error'); return; }
-          const mem = members.window.safeArrayUtils.safeFind(value, m => m.userId === claim.userId);
-          if (!mem) { props.showToast('클레임의 회원 정보를 찾을 수 없습니다.', 'error'); return; }
-          customer.value = mem; searchInput.value = '';
-        }
-      };
-
-      const clearCustomer = () => { customer.value = null; searchInput.value = ''; };
-
-      /* ── 탭 + 뷰모드 ── */
-      const histTab = ref(window._mbCustInfoState.tab || 'orders');
-      watch(histTab, v => { window._mbCustInfoState.tab = v; });
-      const viewMode2 = ref(window._mbCustInfoState.viewMode || 'tab');
-      watch(viewMode2, v => { window._mbCustInfoState.viewMode = v; });
-      const showTab = (id) => viewMode2.value !== 'tab' || histTab.value === id;
-
-      return { custInfos, loading, error, searchMode, searchInput, SEARCH_MODES, memberModal,
+      const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
+      pager.page = 1;
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  return { custInfos, loading, error, searchMode, searchInput, SEARCH_MODES, memberModal,
         period, customFrom, customTo, PERIOD_OPTS, cfDateFrom, cfDateTo,
         customer,
         cfCustOrders, cfCustClaims, cfCustDeliveries, cfCustCache, cfCustCacheBalance,
@@ -264,7 +246,7 @@
     <!-- 번호 입력 -->
     <template v-else>
       <div style="display:flex;align-items:center;gap:0;background:#f8f9fa;border:1.5px solid #ddd;border-radius:8px;overflow:hidden;flex:1;max-width:360px;">
-        <input type="text" v-model="searchInput"
+        <input type="text" v-model="searchParam.input"
           :placeholder="searchMode==='order'?'주문번호  ex) ORD-2026-025':'클레임번호  ex) CLM-2026-013'"
           style="border:none;background:transparent;padding:8px 14px;font-size:13px;outline:none;flex:1;min-width:0;"
           @keyup.enter="() => onSearch?.()" />

@@ -10,25 +10,42 @@ window.StRawMng = {
     const dateRange = ref('이번달');
     const dateStart = ref('');
     const dateEnd   = ref('');
-    const onDateRangeChange = () => {
+    const handleDateRangeChange = () => {
       if (dateRange.value) { const r = window.boCmUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
 
     // 검색 필드
-    const searchKw          = ref('');
-    const searchType        = ref('');
-    const searchStatus      = ref('');
-    const searchVendorType  = ref('');
-    const searchPayMethod   = ref('');
-    const searchBuyConfirm  = ref('');
-    const searchCloseYn     = ref('');
-    const searchErpSend     = ref('');
-    const searchPeriod      = ref('');
-    const searchOrderStatus = ref('');
-    const searchAmtFrom     = ref('');
-    const searchAmtTo       = ref('');
-    const searchMoreOpen    = ref(false);
+  const searchParam = reactive({
+    kw: '',
+    type: '',
+    status: '',
+    vendorType: '',
+    payMethod: '',
+    buyConfirm: '',
+    closeYn: '',
+    erpSend: '',
+    period: '',
+    orderStatus: '',
+    amtFrom: '',
+    amtTo: '',
+    moreOpen: ''
+  });
+  const searchParamOrg = reactive({
+    kw: '',
+    type: '',
+    status: '',
+    vendorType: '',
+    payMethod: '',
+    buyConfirm: '',
+    closeYn: '',
+    erpSend: '',
+    period: '',
+    orderStatus: '',
+    amtFrom: '',
+    amtTo: '',
+    moreOpen: ''
+  });
 
     const pager    = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
@@ -50,9 +67,11 @@ window.StRawMng = {
         orderList.splice(0, orderList.length, ...(resO.data?.data?.list || []));
         claimList.splice(0, claimList.length, ...(resC.data?.data?.list || []));
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
-      } catch (_) {}
+      } catch (_) {
+      console.error('[catch-info]', _);}
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleFetchData();
+    Object.assign(searchParamOrg, searchParam); });
 
     const PAY_METHODS = ['무통장입금','가상계좌','토스페이','카카오페이','네이버페이','핸드폰결제'];
     const PROD_NMS    = ['스탠다드 코튼 티셔츠','슬림 데님 팬츠','캐주얼 후드집업','오버핏 맨투맨','베이직 니트','린넨 셔츠','데일리 스니커즈','크로스백 미니','울 코트','레더 벨트'];
@@ -187,32 +206,23 @@ window.StRawMng = {
 
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    const onSearch = () => { pager.page = 1; };
-    const onReset  = () => {
-      searchKw.value = ''; searchType.value = ''; searchStatus.value = '';
-      searchVendorType.value = ''; searchPayMethod.value = ''; searchBuyConfirm.value = '';
-      searchCloseYn.value = ''; searchErpSend.value = ''; searchPeriod.value = '';
-      searchOrderStatus.value = ''; searchAmtFrom.value = ''; searchAmtTo.value = '';
-      dateRange.value = '이번달'; onDateRangeChange(); pager.page = 1;
-    };
-
-    const expandedRows = reactive(new Set());
-    const toggleRow = id => {
-      if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id);
-    };
-    const isExpanded = id => expandedRows.has(id);
-
-    const fnStatusBadge = s => ({ '정산대상':'badge-blue', '차감':'badge-red', '취소':'badge-gray' }[s] || 'badge-gray');
-    const rawStatusLabel = cd => ({ 'COLLECTED':'수집완료', 'EXCLUDED':'제외', 'SETTLED':'정산완료', 'PENDING':'대기' }[cd] || cd);
-    const fnRawStatusBadge = cd => ({ 'COLLECTED':'badge-green', 'EXCLUDED':'badge-gray', 'SETTLED':'badge-blue', 'PENDING':'badge-orange' }[cd] || 'badge-gray');
-    const vendorTypeLabel = cd => ({ 'SALE':'판매', 'DLIV':'배송', 'EXTERNAL':'외부' }[cd] || cd);
-    const orderStatusLabel = cd => ({ 'SHIPPING':'배송중','DELIVERED':'배송완료','CONFIRMED':'구매확정','CANCELLED':'취소','PAID':'결제완료','PREPARING':'준비중','ORDERED':'주문완료' }[cd] || cd);
-    const fmtW = n => Number(n || 0).toLocaleString() + '원';
-    const fmtPct = n => (n || 0) + '%';
-
-    const doCollect = () => props.showToast('정산 데이터를 재수집합니다.', 'info');
-
-    return {
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
+      pager.page = 1;
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
+    const onReset = () => {
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  return {
       descOpen, searchMoreOpen,
       DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange,
       searchKw, searchType, searchStatus,
@@ -249,27 +259,27 @@ window.StRawMng = {
       <input type="date" v-model="dateStart" style="width:140px" />
       <span style="line-height:32px">~</span>
       <input type="date" v-model="dateEnd" style="width:140px" />
-      <select v-model="searchType" style="width:100px">
+      <select v-model="searchParam.type" style="width:100px">
         <option value="">유형 전체</option><option>주문</option><option>클레임</option>
       </select>
-      <select v-model="searchStatus" style="width:110px">
+      <select v-model="searchParam.status" style="width:110px">
         <option value="">수집상태 전체</option>
         <option value="COLLECTED">수집완료</option>
         <option value="EXCLUDED">제외</option>
         <option value="SETTLED">정산완료</option>
         <option value="PENDING">대기</option>
       </select>
-      <input v-model="searchKw" placeholder="원장ID / 소스ID / 업체명 / 상품명 / 브랜드" style="width:230px" @keyup.enter="() => onSearch?.()" />
+      <input v-model="searchParam.kw" placeholder="원장ID / 소스ID / 업체명 / 상품명 / 브랜드" style="width:230px" @keyup.enter="() => onSearch?.()" />
     </div>
     <!-- 2행: 추가 필터 -->
     <div class="search-bar" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">
-      <select v-model="searchVendorType" style="width:110px">
+      <select v-model="searchParam.vendorType" style="width:110px">
         <option value="">업체구분 전체</option>
         <option value="SALE">판매업체</option>
         <option value="DLIV">배송업체</option>
         <option value="EXTERNAL">외부업체</option>
       </select>
-      <select v-model="searchPayMethod" style="width:120px">
+      <select v-model="searchParam.payMethod" style="width:120px">
         <option value="">결제수단 전체</option>
         <option value="무통장입금">무통장입금</option>
         <option value="가상계좌">가상계좌</option>
@@ -278,22 +288,22 @@ window.StRawMng = {
         <option value="네이버페이">네이버페이</option>
         <option value="핸드폰결제">핸드폰결제</option>
       </select>
-      <select v-model="searchBuyConfirm" style="width:110px">
+      <select v-model="searchParam.buyConfirm" style="width:110px">
         <option value="">구매확정 전체</option>
         <option value="Y">확정</option>
         <option value="N">미확정</option>
       </select>
-      <select v-model="searchCloseYn" style="width:110px">
+      <select v-model="searchParam.closeYn" style="width:110px">
         <option value="">마감여부 전체</option>
         <option value="Y">마감완료</option>
         <option value="N">미마감</option>
       </select>
-      <select v-model="searchErpSend" style="width:110px">
+      <select v-model="searchParam.erpSend" style="width:110px">
         <option value="">ERP전송 전체</option>
         <option value="Y">전송완료</option>
         <option value="N">미전송</option>
       </select>
-      <input v-model="searchPeriod" placeholder="정산기간(YYYY-MM)" style="width:150px" maxlength="7" />
+      <input v-model="searchParam.period" placeholder="정산기간(YYYY-MM)" style="width:150px" maxlength="7" />
       <div class="search-actions" style="margin-left:auto">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary" @click="onReset">초기화</button>
@@ -304,7 +314,7 @@ window.StRawMng = {
     </div>
     <!-- 3행: 상세검색 펼치기 -->
     <div v-if="searchMoreOpen" class="search-bar" style="flex-wrap:wrap;gap:8px;padding-top:8px;border-top:1px solid #f0f0f0">
-      <select v-model="searchOrderStatus" style="width:120px">
+      <select v-model="searchParam.orderStatus" style="width:120px">
         <option value="">주문상태 전체</option>
         <option value="ORDERED">주문완료</option>
         <option value="PAID">결제완료</option>
@@ -315,9 +325,9 @@ window.StRawMng = {
         <option value="CANCELLED">취소</option>
       </select>
       <span style="line-height:32px;font-size:12px;color:#888">수집금액</span>
-      <input v-model="searchAmtFrom" type="number" placeholder="최솟값(원)" style="width:120px" />
+      <input v-model="searchParam.amtFrom" type="number" placeholder="최솟값(원)" style="width:120px" />
       <span style="line-height:32px">~</span>
-      <input v-model="searchAmtTo" type="number" placeholder="최댓값(원)" style="width:120px" />
+      <input v-model="searchParam.amtTo" type="number" placeholder="최댓값(원)" style="width:120px" />
     </div>
   </div>
 

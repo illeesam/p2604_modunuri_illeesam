@@ -29,23 +29,17 @@ window.DpDispPanelMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleFetchData();
+    Object.assign(searchParamOrg, searchParam); });
     const fnPathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const searchKw = ref('');
-    const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+    const handleDateRangeChange = () => {
+      if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.page = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const searchArea = ref('');
-    const searchStatus = ref('');
-    const searchDispDate = ref('');
-    const searchDispTime = ref('');
-    const searchVisibility = ref('');
-    const searchLayoutType = ref('');
+
     const VISIBILITY_OPTS  = [
       { value: '', label: '전체' },
       { value: 'PUBLIC',    label: '전체공개' },
@@ -212,31 +206,23 @@ window.DpDispPanelMng = {
       searchDispTime.value = now.toTimeString().slice(0, 5);
     };
 
-    const onSearch = () => {
-      Object.assign(applied, {
-        kw: searchKw.value,
-        area: searchArea.value,
-        status: searchStatus.value,
-        dateStart: searchDateStart.value,
-        dateEnd: searchDateEnd.value,
-        dispDate: searchDispDate.value,
-        dispTime: searchDispTime.value,
-        visibility: searchVisibility.value,
-        layoutType: searchLayoutType.value,
-      });
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
       pager.page = 1;
-    };
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
     const onReset = () => {
-      searchKw.value = '';
-      searchArea.value = '';
-      searchStatus.value = '';
-      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
-      searchDispDate.value = ''; searchDispTime.value = '';
-      searchVisibility.value = '';
-      searchLayoutType.value = '';
-      Object.assign(applied, { kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' });
-      pager.page = 1;
-    };
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
@@ -356,7 +342,31 @@ window.DpDispPanelMng = {
     const onWidgetDragEnd = () => { widgetDragPanel.value = null; widgetDragSrcWi.value = null; widgetDragOverWi.value = null; };
 
     /* ── 표시경로 (영역별 그룹) ── */
-    const selectedTreeKey = ref('');   /* '' = 전체, '<areaCode>' = 특정 영역 */
+    const selectedTreeKey = ref('');
+  const searchParam = reactive({
+    kw: '',
+    dateRange: '',
+    dateStart: '',
+    dateEnd: '',
+    area: '',
+    status: '',
+    dispDate: '',
+    dispTime: '',
+    visibility: '',
+    layoutType: ''
+  });
+  const searchParamOrg = reactive({
+    kw: '',
+    dateRange: '',
+    dateStart: '',
+    dateEnd: '',
+    area: '',
+    status: '',
+    dispDate: '',
+    dispTime: '',
+    visibility: '',
+    layoutType: ''
+  });   /* '' = 전체, '<areaCode>' = 특정 영역 */
     const treeOpen = reactive(new Set(['__root__']));
     const toggleTree = (k) => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
     const isTreeOpen = (k) => treeOpen.has(k);
@@ -409,14 +419,14 @@ window.DpDispPanelMng = {
   <div class="page-title">전시패널관리 <span style="font-size:13px;font-weight:400;color:#888;">화면 영역별 전시패널 관리</span></div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="패널명 / 영역코드 검색" />
+      <input v-model="searchParam.kw" placeholder="패널명 / 영역코드 검색" />
       <span class="search-label">화면영역</span>
-      <select v-model="searchArea" style="min-width:160px;">
+      <select v-model="searchParam.area" style="min-width:160px;">
         <option value="">전체 영역</option>
         <option v-for="a in cfAreas" :key="a?.codeValue" :value="a.codeValue">{{ a.codeValue }} {{ a.codeLabel }}</option>
       </select>
-      <select v-model="searchStatus"><option value="">상태 전체</option><option>활성</option><option>비활성</option></select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
+      <select v-model="searchParam.status"><option value="">상태 전체</option><option>활성</option><option>비활성</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -425,17 +435,17 @@ window.DpDispPanelMng = {
     <!-- 2행: 전시일·노출조건·인증 -->
     <div class="search-bar" style="margin-top:8px;padding-top:8px;border-top:1px dashed #eee;">
       <span class="search-label">전시일시</span>
-      <input type="date" v-model="searchDispDate" class="date-range-input" style="width:145px;" />
-      <input type="time" v-model="searchDispTime" class="date-range-input" style="width:145px;" />
+      <input type="date" v-model="searchParam.dispDate" class="date-range-input" style="width:145px;" />
+      <input type="time" v-model="searchParam.dispTime" class="date-range-input" style="width:145px;" />
       <button @click="setDispNow" style="font-size:11px;padding:3px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;">🕐 현재</button>
       <div style="width:1px;height:24px;background:#e8e8e8;margin:0 4px;"></div>
       <span class="search-label">공개대상</span>
-      <select v-model="searchVisibility" style="min-width:100px;">
+      <select v-model="searchParam.visibility" style="min-width:100px;">
         <option v-for="o in VISIBILITY_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
       </select>
       <div style="width:1px;height:24px;background:#e8e8e8;margin:0 4px;"></div>
       <span class="search-label">표시방식</span>
-      <select v-model="searchLayoutType" style="min-width:100px;">
+      <select v-model="searchParam.layoutType" style="min-width:100px;">
         <option value="">전체</option>
         <option v-for="o in LAYOUT_TYPE_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
       </select>

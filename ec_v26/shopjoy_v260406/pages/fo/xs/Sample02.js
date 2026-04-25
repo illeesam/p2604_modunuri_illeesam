@@ -20,10 +20,8 @@ window.XsSample02 = {
     };
 
     /* ── 검색 ── */
-    const searchKw       = ref('');
-    const searchCategory = ref('');
-    const searchStatus   = ref('');
-    const applied = reactive({ kw: '', category: '', status: '' });
+    const searchParam = reactive({ kw: '', category: '', status: '' });
+    const searchParamOrg = reactive({ kw: '', category: '', status: '' });
 
     /* ── CRUD Grid ── */
     const allData    = reactive([]);
@@ -68,10 +66,10 @@ window.XsSample02 = {
     const handleLoadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; visibleCount.value = 10;
       allData.filter(d => {
-        const kw = applied.kw.toLowerCase();
+        const kw = searchParam.kw.toLowerCase();
         if (kw && !String(d.productNm || '').toLowerCase().includes(kw)) return false;
-        if (applied.category && d.category !== applied.category) return false;
-        if (applied.status   && d.status   !== applied.status)   return false;
+        if (searchParam.category && d.category !== searchParam.category) return false;
+        if (searchParam.status   && d.status   !== searchParam.status)   return false;
         return true;
       }).forEach(d => gridRows.push(makeRow(d)));
     };
@@ -85,14 +83,17 @@ window.XsSample02 = {
       handleLoadGrid();
       Vue.nextTick(setupObserver);
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => {
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
+    });
 
     onUnmounted(() => {
       if (_observer) _observer.disconnect();
     });
 
-    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, category: searchCategory.value, status: searchStatus.value }); handleLoadGrid(); Vue.nextTick(setupObserver); };
-    const onReset  = () => { searchKw.value = ''; searchCategory.value = ''; searchStatus.value = ''; Object.assign(applied, { kw: '', category: '', status: '' }); handleLoadGrid(); Vue.nextTick(setupObserver); };
+    const onSearch = () => { handleLoadGrid(); Vue.nextTick(setupObserver); };
+    const onReset  = () => { Object.assign(searchParam, searchParamOrg); handleLoadGrid(); Vue.nextTick(setupObserver); };
 
     const setFocused   = idx => { focusedIdx.value = idx; };
     const onCellChange = row => {
@@ -183,7 +184,7 @@ window.XsSample02 = {
     const CATEGORY_OPTS = ['상의', '하의', '아우터', '원피스', '신발', '가방'];
 
     return {
-      toast, searchKw, searchCategory, searchStatus, CATEGORY_OPTS, onSearch, onReset,
+      toast, searchParam, CATEGORY_OPTS, onSearch, onReset,
       gridRows, cfVisibleRows, cfTotal, visibleCount, cfHasMore, loadMore: handleLoadMore, sentinelEl,
       focusedIdx, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
@@ -209,13 +210,13 @@ window.XsSample02 = {
   <!-- 검색 -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <input v-model="searchKw" placeholder="상품명 검색" @keyup.enter="onSearch"
+      <input v-model="searchParam.kw" placeholder="상품명 검색" @keyup.enter="onSearch"
         style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:180px;outline:none;" />
-      <select v-model="searchCategory" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
+      <select v-model="searchParam.category" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
         <option value="">카테고리 전체</option>
         <option v-for="c in CATEGORY_OPTS" :key="c">{{ c }}</option>
       </select>
-      <select v-model="searchStatus" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
+      <select v-model="searchParam.status" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
         <option value="">상태 전체</option><option>판매중</option><option>품절</option><option>판매중지</option>
       </select>
       <button @click="onSearch" style="font-size:12px;padding:5px 14px;border:none;border-radius:6px;background:#e8587a;color:#fff;cursor:pointer;font-weight:600;">검색</button>

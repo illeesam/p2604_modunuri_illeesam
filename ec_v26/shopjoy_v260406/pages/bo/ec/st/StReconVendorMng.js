@@ -10,7 +10,7 @@ window.StReconVendorMng = {
     const dateRange = ref('이번달');
     const dateStart = ref('');
     const dateEnd   = ref('');
-    const onDateRangeChange = () => {
+    const handleDateRangeChange = () => {
       if (dateRange.value) { const r = window.boCmUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
@@ -28,11 +28,18 @@ window.StReconVendorMng = {
         ]);
         orderList.splice(0, orderList.length, ...(resO.data?.data?.list || []));
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
-      } catch (_) {}
+      } catch (_) {
+      console.error('[catch-info]', _);}
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleFetchData();
+    Object.assign(searchParamOrg, searchParam); });
 
-    const searchDiff = ref('');
+  const searchParam = reactive({
+    diff: ''
+  });
+  const searchParamOrg = reactive({
+    diff: ''
+  });
     const pager = reactive({ page: 1, size: 10 });
 
     const cfRows = computed(() => {
@@ -58,8 +65,23 @@ window.StReconVendorMng = {
 
     const fnDiffBadge = s => ({ '일치':'badge-green','시스템과다':'badge-red','업체과다':'badge-orange' }[s] || 'badge-gray');
     const fmtW = n => Number(n||0).toLocaleString() + '원';
-    const onSearch = () => { pager.page = 1; };
-    const onReset  = () => { searchDiff.value = ''; dateRange.value = '이번달'; onDateRangeChange(); pager.page = 1; };
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
+      pager.page = 1;
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
+    const onReset = () => {
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  
 
     const setPage = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
@@ -82,7 +104,7 @@ window.StReconVendorMng = {
         <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
       </select>
       <input type="date" v-model="dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="dateEnd" style="width:140px" />
-      <select v-model="searchDiff" style="width:120px">
+      <select v-model="searchParam.diff" style="width:120px">
         <option value="">대사결과 전체</option><option>일치</option><option>시스템과다</option><option>업체과다</option>
       </select>
       <div class="search-actions">

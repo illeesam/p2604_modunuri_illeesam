@@ -26,45 +26,49 @@ window.SyContactMng = {
       }
     };
     onMounted(() => { handleFetchData(); });
-    const searchKw = ref('');
-    const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
+    const searchParam = reactive({
+      kw: '', category: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '', category: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
+    });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+    const handleDateRangeChange = () => {
+      if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.page = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const searchCategory = ref('');
-    const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     /* 하단 상세 */
-    const selectedId = ref(null);
-    const openMode = ref('view'); // 'view' | 'edit'
-    const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
-    const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
-    const closeDetail = () => { selectedId.value = null; };
+    const detailModal = reactive({
+      show: false,
+      editId: null,
+      viewMode: 'view' // 'view' | 'edit'
+    });
+
+    const loadView = (id) => { if (detailModal.editId === id && detailModal.viewMode === 'view') { detailModal.show = false; detailModal.editId = null; return; } detailModal.editId = id; detailModal.viewMode = 'view'; detailModal.show = true; };
+    const handleLoadDetail = (id) => { if (detailModal.editId === id && detailModal.viewMode === 'edit') { detailModal.show = false; detailModal.editId = null; return; } detailModal.editId = id; detailModal.viewMode = 'edit'; detailModal.show = true; };
+    const openNew = () => { detailModal.editId = '__new__'; detailModal.viewMode = 'edit'; detailModal.show = true; };
+    const closeDetail = () => { detailModal.show = false; detailModal.editId = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'syContactMng') { selectedId.value = null; return; }
-      if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
+      if (pg === 'syContactMng') { detailModal.show = false; detailModal.editId = null; return; }
+      if (pg === '__switchToEdit__') { detailModal.viewMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
-
-    const applied = reactive({ kw: '', category: '', status: '', dateStart: '', dateEnd: '' });
+    const cfDetailEditId = computed(() => detailModal.editId === '__new__' ? null : detailModal.editId);
+    const cfIsViewMode = computed(() => detailModal.viewMode === 'view' && detailModal.editId !== '__new__');
+    const cfDetailKey = computed(() => `${detailModal.editId}_${detailModal.viewMode}`);
 
     const cfFiltered = computed(() => contacts.filter(c => {
-      const kw = applied.kw.trim().toLowerCase();
+      const kw = searchParam.kw.trim().toLowerCase();
       if (kw && !c.title.toLowerCase().includes(kw) && !c.userNm.toLowerCase().includes(kw)) return false;
-      if (applied.category && c.categoryCd !== applied.category) return false;
-      if (applied.status && c.statusCd !== applied.status) return false;
+      if (searchParam.category && c.categoryCd !== searchParam.category) return false;
+      if (searchParam.status && c.statusCd !== searchParam.status) return false;
       const _d = String(c.date || '').slice(0, 10);
-      if (applied.dateStart && _d < applied.dateStart) return false;
-      if (applied.dateEnd && _d > applied.dateEnd) return false;
+      if (searchParam.dateStart && _d < searchParam.dateStart) return false;
+      if (searchParam.dateEnd && _d > searchParam.dateEnd) return false;
       return true;
     }));
     const cfTotal = computed(() => cfFiltered.value.length);
@@ -77,21 +81,10 @@ window.SyContactMng = {
     });
     const fnStatusBadge = s => ({ '요청': 'badge-orange', '처리중': 'badge-blue', '답변완료': 'badge-green', '취소됨': 'badge-gray' }[s] || 'badge-gray');
     const onSearch = () => {
-      Object.assign(applied, {
-        kw: searchKw.value,
-        category: searchCategory.value,
-        status: searchStatus.value,
-        dateStart: searchDateStart.value,
-        dateEnd: searchDateEnd.value,
-      });
       pager.page = 1;
     };
     const onReset = () => {
-      searchKw.value = '';
-      searchCategory.value = '';
-      searchStatus.value = '';
-      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
-      Object.assign(applied, { kw: '', category: '', status: '', dateStart: '', dateEnd: '' });
+      Object.assign(searchParam, searchParamOrg);
       pager.page = 1;
     };
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
@@ -102,7 +95,7 @@ window.SyContactMng = {
       if (!ok) return;
       const idx = contacts.findIndex(x => x.inquiryId === c.inquiryId);
       if (idx !== -1) contacts.splice(idx, 1);
-      if (selectedId.value === c.inquiryId) selectedId.value = null;
+      if (detailModal.editId === c.inquiryId) { detailModal.show = false; detailModal.editId = null; }
       try {
         const res = await window.boApi.delete(`/bo/sy/contact/${c.inquiryId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -117,23 +110,23 @@ window.SyContactMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'inquiryId'},{label:'회원명',key:'userNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'title'},{label:'상태',key:'statusCd'},{label:'등록일',key:'date'}], '문의목록.csv');
 
-    return { contacts, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchCategory, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { contacts, loading, error, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
   <div class="page-title">문의관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="제목 / 회원명 검색" />
-      <select v-model="searchCategory">
+      <input v-model="searchParam.kw" placeholder="제목 / 회원명 검색" />
+      <select v-model="searchParam.category">
         <option value="">카테고리 전체</option>
         <option>배송 문의</option><option>상품 문의</option><option>교환·반품 문의</option>
         <option>주문·결제 문의</option><option>기타 문의</option>
       </select>
-      <select v-model="searchStatus">
+      <select v-model="searchParam.status">
         <option value="">상태 전체</option><option>요청</option><option>처리중</option><option>답변완료</option><option>취소됨</option>
       </select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -154,11 +147,11 @@ window.SyContactMng = {
       </tr></thead>
       <tbody>
         <tr v-if="cfPageList.length===0"><td colspan="7" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="c in cfPageList" :key="c.inquiryId" :style="selectedId===c.inquiryId?'background:#fff8f9;':''">
+        <tr v-for="c in cfPageList" :key="c.inquiryId" :style="detailModal.editId===c.inquiryId?'background:#fff8f9;':''">
           <td>{{ c.inquiryId }}</td>
           <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
           <td><span class="tag">{{ c.categoryCd }}</span></td>
-          <td><span class="title-link" @click="handleLoadDetail(c.inquiryId)" :style="selectedId===c.inquiryId?'color:#e8587a;font-weight:700;':''">{{ c.title }}<span v-if="selectedId===c.inquiryId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="handleLoadDetail(c.inquiryId)" :style="detailModal.editId===c.inquiryId?'color:#e8587a;font-weight:700;':''">{{ c.title }}<span v-if="detailModal.editId===c.inquiryId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><span class="badge" :class="fnStatusBadge(c.statusCd)">{{ c.statusCd }}</span></td>
           <td>{{ c.date.slice(0,10) }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
@@ -187,12 +180,12 @@ window.SyContactMng = {
   </div>
 
   <!-- 하단 상세: ContactDtl 임베드 -->
-  <div v-if="selectedId" style="margin-top:4px;">
+  <div v-if="detailModal.show" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
     <sy-contact-dtl
-      :key="selectedId"
+      :key="detailModal.editId"
       :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"

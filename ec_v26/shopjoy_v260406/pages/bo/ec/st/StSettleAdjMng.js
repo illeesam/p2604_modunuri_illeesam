@@ -11,7 +11,7 @@ window.StSettleAdjMng = {
     const dateRange = ref('이번달');
     const dateStart = ref('');
     const dateEnd   = ref('');
-    const onDateRangeChange = () => {
+    const handleDateRangeChange = () => {
       if (dateRange.value) { const r = window.boCmUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
@@ -23,9 +23,11 @@ window.StSettleAdjMng = {
       try {
         const res = await window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } });
         vendorList.splice(0, vendorList.length, ...(res.data?.data?.list || []));
-      } catch (_) {}
+      } catch (_) {
+      console.error('[catch-info]', _);}
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleFetchData();
+    Object.assign(searchParamOrg, searchParam); });
 
     const adjList = reactive([
       { adjId: 'ADJ-2026-001', adjDate: '2026-04-10', vendorId: 1, vendorNm: '패션스타일 주식회사', adjType: '수수료조정', adjAmt: -5000,  reason: '4월 프로모션 참여 수수료 감면', aprvStatus: '승인', regUserNm: '이관리자' },
@@ -35,9 +37,6 @@ window.StSettleAdjMng = {
       { adjId: 'ADJ-2026-005', adjDate: '2026-03-15', vendorId: 1, vendorNm: '패션스타일 주식회사', adjType: '매출조정', adjAmt: 30000, reason: '오주문 처리 수기 조정', aprvStatus: '승인', regUserNm: '김담당자' },
     ]);
 
-    const searchKw     = ref('');
-    const searchType   = ref('');
-    const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 10 });
 
     const cfFiltered = computed(() => {
@@ -60,6 +59,16 @@ window.StSettleAdjMng = {
     const form = reactive({});
     const errors = reactive({});
     const isNew  = ref(false);
+  const searchParam = reactive({
+    kw: '',
+    type: '',
+    status: ''
+  });
+  const searchParamOrg = reactive({
+    kw: '',
+    type: '',
+    status: ''
+  });
 
     const schema = window.yup.object({
       vendorId: window.yup.number().required('업체를 선택하세요.').min(1, '업체를 선택하세요.'),
@@ -79,7 +88,8 @@ window.StSettleAdjMng = {
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try { await schema.validate(form, { abortEarly: false }); }
-      catch (err) { err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
+      catch (err) {
+      console.error('[catch-info]', err); err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const v = cfVendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === Number(form.vendorId));
       if (v) form.vendorNm = v.vendorNm;
       const ok = await props.showConfirm('저장', '정산조정을 저장하시겠습니까?');
@@ -135,8 +145,23 @@ window.StSettleAdjMng = {
     const fnTypeBadge = t => ({ '매출조정':'badge-blue', '수수료조정':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
     const fmtW = n => (n >= 0 ? '' : '-') + Math.abs(Number(n)).toLocaleString() + '원';
 
-    const onSearch = () => { pager.page = 1; };
-    const onReset  = () => { searchKw.value = ''; searchType.value = ''; searchStatus.value = ''; dateRange.value = '이번달'; onDateRangeChange(); pager.page = 1; };
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
+      pager.page = 1;
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
+    const onReset = () => {
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  
 
     const setPage = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
@@ -162,13 +187,13 @@ window.StSettleAdjMng = {
       <input type="date" v-model="dateStart" style="width:140px" />
       <span style="line-height:32px">~</span>
       <input type="date" v-model="dateEnd" style="width:140px" />
-      <select v-model="searchType" style="width:120px">
+      <select v-model="searchParam.type" style="width:120px">
         <option value="">유형 전체</option><option>매출조정</option><option>수수료조정</option><option>반품조정</option>
       </select>
-      <select v-model="searchStatus" style="width:100px">
+      <select v-model="searchParam.status" style="width:100px">
         <option value="">상태 전체</option><option>대기</option><option>승인</option><option>반려</option>
       </select>
-      <input v-model="searchKw" placeholder="조정ID / 업체명 / 사유" style="width:200px" @keyup.enter="() => onSearch?.()" />
+      <input v-model="searchParam.kw" placeholder="조정ID / 업체명 / 사유" style="width:200px" @keyup.enter="() => onSearch?.()" />
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary" @click="onReset">초기화</button>

@@ -53,17 +53,20 @@ window.SyBrandMng = {
     const selectedPath = ref(null);
 
     /* ── 검색 ── */
-    const searchKw        = ref('');
-    const searchUseYn     = ref('');
-    const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
+    const searchParam = reactive({
+      kw: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
+    });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const onDateRangeChange = () => {
-      if (searchDateRange.value) {
-        const r = window.boCmUtil.getDateRange(searchDateRange.value);
-        searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : '';
+    const handleDateRangeChange = () => {
+      if (searchParam.dateRange) {
+        const r = window.boCmUtil.getDateRange(searchParam.dateRange);
+        searchParam.dateStart = r ? r.from : '';
+        searchParam.dateEnd = r ? r.to : '';
       }
     };
-    const applied = reactive({ kw: '', useYn: '', dateStart: '', dateEnd: '' });
 
     /* ── CRUD 그리드 ── */
     const gridRows   = reactive([]);
@@ -88,15 +91,15 @@ window.SyBrandMng = {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       (brands || [])
         .filter(b => {
-          const kw = applied.kw.trim().toLowerCase();
+          const kw = searchParam.kw.trim().toLowerCase();
           if (kw && !b.brandCode?.toLowerCase().includes(kw)
                  && !b.brandNm?.toLowerCase().includes(kw)
                  && !b.brandEnNm?.toLowerCase().includes(kw)) return false;
-          if (applied.useYn && b.useYn !== applied.useYn) return false;
+          if (searchParam.useYn && b.useYn !== searchParam.useYn) return false;
           if (selectedPath.value != null) { const _desc = window.boCmUtil.getPathDescendants('sy_brand', selectedPath.value); if (_desc && !_desc.has(b.pathId)) return false; }
           const d = String(b.regDate || '').slice(0, 10);
-          if (applied.dateStart && d < applied.dateStart) return false;
-          if (applied.dateEnd   && d > applied.dateEnd)   return false;
+          if (searchParam.dateStart && d < searchParam.dateStart) return false;
+          if (searchParam.dateEnd   && d > searchParam.dateEnd)   return false;
           return true;
         })
         .forEach(b => gridRows.push(makeRow(b)));
@@ -107,14 +110,10 @@ window.SyBrandMng = {
     const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
     const onSearch = () => {
-      Object.assign(applied, { kw: searchKw.value, useYn: searchUseYn.value,
-        dateStart: searchDateStart.value, dateEnd: searchDateEnd.value });
       handleLoadGrid();
     };
     const onReset = () => {
-      searchKw.value = ''; searchUseYn.value = '';
-      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
-      Object.assign(applied, { kw: '', useYn: '', dateStart: '', dateEnd: '' });
+      Object.assign(searchParam, searchParamOrg);
       handleLoadGrid();
     };
 
@@ -283,12 +282,12 @@ window.SyBrandMng = {
       handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
+      Object.assign(searchParamOrg, searchParam);
     });
     watch(selectedPath, () => handleLoadGrid());
 
     return { brands, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      searchKw, searchUseYn, searchDateRange, searchDateStart, searchDateEnd,
-      DATE_RANGE_OPTIONS, onDateRangeChange, applied,
+      searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange, cfIsLocalMode,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
@@ -304,17 +303,17 @@ window.SyBrandMng = {
   <!-- 검색 -->
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="브랜드코드 / 브랜드명 / 영문명 검색" />
-      <select v-model="searchUseYn">
+      <input v-model="searchParam.kw" placeholder="브랜드코드 / 브랜드명 / 영문명 검색" />
+      <select v-model="searchParam.useYn">
         <option value="">사용여부 전체</option>
         <option value="Y">사용</option>
         <option value="N">미사용</option>
       </select>
       <span class="search-label">등록일</span>
-      <input type="date" v-model="searchDateStart" class="date-range-input" />
+      <input type="date" v-model="searchParam.dateStart" class="date-range-input" />
       <span class="date-range-sep">~</span>
-      <input type="date" v-model="searchDateEnd" class="date-range-input" />
-      <select v-model="searchDateRange" @change="onDateRangeChange">
+      <input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
+      <select v-model="searchParam.dateRange" @change="handleDateRangeChange">
         <option value="">옵션선택</option>
         <option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>

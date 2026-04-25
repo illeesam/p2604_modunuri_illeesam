@@ -25,18 +25,29 @@ window.PdTagMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
+    /* ── 검색 파라미터 ── */
+    const searchParam = reactive({
+      kw: '',
+      use: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '',
+      use: ''
+    });
+
+    onMounted(() => {
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
+    });
+
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const searchKw  = ref('');
-    const searchUse = ref('');
-    const applied   = reactive({ kw: '', use: '' });
     const pager     = reactive({ page: 1, size: 20 });
 
     const cfFiltered = computed(() => {
-      const kw = applied.kw.toLowerCase();
+      const kw = searchParam.kw.toLowerCase();
       return (tags || []).filter(t => {
         if (kw && !t.tagNm.toLowerCase().includes(kw)) return false;
-        if (applied.use && t.useYn !== applied.use) return false;
+        if (searchParam.use && t.useYn !== searchParam.use) return false;
         return true;
       });
     });
@@ -49,7 +60,7 @@ window.PdTagMng = {
     let   _tempId    = -1;
 
     const handleLoadGrid = () => { gridRows.splice(0, gridRows.length, ...cfPageList.value.map(t => ({ ...t, _row_status: null }))); };
-    watch([() => pager.page, applied], handleLoadGrid, { immediate: true });
+    watch([() => pager.page, searchParam], handleLoadGrid, { immediate: true });
 
     const addRow       = () => { gridRows.unshift({ tagId: 'T' + (_tempId--), siteId: 1, tagNm: '', tagDesc: '', useCount: 0, sortOrd: 0, useYn: 'Y', _row_status: 'N' }); };
     const onCellChange = (idx) => { if (gridRows[idx]._row_status !== 'N') gridRows[idx]._row_status = 'U'; };
@@ -94,13 +105,19 @@ window.PdTagMng = {
         break;
       }
     };
-    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, use: searchUse.value }); pager.page = 1; };
-    const onReset  = () => { searchKw.value = ''; searchUse.value = ''; Object.assign(applied, { kw: '', use: '' }); pager.page = 1; };
+    const onSearch = () => {
+      pager.page = 1;
+    };
+    const onReset = () => {
+      Object.assign(searchParam, searchParamOrg);
+      pager.page = 1;
+    };
+  
     const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { tags, loading, error, searchKw, searchUse, pager, cfPageNums, cfTotalPages, setPage, cfTotal, onSearch, onReset,
+    return { tags, loading, error, searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, onSearch, onReset,
              gridRows, addRow, onCellChange, deleteRow, saveAll, fnYnBadge , PAGE_SIZES , onSizeChange };
   },
   template: `
@@ -109,9 +126,9 @@ window.PdTagMng = {
     <div class="card">
       <div class="search-bar">
         <label class="search-label">태그명</label>
-        <input class="form-control" v-model="searchKw" @keyup.enter="() => onSearch?.()" placeholder="태그명 검색">
+        <input class="form-control" v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="태그명 검색">
         <label class="search-label">사용여부</label>
-        <select class="form-control" v-model="searchUse"><option value="">전체</option><option value="Y">Y</option><option value="N">N</option></select>
+        <select class="form-control" v-model="searchParam.use"><option value="">전체</option><option value="Y">Y</option><option value="N">N</option></select>
         <div class="search-actions">
           <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
           <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

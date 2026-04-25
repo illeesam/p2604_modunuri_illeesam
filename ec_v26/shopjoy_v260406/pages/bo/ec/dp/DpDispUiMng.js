@@ -28,7 +28,8 @@ window.DpDispUiMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleFetchData();
+    Object.assign(searchParamOrg, searchParam); });
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
@@ -39,96 +40,56 @@ window.DpDispUiMng = {
       { value: 'KIOSK',  label: '키오스크' },
     ];
 
-    const searchKw        = ref('');
-    const searchUiType    = ref('');
-    const searchUseYn     = ref('');
-    const searchDateStart = ref('');
-    const searchDateEnd   = ref('');
-    const searchDateRange = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const onDateRangeChange = () => {
-      if (searchDateRange.value) {
-        const r = window.boCmUtil.getDateRange(searchDateRange.value);
-        searchDateStart.value = r ? r.from : '';
-        searchDateEnd.value   = r ? r.to   : '';
+    const handleDateRangeChange = () => {
+      if (searchParam.dateRange) {
+        const r = window.boCmUtil.getDateRange(searchParam.dateRange);
+        searchParam.dateStart = r ? r.from : '';
+        searchParam.dateEnd   = r ? r.to   : '';
       }
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    const applied = reactive({ kw: '', uiType: '', useYn: '', dateStart: '', dateEnd: '' });
-    const onSearch = () => {
-      Object.assign(applied, {
-        kw: searchKw.value, uiType: searchUiType.value, useYn: searchUseYn.value,
-        dateStart: searchDateStart.value, dateEnd: searchDateEnd.value,
-      });
-      pager.page = 1;
-    };
-    const onReset = () => {
-      searchKw.value = ''; searchUiType.value = ''; searchUseYn.value = '';
-      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
-      Object.assign(applied, { kw: '', uiType: '', useYn: '', dateStart: '', dateEnd: '' });
-      pager.page = 1;
-    };
-
-    /* UI 목록 (codes DISP_UI) */
-    const cfAllUis = computed(() =>
-      (codes || []).filter(c => c.codeGrp === 'DISP_UI')
-    );
-    /* 표시경로 (uiType 그룹 > 실제 UI 아이템) */
-    const selectedTreeKey = ref('');
-    const treeOpen = reactive(new Set(['__root__']));
-    const toggleTree = (k) => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
-    const isTreeOpen = (k) => treeOpen.has(k);
-    const selectTree = (k) => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
-    const cfUiTree = computed(() => {
-      const group = {};
-      window.safeArrayUtils.safeForEach(cfAllUis, u => {
-        const t = u.uiType || '(미분류)';
-        if (!group[t]) group[t] = [];
-        group[t].push(u);
-      });
-      return Object.keys(group).sort().map(t => ({
-        label: t,
-        count: group[t].length,
-        items: group[t].sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
-      }));
-    });
-    const expandAll   = () => { window.safeArrayUtils.safeForEach(cfUiTree, n => { treeOpen.add('grp_'+n.label); n.iwindow.safeArrayUtils.safeForEach(tems, u => treeOpen.add('ui_'+u.codeId)); }); treeOpen.add('__root__'); };
-    const collapseAll = () => { treeOpen.clear(); treeOpen.add('__root__'); };
-
-    const cfFiltered = computed(() => {
-      const kw = applied.kw.trim().toLowerCase();
-      return window.safeArrayUtils.safeFilter(cfAllUis, u => {
-        if (kw &&
-            !(u.codeValue || '').toLowerCase().includes(kw) &&
-            !(u.codeLabel || '').toLowerCase().includes(kw) &&
-            !(u.remark || '').toLowerCase().includes(kw)) return false;
-        if (applied.uiType && u.uiType !== applied.uiType) return false;
-        if (applied.useYn && u.useYn !== applied.useYn) return false;
-        const _d = String(u.regDate || '').slice(0, 10);
-        if (applied.dateStart && _d < applied.dateStart) return false;
-        if (applied.dateEnd   && _d > applied.dateEnd)   return false;
-        if (selectedTreeKey.value && (u.uiType || '(미분류)') !== selectedTreeKey.value) return false;
-        return true;
-      }).sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-    });
-
-    const pager      = reactive({ page: 1, size: 5 });
+    const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const cfTotal      = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList   = computed(() =>
-      cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size)
-    );
-    const cfPageNums   = computed(() => {
-      const cur = pager.page, last = cfTotalPages.value;
-      const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
-      return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-    });
-    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
 
     const selectedId = ref(null);
+  const searchParam = reactive({
+    kw: '',
+    uiType: '',
+    useYn: '',
+    dateStart: '',
+    dateEnd: '',
+    dateRange: ''
+  });
+  const searchParamOrg = reactive({
+    kw: '',
+    uiType: '',
+    useYn: '',
+    dateStart: '',
+    dateEnd: '',
+    dateRange: ''
+  });
+
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
+      pager.page = 1;
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+
+    const onReset = () => {
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+
+    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
+    const onSizeChange = () => { pager.page = 1; };
     const handleLoadDetail = (id) => { if (selectedId.value === id) { selectedId.value = null; return; } selectedId.value = id; };
     const openNew = () => { selectedId.value = '__new__'; };
     const closeDetail = () => { selectedId.value = null; };
@@ -209,21 +170,21 @@ window.DpDispUiMng = {
 
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="UI코드 / UI명 / 설명 검색" style="min-width:260px;" />
-      <select v-model="searchUiType">
+      <input v-model="searchParam.kw" placeholder="UI코드 / UI명 / 설명 검색" style="min-width:260px;" />
+      <select v-model="searchParam.uiType">
         <option value="">UI유형 전체</option>
         <option v-for="o in UI_TYPE_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
       </select>
-      <select v-model="searchUseYn">
+      <select v-model="searchParam.useYn">
         <option value="">사용여부 전체</option>
         <option value="Y">사용</option>
         <option value="N">미사용</option>
       </select>
       <span class="search-label">등록일</span>
-      <input type="date" v-model="searchDateStart" class="date-range-input" />
+      <input type="date" v-model="searchParam.dateStart" class="date-range-input" />
       <span class="date-range-sep">~</span>
-      <input type="date" v-model="searchDateEnd" class="date-range-input" />
-      <select v-model="searchDateRange" @change="onDateRangeChange">
+      <input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
+      <select v-model="searchParam.dateRange" @change="onDateRangeChange">
         <option value="">옵션선택</option>
         <option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option>
       </select>

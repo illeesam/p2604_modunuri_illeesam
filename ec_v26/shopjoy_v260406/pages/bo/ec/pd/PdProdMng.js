@@ -25,17 +25,40 @@ window.PdProdMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
-    const searchKw = ref('');
-    const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
+
+    onMounted(() => {
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
+    });
+
+    /* ── 검색 파라미터 ── */
+    const searchParam = reactive({
+      kw: '',
+      dateRange: '',
+      dateStart: '',
+      dateEnd: '',
+      cate: '',
+      status: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '',
+      dateRange: '',
+      dateStart: '',
+      dateEnd: '',
+      cate: '',
+      status: ''
+    });
+
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+    const handleDateRangeChange = () => {
+      if (searchParam.dateRange) {
+        const r = window.boCmUtil.getDateRange(searchParam.dateRange);
+        searchParam.dateStart = r ? r.from : '';
+        searchParam.dateEnd = r ? r.to : '';
+      }
       pager.page = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const searchCate = ref('');
-    const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
@@ -55,16 +78,14 @@ window.PdProdMng = {
     const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
     const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
 
-    const applied = reactive({ kw: '', cate: '', status: '', dateStart: '', dateEnd: '' });
-
     const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(products, p => {
-      const kw = applied.kw.trim().toLowerCase();
+      const kw = searchParam.kw.trim().toLowerCase();
       if (kw && !p.prodNm.toLowerCase().includes(kw) && !String(p.productId).includes(kw)) return false;
-      if (applied.cate && p.category !== applied.cate) return false;
-      if (applied.status && p.status !== applied.status) return false;
+      if (searchParam.cate && p.category !== searchParam.cate) return false;
+      if (searchParam.status && p.status !== searchParam.status) return false;
       const _d = String(p.regDate || '').slice(0, 10);
-      if (applied.dateStart && _d < applied.dateStart) return false;
-      if (applied.dateEnd && _d > applied.dateEnd) return false;
+      if (searchParam.dateStart && _d < searchParam.dateStart) return false;
+      if (searchParam.dateEnd && _d > searchParam.dateEnd) return false;
       return true;
     }));
     const cfTotal = computed(() => cfFiltered.value.length);
@@ -82,30 +103,20 @@ window.PdProdMng = {
     const catModal = reactive({ show: false });
     const openCatModal = () => { catModal.show = true; };
     const onCatSelect = (cat) => {
-      searchCate.value = cat.categoryNm || '';
+      searchParam.cate = cat.categoryNm || '';
       catModal.show = false;
     };
-    const clearCate = () => { searchCate.value = ''; };
+    const clearCate = () => { searchParam.cate = ''; };
 
     const fnStatusBadge = s => ({ '판매중': 'badge-green', '품절': 'badge-red', '판매중지': 'badge-gray' }[s] || 'badge-gray');
     const onSearch = () => {
-      Object.assign(applied, {
-        kw: searchKw.value,
-        cate: searchCate.value,
-        status: searchStatus.value,
-        dateStart: searchDateStart.value,
-        dateEnd: searchDateEnd.value,
-      });
       pager.page = 1;
     };
     const onReset = () => {
-      searchKw.value = '';
-      searchCate.value = '';
-      searchStatus.value = '';
-      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
-      Object.assign(applied, { kw: '', cate: '', status: '', dateStart: '', dateEnd: '' });
+      Object.assign(searchParam, searchParamOrg);
       pager.page = 1;
     };
+  
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
@@ -134,7 +145,8 @@ window.PdProdMng = {
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'productId'},{label:'상품명',key:'prodNm'},{label:'카테고리',key:'category'},{label:'가격',key:'price'},{label:'재고',key:'stock'},{label:'브랜드',key:'brand'},{label:'상태',key:'status'},{label:'등록일',key:'regDate'}], '상품목록.csv');
 
     const descOpen = ref(false);
-    return { products, loading, error, descOpen, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchCate, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfCategories, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel };
+
+    return { products, loading, error, descOpen, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfCategories, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel };
   },
   template: /* html */`
 <div>
@@ -151,15 +163,15 @@ window.PdProdMng = {
   </div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="상품명 / ID 검색" />
+      <input v-model="searchParam.kw" placeholder="상품명 / ID 검색" />
       <div style="display:flex;align-items:center;gap:4px;">
-        <input class="form-control" v-model="searchCate" placeholder="카테고리 선택" readonly
+        <input class="form-control" v-model="searchParam.cate" placeholder="카테고리 선택" readonly
           style="width:120px;cursor:pointer;background:#fafafa;" @click="openCatModal" />
         <button type="button" class="btn btn-secondary btn-sm" @click="openCatModal">선택</button>
-        <button v-if="searchCate" type="button" class="btn btn-secondary btn-sm" @click="clearCate">✕</button>
+        <button v-if="searchParam.cate" type="button" class="btn btn-secondary btn-sm" @click="clearCate">✕</button>
       </div>
-      <select v-model="searchStatus"><option value="">상태 전체</option><option>판매중</option><option>품절</option><option>판매중지</option></select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
+      <select v-model="searchParam.status"><option value="">상태 전체</option><option>판매중</option><option>품절</option><option>판매중지</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

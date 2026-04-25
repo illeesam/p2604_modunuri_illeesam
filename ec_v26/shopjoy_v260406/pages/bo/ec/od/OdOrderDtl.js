@@ -130,8 +130,10 @@ window.OdOrderDtl = {
       }
     };
 
-    const activeTab = ref(window._odOrderDtlState.activeTab || 'info');
-    watch(activeTab, v => { window._odOrderDtlState.activeTab = v; });
+    const uiState = reactive({
+      activeTab: window._odOrderDtlState?.activeTab || 'info',
+    });
+    watch(uiState, (newVal) => { window._odOrderDtlState.activeTab = newVal.activeTab; }, { deep: true });
     /* 주문 항목 (샘플 데이터) */
     const orderItems = reactive([]);
     const sampleOrderItems = () => {

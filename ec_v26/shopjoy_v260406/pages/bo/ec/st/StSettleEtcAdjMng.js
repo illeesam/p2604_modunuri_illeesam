@@ -11,7 +11,7 @@ window.StSettleEtcAdjMng = {
     const dateRange = ref('이번달');
     const dateStart = ref('');
     const dateEnd   = ref('');
-    const onDateRangeChange = () => {
+    const handleDateRangeChange = () => {
       if (dateRange.value) { const r = window.boCmUtil.getDateRange(dateRange.value); dateStart.value = r ? r.from : ''; dateEnd.value = r ? r.to : ''; }
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { dateStart.value = r.from; dateEnd.value = r.to; } })();
@@ -23,9 +23,11 @@ window.StSettleEtcAdjMng = {
       try {
         const res = await window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } });
         vendorList.splice(0, vendorList.length, ...(res.data?.data?.list || []));
-      } catch (_) {}
+      } catch (_) {
+      console.error('[catch-info]', _);}
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleFetchData();
+    Object.assign(searchParamOrg, searchParam); });
 
     const etcAdjList = reactive([
       { adjId: 'ETCADJ-001', adjDate: '2026-04-12', vendorId: 1, vendorNm: '패션스타일 주식회사', adjType: '위약금', adjAmt: -50000, reason: '납품 지연 위약금', aprvStatus: '승인', regUserNm: '이관리자' },
@@ -35,9 +37,6 @@ window.StSettleEtcAdjMng = {
       { adjId: 'ETCADJ-005', adjDate: '2026-03-20', vendorId: 1, vendorNm: '패션스타일 주식회사', adjType: '위약금', adjAmt: -30000, reason: '반품율 초과 페널티', aprvStatus: '반려', regUserNm: '이관리자' },
     ]);
 
-    const searchKw     = ref('');
-    const searchType   = ref('');
-    const searchStatus = ref('');
     const pager = reactive({ page: 1, size: 10 });
 
     const cfFiltered = computed(() => {
@@ -60,6 +59,16 @@ window.StSettleEtcAdjMng = {
     const form = reactive({});
     const errors = reactive({});
     const isNew  = ref(false);
+  const searchParam = reactive({
+    kw: '',
+    type: '',
+    status: ''
+  });
+  const searchParamOrg = reactive({
+    kw: '',
+    type: '',
+    status: ''
+  });
 
     const openNew = () => {
       Object.assign(form, { adjId: null, adjDate: new Date().toISOString().slice(0,10), vendorId: '', vendorNm: '', adjType: '기타', adjAmt: 0, reason: '', aprvStatus: '대기', regUserNm: '관리자' });
@@ -113,8 +122,23 @@ window.StSettleEtcAdjMng = {
     const fnAprvBadge = s => ({ '승인':'badge-green', '대기':'badge-blue', '반려':'badge-red' }[s] || 'badge-gray');
     const fnTypeBadge = t => ({ '위약금':'badge-red', '인센티브':'badge-green', '세금조정':'badge-orange', '기타':'badge-gray' }[t] || 'badge-gray');
     const fmtW = n => (n >= 0 ? '' : '-') + Math.abs(Number(n)).toLocaleString() + '원';
-    const onSearch = () => { pager.page = 1; };
-    const onReset  = () => { searchKw.value = ''; searchType.value = ''; searchStatus.value = ''; dateRange.value = '이번달'; onDateRangeChange(); pager.page = 1; };
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
+      pager.page = 1;
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
+    const onReset = () => {
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  
 
     const setPage = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
@@ -138,13 +162,13 @@ window.StSettleEtcAdjMng = {
         <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
       </select>
       <input type="date" v-model="dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="dateEnd" style="width:140px" />
-      <select v-model="searchType" style="width:120px">
+      <select v-model="searchParam.type" style="width:120px">
         <option value="">유형 전체</option><option>위약금</option><option>인센티브</option><option>세금조정</option><option>기타</option>
       </select>
-      <select v-model="searchStatus" style="width:100px">
+      <select v-model="searchParam.status" style="width:100px">
         <option value="">상태 전체</option><option>대기</option><option>승인</option><option>반려</option>
       </select>
-      <input v-model="searchKw" placeholder="ID / 업체명 / 사유" style="width:180px" @keyup.enter="() => onSearch?.()" />
+      <input v-model="searchParam.kw" placeholder="ID / 업체명 / 사유" style="width:180px" @keyup.enter="() => onSearch?.()" />
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary" @click="onReset">초기화</button>

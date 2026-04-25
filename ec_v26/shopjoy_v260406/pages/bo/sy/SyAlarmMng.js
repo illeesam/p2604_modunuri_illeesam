@@ -52,45 +52,58 @@ window.SyAlarmMng = {
       handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
+      Object.assign(searchParamOrg, searchParam);
     });
 
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const searchKw = ref(''); const searchType = ref(''); const searchStatus = ref('');
-    const searchDateStart = ref(''); const searchDateEnd = ref(''); const searchDateRange = ref('');
+    const searchParam = reactive({
+      kw: '', type: '', status: '', dateRange: '', dateStart: '', dateEnd: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '', type: '', status: '', dateRange: '', dateStart: '', dateEnd: ''
+    });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+    const handleDateRangeChange = () => {
+      if (searchParam.dateRange) {
+        const r = window.boCmUtil.getDateRange(searchParam.dateRange);
+        searchParam.dateStart = r ? r.from : '';
+        searchParam.dateEnd = r ? r.to : '';
+      }
       pager.page = 1;
     };
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const selectedId = ref(null);
-    const openMode = ref('view'); // 'view' | 'edit'
-    const loadView = (id) => { if (selectedId.value === id && openMode.value === 'view') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'view'; };
-    const handleLoadDetail = (id) => { if (selectedId.value === id && openMode.value === 'edit') { selectedId.value = null; return; } selectedId.value = id; openMode.value = 'edit'; };
-    const openNew = () => { selectedId.value = '__new__'; openMode.value = 'edit'; };
-    const closeDetail = () => { selectedId.value = null; };
+
+    const detailModal = reactive({
+      show: false,
+      editId: null,
+      viewMode: 'view' // 'view' | 'edit'
+    });
+
+    const loadView = (id) => { if (detailModal.editId === id && detailModal.viewMode === 'view') { detailModal.show = false; detailModal.editId = null; return; } detailModal.editId = id; detailModal.viewMode = 'view'; detailModal.show = true; };
+    const handleLoadDetail = (id) => { if (detailModal.editId === id && detailModal.viewMode === 'edit') { detailModal.show = false; detailModal.editId = null; return; } detailModal.editId = id; detailModal.viewMode = 'edit'; detailModal.show = true; };
+    const openNew = () => { detailModal.editId = '__new__'; detailModal.viewMode = 'edit'; detailModal.show = true; };
+    const closeDetail = () => { detailModal.show = false; detailModal.editId = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'syAlarmMng') { selectedId.value = null; return; }
-      if (pg === '__switchToEdit__') { openMode.value = 'edit'; return; }
+      if (pg === 'syAlarmMng') { detailModal.show = false; detailModal.editId = null; return; }
+      if (pg === '__switchToEdit__') { detailModal.viewMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => selectedId.value === '__new__' ? null : selectedId.value);
-    const cfIsViewMode = computed(() => openMode.value === 'view' && selectedId.value !== '__new__');
-    const cfDetailKey = computed(() => `${selectedId.value}_${openMode.value}`);
+    const cfDetailEditId = computed(() => detailModal.editId === '__new__' ? null : detailModal.editId);
+    const cfIsViewMode = computed(() => detailModal.viewMode === 'view' && detailModal.editId !== '__new__');
+    const cfDetailKey = computed(() => `${detailModal.editId}_${detailModal.viewMode}`);
 
-    const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
     const cfFiltered = computed(() => {
       const items = alarms || [];
       if (!Array.isArray(items)) return [];
       return items.filter(a => {
-        const kw = applied.kw.trim().toLowerCase();
+        const kw = searchParam.kw.trim().toLowerCase();
         if (kw && !a.title.toLowerCase().includes(kw) && !a.message.toLowerCase().includes(kw)) return false;
-        if (applied.type && a.alarmTypeCd !== applied.type) return false;
-        if (applied.status && a.statusCd !== applied.status) return false;
+        if (searchParam.type && a.alarmTypeCd !== searchParam.type) return false;
+        if (searchParam.status && a.statusCd !== searchParam.status) return false;
         const d = String(a.sendDate || a.regDate || '').slice(0, 10);
-        if (applied.dateStart && d < applied.dateStart) return false;
-        if (applied.dateEnd && d > applied.dateEnd) return false;
+        if (searchParam.dateStart && d < searchParam.dateStart) return false;
+        if (searchParam.dateEnd && d > searchParam.dateEnd) return false;
         return true;
       });
     });
@@ -105,8 +118,13 @@ window.SyAlarmMng = {
     const fnStatusBadge = s => ({ '발송완료': 'badge-green', '예약': 'badge-blue', '실패': 'badge-red', '임시': 'badge-gray' }[s] || 'badge-gray');
     const fnTypeBadge = t => ({ '푸시': 'badge-blue', '이메일': 'badge-orange', 'SMS': 'badge-green', '인앱': 'badge-gray' }[t] || 'badge-gray');
     const fnTargetBadge = t => ({ '전체': 'badge-red', 'VIP': 'badge-orange', '우수': 'badge-blue', '일반': 'badge-gray' }[t] || 'badge-gray');
-    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, type: searchType.value, status: searchStatus.value, dateStart: searchDateStart.value, dateEnd: searchDateEnd.value }); pager.page = 1; };
-    const onReset = () => { searchKw.value = ''; searchType.value = ''; searchStatus.value = ''; searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = ''; Object.assign(applied, { kw: '', type: '', status: '', dateStart: '', dateEnd: '' }); pager.page = 1; };
+    const onSearch = () => {
+      pager.page = 1;
+    };
+    const onReset = () => {
+      Object.assign(searchParam, searchParamOrg);
+      onSearch();
+    };
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const handleDelete = async (a) => {
@@ -114,7 +132,7 @@ window.SyAlarmMng = {
       if (!ok) return;
       const idx = alarms.findIndex(x => x.alarmId === a.alarmId);
       if (idx !== -1) alarms.splice(idx, 1);
-      if (selectedId.value === a.alarmId) selectedId.value = null;
+      if (detailModal.editId === a.alarmId) { detailModal.show = false; detailModal.editId = null; }
       try {
         const res = await window.boApi.delete(`/bo/sy/alarm/${a.alarmId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -132,18 +150,18 @@ window.SyAlarmMng = {
 
 
     return { alarms, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, cfSiteNm, searchKw, searchType, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnTypeBadge, fnTargetBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnTypeBadge, fnTargetBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
   <div class="page-title">알림관리</div>  <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="제목 / 메시지 검색" />
-      <select v-model="searchType"><option value="">유형 전체</option><option>푸시</option><option>이메일</option><option>SMS</option><option>인앱</option></select>
-      <select v-model="searchStatus"><option value="">상태 전체</option><option>발송완료</option><option>예약</option><option>실패</option><option>임시</option></select>
+      <input v-model="searchParam.kw" placeholder="제목 / 메시지 검색" />
+      <select v-model="searchParam.type"><option value="">유형 전체</option><option>푸시</option><option>이메일</option><option>SMS</option><option>인앱</option></select>
+      <select v-model="searchParam.status"><option value="">상태 전체</option><option>발송완료</option><option>예약</option><option>실패</option><option>임시</option></select>
       <span class="search-label">발송일</span>
-      <input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" />
-      <select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
+      <select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -180,11 +198,11 @@ window.SyAlarmMng = {
           <th style="min-width:140px;">표시경로</th><th>ID</th><th>유형</th><th>제목</th><th>메시지</th><th>대상</th><th>발송일</th><th>상태</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
         <tr v-if="cfPageList.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="a in cfPageList" :key="a.alarmId" :style="selectedId===a.alarmId?'background:#fff8f9;':''">
+        <tr v-for="a in cfPageList" :key="a.alarmId" :style="detailModal.editId===a.alarmId?'background:#fff8f9;':''">
           <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:a.pathId!=null?'#374151':'#9ca3af',fontWeight:a.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(a.pathId) || '경로 선택...' }}</span><button type="button" @click="openPathPick(a)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
           <td>{{ a.alarmId }}</td>
           <td><span class="badge" :class="fnTypeBadge(a.alarmTypeCd)">{{ a.alarmTypeCd }}</span></td>
-          <td><span class="title-link" @click="handleLoadDetail(a.alarmId)" :style="selectedId===a.alarmId?'color:#e8587a;font-weight:700;':''">{{ a.title }}<span v-if="selectedId===a.alarmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="handleLoadDetail(a.alarmId)" :style="detailModal.editId===a.alarmId?'color:#e8587a;font-weight:700;':''">{{ a.title }}<span v-if="detailModal.editId===a.alarmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ a.message }}</td>
           <td><span class="badge" :class="fnTargetBadge(a.targetTypeCd)">{{ a.targetTypeCd }}</span></td>
           <td>{{ a.sendDate || '-' }}</td>
@@ -214,11 +232,11 @@ window.SyAlarmMng = {
       </div>
     </div>
   </div>
-  <div v-if="selectedId" style="margin-top:4px;">
+  <div v-if="detailModal.show" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <sy-alarm-dtl :key="selectedId" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="cfDetailEditId" />
+    <sy-alarm-dtl :key="detailModal.editId" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="cfDetailEditId" />
   </div>
 </div></div>
 

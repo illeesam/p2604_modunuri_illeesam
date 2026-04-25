@@ -31,10 +31,17 @@ window.PdRestockNotiMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleFetchData();
+    Object.assign(searchParamOrg, searchParam); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const searchProd = ref('');
-    const searchNoti = ref('');
+  const searchParam = reactive({
+    prod: '',
+    noti: ''
+  });
+  const searchParamOrg = reactive({
+    prod: '',
+    noti: ''
+  });
     const applied    = reactive({ prod: '', noti: '' });
     const pager      = reactive({ page: 1, size: 20 });
     const checkedIds = reactive(new Set());
@@ -77,8 +84,23 @@ window.PdRestockNotiMng = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
-    const onSearch = () => { Object.assign(applied, { prod: searchProd.value, noti: searchNoti.value }); pager.page = 1; };
-    const onReset  = () => { searchProd.value = ''; searchNoti.value = ''; Object.assign(applied, { prod: '', noti: '' }); pager.page = 1; };
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
+      pager.page = 1;
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
+    const onReset = () => {
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  
     const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
@@ -92,9 +114,9 @@ window.PdRestockNotiMng = {
     <div class="card">
       <div class="search-bar">
         <label class="search-label">상품명</label>
-        <input class="form-control" v-model="searchProd" @keyup.enter="() => onSearch?.()" placeholder="상품명 검색">
+        <input class="form-control" v-model="searchParam.prod" @keyup.enter="() => onSearch?.()" placeholder="상품명 검색">
         <label class="search-label">알림발송</label>
-        <select class="form-control" v-model="searchNoti">
+        <select class="form-control" v-model="searchParam.noti">
           <option value="">전체</option><option value="N">미발송</option><option value="Y">발송완료</option>
         </select>
         <div class="search-actions">

@@ -54,16 +54,29 @@ window.SyTemplateMng = {
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 
-    const searchKw = ref('');
-    const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
+  const searchParam = reactive({
+    kw: '',
+    type: '',
+    useYn: '',
+    dateRange: '',
+    dateStart: '',
+    dateEnd: ''
+  });
+  const searchParamOrg = reactive({
+    kw: '',
+    type: '',
+    useYn: '',
+    dateRange: '',
+    dateStart: '',
+    dateEnd: ''
+  });
+
     const onDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.page = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const searchType = ref('');
-    const searchUseYn = ref('');
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 

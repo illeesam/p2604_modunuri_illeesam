@@ -11,61 +11,39 @@ window.DpDispRelationMng = {
       try {
         const res = await window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 } });
         displays.splice(0, displays.length, ...(res.data?.data?.list || []));
-      } catch (_) {}
+      } catch (_) {
+      console.error('[catch-info]', _);}
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleFetchData();
+    Object.assign(searchParamOrg, searchParam); });
 
     /* 검색 */
-    const searchDateStart = ref('');
-    const searchDateEnd = ref('');
+  const searchParam = reactive({
+    dateStart: '',
+    dateEnd: ''
+  });
+  const searchParamOrg = reactive({
+    dateStart: '',
+    dateEnd: ''
+  });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const onSearch = () => { handleFetchData(); };
-    const onReset = () => { searchDateStart.value = ''; searchDateEnd.value = ''; handleFetchData(); };
-
-    /* 트리 상태 */
-    const expandedNodes = reactive(new Set());
-    const toggleNode = (key) => {
-      if (expandedNodes.has(key)) expandedNodes.delete(key);
-      else expandedNodes.add(key);
-    };
-    const isNodeExpanded = (key) => expandedNodes.has(key);
-
-    /* 트리 데이터 구성 */
-    const cfTreeData = computed(() => {
-      const codesArr = codes.value || [];
-      const uiCodes = codesArr
-        .filter(c => c.codeGrp === 'DISP_UI')
-        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-
-      const areaCodes = codesArr
-        .filter(c => c.codeGrp === 'DISP_AREA')
-        .reduce((map, a) => {
-          map[a.codeValue] = a;
-          return map;
-        }, {});
-
-      const panels = (Array.isArray(displays) ? displays : [])
-        .reduce((map, p) => {
-          if (!map[p.area]) map[p.area] = [];
-          map[p.area].push(p);
-          return map;
-        }, {});
-
-      return uiCodes.map(ui => ({
-        type: 'ui',
-        id: ui.codeId,
-        code: ui.codeValue,
-        name: ui.codeLabel,
-        useYn: ui.useYn,
-        visibilityTargets: ui.visibilityTargets || '',
-        childCount: Object.keys(areaCodes).filter(a => (a || '').startsWith(ui.codeValue + '_')).length,
-        children: Object.keys(areaCodes)
-          .filter(a => (a || '').startsWith(ui.codeValue + '_'))
-          .sort()
-          .map(areaCode => {
-            const area = areaCodes[areaCode];
-            const areaPanels = panels[areaCode] || [];
-            return {
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
+      pager.page = 1;
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
+    const onReset = () => {
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  return {
               type: 'area',
               id: area.codeId,
               code: area.codeValue,
@@ -126,9 +104,9 @@ window.DpDispRelationMng = {
   <div class="card">
     <div class="search-bar">
       <span class="search-label">등록기간</span>
-      <input type="date" v-model="searchDateStart" class="date-range-input" />
+      <input type="date" v-model="searchParam.dateStart" class="date-range-input" />
       <span class="date-range-sep">~</span>
-      <input type="date" v-model="searchDateEnd" class="date-range-input" />
+      <input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

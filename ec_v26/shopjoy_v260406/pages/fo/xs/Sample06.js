@@ -10,27 +10,19 @@ window.XsSample06 = {
     const api = window.axiosApi || window.adminApi;
     const API = 'api/base/sy/zz-sample1';
     const CD_GRP = 'S06_COUPON';
-
     const toast = reactive({ show: false, msg: '', type: 'success' });
     let _tId = null;
     const showToast = (msg, type = 'success') => { toast.msg = msg; toast.type = type; toast.show = true; clearTimeout(_tId); _tId = setTimeout(() => { toast.show = false; }, 2500); };
-
-    const searchKw           = ref('');
-    const searchDiscountType = ref('');
-    const searchUseYn        = ref('');
-    const applied = reactive({ kw: '', discountType: '', useYn: '' });
-
+    const searchParam = reactive({ kw: '', discountType: '', useYn: '' });
+    const searchParamOrg = reactive({ kw: \'\', category: \'\', status: \'\' });
     const allData    = reactive([]);
     const gridRows   = reactive([]);
     let   _tempId    = -1;
     const focusedIdx = ref(null);
     const EDIT_FIELDS = ['couponNm', 'discountType', 'discountVal', 'minAmount', 'useYn', 'expDate'];
-
     const toRow = d => ({ couponId: d.sample1Id, couponNm: d.cdNm || '', discountType: d.col01 || '정액', discountVal: Number(d.col02) || 0, minAmount: Number(d.col03) || 0, expDate: d.col04 || '', useYn: d.useYn || 'Y', regDate: d.regDt || '' });
     const toPayload = r => ({ cdGrp: CD_GRP, cdNm: r.couponNm, col01: r.discountType, col02: String(r.discountVal), col03: String(r.minAmount), col04: r.expDate, useYn: r.useYn });
-
     const makeRow = d => ({ ...d, _row_status: 'N', _row_check: false, _orig: { couponNm: d.couponNm, discountType: d.discountType, discountVal: d.discountVal, minAmount: d.minAmount, useYn: d.useYn, expDate: d.expDate } });
-
     const pager      = reactive({ page: 1, size: 20 });
     const PAGE_SIZES = [10, 20, 50];
     const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
@@ -39,18 +31,16 @@ window.XsSample06 = {
     const cfPageNums   = computed(() => { const c = pager.page, l = cfTotalPages.value, s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
     const setPage    = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const getRealIdx = i => (pager.page - 1) * pager.size + i;
-
     const handleLoadGrid = () => {
       gridRows.splice(0); focusedIdx.value = null; pager.page = 1;
       allData.filter(d => {
-        const kw = applied.kw.toLowerCase();
+        const kw = searchParam.kw.toLowerCase();
         if (kw && !String(d.couponNm || '').toLowerCase().includes(kw)) return false;
-        if (applied.discountType && d.discountType !== applied.discountType) return false;
-        if (applied.useYn        && d.useYn        !== applied.useYn)        return false;
+        if (searchParam.discountType && d.discountType !== searchParam.discountType) return false;
+        if (searchParam.useYn        && d.useYn        !== searchParam.useYn)        return false;
         return true;
       }).forEach(d => gridRows.push(makeRow(d)));
     };
-
     const handleFetchData = async () => {
       try {
         const res = await api.get(API, { cdGrp: CD_GRP });
@@ -59,24 +49,23 @@ window.XsSample06 = {
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       handleLoadGrid();
     };
-    onMounted(() => { handleFetchData(); });
-
-    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, discountType: searchDiscountType.value, useYn: searchUseYn.value }); handleLoadGrid(); };
-    const onReset  = () => { searchKw.value = ''; searchDiscountType.value = ''; searchUseYn.value = ''; Object.assign(applied, { kw: '', discountType: '', useYn: '' }); handleLoadGrid(); };
+    onMounted(() => {
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
+    });
+    const onSearch = () => { handleLoadGrid(); };
+    const onReset  = () => { searchKw.value = ''; searchDiscountType.value = ''; searchUseYn.value = ''; Object.assign(searchParam, { kw: '', discountType: '', useYn: '' }); handleLoadGrid(); };
     const setFocused   = idx => { focusedIdx.value = idx; };
     const onCellChange = row => { if (row._row_status === 'I' || row._row_status === 'D') return; row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._orig[f])) ? 'U' : 'N'; };
-
     const addRow = () => {
       const at = focusedIdx.value !== null ? focusedIdx.value + 1 : gridRows.length;
       gridRows.splice(at, 0, { couponId: _tempId--, couponNm: '', discountType: '정액', discountVal: 0, minAmount: 0, useYn: 'Y', expDate: '', _row_status: 'I', _row_check: false, _orig: null });
       focusedIdx.value = at; pager.page = Math.ceil((at + 1) / pager.size);
     };
-
     const deleteRow = idx => { const row = gridRows[idx]; if (row._row_status === 'I') { gridRows.splice(idx, 1); if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= idx ? 1 : 0)); } else row._row_status = 'D'; };
     const cancelRow = idx => { const row = gridRows[idx]; if (row._row_status === 'I') { gridRows.splice(idx, 1); if (focusedIdx.value !== null) focusedIdx.value = Math.max(0, focusedIdx.value - (focusedIdx.value >= idx ? 1 : 0)); } else { if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; } };
     const deleteRows    = () => { for (let i = gridRows.length - 1; i >= 0; i--) { if (!gridRows[i]._row_check) continue; if (gridRows[i]._row_status === 'I') gridRows.splice(i, 1); else gridRows[i]._row_status = 'D'; } };
     const cancelChecked = () => { const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.couponId)); if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; } for (let i = gridRows.length - 1; i >= 0; i--) { const row = gridRows[i]; if (!ids.has(row.couponId)) continue; if (row._row_status === 'N') continue; if (row._row_status === 'I') gridRows.splice(i, 1); else { if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; } } };
-
     const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I'), uRows = gridRows.filter(r => r._row_status === 'U'), dRows = gridRows.filter(r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) { showToast('변경된 데이터가 없습니다.', 'error'); return; }
@@ -94,19 +83,16 @@ window.XsSample06 = {
         handleLoadGrid();
       } catch (e) { showToast('저장 실패: ' + (e.response?.data?.message || e.message || e), 'error'); }
     };
-
     const dragSrc = ref(null), dragMoved = ref(false);
     const onDragStart = idx => { dragSrc.value = idx; dragMoved.value = false; };
     const onDragOver  = (e, idx) => { e.preventDefault(); if (dragSrc.value === null || dragSrc.value === idx) return; const m = gridRows.splice(dragSrc.value, 1)[0]; gridRows.splice(idx, 0, m); dragSrc.value = idx; dragMoved.value = true; };
     const onDragEnd   = () => { if (dragMoved.value) showToast('정렬이 변경되었습니다.'); dragSrc.value = null; dragMoved.value = false; };
-
     const checkAll = ref(false);
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = checkAll.value; }); };
     const fnStatusBadge = s => ({ N: 'background:#f0f0f0;color:#666;', I: 'background:#dbeafe;color:#1e40af;', U: 'background:#fef3c7;color:#92400e;', D: 'background:#fee2e2;color:#991b1b;' }[s] || '');
     const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
-
     return {
-      toast, searchKw, searchDiscountType, searchUseYn, onSearch, onReset,
+      toast, searchParam, onSearch, onReset,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, getRealIdx,
       focusedIdx, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
@@ -118,23 +104,20 @@ window.XsSample06 = {
 <div style="padding:clamp(12px,3vw,24px);">
   <div v-if="toast.show" style="position:fixed;top:20px;right:20px;z-index:9999;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.15);pointer-events:none;"
     :style="toast.type==='error'?'background:#fee2e2;color:#991b1b;':toast.type==='info'?'background:#dbeafe;color:#1e40af;':'background:#d1fae5;color:#065f46;'">{{ toast.msg }}</div>
-
   <div style="font-size:16px;font-weight:700;margin-bottom:12px;">06. 쿠폰 관리 <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">CRUD Grid 예제</span></div>
-
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <input v-model="searchKw" placeholder="쿠폰명 검색" @keyup.enter="onSearch" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:180px;outline:none;" />
-      <select v-model="searchDiscountType" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
+      <input v-model="searchParam.kw" placeholder="쿠폰명 검색" @keyup.enter="onSearch" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:180px;outline:none;" />
+      <select v-model="searchParam.discounttype" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
         <option value="">할인유형 전체</option><option>정액</option><option>정률</option>
       </select>
-      <select v-model="searchUseYn" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
+      <select v-model="searchParam.useyn" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
         <option value="">사용여부 전체</option><option value="Y">Y 사용</option><option value="N">N 미사용</option>
       </select>
       <button @click="onSearch" style="font-size:12px;padding:5px 14px;border:none;border-radius:6px;background:#e8587a;color:#fff;cursor:pointer;font-weight:600;">검색</button>
       <button @click="onReset"  style="font-size:12px;padding:5px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;">초기화</button>
     </div>
   </div>
-
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #f0f0f0;">
       <span style="font-size:12px;font-weight:700;">쿠폰 목록 <span style="color:#e8587a;margin-left:4px;">{{ cfTotal }}건</span></span>

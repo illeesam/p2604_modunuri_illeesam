@@ -43,107 +43,52 @@ window.DpDispAreaMng = {
     ];
 
     /* ── 검색 ── */
-    const searchKw        = ref('');
-    const searchAreaType  = ref('');
-    const searchUseYn     = ref('');
-    const searchDateStart = ref('');
-    const searchDateEnd   = ref('');
-    const searchDateRange = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const onDateRangeChange = () => {
-      if (searchDateRange.value) {
-        const r = window.boCmUtil.getDateRange(searchDateRange.value);
-        searchDateStart.value = r ? r.from : '';
-        searchDateEnd.value   = r ? r.to   : '';
+    const pager = reactive({ page: 1, size: 5 });
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+
+  const searchParam = reactive({
+    kw: '',
+    areaType: '',
+    useYn: '',
+    dateStart: '',
+    dateEnd: '',
+    dateRange: ''
+  });
+  const searchParamOrg = reactive({
+    kw: '',
+    areaType: '',
+    useYn: '',
+    dateStart: '',
+    dateEnd: '',
+    dateRange: ''
+  });
+
+    const handleDateRangeChange = () => {
+      if (searchParam.dateRange) {
+        const r = window.boCmUtil.getDateRange(searchParam.dateRange);
+        searchParam.dateStart = r ? r.from : '';
+        searchParam.dateEnd   = r ? r.to   : '';
       }
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-
-    const applied = reactive({ kw: '', areaType: '', useYn: '', dateStart: '', dateEnd: '' });
-    const onSearch = () => {
-      Object.assign(applied, {
-        kw: searchKw.value,
-        areaType: searchAreaType.value,
-        useYn: searchUseYn.value,
-        dateStart: searchDateStart.value,
-        dateEnd: searchDateEnd.value,
-      });
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
       pager.page = 1;
-    };
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
     const onReset = () => {
-      searchKw.value = ''; searchAreaType.value = ''; searchUseYn.value = '';
-      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
-      Object.assign(applied, { kw: '', areaType: '', useYn: '', dateStart: '', dateEnd: '' });
-      pager.page = 1;
-    };
-
-    /* ── 표시경로 (영역코드 prefix 그룹) ── */
-    const selectedTreeKey = ref('');   /* '' = 전체, '<prefix>' */
-    const treeOpen = reactive(new Set(['__root__']));
-    const toggleTree = (k) => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
-    const isTreeOpen = (k) => treeOpen.has(k);
-    const selectTree = (k) => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
-
-    const cfAreaTree = computed(() => {
-      const group = {};
-      (codes || [])
-        .filter(c => c.codeGrp === 'DISP_AREA')
-        .forEach(a => {
-          const top = (a.codeValue || '').split('_')[0] || '(기타)';
-          if (!group[top]) group[top] = [];
-          group[top].push(a);
-        });
-      return Object.keys(group).sort().map(top => ({
-        label: top,
-        count: group[top].length,
-        children: group[top].sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).map(a => ({
-          codeId: a.codeId,
-          codeValue: a.codeValue,
-          codeLabel: a.codeLabel,
-          count: 1,
-        })),
-      }));
-    });
-    const expandAll   = () => { window.safeArrayUtils.safeForEach(cfAreaTree, n => treeOpen.add('grp_'+n.label)); treeOpen.add('__root__'); };
-    const collapseAll = () => { treeOpen.clear(); treeOpen.add('__root__'); };
-
-    /* ── 영역 목록 (codes에서 DISP_AREA 필터) ── */
-    const cfAllAreas = computed(() =>
-      (codes || []).filter(c => c.codeGrp === 'DISP_AREA')
-    );
-    const cfFiltered = computed(() => {
-      const kw = applied.kw.trim().toLowerCase();
-      return window.safeArrayUtils.safeFilter(cfAllAreas, a => {
-        if (kw &&
-            !(a.codeValue || '').toLowerCase().includes(kw) &&
-            !(a.codeLabel || '').toLowerCase().includes(kw) &&
-            !(a.remark || '').toLowerCase().includes(kw)) return false;
-        if (applied.areaType && a.areaType !== applied.areaType) return false;
-        if (applied.useYn && a.useYn !== applied.useYn) return false;
-        const _d = String(a.regDate || '').slice(0, 10);
-        if (applied.dateStart && _d < applied.dateStart) return false;
-        if (applied.dateEnd   && _d > applied.dateEnd)   return false;
-        if (selectedTreeKey.value) {
-          const top = (a.codeValue || '').split('_')[0];
-          if (top !== selectedTreeKey.value) return false;
-        }
-        return true;
-      }).sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-    });
-
-    /* ── 페이저 ── */
-    const pager      = reactive({ page: 1, size: 5 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const cfTotal      = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList   = computed(() =>
-      cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size)
-    );
-    const cfPageNums   = computed(() => {
-      const cur = pager.page, last = cfTotalPages.value;
-      const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
-      return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-    });
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
@@ -252,16 +197,14 @@ window.DpDispAreaMng = {
     const isAreaExpanded = (areaId) => expandedAreas.has(areaId);
 
     return { codes, areas, loading, error, fnPathLabel,
-      searchKw, searchAreaType, searchUseYn, searchDateStart, searchDateEnd, searchDateRange,
-      DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm,
+      searchParam, searchParamOrg,
+      DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm,
       AREA_TYPE_OPTS, LAYOUT_TYPE_OPTS,
-      pager, PAGE_SIZES, cfTotal, cfTotalPages, cfPageList, cfPageNums, setPage, onSizeChange,
-      onSearch, onReset, handleDelete, exportExcel,
+      pager, PAGE_SIZES, onSearch, onReset,
       selectedId, openMode, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
       dragSrc, dragOverIdx, onDragStart, onDragOver, onDragLeave, onDrop, onDragEnd,
       fnAreaTypeLabel, fnStatusBadge, panelsOfArea,
       expandedAreas, toggleExpandArea, isAreaExpanded,
-      cfAreaTree, cfAllAreas, cfFiltered, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll,
     };
   },
   template: /* html */`
@@ -271,21 +214,21 @@ window.DpDispAreaMng = {
   <!-- 검색 -->
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="영역코드 / 영역명 / 설명 검색" style="min-width:260px;" />
-      <select v-model="searchAreaType">
+      <input v-model="searchParam.kw" placeholder="영역코드 / 영역명 / 설명 검색" style="min-width:260px;" />
+      <select v-model="searchParam.areaType">
         <option value="">영역유형 전체</option>
         <option v-for="o in AREA_TYPE_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
       </select>
-      <select v-model="searchUseYn">
+      <select v-model="searchParam.useYn">
         <option value="">사용여부 전체</option>
         <option value="Y">사용</option>
         <option value="N">미사용</option>
       </select>
       <span class="search-label">등록일</span>
-      <input type="date" v-model="searchDateStart" class="date-range-input" />
+      <input type="date" v-model="searchParam.dateStart" class="date-range-input" />
       <span class="date-range-sep">~</span>
-      <input type="date" v-model="searchDateEnd" class="date-range-input" />
-      <select v-model="searchDateRange" @change="onDateRangeChange">
+      <input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
+      <select v-model="searchParam.dateRange" @change="onDateRangeChange">
         <option value="">옵션선택</option>
         <option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option>
       </select>

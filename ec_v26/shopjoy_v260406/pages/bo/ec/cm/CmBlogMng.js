@@ -25,22 +25,19 @@ window.CmBlogMng = {
         loading.value = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleFetchData();
+    Object.assign(searchParamOrg, searchParam); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const searchKw     = ref('');
-    const searchUse    = ref('');
-    const searchNotice = ref('');
-    const applied      = reactive({ kw: '', use: '', notice: '' });
     const pager        = reactive({ page: 1, size: 20 });
     const selectedId   = ref(null);
 
     const cfFiltered = computed(() => {
-      const kw = applied.kw.toLowerCase();
+      const kw = searchParam.kw.toLowerCase();
       if (!Array.isArray(blogs)) return [];
       return blogs.filter(p => {
         if (kw && !p.blogTitle.toLowerCase().includes(kw) && !(p.blogAuthor||'').toLowerCase().includes(kw)) return false;
-        if (applied.use && p.useYn !== applied.use) return false;
-        if (applied.notice && p.isNotice !== applied.notice) return false;
+        if (searchParam.use && p.useYn !== searchParam.use) return false;
+        if (searchParam.notice && p.isNotice !== searchParam.notice) return false;
         return true;
       }).sort((a, b) => b.regDate > a.regDate ? 1 : -1);
     });
@@ -49,33 +46,49 @@ window.CmBlogMng = {
     const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
+  const searchParam = reactive({
+    kw: '',
+    use: '',
+    notice: ''
+  });
+  const searchParamOrg = reactive({
+    kw: '',
+    use: '',
+    notice: ''
+  });
+
+  const detailModal = reactive({
+    show: false,
+    isNew: false,
+    editId: null,
+    form: {}
+  });
+
     const cfSelectedRow = computed(() => {
       if (!Array.isArray(blogs)) return null;
-      return blogs.find(p => p.blogId === selectedId.value) || null;
+      return blogs.find(p => p.blogId === detailModal.editId) || null;
     });
-    const form = reactive({});
-    const isNew = ref(false);
 
     const openDetail = (row) => {
-      if (selectedId.value === row.blogId) { selectedId.value = null; return; }
-      Object.assign(form, { ...row });
-      selectedId.value = row.blogId; isNew.value = false;
+      if (detailModal.editId === row.blogId) { detailModal.show = false; detailModal.editId = null; return; }
+      Object.assign(detailModal.form, { ...row });
+      detailModal.editId = row.blogId; detailModal.isNew = false; detailModal.show = true;
     };
     const openNew = () => {
-      Object.assign(form, { blogId: null, siteId: 1, blogCateId: null, blogTitle: '', blogSummary: '', blogContent: '', blogAuthor: '', viewCount: 0, useYn: 'Y', isNotice: 'N' });
-      selectedId.value = '__new__'; isNew.value = true;
+      Object.assign(detailModal.form, { blogId: null, siteId: 1, blogCateId: null, blogTitle: '', blogSummary: '', blogContent: '', blogAuthor: '', viewCount: 0, useYn: 'Y', isNotice: 'N' });
+      detailModal.editId = '__new__'; detailModal.isNew = true; detailModal.show = true;
     };
-    const closeDetail = () => { selectedId.value = null; };
+    const closeDetail = () => { detailModal.show = false; detailModal.editId = null; };
     const handleSave = async () => {
-      if (!form.blogTitle) { props.showToast('제목은 필수입니다.', 'error'); return; }
-      const isNewPost = isNew.value;
+      if (!detailModal.form.blogTitle) { props.showToast('제목은 필수입니다.', 'error'); return; }
+      const isNewPost = detailModal.isNew;
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
       const src = blogs;
-      if (isNewPost) { form.blogId = 'BL' + String(Date.now()).slice(-6); form.regDate = new Date().toLocaleString('sv').replace('T',' '); src.unshift({ ...form }); selectedId.value = form.blogId; isNew.value = false; }
-      else { const si = src.findIndex(p => p.blogId === form.blogId); if (si !== -1) Object.assign(src[si], form); }
+      if (isNewPost) { detailModal.form.blogId = 'BL' + String(Date.now()).slice(-6); detailModal.form.regDate = new Date().toLocaleString('sv').replace('T',' '); src.unshift({ ...detailModal.form }); detailModal.editId = detailModal.form.blogId; detailModal.isNew = false; }
+      else { const si = src.findIndex(p => p.blogId === detailModal.form.blogId); if (si !== -1) Object.assign(src[si], detailModal.form); }
       try {
-        const res = await (isNewPost ? window.boApi.post(`/bo/ec/cm/blog/${form.blogId}`, { ...form }) : window.boApi.put(`/bo/ec/cm/blog/${form.blogId}`, { ...form }));
+        const res = await (isNewPost ? window.boApi.post(`/bo/ec/cm/blog/${detailModal.form.blogId}`, { ...detailModal.form }) : window.boApi.put(`/bo/ec/cm/blog/${detailModal.form.blogId}`, { ...detailModal.form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {
@@ -108,7 +121,7 @@ window.CmBlogMng = {
       const ok = await props.showConfirm('공개설정', `[${row.blogTitle}]을 ${newYn==='Y'?'공개':'비공개'} 처리하시겠습니까?`);
       if (!ok) return;
       row.useYn = newYn;
-      if (form.blogId === row.blogId) form.useYn = newYn;
+      if (detailModal.form.blogId === row.blogId) detailModal.form.useYn = newYn;
       try {
         const res = await window.boApi.put(`/bo/ec/cm/blog/${row.blogId}/use`, { useYn: newYn });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -120,8 +133,23 @@ window.CmBlogMng = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
-    const onSearch = () => { Object.assign(applied, { kw: searchKw.value, use: searchUse.value, notice: searchNotice.value }); pager.page = 1; };
-    const onReset  = () => { searchKw.value = ''; searchUse.value = ''; searchNotice.value = ''; Object.assign(applied, { kw: '', use: '', notice: '' }); pager.page = 1; };
+    const onSearch = async () => {
+    try {
+      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      // TODO: Update items array based on response
+      pager.page = 1;
+    } catch (err) {
+      console.error('[catch-info]', err);
+      if (props.showToast) props.showToast('조회 실패', 'error');
+    }
+  };
+  
+    const onReset = () => {
+    Object.assign(searchParam, searchParamOrg);
+    onSearch();
+  };
+  
     const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
@@ -135,11 +163,11 @@ window.CmBlogMng = {
     <div class="card">
       <div class="search-bar">
         <label class="search-label">제목/작성자</label>
-        <input class="form-control" v-model="searchKw" @keyup.enter="() => onSearch?.()" placeholder="제목 또는 작성자 검색">
+        <input class="form-control" v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="제목 또는 작성자 검색">
         <label class="search-label">공개여부</label>
-        <select class="form-control" v-model="searchUse"><option value="">전체</option><option value="Y">공개</option><option value="N">비공개</option></select>
+        <select class="form-control" v-model="searchParam.use"><option value="">전체</option><option value="Y">공개</option><option value="N">비공개</option></select>
         <label class="search-label">공지여부</label>
-        <select class="form-control" v-model="searchNotice"><option value="">전체</option><option value="Y">공지</option><option value="N">일반</option></select>
+        <select class="form-control" v-model="searchParam.notice"><option value="">전체</option><option value="Y">공지</option><option value="N">일반</option></select>
         <div class="search-actions">
           <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
           <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
