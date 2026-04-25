@@ -7,7 +7,7 @@ window.Prod03List = {
 
     /* ===== UI State ===== */
     const uiState = reactive({
-      uiState.filterOpen: false,
+      filterOpen: false,
     });
 
     /* ── 상품 이미지 자동 할당 ── */
