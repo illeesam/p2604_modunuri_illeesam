@@ -3,7 +3,29 @@ window.Event = {
   name: 'Event',
   props: ['navigate', 'config'],
   setup(props) {
-    const { ref, reactive, computed } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { ref, reactive, computed , watch } = Vue;
 
     const activeTab = ref('ongoing'); // ongoing | ended
     const sortBy    = ref('latest');  // latest | deadline
@@ -80,7 +102,7 @@ window.Event = {
     const cfOngoingCount = computed(() => events.filter(e => e.status === 'ongoing').length);
     const cfEndedCount   = computed(() => events.filter(e => e.status === 'ended').length);
 
-    return { activeTab, sortBy, cfFilteredEvents, cfOngoingCount, cfEndedCount };
+    return { activeTab, sortBy, cfFilteredEvents, cfOngoingCount, cfEndedCount , uiState, codes };
   },
   template: /* html */ `
 <div class="page-wrap">

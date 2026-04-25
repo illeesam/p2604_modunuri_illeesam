@@ -5,7 +5,28 @@ window.XsStore = {
   name: 'XsStore',
   props: ['navigate', 'showToast'],
   setup(props) {
-    const { ref, computed, reactive, onMounted } = Vue;
+    const { ref, computed, reactive, onMounted, watch } = Vue;
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     const storeInfo = ref('');
     const selectedStore = ref(null);
@@ -146,7 +167,7 @@ window.XsStore = {
     });
 
     return {
-      cfStoreList, selectedStore, storeInfo, selectStore, copyToClipboard, clearStore, openStores, viewMode, closeTab, editedStoreInfo, saveStore, loadAllStoreData, refreshStoreData
+      cfStoreList, selectedStore, storeInfo, selectStore, copyToClipboard, clearStore, openStores, viewMode, closeTab, editedStoreInfo, saveStore, loadAllStoreData, refreshStoreData, codes
     };
   },
   template: `

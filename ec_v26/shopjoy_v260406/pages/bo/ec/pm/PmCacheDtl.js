@@ -6,7 +6,8 @@ window.PmCacheDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const caches = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false });
+    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -31,6 +32,28 @@ window.PmCacheDtl = {
     const viewMode2 = ref(window._pmCacheDtlState.viewMode || 'tab');
     watch(viewMode2, v => { window._pmCacheDtlState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     const form = reactive({
       cacheId: null, userId: '', userNm: '', date: '', type: '충전', amount: 0, balance: 0, desc: '',
@@ -119,7 +142,7 @@ window.PmCacheDtl = {
 
     const fnTypeBadge = t => ({ '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' }[t] || 'badge-gray');
 
-    return { caches, uiState, uiState, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, viewMode2, showTab, uiState, cfSelectedVendorNm, selectVendor };
+    return { caches, uiState, codes, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, viewMode2, showTab, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>

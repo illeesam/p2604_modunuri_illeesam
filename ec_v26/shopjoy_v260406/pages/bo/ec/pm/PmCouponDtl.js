@@ -6,7 +6,8 @@ window.PmCouponDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const coupons = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false });
+    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
@@ -31,6 +32,28 @@ window.PmCouponDtl = {
     const viewMode2 = ref(window._pmCouponDtlState.viewMode || 'tab');
     watch(viewMode2, v => { window._pmCouponDtlState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     const COUPON_TYPES = ['배송비할인쿠폰', '회원가입축하쿠폰', '상품할인쿠폰', '주문할인쿠폰', '클레임관리자지급쿠폰', 'VIP쿠폰'];
     const ISSUE_TARGETS = ['상품', '판매업체', '브랜드', '카테고리'];
@@ -219,10 +242,10 @@ window.PmCouponDtl = {
       }
     };
 
-    return { coupons, uiState, uiState, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, memoEl, onTabChange,
+    return { coupons, uiState, codes, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, memoEl, onTabChange,
       COUPON_TYPES, ISSUE_TARGETS, DISCOUNT_TYPES,
       cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer,
-      uiState, cfSelectedVendorNm, selectVendor,
+      cfSelectedVendorNm, selectVendor,
     };
   },
   template: /* html */`

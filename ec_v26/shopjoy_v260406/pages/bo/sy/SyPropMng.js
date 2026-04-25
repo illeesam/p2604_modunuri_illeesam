@@ -5,6 +5,29 @@ window.SyPropMng = {
 
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const uiState = reactive({ isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -197,6 +220,7 @@ window.SyPropMng = {
     };
 
     return {
+      uiState, codes,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       kw, useFlt, typeFlt, TYPES, cfTree, expanded, toggleNode, expandAll, collapseAll,
       selectedPath, selectNode, cfGridRows, cfPagedRows, cfDirtyRows,

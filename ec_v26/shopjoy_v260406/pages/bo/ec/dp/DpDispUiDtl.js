@@ -3,10 +3,33 @@ window.DpDispUiDtl = {
   name: 'DpDispUiDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
-    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
+    const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
+    const codes = reactive({ disp_ui_types: [] });
     const displays = reactive([]);
-    const uiState = reactive({ expanded: false, loading: false, pickOpen: false, showComponentTooltip: false });
+    const uiState = reactive({ expanded: false, loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, isPageCodeLoad: false });
+
+    // App 초기화 준비 상태
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading
+          && codeStore?.svCodes?.length > 0
+          && !uiState.isPageCodeLoad;
+    });
+
+    // 코드 주입
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      codes.disp_ui_types = codeStore.snGetGrpCodes('DISP_UI_TYPE');
+      uiState.isPageCodeLoad = true;
+    };
+
+    // App 초기화 감시
+    watch(isAppReady, (ready) => {
+      if (ready) {
+        fnLoadCodes();
+      }
+    });
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
@@ -31,15 +54,6 @@ window.DpDispUiDtl = {
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
-
-
-    const UI_TYPE_OPTS = [
-      { value: '',       label: '-' },
-      { value: 'FO',     label: '프론트(FO)' },
-      { value: 'BO',     label: '관리자(BO)' },
-      { value: 'MOBILE', label: '모바일' },
-      { value: 'KIOSK',  label: '키오스크' },
-    ];
 
     const cfIsNew = computed(() => !props.editId);
 
@@ -90,7 +104,11 @@ window.DpDispUiDtl = {
       await nextTick();
       initQuillDesc();
     };
-    onMounted(() => { handleLoadData(); handleInitForm(); });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      handleLoadData();
+      handleInitForm();
+    });
 
     const cfRelatedAreas = computed(() =>
       (codes || [])
@@ -323,8 +341,7 @@ window.DpDispUiDtl = {
       form, errors, cfIsNew, UI_TYPE_OPTS,
       handleSave, doCancel, cfRelatedAreas, panelsOfArea,
       activeTab, selectTab, cfActiveArea, uiState, moveArea,
-      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, uiState,
-      uiState, pickKw, pickSel, cfAvailableAreas, openPick, closePick, togglePick, confirmPick, removeArea, onAreaPicked,
+      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, uiState, codes, pickKw, pickSel, cfAvailableAreas, openPick, closePick, togglePick, confirmPick, removeArea, onAreaPicked,
       openUiPreview, openAreaPreview,
       cfVisibilityOptions, hasAreaVisibility, toggleAreaVisibility,
       uiDispEnvOptions, hasUiDispEnv, toggleUiDispEnv,

@@ -5,7 +5,8 @@ window.SyVendorMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const vendors = reactive([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ vendor_status: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -50,9 +51,31 @@ window.SyVendorMng = {
     onMounted(() => {
       handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
-      error: null,
       expanded.clear(); initSet.forEach(v => expanded.add(v));
-      error: null,
+      Object.assign(searchParamOrg, searchParam);
+    });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.vendor_status = await codeStore.snGetGrpCodes('VENDOR_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
     });
 
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
@@ -163,7 +186,7 @@ window.SyVendorMng = {
     watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
-    return { vendors, uiState, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { vendors, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnStatusBadge, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`

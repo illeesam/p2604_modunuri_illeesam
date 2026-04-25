@@ -227,7 +227,28 @@ window.Home01 = {
 </div>
   `,
   setup(props) {
-    const { computed } = Vue;
+    const { computed, ref, onMounted, onBeforeUnmount, reactive, watch } = Vue;
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cartModalMode: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     function fnCategoryLabel(p) {
       if (!p) return '';
@@ -255,9 +276,7 @@ window.Home01 = {
     );
 
     /* ── 빠른보기 모달 ── */
-    const { ref, onMounted, onBeforeUnmount, reactive } = Vue;
     const quickViewProduct = ref(null);
-    const uiState = reactive({ cartModalMode: false });
 
     /* ── 홈 그리드 반응형 CSS 주입 ── */
     /* max-width 컨테이너가 최대 열 수를 자연 제한:
@@ -297,6 +316,6 @@ window.Home01 = {
     });
     onBeforeUnmount(() => clearInterval(bannerTimer));
 
-    return { fnCategoryLabel, fnCatEmoji, cfNewProducts, cfBestProducts, cfAllHomeProducts, cfSaleProducts, quickViewProduct, uiState, bannerIdx, banners, setBanner };
+    return { fnCategoryLabel, fnCatEmoji, cfNewProducts, cfBestProducts, cfAllHomeProducts, cfSaleProducts, quickViewProduct, uiState, bannerIdx, banners, setBanner, codes };
   }
 };

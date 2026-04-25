@@ -3,9 +3,10 @@ window.CmBlogMng = {
   name: 'CmBlogMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const blogs = reactive([]);
-    const uiState = reactive({ loading: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ blog_display_statuses: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -27,6 +28,30 @@ window.CmBlogMng = {
     onMounted(() => { handleFetchData();
     Object.assign(searchParamOrg, searchParam); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.blog_display_statuses = await codeStore.snGetGrpCodes('BLOG_DISPLAY_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+
     const pager        = reactive({ page: 1, size: 20 });
     const selectedId   = ref(null);
 
@@ -155,8 +180,8 @@ window.CmBlogMng = {
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { blogs, uiState; searchKw, searchUse, searchNotice, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
-             selectedId, cfSelectedRow, form, isNew, openDetail, openNew, closeDetail, handleSave, handleDelete, toggleUse, fnYnBadge , PAGE_SIZES , onSizeChange };
+    return { blogs, uiState, codes, searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
+             selectedId, cfSelectedRow, detailModal, openDetail, openNew, closeDetail, handleSave, handleDelete, toggleUse, fnYnBadge, PAGE_SIZES, onSizeChange };
   },
   template: `
 <div>

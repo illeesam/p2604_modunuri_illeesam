@@ -3,10 +3,11 @@ window.SyAttachMng = {
   name: 'SyAttachMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const attaches = reactive([]);
     const attachGrps = reactive([]);
-    const uiState = reactive({ fileEditMode: false, grpEditMode: false, loading: false, error: null });
+    const uiState = reactive({ fileEditMode: false, grpEditMode: false, loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ attach_type: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -28,6 +29,29 @@ window.SyAttachMng = {
       }
     };
     onMounted(() => { handleFetchData(); });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.attach_type = await codeStore.snGetGrpCodes('ATTACH_TYPE') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
     const searchDateRange = ref(''); const searchDateStart = ref(''); const searchDateEnd = ref('');
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
@@ -154,7 +178,7 @@ window.SyAttachMng = {
 
     const cfTotal = computed(() => cfFilteredFiles.value.length);
 
-    return { attaches, uiState, uiState, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm,
+    return { attaches, uiState, codes, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm,
       attachGrps, grpForm, cfTotal,
       selectedGrpId, grpForm, grpEditId, uiState, selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
       searchKw, fileForm, fileEditId, uiState, applied, cfFilteredFiles, onSearch, onReset, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,

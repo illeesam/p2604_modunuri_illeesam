@@ -3,8 +3,34 @@ window.PdDlivTmpltMng = {
   name: 'PdDlivTmpltMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const dlivTmplts = reactive([]);
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({
+      dliv_template_types: [],
+    });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      try {
+        codes.dliv_template_types = codeStore.snGetGrpCodes('DLIV_TEMPLATE_TYPE') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     const handleFetchData = async () => {
       try {
@@ -42,7 +68,7 @@ window.PdDlivTmpltMng = {
 
     const cfSelectedRow = computed(() => (dlivTmplts||[]).find(t => t.dlivTmpltId === selectedId.value) || null);
     const form = reactive({});
-    const uiState = reactive({ descOpen: false, isNew: false });
+    const uiState = reactive({ descOpen: false, isNew: false, error: null, isPageCodeLoad: false });
 
     const openDetail = (row) => {
       if (selectedId.value === row.dlivTmpltId) { selectedId.value = null; return; }

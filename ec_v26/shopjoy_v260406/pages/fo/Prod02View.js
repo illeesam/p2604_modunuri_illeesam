@@ -3,6 +3,28 @@ window.Prod02View = {
   name: "Prod02View",
   props: ['navigate', 'config', 'product', 'addToCart', 'showToast', 'showAlert', 'toggleLike', 'isLiked'],
   setup(props) {
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
     const { ref, computed, onMounted, onBeforeUnmount, watch } = Vue;
 
     /* ── 이미지 갤러리 ── */
@@ -532,7 +554,7 @@ window.Prod02View = {
       scrollToTab, fnCategoryLabel, stars, colorStatus, sizeStatus,
       buyBtnRef,
       selectColor, selectSize, handleAddToCart, handleBuyNow, openQuickBuy, openCartDrawer, execBuyNow, execCartFromDrawer,
-    };
+    , uiState, codes };
   },
 
   template: /* html */ `

@@ -3,10 +3,33 @@ window.DpDispAreaMng = {
   name: 'DpDispAreaMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
-    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const areas = reactive([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ layout_types: [] });
+
+    // App 초기화 준비 상태
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading
+          && codeStore?.svCodes?.length > 0
+          && !uiState.isPageCodeLoad;
+    });
+
+    // 코드 주입
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      codes.layout_types = codeStore.snGetGrpCodes('LAYOUT_TYPE');
+      uiState.isPageCodeLoad = true;
+    };
+
+    // App 초기화 감시
+    watch(isAppReady, (ready) => {
+      if (ready) {
+        fnLoadCodes();
+      }
+    });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -25,21 +48,11 @@ window.DpDispAreaMng = {
         uiState.loading = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      handleFetchData();
+    });
     const fnPathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
-
-
-    const AREA_TYPE_OPTS = [
-      { value: 'FULL',    label: '전체폭' },
-      { value: 'SIDEBAR', label: '사이드바' },
-      { value: 'POPUP',   label: '팝업' },
-      { value: 'GRID',    label: '그리드' },
-      { value: 'BANNER',  label: '배너' },
-    ];
-    const LAYOUT_TYPE_OPTS = [
-      { value: 'grid',      label: '그리드' },
-      { value: 'dashboard', label: '대시보드' },
-    ];
 
     /* ── 검색 ── */
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;

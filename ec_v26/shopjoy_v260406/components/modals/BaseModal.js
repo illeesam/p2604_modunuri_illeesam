@@ -77,6 +77,12 @@ window.OrderDetailModal = {
   name: 'OrderDetailModal',
   props: ['show', 'order'],
   emits: ['close'],
+  setup() {
+    const { reactive } = Vue;
+    const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
+    const codes = reactive({});
+    return { uiState, codes };
+  },
   computed: {
     siteNm() { return window.boCmUtil.getSiteNm(); },
   },
@@ -188,7 +194,9 @@ window.ProductModal = {
   props: ['show', 'product', 'navigate', 'toggleLike', 'isLiked', 'addToCart', 'cartMode'],
   emits: ['close'],
   setup(props) {
-    const { ref, watch, computed } = Vue;
+    const { ref, watch, computed, reactive } = Vue;
+    const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
+    const codes = reactive({});
     const selColor  = ref(null);
     const selSize   = ref(null);
     const qty       = ref(1);
@@ -294,7 +302,7 @@ window.ProductModal = {
       return true;
     };
 
-    return { selColor, selSize, qty, inCart, selThumb, cfThumbImgs, cfRating, cfStarStr,
+    return { uiState, codes, selColor, selSize, qty, inCart, selThumb, cfThumbImgs, cfRating, cfStarStr,
              toastMsg, toastShow, errColor, errSize, handleLike, handleCart, handleBuyNow, handleValidate };
   },
   template: /* html */ `

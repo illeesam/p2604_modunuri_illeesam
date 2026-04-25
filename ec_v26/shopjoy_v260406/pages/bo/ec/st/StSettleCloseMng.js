@@ -3,8 +3,33 @@ window.StSettleCloseMng = {
   name: 'StSettleCloseMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
-    const uiState = reactive({ descOpen: false });
+    const { ref, reactive, computed, watch, onMounted } = Vue;
+    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({
+      settle_statuses: [],
+    });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      try {
+        codes.settle_statuses = codeStore.snGetGrpCodes('SETTLE_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     const orders  = reactive([]);
     const claims  = reactive([]);

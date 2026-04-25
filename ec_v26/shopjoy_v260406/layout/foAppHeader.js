@@ -8,7 +8,8 @@ window.foAppHeader = {
     const { ref, reactive, computed, watch, onUnmounted, nextTick } = Vue;
 
     /* ── UI 상태 ── */
-    const uiState = reactive({ userMenuOpen: false, profileOpen: false, pwOpen: false });
+    const uiState = reactive({ userMenuOpen: false, profileOpen: false, pwOpen: false, loading: false, error: '', isPageCodeLoad: false });
+    const codes = reactive({});
     const userMenuRoot = ref(null);
     const toggleUserMenu = () => { uiState.userMenuOpen = !uiState.userMenuOpen; };
     const closeUserMenu  = () => { uiState.userMenuOpen = false; };
@@ -117,7 +118,7 @@ window.foAppHeader = {
     onUnmounted(() => unbindUserMenuOutside());
 
     return {
-      uiState, userMenuRoot,
+      uiState, codes, userMenuRoot,
       toggleUserMenu, closeUserMenu, goMy, doLogout, cfMenuItems,
       pf, openProfile, saveProfile, openKakaoAddrProfile, genderLabel,
       pw, openPw, savePw, IS,

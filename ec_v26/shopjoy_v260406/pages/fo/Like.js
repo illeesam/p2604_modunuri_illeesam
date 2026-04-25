@@ -3,14 +3,36 @@ window.Like = {
   name: 'Like',
   props: ['navigate', 'config', 'products', 'likes', 'toggleLike', 'selectProduct'],
   setup(props) {
-    const { computed } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { computed , watch } = Vue;
 
     const cfLikedProducts = computed(() => {
       const likeSet = props.likes || new Set();
       return (props.products || []).filter(p => likeSet.has(p.productId));
     });
 
-    return { cfLikedProducts };
+    return { cfLikedProducts , uiState, codes };
   },
   template: /* html */ `
 <div class="page-wrap">

@@ -5,7 +5,8 @@ window.SyCodeMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const codes = reactive([]);
-    const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null });
+    const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false });
+    const pageCodeGroups = reactive({});
 
     /* ── 트리/그룹 선택 상태 (loadGrid 보다 먼저 선언) ── */
     const selectedGrp = ref('');
@@ -38,6 +39,26 @@ window.SyCodeMng = {
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
     const EDIT_FIELDS = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'remark', 'parentCodeValue'];
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     /* ═══════════════════════════════════════════════════════
        상단 섹션: 표시경로 트리 + 코드그룹 CRUD 그리드
@@ -482,6 +503,7 @@ window.SyCodeMng = {
     });
 
     return {
+      uiState, pageCodeGroups,
       cfSiteNm,
       searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfGrpOptions,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,

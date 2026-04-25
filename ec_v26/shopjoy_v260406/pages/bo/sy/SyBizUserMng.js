@@ -6,7 +6,8 @@ window.SyBizUserMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
     const vendorUsers = reactive([]);
-    const uiState = reactive({ loading: false, roleLoading: false, roleModalOpen: false, vendorPickOpen: false, error: null });
+    const uiState = reactive({ loading: false, roleLoading: false, roleModalOpen: false, vendorPickOpen: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ user_status: [] });
 
     /* ── 역할 트리 (좌측 패널) ── */
     const selectedPath = ref(null);
@@ -77,6 +78,29 @@ window.SyBizUserMng = {
       handleLoadData();
       expandAll();
       handleLoadDetail();
+    });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.user_status = await codeStore.snGetGrpCodes('USER_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
     });
 
     const cfVendorMap = computed(() => Object.fromEntries(vendors.map(v => [v.vendorId, v])));
@@ -354,7 +378,7 @@ window.SyBizUserMng = {
     const fnPermBadgeColor = (p) => ({관리:'#f59e0b',쓰기:'#16a34a',읽기:'#2563eb',차단:'#e8587a'}[p]||'#9ca3af');
 
     return {
-      uiState, uiState,
+      uiState, codes,
       vendorUsers, cfVendorMap, fnVendorNm, fnVendorTypeCd, fnVendorSummary,
       vendors, cfVendorList, bizPager, cfBizTotalPages, cfBizPageNums, cfBizPagedRows, setBizPage,
       onSearch, onReset,

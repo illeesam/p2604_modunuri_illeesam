@@ -5,7 +5,29 @@ window.PdTagMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const tags = reactive([]);
-    const uiState = reactive({ loading: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {

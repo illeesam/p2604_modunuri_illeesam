@@ -6,7 +6,8 @@ window.SyVendorDtl = {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
 
     const vendors = reactive([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
@@ -118,7 +119,7 @@ window.SyVendorDtl = {
       }
     };
 
-    return { vendors, uiState, uiState, cfIsNew, form, errors, handleSave, cfSiteNm, addrDetailRef, openKakaoPostcode, memoEl };
+    return { vendors, uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, addrDetailRef, openKakaoPostcode, memoEl };
   },
   template: /* html */`
 <div>

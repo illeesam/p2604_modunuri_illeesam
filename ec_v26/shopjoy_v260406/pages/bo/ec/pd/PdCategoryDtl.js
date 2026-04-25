@@ -5,7 +5,28 @@ window.PdCategoryDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const categories = reactive([]);
-    const uiState = reactive({ loading: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -27,8 +48,6 @@ window.PdCategoryDtl = {
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
       categoryId: null, parentId: null, categoryNm: '', depth: 1, sortOrd: 1, status: '활성', description: '', imgUrl: '',
-      error: null,
-      error: null,
     });
     const errors = reactive({});
 
@@ -39,7 +58,7 @@ window.PdCategoryDtl = {
     onMounted(() => {
       handleFetchData();
       if (!cfIsNew.value) {
-        const c = categories.window.safeArrayUtils.safeFind(value, x => x.categoryId === props.editId);
+        const c = window.safeArrayUtils.safeFind(categories, x => x.categoryId === props.editId);
         if (c) Object.assign(form, { ...c });
       }
     });
@@ -53,7 +72,7 @@ window.PdCategoryDtl = {
       if (form.parentId === null || form.parentId === '') {
         form.depth = 1;
       } else {
-        const parent = categories.window.safeArrayUtils.safeFind(value, c => c.categoryId === Number(form.parentId));
+        const parent = window.safeArrayUtils.safeFind(categories, c => c.categoryId === Number(form.parentId));
         form.depth = parent ? parent.depth + 1 : 1;
       }
     };
@@ -93,7 +112,7 @@ window.PdCategoryDtl = {
       }
     };
 
-    return { categories, uiState; cfIsNew, form, errors, handleSave, cfParentOptions, onParentChange };
+    return { cfIsNew, form, errors, handleSave, cfParentOptions, onParentChange, codes };
   },
   template: /* html */`
 <div>

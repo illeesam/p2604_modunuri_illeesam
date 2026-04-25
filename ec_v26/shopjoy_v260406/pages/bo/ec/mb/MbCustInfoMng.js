@@ -68,10 +68,37 @@
     const { reactive, ref, computed, watch, onMounted } = Vue;
 
     const custInfos = reactive([]);
-    const uiState = reactive({ loading: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({
+      member_statuses: [],
+      member_grades: [],
+    });
     const loginHistory = reactive([]);
     const couponUsage = reactive([]);
     const sendHistory = reactive([]);
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      try {
+        codes.member_statuses = codeStore.snGetGrpCodes('MEMBER_STATUS') || [];
+        codes.member_grades = codeStore.snGetGrpCodes('MEMBER_GRADE') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {

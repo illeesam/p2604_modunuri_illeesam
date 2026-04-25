@@ -3,7 +3,29 @@ window.Order = {
   name: 'Order',
   props: ['navigate', 'config', 'cart', 'instantOrder', 'cartIds', 'showToast', 'showAlert', 'clearCart'],
   setup(props) {
-    const { reactive, computed, ref, onMounted } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { reactive, computed, ref, onMounted , watch } = Vue;
 
     /* ── 유틸 ── */
     const parsePrice = s => parseInt(String(s || '').replace(/[^0-9]/g, ''), 10) || 0;
@@ -185,7 +207,7 @@ window.Order = {
       couponPopup, selectedCoupons, openCouponPopup, closeCouponPopup, applyCoupon, removeCoupon,
       selectedShipCoupon, applyShipCoupon, removeShipCoupon,
       cashBalance, cashInput,
-    };
+    , uiState, codes };
   },
 
   template: /* html */ `

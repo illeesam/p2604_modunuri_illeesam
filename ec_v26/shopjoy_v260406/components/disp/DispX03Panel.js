@@ -12,7 +12,9 @@ window.DispX03Panel = {
   },
   emits: ['widget-action'],
   setup(props, { emit }) {
-    const { computed } = Vue;
+    const { computed, reactive } = Vue;
+    const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
+    const codes = reactive({});
 
     /* panelItem.rows의 각 위젯에 패널 레벨 속성 병합 */
     const mergedWidget = (w) => ({
@@ -42,7 +44,7 @@ window.DispX03Panel = {
 
     const onWidgetAction = (payload) => emit('widget-action', payload);
 
-    return { mergedWidget, cfLayoutStyle, onWidgetAction };
+    return { uiState, codes, mergedWidget, cfLayoutStyle, onWidgetAction };
   },
   template: /* html */`
 <div class="disp-panel" :data-area="panelItem.area">

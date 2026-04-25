@@ -7,8 +7,8 @@ window.OdClaimDtl = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const claims = reactive([]);
     const orders = reactive([]);
-    const uiState = reactive({ loading: false });
-    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ claim_statuses: [] });
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
@@ -31,6 +31,29 @@ window.OdClaimDtl = {
     };
     const cfIsNew = computed(() => !props.editId);
 
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.claim_statuses = await codeStore.snGetGrpCodes('CLAIM_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+
     // 주문 조회 헬퍼 함수
     const getOrder = (orderId) => orders.value?.find(o => o.orderId === orderId);
 
@@ -38,9 +61,6 @@ window.OdClaimDtl = {
       claimId: '', userId: '', userNm: '', orderId: '', prodNm: '',
       type: '취소', statusCd: '신청', reasonCd: '', reasonDetail: '',
       refundAmount: 0, refundMethodCd: '계좌환불', requestDate: '', memo: '',
-      error: null,
-      error: null,
-      error: null,
     });
     const errors = reactive({});
 
@@ -50,11 +70,13 @@ window.OdClaimDtl = {
     });
 
     /* CLAIM_STEPS: parentCodeValues 기반 동적 파생 */
-    const _claimStatusCodes = (codes)
-      .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
-      .sort((a, b) => a.sortOrd - b.sortOrd);
     const TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
-    const cfClaimSteps = computed(() => _claimStatusCodes
+    const cfClaimStatusCodes = computed(() =>
+      (codes.claim_statuses || [])
+        .filter(c => c.useYn === 'Y')
+        .sort((a, b) => a.sortOrd - b.sortOrd)
+    );
+    const cfClaimSteps = computed(() => cfClaimStatusCodes.value
       .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + (TYPE_CD[form.type] || form.type) + '^'))
       .map(c => c.codeLabel)
       .filter(l => !['거부','철회'].includes(l)));
@@ -125,7 +147,7 @@ window.OdClaimDtl = {
       return defs.map((d,i) => {
         const paid = Math.round(amount * shares[i]);
         const sale = Math.round(paid / (1 - discRates[i]));
-        return { claims, uiState; ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
+        return { ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
       });
     };
     const handleInitForm = async () => {
@@ -195,7 +217,7 @@ window.OdClaimDtl = {
       { id:'hist',     label:'상태변경이력',  icon:'🕒', count: cfStatusHistList.value.length },
       { id:'editHist', label:'정보수정이력',  icon:'📝', count: cfEditHistList.value.length },
     ]);
-    return { cfIsNew, form, errors, cfStatusOptions, cfClaimSteps, cfCurrentStepIdx, handleSave, activeTab, claimItems, fmt, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, viewMode2, showTab, orders, getOrder };
+    return { cfIsNew, form, errors, cfStatusOptions, cfClaimSteps, cfCurrentStepIdx, handleSave, activeTab, claimItems, fmt, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, viewMode2, showTab, orders, getOrder, codes };
   },
   template: /* html */`
 <div>

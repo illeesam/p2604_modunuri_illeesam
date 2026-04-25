@@ -6,7 +6,28 @@ window.CmChattDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const chatts = reactive([]);
-    const uiState = reactive({ loading: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -68,14 +89,12 @@ window.CmChattDtl = {
     onMounted(() => {
       handleFetchData();
       if (!cfIsNew.value) {
-        chat.value = chats.window.safeArrayUtils.safeFind(value, c => c.chatId === props.editId) || null;
+        chat.value = window.safeArrayUtils.safeFind(chatts, c => c.chatId === props.editId) || null;
         if (chat.value) chat.value.unread = 0;
         scrollToBottom();
       } else {
         tab.value = 'new';
       }
-      error: null,
-      error: null,
     });
 
     /* 회원의 다른 채팅 이력 */
@@ -115,7 +134,7 @@ window.CmChattDtl = {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
         console.error('[catch-info]', err);
-        err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; });
+        err.inner.forEach(e => { errors[e.path] = e.message; });
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
@@ -154,11 +173,11 @@ window.CmChattDtl = {
     });
     const cfSearchUser = computed(() => getMember.value(Number(searchUserId.value)));
 
-    return { chatts, uiState; cfIsNew, tab, viewMode2, showTab, chat, replyText, sendReply, closeChat, msgBoxRef,
+    return { cfIsNew, tab, viewMode2, showTab, chat, replyText, sendReply, closeChat, msgBoxRef,
       hasRef, refLabel, openMsgRef, refModal, closeRefModal,
       form, errors, handleSave, onUserChange,
       searchUserId, cfUserChats, cfSearchUser,
-      cfMemberChats,
+      cfMemberChats, codes,
     };
   },
   template: /* html */`

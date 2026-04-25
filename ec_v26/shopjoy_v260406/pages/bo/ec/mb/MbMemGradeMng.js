@@ -5,7 +5,8 @@ window.MbMemGradeMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const grades = reactive([]);
-    const uiState = reactive({ loading: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ member_grades: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -27,7 +28,29 @@ window.MbMemGradeMng = {
     onMounted(() => { handleFetchData();
     Object.assign(searchParamOrg, searchParam); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const GRADE_CODES = ['BASIC','SILVER','GOLD','VIP','VVIP','PLATINUM'];
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.member_grades = await codeStore.snGetGrpCodes('MEMBER_GRADE') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     const pager     = reactive({ page: 1, size: 20 });
 
@@ -136,8 +159,8 @@ window.MbMemGradeMng = {
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { grades, uiState; searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, onSearch, onReset,
-             gridRows, addRow, onCellChange, handleDeleteRow, handleSaveAll, focusedIdx, fnYnBadge, GRADE_CODES , PAGE_SIZES , onSizeChange };
+    return { grades, uiState, codes, searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, onSearch, onReset,
+             gridRows, addRow, onCellChange, handleDeleteRow, handleSaveAll, focusedIdx, fnYnBadge, PAGE_SIZES, onSizeChange };
   },
   template: `
 <div>
@@ -180,7 +203,7 @@ window.MbMemGradeMng = {
             <td>
               <select v-if="row._row_status" class="form-control" v-model="row.gradeCd" @change="onCellChange(idx)">
                 <option value="">선택</option>
-                <option v-for="c in GRADE_CODES" :key="Math.random()" :value="c">{{ c }}</option>
+                <option v-for="c in codes.member_grades" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
               </select>
               <span v-else>{{ row.gradeCd }}</span>
             </td>

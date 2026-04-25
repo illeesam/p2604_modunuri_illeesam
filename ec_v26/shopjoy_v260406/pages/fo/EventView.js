@@ -3,7 +3,29 @@ window.EventView = {
   name: 'EventView',
   props: ['navigate', 'config', 'editId'],
   setup(props) {
-    const { ref, computed } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { ref, computed , watch } = Vue;
 
     /* ── 이벤트 데이터 ── */
     const events = [
@@ -170,7 +192,7 @@ window.EventView = {
     /* 더 많은 프로모션 (현재 이벤트 제외) */
     const cfPromoEvents = computed(() => events.filter(e => e.id !== cfEventId.value));
 
-    return { cfEvent, activeTab, setTab, cfTabProducts, cfPromoEvents };
+    return { cfEvent, activeTab, setTab, cfTabProducts, cfPromoEvents , uiState, codes };
   },
 
   template: /* html */ `

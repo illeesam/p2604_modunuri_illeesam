@@ -5,7 +5,8 @@ window.SyDeptMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const depts = reactive([]);
-    const uiState = reactive({ checkAll: false, loading: false, error: null });
+    const uiState = reactive({ checkAll: false, loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ dept_status: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -38,6 +39,30 @@ window.SyDeptMng = {
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.dept_status = await codeStore.snGetGrpCodes('DEPT_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+
     const cfAllowedTreeIds = computed(() => {
       if (selectedTreeId.value == null) return null;
       return window.boCmUtil.collectDescendantIds(depts, 'deptId', 'parentId', selectedTreeId.value);
@@ -239,7 +264,7 @@ window.SyDeptMng = {
       '부서목록.csv'
     );
 
-    return { depts, uiState, uiState, selectedTreeId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
+    return { depts, uiState, codes, selectedTreeId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, searchParamOrg, cfTypeOptions, DEPT_TYPES,
       cfSiteNm,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,

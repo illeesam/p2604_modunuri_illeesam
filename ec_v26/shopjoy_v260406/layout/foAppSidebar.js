@@ -13,7 +13,8 @@ window.foAppSidebar = {
     };
 
     /* 토글 상태 (기본 모두 접힘) */
-    const uiState = reactive({ sample0Open: false, sample1Open: false, sample2Open: false, dispUiOpen: false, devToolsOpen: false });
+    const uiState = reactive({ sample0Open: false, sample1Open: false, sample2Open: false, dispUiOpen: false, devToolsOpen: false, loading: false, error: '', isPageCodeLoad: false });
+    const codes = reactive({});
 
     const SAMPLE0_ITEMS = [
       { menuId: 'sample01', menuNm: '01.gridCrud' },
@@ -77,7 +78,7 @@ window.foAppSidebar = {
     const foSiteNo = window.FO_SITE_NO || '01';
     const showSamples = foSiteNo !== '01'; // Site 01은 샘플 메뉴 숨김
 
-    return { isMenuActive, uiState,
+    return { isMenuActive, uiState, codes,
              SAMPLE0_ITEMS, SAMPLE1_ITEMS, SAMPLE2_ITEMS, DISP_UI_ITEMS, DEV_TOOLS_ITEMS, navTo, navToSite,
              showSamples, foSiteNo };
   },

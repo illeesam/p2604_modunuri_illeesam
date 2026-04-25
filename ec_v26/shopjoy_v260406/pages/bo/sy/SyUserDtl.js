@@ -6,7 +6,8 @@ window.SyUserDtl = {
     const { reactive, computed, onMounted, ref } = Vue;
 
     const users = reactive([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -130,7 +131,7 @@ window.SyUserDtl = {
       }
     };
 
-    return { users, uiState, uiState, cfIsNew, form, errors, handleSave, cfSiteNm,
+    return { users, uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm,
              addrDetailRef, openKakaoPostcode,
              deptModal, openDeptModal, onDeptSelect, clearDept,
              cfUserRoles, fnRoleTypeBadge };

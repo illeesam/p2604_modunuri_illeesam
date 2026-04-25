@@ -3,9 +3,10 @@ window.MbMemberMng = {
   name: 'MbMemberMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const members = reactive([]);
-    const uiState = reactive({ descOpen: false, loading: false });
+    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ member_statuses: [], member_grades: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -66,8 +67,6 @@ window.MbMemberMng = {
         if (applied.dateEnd && _d > applied.dateEnd) return false;
         return true;
       });
-      error: null,
-      error: null,
     });
     const cfTotal = computed(() => cfFiltered.value.length);
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
@@ -136,7 +135,31 @@ window.MbMemberMng = {
     grade: '',
     status: ''
   });
-    return { members, uiState; uiState, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchGrade, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnGradeBadge, fnStatusBadge, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.member_statuses = await codeStore.snGetGrpCodes('MEMBER_STATUS') || [];
+        codes.member_grades = await codeStore.snGetGrpCodes('MEMBER_GRADE') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+
+    return { members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnGradeBadge, fnStatusBadge, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>

@@ -4,9 +4,33 @@ window.DpDispAreaDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
-    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
+    const codes = reactive({ disp_areas: [], layout_types: [] });
     const areas = reactive([]);
-    const uiState = reactive({ loading: false, pickOpen: false, showComponentTooltip: false });
+    const uiState = reactive({ loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, isPageCodeLoad: false });
+
+    // App 초기화 준비 상태
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading
+          && codeStore?.svCodes?.length > 0
+          && !uiState.isPageCodeLoad;
+    });
+
+    // 코드 주입
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      codes.disp_areas = codeStore.snGetGrpCodes('DISP_AREA');
+      codes.layout_types = codeStore.snGetGrpCodes('LAYOUT_TYPE');
+      uiState.isPageCodeLoad = true;
+    };
+
+    // App 초기화 감시
+    watch(isAppReady, (ready) => {
+      if (ready) {
+        fnLoadCodes();
+      }
+    });
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
@@ -32,21 +56,10 @@ window.DpDispAreaDtl = {
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
     const fnPathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-
-    const AREA_TYPE_OPTS = [
-      { value: '',        label: '-' },
-      { value: 'FULL',    label: '전체폭' },
-      { value: 'SIDEBAR', label: '사이드바' },
-      { value: 'POPUP',   label: '팝업' },
-      { value: 'GRID',    label: '그리드' },
-      { value: 'BANNER',  label: '배너' },
-    ];
-    const LAYOUT_TYPE_OPTS = [
-      { value: 'grid',      label: '그리드' },
-      { value: 'dashboard', label: '대시보드' },
-    ];
-
     const cfIsNew = computed(() => !props.editId);
+
+    /* ── Area Type Options (from codes) ── */
+    const fnAreaTypeLabel = (v) => codes.disp_areas.find(c => c.codeValue === v)?.codeLabel || '-';
 
     /* ── 기본 기간: 오늘 ~ +10년 ── */
     const _today = new Date();
@@ -108,7 +121,11 @@ window.DpDispAreaDtl = {
       await nextTick();
       initQuillDesc();
     };
-    onMounted(() => { handleLoadData(); handleInitForm(); });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      handleLoadData();
+      handleInitForm();
+    });
 
     /* ── 연결된 패널 ── */
     const cfRelatedPanels = computed(() =>
@@ -382,7 +399,7 @@ window.DpDispAreaDtl = {
     };
 
     return { codes, areas, uiState; pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
-      form, errors, cfIsNew, AREA_TYPE_OPTS, LAYOUT_TYPE_OPTS,
+      form, errors, cfIsNew, codes, uiState, fnAreaTypeLabel,
       handleSave, onCancel, cfRelatedPanels,
       uiState, pickKw, pickSel, cfAvailablePanels, openPick, closePick, togglePick, confirmPick, removePanel, onPanelPicked, movePanel,
       activeTab, selectTab, cfActivePanel, expanded,
@@ -517,7 +534,7 @@ window.DpDispAreaDtl = {
             <div class="form-group">
               <label class="form-label">영역유형</label>
               <select class="form-control" v-model="form.areaType">
-                <option v-for="o in AREA_TYPE_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
+                <option v-for="o in codes.disp_areas" :key="o?.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
               </select>
             </div>
           </div>
@@ -526,12 +543,12 @@ window.DpDispAreaDtl = {
             <div class="form-group" style="flex:0 0 auto;">
               <label class="form-label">표시방식</label>
               <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;max-width:200px;">
-                <button v-for="o in LAYOUT_TYPE_OPTS" :key="o?.value"
-                  @click="form.layoutType = o.value"
+                <button v-for="o in codes.layout_types" :key="o?.codeValue"
+                  @click="form.layoutType = o.codeValue"
                   type="button"
                   style="flex:1;padding:6px 0;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
-                  :style="[o.value==='grid'?'border-left:none;':'', form.layoutType===o.value ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;']">
-                  {{ o.value==='grid' ? '🔲 ' : '🧩 ' }}{{ o.label }}
+                  :style="[o.codeValue==='grid'?'border-left:none;':'', form.layoutType===o.codeValue ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;']">
+                  {{ o.codeValue==='grid' ? '🔲 ' : '🧩 ' }}{{ o.codeLabel }}
                 </button>
               </div>
             </div>

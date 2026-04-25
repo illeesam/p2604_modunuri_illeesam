@@ -7,7 +7,8 @@ window.PmVoucherDtl = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const vouchers = reactive([]);
     const voucherList = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false });
+    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -32,6 +33,28 @@ window.PmVoucherDtl = {
     const viewMode2 = ref(window._pmVoucherDtlState.viewMode || 'tab');
     watch(viewMode2, v => { window._pmVoucherDtlState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     const form = reactive({
       voucherId: null, voucherNm: '', voucherAmt: 0, salePrice: 0,
@@ -194,7 +217,7 @@ window.PmVoucherDtl = {
       }
     };
 
-    return { vouchers, uiState, uiState, cfIsNew, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, viewMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, uiState, cfSelectedVendorNm, selectVendor };
+    return { vouchers, uiState, codes, cfIsNew, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, viewMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, uiState, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>

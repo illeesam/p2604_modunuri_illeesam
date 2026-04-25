@@ -3,9 +3,34 @@ window.StSettleAdjMng = {
   name: 'StSettleAdjMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const uiState = reactive({ descOpen: false });
+    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({
+      settle_adj_types: [],
+    });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      try {
+        codes.settle_adj_types = codeStore.snGetGrpCodes('SETTLE_ADJ_TYPE') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const dateRange = ref('이번달');

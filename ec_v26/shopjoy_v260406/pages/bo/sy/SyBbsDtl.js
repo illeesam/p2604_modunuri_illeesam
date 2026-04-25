@@ -6,7 +6,8 @@ window.SyBbsDtl = {
     const { reactive, computed, onMounted, ref, onBeforeUnmount } = Vue;
 
     const bbss = reactive([]);
-    const uiState = reactive({ loading: false, showBbmDetail: false, error: null });
+    const uiState = reactive({ loading: false, showBbmDetail: false, error: null, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -141,7 +142,7 @@ window.SyBbsDtl = {
       }
     };
 
-    return { bbss, uiState, uiState, cfIsNew, form, errors, selectedBbm, cfContentType, cfAllowAttach, cfAttachMaxCount,
+    return { bbss, uiState, codes, cfIsNew, form, errors, selectedBbm, cfContentType, cfAllowAttach, cfAttachMaxCount,
       showBbmModal, uiState, onBbmSelect, handleSave, cfSiteNm,
     };
   },

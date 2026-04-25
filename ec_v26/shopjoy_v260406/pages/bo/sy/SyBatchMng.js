@@ -5,7 +5,8 @@ window.SyBatchMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const batches = reactive([]);
-    const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null });
+    const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ batch_status: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -52,6 +53,29 @@ window.SyBatchMng = {
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
+    });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.batch_status = await codeStore.snGetGrpCodes('BATCH_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
     });
 
 
@@ -375,7 +399,7 @@ window.SyBatchMng = {
     watch(selectedPath, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
 
 
-    return { batches, uiState, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { batches, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, applied,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,

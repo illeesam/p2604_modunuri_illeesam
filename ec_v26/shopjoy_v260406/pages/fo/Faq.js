@@ -35,8 +35,30 @@ window.Faq = {
 </div>
   `,
   setup() {
-    const { ref } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { ref , watch } = Vue;
     const openFaq = ref(null);
-    return { openFaq };
+    return { openFaq , uiState, codes };
   }
 };

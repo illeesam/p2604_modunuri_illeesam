@@ -141,6 +141,10 @@ window.DpDispWidgetLibPreview = {
   setup(props) {
     const { ref, reactive, computed, watch, watchEffect, onMounted } = Vue;
     const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
+    const cfDispWidgetTypes = computed(() => {
+      const codeStore = window.getBoCodeStore();
+      return codeStore?.snGetGrpCodes?.('DISP_WIDGET_TYPE') || [];
+    });
     const widgetLibs = reactive([]);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
@@ -155,26 +159,6 @@ window.DpDispWidgetLibPreview = {
     const today   = new Date().toISOString().slice(0, 10);
     const nowTime = new Date().toTimeString().slice(0, 5);
 
-    const WIDGET_TYPES = [
-      { value:'',               label:'전체 유형' },
-      { value:'image_banner',   label:'이미지 배너' },
-      { value:'product_slider', label:'상품 슬라이더' },
-      { value:'product',        label:'상품' },
-      { value:'cond_product',   label:'조건상품' },
-      { value:'chart_bar',      label:'차트 (Bar)' },
-      { value:'chart_line',     label:'차트 (Line)' },
-      { value:'chart_pie',      label:'차트 (Pie)' },
-      { value:'text_banner',    label:'텍스트 배너' },
-      { value:'info_card',      label:'정보 카드' },
-      { value:'popup',          label:'팝업' },
-      { value:'file',           label:'파일' },
-      { value:'file_list',      label:'파일목록' },
-      { value:'coupon',         label:'쿠폰' },
-      { value:'html_editor',    label:'HTML 에디터' },
-      { value:'event_banner',   label:'이벤트' },
-      { value:'cache_banner',   label:'캐쉬' },
-      { value:'widget_embed',   label:'위젯' },
-    ];
     const WIDGET_ICONS = {
       'image_banner':'🖼', 'product_slider':'🛒', 'product':'📦',
       'cond_product':'🔍', 'chart_bar':'📊',      'chart_line':'📈',
@@ -189,7 +173,7 @@ window.DpDispWidgetLibPreview = {
     const CONDITION_OPTS  = ['항상 표시','로그인 필요','로그인+VIP','로그인+우수','비로그인 전용'];
     const AUTH_GRADE_OPTS = ['일반','우수','VIP'];
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
-    const wTypeLabel = (v) => window.safeArrayUtils.safeFind(WIDGET_TYPES, t => t.value === v)?.label || v;
+    const wTypeLabel = (v) => cfDispWidgetTypes.value.find(t => t.codeValue === v)?.codeLabel || v;
 
     /* ── 조회 조건 ── */
     const searchParam = reactive({
@@ -512,7 +496,7 @@ window.DpDispWidgetLibPreview = {
 
     return {
       cfSiteNm, today,
-      WIDGET_TYPES, CONDITION_OPTS, AUTH_GRADE_OPTS, VIEWPORT,
+      CONDITION_OPTS, AUTH_GRADE_OPTS, VIEWPORT,
       wIcon, wTypeLabel,
       previewDate, previewTime,
       filterType, filterStatus, filterCondition, filterAuthReq, filterAuthGrade, searchKw,
@@ -585,7 +569,7 @@ window.DpDispWidgetLibPreview = {
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">위젯유형</span>
         <select v-model="filterType" class="form-control" style="width:114px;margin:0;font-size:12px;">
-          <option v-for="t in WIDGET_TYPES" :key="t?.value" :value="t.value">{{ t.label }}</option>
+          <option v-for="t in codes.disp_widget_types" :key="t?.value" :value="t.codeValue">{{ t.codeLabel }}</option>
         </select>
       </div>
       <input v-model="searchKw" class="form-control" placeholder="이름·태그 검색" style="margin:0;width:130px;font-size:12px;" />

@@ -5,7 +5,8 @@ window.SySiteMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const sites = reactive([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -51,9 +52,28 @@ window.SySiteMng = {
     onMounted(() => {
       handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
-      error: null,
       expanded.clear(); initSet.forEach(v => expanded.add(v));
-      error: null,
+      Object.assign(searchParamOrg, searchParam);
+    });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
     });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
   const searchParam = reactive({
@@ -174,7 +194,7 @@ window.SySiteMng = {
     watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
-    return { sites, uiState, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { sites, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange,
       searchKw, searchType, searchStatus, cfTypeOptions,

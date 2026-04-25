@@ -3,6 +3,28 @@ window.Prod02List = {
   name: "Prod02List",
   props: ['navigate', 'config', 'products', 'selectProduct', 'toggleLike', 'isLiked'],
   setup(props) {
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
     const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
 
     /* ── 상품 이미지 자동 할당 ── */
@@ -197,7 +219,7 @@ window.Prod02List = {
       currentPage, cfTotalPages, cfPagedProducts, cfPageNums, PAGE_SIZE,
       mobileCount, cfMobileProducts, cfHasMore,
       isMobile,
-    };
+    , uiState, codes };
   },
   template: /* html */ `
 <div class="page-wrap">

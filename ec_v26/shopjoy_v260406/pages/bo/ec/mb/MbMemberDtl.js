@@ -5,7 +5,32 @@ window.MbMemberDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const members = reactive([]);
-    const uiState = reactive({ loading: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ member_grades: [], member_statuses: [] });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.member_grades = await codeStore.snGetGrpCodes('MEMBER_GRADE') || [];
+        codes.member_statuses = await codeStore.snGetGrpCodes('MEMBER_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
@@ -29,8 +54,6 @@ window.MbMemberDtl = {
       userId: null,
       email: '', memberNm: '', phone: '', gradeCd: '일반', statusCd: '활성',
       joinDate: '', lastLogin: '', orderCount: 0, totalPurchase: 0, memo: '',
-      error: null,
-      error: null,
     });
     const errors = reactive({});
 
@@ -97,7 +120,7 @@ window.MbMemberDtl = {
       }
     };
 
-    return { members, uiState; cfIsNew, form, errors, handleSave, memoEl };
+    return { cfIsNew, form, errors, handleSave, memoEl, codes };
   },
   template: /* html */`
 <div>

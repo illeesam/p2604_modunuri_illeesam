@@ -5,7 +5,8 @@ window.SyBizMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const bizs = reactive([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ vendor_status: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -34,9 +35,30 @@ window.SyBizMng = {
     onMounted(() => {
       handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
-      error: null,
       expanded.clear(); initSet.forEach(v => expanded.add(v));
-      error: null,
+    });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.vendor_status = await codeStore.snGetGrpCodes('VENDOR_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
     });
     const cfAllowedPathIds = computed(() => selectedPath.value == null ? null : window.boCmUtil.getPathDescendants('sy_biz', selectedPath.value));
 
@@ -126,7 +148,7 @@ window.SyBizMng = {
     const closePathPick = () => { pathPickModal.show = false; };
     const onPathPicked = (pathId) => { formData.pathId = pathId; };
 
-    return { bizs, uiState, uiState, selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
+    return { bizs, uiState, codes, selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       kw, statusFlt, vendorTypeFlt, STATUS, BIZ_CLASS, VENDOR_TYPES,
       cfFiltered, cfPagedRows, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange,
       pathLabel, fnVendorTypeLabel, fnVendorTypeBadge, fnRoleCatLabel, fnRoleCatColor, fnStatusBadge, fnStatusLabel,

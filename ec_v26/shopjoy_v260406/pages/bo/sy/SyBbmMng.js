@@ -3,9 +3,10 @@ window.SyBbmMng = {
   name: 'SyBbmMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const bbms = reactive([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ bbm_type: [], bbm_status: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -37,9 +38,31 @@ window.SyBbmMng = {
       handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
-      error: null,
       Object.assign(searchParamOrg, searchParam);
-      error: null,
+    });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.bbm_type = await codeStore.snGetGrpCodes('BBM_TYPE') || [];
+        codes.bbm_status = await codeStore.snGetGrpCodes('BBM_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
     });
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -129,7 +152,7 @@ window.SyBbmMng = {
     const bbsCount = (bbmId) => bbss.value.filter(b => b.bbmId === bbmId).length;
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
-    return { bbms, uiState, uiState, cfSiteNm, searchParam, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnYnBadge, fnCommentBadge, fnAttachBadge, fnContentBadge, fnScopeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, bbsCount, exportExcel,
+    return { bbms, uiState, codes, cfSiteNm, searchParam, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnYnBadge, fnCommentBadge, fnAttachBadge, fnContentBadge, fnScopeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, bbsCount, exportExcel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
   },

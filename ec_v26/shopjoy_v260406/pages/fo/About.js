@@ -117,7 +117,30 @@ window.About = {
 
 </div>
   `,
-  setup() {
+  setup(props) {
+    const { ref, reactive, computed, watch, onMounted } = Vue;
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+
     const values = [
       { icon:'😊', bg:'#dbeafe', title:'고객 중심', desc:'모든 의사결정의 기준은 고객 만족입니다.' },
       { icon:'💡', bg:'#fef3c7', title:'트렌드 선도', desc:'최신 패션 트렌드를 빠르게 반영합니다.' },
@@ -141,6 +164,6 @@ window.About = {
       { label:'고객센터',  value:'010-3805-0206' },
       { label:'이메일',    value:'illeesam@gmail.com' },
     ];
-    return { values, history, bizInfo };
+    return { values, history, bizInfo, uiState, codes };
   }
 };

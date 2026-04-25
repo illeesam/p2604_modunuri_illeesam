@@ -6,7 +6,8 @@ window.SyBbmDtl = {
     const { reactive, computed, onMounted, ref } = Vue;
 
     const bbms = reactive([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -88,7 +89,7 @@ window.SyBbmDtl = {
       }
     };
 
-    return { bbms, uiState, uiState, cfIsNew, form, errors, handleSave, cfSiteNm, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
+    return { bbms, uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
   },
   template: /* html */`
 <div>

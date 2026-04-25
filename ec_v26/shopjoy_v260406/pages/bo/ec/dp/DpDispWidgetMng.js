@@ -13,10 +13,34 @@ window.DpDispWidgetMng = {
   name: 'DpDispWidgetMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const codes = reactive({ disp_widget_types: [] });
+    const uiState = reactive({ loading: false, isPageCodeLoad: false });
     const widgetLibs = reactive([]);
     const widgets = reactive([]);
-    const uiState = reactive({ loading: false });
+
+    // App 초기화 준비 상태
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading
+          && codeStore?.svCodes?.length > 0
+          && !uiState.isPageCodeLoad;
+    });
+
+    // 코드 주입
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE');
+      uiState.isPageCodeLoad = true;
+    };
+
+    // App 초기화 감시
+    watch(isAppReady, (ready) => {
+      if (ready) {
+        fnLoadCodes();
+      }
+    });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -43,35 +67,6 @@ window.DpDispWidgetMng = {
 
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    const WIDGET_TYPES = [
-      { value: 'image_banner',   label: '이미지 배너' },
-      { value: 'product_slider', label: '상품 슬라이더' },
-      { value: 'product',        label: '상품' },
-      { value: 'cond_product',   label: '조건상품' },
-      { value: 'chart_bar',      label: '차트 (Bar)' },
-      { value: 'chart_line',     label: '차트 (Line)' },
-      { value: 'chart_pie',      label: '차트 (Pie)' },
-      { value: 'text_banner',    label: '텍스트 배너' },
-      { value: 'info_card',      label: '정보 카드' },
-      { value: 'popup',          label: '팝업' },
-      { value: 'file',           label: '파일' },
-      { value: 'file_list',      label: '파일목록' },
-      { value: 'coupon',         label: '쿠폰' },
-      { value: 'html_editor',    label: 'HTML 에디터' },
-      { value: 'textarea',       label: '텍스트 영역' },
-      { value: 'markdown',       label: 'Markdown' },
-      { value: 'barcode',         label: '바코드' },
-      { value: 'qrcode',          label: 'QR코드' },
-      { value: 'barcode_qrcode',  label: '바코드+QR' },
-      { value: 'video_player',    label: '동영상 플레이어' },
-      { value: 'countdown',       label: '카운트다운 타이머' },
-      { value: 'payment_widget',  label: '결제위젯' },
-      { value: 'approval_widget', label: '전자결재' },
-      { value: 'map_widget',      label: '지도맵' },
-      { value: 'event_banner',    label: '이벤트' },
-      { value: 'cache_banner',   label: '캐쉬' },
-      { value: 'widget_embed',   label: '위젯' },
-    ];
     const WIDGET_ICONS = {
       'image_banner':'🖼', 'product_slider':'🛒', 'product':'📦',
       'cond_product':'🔍', 'chart_bar':'📊',      'chart_line':'📈',
@@ -83,7 +78,7 @@ window.DpDispWidgetMng = {
       'barcode_qrcode':'🔖', 'video_player':'▶️',      'countdown':'⏱',
       'payment_widget':'💳', 'approval_widget':'✅',   'map_widget':'🗺',
     };
-    const wTypeLabel = (v) => window.safeArrayUtils.safeFind(WIDGET_TYPES, t => t.value === v)?.label || v;
+    const wTypeLabel = (v) => codes.disp_widget_types.find(t => t.codeValue === v)?.codeLabel || v;
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
 
     /* ── 검색 ── */
@@ -112,7 +107,7 @@ window.DpDispWidgetMng = {
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     return { widgets, uiState; pathLabel,
-      WIDGET_TYPES, wTypeLabel, wIcon, handleDelete,
+      codes, wTypeLabel, wIcon, handleDelete,
       searchKw, searchType, searchStatus, pager, PAGE_SIZES,
       cfFiltered, cfTotalCount, cfPageList, cfTotalPages, cfPageNumbers,
       cfTree, openNodes, toggleNode, isOpen, selectedTreeKey, selectTree, expandAll, collapseAll,
@@ -144,7 +139,7 @@ window.DpDispWidgetMng = {
         <label class="form-label">위젯 유형</label>
         <select v-model="searchParam.type" class="form-control" style="margin:0;">
           <option value="">전체</option>
-          <option v-for="t in WIDGET_TYPES" :key="t?.value" :value="t.value">{{ t.label }}</option>
+          <option v-for="t in codes.disp_widget_types" :key="t?.codeValue" :value="t.codeValue">{{ t.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group" style="margin:0;width:110px;">

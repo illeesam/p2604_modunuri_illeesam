@@ -3,9 +3,10 @@ window.SyContactMng = {
   name: 'SyContactMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const contacts = reactive([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ contact_status: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -25,6 +26,29 @@ window.SyContactMng = {
       }
     };
     onMounted(() => { handleFetchData(); });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.contact_status = await codeStore.snGetGrpCodes('CONTACT_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
     const searchParam = reactive({
       error: null,
       kw: '', category: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
@@ -111,7 +135,7 @@ window.SyContactMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'inquiryId'},{label:'회원명',key:'userNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'title'},{label:'상태',key:'statusCd'},{label:'등록일',key:'date'}], '문의목록.csv');
 
-    return { contacts, uiState, uiState, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { contacts, uiState, codes, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>

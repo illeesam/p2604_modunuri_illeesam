@@ -3,7 +3,30 @@ window.SyDashboardMng = {
   name: 'SyDashboardMng',
   props: ['navigate', 'showToast'],
   setup(props) {
-    const { computed } = Vue;
+    const { computed, reactive, watch, onMounted } = Vue;
+    const uiState = reactive({ isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const cfStats = computed(() => [
@@ -46,7 +69,7 @@ window.SyDashboardMng = {
       { id: 'syUserMng',     label: '사용자관리', icon: '🔑', color: '#c41d7f' },
     ];
 
-    return { cfSiteNm, cfStats, shortcuts };
+    return { uiState, codes, cfSiteNm, cfStats, shortcuts };
   },
   template: /* html */`
 <div>

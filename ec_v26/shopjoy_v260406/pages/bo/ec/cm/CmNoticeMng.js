@@ -3,9 +3,10 @@ window.CmNoticeMng = {
   name: 'CmNoticeMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const notices = reactive([]);
-    const uiState = reactive({ loading: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ notice_display_statuses: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -32,6 +33,30 @@ window.CmNoticeMng = {
       if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.page = 1;
     };
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.notice_display_statuses = await codeStore.snGetGrpCodes('NOTICE_DISPLAY_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+
     const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const selectedId = ref(null);
@@ -125,7 +150,7 @@ window.CmNoticeMng = {
     };
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'noticeId'},{label:'제목',key:'title'},{label:'유형',key:'noticeType'},{label:'상태',key:'statusCd'},{label:'조회수',key:'viewCount'},{label:'등록일',key:'regDate'}], '공지목록.csv');
 
-    return { notices, uiState; cfSiteNm, searchKw, searchType, searchStatus, searchDateStart, searchDateEnd, searchDateRange, DATE_RANGE_OPTIONS, onDateRangeChange, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { notices, uiState, codes, cfSiteNm, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>

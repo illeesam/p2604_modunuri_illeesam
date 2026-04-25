@@ -12,6 +12,9 @@ window.DispX02Area = {
     areaItem:    { type: Object, required: true },     // { code, label, info, panels }
   },
   setup(props) {
+    const { reactive } = Vue;
+    const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
+    const codes = reactive({});
     const mode = props.dispOpt?.mode || 'card';
     const showDesc = props.dispOpt?.showDesc !== false;
 
@@ -63,7 +66,7 @@ window.DispX02Area = {
       p.htmlDesc ? `설명: ${p.htmlDesc}` : '',
     ].filter(Boolean).join('\n');
 
-    return { mode, showDesc, wLabel, wIcon, padId, panelWidgetTypes, periodText, statusCls, panelTitle };
+    return { uiState, codes, mode, showDesc, wLabel, wIcon, padId, panelWidgetTypes, periodText, statusCls, panelTitle };
   },
   template: /* html */`
 <div class="disp-area" style="margin-bottom:28px;">

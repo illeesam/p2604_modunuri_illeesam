@@ -3,7 +3,29 @@ window.MyChatt = {
   name: 'MyChatt',
   props: ['navigate', 'cartCount'],
   setup(props) {
-    const { reactive, onMounted } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { reactive, onMounted , watch } = Vue;
     const myStore = window.useFoMyStore();
     const { chats, expandedChat } = Pinia.storeToRefs(myStore);
 
@@ -16,7 +38,7 @@ window.MyChatt = {
 
     onMounted(() => myStore.loadChats());
 
-    return { myStore, chats, expandedChat, chatPager, paginate, cfDateFilteredChats, onDateSearch };
+    return { myStore, chats, expandedChat, chatPager, paginate, cfDateFilteredChats, onDateSearch , uiState, codes };
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myChatt">

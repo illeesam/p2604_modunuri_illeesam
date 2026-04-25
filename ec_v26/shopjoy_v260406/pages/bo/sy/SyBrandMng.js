@@ -5,7 +5,8 @@ window.SyBrandMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const brands = reactive([]);
-    const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null });
+    const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ brand_status: [] });
 
     // 현재 환경이 local인지 확인
     const cfIsLocalMode = computed(() => {
@@ -78,6 +79,29 @@ window.SyBrandMng = {
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
     const EDIT_FIELDS = ['brandCode', 'brandNm', 'brandEnNm', 'dispPath', 'logoUrl', 'sortOrd', 'useYn', 'remark'];
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.brand_status = await codeStore.snGetGrpCodes('BRAND_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     const makeRow = (b) => ({
       ...b,
@@ -283,7 +307,7 @@ window.SyBrandMng = {
     });
     watch(selectedPath, () => handleLoadGrid());
 
-    return { brands, uiState, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { brands, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange, cfIsLocalMode,

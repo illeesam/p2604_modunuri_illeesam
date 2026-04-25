@@ -8,7 +8,34 @@ window.PdBundleMng = {
     const products = reactive([]);
     const brands = reactive([]);
     const bundles = reactive([]);
-    const uiState = reactive({ descOpen: false, loading: false });
+    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({
+      product_statuses: [],
+      bundle_types: [],
+    });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      try {
+        codes.product_statuses = codeStore.snGetGrpCodes('PRODUCT_STATUS') || [];
+        codes.bundle_types = codeStore.snGetGrpCodes('BUNDLE_TYPE') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -392,7 +419,7 @@ window.PdBundleMng = {
 
 
     return {
-      uiState, bundles, uiState; bundleList,
+      codes, uiState, bundles, bundleList,
       searchNm, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList,
       onSearch, onReset, rateSum, fnRateSumBadge, getProdNm, getProdPrice,
       getCategoryNm, getCategoryDepth, getBrandNm,

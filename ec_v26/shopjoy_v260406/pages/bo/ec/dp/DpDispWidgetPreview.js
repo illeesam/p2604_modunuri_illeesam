@@ -5,8 +5,33 @@ const _WP_DispWidgetPreview = {
   name: 'WidgetPreview',
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
-    const { ref, reactive, computed, watchEffect } = Vue;
+    const { ref, reactive, computed, watchEffect, watch, onMounted } = Vue;
+    const codes = reactive({ disp_widget_types: [] });
+    const uiState = reactive({ isPageCodeLoad: false });
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
+
+    // App 초기화 준비 상태
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading
+          && codeStore?.svCodes?.length > 0
+          && !uiState.isPageCodeLoad;
+    });
+
+    // 코드 주입
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE');
+      uiState.isPageCodeLoad = true;
+    };
+
+    // App 초기화 감시
+    watch(isAppReady, (ready) => {
+      if (ready) {
+        fnLoadCodes();
+      }
+    });
     const cfChartBars = computed(() => {
       const w = props.lib;
       if (!w || !w.chartValues) return [];
@@ -140,7 +165,32 @@ window.DpDispWidgetPreview = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { reactive, computed, ref, watch, onMounted, nextTick, watchEffect } = Vue;
+    const codes = reactive({ disp_widget_types: [] });
+    const uiState = reactive({ isPageCodeLoad: false });
     const widgetLibs = reactive([]);
+
+    // App 초기화 준비 상태
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading
+          && codeStore?.svCodes?.length > 0
+          && !uiState.isPageCodeLoad;
+    });
+
+    // 코드 주입
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE');
+      uiState.isPageCodeLoad = true;
+    };
+
+    // App 초기화 감시
+    watch(isAppReady, (ready) => {
+      if (ready) {
+        fnLoadCodes();
+      }
+    });
 
     const handleFetchData = async () => {
       try {
@@ -148,32 +198,15 @@ window.DpDispWidgetPreview = {
         widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      handleFetchData();
+    });
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
     const today   = new Date().toISOString().slice(0, 10);
     const nowTime = new Date().toTimeString().slice(0, 5);
 
-    const WIDGET_TYPES = [
-      { value:'',               label:'전체 유형' },
-      { value:'image_banner',   label:'이미지 배너' },
-      { value:'product_slider', label:'상품 슬라이더' },
-      { value:'product',        label:'상품' },
-      { value:'cond_product',   label:'조건상품' },
-      { value:'chart_bar',      label:'차트 (Bar)' },
-      { value:'chart_line',     label:'차트 (Line)' },
-      { value:'chart_pie',      label:'차트 (Pie)' },
-      { value:'text_banner',    label:'텍스트 배너' },
-      { value:'info_card',      label:'정보 카드' },
-      { value:'popup',          label:'팝업' },
-      { value:'file',           label:'파일' },
-      { value:'file_list',      label:'파일목록' },
-      { value:'coupon',         label:'쿠폰' },
-      { value:'html_editor',    label:'HTML 에디터' },
-      { value:'event_banner',   label:'이벤트' },
-      { value:'cache_banner',   label:'캐쉬' },
-      { value:'widget_embed',   label:'위젯' },
-    ];
     const WIDGET_ICONS = {
       'image_banner':'🖼', 'product_slider':'🛒', 'product':'📦',
       'cond_product':'🔍', 'chart_bar':'📊',      'chart_line':'📈',
@@ -197,7 +230,7 @@ window.DpDispWidgetPreview = {
       { value: 'EXECUTIVE', label: '임직원' },
     ];
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
-    const wTypeLabel = (v) => window.safeArrayUtils.safeFind(WIDGET_TYPES, t => t.value === v)?.label || v;
+    const wTypeLabel = (v) => codes.disp_widget_types.find(t => t.codeValue === v)?.codeLabel || v;
 
     /* ── 조회 조건 ── */
     const searchParam = reactive({
@@ -531,7 +564,7 @@ window.DpDispWidgetPreview = {
 
     return {
       cfSiteNm, today,
-      WIDGET_TYPES, VISIBILITY_OPTS, VIEWPORT,
+      VISIBILITY_OPTS, VIEWPORT,
       wIcon, wTypeLabel,
       searchParam, searchParamOrg,
       applied, onSearch, onReset,
@@ -596,7 +629,7 @@ window.DpDispWidgetPreview = {
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">위젯유형</span>
         <select v-model="searchParam.filterType" class="form-control" style="width:114px;margin:0;font-size:12px;">
-          <option v-for="t in WIDGET_TYPES" :key="t?.value" :value="t.value">{{ t.label }}</option>
+          <option v-for="t in codes.disp_widget_types" :key="t?.value" :value="t.codeValue">{{ t.codeLabel }}</option>
         </select>
       </div>
       <input v-model="searchParam.kw" class="form-control" placeholder="이름·태그 검색" style="margin:0;width:130px;font-size:12px;" />

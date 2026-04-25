@@ -3,7 +3,29 @@ window.MyContact = {
   name: 'MyContact',
   props: ['navigate', 'cartCount', 'showToast', 'showConfirm'],
   setup(props) {
-    const { reactive, onMounted } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { reactive, onMounted , watch } = Vue;
     const myStore = window.useFoMyStore();
     const { inquiries, expandedInquiry } = Pinia.storeToRefs(myStore);
 
@@ -27,7 +49,7 @@ window.MyContact = {
     return {
       myStore, inquiries, expandedInquiry,
       inquiryPager, paginate, cancelInquiry, cfDateFilteredInquiries, onDateSearch,
-    };
+    , uiState, codes };
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myContact">

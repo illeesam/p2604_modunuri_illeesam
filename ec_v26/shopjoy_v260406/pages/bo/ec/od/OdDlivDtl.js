@@ -6,9 +6,33 @@ window.OdDlivDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
     const deliveries = reactive([]);
-    const uiState = reactive({ loading: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ dliv_statuses: [] });
     const claims = reactive([]);
     const orders = reactive([]);
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.dliv_statuses = await codeStore.snGetGrpCodes('DLIV_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
@@ -41,8 +65,6 @@ window.OdDlivDtl = {
     const form = reactive({
       dlivId: '', orderId: '', userId: '', userNm: '', receiver: '',
       address: '', phone: '', courierCd: '', trackingNo: '', statusCd: '준비중', regDate: '', memo: '',
-      error: null,
-      error: null,
     });
     const errors = reactive({});
 
@@ -122,7 +144,7 @@ window.OdDlivDtl = {
 
     const dlivItems = reactive([]);
     const sampleDlivItems = () => {
-      const rel = orders.window.safeArrayUtils.safeFind(value, x => x.orderId === form.orderId);
+      const rel = window.safeArrayUtils.safeFind(orders, x => x.orderId === form.orderId);
       const base = rel ? rel.prodNm : (form.receiver || '배송상품');
       const total = rel ? Number(rel.totalPrice || 0) : 30000;
       const shares = [0.50, 0.30, 0.20];
@@ -137,7 +159,7 @@ window.OdDlivDtl = {
         const paid = Math.round(total * shares[i]);
         if (paid <= 0) return null;
         const sale = discRates[i] > 0 ? Math.round(paid / (1 - discRates[i])) : paid;
-        return { deliveries, uiState; ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
+        return { ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
       }).filter(Boolean);
     };
     const initItems = async () => {
@@ -192,7 +214,7 @@ window.OdDlivDtl = {
       { id:'hist',     label:'상태변경이력',  icon:'🕒', count: cfStatusHistList.value.length },
       { id:'editHist', label:'정보수정이력',  icon:'📝', count: cfEditHistList.value.length },
     ]);
-    return { cfIsNew, tab, form, errors, handleSave, memoEl, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfRelatedOrder, cfFirstClaim, CLAIM_TYPE_COLOR, viewMode2, showTab, claims, relatedClaims };
+    return { cfIsNew, tab, form, errors, handleSave, memoEl, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfRelatedOrder, cfFirstClaim, CLAIM_TYPE_COLOR, viewMode2, showTab, claims, relatedClaims, codes };
   },
   template: /* html */`
 <div>

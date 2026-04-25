@@ -3,10 +3,11 @@ window.OdOrderMng = {
   name: 'OdOrderMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const orders = reactive([]);
     const members = reactive([]);
-    const uiState = reactive({ bulkOpen: false, loading: false });
+    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ order_statuses: [], payment_methods: [], dliv_statuses: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -64,6 +65,31 @@ window.OdOrderMng = {
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.order_statuses = await codeStore.snGetGrpCodes('ORDER_STATUS') || [];
+        codes.payment_methods = await codeStore.snGetGrpCodes('PAYMENT_METHOD') || [];
+        codes.dliv_statuses = await codeStore.snGetGrpCodes('DLIV_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     /* 하단 상세 */
     const selectedId = ref(null);
@@ -264,7 +290,7 @@ window.OdOrderMng = {
       }
     };
 
-    return { orders, members, uiState; searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, ORDER_STATUS_OPTIONS, PAY_METHOD_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, uiState, bulkTab, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { orders, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, APPROVAL_ACTIONS, REQ_TARGETS, bulkTab, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>

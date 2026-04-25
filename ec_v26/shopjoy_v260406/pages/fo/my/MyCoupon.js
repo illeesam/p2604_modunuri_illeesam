@@ -3,7 +3,29 @@ window.MyCoupon = {
   name: 'MyCoupon',
   props: ['navigate', 'cartCount', 'showToast'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { ref, reactive, computed, onMounted , watch } = Vue;
     const myStore = window.useFoMyStore();
     const { coupons, couponCode } = Pinia.storeToRefs(myStore);
 
@@ -52,7 +74,7 @@ window.MyCoupon = {
       myStore, coupons, couponCode, couponPager, paginate,
       addCoupon, cfDateFilteredCoupons, onDateSearch,
       activeTab, cfUnusedCount, cfUsedCount, onTabChange,
-    };
+    , uiState, codes };
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myCoupon">

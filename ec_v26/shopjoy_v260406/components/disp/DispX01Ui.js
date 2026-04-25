@@ -15,7 +15,9 @@ window.DispX01Ui = {
     dispOpt:     { type: Object, default: () => ({ layout: 'auto', showHeader: true, showBadges: true }) },
   },
   setup(props) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, watch } = Vue;
+    const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
+    const codes = reactive({});
 
     /* ── 유효 탭 목록 (viewOpts 기준) ── */
     const ALL_TABS = [
@@ -230,6 +232,7 @@ window.DispX01Ui = {
     const showContentStruct = ref(false);
 
     return {
+      uiState, codes,
       cfActiveTabs, activeTab,
       showContentStruct,
       wLabel, areaLabel, areaInfo, panelsForArea, cfTotalPanels,

@@ -126,7 +126,8 @@ window.SyTemplateDtl = {
     const cfIsLongContent = computed(() => ['MMS템플릿'].includes(form.templateTypeCd));
 
     /* 미리보기 / 발송 모달 */
-    const uiState = reactive({ previewOpen: false, sendOpen: false });
+    const uiState = reactive({ previewOpen: false, sendOpen: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
 
     return { templates, loading, uiState, cfIsNew, form, errors, handleSave, TEMPLATE_TYPES, cfNeedSubject, cfIsLongContent,
              cfUseHtmlEditor, quillEditorEl, uiState, cfSiteNm };

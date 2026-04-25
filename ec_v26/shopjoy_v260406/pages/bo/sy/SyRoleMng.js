@@ -12,7 +12,9 @@ window.SyRoleMng = {
       checkAll: false,
       error: null,
       userSelectOpen: false,
+      isPageCodeLoad: false,
     });
+    const codes = reactive({ role_status: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -86,6 +88,29 @@ window.SyRoleMng = {
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
+    });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.role_status = await codeStore.snGetGrpCodes('ROLE_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
     });
 
     const cfSiteNm  = computed(() => window.boCmUtil.getSiteNm());
@@ -443,7 +468,7 @@ window.SyRoleMng = {
 
 
     return {
-      uiState,
+      uiState, codes,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       cfSiteNm, ROLE_TYPES, PERM_LEVELS, ROLE_CATS, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, fnPermColor, depthBullet, depthColor, fnStatusClass,

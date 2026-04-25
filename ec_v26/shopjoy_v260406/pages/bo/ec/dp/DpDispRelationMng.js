@@ -3,8 +3,34 @@ window.DpDispRelationMng = {
   name: 'DpDispRelationMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
-    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
+    const { ref, reactive, computed, watch, onMounted } = Vue;
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({
+      disp_relation_types: [],
+    });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      try {
+        codes.disp_relation_types = codeStore.snGetGrpCodes('DISP_RELATION_TYPE') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+
     const displays = reactive([]);
 
     const handleFetchData = async () => {

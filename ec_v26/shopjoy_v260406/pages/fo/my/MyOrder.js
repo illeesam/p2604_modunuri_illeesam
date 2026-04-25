@@ -3,7 +3,29 @@ window.MyOrder = {
   name: 'MyOrder',
   props: ['navigate', 'config', 'cart', 'cartCount', 'showToast', 'showConfirm', 'removeFromCart', 'updateCartQty'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { ref, reactive, computed, onMounted , watch } = Vue;
     const myStore = window.useFoMyStore();
     const { orders, cfClaimsByOrderId, coupons } = Pinia.storeToRefs(myStore);
     const claimsByOrderId = cfClaimsByOrderId;
@@ -185,7 +207,7 @@ window.MyOrder = {
       openClaimModal, submitClaimModal,
       cfAuthUser, findProduct, openProductModal, openCustomerModal,
       reviews, reviewModal, openReviewModal, submitReview, getReview, onReviewFileChange, removeReviewFile,
-    };
+    , uiState, codes };
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myOrder">

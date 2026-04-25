@@ -3,7 +3,29 @@ window.BlogEdit = {
   name: 'BlogEdit',
   props: ['navigate', 'config', 'editId', 'showToast'],
   setup(props) {
-    const { ref, computed, reactive, onMounted } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { ref, computed, reactive, onMounted , watch } = Vue;
 
     const cfIsEdit = computed(() => !!props.editId);
     const form = reactive({
@@ -51,7 +73,7 @@ window.BlogEdit = {
     };
     const removeImage = (id) => { const idx = images.findIndex(img => img.id === id); if (idx !== -1) images.splice(idx, 1); };
 
-    return { cfIsEdit, form, categories, images, handleSave, cancel, addImage, removeImage };
+    return { cfIsEdit, form, categories, images, handleSave, cancel, addImage, removeImage , uiState, codes };
   },
   template: /* html */ `
 <div class="page-wrap" style="max-width:760px;">

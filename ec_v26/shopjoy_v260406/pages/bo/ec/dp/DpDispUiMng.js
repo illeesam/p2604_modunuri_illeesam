@@ -5,12 +5,36 @@ window.DpDispUiMng = {
   name: 'DpDispUiMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
-    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const displays = reactive([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({
+      disp_ui_types: [],
+    });
 
-    // onMounted에서 API 로드
+    // App 초기화 준비 상태
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading
+          && codeStore?.svCodes?.length > 0
+          && !uiState.isPageCodeLoad;
+    });
+
+    // 코드 주입
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      codes.disp_ui_types = codeStore.snGetGrpCodes('DISP_UI_TYPE');
+      uiState.isPageCodeLoad = true;
+    };
+
+    // App 초기화 감시
+    watch(isAppReady, (ready) => {
+      if (ready) {
+        fnLoadCodes();
+      }
+    });
+
     const handleFetchData = async () => {
       uiState.loading = true;
       try {
@@ -27,17 +51,16 @@ window.DpDispUiMng = {
         uiState.loading = false;
       }
     };
-    onMounted(() => { handleFetchData();
-    Object.assign(searchParamOrg, searchParam); });
+
+    onMounted(() => {
+      if (isAppReady.value) {
+        fnLoadCodes();
+      }
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
+    });
+
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
-
-
-    const UI_TYPE_OPTS = [
-      { value: 'FO',     label: '프론트(FO)' },
-      { value: 'BO',     label: '관리자(BO)' },
-      { value: 'MOBILE', label: '모바일' },
-      { value: 'KIOSK',  label: '키오스크' },
-    ];
 
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
@@ -130,7 +153,7 @@ window.DpDispUiMng = {
       '전시UI목록.csv'
     );
 
-    const uiTypeLabel = (v) => (window.safeArrayUtils.safeFind(UI_TYPE_OPTS, o => o.value === v) || {}).label || '-';
+    const fnUiTypeLabel = (v) => codes.disp_ui_types.find(o => o.codeValue === v)?.codeLabel || '-';
     const fnStatusBadge = s => s === 'Y' ? 'badge-green' : 'badge-gray';
 
     /* UI 하위 영역 개수 (영역의 uiCode 필드 기준) */
@@ -151,14 +174,13 @@ window.DpDispUiMng = {
     };
     const isUIExpanded = (uiId) => expandedUIs.has(uiId);
 
-    return { codes, displays, uiState; pathLabel,
-      searchKw, searchUiType, searchUseYn, searchDateStart, searchDateEnd, searchDateRange,
-      DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm,
-      UI_TYPE_OPTS,
+    return { codes, displays, uiState, pathLabel,
+      searchParam, searchParamOrg,
+      DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm,
       pager, PAGE_SIZES, cfTotal, cfTotalPages, cfPageList, cfPageNums, setPage, onSizeChange,
       onSearch, onReset, handleDelete, exportExcel,
       selectedId, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
-      uiTypeLabel, fnStatusBadge, areaCountFor, areasOfUi,
+      fnUiTypeLabel, fnStatusBadge, areaCountFor, areasOfUi,
       expandedUIs, toggleExpandUI, isUIExpanded,
       cfAllUis, cfFiltered, cfUiTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll,
     };
@@ -172,7 +194,7 @@ window.DpDispUiMng = {
       <input v-model="searchParam.kw" placeholder="UI코드 / UI명 / 설명 검색" style="min-width:260px;" />
       <select v-model="searchParam.uiType">
         <option value="">UI유형 전체</option>
-        <option v-for="o in UI_TYPE_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
+        <option v-for="o in codes.disp_ui_types" :key="o?.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <select v-model="searchParam.useYn">
         <option value="">사용여부 전체</option>
@@ -300,7 +322,7 @@ window.DpDispUiMng = {
                   <span><b style="color:#888;">표시경로:</b>
                     <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ pathLabel(u.pathId) || u.displayPath || ((u.uiType || '-') + '.' + u.codeLabel) }}</span>
                   </span>
-                  <span><b style="color:#888;">유형:</b> {{ uiTypeLabel(u.uiType) }}</span>
+                  <span><b style="color:#888;">유형:</b> {{ fnUiTypeLabel(u.uiType) }}</span>
                   <span><b style="color:#888;">포함 영역:</b>
                     <span style="background:#e3f2fd;color:#1565c0;border-radius:10px;padding:1px 8px;margin-left:3px;font-weight:700;">{{ areaCountFor(u.codeValue) }}</span>
                   </span>

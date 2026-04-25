@@ -3,8 +3,30 @@ window.StConfigMng = {
   name: 'StConfigMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed } = Vue;
-    const uiState = reactive({ descOpen: false, isNew: false });
+    const { ref, reactive, computed, watch } = Vue;
+    const uiState = reactive({ descOpen: false, isNew: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     const configs = reactive([
       { configId: 1, siteId: 1, siteNm: 'ShopJoy 01', vendorType: '판매업체', commRate: 10, settleCycle: '월정산', settleDay: 10, minSettleAmt: 10000, taxYn: 'Y', autoCloseYn: 'Y', useYn: 'Y', remark: '기본 판매업체 정산 기준' },

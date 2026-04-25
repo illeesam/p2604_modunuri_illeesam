@@ -7,7 +7,8 @@ window.PmGiftDtl = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const giftList = ref([]);
     const gifts = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false });
+    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -34,6 +35,28 @@ window.PmGiftDtl = {
     const viewMode2 = ref(window._pmGiftDtlState.viewMode || 'tab');
     watch(viewMode2, v => { window._pmGiftDtlState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     const _today = new Date();
     const _pad = n => String(n).padStart(2, '0');
@@ -126,7 +149,7 @@ window.PmGiftDtl = {
       }
     };
 
-    return { gifts, uiState, uiState, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfCondValLabel, uiState, cfSelectedVendorNm, selectVendor };
+    return { gifts, uiState, codes, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfCondValLabel, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>

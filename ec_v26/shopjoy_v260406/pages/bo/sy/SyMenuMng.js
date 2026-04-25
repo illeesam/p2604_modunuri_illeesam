@@ -5,7 +5,8 @@ window.SyMenuMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const menus = reactive([]);
-    const uiState = reactive({ checkAll: false, loading: false, error: null });
+    const uiState = reactive({ checkAll: false, loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ menu_type: [], menu_status: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -37,14 +38,35 @@ window.SyMenuMng = {
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
-      error: null,
-      error: null,
-      error: null,
     });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.menu_type = await codeStore.snGetGrpCodes('MENU_TYPE') || [];
+        codes.menu_status = await codeStore.snGetGrpCodes('MENU_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+
     const cfAllowedTreeIds = computed(() => {
       if (selectedTreeId.value == null) return null;
       return window.boCmUtil.collectDescendantIds(menus, 'menuId', 'parentId', selectedTreeId.value);
-      error: null,
     });
     watch(selectedTreeId, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
 
@@ -251,7 +273,7 @@ window.SyMenuMng = {
       '메뉴목록.csv'
     );
 
-    return { menus, uiState, uiState, selectedTreeId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
+    return { menus, uiState, codes, selectedTreeId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, searchParamOrg, MENU_TYPES,
       cfSiteNm,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,

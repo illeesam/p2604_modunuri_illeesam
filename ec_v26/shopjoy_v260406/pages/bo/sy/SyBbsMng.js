@@ -6,7 +6,8 @@ window.SyBbsMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const bbss = reactive([]);
     const bbms = reactive([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ bbs_status: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -57,9 +58,31 @@ window.SyBbsMng = {
     onMounted(() => {
       handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
-      error: null,
       expanded.clear(); initSet.forEach(v => expanded.add(v));
-      error: null,
+      Object.assign(searchParamOrg, searchParam);
+    });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.bbs_status = await codeStore.snGetGrpCodes('BBS_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
     });
 
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
@@ -144,7 +167,7 @@ window.SyBbsMng = {
     watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
-    return { bbss, uiState, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { bbss, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, cfBbmOptions, bbmNm, exportExcel };
   },
   template: /* html */`

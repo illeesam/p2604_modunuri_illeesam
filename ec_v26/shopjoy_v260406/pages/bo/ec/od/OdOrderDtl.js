@@ -9,12 +9,12 @@ window.OdOrderDtl = {
     const vendors = reactive([]);
     const deliveries = reactive([]);
     const claims = reactive([]);
-    const cfCodes = Vue.computed(() => window.getBoCodeStore().svCodes);
-    const loading = ref(false);
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ claim_statuses: [] });
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [ordersRes, vendorsRes, deliveriesRes, claimsRes] = await Promise.all([
           window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -32,10 +32,33 @@ window.OdOrderDtl = {
         uiState.error = err.message;
         if (props.showToast) props.showToast('OdOrder 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => !props.editId);
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.claim_statuses = await codeStore.snGetGrpCodes('CLAIM_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     const ORDER_STEPS = ['입금대기', '결제완료', '상품준비중', '배송중', '배송완료', '구매확정'];
 
@@ -129,11 +152,8 @@ window.OdOrderDtl = {
       }
     };
 
-    const uiState = reactive({
-      activeTab: window._odOrderDtlState?.activeTab || 'info',
-      error: null,
-    });
-    watch(uiState, (newVal) => { window._odOrderDtlState.activeTab = newVal.activeTab; }, { deep: true });
+    const activeTab = ref(window._odOrderDtlState?.activeTab || 'info');
+    watch(activeTab, (newVal) => { window._odOrderDtlState.activeTab = newVal; });
     /* 주문 항목 (샘플 데이터) */
     const orderItems = reactive([]);
     const sampleOrderItems = () => {
@@ -176,11 +196,13 @@ window.OdOrderDtl = {
     const cfRelatedClaim = computed(() =>
       (claims).find(c => c.orderId === props.editId)
     );
-    const _claimStatusCodes = (cfCodes)
-      .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
-      .sort((a, b) => a.sortOrd - b.sortOrd);
     const _TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
-    const _claimFlow = type => _claimStatusCodes
+    const cfClaimStatusCodes = computed(() =>
+      (codes.claim_statuses || [])
+        .filter(c => c.useYn === 'Y')
+        .sort((a, b) => a.sortOrd - b.sortOrd)
+    );
+    const _claimFlow = type => cfClaimStatusCodes.value
       .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + (_TYPE_CD[type] || type) + '^'))
       .map(c => c.codeLabel)
       .filter(l => !['거부','철회'].includes(l));
@@ -256,7 +278,7 @@ window.OdOrderDtl = {
       { id:'hist',     label:'상태변경이력',  icon:'🕒', count: cfStatusHistList.value.length },
       { id:'editHist', label:'정보수정이력',  icon:'📝', count: cfEditHistList.value.length },
     ]);
-    return { cfIsNew, form, errors, handleSave, ORDER_STEPS, cfCurrentStepIdx, cfIsCanceled, memoEl, activeTab, orderItems, fmt, cfRelatedClaim, cfRelatedDelivery, cfRelatedVendor, CLAIM_FLOWS, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, PAY_STATUS_OPTIONS, fnPayStatusBadge, viewMode2, showTab, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll };
+    return { cfIsNew, form, errors, handleSave, ORDER_STEPS, cfCurrentStepIdx, cfIsCanceled, memoEl, activeTab, orderItems, fmt, cfRelatedClaim, cfRelatedDelivery, cfRelatedVendor, CLAIM_FLOWS, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, PAY_STATUS_OPTIONS, fnPayStatusBadge, viewMode2, showTab, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, codes };
   },
   template: /* html */`
 <div>

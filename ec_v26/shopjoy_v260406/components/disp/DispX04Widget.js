@@ -9,7 +9,9 @@ window.DispX04Widget = {
   },
   emits: ['click-action'],
   setup(props, { emit }) {
-    const { computed } = Vue;
+    const { computed, reactive } = Vue;
+    const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
+    const codes = reactive({});
 
     /* 노출 여부 판단 */
     const cfVisible = computed(() => {
@@ -132,7 +134,7 @@ window.DispX04Widget = {
       catch { return [{ role: '담당자', name: '' }, { role: '팀장', name: '' }, { role: '부서장', name: '' }]; }
     };
 
-    return { widget: props.widgetItem, cfVisible, handleClick, nameGrad, cfChartBars, chartColors, parseMarkdown, getVideoEmbed, getMapEmbed, parseApprovalLine };
+    return { uiState, codes, widget: props.widgetItem, cfVisible, handleClick, nameGrad, cfChartBars, chartColors, parseMarkdown, getVideoEmbed, getMapEmbed, parseApprovalLine };
   },
   template: /* html */`
 <div v-if="cfVisible" class="disp-widget" :style="{ cursor: widget.clickAction && widget.clickAction !== 'none' ? 'pointer' : 'default' }" @click="handleClick">

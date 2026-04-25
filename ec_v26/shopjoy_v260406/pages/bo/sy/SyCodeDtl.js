@@ -6,7 +6,7 @@ window.SyCodeDtl = {
     const { reactive, computed, onMounted, ref } = Vue;
 
     const codes = reactive([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -79,7 +79,7 @@ window.SyCodeDtl = {
       }
     };
 
-    return { codes, uiState, uiState, cfIsNew, form, errors, handleSave, cfSiteNm };
+    return { codes, uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm };
   },
   template: /* html */`
 <div>

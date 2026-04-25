@@ -3,9 +3,11 @@ window.SyI18nMng = {
   name: 'SyI18nMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const i18nKeys = reactive([]);
     const i18nMsgs = reactive([]);
+    const uiState = reactive({ isPageCodeLoad: false });
+    const codes = reactive({ lang_code: [] });
 
     const handleFetchData = async () => {
       try {
@@ -18,6 +20,29 @@ window.SyI18nMng = {
       } catch (_) {}
     };
     onMounted(() => { handleFetchData(); });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.lang_code = await codeStore.snGetGrpCodes('LANG_CODE') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const searchKw    = ref('');
     const searchScope = ref('');
@@ -94,7 +119,7 @@ window.SyI18nMng = {
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { searchKw, searchScope, searchUse, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
+    return { uiState, codes, searchKw, searchScope, searchUse, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
              selectedId, cfSelectedKey, cfSelectedMsgs, msgForm, openDetail, saveMsgs, getLangMsg,
              SCOPES, LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, PAGE_SIZES, onSizeChange };
   },

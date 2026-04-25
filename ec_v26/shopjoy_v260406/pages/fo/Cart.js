@@ -4,7 +4,29 @@ window.Cart = {
   props: ['navigate', 'config', 'cart', 'cartCount', 'removeFromCart', 'updateCartQty', 'showConfirm', 'clearCart'],
   emits: [],
   setup(props) {
-    const { computed, ref, reactive } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { computed, ref, reactive , watch } = Vue;
 
     /* ── 체크박스 ── */
     const checkedIdxs = reactive(new Set());
@@ -89,7 +111,7 @@ window.Cart = {
       checkedIdxs, isChecked, toggleCheck, cfAllChecked, cfSomeChecked, toggleAll,
       removeItem, goOrder,
       formatPrice, cfTotalPriceStr, cfSummaryItems, cfOrderCount, handleClearAll,
-    };
+    , uiState, codes };
   },
 
   template: /* html */ `

@@ -3,7 +3,29 @@ window.XsSample11 = {
   name: 'XsSample11',
   components: { 'category-select-modal': window.CategorySelectModal },
   setup() {
-    const { ref, reactive, computed } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { ref, reactive, computed , watch } = Vue;
     const today = new Date().toISOString().slice(0, 10);
     const previewDate = ref(today);
     const previewTime = ref(new Date().toTimeString().slice(0, 5));
@@ -113,7 +135,7 @@ window.XsSample11 = {
        selectedCatIds, cfCatBtnLabel, onCatApply, cfSelectedCatNames,
       panelsForArea, cfTotalPanels,
       fnWLabel, fnWIcon,
-    };
+    , uiState, codes };
   },
   template: /* html */`
 <div style="padding:clamp(12px,3vw,24px);">

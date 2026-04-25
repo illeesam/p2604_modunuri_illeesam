@@ -5,7 +5,8 @@ window.foAppFooter = {
   emits: [],
   setup() {
     const { ref, reactive } = Vue;
-    const uiState = reactive({ menuOpen: false });
+    const uiState = reactive({ menuOpen: false, loading: false, error: '', isPageCodeLoad: false });
+    const codes = reactive({});
     const toggleMenu = () => { uiState.menuOpen = !uiState.menuOpen; };
     const closeMenu  = () => { uiState.menuOpen = false; };
     /* 외부(헤더 등)에서 팝업 오픈 요청 수신 */
@@ -85,7 +86,7 @@ window.foAppFooter = {
       { fo:'03',   bo:'03' },
       { fo:'9999', bo:'9999' },
     ];
-    return { uiState, toggleMenu, closeMenu, goItem, currentFoSiteNo, currentBoSiteNo, FO_MENU, BO_MENU, DISP_MENU, SITE_MENU, SITE_PAIR_MENU };
+    return { uiState, codes, toggleMenu, closeMenu, goItem, currentFoSiteNo, currentBoSiteNo, FO_MENU, BO_MENU, DISP_MENU, SITE_MENU, SITE_PAIR_MENU };
   },
   template: /* html */ `
 <footer style="padding:28px 32px;">

@@ -3,9 +3,10 @@ window.PdProdMng = {
   name: 'PdProdMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const products = reactive([]);
-    const uiState = reactive({ descOpen: false, loading: false, error: null });
+    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ product_statuses: [], option_types: [], category_depths: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -60,6 +61,31 @@ window.PdProdMng = {
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.product_statuses = await codeStore.snGetGrpCodes('PRODUCT_STATUS') || [];
+        codes.option_types = await codeStore.snGetGrpCodes('OPTION_TYPE') || [];
+        codes.category_depths = await codeStore.snGetGrpCodes('CATEGORY_DEPTH') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     /* 하단 상세 */
     const selectedId = ref(null);

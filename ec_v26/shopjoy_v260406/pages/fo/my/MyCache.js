@@ -3,7 +3,29 @@ window.MyCache = {
   name: 'MyCache',
   props: ['navigate', 'cartCount', 'showToast'],
   setup(props) {
-    const { reactive, onMounted } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { reactive, onMounted , watch } = Vue;
     const myStore = window.useFoMyStore();
     const { cashBalance, cashHistory, chargeAmount } = Pinia.storeToRefs(myStore);
 
@@ -40,7 +62,7 @@ window.MyCache = {
     return {
       myStore, cashBalance, cashHistory, chargeAmount,
       cashPager, paginate, addCash, openOrderModal, cfDateFilteredHistory, onDateSearch,
-    };
+    , uiState, codes };
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myCache">

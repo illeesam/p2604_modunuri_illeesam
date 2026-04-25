@@ -5,6 +5,34 @@ window.PdCategoryMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const categories = reactive([]);
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({
+      category_depths: [],
+      product_statuses: [],
+    });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      try {
+        codes.category_depths = codeStore.snGetGrpCodes('CATEGORY_DEPTH') || [];
+        codes.product_statuses = codeStore.snGetGrpCodes('PRODUCT_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     /* ── 검색 파라미터 ── */
     const searchParam = reactive({
@@ -134,6 +162,7 @@ window.PdCategoryMng = {
       handleLoadGrid();
     };
     return {
+      codes,
       descOpen,
       expandedSet, isExpanded, toggleNode, expandAll, collapseAll, cfCatTreeFlat,
       selectedCatId, selectNode,

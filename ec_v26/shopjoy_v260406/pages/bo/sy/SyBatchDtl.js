@@ -6,7 +6,8 @@ window.SyBatchDtl = {
     const { reactive, computed, onMounted, ref } = Vue;
 
     const batches = reactive([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -89,7 +90,7 @@ window.SyBatchDtl = {
       }
     };
 
-    return { batches, uiState, uiState, cfIsNew, form, errors, handleSave, CRON_PRESETS, cfSiteNm };
+    return { batches, uiState, codes, cfIsNew, form, errors, handleSave, CRON_PRESETS, cfSiteNm };
   },
   template: /* html */`
 <div>

@@ -7,7 +7,8 @@ window.PmEventDtl = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const products = reactive([]);
     const events = reactive([]);
-    const uiState = reactive({ loading: false, showProdPopup: false, showVendorModal: false });
+    const uiState = reactive({ loading: false, showProdPopup: false, showVendorModal: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -34,6 +35,28 @@ window.PmEventDtl = {
     const viewMode2 = ref(window._ecEventDtlState.viewMode || 'tab');
     watch(viewMode2, v => { window._ecEventDtlState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     const _today = new Date();
     const _pad = n => String(n).padStart(2, '0');
@@ -195,7 +218,7 @@ window.PmEventDtl = {
       uiState.showVendorModal = false;
     };
 
-    return { events, uiState, uiState, cfIsNew, tab, onTabChange, form, errors, activeContentTab, uiState, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, viewMode2, showTab, uiState, cfSelectedVendorNm, selectVendor };
+    return { events, uiState, codes, cfIsNew, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, viewMode2, showTab, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>

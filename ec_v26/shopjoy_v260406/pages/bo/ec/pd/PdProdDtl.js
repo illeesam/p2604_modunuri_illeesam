@@ -9,8 +9,32 @@ window.PdProdDtl = {
     const boUsers = reactive([]);
     const categories = reactive([]);
     const categoryProds = reactive([]);
-    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
-    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false });
+    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, isPageCodeLoad: false });
+    const codes = reactive([]);
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.svCodes) return;
+        codes.length = 0;
+        codes.push(...codeStore.svCodes);
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
@@ -58,8 +82,6 @@ window.PdProdDtl = {
       weight: null, sizeInfoCd: '',
       isNew_: 'N', isBest: 'N',
       contentHtml: '',
-      error: null,
-      error: null,
     });
     const errors = reactive({});
     const schema = yup.object({
@@ -523,7 +545,7 @@ window.PdProdDtl = {
       }
     };
 
-    return { products, uiState; cfIsNew, topTab, viewMode2, showTab, form, errors, handleSave,
+    return { cfIsNew, topTab, viewMode2, showTab, form, errors, handleSave,
       uiState, mdSearch, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
       useOpt, clearOpt, optGroups, skus, cfTotalStock, generateSkus,
       skuFilter1, skuFilter2, skuFilterStock, cfSkuFilter1Options, cfSkuFilter2Options, cfSkusFiltered,
@@ -841,7 +863,8 @@ window.PdProdDtl = {
             style="display:flex;align-items:center;gap:6px;">
             <span class="badge badge-blue" style="font-size:11px;flex-shrink:0;">{{ gi+1 }}단 유형</span>
             <select class="form-control" v-model="grp.typeCd" style="width:140px;font-size:12px;"
-              @change="grp.iwindow.safeArrayUtils.safeForEach(tems, i=>{i.val='';i.valCodeId='';})"
+              @change="grp.items.forEach(i=>{i.val='';i.valCodeId='';})"
+              >
               <option value="">-- OPT_TYPE 2레벨 --</option>
               <option v-for="c in cfOptTypeCodes" :key="c?.codeId" :value="c.codeValue">{{ c.codeLabel }} ({{ c.codeValue }})</option>
             </select>

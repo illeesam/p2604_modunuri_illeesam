@@ -3,7 +3,29 @@ window.BlogView = {
   name: 'BlogView',
   props: ['navigate', 'config', 'editId'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { ref, reactive, computed, onMounted , watch } = Vue;
 
     const posts = [
       { id: 1, title: 'Anteposuerit litterarum formas.', category: 'Fashion', author: '김민지', date: '2026.04.10', readTime: '5분',
@@ -92,7 +114,7 @@ window.BlogView = {
     });
 
     return { cfPost, cfBodyParagraphs, commentText, cfAllComments, addComment,
-             searchParam, cfLatestPosts, categories, archives, cfRecentComments, cfRelatedPosts, onSearch, onReset };
+             searchParam, cfLatestPosts, categories, archives, cfRecentComments, cfRelatedPosts, onSearch, onReset , uiState, codes };
   },
   template: /* html */ `
 <div class="page-wrap" style="max-width:1100px;">

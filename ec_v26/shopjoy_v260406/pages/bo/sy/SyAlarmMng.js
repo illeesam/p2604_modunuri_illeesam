@@ -5,7 +5,8 @@ window.SyAlarmMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const alarms = reactive([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ alarm_type: [], alarm_status: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -51,9 +52,31 @@ window.SyAlarmMng = {
       handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
-      error: null,
       Object.assign(searchParamOrg, searchParam);
-      error: null,
+    });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.alarm_type = await codeStore.snGetGrpCodes('ALARM_TYPE') || [];
+        codes.alarm_status = await codeStore.snGetGrpCodes('ALARM_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
     });
 
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
@@ -150,7 +173,7 @@ window.SyAlarmMng = {
     watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
-    return { alarms, uiState, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { alarms, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnTypeBadge, fnTargetBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`

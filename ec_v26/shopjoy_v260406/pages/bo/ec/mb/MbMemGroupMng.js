@@ -5,7 +5,8 @@ window.MbMemGroupMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const groups = reactive([]);
-    const uiState = reactive({ loading: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ member_group_types: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -27,6 +28,30 @@ window.MbMemGroupMng = {
     onMounted(() => { handleFetchData();
     Object.assign(searchParamOrg, searchParam); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.member_group_types = await codeStore.snGetGrpCodes('MEMBER_GROUP_TYPE') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+
   const searchParam = reactive({
     kw: '',
     use: ''
@@ -126,8 +151,8 @@ window.MbMemGroupMng = {
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { groups, uiState; searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, onSearch, onReset,
-             gridRows, addRow, onCellChange, handleDeleteRow, handleSaveAll, fnYnBadge , PAGE_SIZES , onSizeChange };
+    return { groups, uiState, codes, searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, onSearch, onReset,
+             gridRows, addRow, onCellChange, handleDeleteRow, handleSaveAll, fnYnBadge, PAGE_SIZES, onSizeChange };
   },
   template: `
 <div>

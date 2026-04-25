@@ -6,6 +6,29 @@ window.SyPathMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
+    const uiState = reactive({ isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+
     /* ── 검색 상태 ── */
     const kw       = ref('');
     const useFlt   = ref('');
@@ -227,6 +250,7 @@ window.SyPathMng = {
     };
 
     return {
+      uiState, codes,
       kw, useFlt, bizFlt, BIZ_OPTIONS, bizLabel,
       selectedBiz, selectedPathId, cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
       cfGridRows, cfPagedRows, cfDirtyRows,

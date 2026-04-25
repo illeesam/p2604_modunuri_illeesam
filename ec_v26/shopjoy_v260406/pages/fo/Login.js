@@ -4,10 +4,30 @@ window.Login = {
   props: ['showToast'],
   emits: ['close'],
   setup(props, { emit }) {
-    const { ref, reactive, watch } = Vue;
+    const { ref, reactive, watch, computed, onMounted } = Vue;
 
     /* ── UI 상태 ── */
-    const uiState = reactive({ snsPhoneVerified: false });
+    const uiState = reactive({ snsPhoneVerified: false, loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     // login | terms | signup | sns-signup
     const step       = ref('login');
@@ -188,7 +208,7 @@ window.Login = {
       sf, signupErr, sendEmailCode, verifyEmail, sendPhoneCode, verifyPhone, doSignup, openKakaoAddr,
       snsNickname, snsPhone, snsPhoneCode, snsPhoneCodeSent, uiState, snsErr,
       sendSnsPhoneCode, verifySnsPhone, doSnsSignup, snsSf, openKakaoAddrSns,
-      providerLabel, providerColor, providerTextColor, IS,
+      providerLabel, providerColor, providerTextColor, IS, codes,
     };
   },
   computed: { foAuth() { return window.foAuth; } },

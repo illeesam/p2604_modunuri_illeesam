@@ -5,7 +5,28 @@ window.CmNoticeDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const notices = reactive([]);
-    const uiState = reactive({ loading: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -29,8 +50,6 @@ window.CmNoticeDtl = {
       noticeId: null, title: '', noticeType: '일반', isFixed: false,
       startDate: '', endDate: '', statusCd: '게시', contentHtml: '',
       attachGrpId: null,
-      error: null,
-      error: null,
     });
     const errors = reactive({});
 
@@ -42,7 +61,7 @@ window.CmNoticeDtl = {
     onMounted(() => {
       handleFetchData();
       if (!cfIsNew.value) {
-        const n = notices.window.safeArrayUtils.safeFind(value, x => x.noticeId === props.editId);
+        const n = window.safeArrayUtils.safeFind(notices, x => x.noticeId === props.editId);
         if (n) Object.assign(form, { ...n });
       }
       if (typeof Quill !== 'undefined') {
@@ -59,7 +78,7 @@ window.CmNoticeDtl = {
         await schema.validate(form, { abortEarly: false });
       } catch (err) {
         console.error('[catch-info]', err);
-        err.iwindow.safeArrayUtils.safeForEach(nner, e => { errors[e.path] = e.message; });
+        err.inner.forEach(e => { errors[e.path] = e.message; });
         props.showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
@@ -89,7 +108,7 @@ window.CmNoticeDtl = {
       }
     };
 
-    return { notices, uiState; cfIsNew, form, errors, handleSave };
+    return { cfIsNew, form, errors, handleSave, codes };
   },
   template: /* html */`
 <div>

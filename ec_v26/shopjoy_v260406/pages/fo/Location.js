@@ -3,7 +3,29 @@ window.Location = {
   name: 'Location',
   props: ['navigate', 'config'],
   setup() {
-    const { ref, reactive, onMounted } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { ref, reactive, onMounted , watch } = Vue;
 
     const LAT  = 37.4407;
     const LNG  = 127.1468;
@@ -75,7 +97,7 @@ window.Location = {
       mapProvider, mapSrc, uiState, onMapError,
       kakaoLink, naverLink, googleLink,
       ADDR,
-    };
+    , uiState, codes };
   },
 
   template: /* html */ `

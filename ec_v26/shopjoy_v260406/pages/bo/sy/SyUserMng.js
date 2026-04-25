@@ -3,11 +3,12 @@ window.SyUserMng = {
   name: 'SyUserMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const users = reactive([]);
     const depts = reactive([]);
     const boUsers = ref([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ user_status: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -38,9 +39,7 @@ window.SyUserMng = {
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     /* 검색 파라미터 */
     const searchParam = reactive({
-      error: null,
       kw: '', role: '', status: '', dateRange: '', dateStart: '', dateEnd: ''
-      error: null,
     });
     const searchParamOrg = reactive({
       kw: '', role: '', status: '', dateRange: '', dateStart: '', dateEnd: ''
@@ -51,6 +50,29 @@ window.SyUserMng = {
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
+    });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.user_status = await codeStore.snGetGrpCodes('USER_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
     });
     /* 선택 부서 + 자손의 dept 이름 Set */
     const cfAllowedDeptNms = computed(() => {
@@ -140,7 +162,7 @@ window.SyUserMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'boUserId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'권한',key:'role'},{label:'부서',key:'dept'},{label:'상태',key:'statusCd'},{label:'최종로그인',key:'lastLogin'}], '사용자목록.csv');
 
-    return { users, uiState, uiState, selectedDeptId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { users, uiState, codes, selectedDeptId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>

@@ -3,8 +3,33 @@ window.StErpGenMng = {
   name: 'StErpGenMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
-    const uiState = reactive({ descOpen: false });
+    const { ref, reactive, computed, watch, onMounted } = Vue;
+    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({
+      erp_statuses: [],
+    });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      try {
+        codes.erp_statuses = codeStore.snGetGrpCodes('ERP_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     const targetMon = ref(new Date().toISOString().slice(0, 7));
     const slipType  = ref('정산');

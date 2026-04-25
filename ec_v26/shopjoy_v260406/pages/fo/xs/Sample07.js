@@ -2,6 +2,28 @@
 window.XsSample07 = {
   name: 'XsSample07',
   setup() {
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
     /* ===== Tree (JSON 로딩) ===== */
@@ -535,7 +557,7 @@ window.XsSample07 = {
       // 자동실행
       autoPopupTabId, autoPopupPos, POPUP_ROWS, SECS, MINS, HOURS,
       openAutoPopup, closeAutoPopup, selectAuto, countdown,
-    };
+    , uiState, codes };
   },
 
   template: /* html */`

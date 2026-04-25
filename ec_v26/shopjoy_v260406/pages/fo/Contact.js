@@ -90,7 +90,29 @@ window.Contact = {
 </div>
   `,
   setup(props) {
-    const { reactive, ref, computed } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { reactive, ref, computed , watch } = Vue;
 
     const cfInquiryCodes = computed(() =>
       window.foCmUtil.codesByGroup(props.config || {}, 'shopjoy_contact_inquiry')
@@ -128,6 +150,6 @@ window.Contact = {
       Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
     };
 
-    return { form, errors, openFaq, clearErr, handleSubmit, cfInquiryCodes };
+    return { form, errors, openFaq, clearErr, handleSubmit, cfInquiryCodes , uiState, codes };
   }
 };

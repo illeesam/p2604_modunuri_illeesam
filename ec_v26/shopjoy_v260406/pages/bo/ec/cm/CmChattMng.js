@@ -5,7 +5,8 @@ window.CmChattMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const chatts = reactive([]);
-    const uiState = reactive({ loading: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ chatt_message_types: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -34,6 +35,29 @@ window.CmChattMng = {
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.chatt_message_types = await codeStore.snGetGrpCodes('CHATT_MESSAGE_TYPE') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     /* 하단 상세 */
     const selectedId = ref(null);
@@ -127,7 +151,7 @@ window.CmChattMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'채팅ID',key:'chattId'},{label:'회원명',key:'userNm'},{label:'상태',key:'status'},{label:'마지막메시지',key:'lastMessage'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
 
-    return { chatts, uiState; searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { chatts, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>

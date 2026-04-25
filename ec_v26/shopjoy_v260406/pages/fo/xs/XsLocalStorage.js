@@ -5,7 +5,28 @@ window.XsLocalStorage = {
   name: 'XsLocalStorage',
   props: ['navigate', 'showToast'],
   setup(props) {
-    const { ref, reactive, computed, onMounted, onUnmounted } = Vue;
+    const { ref, reactive, computed, onMounted, onUnmounted, watch } = Vue;
+    const uiStateGlobal = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiStateGlobal.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiStateGlobal.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     const storageData = reactive([]);
     const filterKey = ref('');
@@ -129,7 +150,7 @@ window.XsLocalStorage = {
 
     return {
       storageData, filterKey, cfFilteredData, editingKey, editingValue, valueColWidth, uiState,
-      loadStorageData, copyValue, startEdit, saveEdit, cancelEdit, handleDelete, clearAllStorage, parseValue, startResize
+      loadStorageData, copyValue, startEdit, saveEdit, cancelEdit, handleDelete, clearAllStorage, parseValue, startResize, codes
     };
   },
   template: `

@@ -6,7 +6,8 @@ window.SyAlarmDtl = {
     const { reactive, computed, onMounted, ref } = Vue;
 
     const alarms = reactive([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -79,7 +80,7 @@ window.SyAlarmDtl = {
       }
     };
 
-    return { alarms, uiState, uiState, cfIsNew, form, errors, handleSave, cfSiteNm };
+    return { alarms, uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm };
   },
   template: /* html */`
 <div>

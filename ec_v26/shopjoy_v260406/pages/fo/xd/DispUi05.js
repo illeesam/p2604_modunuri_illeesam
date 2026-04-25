@@ -5,7 +5,29 @@ window.DispUi05 = {
   name: 'DispUi05',
   components: { DispX01Ui: window.DispX01Ui },
   setup() {
-    const { computed } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { computed , watch } = Vue;
 
     const dispDataset = window.dispDataset || { displays: [], codes: [] };
     const qs = new URLSearchParams(location.search);
@@ -35,7 +57,7 @@ window.DispUi05 = {
       return params.areas.reduce((s, a) => s + displays.filter(p => p.area === a).length, 0);
     });
 
-    return { params, dispDataset, dispOpt, cfTotalPanels };
+    return { params, dispDataset, dispOpt, cfTotalPanels , uiState, codes };
   },
   template: /* html */`
 <div>

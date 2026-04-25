@@ -5,6 +5,31 @@ window.DpDispWidgetLibDtl = {
   emits: ['close'],
   setup(props, { emit }) {
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
+    const codes = reactive({ disp_widget_types: [] });
+    const uiState = reactive({ isPageCodeLoad: false, error: null, isPageCodeLoad: false });
+
+    // App 초기화 준비 상태
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading
+          && codeStore?.svCodes?.length > 0
+          && !uiState.isPageCodeLoad;
+    });
+
+    // 코드 주입
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE');
+      uiState.isPageCodeLoad = true;
+    };
+
+    // App 초기화 감시
+    watch(isAppReady, (ready) => {
+      if (ready) {
+        fnLoadCodes();
+      }
+    });
 
     /* ── 표시경로 선택 모달 (sy_path, 다중) ── */
     const pathPickModal = reactive({ show: false });
@@ -14,36 +39,6 @@ window.DpDispWidgetLibDtl = {
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
     const widgetLibs = reactive([]);
     const cfIsNew = computed(() => !props.editId);
-
-    const WIDGET_TYPES = [
-      { value: 'image_banner',   label: '이미지 배너' },
-      { value: 'product_slider', label: '상품 슬라이더' },
-      { value: 'product',        label: '상품' },
-      { value: 'cond_product',   label: '조건상품' },
-      { value: 'chart_bar',      label: '차트 (Bar)' },
-      { value: 'chart_line',     label: '차트 (Line)' },
-      { value: 'chart_pie',      label: '차트 (Pie)' },
-      { value: 'text_banner',    label: '텍스트 배너' },
-      { value: 'info_card',      label: '정보 카드' },
-      { value: 'popup',          label: '팝업' },
-      { value: 'file',           label: '파일' },
-      { value: 'file_list',      label: '파일목록' },
-      { value: 'coupon',         label: '쿠폰' },
-      { value: 'html_editor',    label: 'HTML 에디터' },
-      { value: 'textarea',       label: '텍스트 영역' },
-      { value: 'markdown',       label: 'Markdown' },
-      { value: 'barcode',         label: '바코드' },
-      { value: 'qrcode',          label: 'QR코드' },
-      { value: 'barcode_qrcode',  label: '바코드+QR' },
-      { value: 'video_player',    label: '동영상 플레이어' },
-      { value: 'countdown',       label: '카운트다운 타이머' },
-      { value: 'payment_widget',  label: '결제위젯' },
-      { value: 'approval_widget', label: '전자결재' },
-      { value: 'map_widget',      label: '지도맵' },
-      { value: 'event_banner',    label: '이벤트' },
-      { value: 'cache_banner',   label: '캐쉬' },
-      { value: 'widget_embed',   label: '위젯' },
-    ];
 
     /* ── 폼 초기값 ── */
     const makeForm = () => ({
@@ -125,7 +120,10 @@ window.DpDispWidgetLibDtl = {
         initQuill();
       }
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      handleFetchData();
+    });
 
     /* ── 위젯 유형별 표시 여부 ── */
     const cfIsImage       = computed(() => form.widgetType === 'image_banner');
@@ -464,7 +462,7 @@ window.DpDispWidgetLibDtl = {
     return {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       uiState, openLibPick, onLibPicked,
-      cfIsNew, form, errors, WIDGET_TYPES,
+      cfIsNew, form, errors, codes,
       cfIsImage, cfIsProduct, cfIsCondProduct, cfIsChart, cfIsText, cfIsInfo,
       cfIsPopup, cfIsFile, cfIsFileList, cfIsCoupon, cfIsHtmlEditor, cfIsEvent, cfIsCache, cfIsEmbed,
       cfDisplayRows, cfFileListItems, addFileItem, removeFileItem, updateFileItem,
@@ -581,7 +579,7 @@ window.DpDispWidgetLibDtl = {
             <span style="font-size:11px;font-weight:600;color:#888;white-space:nowrap;">위젯유형</span>
             <select v-model="form.widgetType" class="form-control" :class="{'is-invalid':errors.widgetType}"
               style="margin:0;font-size:12px;padding:3px 8px;height:28px;border-radius:5px;min-width:160px;">
-              <option v-for="t in WIDGET_TYPES" :key="t?.value" :value="t.value">{{ t.label }}</option>
+              <option v-for="t in codes.disp_widget_types" :key="t?.codeValue" :value="t.codeValue">{{ t.codeLabel }}</option>
             </select>
           </span>
         </div>

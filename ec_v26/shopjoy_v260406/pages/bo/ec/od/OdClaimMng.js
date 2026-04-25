@@ -3,11 +3,11 @@ window.OdClaimMng = {
   name: 'OdClaimMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const claims = reactive([]);
     const members = reactive([]);
-    const uiState = reactive({ bulkOpen: false, loading: false });
-    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
+    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ order_statuses: [], claim_types: [], claim_statuses: [], dliv_statuses: [], payment_methods: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -67,6 +67,33 @@ window.OdClaimMng = {
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.order_statuses = await codeStore.snGetGrpCodes('ORDER_STATUS') || [];
+        codes.claim_types = await codeStore.snGetGrpCodes('CLAIM_TYPE') || [];
+        codes.claim_statuses = await codeStore.snGetGrpCodes('CLAIM_STATUS') || [];
+        codes.dliv_statuses = await codeStore.snGetGrpCodes('DLIV_STATUS') || [];
+        codes.payment_methods = await codeStore.snGetGrpCodes('PAYMENT_METHOD') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     /* 하단 상세 */
     const selectedId = ref(null);
@@ -315,7 +342,7 @@ window.OdClaimMng = {
       }
     };
 
-    return { claims, members, uiState; searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, uiState, bulkTab, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { claims, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkTab, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>

@@ -2,7 +2,29 @@
 window.XsSample04 = {
   name: 'XsSample04',
   setup() {
-    const { ref, reactive, onMounted } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { ref, reactive, onMounted , watch } = Vue;
 
     /* ── 회원 데이터 ── */
     const members = reactive([]);
@@ -184,7 +206,7 @@ window.XsSample04 = {
       boData, bModal, openBModal, closeBModal, bShowToast, bShowConfirm,
       demoOrder, demoProduct, demoUser, demoTmpl, demoSampleParams, catSelIds,
       CATALOG2_COMMON, CATALOG2_FO, CATALOG2_BO,
-    };
+    , uiState, codes };
   },
 
   template: /* html */`

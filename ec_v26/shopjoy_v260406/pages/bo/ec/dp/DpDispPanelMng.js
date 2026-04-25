@@ -5,11 +5,35 @@ window.DpDispPanelMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const panels = reactive([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const displays = reactive([]);
-    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
+    const codes = reactive({
+      layout_types: [],
+    });
 
-    // onMounted에서 API 로드
+    // App 초기화 준비 상태
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading
+          && codeStore?.svCodes?.length > 0
+          && !uiState.isPageCodeLoad;
+    });
+
+    // 코드 주입
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      codes.layout_types = codeStore.snGetGrpCodes('LAYOUT_TYPE');
+      uiState.isPageCodeLoad = true;
+    };
+
+    // App 초기화 감시
+    watch(isAppReady, (ready) => {
+      if (ready) {
+        fnLoadCodes();
+      }
+    });
+
     const handleFetchData = async () => {
       uiState.loading = true;
       try {
@@ -28,8 +52,14 @@ window.DpDispPanelMng = {
         uiState.loading = false;
       }
     };
-    onMounted(() => { handleFetchData();
-    Object.assign(searchParamOrg, searchParam); });
+
+    onMounted(() => {
+      if (isAppReady.value) {
+        fnLoadCodes();
+      }
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
+    });
     const fnPathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
@@ -50,7 +80,6 @@ window.DpDispPanelMng = {
       { value: 'STAFF',     label: '직원' },
       { value: 'EXECUTIVE', label: '임직원' },
     ];
-    const LAYOUT_TYPE_OPTS = [{ value:'grid', label:'그리드' }, { value:'dashboard', label:'대시보드' }];
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
@@ -174,7 +203,9 @@ window.DpDispPanelMng = {
       const cur = pager.page, last = cfTotalPages.value;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-      error: null,
+    });
+    const uiState = reactive({
+      loading: false,
       error: null,
     });
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
@@ -412,8 +443,8 @@ window.DpDispPanelMng = {
       }));
     });
 
-    return { panels, uiState; fnPathLabel, displays, codes,
-      cfPanelTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchVisibility, searchLayoutType, VISIBILITY_OPTS, LAYOUT_TYPE_OPTS, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
+    return { panels, uiState, fnPathLabel, displays, codes,
+      codes, cfPanelTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchParam, searchParamOrg, searchDateRange, VISIBILITY_OPTS, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
   },
   template: /* html */`
 <div>
@@ -448,7 +479,7 @@ window.DpDispPanelMng = {
       <span class="search-label">표시방식</span>
       <select v-model="searchParam.layoutType" style="min-width:100px;">
         <option value="">전체</option>
-        <option v-for="o in LAYOUT_TYPE_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
+        <option v-for="o in codes.layout_types" :key="o?.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
     </div>
   </div>

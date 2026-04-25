@@ -6,7 +6,29 @@
 window.XsSample01 = {
   name: 'XsSample01',
   setup() {
-    const { ref, reactive, computed, onMounted } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const codeStore = window.useFoCodeStore?.();
+      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
+    const { ref, reactive, computed, onMounted , watch } = Vue;
     const api = window.axiosApi || window.adminApi;
     const API = 'api/base/sy/zz-sample1';
     const CD_GRP = 'S01_MEMBER';
@@ -169,7 +191,7 @@ window.XsSample01 = {
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
       dragSrc, onDragStart, onDragOver, onDragEnd,
       uiState, toggleCheckAll, fnStatusBadge, rowBg,
-    };
+    , uiState, codes };
   },
   template: /* html */`
 <div style="padding:clamp(12px,3vw,24px);">

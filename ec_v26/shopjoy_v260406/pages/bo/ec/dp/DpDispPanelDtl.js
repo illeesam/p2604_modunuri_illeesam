@@ -3,12 +3,36 @@ window.DpDispPanelDtl = {
   name: 'DpDispPanelDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const panels = reactive([]);
-    const uiState = reactive({ htmlSourceMode: false, libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false });
-    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
+    const uiState = reactive({ htmlSourceMode: false, libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false, isPageCodeLoad: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ layout_types: [], disp_widget_types: [] });
     const displays = reactive([]);
     const events = reactive([]);
+
+    // App 초기화 준비 상태
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading
+          && codeStore?.svCodes?.length > 0
+          && !uiState.isPageCodeLoad;
+    });
+
+    // 코드 주입
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      codes.layout_types = codeStore.snGetGrpCodes('LAYOUT_TYPE');
+      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE');
+      uiState.isPageCodeLoad = true;
+    };
+
+    // App 초기화 감시
+    watch(isAppReady, (ready) => {
+      if (ready) {
+        fnLoadCodes();
+      }
+    });
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
@@ -75,11 +99,6 @@ window.DpDispPanelDtl = {
       window.addEventListener('mouseup', onUp);
     };
 
-    /* ── 패널정보 (패널 공통) ── */
-    const LAYOUT_TYPE_OPTS = [
-      { value: 'grid',      label: '그리드' },
-      { value: 'dashboard', label: '대시보드' },
-    ];
     /* ── 기본 기간: 오늘 ~ +10년 ── */
     const _today = new Date();
     const _pad = n => String(n).padStart(2, '0');
@@ -178,36 +197,6 @@ window.DpDispPanelDtl = {
       window.safeArrayUtils.safeForEach(rows, (r, i) => { r.sortOrder = i + 1; });
       tab.value = cfRowTabKeys.value[target];
     };
-
-    const WIDGET_TYPES = [
-      { value: 'image_banner',  label: '이미지 배너' },
-      { value: 'product_slider',label: '상품 슬라이더' },
-      { value: 'product',       label: '상품' },
-      { value: 'cond_product',  label: '조건상품' },
-      { value: 'chart_bar',     label: '차트 (Bar)' },
-      { value: 'chart_line',    label: '차트 (Line)' },
-      { value: 'chart_pie',     label: '차트 (Pie)' },
-      { value: 'text_banner',   label: '텍스트 배너' },
-      { value: 'info_card',     label: '정보 카드' },
-      { value: 'popup',         label: '팝업' },
-      { value: 'file',          label: '파일' },
-      { value: 'file_list',     label: '파일목록' },
-      { value: 'coupon',        label: '쿠폰' },
-      { value: 'html_editor',   label: 'HTML 에디터' },
-      { value: 'textarea',      label: '텍스트 영역' },
-      { value: 'markdown',      label: 'Markdown' },
-      { value: 'barcode',        label: '바코드' },
-      { value: 'qrcode',         label: 'QR코드' },
-      { value: 'barcode_qrcode', label: '바코드+QR' },
-      { value: 'video_player',   label: '동영상 플레이어' },
-      { value: 'countdown',      label: '카운트다운 타이머' },
-      { value: 'payment_widget', label: '결제위젯' },
-      { value: 'approval_widget',label: '전자결재' },
-      { value: 'map_widget',     label: '지도맵' },
-      { value: 'event_banner',   label: '이벤트' },
-      { value: 'cache_banner',  label: '캐쉬' },
-      { value: 'widget_embed',  label: '위젯' },
-    ];
 
     const cfAreas = computed(() =>
       (Array.isArray(codes) ? codes : [])
@@ -485,7 +474,11 @@ window.DpDispPanelDtl = {
       /* Quill 초기화 (기본정보 탭이 기본) */
       initQuillDesc();
     };
-    onMounted(() => { handleLoadData(); handleInitForm(); });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      handleLoadData();
+      handleInitForm();
+    });
 
     /* 탭 전환 시 Quill 초기화/싱크 */
     watch(tab, async (newTab) => {
@@ -555,7 +548,7 @@ window.DpDispPanelDtl = {
       const found = (Array.isArray(codes) ? codes : []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === form.area);
       return found ? found.codeLabel : form.area;
     });
-    const fnWLabel = (t) => window.safeArrayUtils.safeFind(WIDGET_TYPES, w => w.value === t)?.label || t || '-';
+    const fnWLabel = (t) => codes.disp_widget_types.find(w => w.codeValue === t)?.codeLabel || t || '-';
 
     /* ── 펼치기 / 탭 모드 토글 ── */
 
@@ -719,7 +712,7 @@ window.DpDispPanelDtl = {
       dispEnvOptions, hasDispEnv, toggleDispEnv,
       hasPanelDispEnv, togglePanelDispEnv, hasPanelVisibility, togglePanelVisibility,
       previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, uiState,
-      cfIsNew, tab, form, rows, WIDGET_TYPES, cfAreas, LAYOUT_TYPE_OPTS, cfTabLabels, cfTabRowMap,
+      cfIsNew, tab, form, rows, cfAreas, cfTabLabels, cfTabRowMap,
       MAX_WIDGETS, addWidget, removeWidget,
       cfActiveRowIdx, cfActiveRow, moveRow,
       cfIsChart, cfIsProduct, cfIsImage, cfIsText, cfIsInfo, cfIsPopup, cfIsFile, cfIsFileList,
@@ -877,12 +870,12 @@ window.DpDispPanelDtl = {
               <div class="form-group" style="flex:0 0 auto;">
                 <label class="form-label">표시방식</label>
                 <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;max-width:200px;">
-                  <button v-for="o in LAYOUT_TYPE_OPTS" :key="o?.value"
-                    @click="!viewMode && (form.layoutType = o.value)"
+                  <button v-for="o in codes.layout_types" :key="o?.codeValue"
+                    @click="!viewMode && (form.layoutType = o.codeValue)"
                     type="button"
                     style="flex:1;padding:6px 0;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
-                    :style="[o.value==='grid'?'border-left:none;':'', form.layoutType===o.value ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', viewMode?'cursor:default;opacity:.6;':'']">
-                    {{ o.value==='grid' ? '🔲 ' : '🧩 ' }}{{ o.label }}
+                    :style="[o.codeValue==='grid'?'border-left:none;':'', form.layoutType===o.codeValue ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', viewMode?'cursor:default;opacity:.6;':'']">
+                    {{ o.codeValue==='grid' ? '🔲 ' : '🧩 ' }}{{ o.codeLabel }}
                   </button>
                 </div>
               </div>
@@ -1116,7 +1109,7 @@ window.DpDispPanelDtl = {
                 <span style="font-size:11px;font-weight:600;color:#888;white-space:nowrap;">위젯유형</span>
                 <select class="form-control" v-model="cfActiveRow.widgetType" :disabled="viewMode"
                   style="margin:0;font-size:12px;padding:3px 8px;height:28px;border-radius:5px;min-width:160px;">
-                  <option v-for="w in WIDGET_TYPES" :key="w?.value" :value="w.value">{{ w.label }}</option>
+                  <option v-for="w in codes.disp_widget_types" :key="w?.codeValue" :value="w.codeValue">{{ w.codeLabel }}</option>
                 </select>
               </span>
             </div>
@@ -1492,7 +1485,7 @@ window.DpDispPanelDtl = {
               <div class="form-group">
                 <label class="form-label">위젯 유형</label>
                 <select class="form-control" v-model="r.widgetType" :disabled="viewMode">
-                  <option v-for="w in WIDGET_TYPES" :key="w?.value" :value="w.value">{{ w.label }}</option>
+                  <option v-for="w in codes.disp_widget_types" :key="w?.codeValue" :value="w.codeValue">{{ w.codeLabel }}</option>
                 </select>
               </div>
               <div class="form-group">

@@ -7,7 +7,8 @@ window.SyContactDtl = {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
 
     const contacts = reactive([]);
-    const uiState = reactive({ loading: false, error: null });
+    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
@@ -33,6 +34,28 @@ window.SyContactDtl = {
     const viewMode2 = ref(window._syContactDtlState.viewMode || 'tab');
     watch(viewMode2, v => { window._syContactDtlState.viewMode = v; });
     const showTab = (id) => viewMode2.value !== 'tab' || tab.value === id;
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     const form = reactive({
       inquiryId: null, userId: '', userNm: '', date: '', categoryCd: '배송 문의',
@@ -146,7 +169,7 @@ window.SyContactDtl = {
       props.showToast('답변이 저장되었습니다.');
     };
 
-    return { contacts, uiState, uiState, cfIsNew, tab, viewMode2, showTab, form, errors, cfMemberContacts, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm, contentEl, answerEl };
+    return { contacts, uiState, codes, cfIsNew, tab, viewMode2, showTab, form, errors, cfMemberContacts, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm, contentEl, answerEl };
   },
   template: /* html */`
 <div>

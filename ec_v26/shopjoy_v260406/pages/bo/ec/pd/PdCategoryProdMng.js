@@ -7,6 +7,32 @@ window.PdCategoryProdMng = {
     const categories = reactive([]);
     const products = reactive([]);
     const categoryProds = reactive([]);
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({
+      product_statuses: [],
+    });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = () => {
+      const codeStore = window.getBoCodeStore();
+      try {
+        codes.product_statuses = codeStore.snGetGrpCodes('PRODUCT_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
+    });
 
     /* ── 뷰모드 영속화 ── */
     if (!window._ecCategoryProdState) window._ecCategoryProdState = { viewMode: 'tab' };
@@ -71,6 +97,7 @@ window.PdCategoryProdMng = {
     onSearch();
   };
   return {
+      codes,
       viewMode, TYPE_TABS, activeTypeCd, cfTypeCountMap,
       EMPHASIS_OPTS, parseEmphasis, hasEmphasis, toggleEmphasis,
       defaultDispStartDate, defaultDispEndDate,
