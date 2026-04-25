@@ -142,8 +142,9 @@ window.SyMenuMng = {
     const setPage    = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
 
-    const onSearch = () => {
-      handleLoadGrid();
+    const onSearch = async () => {
+      pager.page = 1;
+      await handleFetchData();
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);

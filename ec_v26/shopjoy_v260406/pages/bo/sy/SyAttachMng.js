@@ -123,12 +123,13 @@ window.SyAttachMng = {
       });
     });
 
-    const onSearch = () => {
+    const onSearch = async () => {
       Object.assign(applied, {
         kw: searchParam.kw,
         dateStart: searchParam.dateStart,
         dateEnd: searchParam.dateEnd,
       });
+      await handleFetchData();
     };
     const onReset = () => {
       searchParam.kw = '';

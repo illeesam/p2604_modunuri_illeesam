@@ -137,8 +137,9 @@ window.SyDeptMng = {
 
     const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
-    const onSearch = () => {
-      handleLoadGrid();
+    const onSearch = async () => {
+      pager.page = 1;
+      await handleFetchData();
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);

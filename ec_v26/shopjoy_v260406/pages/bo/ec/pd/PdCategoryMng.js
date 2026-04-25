@@ -151,8 +151,9 @@ window.PdCategoryMng = {
     const onSizeChange  = () => { pager.page = 1; };
     const getRealIdx    = localIdx => (pager.page - 1) * pager.size + localIdx;
 
-    const onSearch = () => {
-      handleLoadGrid();
+    const onSearch = async () => {
+      pager.page = 1;
+      await handleFetchData();
     };
   
     const onReset = () => {

@@ -118,6 +118,7 @@ window.PmCouponMng = {
       const res = await window.boApi.get('/bo/ec/resource/page', { params });
       // TODO: Update items array based on response
       pager.page = 1;
+      await handleFetchData();
     } catch (err) {
       console.error('[catch-info]', err);
       if (props.showToast) props.showToast('조회 실패', 'error');

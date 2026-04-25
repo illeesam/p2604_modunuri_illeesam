@@ -149,7 +149,7 @@ window.SySiteMng = {
       '가격비교': 'badge-blue', '시각화': 'badge-purple', '홈페이지': 'badge-gray',
     }[t] || 'badge-gray');
 
-    const onSearch = () => {
+    const onSearch = async () => {
       Object.assign(applied, {
         kw: searchParam.kw,
         type: searchParam.type,
@@ -158,6 +158,7 @@ window.SySiteMng = {
         dateEnd: searchParam.dateEnd,
       });
       pager.page = 1;
+      await handleFetchData();
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);

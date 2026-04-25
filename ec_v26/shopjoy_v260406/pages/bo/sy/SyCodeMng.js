@@ -272,6 +272,7 @@ window.SyCodeMng = {
         updateCodeGroups();
         loadGrp();
         handleLoadGrid();
+        await handleFetchData();
       } catch (err) {
         console.error('[catch-info]', err);
         props.showToast('조회 중 오류가 발생했습니다.', 'error');

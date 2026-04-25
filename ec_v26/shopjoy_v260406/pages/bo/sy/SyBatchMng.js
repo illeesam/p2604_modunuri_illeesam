@@ -128,7 +128,7 @@ window.SyBatchMng = {
 
     const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
-    const onSearch = () => {
+    const onSearch = async () => {
       Object.assign(applied, {
         kw: searchParam.kw,
         status: searchParam.status,
@@ -136,7 +136,8 @@ window.SyBatchMng = {
         dateStart: searchParam.dateStart,
         dateEnd: searchParam.dateEnd
       });
-      handleLoadGrid();
+      pager.page = 1;
+      await handleFetchData();
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);

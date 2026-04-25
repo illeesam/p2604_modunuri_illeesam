@@ -76,11 +76,12 @@ window.DpDispWidgetLibMng = {
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     const applied = reactive({ kw: '', type: '', status: '' });
-    const onSearch = () => {
+    const onSearch = async () => {
       applied.kw     = searchParam.kw.trim().toLowerCase();
       applied.type   = searchParam.type;
       applied.status = searchParam.status;
       pager.page = 1;
+      await handleFetchData();
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);

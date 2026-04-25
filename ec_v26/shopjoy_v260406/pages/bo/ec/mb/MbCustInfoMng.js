@@ -239,6 +239,7 @@
         try {
           const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
           await window.boApi.get('/bo/ec/resource/page', { params });
+          await handleFetchData();
         } catch (err) {
           console.error('[catch-info]', err);
           if (props.showToast) props.showToast('조회 실패', 'error');
