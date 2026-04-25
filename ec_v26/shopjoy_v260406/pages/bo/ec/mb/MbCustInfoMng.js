@@ -68,15 +68,14 @@
     const { reactive, ref, computed, watch, onMounted } = Vue;
 
     const custInfos = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false });
     const loginHistory = reactive([]);
     const couponUsage = reactive([]);
     const sendHistory = reactive([]);
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [resCust, resLogin, resCoupon, resSend] = await Promise.all([
           window.boApi.get('/bo/ec/mb/cust-info/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -88,13 +87,13 @@
         loginHistory.splice(0, loginHistory.length, ...(resLogin.data?.data?.list || []));
         couponUsage.splice(0, couponUsage.length, ...(resCoupon.data?.data?.list || []));
         sendHistory.splice(0, sendHistory.length, ...(resSend.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('MbCustInfo 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     onMounted(() => { handleFetchData();
@@ -202,7 +201,7 @@
       if (props.showToast) props.showToast('조회 실패', 'error');
     }
   };
-  return { custInfos, loading, error, searchMode, searchInput, SEARCH_MODES, memberModal,
+  return { custInfos, uiState; searchMode, searchInput, SEARCH_MODES, memberModal,
         searchParam, searchParamOrg, PERIOD_OPTS, cfDateFrom, cfDateTo,
         customer,
         cfCustOrders, cfCustClaims, cfCustDeliveries, cfCustCache, cfCustCacheBalance,

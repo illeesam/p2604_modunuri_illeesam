@@ -5,15 +5,14 @@ window.DpDispPanelDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const panels = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ htmlSourceMode: false, libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false });
     const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
     const displays = reactive([]);
     const events = reactive([]);
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [panelsRes, displaysRes, eventsRes] = await Promise.all([
           window.boApi.get('/bo/ec/dp/panel/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -23,13 +22,13 @@ window.DpDispPanelDtl = {
         panels.splice(0, panels.length, ...(panelsRes.data?.data?.list || []));
         displays.splice(0, displays.length, ...(displaysRes.data?.data?.list || []));
         events.splice(0, events.length, ...(eventsRes.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('DpDispPanel 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     /* ── 표시경로 선택 모달 (sy_path) ── */
@@ -41,7 +40,6 @@ window.DpDispPanelDtl = {
 
     const cfIsNew = computed(() => !props.editId);
     const tab = ref('info');
-    const showComponentTooltip = ref(false);
     const previewMode = ref('default');
     const PREVIEW_MODES = [
       { value: 'default', label: '기본',   width: 480  },
@@ -52,6 +50,8 @@ window.DpDispPanelDtl = {
     const cfPreviewFrameWidth = computed(() => {
       const m = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === previewMode.value);
       return (m?.width || 480) + 'px';
+      error: null,
+      error: null,
     });
     /* 패널 폭(스플리터 드래그 반영). 모드 변경 시 자동 갱신 */
     const previewPaneWidth = ref(520);
@@ -389,17 +389,16 @@ window.DpDispPanelDtl = {
     const htmlContentEl = ref(null);
     let quillDesc    = null;
     let quillContent = null;
-    const htmlSourceMode = ref(false);  // WYSIWYG ↔ 소스 토글
 
     const toggleHtmlSource = async () => {
       if (!cfActiveRow.value) return;
-      if (!htmlSourceMode.value) {
+      if (!uiState.htmlSourceMode) {
         /* WYSIWYG → 소스: Quill 최신값 저장 후 소스 모드 ON */
         if (quillContent) cfActiveRow.value.htmlContent = quillContent.root.innerHTML;
-        htmlSourceMode.value = true;
+        uiState.htmlSourceMode = true;
       } else {
         /* 소스 → WYSIWYG: quillContent 재생성 없이 내용만 동기화 */
-        htmlSourceMode.value = false;
+        uiState.htmlSourceMode = false;
         await nextTick();
         if (quillContent) {
           bindQuillContent();   // 기존 인스턴스에 textarea 값 반영
@@ -559,7 +558,6 @@ window.DpDispPanelDtl = {
     const fnWLabel = (t) => window.safeArrayUtils.safeFind(WIDGET_TYPES, w => w.value === t)?.label || t || '-';
 
     /* ── 펼치기 / 탭 모드 토글 ── */
-    const viewAll = ref(false);
 
     /* 아코디언 다중 펼치기 */
     const expandedSections = reactive(new Set(['info', 'tab1']));
@@ -682,7 +680,6 @@ window.DpDispPanelDtl = {
     };
 
     /* ── 전시항목 복사 팝업 ── */
-    const rowCopyOpen = ref(false);
     const onRowCopy = (pickedRows) => {
       if (!Array.isArray(pickedRows) || !pickedRows.length) return;
       window.safeArrayUtils.safeForEach(pickedRows, r => {
@@ -690,18 +687,17 @@ window.DpDispPanelDtl = {
         rows.push({ ...makeRowData(), ...r, sortOrder: rows.length + 1 });
       });
       props.showToast && props.showToast(`${pickedRows.length}개 전시항목을 복사했습니다.`, 'info');
-      rowCopyOpen.value = false;
+      uiState.rowCopyOpen = false;
     };
 
     /* ── 위젯Lib 선택 팝업 (활성 row에 복사/참조) ── */
-    const libPickOpen = ref(false);
     const libPickMode = ref('copy');
     const openLibPick = (mode) => {
       if (!cfActiveRow.value) return;
-      libPickMode.value = mode; libPickOpen.value = true;
+      libPickMode.value = mode; uiState.libPickOpen = true;
     };
     const onLibPicked = (lib) => {
-      libPickOpen.value = false;
+      uiState.libPickOpen = false;
       if (!cfActiveRow.value) return;
       if (libPickMode.value === 'copy') {
         const r = cfActiveRow.value;
@@ -716,13 +712,13 @@ window.DpDispPanelDtl = {
       }
     };
 
-    return { panels, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
-      libPickOpen, libPickMode, openLibPick, onLibPicked,
-      rowCopyOpen, onRowCopy,
+    return { panels, uiState; pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
+      uiState, libPickMode, openLibPick, onLibPicked,
+      uiState, onRowCopy,
       cfVisibilityOptions, hasVisibility, toggleVisibility,
       dispEnvOptions, hasDispEnv, toggleDispEnv,
       hasPanelDispEnv, togglePanelDispEnv, hasPanelVisibility, togglePanelVisibility,
-      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, showComponentTooltip,
+      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, uiState,
       cfIsNew, tab, form, rows, WIDGET_TYPES, cfAreas, LAYOUT_TYPE_OPTS, cfTabLabels, cfTabRowMap,
       MAX_WIDGETS, addWidget, removeWidget,
       cfActiveRowIdx, cfActiveRow, moveRow,
@@ -730,10 +726,10 @@ window.DpDispPanelDtl = {
       cfIsCoupon, cfIsHtmlEditor, cfIsEventBanner, cfIsCacheBanner, cfIsWidgetEmbed, cfIsCondProduct,
       cfDisplayRows, cfRelatedEvent, handleSave,
       cfFileListItems, addFileItem, removeFileItem, updateFileItem,
-      htmlDescEl, htmlContentEl, htmlSourceMode, toggleHtmlSource,
+      htmlDescEl, htmlContentEl, uiState, toggleHtmlSource,
       preview, openPreview, closePreview, cfPreviewWidget,
       cardPreview, openCardPreview, closeCardPreview, cfCurrentAreaLabel, fnWLabel,
-      viewAll,
+      uiState,
       expandedSections, toggleSection, isSectionExpanded,
       fnRowIsHtmlEditor, fnRowIsFileList, fnRowIsImage, fnRowIsText, fnRowIsProduct,
       fnGetDisplayRows, fnGetRelatedEvent,

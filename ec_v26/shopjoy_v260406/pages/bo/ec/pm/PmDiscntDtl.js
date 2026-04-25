@@ -7,12 +7,11 @@ window.PmDiscntDtl = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const discntList = ref([]);
     const discounts = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, showVendorModal: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/discnt/page', {
           params: { pageNo: 1, pageSize: 10000 }
@@ -20,13 +19,13 @@ window.PmDiscntDtl = {
         const list = res.data?.data?.list || [];
         discounts.splice(0, discounts.length, ...list);
         discntList.value = list;
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('PmDiscnt 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => !props.editId);
@@ -46,7 +45,9 @@ window.PmDiscntDtl = {
       discntStatus: '활성', startDate: DEFAULT_START, endDate: DEFAULT_END,
       applyTarget: '전체상품', minOrderAmt: 0, maxDiscntAmt: 0, remark: '',
       visibilityTargets: '^PUBLIC^',
+      error: null,
       vendorId: '', chargeStaff: '',
+      error: null,
     });
     const errors = reactive({});
 
@@ -108,7 +109,6 @@ window.PmDiscntDtl = {
       }
     };
 
-    const showVendorModal = ref(false);
     const cfSelectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
       const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === form.vendorId);
@@ -116,10 +116,10 @@ window.PmDiscntDtl = {
     });
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
-      showVendorModal.value = false;
+      uiState.showVendorModal = false;
     };
 
-    return { discounts, loading, error, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, showVendorModal, cfSelectedVendorNm, selectVendor };
+    return { discounts, uiState, uiState, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, uiState, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>

@@ -5,24 +5,23 @@ window.SyBbmMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const bbms = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, error: null });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/bbm/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         bbms.splice(0, bbms.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('SyBbm 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     /* 표시경로 트리/픽커 (sy_path biz_cd=sy_bbm) */
@@ -38,7 +37,9 @@ window.SyBbmMng = {
       handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
+      error: null,
       Object.assign(searchParamOrg, searchParam);
+      error: null,
     });
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -128,7 +129,7 @@ window.SyBbmMng = {
     const bbsCount = (bbmId) => bbss.value.filter(b => b.bbmId === bbmId).length;
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
-    return { bbms, loading, error, cfSiteNm, searchParam, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnYnBadge, fnCommentBadge, fnAttachBadge, fnContentBadge, fnScopeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, bbsCount, exportExcel,
+    return { bbms, uiState, uiState, cfSiteNm, searchParam, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnYnBadge, fnCommentBadge, fnAttachBadge, fnContentBadge, fnScopeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, bbsCount, exportExcel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
   },

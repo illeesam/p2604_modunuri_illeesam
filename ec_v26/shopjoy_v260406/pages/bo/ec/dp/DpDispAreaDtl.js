@@ -6,24 +6,23 @@ window.DpDispAreaDtl = {
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
     const areas = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, pickOpen: false, showComponentTooltip: false });
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/dp/area/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         areas.splice(0, areas.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('DpDispArea 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     /* ── 표시경로 선택 모달 (sy_path) ── */
@@ -67,6 +66,8 @@ window.DpDispAreaDtl = {
       areaBaseDispStartDate: '', areaBaseDispEndDate: '',
       areaBaseDispEnv: '^PROD^',
       areaBaseVisibilityTargets: '^PUBLIC^',
+      error: null,
+      error: null,
     });
 
     const errors = reactive({});
@@ -117,7 +118,6 @@ window.DpDispAreaDtl = {
     );
 
     /* ── 패널 선택 팝업 ── */
-    const pickOpen = ref(false);
     const pickKw   = ref('');
     const pickSel  = reactive(new Set());
     const cfAvailablePanels = computed(() => {
@@ -129,7 +129,7 @@ window.DpDispAreaDtl = {
         return true;
       }).sort((a, b) => (a.name||'').localeCompare(b.name||''));
     });
-    const openPick  = () => { pickOpen.value = true; pickKw.value = ''; pickSel = new Set(); };
+    const openPick  = () => { uiState.pickOpen = true; pickKw.value = ''; pickSel = new Set(); };
     const movePanel = (idx, dir) => {
       const arr = cfRelatedPanels.value;
       const target = idx + dir;
@@ -144,9 +144,9 @@ window.DpDispAreaDtl = {
       const list = (displays || []).filter(x => x.area === form.codeValue);
       window.safeArrayUtils.safeForEach(list, (x, i) => { x.sortOrder = i + 1; });
       props.showToast && props.showToast(`[${p.name}] 패널을 추가했습니다.`, 'info');
-      pickOpen.value = false;
+      uiState.pickOpen = false;
     };
-    const closePick = () => { pickOpen.value = false; };
+    const closePick = () => { uiState.pickOpen = false; };
     const togglePick = (id) => {
       const s = new Set(pickSel);
       if (s.has(id)) s.delete(id); else s.add(id);
@@ -181,7 +181,6 @@ window.DpDispAreaDtl = {
     const activeTab = ref('base');          /* 'base' | 'panel_<dispId>' */
     const expanded  = ref(false);           /* 우측 미리보기 펼치기 */
     const previewMode = ref('default');     /* 'default' | 'pc' | 'tablet' | 'mobile' */
-    const showComponentTooltip = ref(false);
     const PREVIEW_MODES = [
       { value: 'default', label: '기본',   width: 480  },
       { value: 'pc',      label: 'PC',     width: 1200 },
@@ -382,12 +381,12 @@ window.DpDispAreaDtl = {
       form.areaBaseVisibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
-    return { codes, areas, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
+    return { codes, areas, uiState; pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
       form, errors, cfIsNew, AREA_TYPE_OPTS, LAYOUT_TYPE_OPTS,
       handleSave, onCancel, cfRelatedPanels,
-      pickOpen, pickKw, pickSel, cfAvailablePanels, openPick, closePick, togglePick, confirmPick, removePanel, onPanelPicked, movePanel,
+      uiState, pickKw, pickSel, cfAvailablePanels, openPick, closePick, togglePick, confirmPick, removePanel, onPanelPicked, movePanel,
       activeTab, selectTab, cfActivePanel, expanded,
-      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, showComponentTooltip,
+      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, uiState,
       openPanelPreview, openWidgetPreview, addPanelShortcut, fnWLabel,
       cfVisibilityOptions, hasPanelVisibility, togglePanelVisibility,
       areaDispEnvOptions, hasAreaDispEnv, toggleAreaDispEnv,

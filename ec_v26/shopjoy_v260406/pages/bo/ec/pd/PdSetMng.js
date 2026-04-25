@@ -8,12 +8,11 @@ window.PdSetMng = {
     const products = reactive([]);
     const brands = reactive([]);
     const sets = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ descOpen: false, loading: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [setsRes, prodsRes, catsRes] = await Promise.all([
           window.boApi.get('/bo/ec/pd/set/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -23,18 +22,20 @@ window.PdSetMng = {
         sets.splice(0, sets.length, ...(setsRes.data?.data?.list || []));
         products.splice(0, products.length, ...(prodsRes.data?.data?.list || []));
         categories.splice(0, categories.length, ...(catsRes.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('PdSet 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     /* ── 검색 파라미터 ── */
     const searchParam = reactive({
+      error: null,
       nm: ''
+      error: null,
     });
     const searchParamOrg = reactive({
       nm: ''
@@ -145,7 +146,7 @@ window.PdSetMng = {
             .filter(s => s.setProdId === id)
             .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
           const prod = getProd(id);
-          return { sets, loading, error, setProdId: id, prodNm: getProdNm(id), prod, items, itemCount: items.length };
+          return { sets, uiState, uiState, setProdId: id, prodNm: getProdNm(id), prod, items, itemCount: items.length };
         })
         .filter(g => !kw || g.prodNm.toLowerCase().includes(kw));
     });
@@ -335,7 +336,6 @@ window.PdSetMng = {
       }
     };
 
-    const descOpen = ref(false);
   const searchParam = reactive({
     nm: ''
   });
@@ -344,7 +344,7 @@ window.PdSetMng = {
   });
 
     return {
-      descOpen,
+      uiState,
       searchNm, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList,
       onSearch, onReset, getProdNm, getProd, getBrandNm,
       getCategoryNm, getCategoryDepth,

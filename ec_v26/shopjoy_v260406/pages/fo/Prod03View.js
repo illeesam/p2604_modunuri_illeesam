@@ -202,7 +202,7 @@ window.Prod03View = {
       const mainRect = main.getBoundingClientRect ? main.getBoundingClientRect() : { top: 0 };
       const barH = tabBarRef.value?.offsetHeight || 44;
       /* 탭바 fixed 시: mainRect.top + barH 만큼 오프셋 필요 */
-      const offset = uiState.uiState.tabFixed ? barH + 8 : barH + 8;
+      const offset = uiState.tabFixed ? barH + 8 : barH + 8;
       const elTop = el.getBoundingClientRect().top - mainRect.top;
       const top = main.scrollTop + elTop - offset;
       main.scrollTo({ top, behavior: 'smooth' });

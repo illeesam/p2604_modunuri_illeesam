@@ -5,14 +5,13 @@ window.DpDispPanelMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const panels = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, error: null });
     const displays = reactive([]);
     const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [panelsRes, displaysRes] = await Promise.all([
           window.boApi.get('/bo/ec/dp/panel/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -20,13 +19,13 @@ window.DpDispPanelMng = {
         ]);
         panels.splice(0, panels.length, ...(panelsRes.data?.data?.list || []));
         displays.splice(0, displays.length, ...(displaysRes.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('DpDispPanel 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     onMounted(() => { handleFetchData();
@@ -175,6 +174,8 @@ window.DpDispPanelMng = {
       const cur = pager.page, last = cfTotalPages.value;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+      error: null,
+      error: null,
     });
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
     const fnTypeBadge = t => ({
@@ -411,7 +412,7 @@ window.DpDispPanelMng = {
       }));
     });
 
-    return { panels, loading, error, fnPathLabel, displays, codes,
+    return { panels, uiState; fnPathLabel, displays, codes,
       cfPanelTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchArea, searchStatus, searchDispDate, searchDispTime, setDispNow, searchVisibility, searchLayoutType, VISIBILITY_OPTS, LAYOUT_TYPE_OPTS, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, wLabel, cardPreviewItem, openCardPreview, closeCardPreview, panelDragSrc, panelDragOverIdx, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, widgetDragPanel, widgetDragSrcWi, widgetDragOverWi, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd };
   },
   template: /* html */`

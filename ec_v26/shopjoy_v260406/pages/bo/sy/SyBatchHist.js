@@ -6,12 +6,11 @@ window.SyBatchHist = {
     const { ref, reactive, computed, onMounted } = Vue;
     const batches = reactive([]);
     const batchLogs = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, error: null });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [resBatch, resLogs] = await Promise.all([
           window.boApi.get('/bo/sy/batch/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -19,13 +18,13 @@ window.SyBatchHist = {
         ]);
         batches.splice(0, batches.length, ...(resBatch.data?.data?.list || []));
         batchLogs.splice(0, batchLogs.length, ...(resLogs.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('SyBatch 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     onMounted(() => { handleFetchData(); });
@@ -46,7 +45,9 @@ window.SyBatchHist = {
         if (searchBatchId.value && l.batchId !== Number(searchBatchId.value)) return false;
         if (searchStatus.value && l.runStatus !== searchStatus.value) return false;
         return true;
+      error: null,
       });
+      error: null,
     });
 
     const cfTotal      = computed(() => cfFiltered.value.length);
@@ -75,7 +76,7 @@ window.SyBatchHist = {
       return `${Math.floor(sec / 60)}분 ${sec % 60}초`;
     };
 
-    return { batches, loading, error, searchBatchId, searchStatus, cfBatchOptions,
+    return { batches, uiState, uiState, searchBatchId, searchStatus, cfBatchOptions,
       cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, pager, PAGE_SIZES,
       setPage, onSizeChange, onFilter,
       expandedId, toggleExpand,

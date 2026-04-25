@@ -31,7 +31,8 @@ window.BaseAttachGrp = {
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
-    const { computed, ref } = Vue;
+    const { computed, ref, reactive } = Vue;
+    const uiState = reactive({});
 
     /* 현재 그룹의 파일 목록 */
     const cfFiles = computed(() =>
@@ -135,7 +136,7 @@ window.BaseAttachGrp = {
       return map[ext?.toLowerCase()] || '📎';
     };
 
-    return { cfFiles, cfAcceptAttr, fileInputRef, openPicker, onFileChange, removeFile, fnFmtSize, fnExtIcon };
+    return { uiState, cfFiles, cfAcceptAttr, fileInputRef, openPicker, onFileChange, removeFile, fnFmtSize, fnExtIcon };
   },
   template: /* html */`
 <div style="border:1px solid #e8e8e8;border-radius:8px;background:#fafafa;padding:12px 14px;">

@@ -4,7 +4,7 @@ window.StErpGenMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const descOpen = ref(false);
+    const uiState = reactive({ descOpen: false });
 
     const targetMon = ref(new Date().toISOString().slice(0, 7));
     const slipType  = ref('정산');

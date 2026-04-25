@@ -5,24 +5,23 @@ window.MbMemGroupMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const groups = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/mb/member-group/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         groups.splice(0, groups.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('MbMemGroup 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     onMounted(() => { handleFetchData();
@@ -46,6 +45,8 @@ window.MbMemGroupMng = {
         if (searchParam.use && g.useYn !== searchParam.use) return false;
         return true;
       });
+      error: null,
+      error: null,
     });
     const cfTotal      = computed(() => cfFiltered.value.length);
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
@@ -125,7 +126,7 @@ window.MbMemGroupMng = {
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { groups, loading, error, searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, onSearch, onReset,
+    return { groups, uiState; searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, onSearch, onReset,
              gridRows, addRow, onCellChange, handleDeleteRow, handleSaveAll, fnYnBadge , PAGE_SIZES , onSizeChange };
   },
   template: `

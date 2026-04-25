@@ -710,7 +710,7 @@ window.DpDispWidgetPreview = {
           <button @click="uiState.showRealContent=!showRealContent"
             style="font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;margin-right:4px;"
             :style="uiState.showRealContent?'background:#059669;color:#fff;border-color:#059669;':'background:#fff;color:#6b7280;'">
-            {{ uiState.uiState.showRealContent ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
+            {{ uiState.showRealContent ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
           </button>
           <div style="width:1px;height:18px;background:#e5e7eb;margin-right:2px;"></div>
           <button v-for="(vp, key) in VIEWPORT" :key="Math.random()" @click="uiState.viewportMode=key"

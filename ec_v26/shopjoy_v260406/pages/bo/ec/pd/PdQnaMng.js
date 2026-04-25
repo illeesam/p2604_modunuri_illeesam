@@ -7,12 +7,11 @@ window.PdQnaMng = {
     const products = reactive([]);
     const members = reactive([]);
     const qnas = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [qnasRes, prodsRes, membersRes] = await Promise.all([
           window.boApi.get('/bo/ec/pd/qna/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -22,13 +21,13 @@ window.PdQnaMng = {
         qnas.splice(0, qnas.length, ...(qnasRes.data?.data?.list || []));
         products.splice(0, products.length, ...(prodsRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('PdQna 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     onMounted(() => { handleFetchData();
@@ -58,7 +57,10 @@ window.PdQnaMng = {
         if (kw && !q.qnaTitle.toLowerCase().includes(kw)) return false;
         if (searchParam.answ && q.answYn !== searchParam.answ) return false;
         return true;
+      error: null,
       }).sort((a, b) => b.regDate > a.regDate ? 1 : -1);
+      error: null,
+      error: null,
     });
     const cfTotal      = computed(() => cfFiltered.value.length);
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
@@ -111,7 +113,7 @@ window.PdQnaMng = {
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-red';
 
-    return { qnas, loading, error, searchKw, searchAnsw, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
+    return { qnas, uiState, uiState, searchKw, searchAnsw, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
              selectedId, cfSelectedRow, answForm, openDetail, handleAnswer, fnTypeBadge, fnYnBadge, TYPE_LABELS, getProdNm, getMemNm , PAGE_SIZES , onSizeChange };
   },
   template: `

@@ -6,24 +6,23 @@ window.DpDispAreaMng = {
     const { ref, reactive, computed, onMounted } = Vue;
     const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
     const areas = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, error: null });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/dp/area/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         areas.splice(0, areas.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('DpDispArea 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     onMounted(() => { handleFetchData(); });
@@ -196,7 +195,7 @@ window.DpDispAreaMng = {
     };
     const isAreaExpanded = (areaId) => expandedAreas.has(areaId);
 
-    return { codes, areas, loading, error, fnPathLabel,
+    return { codes, areas, uiState; fnPathLabel,
       searchParam, searchParamOrg,
       DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm,
       AREA_TYPE_OPTS, LAYOUT_TYPE_OPTS,

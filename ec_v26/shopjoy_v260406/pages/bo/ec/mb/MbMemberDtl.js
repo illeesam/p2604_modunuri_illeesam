@@ -5,24 +5,23 @@ window.MbMemberDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const members = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false });
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/mb/member/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         members.splice(0, members.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('MbMember 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
@@ -30,6 +29,8 @@ window.MbMemberDtl = {
       userId: null,
       email: '', memberNm: '', phone: '', gradeCd: '일반', statusCd: '활성',
       joinDate: '', lastLogin: '', orderCount: 0, totalPurchase: 0, memo: '',
+      error: null,
+      error: null,
     });
     const errors = reactive({});
 
@@ -96,7 +97,7 @@ window.MbMemberDtl = {
       }
     };
 
-    return { members, loading, error, cfIsNew, form, errors, handleSave, memoEl };
+    return { members, uiState; cfIsNew, form, errors, handleSave, memoEl };
   },
   template: /* html */`
 <div>

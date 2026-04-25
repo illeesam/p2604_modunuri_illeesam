@@ -6,24 +6,23 @@ window.PmCacheDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const caches = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, showVendorModal: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/cache/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         caches.splice(0, caches.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('PmCache 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => !props.editId);
@@ -35,7 +34,9 @@ window.PmCacheDtl = {
 
     const form = reactive({
       cacheId: null, userId: '', userNm: '', date: '', type: '충전', amount: 0, balance: 0, desc: '',
+      error: null,
       vendorId: '', chargeStaff: '',
+      error: null,
     });
     const errors = reactive({});
 
@@ -106,7 +107,6 @@ window.PmCacheDtl = {
       if (m) form.userNm = m.memberNm;
     };
 
-    const showVendorModal = ref(false);
     const cfSelectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
       const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === form.vendorId);
@@ -114,12 +114,12 @@ window.PmCacheDtl = {
     });
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
-      showVendorModal.value = false;
+      uiState.showVendorModal = false;
     };
 
     const fnTypeBadge = t => ({ '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' }[t] || 'badge-gray');
 
-    return { caches, loading, error, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, viewMode2, showTab, showVendorModal, cfSelectedVendorNm, selectVendor };
+    return { caches, uiState, uiState, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, viewMode2, showTab, uiState, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>

@@ -6,12 +6,11 @@ window.SyAttachMng = {
     const { ref, reactive, computed, onMounted } = Vue;
     const attaches = reactive([]);
     const attachGrps = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ fileEditMode: false, grpEditMode: false, loading: false, error: null });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [attachRes, grpRes] = await Promise.all([
           window.boApi.get('/bo/sy/attach/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -19,13 +18,13 @@ window.SyAttachMng = {
         ]);
         attaches.splice(0, attaches.length, ...(attachRes.data?.data?.list || []));
         attachGrps.splice(0, attachGrps.length, ...(grpRes.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('SyAttach 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     onMounted(() => { handleFetchData(); });
@@ -48,16 +47,15 @@ window.SyAttachMng = {
     const selectedGrpId = ref(null);
     const grpForm = reactive({ grpNm: '', grpCode: '', description: '', maxCount: 10, maxSizeMb: 5, allowExt: 'jpg,png', status: '활성' });
     const grpEditId = ref(null);
-    const grpEditMode = ref(false);
 
-    const selectGrp = (id) => { selectedGrpId.value = selectedGrpId.value === id ? null : id; grpEditMode.value = false; };
+    const selectGrp = (id) => { selectedGrpId.value = selectedGrpId.value === id ? null : id; uiState.grpEditMode = false; };
 
     const openGrpNew = () => {
-      grpEditId.value = null; grpEditMode.value = true;
+      grpEditId.value = null; uiState.grpEditMode = true;
       Object.assign(grpForm, { grpNm: '', grpCode: '', description: '', maxCount: 10, maxSizeMb: 5, allowExt: 'jpg,png', status: '활성' });
     };
     const openGrpEdit = (g) => {
-      grpEditId.value = g.attachGrpId; grpEditMode.value = true;
+      grpEditId.value = g.attachGrpId; uiState.grpEditMode = true;
       Object.assign(grpForm, { ...g });
     };
     const handleSaveGrp = () => {
@@ -72,7 +70,7 @@ window.SyAttachMng = {
         if (idx !== -1) Object.assign(attachGrps[idx], grpForm);
         props.showToast('저장되었습니다.');
       }
-      grpEditMode.value = false;
+      uiState.grpEditMode = false;
     };
     const handleDeleteGrp = async (g) => {
       const ok = await props.showConfirm('그룹 삭제', `[${g.grpNm}] 그룹을 삭제하시겠습니까?`);
@@ -87,7 +85,6 @@ window.SyAttachMng = {
     const searchKw = ref('');
     const fileForm = reactive({ attachGrpId: null, fileNm: '', fileSize: 0, fileExt: '', url: '', refId: '', memo: '' });
     const fileEditId = ref(null);
-    const fileEditMode = ref(false);
 
     const applied = reactive({ kw: '', dateStart: '', dateEnd: '' });
 
@@ -119,11 +116,11 @@ window.SyAttachMng = {
     };
 
     const openFileNew = () => {
-      fileEditId.value = null; fileEditMode.value = true;
+      fileEditId.value = null; uiState.fileEditMode = true;
       Object.assign(fileForm, { attachGrpId: selectedGrpId.value, fileNm: '', fileSize: 0, fileExt: '', url: '', refId: '', memo: '' });
     };
     const openFileEdit = (a) => {
-      fileEditId.value = a.attachId; fileEditMode.value = true;
+      fileEditId.value = a.attachId; uiState.fileEditMode = true;
       Object.assign(fileForm, { ...a });
     };
     const handleSaveFile = () => {
@@ -137,7 +134,7 @@ window.SyAttachMng = {
         if (idx !== -1) Object.assign(attaches[idx], { ...fileForm, attachGrpNm: grp?.grpNm || '' });
         props.showToast('저장되었습니다.');
       }
-      fileEditMode.value = false;
+      uiState.fileEditMode = false;
     };
     const handleDeleteFile = async (a) => {
       const ok = await props.showConfirm('파일 삭제', `[${a.fileNm}] 파일을 삭제하시겠습니까?`);
@@ -157,10 +154,10 @@ window.SyAttachMng = {
 
     const cfTotal = computed(() => cfFilteredFiles.value.length);
 
-    return { attaches, loading, error, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm,
+    return { attaches, uiState, uiState, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm,
       attachGrps, grpForm, cfTotal,
-      selectedGrpId, grpForm, grpEditId, grpEditMode, selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
-      searchKw, fileForm, fileEditId, fileEditMode, applied, cfFilteredFiles, onSearch, onReset, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
+      selectedGrpId, grpForm, grpEditId, uiState, selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
+      searchKw, fileForm, fileEditId, uiState, applied, cfFilteredFiles, onSearch, onReset, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
       fnFmtSize, fnStatusBadge,
     };
   },

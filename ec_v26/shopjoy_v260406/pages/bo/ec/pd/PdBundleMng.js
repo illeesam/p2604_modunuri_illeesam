@@ -8,12 +8,11 @@ window.PdBundleMng = {
     const products = reactive([]);
     const brands = reactive([]);
     const bundles = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ descOpen: false, loading: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [bundlesRes, prodsRes, catsRes] = await Promise.all([
           window.boApi.get('/bo/ec/pd/bundle/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -23,18 +22,21 @@ window.PdBundleMng = {
         bundles.splice(0, bundles.length, ...(bundlesRes.data?.data?.list || []));
         products.splice(0, products.length, ...(prodsRes.data?.data?.list || []));
         categories.splice(0, categories.length, ...(catsRes.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('PdBundle 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     /* ── 검색 파라미터 ── */
     const searchParam = reactive({
       nm: ''
+      error: null,
+      error: null,
+      error: null,
     });
     const searchParamOrg = reactive({
       nm: ''
@@ -388,10 +390,9 @@ window.PdBundleMng = {
       }
     };
 
-    const descOpen = ref(false);
 
     return {
-      descOpen, bundles, loading, error, bundleList,
+      uiState, bundles, uiState; bundleList,
       searchNm, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList,
       onSearch, onReset, rateSum, fnRateSumBadge, getProdNm, getProdPrice,
       getCategoryNm, getCategoryDepth, getBrandNm,

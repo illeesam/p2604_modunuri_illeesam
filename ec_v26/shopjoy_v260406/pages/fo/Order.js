@@ -64,9 +64,9 @@ window.Order = {
     };
 
     /* ── 배송비 쿠폰 팝업 ── */
-    const shipCouponPopup = ref(false);
+    const uiState = reactive({ shipCouponPopup: false, submitting: false });
     const selectedShipCoupon = ref(null);
-    const applyShipCoupon = c => { selectedShipCoupon.value = c; shipCouponPopup.value = false; };
+    const applyShipCoupon = c => { selectedShipCoupon.value = c; uiState.shipCouponPopup = false; };
     const removeShipCoupon = () => { selectedShipCoupon.value = null; };
 
     /* ── 캐쉬 ── */
@@ -143,10 +143,9 @@ window.Order = {
     };
 
     /* ── 주문 제출 ── */
-    const submitting = ref(false);
     const handleSubmit = async () => {
       if (!validate()) return;
-      submitting.value = true;
+      uiState.submitting = true;
       try {
         const orderId = 'ORD-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-5);
         const payload = {
@@ -173,18 +172,18 @@ window.Order = {
         view.value = 'result';
         if (!props.instantOrder) props.clearCart(); // 바로구매는 장바구니 건드리지 않음
         cashBalance.value = Math.max(0, cashBalance.value - cfAppliedCash.value);
-      } finally { submitting.value = false; }
+      } finally { uiState.submitting = false; }
     };
 
     return {
       view, resultData,
       cfOrderItems,
-      form, errors, clearErr, submitting, handleSubmit, openKakaoAddr,
+      form, errors, clearErr, uiState, handleSubmit, openKakaoAddr,
       parsePrice, fmt,
       cfCartTotal, cfTotalCouponDiscount, cfShippingFee, cfAppliedCash, cfFinalPrice,
       allCoupons, productCoupons, cfShippingCoupons, discountLabel, calcCouponDiscount,
       couponPopup, selectedCoupons, openCouponPopup, closeCouponPopup, applyCoupon, removeCoupon,
-      shipCouponPopup, selectedShipCoupon, applyShipCoupon, removeShipCoupon,
+      selectedShipCoupon, applyShipCoupon, removeShipCoupon,
       cashBalance, cashInput,
     };
   },
@@ -446,18 +445,18 @@ window.Order = {
               <option value="연락 후 배송해주세요">연락 후 배송해주세요</option>
             </select>
           </div>
-          <button @click="handleSubmit" :disabled="submitting"
+          <button @click="handleSubmit" :disabled="uiState.submitting"
             :style="{
               width:'100%',padding:'14px',border:'none',borderRadius:'10px',fontSize:'0.95rem',fontWeight:700,
-              cursor: submitting ? 'wait' : 'pointer',
-              background: submitting ? '#9ca3af' : 'linear-gradient(135deg,#1a1a1a,#404040)',
+              cursor: uiState.submitting ? 'wait' : 'pointer',
+              background: uiState.submitting ? '#9ca3af' : 'linear-gradient(135deg,#1a1a1a,#404040)',
               color:'#fff',transition:'all .15s',
-              boxShadow: submitting ? 'none' : '0 2px 8px rgba(0,0,0,0.15)',
+              boxShadow: uiState.submitting ? 'none' : '0 2px 8px rgba(0,0,0,0.15)',
               letterSpacing:'0.5px',
             }"
-            @mouseenter="!submitting && ($event.currentTarget.style.transform='translateY(-1px)', $event.currentTarget.style.boxShadow='0 4px 14px rgba(0,0,0,0.25)')"
-            @mouseleave="$event.currentTarget.style.transform='', $event.currentTarget.style.boxShadow=submitting?'none':'0 2px 8px rgba(0,0,0,0.15)'">
-            {{ submitting ? '처리 중...' : '🛒 주문 완료' }}
+            @mouseenter="!uiState.submitting && ($event.currentTarget.style.transform='translateY(-1px)', $event.currentTarget.style.boxShadow='0 4px 14px rgba(0,0,0,0.25)')"
+            @mouseleave="$event.currentTarget.style.transform='', $event.currentTarget.style.boxShadow=uiState.submitting?'none':'0 2px 8px rgba(0,0,0,0.15)'">
+            {{ uiState.submitting ? '처리 중...' : '🛒 주문 완료' }}
           </button>
         </div>
 
@@ -497,7 +496,7 @@ window.Order = {
                         style="padding:5px 11px;border:1px solid #ffcdd2;border-radius:6px;background:#ffebee;color:#c62828;font-size:0.78rem;cursor:pointer;font-weight:600;transition:all .15s;"
                         @mouseenter="$event.currentTarget.style.background='#ffcdd2'"
                         @mouseleave="$event.currentTarget.style.background='#ffebee'">✕ 제거</button>
-                      <button @click="shipCouponPopup=true"
+                      <button @click="uiState.shipCouponPopup=true"
                         style="padding:5px 12px;border:1px solid #ce93d8;border-radius:6px;background:#f3e5f5;color:#6a1b9a;font-size:0.78rem;cursor:pointer;font-weight:600;transition:all .15s;"
                         @mouseenter="$event.currentTarget.style.background='#e1bee7'"
                         @mouseleave="$event.currentTarget.style.background='#f3e5f5'">변경</button>
@@ -507,7 +506,7 @@ window.Order = {
                   <template v-else>
                     <div style="display:flex;align-items:center;gap:8px;">
                       <span style="font-size:0.85rem;color:#22c55e;font-weight:700;">무료</span>
-                      <button v-if="cfShippingCoupons.length" @click="shipCouponPopup=true"
+                      <button v-if="cfShippingCoupons.length" @click="uiState.shipCouponPopup=true"
                         style="padding:6px 12px;border:1px solid #ce93d8;border-radius:8px;background:#f3e5f5;color:#6a1b9a;font-size:0.78rem;cursor:pointer;font-weight:600;transition:all .15s;"
                         @mouseenter="$event.currentTarget.style.background='#e1bee7'"
                         @mouseleave="$event.currentTarget.style.background='#f3e5f5'">
@@ -592,14 +591,14 @@ window.Order = {
   </div>
 
   <!-- ══ 배송비 쿠폰 팝업 ══ -->
-  <div v-if="shipCouponPopup" class="modal-overlay" @click.self="shipCouponPopup=false" style="z-index:200;">
+  <div v-if="uiState.shipCouponPopup" class="modal-overlay" @click.self="uiState.shipCouponPopup=false" style="z-index:200;">
     <div class="modal-box" style="max-width:440px;width:92%;padding:0;max-height:72vh;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;">
       <div style="background:linear-gradient(135deg,#22c55e 0%,#0ea5e9 100%);color:#fff;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
         <div>
           <div style="font-size:1.05rem;font-weight:800;display:flex;align-items:center;gap:8px;">🚚 배송비 쿠폰 선택</div>
           <div style="font-size:0.76rem;opacity:0.85;margin-top:4px;">배송비 할인 쿠폰만 표시됩니다</div>
         </div>
-        <button @click="shipCouponPopup=false" style="background:rgba(255,255,255,0.2);border:none;cursor:pointer;font-size:1rem;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;">✕</button>
+        <button @click="uiState.shipCouponPopup=false" style="background:rgba(255,255,255,0.2);border:none;cursor:pointer;font-size:1rem;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;">✕</button>
       </div>
       <div style="overflow-y:auto;flex:1;padding:16px;background:#fafbfc;display:flex;flex-direction:column;gap:8px;">
         <div @click="applyShipCoupon(null)"

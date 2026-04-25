@@ -289,17 +289,16 @@ window.DpDispWidgetLibDtl = {
       });
       return JSON.stringify(obj, null, 2);
     });
-    const jsonCopied = ref(false);
+    const uiState = reactive({ htmlSourceMode: false, jsonCopied: false, libPickOpen: false, showComponentTooltip: false });
     const copyJson = () => {
       navigator.clipboard?.writeText(cfSampleJson.value).then(() => {
-        jsonCopied.value = true;
-        setTimeout(() => { jsonCopied.value = false; }, 1500);
+        uiState.jsonCopied = true;
+        setTimeout(() => { uiState.jsonCopied = false; }, 1500);
       });
     };
 
     /* ── 디바이스 모드 + 스플리터 ── */
     const previewMode = ref('default');
-    const showComponentTooltip = ref(false);
     const PREVIEW_MODES = [
       { value: 'default', label: '기본',   width: 420  },
       { value: 'pc',      label: 'PC',     width: 1200 },
@@ -346,7 +345,6 @@ window.DpDispWidgetLibDtl = {
 
     /* ── Quill 에디터 (HTML 에디터 유형) ── */
     const htmlContentEl  = ref(null);
-    const htmlSourceMode = ref(false);
     let quillInst = null;
 
     const QUILL_OPTS = {
@@ -369,13 +367,13 @@ window.DpDispWidgetLibDtl = {
     };
 
     const toggleHtmlSource = async () => {
-      if (!htmlSourceMode.value) {
+      if (!uiState.htmlSourceMode) {
         /* WYSIWYG → 소스 */
         if (quillInst) form.htmlContent = quillInst.root.innerHTML;
-        htmlSourceMode.value = true;
+        uiState.htmlSourceMode = true;
       } else {
         /* 소스 → WYSIWYG */
-        htmlSourceMode.value = false;
+        uiState.htmlSourceMode = false;
         await nextTick();
         if (quillInst) {
           quillInst.off('text-change');
@@ -389,7 +387,7 @@ window.DpDispWidgetLibDtl = {
 
     watch(cfIsHtmlEditor, async (val) => {
       if (!val) return;
-      htmlSourceMode.value = false;
+      uiState.htmlSourceMode = false;
       quillInst = null;
       await nextTick();
       initQuill();
@@ -455,10 +453,9 @@ window.DpDispWidgetLibDtl = {
     };
 
     /* ── 위젯Lib 내용복사 팝업 ── */
-    const libPickOpen = ref(false);
-    const openLibPick = () => { libPickOpen.value = true; };
+    const openLibPick = () => { uiState.libPickOpen = true; };
     const onLibPicked = (lib) => {
-      libPickOpen.value = false;
+      uiState.libPickOpen = false;
       const preserve = { libId: form.libId, libCode: form.libCode, regDate: form.regDate };
       Object.assign(form, { ...lib, ...preserve });
       props.showToast && props.showToast(`[${lib.name}] 내용을 복사했습니다.`, 'info');
@@ -466,14 +463,14 @@ window.DpDispWidgetLibDtl = {
 
     return {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      libPickOpen, openLibPick, onLibPicked,
+      uiState, openLibPick, onLibPicked,
       cfIsNew, form, errors, WIDGET_TYPES,
       cfIsImage, cfIsProduct, cfIsCondProduct, cfIsChart, cfIsText, cfIsInfo,
       cfIsPopup, cfIsFile, cfIsFileList, cfIsCoupon, cfIsHtmlEditor, cfIsEvent, cfIsCache, cfIsEmbed,
       cfDisplayRows, cfFileListItems, addFileItem, removeFileItem, updateFileItem,
-      cfPreviewWidget, cfSampleJson, jsonCopied, copyJson, handleSave, handleDelete,
-      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, showComponentTooltip,
-      htmlContentEl, htmlSourceMode, toggleHtmlSource,
+      cfPreviewWidget, cfSampleJson, uiState, copyJson, handleSave, handleDelete,
+      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, uiState,
+      htmlContentEl, uiState, toggleHtmlSource,
     };
   },
   template: /* html */`

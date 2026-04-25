@@ -7,13 +7,12 @@ window.OdClaimDtl = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const claims = reactive([]);
     const orders = reactive([]);
-    const loading = ref(false);
+    const uiState = reactive({ loading: false });
     const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
-    const error = ref(null);
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [claimsRes, ordersRes] = await Promise.all([
           window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -21,13 +20,13 @@ window.OdClaimDtl = {
         ]);
         claims = claimsRes.data?.data?.list || [];
         orders = ordersRes.data?.data?.list || [];
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('OdClaim 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => !props.editId);
@@ -39,6 +38,9 @@ window.OdClaimDtl = {
       claimId: '', userId: '', userNm: '', orderId: '', prodNm: '',
       type: '취소', statusCd: '신청', reasonCd: '', reasonDetail: '',
       refundAmount: 0, refundMethodCd: '계좌환불', requestDate: '', memo: '',
+      error: null,
+      error: null,
+      error: null,
     });
     const errors = reactive({});
 
@@ -123,7 +125,7 @@ window.OdClaimDtl = {
       return defs.map((d,i) => {
         const paid = Math.round(amount * shares[i]);
         const sale = Math.round(paid / (1 - discRates[i]));
-        return { claims, loading, error, ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
+        return { claims, uiState; ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
       });
     };
     const handleInitForm = async () => {

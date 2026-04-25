@@ -10,12 +10,11 @@ window.PdProdDtl = {
     const categories = reactive([]);
     const categoryProds = reactive([]);
     const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false });
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [prodsRes, usersRes, catsRes] = await Promise.all([
           window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -25,13 +24,13 @@ window.PdProdDtl = {
         products.splice(0, products.length, ...(prodsRes.data?.data?.list || []));
         boUsers.splice(0, boUsers.length, ...(usersRes.data?.data?.list || []));
         categories.splice(0, categories.length, ...(catsRes.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('PdProd 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => !props.editId);
@@ -59,6 +58,8 @@ window.PdProdDtl = {
       weight: null, sizeInfoCd: '',
       isNew_: 'N', isBest: 'N',
       contentHtml: '',
+      error: null,
+      error: null,
     });
     const errors = reactive({});
     const schema = yup.object({
@@ -251,9 +252,8 @@ window.PdProdDtl = {
     // ── 스플릿 패널 + 미리보기
     const splitPct = ref(65);
     const previewDevice = ref('pc');
-    const isDraggingDivider = ref(false);
     const contentSplitRef = ref(null);
-    const onDividerMousedown = (e) => { isDraggingDivider.value = true; e.preventDefault(); };
+    const onDividerMousedown = (e) => { uiState.isDraggingDivider = true; e.preventDefault(); };
     let _divMoveH = null, _divUpH = null;
 
     // ── 계산값
@@ -368,7 +368,6 @@ window.PdProdDtl = {
 
     // ── mounted
     // ── 담당MD 모달
-    const mdModalOpen = ref(false);
     const mdSearch    = ref('');
     const cfMdUserList  = computed(() => (boUsers||[]).filter(u => u.status==='활성'));
     const cfMdUserListFiltered = computed(() => {
@@ -380,8 +379,8 @@ window.PdProdDtl = {
       const u = cfMdUserList.window.safeArrayUtils.safeFind(value, u => u.boUserId === form.mdUserId);
       return u ? `${u.name} (${u.dept||''})` : '';
     });
-    const openMdModal  = () => { mdSearch.value = ''; mdModalOpen.value = true; };
-    const selectMdUser = (u) => { form.mdUserId = u.boUserId; mdModalOpen.value = false; };
+    const openMdModal  = () => { mdSearch.value = ''; uiState.mdModalOpen = true; };
+    const selectMdUser = (u) => { form.mdUserId = u.boUserId; uiState.mdModalOpen = false; };
 
     const handleInitForm = async () => {
       if (cfIsNew.value) {
@@ -472,12 +471,12 @@ window.PdProdDtl = {
       });
       // 스플릿 패널 divider 마우스 리스너
       _divMoveH = (e) => {
-        if (!isDraggingDivider.value || !contentSplitRef.value) return;
+        if (!uiState.isDraggingDivider || !contentSplitRef.value) return;
         const rect = contentSplitRef.value.getBoundingClientRect();
         const pct = ((e.clientX - rect.left) / rect.width) * 100;
         splitPct.value = Math.max(25, Math.min(78, pct));
       };
-      _divUpH = () => { isDraggingDivider.value = false; };
+      _divUpH = () => { uiState.isDraggingDivider = false; };
       document.addEventListener('mousemove', _divMoveH);
       document.addEventListener('mouseup', _divUpH);
     };
@@ -524,8 +523,8 @@ window.PdProdDtl = {
       }
     };
 
-    return { products, loading, error, cfIsNew, topTab, viewMode2, showTab, form, errors, handleSave,
-      mdModalOpen, mdSearch, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
+    return { products, uiState; cfIsNew, topTab, viewMode2, showTab, form, errors, handleSave,
+      uiState, mdSearch, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
       useOpt, clearOpt, optGroups, skus, cfTotalStock, generateSkus,
       skuFilter1, skuFilter2, skuFilterStock, cfSkuFilter1Options, cfSkuFilter2Options, cfSkusFiltered,
       prodOptCategoryTypeCd, cfOptTypeLevel1Codes, cfOptTypeCodes, cfOptInputTypeCodes, getOptValCodes,
@@ -543,7 +542,7 @@ window.PdProdDtl = {
       cfMarginRateCalc, cfDiscountRate,
       contentBlocks, addContentBlock, removeContentBlock, onBlockFileChange,
       dragBlockIdx, dragoverBlockIdx, onBlockDragStart, onBlockDragOver, onBlockDrop,
-      splitPct, previewDevice, isDraggingDivider, contentSplitRef, onDividerMousedown,
+      splitPct, previewDevice, uiState, contentSplitRef, onDividerMousedown,
     };
   },
   template: /* html */`

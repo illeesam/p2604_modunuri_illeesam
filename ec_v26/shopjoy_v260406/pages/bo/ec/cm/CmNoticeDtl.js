@@ -5,24 +5,23 @@ window.CmNoticeDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const notices = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/cm/notice/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         notices.splice(0, notices.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('CmNotice 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
@@ -30,6 +29,8 @@ window.CmNoticeDtl = {
       noticeId: null, title: '', noticeType: '일반', isFixed: false,
       startDate: '', endDate: '', statusCd: '게시', contentHtml: '',
       attachGrpId: null,
+      error: null,
+      error: null,
     });
     const errors = reactive({});
 
@@ -88,7 +89,7 @@ window.CmNoticeDtl = {
       }
     };
 
-    return { notices, loading, error, cfIsNew, form, errors, handleSave };
+    return { notices, uiState; cfIsNew, form, errors, handleSave };
   },
   template: /* html */`
 <div>

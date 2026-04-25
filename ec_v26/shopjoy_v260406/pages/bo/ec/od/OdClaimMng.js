@@ -6,13 +6,12 @@ window.OdClaimMng = {
     const { ref, reactive, computed, onMounted } = Vue;
     const claims = reactive([]);
     const members = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ bulkOpen: false, loading: false });
     const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [claimsRes, membersRes] = await Promise.all([
           window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -20,13 +19,13 @@ window.OdClaimMng = {
         ]);
         claims = claimsRes.data?.data?.list || [];
         members = membersRes.data?.data?.list || [];
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('OdClaim 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
 
@@ -38,6 +37,9 @@ window.OdClaimMng = {
       dateRange: '',
       dateStart: '',
       dateEnd: ''
+      error: null,
+      error: null,
+      error: null,
     });
     const searchParamOrg = reactive({
       kw: '',
@@ -161,7 +163,6 @@ window.OdClaimMng = {
     const APPROVAL_ACTIONS = ['승인','반려','보류'];
     const REQ_TARGETS = ['주문','상품','배송','추가결재'];
     const DEFAULT_TMPL = '[결재요청]\n요청대상: {target} - {targetNm}\n요청금액: {amount}원\n내용: {reason}\n\n위 건에 대한 추가결재 부탁드립니다.';
-    const bulkOpen = ref(false);
     const bulkTab = ref('status');
     const bulkForm = reactive({
       statusByType: { '취소':'', '반품':'', '교환':'' }, type: '',
@@ -204,10 +205,10 @@ window.OdClaimMng = {
       bulkForm.apprToUserId = ''; bulkForm.apprToNm = ''; bulkForm.apprToPhone = ''; bulkForm.apprToEmail = '';
       bulkForm.reqTarget = '추가결재'; bulkForm.reqTargetNm = ''; bulkForm.reqAmount = 0; bulkForm.reqReason = ''; bulkForm.tmplMsg = DEFAULT_TMPL;
       onReqTargetChange();
-      bulkOpen.value = true;
+      uiState.bulkOpen = true;
     };
     const cfBulkPreview = computed(() => {
-      if (!bulkOpen.value) return '';
+      if (!uiState.bulkOpen) return '';
       const ids = Array.from(checked);
       const selected = window.safeArrayUtils.safeFilter(claims, c => ids.includes(c.claimId));
       let rows = [];
@@ -229,7 +230,7 @@ window.OdClaimMng = {
       return `※ 총 ${rows.length}건\n` + rows.join('\n');
     });
     const saveBulk = async () => {
-      if (!checked.size) { props.showToast('항목을 선택하세요.', 'error'); bulkOpen.value = false; return; }
+      if (!checked.size) { props.showToast('항목을 선택하세요.', 'error'); uiState.bulkOpen = false; return; }
       if (bulkTab.value === 'status') {
         const changes = CLAIM_TYPE_OPTIONS
           .filter(t => bulkForm.statusByType[t] && cfCheckedByType.value[t].length)
@@ -243,7 +244,7 @@ window.OdClaimMng = {
           window.safeArrayUtils.safeForEach(claims, c => { if (ch.ids.includes(c.claimId)) c.status = ch.status; });
         });
         checked = new Set();
-        bulkOpen.value = false;
+        uiState.bulkOpen = false;
         try {
           const res = await window.boApi.put('/bo/ec/od/claim/bulk-status', { changes });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -262,7 +263,7 @@ window.OdClaimMng = {
         if (!ok) return;
         window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) c.type = val; });
         checked = new Set();
-        bulkOpen.value = false;
+        uiState.bulkOpen = false;
         try {
           const res = await window.boApi.put('/bo/ec/od/claim/bulk-type', { ids, type: val });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -279,7 +280,7 @@ window.OdClaimMng = {
         const ok = await props.showConfirm('일괄 결재처리', `선택한 ${ids.length}건을 [${bulkForm.apprAction}] 처리하시겠습니까?`);
         if (!ok) return;
         window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) { c.apprStatus = bulkForm.apprAction; c.apprComment = bulkForm.apprComment; } });
-        checked = new Set(); bulkOpen.value = false;
+        checked = new Set(); uiState.bulkOpen = false;
         try {
           const res = await window.boApi.put('/bo/ec/od/claim/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -300,7 +301,7 @@ window.OdClaimMng = {
           c.reqTarget = bulkForm.reqTarget; c.reqTargetNm = bulkForm.reqTargetNm;
           c.reqAmount = Number(bulkForm.reqAmount||0); c.reqReason = bulkForm.reqReason;
         } });
-        checked = new Set(); bulkOpen.value = false;
+        checked = new Set(); uiState.bulkOpen = false;
         try {
           const res = await window.boApi.put('/bo/ec/od/claim/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -314,7 +315,7 @@ window.OdClaimMng = {
       }
     };
 
-    return { claims, members, loading, error, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { claims, members, uiState; searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, uiState, bulkTab, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>

@@ -6,24 +6,23 @@ window.PdProdHist = {
   setup(props) {
     const { ref, computed, onMounted } = Vue;
     const products = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pd/prod/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         products.splice(0, products.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('PdProd 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const botTab = ref(window._ecProdHistState.tab || 'orders');
@@ -54,6 +53,8 @@ window.PdProdHist = {
           { date: p.regDate || '2026-01-01', field: '판매가', before: '-', after: String(p.price), bo: '관리자' },
         );
       }
+      error: null,
+      error: null,
     });
 
     const cfRelatedOrders = computed(() => {
@@ -62,7 +63,7 @@ window.PdProdHist = {
       return window.safeArrayUtils.safeFilter(orders, o => o.prodNm && p.prodNm && o.prodNm.includes(p.prodNm.slice(0, 8)));
     });
 
-    return { products, loading, error, botTab, stockHistory, statusHistory, changeHistory, priceHistory, cfRelatedOrders, viewMode2, showTab };
+    return { products, uiState; botTab, stockHistory, statusHistory, changeHistory, priceHistory, cfRelatedOrders, viewMode2, showTab };
   },
   template: /* html */`
 <div>

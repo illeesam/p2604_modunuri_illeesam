@@ -7,12 +7,11 @@ window.SyUserMng = {
     const users = reactive([]);
     const depts = reactive([]);
     const boUsers = ref([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, error: null });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [resUsers, resDepts] = await Promise.all([
           window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -20,13 +19,13 @@ window.SyUserMng = {
         ]);
         boUsers.value = resUsers.data?.data?.list || [];
         depts.splice(0, depts.length, ...(resDepts.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('SyUser 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     /* 좌측 부서 트리 */
@@ -39,7 +38,9 @@ window.SyUserMng = {
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     /* 검색 파라미터 */
     const searchParam = reactive({
+      error: null,
       kw: '', role: '', status: '', dateRange: '', dateStart: '', dateEnd: ''
+      error: null,
     });
     const searchParamOrg = reactive({
       kw: '', role: '', status: '', dateRange: '', dateStart: '', dateEnd: ''
@@ -139,7 +140,7 @@ window.SyUserMng = {
 
     const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'boUserId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'권한',key:'role'},{label:'부서',key:'dept'},{label:'상태',key:'statusCd'},{label:'최종로그인',key:'lastLogin'}], '사용자목록.csv');
 
-    return { users, loading, error, selectedDeptId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { users, uiState, uiState, selectedDeptId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>

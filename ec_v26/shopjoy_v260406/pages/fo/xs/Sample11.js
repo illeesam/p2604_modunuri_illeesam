@@ -9,10 +9,9 @@ window.XsSample11 = {
     const previewTime = ref(new Date().toTimeString().slice(0, 5));
     const viewMode    = ref('card');   // 'list' | 'card' | 'expand'
     const showDesc    = ref(true);
-    const showAreaDrop = ref(false);
+    const uiState = reactive({ showAreaDrop: false, showCatModal: false });
     const selectedAreas = reactive(new Set());
     /* 카테고리 선택 */
-    const showCatModal   = ref(false);
     const selectedCatIds = reactive(new Set());
     const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
     const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
@@ -105,13 +104,13 @@ window.XsSample11 = {
       cfAreaList.value.reduce((sum, a) => sum + panelsForArea(a.codeValue).length, 0)
     );
     return {
-      previewDate, previewTime, viewMode, showDesc, showAreaDrop,
+      previewDate, previewTime, viewMode, showDesc, uiState,
       selectedAreas, cfAllAreas, cfAreaList, cfAreaBtnLabel,
       toggleArea, selectAllAreas, clearAllAreas, resetDate,
       searchStatus, searchCondition, searchAuthRequired, searchAuthGrade,
       CONDITION_OPTS, AUTH_GRADE_OPTS,
       isLoggedIn, userGrade, userNm, cfAccessibleConds,
-      showCatModal, selectedCatIds, cfCatBtnLabel, onCatApply, cfSelectedCatNames,
+       selectedCatIds, cfCatBtnLabel, onCatApply, cfSelectedCatNames,
       panelsForArea, cfTotalPanels,
       fnWLabel, fnWIcon,
     };

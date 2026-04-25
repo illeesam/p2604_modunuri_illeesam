@@ -6,24 +6,23 @@ window.CmChattDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const chatts = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/cm/chatt/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         chatts.splice(0, chatts.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('CmChatt 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => !props.editId);
@@ -75,6 +74,8 @@ window.CmChattDtl = {
       } else {
         tab.value = 'new';
       }
+      error: null,
+      error: null,
     });
 
     /* 회원의 다른 채팅 이력 */
@@ -153,7 +154,7 @@ window.CmChattDtl = {
     });
     const cfSearchUser = computed(() => getMember.value(Number(searchUserId.value)));
 
-    return { chatts, loading, error, cfIsNew, tab, viewMode2, showTab, chat, replyText, sendReply, closeChat, msgBoxRef,
+    return { chatts, uiState; cfIsNew, tab, viewMode2, showTab, chat, replyText, sendReply, closeChat, msgBoxRef,
       hasRef, refLabel, openMsgRef, refModal, closeRefModal,
       form, errors, handleSave, onUserChange,
       searchUserId, cfUserChats, cfSearchUser,

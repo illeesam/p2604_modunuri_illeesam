@@ -5,8 +5,7 @@ window.SyBrandMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const brands = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null });
 
     // 현재 환경이 local인지 확인
     const cfIsLocalMode = computed(() => {
@@ -20,19 +19,19 @@ window.SyBrandMng = {
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/brand/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         brands = res.data?.data?.list || [];
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('SyBrand 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     /* ── 표시경로 선택 모달 (sy_path) ── */
@@ -228,24 +227,22 @@ window.SyBrandMng = {
 
     /* ── 드래그 ── */
     const dragSrc   = ref(null);
-    const dragMoved = ref(false);
-    const onDragStart = (idx) => { dragSrc.value = idx; dragMoved.value = false; };
+    const onDragStart = (idx) => { dragSrc.value = idx; uiState.dragMoved = false; };
     const onDragOver  = (e, idx) => {
       e.preventDefault();
       if (dragSrc.value === null || dragSrc.value === idx) return;
       const moved = gridRows.splice(dragSrc.value, 1)[0];
       gridRows.splice(idx, 0, moved);
       dragSrc.value = idx;
-      dragMoved.value = true;
+      uiState.dragMoved = true;
     };
     const onDragEnd = () => {
-      if (dragMoved.value) props.showToast('정렬정보가 저장되었습니다.');
-      dragSrc.value = null; dragMoved.value = false;
+      if (uiState.dragMoved) props.showToast('정렬정보가 저장되었습니다.');
+      dragSrc.value = null; uiState.dragMoved = false;
     };
 
     /* ── 전체 체크 ── */
-    const checkAll = ref(false);
-    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = checkAll.value; }); };
+    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
     const fnStatusClass  = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
     const cfPagedRows    = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
@@ -286,13 +283,13 @@ window.SyBrandMng = {
     });
     watch(selectedPath, () => handleLoadGrid());
 
-    return { brands, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { brands, uiState, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange, cfIsLocalMode,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       dragSrc, onDragStart, onDragOver, onDragEnd,
-      checkAll, toggleCheckAll, fnStatusClass, exportExcel,
+      uiState, toggleCheckAll, fnStatusClass, exportExcel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
     };
   },

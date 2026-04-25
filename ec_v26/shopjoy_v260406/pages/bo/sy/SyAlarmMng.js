@@ -5,24 +5,23 @@ window.SyAlarmMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const alarms = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, error: null });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/alarm/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         alarms.splice(0, alarms.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('SyAlarm 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     /* ── 표시경로 선택 모달 (sy_path) ── */
@@ -52,7 +51,9 @@ window.SyAlarmMng = {
       handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
+      error: null,
       Object.assign(searchParamOrg, searchParam);
+      error: null,
     });
 
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
@@ -149,7 +150,7 @@ window.SyAlarmMng = {
     watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
-    return { alarms, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { alarms, uiState, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnTypeBadge, fnTargetBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`

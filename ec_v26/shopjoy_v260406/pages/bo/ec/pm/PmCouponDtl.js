@@ -6,24 +6,23 @@ window.PmCouponDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const coupons = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, showVendorModal: false });
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/coupon/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         coupons.splice(0, coupons.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('PmCoupon 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => !props.editId);
@@ -45,7 +44,9 @@ window.PmCouponDtl = {
       issueMethods: 'auto', issueCondition: 'all', issueGrades: [],
       useScope: 'all', useExclude: '', useRemark: '',
       memo: '',
+      error: null,
       vendorId: '', chargeStaff: '',
+      error: null,
     });
     const errors = reactive({});
 
@@ -86,7 +87,6 @@ window.PmCouponDtl = {
 
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
-    const showVendorModal = ref(false);
     const cfSelectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
       const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === form.vendorId);
@@ -94,7 +94,7 @@ window.PmCouponDtl = {
     });
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
-      showVendorModal.value = false;
+      uiState.showVendorModal = false;
     };
 
     /* 발급목록 */
@@ -219,10 +219,10 @@ window.PmCouponDtl = {
       }
     };
 
-    return { coupons, loading, error, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, memoEl, onTabChange,
+    return { coupons, uiState, uiState, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, memoEl, onTabChange,
       COUPON_TYPES, ISSUE_TARGETS, DISCOUNT_TYPES,
       cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer,
-      showVendorModal, cfSelectedVendorNm, selectVendor,
+      uiState, cfSelectedVendorNm, selectVendor,
     };
   },
   template: /* html */`

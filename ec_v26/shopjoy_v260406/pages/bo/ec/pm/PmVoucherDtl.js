@@ -7,24 +7,23 @@ window.PmVoucherDtl = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const vouchers = reactive([]);
     const voucherList = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, showVendorModal: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/voucher/page', { params: { pageNo: 1, pageSize: 10000 } });
         const list = res.data?.data?.list || [];
         vouchers.splice(0, vouchers.length, ...list);
         voucherList.splice(0, voucherList.length, ...list);
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('PmVoucher 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => !props.editId);
@@ -38,7 +37,9 @@ window.PmVoucherDtl = {
       voucherId: null, voucherNm: '', voucherAmt: 0, salePrice: 0,
       issueQty: 0, soldQty: 0, voucherStatus: '활성', startDate: '', endDate: '',
       remark: '',
+      error: null,
       vendorId: '', chargeStaff: '',
+      error: null,
     });
     const errors = reactive({});
 
@@ -122,7 +123,6 @@ window.PmVoucherDtl = {
       previewTab.value = pt;
     };
 
-    const showVendorModal = ref(false);
     const cfSelectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
       const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === form.vendorId);
@@ -130,7 +130,7 @@ window.PmVoucherDtl = {
     });
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
-      showVendorModal.value = false;
+      uiState.showVendorModal = false;
     };
 
     /* SNS 전송 */
@@ -194,7 +194,7 @@ window.PmVoucherDtl = {
       }
     };
 
-    return { vouchers, loading, error, cfIsNew, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, viewMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, showVendorModal, cfSelectedVendorNm, selectVendor };
+    return { vouchers, uiState, uiState, cfIsNew, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, viewMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, uiState, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>

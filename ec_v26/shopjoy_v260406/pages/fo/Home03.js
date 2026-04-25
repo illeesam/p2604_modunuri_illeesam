@@ -95,10 +95,10 @@ window.Home03 = {
           </button>
           <!-- 장바구니 + 빠른보기 (hover 시에만) -->
           <div class="prod-hover" style="opacity:0;transition:opacity .25s;position:absolute;right:12px;top:48px;display:flex;flex-direction:column;gap:6px;">
-            <button @click.stop="quickViewProduct=p; cartModalMode=true" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="장바구니">
+            <button @click.stop="quickViewProduct=p; uiState.cartModalMode=true" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="장바구니">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
             </button>
-            <button @click.stop="quickViewProduct=p; cartModalMode=false" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="빠른보기">
+            <button @click.stop="quickViewProduct=p; uiState.cartModalMode=false" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="빠른보기">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             </button>
           </div>
@@ -223,11 +223,11 @@ window.Home03 = {
   <product-modal
     :show="!!quickViewProduct"
     :product="quickViewProduct"
-    :cart-mode="cartModalMode"
+    :cart-mode="uiState.cartModalMode"
     :navigate="(page, opts) => { if(opts&&opts.instantOrder){ navigate('order',opts); quickViewProduct=null; } else { selectProduct(quickViewProduct); quickViewProduct=null; } }"
     :toggle-like="toggleLike"
     :is-liked="isLiked"
-    @close="quickViewProduct=null; cartModalMode=false"
+    @close="quickViewProduct=null; uiState.cartModalMode=false"
   />
 
 
@@ -262,9 +262,9 @@ window.Home03 = {
     );
 
     /* ── 빠른보기 모달 ── */
-    const { ref, onMounted, onBeforeUnmount } = Vue;
+    const { ref, onMounted, onBeforeUnmount, reactive } = Vue;
     const quickViewProduct = ref(null);
-    const cartModalMode = ref(false);
+    const uiState = reactive({ cartModalMode: false });
 
     /* ── 홈 그리드 반응형 CSS 주입 ── */
     /* max-width 컨테이너가 최대 열 수를 자연 제한:
@@ -303,6 +303,6 @@ window.Home03 = {
     });
     onBeforeUnmount(() => clearInterval(bannerTimer));
 
-    return { fnCategoryLabel, fnCatEmoji, cfNewProducts, cfBestProducts, cfAllHomeProducts, cfSaleProducts, quickViewProduct, cartModalMode, bannerIdx, banners, setBanner };
+    return { fnCategoryLabel, fnCatEmoji, cfNewProducts, cfBestProducts, cfAllHomeProducts, cfSaleProducts, quickViewProduct, uiState, bannerIdx, banners, setBanner };
   }
 };

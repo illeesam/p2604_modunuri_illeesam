@@ -12,7 +12,7 @@ window.ZdLocalStorage = {
     const editingKey = ref(null);
     const editingValue = ref('');
     const valueColWidth = ref(65);
-    const isResizing = ref(false);
+    const uiState = reactive({ isResizing: false });
     const startX = ref(0);
     const startWidth = ref(0);
 
@@ -94,13 +94,13 @@ window.ZdLocalStorage = {
     };
 
     const startResize = (e) => {
-      isResizing.value = true;
+      uiState.isResizing = true;
       startX.value = e.clientX;
       startWidth.value = valueColWidth.value;
     };
 
     const handleMouseMove = (e) => {
-      if (!isResizing.value) return;
+      if (!uiState.isResizing) return;
       const delta = e.clientX - startX.value;
       const newWidth = Math.max(30, startWidth.value + (delta / window.innerWidth * 100));
       const keyWidth = 25;
@@ -110,7 +110,7 @@ window.ZdLocalStorage = {
     };
 
     const stopResize = () => {
-      isResizing.value = false;
+      uiState.isResizing = false;
     };
 
     onMounted(() => {
@@ -126,7 +126,7 @@ window.ZdLocalStorage = {
     loadStorageData();
 
     return {
-      storageData, filterKey, filteredData, editingKey, editingValue, valueColWidth, isResizing,
+      storageData, filterKey, filteredData, editingKey, editingValue, valueColWidth, uiState,
       loadStorageData, copyValue, startEdit, saveEdit, cancelEdit, deleteItem, clearAllStorage, parseValue, startResize
     };
   },

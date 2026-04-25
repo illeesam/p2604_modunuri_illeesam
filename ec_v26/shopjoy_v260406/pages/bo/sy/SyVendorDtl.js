@@ -6,24 +6,23 @@ window.SyVendorDtl = {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
 
     const vendors = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, error: null });
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/vendor/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         vendors = res.data?.data?.list || [];
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('SyVendor 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
@@ -32,7 +31,9 @@ window.SyVendorDtl = {
     const form = reactive({
       vendorId: null, vendorType: '판매업체', vendorNm: '', ceo: '', bizNo: '', phone: '', email: '',
       zipcode: '', address: '', addressDetail: '',
+      error: null,
       contractDate: '', statusCd: '활성', memo: '',
+      error: null,
     });
     const errors = reactive({});
     const addrDetailRef = ref(null);
@@ -117,7 +118,7 @@ window.SyVendorDtl = {
       }
     };
 
-    return { vendors, loading, error, cfIsNew, form, errors, handleSave, cfSiteNm, addrDetailRef, openKakaoPostcode, memoEl };
+    return { vendors, uiState, uiState, cfIsNew, form, errors, handleSave, cfSiteNm, addrDetailRef, openKakaoPostcode, memoEl };
   },
   template: /* html */`
 <div>

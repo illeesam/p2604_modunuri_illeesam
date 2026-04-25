@@ -4,7 +4,7 @@ window.StConfigMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed } = Vue;
-    const descOpen = ref(false);
+    const uiState = reactive({ descOpen: false, isNew: false });
 
     const configs = reactive([
       { configId: 1, siteId: 1, siteNm: 'ShopJoy 01', vendorType: '판매업체', commRate: 10, settleCycle: '월정산', settleDay: 10, minSettleAmt: 10000, taxYn: 'Y', autoCloseYn: 'Y', useYn: 'Y', remark: '기본 판매업체 정산 기준' },
@@ -16,18 +16,17 @@ window.StConfigMng = {
     const selectedId = ref(null);
     const form = reactive({});
     const errors = reactive({});
-    const isNew = ref(false);
 
     const openEdit = (c) => {
       Object.assign(form, { ...c });
       selectedId.value = c.configId;
-      isNew.value = false;
+      uiState.isNew = false;
       Object.keys(errors).forEach(k => delete errors[k]);
     };
     const openNew = () => {
       Object.assign(form, { configId: null, siteNm: 'ShopJoy 01', vendorType: '', commRate: 10, settleCycle: '월정산', settleDay: 10, minSettleAmt: 10000, taxYn: 'Y', autoCloseYn: 'Y', useYn: 'Y', remark: '' });
       selectedId.value = '__new__';
-      isNew.value = true;
+      uiState.isNew = true;
       Object.keys(errors).forEach(k => delete errors[k]);
     };
     const closeForm = () => { selectedId.value = null; };
@@ -44,11 +43,11 @@ window.StConfigMng = {
       if (!validate()) { props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const ok = await props.showConfirm('저장', '정산기준을 저장하시겠습니까?');
       if (!ok) return;
-      if (isNew.value) { form.configId = Date.now(); configs.push({ ...form }); }
+      if (uiState.isNew) { form.configId = Date.now(); configs.push({ ...form }); }
       else { const idx = configs.findIndex(c => c.configId === form.configId); if (idx !== -1) Object.assign(configs[idx], { ...form }); }
       closeForm();
       try {
-        const res = await (isNew.value ? window.boApi.post('/bo/ec/st/config', { ...form }) : window.boApi.put(`/bo/ec/st/config/${form.configId}`, { ...form }));
+        const res = await (uiState.isNew ? window.boApi.post('/bo/ec/st/config', { ...form }) : window.boApi.put(`/bo/ec/st/config/${form.configId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {
@@ -77,7 +76,7 @@ window.StConfigMng = {
 
     const fnCycleBadge = s => ({ '월정산': 'badge-blue', '주정산': 'badge-green', '일정산': 'badge-orange' }[s] || 'badge-gray');
 
-    return { descOpen, configs, selectedId, form, errors, isNew, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge };
+    return { descOpen, configs, selectedId, form, errors, uiState, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge };
   },
   template: /* html */`
 <div>

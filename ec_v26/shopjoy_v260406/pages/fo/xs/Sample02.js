@@ -163,19 +163,19 @@ window.XsSample02 = {
       } catch (e) { showToast('저장 실패: ' + (e.response?.data?.message || e.message || e), 'error'); }
     };
 
-    /* ── Drag ── */
-    const dragSrc = ref(null), dragMoved = ref(false);
-    const onDragStart = idx => { dragSrc.value = idx; dragMoved.value = false; };
+    /* ── Drag & UI State ── */
+    const dragSrc = ref(null);
+    const uiState = reactive({ dragMoved: false, checkAll: false });
+    const onDragStart = idx => { dragSrc.value = idx; uiState.dragMoved = false; };
     const onDragOver  = (e, idx) => {
       e.preventDefault();
       if (dragSrc.value === null || dragSrc.value === idx) return;
       const m = gridRows.splice(dragSrc.value, 1)[0]; gridRows.splice(idx, 0, m);
-      dragSrc.value = idx; dragMoved.value = true;
+      dragSrc.value = idx; uiState.dragMoved = true;
     };
-    const onDragEnd = () => { if (dragMoved.value) showToast('정렬이 변경되었습니다.'); dragSrc.value = null; dragMoved.value = false; };
+    const onDragEnd = () => { if (uiState.dragMoved) showToast('정렬이 변경되었습니다.'); dragSrc.value = null; uiState.dragMoved = false; };
 
-    const checkAll = ref(false);
-    const toggleCheckAll = () => { cfVisibleRows.value.forEach(r => { r._row_check = checkAll.value; }); };
+    const toggleCheckAll = () => { cfVisibleRows.value.forEach(r => { r._row_check = uiState.checkAll; }); };
 
     const fnStatusBadge = s => ({ N: 'background:#f0f0f0;color:#666;', I: 'background:#dbeafe;color:#1e40af;', U: 'background:#fef3c7;color:#92400e;', D: 'background:#fee2e2;color:#991b1b;' }[s] || '');
     const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
@@ -189,7 +189,7 @@ window.XsSample02 = {
       focusedIdx, setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
       dragSrc, onDragStart, onDragOver, onDragEnd,
-      checkAll, toggleCheckAll, fnStatusBadge, rowBg,
+      uiState, toggleCheckAll, fnStatusBadge, rowBg,
     };
   },
   template: /* html */`
@@ -249,7 +249,7 @@ window.XsSample02 = {
             <th style="width:28px;padding:7px 4px;text-align:center;color:#ccc;font-weight:400;">⠿</th>
             <th style="width:50px;padding:7px;text-align:center;font-weight:600;color:#555;font-size:11px;">ID</th>
             <th style="width:36px;padding:7px;text-align:center;font-weight:600;color:#555;font-size:11px;">상태</th>
-            <th style="width:28px;padding:7px;text-align:center;"><input type="checkbox" v-model="checkAll" @change="toggleCheckAll" /></th>
+            <th style="width:28px;padding:7px;text-align:center;"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
             <th style="padding:7px;text-align:left;font-weight:600;color:#555;">상품명</th>
             <th style="width:90px;padding:7px;text-align:center;font-weight:600;color:#555;">카테고리</th>
             <th style="width:90px;padding:7px;text-align:right;font-weight:600;color:#555;">가격</th>

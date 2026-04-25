@@ -5,30 +5,31 @@ window.PdTagMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const tags = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pd/tag/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         tags.splice(0, tags.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('PdTag 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     /* ── 검색 파라미터 ── */
     const searchParam = reactive({
       kw: '',
+      error: null,
       use: ''
+      error: null,
     });
     const searchParamOrg = reactive({
       kw: '',
@@ -117,7 +118,7 @@ window.PdTagMng = {
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { tags, loading, error, searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, onSearch, onReset,
+    return { tags, uiState, uiState, searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, onSearch, onReset,
              gridRows, addRow, onCellChange, deleteRow, saveAll, fnYnBadge , PAGE_SIZES , onSizeChange };
   },
   template: `

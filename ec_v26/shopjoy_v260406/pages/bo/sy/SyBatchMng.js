@@ -5,24 +5,23 @@ window.SyBatchMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const batches = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/batch/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         batches = res.data?.data?.list || [];
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('SyBatch 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     /* ── 표시경로 선택 모달 (sy_path) ── */
@@ -343,20 +342,18 @@ window.SyBatchMng = {
     };
 
     /* ── 드래그 ── */
-    const dragSrc = ref(null); const dragMoved = ref(false);
-    const onDragStart = (idx) => { dragSrc.value = idx; dragMoved.value = false; };
+    const onDragStart = (idx) => { dragSrc.value = idx; uiState.dragMoved = false; };
     const onDragOver = (e, idx) => {
       e.preventDefault();
       if (dragSrc.value === null || dragSrc.value === idx) return;
       const moved = gridRows.splice(dragSrc.value, 1)[0];
       gridRows.splice(idx, 0, moved);
-      dragSrc.value = idx; dragMoved.value = true;
+      dragSrc.value = idx; uiState.dragMoved = true;
     };
-    const onDragEnd = () => { if (dragMoved.value) props.showToast('정렬정보가 저장되었습니다.'); dragSrc.value = null; dragMoved.value = false; };
+    const onDragEnd = () => { if (uiState.dragMoved) props.showToast('정렬정보가 저장되었습니다.'); dragSrc.value = null; uiState.dragMoved = false; };
 
     /* ── 체크 ── */
-    const checkAll = ref(false);
-    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = checkAll.value; }); };
+    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
     const fnStatusBadge  = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
     const fnRunBadge     = s => ({ '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' }[s] || 'badge-gray');
@@ -378,7 +375,7 @@ window.SyBatchMng = {
     watch(selectedPath, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
 
 
-    return { batches, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { batches, uiState, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, applied,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
@@ -386,7 +383,7 @@ window.SyBatchMng = {
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave, runNow,
       CRON_PRESETS, CRON_FIELDS, cronPicker, openCronPicker, applyCronPreset, applyCron, updateCronPreview, cfCronPresetLabel, cfCronDesc,
       dragSrc, onDragStart, onDragOver, onDragEnd,
-      checkAll, toggleCheckAll, fnStatusBadge, fnRunBadge, fnStatusClass,
+      uiState, toggleCheckAll, fnStatusBadge, fnRunBadge, fnStatusClass,
       exportExcel,
     };
   },

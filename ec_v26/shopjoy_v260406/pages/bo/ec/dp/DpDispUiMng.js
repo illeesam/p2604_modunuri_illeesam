@@ -8,24 +8,23 @@ window.DpDispUiMng = {
     const { ref, reactive, computed, onMounted } = Vue;
     const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
     const displays = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, error: null });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/dp/ui/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         displays.splice(0, displays.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('DpDispUi 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     onMounted(() => { handleFetchData();
@@ -152,7 +151,7 @@ window.DpDispUiMng = {
     };
     const isUIExpanded = (uiId) => expandedUIs.has(uiId);
 
-    return { codes, displays, loading, error, pathLabel,
+    return { codes, displays, uiState; pathLabel,
       searchKw, searchUiType, searchUseYn, searchDateStart, searchDateEnd, searchDateRange,
       DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm,
       UI_TYPE_OPTS,

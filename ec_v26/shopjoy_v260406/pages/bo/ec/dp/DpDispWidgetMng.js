@@ -16,12 +16,11 @@ window.DpDispWidgetMng = {
     const { ref, reactive, computed, onMounted } = Vue;
     const widgetLibs = reactive([]);
     const widgets = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [res, resLibs] = await Promise.all([
           window.boApi.get('/bo/ec/dp/widget/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -29,13 +28,13 @@ window.DpDispWidgetMng = {
         ]);
         widgets.splice(0, widgets.length, ...(res.data?.data?.list || []));
         widgetLibs.splice(0, widgetLibs.length, ...(resLibs.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('DpDispWidget 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     onMounted(() => { handleFetchData();
@@ -112,7 +111,7 @@ window.DpDispWidgetMng = {
 
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    return { widgets, loading, error, pathLabel,
+    return { widgets, uiState; pathLabel,
       WIDGET_TYPES, wTypeLabel, wIcon, handleDelete,
       searchKw, searchType, searchStatus, pager, PAGE_SIZES,
       cfFiltered, cfTotalCount, cfPageList, cfTotalPages, cfPageNumbers,

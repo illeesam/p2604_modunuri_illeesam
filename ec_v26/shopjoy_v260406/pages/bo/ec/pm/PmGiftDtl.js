@@ -7,12 +7,11 @@ window.PmGiftDtl = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const giftList = ref([]);
     const gifts = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, showVendorModal: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/gift/page', {
           params: { pageNo: 1, pageSize: 10000 }
@@ -20,13 +19,13 @@ window.PmGiftDtl = {
         const list = res.data?.data?.list || [];
         gifts.splice(0, gifts.length, ...list);
         giftList.value = list;
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('PmGift 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => !props.editId);
@@ -46,7 +45,9 @@ window.PmGiftDtl = {
       giftStatus: '활성', stock: 0, startDate: DEFAULT_START, endDate: DEFAULT_END,
       giftProdId: null, remark: '',
       visibilityTargets: '^PUBLIC^',
+      error: null,
       vendorId: '', chargeStaff: '',
+      error: null,
     });
     const errors = reactive({});
 
@@ -72,7 +73,6 @@ window.PmGiftDtl = {
       form.visibilityTargets = window.visibilityUtil.serialize(list);
     };
 
-    const showVendorModal = ref(false);
     const cfSelectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
       const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === form.vendorId);
@@ -80,7 +80,7 @@ window.PmGiftDtl = {
     });
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
-      showVendorModal.value = false;
+      uiState.showVendorModal = false;
     };
 
     const cfCondValLabel = computed(() => {
@@ -126,7 +126,7 @@ window.PmGiftDtl = {
       }
     };
 
-    return { gifts, loading, error, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfCondValLabel, showVendorModal, cfSelectedVendorNm, selectVendor };
+    return { gifts, uiState, uiState, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfCondValLabel, uiState, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>

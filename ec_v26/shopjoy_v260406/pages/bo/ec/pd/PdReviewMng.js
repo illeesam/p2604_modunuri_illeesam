@@ -7,12 +7,11 @@ window.PdReviewMng = {
     const products = reactive([]);
     const members = reactive([]);
     const reviews = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [reviewsRes, prodsRes, membersRes] = await Promise.all([
           window.boApi.get('/bo/ec/pd/review/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -22,13 +21,13 @@ window.PdReviewMng = {
         reviews.splice(0, reviews.length, ...(reviewsRes.data?.data?.list || []));
         products.splice(0, products.length, ...(prodsRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('PdReview 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     onMounted(() => { handleFetchData();
@@ -61,7 +60,9 @@ window.PdReviewMng = {
         if (searchParam.status && r.reviewStatusCd !== searchParam.status) return false;
         if (searchParam.rating) { const min = parseFloat(searchParam.rating); if (r.rating < min || r.rating >= min + 1) return false; }
         return true;
+      error: null,
       }).sort((a, b) => b.reviewDate > a.reviewDate ? 1 : -1);
+      error: null,
     });
     const cfTotal      = computed(() => cfFiltered.value.length);
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
@@ -106,7 +107,7 @@ window.PdReviewMng = {
     const onSizeChange = () => { pager.page = 1; };
     const starStr  = r => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r));
 
-    return { reviews, loading, error, searchKw, searchStatus, searchRating, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
+    return { reviews, uiState, uiState, searchKw, searchStatus, searchRating, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
              selectedId, cfSelectedRow, openDetail, changeStatus, fnStatusBadge, STATUS_LIST, STATUS_LABEL, getProdNm, getMemNm, starStr , PAGE_SIZES , onSizeChange };
   },
   template: `

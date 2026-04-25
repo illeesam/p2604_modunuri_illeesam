@@ -13,7 +13,7 @@ window.MyOrder = {
     const paginate = myStore.paginate;
 
     /* ── 도움말 모달 ── */
-    const flowHelpOpen = ref(false);
+    const uiState = reactive({ flowHelpOpen: false });
     const helpTab = ref('order');
 
     /* ── 배송조회 ── */
@@ -177,7 +177,7 @@ window.MyOrder = {
       myStore, orders, claimsByOrderId, cfDateFilteredOrders, onDateSearch,
       orderPager, paginate,
       flowStatusFilter, toggleFlowStatus,
-      flowHelpOpen, helpTab,
+      uiState, helpTab,
       openTracking, openTracking2, showOrderPayBreakdown,
       cancelOrder, confirmPurchase,
       EXCHANGE_REASONS, RETURN_REASONS,
@@ -219,7 +219,7 @@ window.MyOrder = {
       </template>
       <button v-if="flowStatusFilter.length" @click="flowStatusFilter.splice(0)"
         style="margin-left:4px;font-size:0.68rem;padding:2px 7px;border-radius:6px;border:1px solid var(--border);background:var(--bg-base);color:var(--text-secondary);cursor:pointer;flex-shrink:0;">✕</button>
-      <button type="button" @click="flowHelpOpen=true" aria-label="도움말"
+      <button type="button" @click="uiState.flowHelpOpen=true" aria-label="도움말"
         style="margin-left:auto;flex-shrink:0;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg-base);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--blue);">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       </button>
@@ -549,12 +549,12 @@ window.MyOrder = {
   </div>
 
   <!-- 도움말 모달 -->
-  <div v-if="flowHelpOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="flowHelpOpen=false">
+  <div v-if="uiState.flowHelpOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="uiState.flowHelpOpen=false">
     <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:520px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.25);border:1px solid var(--border);overflow:hidden;" @click.stop>
       <div style="padding:18px 20px 0;flex-shrink:0;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
           <div style="display:flex;align-items:center;gap:8px;"><span>📋</span><span style="font-size:1.05rem;font-weight:800;color:var(--text-primary);">주문 · 클레임 도움말</span></div>
-          <button @click="flowHelpOpen=false" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>
+          <button @click="uiState.flowHelpOpen=false" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>
         </div>
         <div style="display:flex;border-bottom:2px solid var(--border);">
           <button v-for="t in [{id:'order',label:'주문',icon:'📦'},{id:'cancel',label:'취소',icon:'🚫'},{id:'return',label:'반품',icon:'↩️'},{id:'exchange',label:'교환',icon:'🔄'}]"
@@ -608,7 +608,7 @@ window.MyOrder = {
         </div>
       </div>
       <div style="padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;">
-        <button @click="flowHelpOpen=false" class="btn-blue" style="width:100%;padding:10px;border:none;border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:700;">확인</button>
+        <button @click="uiState.flowHelpOpen=false" class="btn-blue" style="width:100%;padding:10px;border:none;border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:700;">확인</button>
       </div>
     </div>
   </div>

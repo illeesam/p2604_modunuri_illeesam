@@ -7,13 +7,12 @@ window.XsSample12 = {
     const today = new Date().toISOString().slice(0, 10);
     const previewDate = ref(today);
     const previewTime = ref(new Date().toTimeString().slice(0, 5));
-    const showAreaDrop  = ref(false);
+    const uiState = reactive({ showAreaDrop: false, showCatModal: false });
     const selectedAreas = reactive(new Set());
     const expandedAreas = reactive(new Set());
     const checkedPanels  = reactive(new Set());
     const checkedWidgets = reactive(new Set()); // key: dispId_wi
     /* 카테고리 선택 */
-    const showCatModal   = ref(false);
     const selectedCatIds = reactive(new Set());
     const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
     const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
@@ -164,7 +163,7 @@ window.XsSample12 = {
     /* 초기화 */
     initExpand();
     return {
-      previewDate, previewTime, showAreaDrop,
+      previewDate, previewTime, uiState,
       selectedAreas, cfAllAreas, cfAreaBtnLabel,
       toggleArea, selectAllAreas, clearAllAreas, resetDate,
       searchStatus, searchCondition, searchAuthRequired, searchAuthGrade,

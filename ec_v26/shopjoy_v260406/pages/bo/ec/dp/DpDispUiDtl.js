@@ -6,24 +6,23 @@ window.DpDispUiDtl = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
     const displays = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ expanded: false, loading: false, pickOpen: false, showComponentTooltip: false });
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/dp/ui/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         displays.splice(0, displays.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('DpDispUi 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     /* ── 표시경로 선택 모달 (sy_path) ── */
@@ -56,6 +55,8 @@ window.DpDispUiDtl = {
       uiType: 'FO',
       remark: '', sortOrd: 1, useYn: 'Y', useStartDate: DEFAULT_START_DATE, useEndDate: DEFAULT_END_DATE, regDate: '', displayPath: '', pathId: null,
       titleYn: 'N', title: '', htmlDesc: '',
+      error: null,
+      error: null,
     });
 
     const errors = reactive({});
@@ -113,7 +114,6 @@ window.DpDispUiDtl = {
 
     /* 디바이스 모드 + 스플리터 */
     const previewMode = ref('default');
-    const showComponentTooltip = ref(false);
     const PREVIEW_MODES = [
       { value: 'default', label: '기본',   width: 480  },
       { value: 'pc',      label: 'PC',     width: 1200 },
@@ -143,10 +143,8 @@ window.DpDispUiDtl = {
       window.addEventListener('mousemove', onMove);
       window.addEventListener('mouseup', onUp);
     };
-    const expanded = ref(false);
 
     /* 영역 선택 팝업 */
-    const pickOpen = ref(false);
     const pickKw   = ref('');
     const pickSel  = reactive(new Set());
     const cfAvailableAreas = computed(() => {
@@ -158,14 +156,14 @@ window.DpDispUiDtl = {
         return true;
       }).sort((a, b) => (a.codeLabel||'').localeCompare(b.codeLabel||''));
     });
-    const openPick  = () => { pickOpen.value = true; pickKw.value = ''; pickSel = new Set(); };
+    const openPick  = () => { uiState.pickOpen = true; pickKw.value = ''; pickSel = new Set(); };
     const onAreaPicked = (a) => {
       if (!form.codeValue) { props.showToast && props.showToast('UI코드를 먼저 입력하세요.', 'error'); return; }
       a.uiCode = form.codeValue;
       props.showToast && props.showToast(`[${a.codeLabel}] 영역을 추가했습니다.`, 'info');
-      pickOpen.value = false;
+      uiState.pickOpen = false;
     };
-    const closePick = () => { pickOpen.value = false; };
+    const closePick = () => { uiState.pickOpen = false; };
     const togglePick = (id) => {
       const s = new Set(pickSel);
       if (s.has(id)) s.delete(id); else s.add(id);
@@ -321,12 +319,12 @@ window.DpDispUiDtl = {
       if (t === 'base') { await nextTick(); initQuillDesc(); }
     });
 
-    return { codes, displays, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { codes, displays, uiState; pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       form, errors, cfIsNew, UI_TYPE_OPTS,
       handleSave, doCancel, cfRelatedAreas, panelsOfArea,
-      activeTab, selectTab, cfActiveArea, expanded, moveArea,
-      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, showComponentTooltip,
-      pickOpen, pickKw, pickSel, cfAvailableAreas, openPick, closePick, togglePick, confirmPick, removeArea, onAreaPicked,
+      activeTab, selectTab, cfActiveArea, uiState, moveArea,
+      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, uiState,
+      uiState, pickKw, pickSel, cfAvailableAreas, openPick, closePick, togglePick, confirmPick, removeArea, onAreaPicked,
       openUiPreview, openAreaPreview,
       cfVisibilityOptions, hasAreaVisibility, toggleAreaVisibility,
       uiDispEnvOptions, hasUiDispEnv, toggleUiDispEnv,

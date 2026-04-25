@@ -4,7 +4,7 @@ window.StSettleCloseMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const descOpen = ref(false);
+    const uiState = reactive({ descOpen: false });
 
     const orders  = reactive([]);
     const claims  = reactive([]);

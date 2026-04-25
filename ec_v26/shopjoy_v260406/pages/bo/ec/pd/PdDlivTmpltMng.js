@@ -42,27 +42,27 @@ window.PdDlivTmpltMng = {
 
     const cfSelectedRow = computed(() => (dlivTmplts||[]).find(t => t.dlivTmpltId === selectedId.value) || null);
     const form = reactive({});
-    const isNew = ref(false);
+    const uiState = reactive({ descOpen: false, isNew: false });
 
     const openDetail = (row) => {
       if (selectedId.value === row.dlivTmpltId) { selectedId.value = null; return; }
       Object.assign(form, { ...row });
       selectedId.value = row.dlivTmpltId;
-      isNew.value = false;
+      uiState.isNew = false;
     };
     const openNew = () => {
       Object.assign(form, { dlivTmpltId: null, siteId: 1, vendorId: null, dlivTmpltNm: '', dlivMethodCd: 'COURIER', dlivPayTypeCd: 'PREPAY', dlivCourierCd: 'CJ', dlivCost: 3000, freeDlivMinAmt: 50000, islandExtraCost: 5000, returnCost: 3000, exchangeCost: 6000, returnCourierCd: 'CJ', returnAddrZip: '', returnAddr: '', returnAddrDetail: '', returnTelNo: '', baseDlivYn: 'N', useYn: 'Y' });
       selectedId.value = '__new__';
-      isNew.value = true;
+      uiState.isNew = true;
     };
     const closeDetail = () => { selectedId.value = null; };
     const handleSave = async () => {
       if (!form.dlivTmpltNm) { props.showToast('템플릿명은 필수입니다.', 'error'); return; }
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
-      const isNewTmplt = isNew.value;
+      const isNewTmplt = uiState.isNew;
       const src = dlivTmplts;
-      if (isNewTmplt) { form.dlivTmpltId = 'DT' + String(Date.now()).slice(-6); src.push({ ...form }); selectedId.value = form.dlivTmpltId; isNew.value = false; }
+      if (isNewTmplt) { form.dlivTmpltId = 'DT' + String(Date.now()).slice(-6); src.push({ ...form }); selectedId.value = form.dlivTmpltId; uiState.isNew = false; }
       else { const si = src.findIndex(t => t.dlivTmpltId === form.dlivTmpltId); if (si !== -1) Object.assign(src[si], form); }
       try {
         const res = await (isNewTmplt ? window.boApi.post(`/bo/ec/pd/dliv-tmplt/${form.dlivTmpltId||''}`, { ...form }) : window.boApi.put(`/bo/ec/pd/dliv-tmplt/${form.dlivTmpltId||''}`, { ...form }));
@@ -111,7 +111,6 @@ window.PdDlivTmpltMng = {
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
     const fnMethodBadge = v => ({ COURIER:'badge-blue', DIRECT:'badge-orange', PICKUP:'badge-green' }[v] || 'badge-gray');
 
-    const descOpen = ref(false);
   const searchParam = reactive({
     kw: '',
     method: '',
@@ -125,7 +124,7 @@ window.PdDlivTmpltMng = {
 
     return { descOpen,
              searchKw, searchMethod, searchUse, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
-             selectedId, form, isNew, openDetail, openNew, closeDetail, handleSave, handleDelete,
+             selectedId, form, uiState, openDetail, openNew, closeDetail, handleSave, handleDelete,
              fnYnBadge, fnMethodBadge, DLIV_METHODS, DLIV_PAY_TYPES, COURIERS, METHOD_LABELS, PAY_LABELS , PAGE_SIZES , onSizeChange };
   },
   template: `

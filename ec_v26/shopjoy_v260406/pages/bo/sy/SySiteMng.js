@@ -5,25 +5,24 @@ window.SySiteMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const sites = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, error: null });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/site/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         const list = res.data?.data?.list || [];
         sites.splice(0, sites.length, ...list);
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('SySite 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     /* ── 표시경로 선택 모달 (sy_path) ── */
@@ -52,7 +51,9 @@ window.SySiteMng = {
     onMounted(() => {
       handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
+      error: null,
       expanded.clear(); initSet.forEach(v => expanded.add(v));
+      error: null,
     });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
   const searchParam = reactive({
@@ -173,7 +174,7 @@ window.SySiteMng = {
     watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
-    return { sites, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { sites, uiState, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange,
       searchKw, searchType, searchStatus, cfTypeOptions,

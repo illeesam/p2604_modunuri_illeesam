@@ -6,12 +6,11 @@ window.OdDlivMng = {
     const { ref, reactive, computed, onMounted } = Vue;
     const deliveries = reactive([]);
     const members = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ bulkOpen: false, loading: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [delivRes, membersRes] = await Promise.all([
           window.boApi.get('/bo/ec/od/dliv/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -19,13 +18,13 @@ window.OdDlivMng = {
         ]);
         deliveries = delivRes.data?.data?.list || [];
         members = membersRes.data?.data?.list || [];
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('OdDliv 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
 
@@ -36,6 +35,9 @@ window.OdDlivMng = {
       dateRange: '',
       dateStart: '',
       dateEnd: ''
+      error: null,
+      error: null,
+      error: null,
     });
     const searchParamOrg = reactive({
       kw: '',
@@ -155,7 +157,6 @@ window.OdDlivMng = {
     const APPROVAL_ACTIONS = ['승인','반려','보류'];
     const REQ_TARGETS = ['주문','상품','배송','추가결재'];
     const DEFAULT_TMPL = '[결재요청]\n요청대상: {target} - {targetNm}\n요청금액: {amount}원\n내용: {reason}\n\n위 건에 대한 추가결재 부탁드립니다.';
-    const bulkOpen = ref(false);
     const bulkTab = ref('status');
     const bulkForm = reactive({
       status:'', courier:'', trackingNo:'', apprAction:'', apprComment:'',
@@ -192,10 +193,10 @@ window.OdDlivMng = {
         reqTarget:'배송', reqTargetNm:'', reqAmount:0, reqReason:'', tmplMsg: DEFAULT_TMPL,
       });
       onReqTargetChange();
-      bulkOpen.value = true;
+      uiState.bulkOpen = true;
     };
     const cfBulkPreview = computed(() => {
-      if (!bulkOpen.value) return '';
+      if (!uiState.bulkOpen) return '';
       const ids = Array.from(checked);
       const selected = window.safeArrayUtils.safeFilter(deliveries, d => ids.includes(d.dlivId));
       let rows = [];
@@ -222,13 +223,13 @@ window.OdDlivMng = {
     });
     const saveBulk = async () => {
       const ids = Array.from(checked);
-      if (!ids.length) { props.showToast('항목을 선택하세요.', 'error'); bulkOpen.value = false; return; }
+      if (!ids.length) { props.showToast('항목을 선택하세요.', 'error'); uiState.bulkOpen = false; return; }
       if (bulkTab.value === 'status') {
         if (!bulkForm.status) { props.showToast('변경할 배송상태를 선택하세요.', 'error'); return; }
         const ok = await props.showConfirm('일괄 배송상태 변경', `선택한 ${ids.length}건을 [${bulkForm.status}] 상태로 변경하시겠습니까?`);
         if (!ok) return;
         window.safeArrayUtils.safeForEach(deliveries, d => { if (ids.includes(d.dlivId)) d.status = bulkForm.status; });
-        checked = new Set(); bulkOpen.value = false;
+        checked = new Set(); uiState.bulkOpen = false;
         try {
           const res = await window.boApi.put('/bo/ec/od/dliv/bulk-status', { ids, status: bulkForm.status });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -249,7 +250,7 @@ window.OdDlivMng = {
             if (bulkForm.trackingNo) d.trackingNo = bulkForm.trackingNo;
           }
         });
-        checked = new Set(); bulkOpen.value = false;
+        checked = new Set(); uiState.bulkOpen = false;
         try {
           const res = await window.boApi.put('/bo/ec/od/dliv/bulk-courier', { ids, courier: bulkForm.courier, trackingNo: bulkForm.trackingNo });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -265,7 +266,7 @@ window.OdDlivMng = {
         const ok = await props.showConfirm('일괄 결재처리', `선택한 ${ids.length}건을 [${bulkForm.apprAction}] 처리하시겠습니까?`);
         if (!ok) return;
         window.safeArrayUtils.safeForEach(deliveries, d => { if (ids.includes(d.dlivId)) { d.apprStatus = bulkForm.apprAction; d.apprComment = bulkForm.apprComment; } });
-        checked = new Set(); bulkOpen.value = false;
+        checked = new Set(); uiState.bulkOpen = false;
         try {
           const res = await window.boApi.put('/bo/ec/od/dliv/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -285,7 +286,7 @@ window.OdDlivMng = {
           d.reqTarget = bulkForm.reqTarget; d.reqTargetNm = bulkForm.reqTargetNm;
           d.reqAmount = Number(bulkForm.reqAmount||0); d.reqReason = bulkForm.reqReason;
         } });
-        checked = new Set(); bulkOpen.value = false;
+        checked = new Set(); uiState.bulkOpen = false;
         try {
           const res = await window.boApi.put('/bo/ec/od/dliv/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -299,7 +300,7 @@ window.OdDlivMng = {
       }
     };
 
-    return { deliveries, members, loading, error, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, DLIV_STATUS_OPTIONS, COURIER_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { deliveries, members, uiState; searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, DLIV_STATUS_OPTIONS, COURIER_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, uiState, bulkTab, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>

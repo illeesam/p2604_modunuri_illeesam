@@ -11,7 +11,6 @@ window.OdOrderDtl = {
     const claims = reactive([]);
     const cfCodes = Vue.computed(() => window.getBoCodeStore().svCodes);
     const loading = ref(false);
-    const error = ref(null);
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
@@ -27,10 +26,10 @@ window.OdOrderDtl = {
         vendors.splice(0, vendors.length, ...(vendorsRes.data?.data?.list || []));
         deliveries.splice(0, deliveries.length, ...(deliveriesRes.data?.data?.list || []));
         claims.splice(0, claims.length, ...(claimsRes.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('OdOrder 로드 실패', 'error');
       } finally {
         loading.value = false;
@@ -132,6 +131,7 @@ window.OdOrderDtl = {
 
     const uiState = reactive({
       activeTab: window._odOrderDtlState?.activeTab || 'info',
+      error: null,
     });
     watch(uiState, (newVal) => { window._odOrderDtlState.activeTab = newVal.activeTab; }, { deep: true });
     /* 주문 항목 (샘플 데이터) */
@@ -152,7 +152,7 @@ window.OdOrderDtl = {
         if (paid <= 0) return null;
         const sale = Math.round(paid / (1 - discRates[i]));
         const disc = sale - paid;
-        return { orders, loading, error, ...d, salePrice: sale, discInfo: discLabels[i], discAmount: disc, price: paid };
+        return { orders, loading; ...d, salePrice: sale, discInfo: discLabels[i], discAmount: disc, price: paid };
       }).filter(Boolean);
     };
     const initItems = async () => {

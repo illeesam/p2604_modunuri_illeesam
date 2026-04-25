@@ -7,7 +7,7 @@ window.Prod02View = {
 
     /* ── 이미지 갤러리 ── */
     const selectedImg = ref(0);
-    const uiState = reactive({ zoomOpen: false, photoPopupOpen: false, showBottomBar: false, showSizeGuide: false });
+    const uiState = reactive({ zoomOpen: false, photoPopupOpen: false, showBottomBar: false, showSizeGuide: false, tabFixed: false, quickBuyOpen: false, photoFromGrid: false });
 
     /* ── 구매 옵션 ── */
     const selectedColor = ref(null);
@@ -169,7 +169,6 @@ window.Prod02View = {
     let scrollEl = null;
     const getScrollEl = () => scrollEl || (scrollEl = document.querySelector('.layout-main')) || window;
 
-    const tabFixed     = ref(false);
     const tabFixedTop  = ref(0);
     const tabFixedLeft = ref(0);
     const tabFixedW    = ref(0);
@@ -193,7 +192,7 @@ window.Prod02View = {
       const mainRect = main.getBoundingClientRect ? main.getBoundingClientRect() : { top: 0 };
       const barH = tabBarRef.value?.offsetHeight || 44;
       /* 탭바 fixed 시: mainRect.top + barH 만큼 오프셋 필요 */
-      const offset = tabFixed.value ? barH + 8 : barH + 8;
+      const offset = uiState.tabFixed ? barH + 8 : barH + 8;
       const elTop = el.getBoundingClientRect().top - mainRect.top;
       const top = main.scrollTop + elTop - offset;
       main.scrollTo({ top, behavior: 'smooth' });
@@ -208,16 +207,16 @@ window.Prod02View = {
       const mainTop = main.getBoundingClientRect().top;
 
       /* ── fixed 전환 ── */
-      if (!tabFixed.value) {
+      if (!uiState.tabFixed) {
         if (bar.getBoundingClientRect().top <= mainTop) {
           tabPlaceholderH.value = bar.offsetHeight;
           tabNaturalScrollTop   = main.scrollTop;
           updateTabFixedPos();
-          tabFixed.value = true;
+          uiState.tabFixed = true;
         }
       } else {
         if (main.scrollTop < tabNaturalScrollTop) {
-          tabFixed.value = false;
+          uiState.tabFixed = false;
         }
       }
 
@@ -227,7 +226,7 @@ window.Prod02View = {
 
       /* ── 활성 탭 ── */
       const barH = bar.offsetHeight || 44;
-      const anchor = tabFixed.value
+      const anchor = uiState.tabFixed
         ? tabFixedTop.value + barH + 20   /* fixed: 탭바 하단 기준 */
         : bar.getBoundingClientRect().bottom + 10;
       const sections = [
@@ -245,19 +244,18 @@ window.Prod02View = {
     };
 
     /* ── 드로어 상태 (anyModalOpen 보다 먼저 선언 필요) ── */
-    const quickBuyOpen = ref(false);
     const drawerMode   = ref('buy'); // 'buy' | 'cart'
 
     /* ── 모달 공통 닫기 (ESC / 뒤로가기) ── */
     const anyModalOpen = () =>
-      zoomOpen.value || photoPopupOpen.value || !!selectedReview.value ||
-      showSizeGuide.value || quickBuyOpen.value;
+      uiState.zoomOpen || uiState.photoPopupOpen || !!selectedReview.value ||
+      uiState.showSizeGuide || uiState.quickBuyOpen;
     const closeAllModals = () => {
-      zoomOpen.value = false;
-      photoPopupOpen.value = false;
+      uiState.zoomOpen = false;
+      uiState.photoPopupOpen = false;
       selectedReview.value = null;
-      showSizeGuide.value = false;
-      quickBuyOpen.value = false;
+      uiState.showSizeGuide = false;
+      uiState.quickBuyOpen = false;
     };
     const onKeydown = (e) => {
       if (e.key === 'Escape' && anyModalOpen()) {
@@ -296,8 +294,8 @@ window.Prod02View = {
       qty.value           = 1;
       selectedImg.value   = 0;
       activeTab.value     = 'detail';
-      quickBuyOpen.value  = false;
-      tabFixed.value      = false;
+      uiState.quickBuyOpen  = false;
+      uiState.tabFixed      = false;
       getScrollEl().scrollTo(0, 0);
     });
 
@@ -447,7 +445,7 @@ window.Prod02View = {
     /* 바로구매: 현재 상품 정보를 파라메터로 전달 (장바구니 미변경) */
     const execBuyNow = () => {
       if (!validate()) return;
-      quickBuyOpen.value = false;
+      uiState.quickBuyOpen = false;
       props.navigate('order', {
         instantOrder: {
           product: props.product,
@@ -462,7 +460,7 @@ window.Prod02View = {
     const execCartFromDrawer = () => {
       if (!validate()) return;
       props.addToCart(props.product, selectedColor.value, selectedSize.value, qty.value);
-      quickBuyOpen.value = false;
+      uiState.quickBuyOpen = false;
       selectedColor.value = props.product?.opt1s?.[0] || null;
       selectedSize.value  = null;
       qty.value = 1;
@@ -472,17 +470,16 @@ window.Prod02View = {
     const handleBuyNow = () => execBuyNow();
 
     /* 하단 바 "바로구매" → 드로어 열기 */
-    const openQuickBuy  = () => { drawerMode.value = 'buy';  quickBuyOpen.value = true; };
-    const openCartDrawer = () => { drawerMode.value = 'cart'; quickBuyOpen.value = true; };
+    const openQuickBuy  = () => { drawerMode.value = 'buy';  uiState.quickBuyOpen = true; };
+    const openCartDrawer = () => { drawerMode.value = 'cart'; uiState.quickBuyOpen = true; };
 
     /* ── 포토 리뷰 진입 경로 (grid=모아보기에서, list=리뷰목록에서) ── */
-    const photoFromGrid = ref(false);
-    const openPhotoFromGrid = (r) => { selectedReview.value = r; photoFromGrid.value = true;  photoPopupOpen.value = false; };
-    const openPhotoFromList = (r) => { selectedReview.value = r; photoFromGrid.value = false; };
+    const openPhotoFromGrid = (r) => { selectedReview.value = r; uiState.photoFromGrid = true;  uiState.photoPopupOpen = false; };
+    const openPhotoFromList = (r) => { selectedReview.value = r; uiState.photoFromGrid = false; };
     const closePhotoDetail  = () => {
       selectedReview.value = null;
-      if (photoFromGrid.value) photoPopupOpen.value = true;
-      photoFromGrid.value = false;
+      if (uiState.photoFromGrid) uiState.photoPopupOpen = true;
+      uiState.photoFromGrid = false;
     };
 
     /* ── 포토 리뷰 좌/우 이동 ── */
@@ -521,19 +518,19 @@ window.Prod02View = {
     };
 
     return {
-      selectedImg, zoomOpen,
-      selectedColor, selectedSize, qty, colorError, sizeError, showSizeGuide,
+      selectedImg, uiState,
+      selectedColor, selectedSize, qty, colorError, sizeError,
       TABS, activeTab, tabBarRef, detailSecRef, sizeSecRef, reviewSecRef, styleSecRef,
-      reviewFilter, photoPopupOpen, selectedReview,
+      reviewFilter, selectedReview,
       photoNavPrev, photoNavNext, cfPhotoNavIdx,
       photoGridPage, cfPhotoGridPageCount, cfPhotoGridItems, photoGridPrev, photoGridNext,
-      photoFromGrid, openPhotoFromGrid, openPhotoFromList, closePhotoDetail,
+      openPhotoFromGrid, openPhotoFromList, closePhotoDetail,
       sizeGuideRows, styleItems,
       cfMockImages, cfMockReviews, cfReviewsWithPhoto, cfFilteredReviews, cfAvgRating, cfRatingDist,
-      tabFixed, tabFixedTop, tabFixedLeft, tabFixedW, tabPlaceholderH,
-      quickBuyOpen, drawerMode, cfQuickBuyTotal, cfDisplayPrice, getSizeDelta,
+      tabFixedTop, tabFixedLeft, tabFixedW, tabPlaceholderH,
+      drawerMode, cfQuickBuyTotal, cfDisplayPrice, getSizeDelta,
       scrollToTab, fnCategoryLabel, stars, colorStatus, sizeStatus,
-      buyBtnRef, showBottomBar,
+      buyBtnRef,
       selectColor, selectSize, handleAddToCart, handleBuyNow, openQuickBuy, openCartDrawer, execBuyNow, execCartFromDrawer,
     };
   },
@@ -764,9 +761,9 @@ window.Prod02View = {
     </div><!-- /page-wrap top -->
 
     <!-- ══ 탭 바 (스크롤 시 헤더 아래 고정) ══ -->
-    <div v-if="tabFixed" :style="{ height: tabPlaceholderH + 'px', marginTop:'24px' }"></div>
+    <div v-if="uiState.tabFixed" :style="{ height: tabPlaceholderH + 'px', marginTop:'24px' }"></div>
     <div ref="tabBarRef"
-      :style="tabFixed ? {
+      :style="uiState.tabFixed ? {
         position:'fixed', top:tabFixedTop+'px', left:tabFixedLeft+'px', width:tabFixedW+'px',
         zIndex:55,
         background:'linear-gradient(to bottom, rgba(245,248,253,0.98) 0%, var(--bg-card) 100%)',
@@ -1138,9 +1135,9 @@ window.Prod02View = {
   </div>
 
   <!-- ══ 바로구매 드로어 (우측) ══ -->
-  <template v-if="quickBuyOpen && product">
+  <template v-if="uiState.quickBuyOpen && product">
     <!-- 딤 오버레이 -->
-    <div @click="quickBuyOpen=false"
+    <div @click="uiState.quickBuyOpen=false"
       style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:150;transition:opacity .25s;"></div>
 
     <!-- 드로어 패널 -->
@@ -1149,7 +1146,7 @@ window.Prod02View = {
       <!-- 헤더 -->
       <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);flex-shrink:0;">
         <span style="font-size:0.9rem;font-weight:800;color:var(--text-primary);">{{ drawerMode==='cart' ? '🛒 장바구니 담기' : '⚡ 바로구매' }}</span>
-        <button @click="quickBuyOpen=false" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--text-muted);line-height:1;padding:0;">✕</button>
+        <button @click="uiState.quickBuyOpen=false" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--text-muted);line-height:1;padding:0;">✕</button>
       </div>
 
       <!-- 스크롤 영역 -->

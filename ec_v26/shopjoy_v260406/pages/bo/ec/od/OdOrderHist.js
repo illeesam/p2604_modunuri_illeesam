@@ -6,14 +6,13 @@ window.OdOrderHist = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const orders = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false });
     const claims = reactive([]);
     const deliveries = reactive([]);
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [resO, resC, resD] = await Promise.all([
           window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -23,13 +22,13 @@ window.OdOrderHist = {
         orders.splice(0, orders.length, ...(resO.data?.data?.list || []));
         claims.splice(0, claims.length, ...(resC.data?.data?.list || []));
         deliveries.splice(0, deliveries.length, ...(resD.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('OdOrderHist 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const botTab = ref(window._ecOrderHistState.tab || 'products');
@@ -47,6 +46,8 @@ window.OdOrderHist = {
           { no: 1, prodNm: o.prodNm, optionNm: '-', qty: 1, unitPrice: o.totalPrice, totalPrice: o.totalPrice, statusCd: o.statusCd },
         );
       }
+      error: null,
+      error: null,
     });
 
     const cfRelatedDliv   = computed(() => window.safeArrayUtils.safeFind(deliveries || [], d => d.orderId === props.orderId) || null);
@@ -60,7 +61,7 @@ window.OdOrderHist = {
       ].filter(h => h.date !== '-');
     });
 
-    return { orders, loading, error, botTab, orderItems, cfRelatedDliv, cfRelatedClaims, cfDlivHistory, viewMode2, showTab, claims, deliveries };
+    return { orders, uiState; botTab, orderItems, cfRelatedDliv, cfRelatedClaims, cfDlivHistory, viewMode2, showTab, claims, deliveries };
   },
   template: /* html */`
 <div>

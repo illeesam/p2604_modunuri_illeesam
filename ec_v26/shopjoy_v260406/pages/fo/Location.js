@@ -3,7 +3,7 @@ window.Location = {
   name: 'Location',
   props: ['navigate', 'config'],
   setup() {
-    const { ref, onMounted } = Vue;
+    const { ref, reactive, onMounted } = Vue;
 
     const LAT  = 37.4407;
     const LNG  = 127.1468;
@@ -13,7 +13,7 @@ window.Location = {
     /* 지도 iframe src — 카카오 → 구글 → OSM 순 */
     const mapProvider = ref('kakao');   // 현재 사용 중인 제공자
     const mapSrc      = ref('');
-    const mapError    = ref(false);
+    const uiState     = reactive({ mapError: false });
 
     /* 제공자별 embed URL */
     const PROVIDERS = {
@@ -33,7 +33,7 @@ window.Location = {
         mapProvider.value = 'osm';
         mapSrc.value = PROVIDERS.osm;
       } else {
-        mapError.value = true;
+        uiState.mapError = true;
       }
     };
 
@@ -72,7 +72,7 @@ window.Location = {
     });
 
     return {
-      mapProvider, mapSrc, mapError, onMapError,
+      mapProvider, mapSrc, uiState, onMapError,
       kakaoLink, naverLink, googleLink,
       ADDR,
     };
@@ -105,7 +105,7 @@ window.Location = {
     </div>
 
     <!-- iframe 모드 (Google / OSM) -->
-    <iframe v-else-if="!mapError && mapSrc"
+    <iframe v-else-if="!uiState.mapError && mapSrc"
       :src="mapSrc"
       width="100%"
       style="border:0;display:block;height:clamp(220px,40vw,320px);"
@@ -115,7 +115,7 @@ window.Location = {
     </iframe>
 
     <!-- 로딩 중 (mapSrc 아직 미설정) -->
-    <div v-else-if="!mapError && !mapSrc"
+    <div v-else-if="!uiState.mapError && !mapSrc"
       style="height:clamp(220px,40vw,320px);display:flex;align-items:center;justify-content:center;background:var(--bg-base);color:var(--text-muted);font-size:13px;gap:8px;">
       <span style="animation:spin .8s linear infinite;display:inline-block;">⏳</span> 지도 로딩 중…
     </div>

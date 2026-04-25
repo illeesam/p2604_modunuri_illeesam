@@ -7,13 +7,18 @@ window.XsSample13 = {
     const today = new Date().toISOString().slice(0, 10);
     const previewDate   = ref(today);
     const previewTime   = ref(new Date().toTimeString().slice(0, 5));
-    const showAreaDrop  = ref(false);
     const selectedAreas = reactive(new Set());
-    const copied        = ref(false);
     const copiedPanel   = ref(null);
-    /* 카테고리 선택 */
-    const showCatModal   = ref(false);
     const selectedCatIds = reactive(new Set());
+    const uiState = reactive({
+      showAreaDrop: false,
+      copied: false,
+      showCatModal: false,
+      searchStatus: null,
+      searchCondition: null,
+      searchAuthRequired: null,
+      searchAuthGrade: null
+    });
     const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
     const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
     const cfCatBtnLabel = computed(() => {
@@ -51,12 +56,12 @@ window.XsSample13 = {
       return true;
     };
     const panelFilter = (p) => {
-      if (searchStatus.value       && p.status !== searchStatus.value) return false;
+      if (uiState.searchStatus       && p.status !== uiState.searchStatus) return false;
       if (!isInRange(p)) return false;
-      if (searchCondition.value    && (p.condition || '항상 표시') !== searchCondition.value) return false;
-      if (searchAuthRequired.value === 'Y' && !p.authRequired) return false;
-      if (searchAuthRequired.value === 'N' &&  p.authRequired) return false;
-      if (searchAuthGrade.value    && p.authGrade !== searchAuthGrade.value) return false;
+      if (uiState.searchCondition    && (p.condition || '항상 표시') !== uiState.searchCondition) return false;
+      if (uiState.searchAuthRequired === 'Y' && !p.authRequired) return false;
+      if (uiState.searchAuthRequired === 'N' &&  p.authRequired) return false;
+      if (uiState.searchAuthGrade    && p.authGrade !== uiState.searchAuthGrade) return false;
       if (selectedCatIds.size > 0) {
         const names = cfSelectedCatNames.value;
         const hit = names.some(nm => p.name.includes(nm)) ||
@@ -117,7 +122,7 @@ window.XsSample13 = {
     /* 전체 소스 복사 */
     const cfSourceText = computed(() => {
       const parts = [];
-      cfPanelsByArea.value.forEach(({ area, panels }) => {
+      uiState.cfPanelsByArea.forEach(({ area, panels }) => {
         parts.push(`<!-- ===== ${area.codeValue} ${area.codeLabel} (${panels.length}개) ===== -->`);
         panels.forEach(p => { parts.push(panelSource(p)); });
         parts.push('');
@@ -126,8 +131,8 @@ window.XsSample13 = {
     });
     const copySource = () => {
       navigator.clipboard?.writeText(cfSourceText.value).then(() => {
-        copied.value = true;
-        setTimeout(() => { copied.value = false; }, 2000);
+        uiState.copied = true;
+        setTimeout(() => { uiState.copied = false; }, 2000);
       });
     };
     const copyPanel = (panel) => {
@@ -160,14 +165,13 @@ window.XsSample13 = {
       previewTime.value = new Date().toTimeString().slice(0, 5);
     };
     return {
-      previewDate, previewTime, showAreaDrop,
+      uiState, previewDate, previewTime,
       selectedAreas, cfAllAreas, cfAreaBtnLabel,
       toggleArea, selectAllAreas, clearAllAreas, resetDate,
-      searchStatus, searchCondition, searchAuthRequired, searchAuthGrade,
       CONDITION_OPTS, AUTH_GRADE_OPTS,
       isLoggedIn, userGrade, userNm, cfAccessibleConds,
-      showCatModal, selectedCatIds, cfCatBtnLabel, onCatApply, cfSelectedCatNames,
-      cfPanelsByArea, panelSource, panelSourceHtml, copied, copiedPanel, copySource, copyPanel,
+      selectedCatIds, cfCatBtnLabel, onCatApply, cfSelectedCatNames,
+      cfPanelsByArea, panelSource, panelSourceHtml, copiedPanel, copySource, copyPanel,
       fnWLabel, fnWIcon,
     };
   },

@@ -429,7 +429,7 @@ window.DpDispUiSimul = {
 
     /* 탭 전환 시 초기화 */
     const switchTab = (tab) => {
-      uiState.uiState.mainTab = tab;
+      uiState.mainTab = tab;
       if (tab === 'struct') initExpandedAreas();
     };
 
@@ -888,7 +888,7 @@ window.DpDispUiSimul = {
       <div style="width:1px;height:28px;background:#e0e0e0;" :style="uiState.mainTab!=='preview' ? 'opacity:.4;' : ''"></div>
 
       <!-- 설명보기 (Tab1에서만) -->
-      <button v-if="uiState.uiState.mainTab==='preview'" @click="uiState.showDesc=!uiState.showDesc"
+      <button v-if="uiState.mainTab==='preview'" @click="uiState.showDesc=!uiState.showDesc"
         style="font-size:11px;padding:4px 12px;border-radius:10px;border:1px solid #ddd;cursor:pointer;transition:all .15s;"
         :style="showDesc ? 'background:#e3f2fd;border-color:#90caf9;color:#1565c0;' : 'background:#fff;color:#999;'">
         {{ showDesc ? '📋 설명 숨기기' : '📋 설명 보기' }}

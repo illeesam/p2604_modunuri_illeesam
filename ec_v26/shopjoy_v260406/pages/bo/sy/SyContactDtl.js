@@ -7,24 +7,23 @@ window.SyContactDtl = {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
 
     const contacts = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, error: null });
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/contact/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         contacts = res.data?.data?.list || [];
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('SyContact 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => !props.editId);
@@ -37,7 +36,9 @@ window.SyContactDtl = {
 
     const form = reactive({
       inquiryId: null, userId: '', userNm: '', date: '', categoryCd: '배송 문의',
+      error: null,
       title: '', content: '', statusCd: '요청', answer: '',
+      error: null,
     });
     const errors = reactive({});
 
@@ -145,7 +146,7 @@ window.SyContactDtl = {
       props.showToast('답변이 저장되었습니다.');
     };
 
-    return { contacts, loading, error, cfIsNew, tab, viewMode2, showTab, form, errors, cfMemberContacts, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm, contentEl, answerEl };
+    return { contacts, uiState, uiState, cfIsNew, tab, viewMode2, showTab, form, errors, cfMemberContacts, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm, contentEl, answerEl };
   },
   template: /* html */`
 <div>

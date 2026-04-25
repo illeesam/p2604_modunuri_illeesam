@@ -339,7 +339,7 @@ window.DpDispWidgetLibPreview = {
     });
 
     /* 실제컨텐츠 토글 */
-    const showRealContent = ref(false);
+    const uiState = reactive({ dashDragOver: false, showRealContent: false });
 
     /* ── 그리드 슬롯 (탭별 동적 배열) ── */
     const makeInit = (cols) => Array(cols * 2).fill(null);
@@ -421,12 +421,11 @@ window.DpDispWidgetLibPreview = {
     /* ── 대시보드: 자유 배치 + 크기 조절 ── */
     const dashItems  = reactive([]); // { id, lib, x, y, w, h }
     const dashCanvas = ref(null);
-    const dashDragOver = ref(false);
 
-    const onDashDragOver = (e) => { e.preventDefault(); dashDragOver.value = true; };
-    const onDashDragLeave = () => { dashDragOver.value = false; };
+    const onDashDragOver = (e) => { e.preventDefault(); uiState.dashDragOver = true; };
+    const onDashDragLeave = () => { uiState.dashDragOver = false; };
     const onDashDrop = (e) => {
-      e.preventDefault(); dashDragOver.value = false;
+      e.preventDefault(); uiState.dashDragOver = false;
       if (!dashCanvas.value) return;
       const rect = dashCanvas.value.getBoundingClientRect();
 
@@ -522,11 +521,11 @@ window.DpDispWidgetLibPreview = {
       cfTree, openNodes, toggleNode, isOpen, allChildrenOpen, toggleAllChildren, expandAll, collapseAll,
       onItemDragStart, onItemDragEnd, onNodeDragStart, onNodeDragEnd,
       previewGrid, GRID_TABS,
-      viewportMode, cfAutoGridCols, showRealContent,
+      viewportMode, cfAutoGridCols, uiState,
       tabSlots, cfCurrentSlots,
       dragOverIdx, onDragOver, onDragLeave, onDrop, removeSlot, setSpan, GRID_COLS,
       spanPopupIdx, toggleSpanPopup, closeSpanPopup,
-      dashItems, dashCanvas, dashDragOver,
+      dashItems, dashCanvas, uiState,
       onDashDragOver, onDashDragLeave, onDashDrop,
       removeDashItem, startItemMove, startItemResize,
       cfPlacedCount, resetCurrent,

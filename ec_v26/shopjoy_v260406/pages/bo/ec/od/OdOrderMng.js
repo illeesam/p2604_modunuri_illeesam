@@ -6,12 +6,11 @@ window.OdOrderMng = {
     const { ref, reactive, computed, onMounted } = Vue;
     const orders = reactive([]);
     const members = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ bulkOpen: false, loading: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [ordersRes, membersRes] = await Promise.all([
           window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -19,13 +18,13 @@ window.OdOrderMng = {
         ]);
         orders = ordersRes.data?.data?.list || [];
         members = membersRes.data?.data?.list || [];
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('OdOrder 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
 
@@ -36,6 +35,9 @@ window.OdOrderMng = {
       dateStart: '',
       dateEnd: '',
       status: ''
+      error: null,
+      error: null,
+      error: null,
     });
     const searchParamOrg = reactive({
       kw: '',
@@ -168,7 +170,6 @@ window.OdOrderMng = {
     const REQ_TARGETS = ['주문','상품','배송','추가결재'];
     const DEFAULT_TMPL = '[결재요청]\n요청대상: {target} - {targetNm}\n요청금액: {amount}원\n내용: {reason}\n\n위 건에 대한 추가결재 부탁드립니다.';
     /* 변경작업 모달 */
-    const bulkOpen = ref(false);
     const bulkTab = ref('status');
     const bulkForm = reactive({
       status:'', payMethod:'', apprAction:'', apprComment:'',
@@ -205,10 +206,10 @@ window.OdOrderMng = {
         reqTarget:'주문', reqTargetNm:'', reqAmount:0, reqReason:'', tmplMsg: DEFAULT_TMPL,
       });
       onReqTargetChange();
-      bulkOpen.value = true;
+      uiState.bulkOpen = true;
     };
     const cfBulkPreview = computed(() => {
-      if (!bulkOpen.value) return '';
+      if (!uiState.bulkOpen) return '';
       const ids = Array.from(checked);
       const selected = window.safeArrayUtils.safeFilter(orders, o => ids.includes(o.orderId));
       let rows = [];
@@ -230,7 +231,7 @@ window.OdOrderMng = {
     });
     const saveBulk = async () => {
       const ids = Array.from(checked);
-      if (!ids.length) { props.showToast('항목을 선택하세요.', 'error'); bulkOpen.value = false; return; }
+      if (!ids.length) { props.showToast('항목을 선택하세요.', 'error'); uiState.bulkOpen = false; return; }
       const cfg = {
         status:     { field:'status',       label:'주문상태',     path:'orders/bulk-status' },
         payMethod:  { field:'payMethod',    label:'결제수단',     path:'orders/bulk-payMethod' },
@@ -250,7 +251,7 @@ window.OdOrderMng = {
         o.reqAmount = Number(bulkForm.reqAmount||0); o.reqReason = bulkForm.reqReason;
       } });
       checked = new Set();
-      bulkOpen.value = false;
+      uiState.bulkOpen = false;
       try {
         const res = await window.boApi.put(cfg.path, { ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -263,7 +264,7 @@ window.OdOrderMng = {
       }
     };
 
-    return { orders, members, loading, error, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, ORDER_STATUS_OPTIONS, PAY_METHOD_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkOpen, bulkTab, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { orders, members, uiState; searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, selectedId, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, ORDER_STATUS_OPTIONS, PAY_METHOD_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, uiState, bulkTab, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>

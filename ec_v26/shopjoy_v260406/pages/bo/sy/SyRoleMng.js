@@ -6,11 +6,11 @@ window.SyRoleMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const roles = reactive([]);
     const loading = ref(false);
-    const error = ref(null);
 
     /* ===== UI State ===== */
     const uiState = reactive({
       checkAll: false,
+      error: null,
       userSelectOpen: false,
     });
 
@@ -22,10 +22,10 @@ window.SyRoleMng = {
           params: { pageNo: 1, pageSize: 10000 }
         });
         roles.splice(0, roles.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('SyRole 로드 실패', 'error');
       } finally {
         loading.value = false;
@@ -177,7 +177,7 @@ window.SyRoleMng = {
 
     const makeRow = (r) => {
       const cat = Array.isArray(r.roleCat) ? [...r.roleCat] : [];
-      return { roles, loading, error, ...r, _depth: r._depth || 0, _row_status: 'N', _row_check: false,
+      return { roles, loading, uiState, ...r, _depth: r._depth || 0, _row_status: 'N', _row_check: false,
         restrictPerm: r.restrictPerm || '없음',
         roleCat: cat,
         _orig: { roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId,
@@ -417,7 +417,7 @@ window.SyRoleMng = {
         const already = roleUsers.value.some(x => x.roleId === selectedRoleId.value && x.boUserId === u.boUserId);
         if (!already) roleUsers.value.push({ roleId: selectedRoleId.value, boUserId: u.boUserId });
       });
-      uiState.uiState.userSelectOpen = false;
+      uiState.userSelectOpen = false;
     };
 
     const removeUser = (boUserId) => {

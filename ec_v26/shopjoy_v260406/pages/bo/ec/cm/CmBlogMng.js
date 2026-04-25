@@ -5,24 +5,23 @@ window.CmBlogMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const blogs = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/cm/blog/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         blogs.splice(0, blogs.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('CmBlog 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     onMounted(() => { handleFetchData();
@@ -40,6 +39,8 @@ window.CmBlogMng = {
         if (searchParam.notice && p.isNotice !== searchParam.notice) return false;
         return true;
       }).sort((a, b) => b.regDate > a.regDate ? 1 : -1);
+      error: null,
+      error: null,
     });
     const cfTotal      = computed(() => cfFiltered.value.length);
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
@@ -154,7 +155,7 @@ window.CmBlogMng = {
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { blogs, loading, error, searchKw, searchUse, searchNotice, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
+    return { blogs, uiState; searchKw, searchUse, searchNotice, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
              selectedId, cfSelectedRow, form, isNew, openDetail, openNew, closeDetail, handleSave, handleDelete, toggleUse, fnYnBadge , PAGE_SIZES , onSizeChange };
   },
   template: `

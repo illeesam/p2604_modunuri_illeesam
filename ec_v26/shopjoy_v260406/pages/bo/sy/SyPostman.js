@@ -449,7 +449,7 @@ window.SyPostman = {
       histResTime.value     = null;
       histResTs.value       = '';
       histResProgress.value = 0;
-      uiState.uiState.histResSending  = true;
+      uiState.histResSending  = true;
       const _start = Date.now();
       const _tick = setInterval(() => {
         const elapsed = Date.now() - _start;
@@ -458,7 +458,7 @@ window.SyPostman = {
       await doSend(tab);
       clearInterval(_tick);
       histResProgress.value = 100;
-      uiState.uiState.histResSending  = false;
+      uiState.histResSending  = false;
       histResJson.value     = tab.resJson;
       histResStatus.value   = tab.resStatus;
       histResTime.value     = tab.resTime;

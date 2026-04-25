@@ -5,12 +5,11 @@ window.SyBizMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const bizs = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, error: null });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/biz/page', {
           params: { pageNo: 1, pageSize: 10000 }
@@ -18,10 +17,10 @@ window.SyBizMng = {
         bizs.splice(0, bizs.length, ...(res.data?.data?.list || []));
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('SyBiz 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     /* 좌측 표시경로 트리 */
@@ -35,7 +34,9 @@ window.SyBizMng = {
     onMounted(() => {
       handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
+      error: null,
       expanded.clear(); initSet.forEach(v => expanded.add(v));
+      error: null,
     });
     const cfAllowedPathIds = computed(() => selectedPath.value == null ? null : window.boCmUtil.getPathDescendants('sy_biz', selectedPath.value));
 
@@ -125,7 +126,7 @@ window.SyBizMng = {
     const closePathPick = () => { pathPickModal.show = false; };
     const onPathPicked = (pathId) => { formData.pathId = pathId; };
 
-    return { bizs, loading, error, selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
+    return { bizs, uiState, uiState, selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       kw, statusFlt, vendorTypeFlt, STATUS, BIZ_CLASS, VENDOR_TYPES,
       cfFiltered, cfPagedRows, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange,
       pathLabel, fnVendorTypeLabel, fnVendorTypeBadge, fnRoleCatLabel, fnRoleCatColor, fnStatusBadge, fnStatusLabel,

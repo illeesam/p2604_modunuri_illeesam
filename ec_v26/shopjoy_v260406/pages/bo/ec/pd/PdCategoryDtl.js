@@ -5,29 +5,30 @@ window.PdCategoryDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const categories = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pd/category/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         categories.splice(0, categories.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('PdCategory 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
       categoryId: null, parentId: null, categoryNm: '', depth: 1, sortOrd: 1, status: '활성', description: '', imgUrl: '',
+      error: null,
+      error: null,
     });
     const errors = reactive({});
 
@@ -92,7 +93,7 @@ window.PdCategoryDtl = {
       }
     };
 
-    return { categories, loading, error, cfIsNew, form, errors, handleSave, cfParentOptions, onParentChange };
+    return { categories, uiState; cfIsNew, form, errors, handleSave, cfParentOptions, onParentChange };
   },
   template: /* html */`
 <div>

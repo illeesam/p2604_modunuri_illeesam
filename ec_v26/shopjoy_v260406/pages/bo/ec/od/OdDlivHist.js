@@ -6,24 +6,23 @@ window.OdDlivHist = {
   setup(props) {
     const { ref, computed } = Vue;
     const deliveries = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/od/dliv/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         deliveries.splice(0, deliveries.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('OdDliv 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     onMounted(() => { handleFetchData(); });
@@ -34,7 +33,7 @@ window.OdDlivHist = {
     const showTab = (id) => viewMode2.value !== 'tab' || botTab.value === id;
     const cfRelatedOrder  = computed(() => getOrder.value(props.orderId));
     const cfRelatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.orderId === props.orderId));
-    return { deliveries, loading, error, botTab, cfRelatedOrder, cfRelatedClaims, viewMode2, showTab };
+    return { deliveries, uiState; botTab, cfRelatedOrder, cfRelatedClaims, viewMode2, showTab };
   },
   template: /* html */`
 <div>

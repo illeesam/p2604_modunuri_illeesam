@@ -6,7 +6,7 @@ window.SyBizUserMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
     const vendorUsers = reactive([]);
-    const loading = ref(false);
+    const uiState = reactive({ loading: false, roleLoading: false, roleModalOpen: false, vendorPickOpen: false, error: null });
 
     /* ── 역할 트리 (좌측 패널) ── */
     const selectedPath = ref(null);
@@ -129,12 +129,11 @@ window.SyBizUserMng = {
       bizPager.page = 1;
     };
 
-    const vendorPickOpen = ref(false);
-    const onVendorPicked = (v) => { vendorPickOpen.value=false; pickVendorRow(v); };
+    const onVendorPicked = (v) => { uiState.vendorPickOpen=false; pickVendorRow(v); };
 
     /* ── 사용자 목록 API 로드 ── */
     const loadVendorUsers = async (vendorId) => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/base/sy/vendor-user', { params: { vendorId, pageSize:10000 } });
         const list = res.data?.data || [];
@@ -142,7 +141,7 @@ window.SyBizUserMng = {
       } catch(e) {
         props.showToast('사용자 목록 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
 
@@ -237,23 +236,21 @@ window.SyBizUserMng = {
 
     /* ── 역할 관리 (sy_vendor_user_role) ── */
     const userRoles = reactive([]);
-    const roleLoading = ref(false);
 
     const loadUserRoles = async (vendorUserId) => {
       if (!vendorUserId) return;
-      roleLoading.value = true;
+      uiState.roleLoading = true;
       try {
         const res = await window.boApi.get('/base/sy/vendor-user-role', { params: { userId: vendorUserId } });
         userRoles.splice(0, userRoles.length, ...(res.data?.data || []));
       } catch(e) {
         props.showToast('역할 목록 로드 실패', 'error');
       } finally {
-        roleLoading.value = false;
+        uiState.roleLoading = false;
       }
     };
 
     /* 역할 선택 모달 */
-    const roleModalOpen = ref(false);
     const roleModalTemp = ref(null);
     const roleTreeExpanded = reactive(new Set());
 
@@ -281,9 +278,9 @@ window.SyBizUserMng = {
       roleTreeExpanded.clear();
       const root = roles.find(r=>r.roleCode===cfFormAllowedRootCode.value);
       if (root) roleTreeExpanded.add(root.roleId);
-      roleModalOpen.value = true;
+      uiState.roleModalOpen = true;
     };
-    const closeRoleModal = () => { roleModalOpen.value = false; };
+    const closeRoleModal = () => { uiState.roleModalOpen = false; };
     const toggleRoleNode = (id) => { if(roleTreeExpanded.has(id)) roleTreeExpanded.delete(id); else roleTreeExpanded.add(id); };
     const pickRoleInModal = (n) => { if (!n.allowed) return; roleModalTemp.value = n.roleCode; };
 
@@ -357,18 +354,18 @@ window.SyBizUserMng = {
     const fnPermBadgeColor = (p) => ({관리:'#f59e0b',쓰기:'#16a34a',읽기:'#2563eb',차단:'#e8587a'}[p]||'#9ca3af');
 
     return {
-      loading, roleLoading,
+      uiState, uiState,
       vendorUsers, cfVendorMap, fnVendorNm, fnVendorTypeCd, fnVendorSummary,
       vendors, cfVendorList, bizPager, cfBizTotalPages, cfBizPageNums, cfBizPagedRows, setBizPage,
       onSearch, onReset,
       searchVendorId, bizKw, bizVendorFlt, bizStatusFlt, BIZ_STATUS, applied,
       pickVendorRow, fnVendorStatusBadge, fnVendorStatusLabel, fnVendorTypeBadge, fnVendorTypeLabel,
-      vendorPickOpen, onVendorPicked, VENDOR_TYPES,
+      uiState, onVendorPicked, VENDOR_TYPES,
       treeRoleCat, cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
       STATUS, fnStatusBadge, fnStatusLabel,
       cfFiltered, cfPagedRows, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange,
       formMode, formData, openNew, openEdit, closeForm, handleSaveForm, handleDeleteRow,
-      userRoles, roleModalOpen, roleModalTemp, roleTreeExpanded,
+      userRoles, uiState, roleModalTemp, roleTreeExpanded,
       openRoleModal, closeRoleModal, confirmRoleModal, handleDeleteRole,
       toggleRoleNode, pickRoleInModal, cfFormRoleTree, cfFormAllowedRootCode,
       roleNmByCode, cfSelectedModalRole, cfModalMenuList, fnPermBadgeColor,

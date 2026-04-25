@@ -5,24 +5,23 @@ window.DpDispWidgetLibMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const widgetLibs = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('DpDispWidgetLib 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     onMounted(() => { handleFetchData(); });
@@ -101,6 +100,8 @@ window.DpDispWidgetLibMng = {
         if (applied.status && d.status     !== applied.status) return false;
         return true;
       });
+      error: null,
+      error: null,
     });
 
     /* ── 표시경로 ── */
@@ -228,7 +229,7 @@ window.DpDispWidgetLibMng = {
 
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
-    return { widgetLibs, loading, error, pathLabel,
+    return { widgetLibs, uiState; pathLabel,
       WIDGET_TYPES, wTypeLabel, wIcon, handleDelete,
       searchParam, searchParamOrg, pager, PAGE_SIZES,
       cfFiltered, cfTotalCount, cfPageList, cfTotalPages, cfPageNumbers,

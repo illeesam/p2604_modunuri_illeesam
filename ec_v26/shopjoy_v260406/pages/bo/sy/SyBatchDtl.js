@@ -6,30 +6,31 @@ window.SyBatchDtl = {
     const { reactive, computed, onMounted, ref } = Vue;
 
     const batches = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, error: null });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/batch/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         batches = res.data?.data?.list || [];
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('SyBatch 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({
+      error: null,
       batchId: null, batchNm: '', batchCode: '', description: '', cron: '0 0 * * *', statusCd: '활성',
+      error: null,
     });
     const errors = reactive({});
 
@@ -88,7 +89,7 @@ window.SyBatchDtl = {
       }
     };
 
-    return { batches, loading, error, cfIsNew, form, errors, handleSave, CRON_PRESETS, cfSiteNm };
+    return { batches, uiState, uiState, cfIsNew, form, errors, handleSave, CRON_PRESETS, cfSiteNm };
   },
   template: /* html */`
 <div>

@@ -5,7 +5,7 @@ window.StReconOrderMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const descOpen = ref(false);
+    const uiState = reactive({ descOpen: false });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const dateRange = ref('이번달');
     const dateStart = ref('');

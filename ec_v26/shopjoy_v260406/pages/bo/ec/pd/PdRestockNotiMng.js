@@ -7,12 +7,11 @@ window.PdRestockNotiMng = {
     const products = reactive([]);
     const members = reactive([]);
     const restockNotis = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [notiRes, prodsRes, membersRes] = await Promise.all([
           window.boApi.get('/bo/ec/pd/restock-noti/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -22,13 +21,13 @@ window.PdRestockNotiMng = {
         restockNotis.splice(0, restockNotis.length, ...(notiRes.data?.data?.list || []));
         products.splice(0, products.length, ...(prodsRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('PdRestockNoti 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     onMounted(() => { handleFetchData();
@@ -55,7 +54,10 @@ window.PdRestockNotiMng = {
         if (kw && !getProdNm(r.prodId).toLowerCase().includes(kw)) return false;
         if (applied.noti && r.notiYn !== applied.noti) return false;
         return true;
+      error: null,
       }).sort((a, b) => b.regDate > a.regDate ? 1 : -1);
+      error: null,
+      error: null,
     });
     const cfTotal      = computed(() => cfFiltered.value.length);
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
@@ -105,7 +107,7 @@ window.PdRestockNotiMng = {
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { restockNotis, loading, error, searchProd, searchNoti, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
+    return { restockNotis, uiState, uiState, searchProd, searchNoti, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
              checkedIds, checkedCount, allChecked, toggleAll, toggleOne, handleSend, fnYnBadge, getProdNm, getMemNm , PAGE_SIZES , onSizeChange };
   },
   template: `

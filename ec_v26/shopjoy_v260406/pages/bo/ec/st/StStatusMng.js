@@ -5,7 +5,7 @@ window.StStatusMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const descOpen = ref(false);
+    const uiState = reactive({ descOpen: false });
 
     /* ── 탭 ── */
     const activeTab = ref('vendor');
@@ -270,7 +270,7 @@ window.StStatusMng = {
       /* claim  */ claimSearchType, claimSearchStatus, claimPager, cfClaimRows, cfClaimTotal, cfClaimPages, cfClaimPageList, cfClaimSummary,
       /* promo  */ promoSearchKw, promoSearchType, promoPager, cfPromoRows, cfPromoTotal, cfPromoPages, cfPromoPageList, cfPromoSummary,
       /* settle */ settleSearchMonth, settlePager, cfSettleRows, cfSettleTotal, cfSettlePages, cfSettlePageList, cfSettleSummary,
-      descOpen, fmt, fmtW, fnStatusBadge, fnTypeBadge, onSearch, onReset, pageNums, exportTab, COMM_RATE,
+      uiState, fmt, fmtW, fnStatusBadge, fnTypeBadge, onSearch, onReset, pageNums, exportTab, COMM_RATE,
       PAGE_SIZES,
       setVendorPage, onVendorSizeChange,
       setOrderPage, onOrderSizeChange,

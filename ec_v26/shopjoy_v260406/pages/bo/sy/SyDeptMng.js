@@ -5,24 +5,23 @@ window.SyDeptMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const depts = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ checkAll: false, loading: false, error: null });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/dept/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         depts = res.data?.data?.list || [];
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('SyDept 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     /* 좌측 부서 트리 */
@@ -212,8 +211,7 @@ window.SyDeptMng = {
       handleLoadGrid();
     };
 
-    const checkAll = ref(false);
-    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = checkAll.value; }); };
+    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
     const parentNm = (parentId) => {
       if (!parentId) return '';
@@ -241,13 +239,13 @@ window.SyDeptMng = {
       '부서목록.csv'
     );
 
-    return { depts, loading, error, selectedTreeId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
+    return { depts, uiState, uiState, selectedTreeId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, searchParamOrg, cfTypeOptions, DEPT_TYPES,
       cfSiteNm,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
-      checkAll, toggleCheckAll, parentNm,
+      uiState, toggleCheckAll, parentNm,
       deptTreeModal, openParentModal, onParentSelect,
       depthBullet, depthColor, fnStatusClass,
       exportExcel,

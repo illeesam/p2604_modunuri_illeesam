@@ -7,7 +7,6 @@ window.SyTemplateDtl = {
 
     const templates = reactive([]);
     const loading = ref(false);
-    const error = ref(null);
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
@@ -17,10 +16,10 @@ window.SyTemplateDtl = {
           params: { pageNo: 1, pageSize: 10000 }
         });
         templates = res.data?.data?.list || [];
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('SyTemplate 로드 실패', 'error');
       } finally {
         loading.value = false;
@@ -129,7 +128,7 @@ window.SyTemplateDtl = {
     /* 미리보기 / 발송 모달 */
     const uiState = reactive({ previewOpen: false, sendOpen: false });
 
-    return { templates, loading, error, cfIsNew, form, errors, handleSave, TEMPLATE_TYPES, cfNeedSubject, cfIsLongContent,
+    return { templates, loading, uiState, cfIsNew, form, errors, handleSave, TEMPLATE_TYPES, cfNeedSubject, cfIsLongContent,
              cfUseHtmlEditor, quillEditorEl, uiState, cfSiteNm };
   },
   template: /* html */`

@@ -7,14 +7,19 @@ window.XsSample14 = {
     const today = new Date().toISOString().slice(0, 10);
     const previewDate = ref(today);
     const previewTime = ref(new Date().toTimeString().slice(0, 5));
-    const showAreaDrop  = ref(false);
     const selectedAreas = reactive(new Set());
     const expandedAreas = reactive(new Set());
     const checkedPanels  = reactive(new Set());
     const checkedWidgets = reactive(new Set()); // key: dispId_wi
-    /* 카테고리 선택 */
-    const showCatModal   = ref(false);
     const selectedCatIds = reactive(new Set());
+    const uiState = reactive({
+      showAreaDrop: false,
+      showCatModal: false,
+      searchStatus: null,
+      searchCondition: null,
+      searchAuthRequired: null,
+      searchAuthGrade: null
+    });
     const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
     const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
     const cfCatBtnLabel = computed(() => {
@@ -70,12 +75,12 @@ window.XsSample14 = {
       return true;
     };
     const panelFilter = (p) => {
-      if (searchStatus.value       && p.status !== searchStatus.value) return false;
+      if (uiState.searchStatus       && p.status !== uiState.searchStatus) return false;
       if (!isInRange(p)) return false;
-      if (searchCondition.value    && (p.condition || '항상 표시') !== searchCondition.value) return false;
-      if (searchAuthRequired.value === 'Y' && !p.authRequired) return false;
-      if (searchAuthRequired.value === 'N' &&  p.authRequired) return false;
-      if (searchAuthGrade.value    && p.authGrade !== searchAuthGrade.value) return false;
+      if (uiState.searchCondition    && (p.condition || '항상 표시') !== uiState.searchCondition) return false;
+      if (uiState.searchAuthRequired === 'Y' && !p.authRequired) return false;
+      if (uiState.searchAuthRequired === 'N' &&  p.authRequired) return false;
+      if (uiState.searchAuthGrade    && p.authGrade !== uiState.searchAuthGrade) return false;
       if (selectedCatIds.size > 0) {
         const names = cfSelectedCatNames.value;
         const hit = names.some(nm => p.name.includes(nm)) ||
@@ -185,42 +190,42 @@ window.XsSample14 = {
     const wColor = (t) => WIDGET_COLORS[t] || '#888';
     // 헤더 카운트용
     const cfPreviewWidgets = computed(() => {
-      if (activeTab.value === 'dashboard') return dashItems;
-      return (gridCells[activeTab.value] || []).filter(c => c.widget);
+      if (uiState.activeTab === 'dashboard') return dashItems;
+      return (gridCells[uiState.activeTab] || []).filter(c => c.widget);
     });
     const dragSrc      = ref(null);
     const dragSrcList  = ref(null);
     const dropZoneIdx  = ref(-1);
     const onWidgetDragStart = (w, p, area, evt) => {
-      dragSrc.value     = { ...w, _dispId: p.dispId, _panelNm: p.name, _area: area.codeLabel };
-      dragSrcList.value = null;
+      uiState.dragSrc     = { ...w, _dispId: p.dispId, _panelNm: p.name, _area: area.codeLabel };
+      uiState.dragSrcList = null;
       evt.dataTransfer.effectAllowed = 'copy';
     };
     const onAreaNodeDragStart = (area, evt) => {
       const widgets = (area.panels || []).flatMap(p =>
         (p.rows || []).map(w => ({ ...w, _dispId: p.dispId, _panelNm: p.name, _area: area.codeLabel }))
       );
-      dragSrcList.value = widgets;
-      dragSrc.value     = null;
+      uiState.dragSrcList = widgets;
+      uiState.dragSrc     = null;
       evt.dataTransfer.effectAllowed = 'copy';
       evt.dataTransfer.setData('text/plain', 'area:' + widgets.length);
     };
     const onPanelNodeDragStart = (p, area, evt) => {
       const widgets = (p.rows || []).map(w => ({ ...w, _dispId: p.dispId, _panelNm: p.name, _area: area.codeLabel }));
-      dragSrcList.value = widgets;
-      dragSrc.value     = null;
+      uiState.dragSrcList = widgets;
+      uiState.dragSrc     = null;
       evt.dataTransfer.effectAllowed = 'copy';
       evt.dataTransfer.setData('text/plain', 'panel:' + widgets.length);
     };
-    const onDragEnd = () => { dragSrc.value = null; dragSrcList.value = null; dropZoneIdx.value = -1; };
+    const onDragEnd = () => { uiState.dragSrc = null; uiState.dragSrcList = null; uiState.dropZoneIdx = -1; };
     /* ── span 팝업 ── */
     const spanPopupIdx = ref(-1); // 'tab_ci' 형태 키
     const toggleSpanPopup = (e, tab, ci) => {
       e.stopPropagation();
       const key = tab + '_' + ci;
-      spanPopupIdx.value = spanPopupIdx.value === key ? null : key;
+      uiState.spanPopupIdx = uiState.spanPopupIdx === key ? null : key;
     };
-    const closeSpanPopup = () => { spanPopupIdx.value = null; };
+    const closeSpanPopup = () => { uiState.spanPopupIdx = null; };
     const setSpan = (tab, ci, axis, delta) => {
       const cell = gridCells[tab][ci];
       if (!cell || !cell.widget) return;
@@ -246,11 +251,11 @@ window.XsSample14 = {
       evt.preventDefault();
       const cols = GRID_COLS[tab];
       const cells = gridCells[tab];
-      if (dragSrcList.value) {
-        const list = dragSrcList.value;
+      if (uiState.dragSrcList) {
+        const list = uiState.dragSrcList;
         if (list.length > 40) {
           window.alert(`위젯이 ${list.length}개입니다. 한 번에 최대 40개까지만 배치할 수 있습니다.`);
-          dragSrcList.value = null; dropZoneIdx.value = -1; return;
+          uiState.dragSrcList = null; uiState.dropZoneIdx = -1; return;
         }
         /* ci부터 순서대로 빈 슬롯에 배치 */
         let placed = 0;
@@ -266,13 +271,13 @@ window.XsSample14 = {
           }
         }
         ensureTrailingRows(cells, cols);
-        dragSrcList.value = null; dropZoneIdx.value = -1; return;
+        uiState.dragSrcList = null; uiState.dropZoneIdx = -1; return;
       }
-      if (!dragSrc.value) return;
-      cells[ci] = { widget: { ...dragSrc.value }, colSpan: 1, rowSpan: 1 };
+      if (!uiState.dragSrc) return;
+      cells[ci] = { widget: { ...uiState.dragSrc }, colSpan: 1, rowSpan: 1 };
       ensureTrailingRows(cells, cols);
-      dragSrc.value = null;
-      dropZoneIdx.value = -1;
+      uiState.dragSrc = null;
+      uiState.dropZoneIdx = -1;
     };
     const removeCellWidget = (tab, ci) => { gridCells[tab][ci] = { widget: null }; };
     /* dashboard */
@@ -280,25 +285,25 @@ window.XsSample14 = {
       evt.preventDefault();
       const rect = evt.currentTarget.getBoundingClientRect();
       const snap = DASH_SNAP;
-      if (dragSrcList.value) {
-        const list = dragSrcList.value;
+      if (uiState.dragSrcList) {
+        const list = uiState.dragSrcList;
         if (list.length > 40) {
           window.alert(`위젯이 ${list.length}개입니다. 한 번에 최대 40개까지만 배치할 수 있습니다.`);
-          dragSrcList.value = null; dropZoneIdx.value = -1; return;
+          uiState.dragSrcList = null; uiState.dropZoneIdx = -1; return;
         }
         let baseX = Math.max(0, Math.round((evt.clientX - rect.left - 80) / snap) * snap);
         let baseY = Math.max(0, Math.round((evt.clientY - rect.top  - 14) / snap) * snap);
         list.forEach((w, i) => {
           dashItems.push({ widget: { ...w }, x: baseX + (i % 4) * 220, y: baseY + Math.floor(i / 4) * 180, w: 200, h: 160 });
         });
-        dragSrcList.value = null; dropZoneIdx.value = -1; return;
+        uiState.dragSrcList = null; uiState.dropZoneIdx = -1; return;
       }
-      if (!dragSrc.value) return;
+      if (!uiState.dragSrc) return;
       const x = Math.max(0, Math.round((evt.clientX - rect.left - 80) / snap) * snap);
       const y = Math.max(0, Math.round((evt.clientY - rect.top  - 14) / snap) * snap);
-      dashItems.push({ widget: { ...dragSrc.value }, x, y, w: 200, h: 160 });
-      dragSrc.value = null;
-      dropZoneIdx.value = -1;
+      dashItems.push({ widget: { ...uiState.dragSrc }, x, y, w: 200, h: 160 });
+      uiState.dragSrc = null;
+      uiState.dropZoneIdx = -1;
     };
     const onDashItemMd = (idx, evt) => {
       dashDrag.on = true; dashDrag.idx = idx;
@@ -331,7 +336,7 @@ window.XsSample14 = {
     const removeDashItem = (idx) => { dashItems.splice(idx, 1); };
     /* 탭별 초기화 */
     const clearPreview = () => {
-      const tab = activeTab.value;
+      const tab = uiState.activeTab;
       if (GRID_COLS[tab]) {
         const cells = gridCells[tab], cols = GRID_COLS[tab];
         cells.splice(0, cells.length);
@@ -348,16 +353,16 @@ window.XsSample14 = {
     const popoverPos    = reactive({ top: 0, left: 0 });
     const showWidgetInfo = (w, p, area, key, evt) => {
       evt.stopPropagation();
-      if (popoverKey.value === key) { popoverKey.value = null; return; }
+      if (uiState.popoverKey === key) { uiState.popoverKey = null; return; }
       const rect = evt.currentTarget.getBoundingClientRect();
       popoverPos.top  = rect.bottom + 6;
       popoverPos.left = Math.min(rect.left, window.innerWidth - 316);
-      popoverWidget.value = w;
-      popoverArea.value   = area;
-      popoverPanel.value  = p;
-      popoverKey.value    = key;
+      uiState.popoverWidget = w;
+      uiState.popoverArea   = area;
+      uiState.popoverPanel  = p;
+      uiState.popoverKey    = key;
     };
-    const closePopover = () => { popoverKey.value = null; };
+    const closePopover = () => { uiState.popoverKey = null; };
     /* ── 반응형 뷰포트 ── */
     const viewportMode = ref('desktop');
     /* auto-fill 기반 반응형: 뷰포트 너비 제약이 걸리면 자동으로 컬럼 축소 */
@@ -368,25 +373,24 @@ window.XsSample14 = {
         grid3: 'repeat(auto-fill,minmax(max(calc(33.333% - 6px),190px),1fr))',
         grid4: 'repeat(auto-fill,minmax(max(calc(25% - 6px),220px),1fr))',
       };
-      return map[activeTab.value] || 'repeat(1,1fr)';
+      return map[uiState.activeTab] || 'repeat(1,1fr)';
     });
     const cfViewportWidth = computed(() => {
-      if (viewportMode.value === 'mobile') return '375px';
-      if (viewportMode.value === 'tablet') return '768px';
+      if (uiState.viewportMode === 'mobile') return '375px';
+      if (uiState.viewportMode === 'tablet') return '768px';
       return null;
     });
     /* 실제 컨텐츠 보기 토글 */
-    const showRealContent = ref(false);
+    const uiState = reactive({ showRealContent: false, copied: false });
     /* 초기화 */
     initExpand();
     return {
-      previewDate, previewTime, showAreaDrop,
+      uiState, previewDate, previewTime,
       selectedAreas, cfAllAreas, cfAreaBtnLabel,
       toggleArea, selectAllAreas, clearAllAreas, resetDate,
-      searchStatus, searchCondition, searchAuthRequired, searchAuthGrade,
       CONDITION_OPTS, AUTH_GRADE_OPTS,
       isLoggedIn, userGrade, userNm, cfAccessibleConds,
-      showCatModal, selectedCatIds, cfCatBtnLabel, onCatApply, cfSelectedCatNames,
+      selectedCatIds, cfCatBtnLabel, onCatApply, cfSelectedCatNames,
       cfStructAreaList, expandedAreas, toggleAreaExpand, initExpand,
       checkedPanels, checkedWidgets,
       togglePanel, toggleWidget,

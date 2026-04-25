@@ -5,24 +5,23 @@ window.SyMenuMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const menus = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ checkAll: false, loading: false, error: null });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/menu/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         menus = res.data?.data?.list || [];
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('SyMenu 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     /* 좌측 메뉴 트리 */
@@ -38,10 +37,14 @@ window.SyMenuMng = {
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
+      error: null,
+      error: null,
+      error: null,
     });
     const cfAllowedTreeIds = computed(() => {
       if (selectedTreeId.value == null) return null;
       return window.boCmUtil.collectDescendantIds(menus, 'menuId', 'parentId', selectedTreeId.value);
+      error: null,
     });
     watch(selectedTreeId, () => { if (typeof handleLoadGrid === 'function') handleLoadGrid(); });
 
@@ -51,11 +54,13 @@ window.SyMenuMng = {
       kw: '',
       type: '',
       useYn: ''
+      error: null,
     });
     const searchParamOrg = reactive({
       kw: '',
       type: '',
       useYn: ''
+      error: null,
     });
     const MENU_TYPES   = ['페이지', '폴더', '외부링크', '구분선'];
 
@@ -93,6 +98,7 @@ window.SyMenuMng = {
       ...m, _depth: m._depth || 0, _row_status: 'N', _row_check: false,
       _orig: { menuCode: m.menuCode, menuNm: m.menuNm, parentId: m.parentId,
                menuUrl: m.menuUrl, menuType: m.menuType, sortOrd: m.sortOrd, useYn: m.useYn, remark: m.remark },
+      error: null,
     });
 
     const handleLoadGrid = () => {
@@ -216,8 +222,7 @@ window.SyMenuMng = {
       handleLoadGrid();
     };
 
-    const checkAll = ref(false);
-    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = checkAll.value; }); };
+    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
     const parentNm = (parentId) => {
       if (!parentId) return '';
@@ -246,13 +251,13 @@ window.SyMenuMng = {
       '메뉴목록.csv'
     );
 
-    return { menus, loading, error, selectedTreeId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
+    return { menus, uiState, uiState, selectedTreeId, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, searchParamOrg, MENU_TYPES,
       cfSiteNm,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
-      checkAll, toggleCheckAll, parentNm,
+      uiState, toggleCheckAll, parentNm,
       menuTreeModal, openParentModal, onParentSelect,
       depthBullet, depthColor, fnStatusClass, fnTypeClass,
       exportExcel,

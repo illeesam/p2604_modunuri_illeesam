@@ -6,12 +6,11 @@ window.SyBbsMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const bbss = reactive([]);
     const bbms = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, error: null });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const resBbs = await window.boApi.get('/bo/sy/bbs/page', {
           params: { pageNo: 1, pageSize: 10000 }
@@ -23,13 +22,13 @@ window.SyBbsMng = {
         });
         bbms.splice(0, bbms.length, ...(resBbm.data?.data?.list || []));
 
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('SyBbs 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     /* ── 표시경로 선택 모달 (sy_path) ── */
@@ -58,7 +57,9 @@ window.SyBbsMng = {
     onMounted(() => {
       handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
+      error: null,
       expanded.clear(); initSet.forEach(v => expanded.add(v));
+      error: null,
     });
 
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
@@ -143,7 +144,7 @@ window.SyBbsMng = {
     watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
-    return { bbss, loading, error, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { bbss, uiState, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, cfBbmOptions, bbmNm, exportExcel };
   },
   template: /* html */`

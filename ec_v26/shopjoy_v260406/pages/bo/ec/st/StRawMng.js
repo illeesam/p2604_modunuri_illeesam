@@ -4,7 +4,7 @@ window.StRawMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
-    const descOpen = ref(false);
+    const uiState = reactive({ descOpen: false });
 
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const dateRange = ref('이번달');
@@ -223,7 +223,7 @@ window.StRawMng = {
     onSearch();
   };
   return {
-      descOpen, searchMoreOpen,
+      uiState, searchMoreOpen,
       DATE_RANGE_OPTIONS, dateRange, dateStart, dateEnd, onDateRangeChange,
       searchKw, searchType, searchStatus,
       searchVendorType, searchPayMethod, searchBuyConfirm,

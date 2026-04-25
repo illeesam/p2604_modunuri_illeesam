@@ -6,14 +6,13 @@ window.OdDlivDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
     const deliveries = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false });
     const claims = reactive([]);
     const orders = reactive([]);
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [resD, resC, resO] = await Promise.all([
           window.boApi.get('/bo/ec/od/dliv/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -23,13 +22,13 @@ window.OdDlivDtl = {
         deliveries.splice(0, deliveries.length, ...(resD.data?.data?.list || []));
         claims.splice(0, claims.length, ...(resC.data?.data?.list || []));
         orders.splice(0, orders.length, ...(resO.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('OdDliv 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => !props.editId);
@@ -42,6 +41,8 @@ window.OdDlivDtl = {
     const form = reactive({
       dlivId: '', orderId: '', userId: '', userNm: '', receiver: '',
       address: '', phone: '', courierCd: '', trackingNo: '', statusCd: '준비중', regDate: '', memo: '',
+      error: null,
+      error: null,
     });
     const errors = reactive({});
 
@@ -136,7 +137,7 @@ window.OdDlivDtl = {
         const paid = Math.round(total * shares[i]);
         if (paid <= 0) return null;
         const sale = discRates[i] > 0 ? Math.round(paid / (1 - discRates[i])) : paid;
-        return { deliveries, loading, error, ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
+        return { deliveries, uiState; ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
       }).filter(Boolean);
     };
     const initItems = async () => {

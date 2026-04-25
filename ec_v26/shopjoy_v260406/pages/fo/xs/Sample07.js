@@ -6,7 +6,7 @@ window.XsSample07 = {
 
     /* ===== Tree (JSON 로딩) ===== */
     const treeRoot   = reactive([]);
-    const treeLoaded = ref(false);
+    const uiState    = reactive({ uiState.treeLoaded: false, settingsOpen: false, uiState.histResSending: false });
 
     const makeNode = n => {
       const node = reactive({
@@ -135,7 +135,6 @@ window.XsSample07 = {
 
     /* ===== Settings (localStorage 자동저장) ===== */
     const SETTINGS_KEY = 'sj_sample07_v2';
-    const settingsOpen = ref(false);
     const hostUrl      = ref(window.location.origin);
     const token        = ref('');
     const defHeaders   = reactive([{ k: 'Content-Type', v: 'application/json' }, { k: '', v: '' }]);
@@ -431,7 +430,6 @@ window.XsSample07 = {
     const closeHistModal = () => { histModal.value = null; };
 
     const histResJson     = ref('');
-    const histResSending  = ref(false);
     const histResStatus   = ref(null);
     const histResTime     = ref(null);
     const histResTs       = ref('');
@@ -453,7 +451,7 @@ window.XsSample07 = {
       histResTime.value     = null;
       histResTs.value       = '';
       histResProgress.value = 0;
-      histResSending.value  = true;
+      uiState.histResSending  = true;
       // progress 애니메이션: 0→85 느리게, 나머지는 완료 후 100
       const _start = Date.now();
       const _tick = setInterval(() => {
@@ -464,7 +462,7 @@ window.XsSample07 = {
       await doSend(tab);
       clearInterval(_tick);
       histResProgress.value = 100;
-      histResSending.value  = false;
+      uiState.histResSending  = false;
       histResJson.value     = tab.resJson;
       histResStatus.value   = tab.resStatus;
       histResTime.value     = tab.resTime;
@@ -521,17 +519,17 @@ window.XsSample07 = {
     onMounted(() => {
       loadSettings(); refreshLs();
       /* 샘플 데이터: 빈 상태로 시작 */
-      treeLoaded.value = true;
+      uiState.treeLoaded = true;
       treeRoot.push(buildAutoCrudNodes());
       treeRoot.push(buildAutoCrudRestNodes());
     });
 
     return {
-      cfFlatTree, treeSearch, toggleNode, selectApiNode, treeLoaded, appFilter, APP_META,
+      cfFlatTree, treeSearch, toggleNode, selectApiNode, appFilter, APP_META,
       openTabs, activeTabId, cfActiveTab, closeTab, closeAllTabs,
-      settingsOpen, hostUrl, token, defHeaders, lsItems, refreshLs,
+      uiState, hostUrl, token, defHeaders, lsItems, refreshLs,
       toasts, closeToast,
-      doSend, history, histSelIdx, histModal, histModalTab, editReq, histResJson, histResSending, histResStatus, histResTime, histResTs, histResProgress, selectHistory, closeHistModal, resendHist,
+      doSend, history, histSelIdx, histModal, histModalTab, editReq, histResJson, histResStatus, histResTime, histResTs, histResProgress, selectHistory, closeHistModal, resendHist,
       cfResGridCols, cfResGridRows,
       addRow, removeRow, fnMethodStyle, fnStatusStyle, fnMethodDot, quickRun,
       // 자동실행
@@ -549,9 +547,9 @@ window.XsSample07 = {
     <div style="padding:7px 10px 6px;border-bottom:1px solid #e0e0e0;background:#f0f2f5;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
         <span style="font-size:11px;font-weight:800;color:#333;">API Endpoints</span>
-        <button @click="settingsOpen=!settingsOpen" title="공통 설정"
+        <button @click="uiState.settingsOpen=!settingsOpen" title="공통 설정"
           style="border:none;background:none;cursor:pointer;font-size:15px;padding:0;line-height:1;"
-          :style="settingsOpen?'color:#1a73e8;':'color:#999;'">⚙</button>
+          :style="uiState.settingsOpen?'color:#1a73e8;':'color:#999;'">⚙</button>
       </div>
       <div style="display:flex;gap:3px;margin-bottom:6px;flex-wrap:wrap;">
         <label v-for="(meta,key) in APP_META" :key="key"
@@ -565,7 +563,7 @@ window.XsSample07 = {
     </div>
     <!-- Tree -->
     <div style="flex:1;overflow-y:auto;padding:4px 0;">
-      <div v-if="!treeLoaded" style="text-align:center;padding:20px;color:#ccc;font-size:11px;">로딩 중…</div>
+      <div v-if="!uiState.treeLoaded" style="text-align:center;padding:20px;color:#ccc;font-size:11px;">로딩 중…</div>
       <div v-for="item in cfFlatTree" :key="item.n.id"
         @click="item.n.type==='req' ? selectApiNode(item.n) : toggleNode(item.n)"
         style="display:flex;align-items:center;gap:3px;padding:3px 6px;cursor:pointer;white-space:nowrap;overflow:hidden;transition:background .1s;user-select:none;"
@@ -968,10 +966,10 @@ window.XsSample07 = {
               <span style="font-size:10px;font-weight:800;color:#1a73e8;text-transform:uppercase;letter-spacing:.05em;">요청</span>
               <span style="font-size:10px;color:#aaa;">{{ histModal.ts }}</span>
               <span style="flex:1;"></span>
-              <button @click="resendHist" :disabled="histResSending"
+              <button @click="resendHist" :disabled="uiState.histResSending"
                 style="font-size:11px;font-weight:700;padding:4px 14px;border:none;border-radius:5px;background:#e8587a;color:#fff;cursor:pointer;white-space:nowrap;"
-                :style="histResSending?'opacity:.55;cursor:not-allowed;':''">
-                {{ histResSending ? '전송 중…' : '▶ 재전송' }}
+                :style="uiState.histResSending?'opacity:.55;cursor:not-allowed;':''">
+                {{ uiState.histResSending ? '전송 중…' : '▶ 재전송' }}
               </button>
             </div>
             <!-- 메서드 -->
@@ -1046,7 +1044,7 @@ window.XsSample07 = {
               <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
                 <span style="font-size:10px;font-weight:800;color:#e8587a;text-transform:uppercase;letter-spacing:.05em;">응답</span>
                 <span style="flex:1;"></span>
-                <template v-if="histResSending">
+                <template v-if="uiState.histResSending">
                   <span style="font-size:10px;color:#1a73e8;font-weight:600;">전송 중… {{ histResProgress }}%</span>
                 </template>
                 <template v-else-if="histResStatus">
@@ -1064,15 +1062,15 @@ window.XsSample07 = {
               <!-- progress bar -->
               <div style="height:6px;background:#f0f0f0;border-radius:0;margin:0 -14px;overflow:hidden;">
                 <div style="height:100%;transition:width .08s linear;"
-                  :style="histResSending ? 'background:#e8587a;width:'+histResProgress+'%;' : (histResStatus ? 'background:#22c55e;width:100%;' : 'width:0;')"
+                  :style="uiState.histResSending ? 'background:#e8587a;width:'+histResProgress+'%;' : (histResStatus ? 'background:#22c55e;width:100%;' : 'width:0;')"
                 ></div>
               </div>
             </div>
             <!-- 응답 본문 스크롤 영역 -->
             <div style="flex:1;overflow-y:auto;padding:12px 14px;">
-              <pre v-if="!histResSending && histResJson" style="margin:0;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#333;line-height:1.6;background:#fafafa;border:1px solid #eee;border-radius:6px;padding:10px;">{{ histResJson }}</pre>
-              <pre v-else-if="!histResSending && !histResJson && histModal.resJson" style="margin:0;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#888;line-height:1.6;background:#fafafa;border:1px solid #eee;border-radius:6px;padding:10px;">{{ histModal.resJson }}</pre>
-              <div v-else-if="!histResSending" style="display:flex;align-items:center;justify-content:center;height:80px;color:#ccc;font-size:12px;">응답 본문 없음</div>
+              <pre v-if="!uiState.histResSending && histResJson" style="margin:0;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#333;line-height:1.6;background:#fafafa;border:1px solid #eee;border-radius:6px;padding:10px;">{{ histResJson }}</pre>
+              <pre v-else-if="!uiState.histResSending && !histResJson && histModal.resJson" style="margin:0;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#888;line-height:1.6;background:#fafafa;border:1px solid #eee;border-radius:6px;padding:10px;">{{ histModal.resJson }}</pre>
+              <div v-else-if="!uiState.histResSending" style="display:flex;align-items:center;justify-content:center;height:80px;color:#ccc;font-size:12px;">응답 본문 없음</div>
             </div>
           </div>
         </div>

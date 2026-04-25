@@ -5,8 +5,7 @@ window.SyCodeMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const codes = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null });
 
     /* ── 트리/그룹 선택 상태 (loadGrid 보다 먼저 선언) ── */
     const selectedGrp = ref('');
@@ -130,13 +129,13 @@ window.SyCodeMng = {
     /* _expand3_grp: 그룹 트리 3레벨 펼침 */
     const handleFetchData = async () => {
       try {
-        loading.value = true;
+        uiState.loading = true;
         const res = await window.boApi.get('/bo/sy/code/page', { params: { pageNo: 1, pageSize: 100000 } });
         const list = res.data?.data?.list || [];
         codes.splice(0, codes.length, ...list);
         updateCodeGroups();
         loadGrp();
-      } catch (_) {}  finally { loading.value = false; }
+      } catch (_) {}  finally { uiState.loading = false; }
       const initSet = window.boCmUtil.collectExpandedToDepth(cfGrpTree.value, 2);
       grpExpanded.clear(); initSet.forEach(v => grpExpanded.add(v));
     };
@@ -237,7 +236,7 @@ window.SyCodeMng = {
           current = current.parentCodeValue ? byValue.get(current.parentCodeValue) : null;
         }
         const indent = '　'.repeat(depth); // 전각 공백으로 들여쓰기
-        return { codes, loading, error, label: `${r.codeLabel}(${r.codeValue})`,
+        return { codes, uiState, uiState, label: `${r.codeLabel}(${r.codeValue})`,
           value: r.codeValue,
           path: getCodeHierarchyPath(r.codeValue),
           displayLabel: `${indent}${r.codeLabel}(${r.codeValue})`
@@ -247,7 +246,7 @@ window.SyCodeMng = {
 
     const onSearch = async () => {
       try {
-        loading.value = true;
+        uiState.loading = true;
         const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(
           Object.entries(searchParam).filter(([, v]) => v)
         )};
@@ -261,7 +260,7 @@ window.SyCodeMng = {
         console.error('[catch-info]', err);
         props.showToast('조회 중 오류가 발생했습니다.', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const onReset = () => {
@@ -400,26 +399,24 @@ window.SyCodeMng = {
 
     /* ── 드래그 이동 ── */
     const dragSrc  = ref(null);
-    const dragMoved = ref(false);
-    const onDragStart = (idx) => { dragSrc.value = idx; dragMoved.value = false; };
+    const onDragStart = (idx) => { dragSrc.value = idx; uiState.dragMoved = false; };
     const onDragOver  = (e, idx) => {
       e.preventDefault();
       if (dragSrc.value === null || dragSrc.value === idx) return;
       const moved = gridRows.splice(dragSrc.value, 1)[0];
       gridRows.splice(idx, 0, moved);
       dragSrc.value = idx;
-      dragMoved.value = true;
+      uiState.dragMoved = true;
     };
     const onDragEnd = () => {
-      if (dragMoved.value) props.showToast('정렬정보가 저장되었습니다.');
+      if (uiState.dragMoved) props.showToast('정렬정보가 저장되었습니다.');
       dragSrc.value = null;
-      dragMoved.value = false;
+      uiState.dragMoved = false;
     };
 
     /* ── 전체 체크 (D 행 포함) ── */
-    const checkAll = ref(false);
     const toggleCheckAll = () => {
-      gridRows.forEach(r => { r._row_check = checkAll.value; });
+      gridRows.forEach(r => { r._row_check = uiState.checkAll; });
     };
 
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
@@ -491,7 +488,7 @@ window.SyCodeMng = {
       focusedIdx, setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       dragSrc, onDragStart, onDragOver, onDragEnd,
-      checkAll, toggleCheckAll, fnStatusClass,
+      uiState, toggleCheckAll, fnStatusClass,
       exportExcel,
       codeGroups,
       grpRows, cfGrpDirty, addGrp, handleDeleteGrp, cancelGrp, handleSaveGrp, onGrpChange,

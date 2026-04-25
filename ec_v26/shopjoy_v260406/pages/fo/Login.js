@@ -6,6 +6,9 @@ window.Login = {
   setup(props, { emit }) {
     const { ref, reactive, watch } = Vue;
 
+    /* ── UI 상태 ── */
+    const uiState = reactive({ snsPhoneVerified: false });
+
     // login | terms | signup | sns-signup
     const step       = ref('login');
     const snsProvider = ref(null); // sns 회원가입 시 provider 저장
@@ -130,7 +133,7 @@ window.Login = {
     /* ── SNS 회원가입 제출 ── */
     const snsNickname = ref('');
     const snsPhone    = ref('');
-    const snsPhoneCode = ref(''); const snsPhoneCodeSent = ref(false); const snsPhoneVerified = ref(false);
+    const snsPhoneCode = ref(''); const snsPhoneCodeSent = ref(false);
     const _spc = ref('');
     const snsErr = ref('');
 
@@ -141,11 +144,11 @@ window.Login = {
     const sendSnsPhoneCode = () => {
       if (!/^010[-]?\d{4}[-]?\d{4}$/.test(snsPhone.value.replace(/\s/g, ''))) { snsErr.value = '올바른 휴대폰 번호를 입력하세요.'; return; }
       _spc.value = String(Math.floor(100000 + Math.random() * 900000));
-      snsPhoneCodeSent.value = true; snsPhoneVerified.value = false; snsErr.value = '';
+      snsPhoneCodeSent.value = true; uiState.snsPhoneVerified = false; snsErr.value = '';
       props.showToast('인증코드: ' + _spc.value + '  (데모용)', 'info');
     };
     const verifySnsPhone = () => {
-      if (snsPhoneCode.value === _spc.value) { snsPhoneVerified.value = true; snsErr.value = ''; props.showToast('휴대폰 인증 완료!', 'success'); }
+      if (snsPhoneCode.value === _spc.value) { uiState.snsPhoneVerified = true; snsErr.value = ''; props.showToast('휴대폰 인증 완료!', 'success'); }
       else snsErr.value = '인증코드가 올바르지 않습니다.';
     };
 
@@ -161,7 +164,7 @@ window.Login = {
     const doSnsSignup = async () => {
       snsErr.value = '';
       if (!snsNickname.value.trim()) { snsErr.value = '이름/닉네임을 입력하세요.'; return; }
-      if (!snsPhoneVerified.value)   { snsErr.value = '휴대폰 인증이 필요합니다.'; return; }
+      if (!uiState.snsPhoneVerified)   { snsErr.value = '휴대폰 인증이 필요합니다.'; return; }
       const demos = { google: 'google.sns@gmail.com', kakao: 'kakao.sns@kakao.com', naver: 'naver.sns@naver.com' };
       const r = await window.foAuth.signup(snsNickname.value, demos[snsProvider.value] || 'sns@demo.com', snsPhone.value, {
         provider: snsProvider.value,
@@ -183,7 +186,7 @@ window.Login = {
       step, snsProvider, form, loginErr, doLogin, doSocial, startSnsSignup,
       terms, toggleAll, goNextFromTerms,
       sf, signupErr, sendEmailCode, verifyEmail, sendPhoneCode, verifyPhone, doSignup, openKakaoAddr,
-      snsNickname, snsPhone, snsPhoneCode, snsPhoneCodeSent, snsPhoneVerified, snsErr,
+      snsNickname, snsPhone, snsPhoneCode, snsPhoneCodeSent, uiState, snsErr,
       sendSnsPhoneCode, verifySnsPhone, doSnsSignup, snsSf, openKakaoAddrSns,
       providerLabel, providerColor, providerTextColor, IS,
     };
@@ -408,20 +411,20 @@ window.Login = {
         <!-- 휴대폰 인증 -->
         <div>
           <div style="display:flex;gap:8px;">
-            <input v-model="snsPhone" type="tel" placeholder="휴대폰 번호 (010-0000-0000) *" :disabled="snsPhoneVerified"
+            <input v-model="snsPhone" type="tel" placeholder="휴대폰 번호 (010-0000-0000) *" :disabled="uiState.snsPhoneVerified"
               style="flex:1;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
-            <button @click="sendSnsPhoneCode" :disabled="snsPhoneVerified"
+            <button @click="sendSnsPhoneCode" :disabled="uiState.snsPhoneVerified"
               style="padding:11px 14px;border:1.5px solid var(--blue);border-radius:8px;background:transparent;color:var(--blue);cursor:pointer;font-size:0.82rem;font-weight:600;white-space:nowrap;"
-              :style="snsPhoneVerified?'opacity:0.4;cursor:not-allowed;':''">
-              {{ snsPhoneVerified ? '✓ 인증됨' : '코드 발송' }}
+              :style="uiState.snsPhoneVerified?'opacity:0.4;cursor:not-allowed;':''">
+              {{ uiState.snsPhoneVerified ? '✓ 인증됨' : '코드 발송' }}
             </button>
           </div>
-          <div v-if="snsPhoneCodeSent && !snsPhoneVerified" style="display:flex;gap:8px;margin-top:8px;">
+          <div v-if="snsPhoneCodeSent && !uiState.snsPhoneVerified" style="display:flex;gap:8px;margin-top:8px;">
             <input v-model="snsPhoneCode" type="text" placeholder="인증코드 6자리"
               style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
             <button @click="verifySnsPhone" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">확인</button>
           </div>
-          <div v-if="snsPhoneVerified" style="font-size:0.8rem;color:#22c55e;margin-top:4px;">✓ 휴대폰 인증 완료</div>
+          <div v-if="uiState.snsPhoneVerified" style="font-size:0.8rem;color:#22c55e;margin-top:4px;">✓ 휴대폰 인증 완료</div>
         </div>
       </div>
 

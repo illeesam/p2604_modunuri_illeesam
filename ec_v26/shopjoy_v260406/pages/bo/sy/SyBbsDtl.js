@@ -6,24 +6,23 @@ window.SyBbsDtl = {
     const { reactive, computed, onMounted, ref, onBeforeUnmount } = Vue;
 
     const bbss = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, showBbmDetail: false, error: null });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/bbs/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         bbss = res.data?.data?.list || [];
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('SyBbs 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
@@ -46,7 +45,6 @@ window.SyBbsDtl = {
 
     /* ── 게시판 선택 팝업 ── */
     const showBbmModal  = ref(false);
-    const showBbmDetail = ref(false);   // 상세보기 팝업
 
     const onBbmSelect = (b) => {
       showBbmModal.value = false;
@@ -143,8 +141,8 @@ window.SyBbsDtl = {
       }
     };
 
-    return { bbss, loading, error, cfIsNew, form, errors, selectedBbm, cfContentType, cfAllowAttach, cfAttachMaxCount,
-      showBbmModal, showBbmDetail, onBbmSelect, handleSave, cfSiteNm,
+    return { bbss, uiState, uiState, cfIsNew, form, errors, selectedBbm, cfContentType, cfAllowAttach, cfAttachMaxCount,
+      showBbmModal, uiState, onBbmSelect, handleSave, cfSiteNm,
     };
   },
   template: /* html */`

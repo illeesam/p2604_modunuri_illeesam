@@ -92,7 +92,7 @@
       };
 
       /* ── UI 상태 ── */
-      const filterExpand = ref(false);
+      const uiState = reactive({ filterExpand: false });
       const activeTab    = ref('sales');
       const viewMode     = ref('4col'); // tab | 1col | 2col | 3col | 4col
       const TABS = [

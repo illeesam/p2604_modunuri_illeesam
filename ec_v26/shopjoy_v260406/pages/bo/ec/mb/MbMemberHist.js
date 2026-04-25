@@ -6,24 +6,23 @@ window.MbMemberHist = {
   setup(props) {
     const { ref, computed } = Vue;
     const members = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/mb/member/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
         members.splice(0, members.length, ...(res.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('MbMember 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     onMounted(() => { handleFetchData(); });
@@ -36,7 +35,7 @@ window.MbMemberHist = {
     const cfMemberOrders = computed(() => window.safeArrayUtils.safeFilter(orders, o => o.userId === props.memberId));
     const cfMemberClaims = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.userId === props.memberId));
 
-    return { members, loading, error, tab, cfMemberOrders, cfMemberClaims, viewMode2, showTab };
+    return { members, uiState; tab, cfMemberOrders, cfMemberClaims, viewMode2, showTab };
   },
   template: /* html */`
 <div>

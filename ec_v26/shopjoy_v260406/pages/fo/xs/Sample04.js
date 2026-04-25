@@ -7,24 +7,24 @@ window.XsSample04 = {
     /* ── 회원 데이터 ── */
     const members = reactive([]);
 
-    /* ── 메인 모달 상태 ── */
-    const modal = reactive({ type: null, variant: 'info', data: null, nested2: false });
-
-    /* ── Confirm 콜백 저장 ── */
-    let _confirmCb = null;
-
     /* ── 폼 모달 ── */
     const form = reactive({ name: '', email: '', phone: '', grade: '일반' });
     const formErrors = reactive({});
 
+    /* ── UI 상태 ── */
+    const uiState = reactive({ modalType: null, modalVariant: 'info', modalData: null, nested2: false });
+
+    /* ── Confirm 콜백 저장 ── */
+    let _confirmCb = null;
+
     const openModal = (type, opts = {}) => {
-      modal.type     = type;
-      modal.variant  = opts.variant || 'info';
-      modal.data     = opts.data    || null;
-      modal.nested2  = false;
+      uiState.modalType     = type;
+      uiState.modalVariant  = opts.variant || 'info';
+      uiState.modalData     = opts.data    || null;
+      uiState.nested2  = false;
       _confirmCb     = opts.onConfirm || null;
     };
-    const closeModal = () => { modal.type = null; modal.nested2 = false; _confirmCb = null; };
+    const closeModal = () => { uiState.modalType = null; uiState.nested2 = false; _confirmCb = null; };
 
     const doConfirm = () => {
       const cb = _confirmCb;
@@ -35,7 +35,7 @@ window.XsSample04 = {
     const loadingDemo = async () => {
       openModal('loading');
       await new Promise(r => setTimeout(r, 2500));
-      if (modal.type === 'loading') closeModal();
+      if (uiState.modalType === 'loading') closeModal();
     };
 
     const submitForm = () => {
@@ -177,7 +177,7 @@ window.XsSample04 = {
     ];
 
     return {
-      members, modal, form, formErrors, CATALOG,
+      uiState, members, form, formErrors, CATALOG,
       openModal, closeModal, doConfirm, loadingDemo, submitForm, openEditConfirm,
       fnGradeBadge, fnStatusBadge, fnAlertMeta,
       /* BaseModal */
@@ -382,30 +382,30 @@ window.XsSample04 = {
   <!-- ━━━━━━ MODALS ━━━━━━ -->
 
   <!-- ① Alert 모달 -->
-  <template v-if="modal.type==='alert'">
+  <template v-if="uiState.modalType==='alert'">
     <div @click="closeModal"
       style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
       <div @click.stop
         style="background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.22);width:340px;max-width:90vw;overflow:hidden;">
-        <div style="height:4px;" :style="'background:'+fnAlertMeta(modal.variant).bar"></div>
+        <div style="height:4px;" :style="'background:'+fnAlertMeta(uiState.modalVariant).bar"></div>
         <div style="padding:22px 20px 18px;">
           <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:18px;">
-            <span style="font-size:30px;line-height:1;flex-shrink:0;">{{ fnAlertMeta(modal.variant).icon }}</span>
+            <span style="font-size:30px;line-height:1;flex-shrink:0;">{{ fnAlertMeta(uiState.modalVariant).icon }}</span>
             <div>
-              <div style="font-size:13px;font-weight:800;color:#111;margin-bottom:5px;">{{ fnAlertMeta(modal.variant).label }}</div>
-              <div style="font-size:12px;color:#555;line-height:1.65;">{{ modal.data?.msg }}</div>
+              <div style="font-size:13px;font-weight:800;color:#111;margin-bottom:5px;">{{ fnAlertMeta(uiState.modalVariant).label }}</div>
+              <div style="font-size:12px;color:#555;line-height:1.65;">{{ uiState.modalData?.msg }}</div>
             </div>
           </div>
           <button @click="closeModal"
             style="width:100%;padding:9px;border:none;border-radius:7px;cursor:pointer;font-size:13px;font-weight:700;color:#fff;"
-            :style="'background:'+fnAlertMeta(modal.variant).bg">확인</button>
+            :style="'background:'+fnAlertMeta(uiState.modalVariant).bg">확인</button>
         </div>
       </div>
     </div>
   </template>
 
   <!-- ② Confirm 다이얼로그 -->
-  <template v-if="modal.type==='confirm'">
+  <template v-if="uiState.modalType==='confirm'">
     <div @click="closeModal"
       style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
       <div @click.stop
@@ -424,7 +424,7 @@ window.XsSample04 = {
   </template>
 
   <!-- ③ 폼 입력 모달 -->
-  <template v-if="modal.type==='form'">
+  <template v-if="uiState.modalType==='form'">
     <div @click="closeModal"
       style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
       <div @click.stop
@@ -470,7 +470,7 @@ window.XsSample04 = {
   </template>
 
   <!-- ④ 상세보기 모달 -->
-  <template v-if="modal.type==='detail' && modal.data">
+  <template v-if="uiState.modalType==='detail' && uiState.modalData">
     <div @click="closeModal"
       style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
       <div @click.stop
@@ -478,8 +478,8 @@ window.XsSample04 = {
         <div style="padding:13px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;background:#f8f9fa;">
           <span style="font-size:18px;">👤</span>
           <span style="font-size:13px;font-weight:800;color:#222;">회원 상세 정보</span>
-          <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;" :style="fnGradeBadge(modal.data.grade)">{{ modal.data.grade }}</span>
-          <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;margin-left:2px;" :style="fnStatusBadge(modal.data.status)">{{ modal.data.status }}</span>
+          <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;" :style="fnGradeBadge(uiState.modalData.grade)">{{ uiState.modalData.grade }}</span>
+          <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;margin-left:2px;" :style="fnStatusBadge(uiState.modalData.status)">{{ uiState.modalData.status }}</span>
           <span style="flex:1;"></span>
           <button @click="closeModal" style="border:none;background:none;cursor:pointer;font-size:18px;color:#bbb;line-height:1;">✕</button>
         </div>
@@ -487,49 +487,49 @@ window.XsSample04 = {
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin-bottom:14px;">
             <div>
               <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">이름</div>
-              <div style="font-size:16px;font-weight:800;color:#111;">{{ modal.data.name }}</div>
+              <div style="font-size:16px;font-weight:800;color:#111;">{{ uiState.modalData.name }}</div>
             </div>
             <div>
               <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">회원번호</div>
-              <div style="font-size:14px;font-weight:700;color:#555;">#{{ modal.data.memberId }}</div>
+              <div style="font-size:14px;font-weight:700;color:#555;">#{{ uiState.modalData.memberId }}</div>
             </div>
             <div>
               <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">이메일</div>
-              <div style="font-size:11px;color:#333;font-family:monospace;">{{ modal.data.email }}</div>
+              <div style="font-size:11px;color:#333;font-family:monospace;">{{ uiState.modalData.email }}</div>
             </div>
             <div>
               <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">연락처</div>
-              <div style="font-size:12px;color:#333;">{{ modal.data.phone }}</div>
+              <div style="font-size:12px;color:#333;">{{ uiState.modalData.phone }}</div>
             </div>
             <div>
               <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">가입일</div>
-              <div style="font-size:12px;color:#333;">{{ modal.data.joinDate }}</div>
+              <div style="font-size:12px;color:#333;">{{ uiState.modalData.joinDate }}</div>
             </div>
             <div>
               <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">주소</div>
-              <div style="font-size:11px;color:#333;">{{ modal.data.address }}</div>
+              <div style="font-size:11px;color:#333;">{{ uiState.modalData.address }}</div>
             </div>
           </div>
           <!-- 구매 통계 -->
           <div style="background:#f8f9fa;border-radius:8px;padding:12px 16px;display:flex;gap:0;margin-bottom:10px;">
             <div style="flex:1;text-align:center;border-right:1px solid #e5e7eb;">
               <div style="font-size:10px;color:#aaa;margin-bottom:4px;">총 주문</div>
-              <div style="font-size:20px;font-weight:800;color:#333;">{{ modal.data.orders }}</div>
+              <div style="font-size:20px;font-weight:800;color:#333;">{{ uiState.modalData.orders }}</div>
               <div style="font-size:10px;color:#aaa;">건</div>
             </div>
             <div style="flex:1;text-align:center;padding:0 12px;">
               <div style="font-size:10px;color:#aaa;margin-bottom:4px;">총 구매액</div>
-              <div style="font-size:18px;font-weight:800;color:#e8587a;">{{ modal.data.totalAmt.toLocaleString() }}</div>
+              <div style="font-size:18px;font-weight:800;color:#e8587a;">{{ uiState.modalData.totalAmt.toLocaleString() }}</div>
               <div style="font-size:10px;color:#aaa;">원</div>
             </div>
           </div>
-          <div v-if="modal.data.memo"
+          <div v-if="uiState.modalData.memo"
             style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:8px 12px;font-size:11px;color:#92400e;">
-            📌 {{ modal.data.memo }}
+            📌 {{ uiState.modalData.memo }}
           </div>
         </div>
         <div style="padding:10px 20px 14px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid #f0f0f0;">
-          <button @click="openEditConfirm(modal.data)"
+          <button @click="openEditConfirm(uiState.modalData)"
             style="padding:7px 16px;border:none;border-radius:6px;background:#7c3aed;color:#fff;cursor:pointer;font-size:12px;font-weight:700;">✏ 수정</button>
           <button @click="closeModal"
             style="padding:7px 16px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#666;">닫기</button>
@@ -539,7 +539,7 @@ window.XsSample04 = {
   </template>
 
   <!-- ⑤ 이미지 팝업 -->
-  <template v-if="modal.type==='image'">
+  <template v-if="uiState.modalType==='image'">
     <div @click="closeModal"
       style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;">
       <button @click="closeModal"
@@ -555,7 +555,7 @@ window.XsSample04 = {
   </template>
 
   <!-- ⑥ 우측 Drawer -->
-  <template v-if="modal.type==='drawer'">
+  <template v-if="uiState.modalType==='drawer'">
     <div @click="closeModal" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.4);"></div>
     <div @click.stop
       style="position:fixed;top:0;right:0;bottom:0;z-index:9001;width:360px;max-width:88vw;background:#fff;box-shadow:-4px 0 28px rgba(0,0,0,.18);display:flex;flex-direction:column;animation:s04_slideRight .22s ease;">
@@ -583,7 +583,7 @@ window.XsSample04 = {
   </template>
 
   <!-- ⑦ 바텀시트 -->
-  <template v-if="modal.type==='bottom'">
+  <template v-if="uiState.modalType==='bottom'">
     <div @click="closeModal" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.4);"></div>
     <div @click.stop
       style="position:fixed;left:0;right:0;bottom:0;z-index:9001;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -4px 28px rgba(0,0,0,.2);max-height:68vh;display:flex;flex-direction:column;animation:s04_slideBottom .22s ease;">
@@ -611,7 +611,7 @@ window.XsSample04 = {
   </template>
 
   <!-- ⑧ 전체화면 모달 -->
-  <template v-if="modal.type==='fullscreen'">
+  <template v-if="uiState.modalType==='fullscreen'">
     <div style="position:fixed;inset:0;z-index:9000;background:#fff;display:flex;flex-direction:column;animation:s04_fadeIn .18s ease;">
       <div style="padding:12px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;background:#9f1239;color:#fff;flex-shrink:0;">
         <span style="font-size:13px;font-weight:800;">⛶ 전체화면 모달</span>
@@ -630,8 +630,8 @@ window.XsSample04 = {
   </template>
 
   <!-- ⑨ 중첩 모달 -->
-  <template v-if="modal.type==='nested'">
-    <div @click="modal.nested2 ? modal.nested2=false : closeModal()"
+  <template v-if="uiState.modalType==='nested'">
+    <div @click="uiState.nested2 ? uiState.nested2=false : closeModal()"
       style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
       <div @click.stop
         style="background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.22);width:420px;max-width:92vw;">
@@ -644,7 +644,7 @@ window.XsSample04 = {
             이 모달 위에 2단계 모달을 추가로 오픈할 수 있습니다.<br>
             배경 클릭 시 가장 상단 모달부터 닫힙니다.
           </div>
-          <button @click="modal.nested2=true"
+          <button @click="uiState.nested2=true"
             style="font-size:12px;padding:7px 18px;border:none;border-radius:6px;background:#1e40af;color:#fff;cursor:pointer;font-weight:700;">+ 2단계 모달 열기</button>
         </div>
         <div style="padding:10px 18px 14px;border-top:1px solid #f0f0f0;text-align:right;">
@@ -653,15 +653,15 @@ window.XsSample04 = {
       </div>
     </div>
     <!-- 2단계 inner 모달 -->
-    <template v-if="modal.nested2">
-      <div @click="modal.nested2=false"
+    <template v-if="uiState.nested2">
+      <div @click="uiState.nested2=false"
         style="position:fixed;inset:0;z-index:9010;background:rgba(0,0,0,.32);display:flex;align-items:center;justify-content:center;">
         <div @click.stop
           style="background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.35);width:300px;max-width:86vw;padding:22px 20px 18px;">
           <div style="font-size:22px;margin-bottom:10px;">✅</div>
           <div style="font-size:13px;font-weight:800;color:#111;margin-bottom:8px;">2단계 모달</div>
           <div style="font-size:12px;color:#666;line-height:1.7;margin-bottom:18px;">모달 위에 표시되는 중첩 모달입니다.<br>z-index를 높여 최상단에 렌더링됩니다.</div>
-          <button @click="modal.nested2=false"
+          <button @click="uiState.nested2=false"
             style="width:100%;padding:9px;border:none;border-radius:7px;background:#1e40af;color:#fff;cursor:pointer;font-size:13px;font-weight:700;">닫기</button>
         </div>
       </div>
@@ -669,7 +669,7 @@ window.XsSample04 = {
   </template>
 
   <!-- ⑩ 로딩 모달 -->
-  <template v-if="modal.type==='loading'">
+  <template v-if="uiState.modalType==='loading'">
     <div style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;">
       <div style="width:56px;height:56px;border:5px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:s04_spin .75s linear infinite;"></div>
       <div style="color:#fff;font-size:14px;font-weight:700;">처리 중입니다…</div>

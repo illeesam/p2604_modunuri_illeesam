@@ -7,12 +7,11 @@ window.PmEventDtl = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const products = reactive([]);
     const events = reactive([]);
-    const loading = ref(false);
-    const error = ref(null);
+    const uiState = reactive({ loading: false, showProdPopup: false, showVendorModal: false });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
-      loading.value = true;
+      uiState.loading = true;
       try {
         const [eventsRes, prodsRes] = await Promise.all([
           window.boApi.get('/bo/ec/pm/event/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -20,13 +19,13 @@ window.PmEventDtl = {
         ]);
         events.splice(0, events.length, ...(eventsRes.data?.data?.list || []));
         products.splice(0, products.length, ...(prodsRes.data?.data?.list || []));
-        error.value = null;
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        error.value = err.message;
+        uiState.error = err.message;
         if (props.showToast) props.showToast('PmEvent 로드 실패', 'error');
       } finally {
-        loading.value = false;
+        uiState.loading = false;
       }
     };
     const cfIsNew = computed(() => !props.editId);
@@ -45,7 +44,9 @@ window.PmEventDtl = {
       title: '', status: '진행중', startDate: DEFAULT_START, endDate: DEFAULT_END,
       authRequired: false, targetProducts: [], visibilityTargets: '^PUBLIC^',
       bannerImage: '', content1: '', content2: '', content3: '', content4: '', content5: '',
+      error: null,
       vendorId: '', chargeStaff: '',
+      error: null,
     });
     const errors = reactive({});
 
@@ -116,7 +117,6 @@ window.PmEventDtl = {
     onUnmounted(() => { Object.keys(quillers).forEach(k => { delete quillers[k]; }); });
 
     /* 대상 상품 팝업 */
-    const showProdPopup = ref(false);
     const prodSearch = ref('');
     const cfFilteredProds = computed(() => window.safeArrayUtils.safeFilter(products, p => {
       const kw = prodSearch.value.trim().toLowerCase();
@@ -185,7 +185,6 @@ window.PmEventDtl = {
       form.visibilityTargets = window.visibilityUtil.serialize(list);
     };
 
-    const showVendorModal = ref(false);
     const cfSelectedVendorNm = computed(() => {
       if (!form.vendorId) return '소속업체 선택';
       const v = vendors.window.safeArrayUtils.safeFind(value, x => x.vendorId === form.vendorId);
@@ -193,10 +192,10 @@ window.PmEventDtl = {
     });
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
-      showVendorModal.value = false;
+      uiState.showVendorModal = false;
     };
 
-    return { events, loading, error, cfIsNew, tab, onTabChange, form, errors, activeContentTab, showProdPopup, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, viewMode2, showTab, showVendorModal, cfSelectedVendorNm, selectVendor };
+    return { events, uiState, uiState, cfIsNew, tab, onTabChange, form, errors, activeContentTab, uiState, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, viewMode2, showTab, uiState, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
