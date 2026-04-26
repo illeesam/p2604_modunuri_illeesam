@@ -2,7 +2,7 @@
 정책명: 사용자(Front Office) 기술 정책
 정책번호: base-기술-front
 관리자: 개발팀
-최종수정: 2026-04-19
+최종수정: 2026-04-26
 ---
 
 # 사용자(Front Office) 기술 정책
@@ -310,6 +310,155 @@ disp-fo-ui.html
 | `sv` | Pinia store state/getters | `svAuthUser`, `svCodes`, `svIsLoggedIn` |
 
 상세 규칙: `_doc/정책서-sy/sy.54.네이밍규칙.md`
+
+---
+
+## 15. FO 페이지 데이터 로딩 패턴
+
+모든 FO 페이지 컴포넌트는 동일한 3단계 체인으로 데이터를 로딩한다.
+
+### 15.1 표준 체인 구조
+
+```js
+// ① isAppReady: 스토어 초기화 완료 여부
+const isAppReady = computed(() => {
+  const initStore = window.useFoAppInitStore?.();
+  const codeStore = window.useFoCodeStore?.();
+  return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+});
+
+// ② fnLoadCodes: 코드/마스터 로드 진입점 (재진입 방지 플래그 포함)
+const fnLoadCodes = async () => {
+  try {
+    uiState.isPageCodeLoad = true;   // 재진입 방지 → isAppReady false 처리
+    handleFetchData();               // 실제 데이터 조회 호출
+  } catch (err) {
+    console.error('[fnLoadCodes]', err);
+  }
+};
+
+// ③ handleFetchData: foApi 호출 → 실패 시 목업 fallback
+const handleFetchData = async () => {
+  try {
+    const res = await window.foApi.get('/fo/xxx/list', { params: { ... } });
+    items.splice(0, items.length, ...res.data);
+  } catch (e) {
+    items.splice(0, items.length, ...[ /* 목업 데이터 */ ]);
+  }
+};
+
+// ④ watch: 스토어가 나중에 준비될 때 트리거
+watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
+// ⑤ onMounted: 스토어가 이미 준비된 경우 즉시 실행
+onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+```
+
+### 15.2 핵심 규칙
+
+| 규칙 | 내용 |
+|---|---|
+| `isPageCodeLoad` 플래그 | `fnLoadCodes` 진입 시 `true` 설정 → `isAppReady` computed가 `false`로 전환되어 중복 실행 방지 |
+| `onMounted` 가드 필수 | `if (isAppReady.value) fnLoadCodes()` — 스토어가 이미 ready인 경우 처리 |
+| `watch` 병행 필수 | 스토어 초기화가 mount보다 늦게 완료되는 경우 처리 |
+| foApi fallback | `try` → `window.foApi.get(...)` 성공 시 서버 데이터 사용, `catch` → 목업 데이터 주입 |
+| 데이터 주입 방식 | `reactive([])` + `splice(0, length, ...data)` — 반드시 splice로 교체 (직접 대입 금지) |
+
+### 15.3 금지 패턴
+
+```js
+// ❌ fnLoadCodes에서 handleFetchData 미호출
+const fnLoadCodes = async () => {
+  uiState.isPageCodeLoad = true;
+  // handleFetchData 호출 없음 → 데이터 로딩 안 됨
+};
+
+// ❌ onMounted에서 handleFetchData 직접 호출 (isAppReady 무시)
+onMounted(() => { handleFetchData(); });
+
+// ❌ 목업 데이터를 reactive 배열 초기값으로 직접 주입
+const items = reactive([ ...8개 하드코딩 목업... ]); // handleFetchData를 통해야 함
+```
+
+### 15.4 foApi 엔드포인트 연결 현황
+
+| 파일 | 엔드포인트 |
+|---|---|
+| `Blog.js` | `GET /fo/blog/list` |
+| `BlogView.js` | `GET /fo/blog/view?blogId=` |
+| `BlogEdit.js` | `GET /fo/blog/view?blogId=` (수정 모드) |
+| `Event.js` | `GET /fo/event/list` |
+| `EventView.js` | `GET /fo/event/view?eventId=` |
+| `Contact.js` | `POST /fo/contact` |
+| `Prod01/02/03List.js` | `GET /fo/product/list` |
+| `Order.js` | `POST /fo/order` |
+| `xs/XsStore.js` | `GET /fo/store/list` |
+
+---
+
+## 16. foApp.js 상품 데이터 로딩 정책
+
+`base/foApp.js`는 FO 전체 앱의 루트 컴포넌트로, 상품 데이터를 하위 페이지에 props로 전달한다.
+
+### 16.1 상품 로딩 구조
+
+```js
+// products: reactive 빈 배열로 선언 (초기값 없음)
+const products = reactive([]);
+const selectedProduct = ref(null);
+
+// handleFetchProducts: foApi 호출 → 실패 시 SITE_CONFIG fallback
+const handleFetchProducts = async () => {
+  try {
+    const res = await window.foApi.get('/fo/product/list');
+    const list = Array.isArray(res.data)
+      ? res.data
+      : (res.data?.list || res.data?.products || []);
+    list.forEach(_assignImg);
+    products.splice(0, products.length, ...list);
+  } catch (e) {
+    const fallback = window.SITE_CONFIG?.products || [];
+    fallback.forEach(_assignImg);
+    products.splice(0, products.length, ...fallback);
+  }
+  _restoreAfterProducts(); // 장바구니·URL pid 복원
+};
+
+onMounted(() => { handleFetchProducts(); });
+```
+
+### 16.2 products 로드 후 복원 처리
+
+상품 데이터는 비동기 로드이므로, 장바구니 복원과 URL `pid` 파라미터 복원은 반드시 로드 완료 후 실행한다.
+
+```js
+const _restoreAfterProducts = () => {
+  // localStorage 장바구니 → products에서 상품 객체 매핑 후 cart에 추가
+  // URL hash pid → products.find()로 selectedProduct 설정
+  // selectedProduct가 없으면 products[0] 기본 설정
+};
+```
+
+### 16.3 _assignImg 이미지 자동 할당
+
+```js
+const _assignImg = (p) => {
+  // colors → opt1s, sizes → opt2s 호환 변환
+  // p.image 없으면 productId 기준 로컬 이미지 경로 자동 할당
+  // p.priceNum 없으면 p.price 문자열에서 숫자 추출
+};
+```
+
+상품 데이터 로드 시 반드시 `forEach(_assignImg)` 적용 후 `products.splice`로 주입한다.
+
+### 16.4 핵심 규칙
+
+| 규칙 | 내용 |
+|---|---|
+| `products` 초기값 | `reactive([])` — 빈 배열, 절대 SITE_CONFIG 직접 대입 금지 |
+| foApi 우선 | 서버 API 성공 시 서버 데이터 사용, 실패 시만 SITE_CONFIG fallback |
+| 복원 순서 | products 로드 완료 → `_restoreAfterProducts()` → 장바구니/selectedProduct 복원 |
+| onMounted 위치 | `handleFetchProducts` 정의 직후에 `onMounted` 배치 (선언 순서 준수) |
 
 ---
 

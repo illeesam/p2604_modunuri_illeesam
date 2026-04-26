@@ -240,9 +240,8 @@
       }
       return p;
     };
-    const products = window.SITE_CONFIG?.products || [];
-    if (Array.isArray(products)) products.forEach(_assignImg);
-    const selectedProduct = ref(Array.isArray(products) && products.length > 0 ? products[0] : null);
+    const products = reactive([]);
+    const selectedProduct = ref(null);
     const selectProduct = p => {
       selectedProduct.value = p;
       navigate('prodView');
@@ -275,22 +274,52 @@
         + Math.random().toString(36).slice(2,6).toUpperCase();
     };
 
-    // 로컬스토리지에서 장바구니 복원
-    try {
-      const saved = localStorage.getItem('shopjoy_cart');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && Array.isArray(products)) {
-          parsed.forEach(item => {
-            const p = products.find(x => x.productId === item.productId);
-            if (p && item.color && item.size && Array.isArray(p.opt1s)) {
-              const color = p.opt1s.find(c => c.name === item.color.name) || item.color;
-              cart.push({ cartId: item.cartId || genId(), product: p, color, size: item.size, qty: item.qty || 1 });
-            }
-          });
+    /* products 로드 후: 장바구니 복원 + URL pid 복원 */
+    const _restoreAfterProducts = () => {
+      try {
+        const saved = localStorage.getItem('shopjoy_cart');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            parsed.forEach(item => {
+              const p = products.find(x => x.productId === item.productId);
+              if (p && item.color && item.size && Array.isArray(p.opt1s)) {
+                const color = p.opt1s.find(c => c.name === item.color.name) || item.color;
+                cart.push({ cartId: item.cartId || genId(), product: p, color, size: item.size, qty: item.qty || 1 });
+              }
+            });
+          }
         }
+      } catch (e) {}
+      try {
+        const rawHash = String(window.location.hash || '').replace(/^#/, '');
+        if (rawHash.includes('page=')) {
+          const hpid = new URLSearchParams(rawHash).get('pid');
+          const pid = hpid !== null && hpid !== '' ? Number(hpid) : NaN;
+          if (!Number.isNaN(pid)) {
+            const f = products.find(x => Number(x.productId) === pid);
+            if (f) selectedProduct.value = f;
+          }
+        }
+      } catch (e) {}
+      if (!selectedProduct.value && products.length > 0) selectedProduct.value = products[0];
+    };
+
+    /* ── 상품 데이터 로드 ── */
+    const handleFetchProducts = async () => {
+      try {
+        const res = await window.foApi.get('/fo/product/list');
+        const list = Array.isArray(res.data) ? res.data : (res.data?.list || res.data?.products || []);
+        list.forEach(_assignImg);
+        products.splice(0, products.length, ...list);
+      } catch (e) {
+        const fallback = window.SITE_CONFIG?.products || [];
+        fallback.forEach(_assignImg);
+        products.splice(0, products.length, ...fallback);
       }
-    } catch (e) {}
+      _restoreAfterProducts();
+    };
+    onMounted(() => { handleFetchProducts(); });
 
     const saveCart = () => {
       try {
@@ -388,12 +417,6 @@
         const hEditId  = params.get('editId');
         if (hEventId) viewEditId.value = Number(hEventId) || hEventId;
         else if (hEditId) viewEditId.value = Number(hEditId) || hEditId;
-      }
-      const hpid = hasPageParam ? params?.get('pid') : null;
-      const pid = hpid !== null && hpid !== '' ? Number(hpid) : NaN;
-      if (!Number.isNaN(pid) && Array.isArray(products)) {
-        const f = products.find(x => Number(x.productId) === pid);
-        if (f) selectedProduct.value = f;
       }
     } catch(e) {}
     restoring = false;
