@@ -106,8 +106,8 @@ window.OdOrderHist = {
           <td>{{ item.prodNm }}</td>
           <td>{{ item.optionNm }}</td>
           <td>{{ item.qty }}</td>
-          <td>{{ item.unitPrice.toLocaleString() }}원</td>
-          <td style="font-weight:600;">{{ item.totalPrice.toLocaleString() }}원</td>
+          <td>{{ (item.unitPrice||0).toLocaleString() }}원</td>
+          <td style="font-weight:600;">{{ (item.totalPrice||0).toLocaleString() }}원</td>
           <td>{{ item.statusCd }}</td>
           <td><button class="btn btn-secondary btn-sm" @click="showRefModal('order', orderId)">보기</button></td>
         </tr>

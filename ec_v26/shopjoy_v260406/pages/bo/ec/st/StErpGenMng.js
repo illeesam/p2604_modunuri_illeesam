@@ -47,8 +47,8 @@ window.StErpGenMng = {
           window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': 'ERP연동생성', 'X-Cmd-Nm': '조회' } }),
           window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': 'ERP연동생성', 'X-Cmd-Nm': '조회' } }),
         ]);
-        orderList.splice(0, orderList.length, ...(resO.data?.data?.list || []));
-        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
+        orderList.splice(0, orderList.length, ...(resO.data?.data?.pageList || []));
+        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.pageList || []));
       } catch (_) {}
     };
 

@@ -87,7 +87,7 @@ window.MbMemberHist = {
           <td><span class="ref-link" @click="showRefModal('order', o.orderId)">{{ o.orderId }}</span></td>
           <td>{{ o.orderDate }}</td>
           <td>{{ o.prodNm }}</td>
-          <td>{{ o.totalPrice.toLocaleString() }}원</td>
+          <td>{{ (o.totalPrice||0).toLocaleString() }}원</td>
           <td>{{ o.statusCd }}</td>
           <td><button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:o.orderId})">상세</button></td>
         </tr>

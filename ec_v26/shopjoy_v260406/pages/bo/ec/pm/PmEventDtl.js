@@ -415,7 +415,7 @@ window.PmEventDtl = {
             <td>{{ p.productId }}</td>
             <td><span class="ref-link" @click="showRefModal('product', p.productId)">{{ p.prodNm }}</span></td>
             <td>{{ p.category }}</td>
-            <td>{{ p.price.toLocaleString() }}원</td>
+            <td>{{ (p.price||0).toLocaleString() }}원</td>
             <td>{{ p.stock }}개</td>
             <td>{{ p.status }}</td>
             <td><button class="btn btn-danger btn-sm" @click="removeProduct(p.productId)">제거</button></td>
@@ -485,7 +485,7 @@ window.PmEventDtl = {
         <label v-for="p in cfFilteredProds" :key="p?.productId" class="popup-prod-item">
           <input type="checkbox" :checked="isSelected(p.productId)" @change="toggleProduct(p.productId)" />
           <span>{{ p.prodNm }}</span>
-          <span style="font-size:12px;color:#888;margin-left:auto;">{{ p.price.toLocaleString() }}원</span>
+          <span style="font-size:12px;color:#888;margin-left:auto;">{{ (p.price||0).toLocaleString() }}원</span>
         </label>
       </div>
       <div style="margin-top:12px;text-align:right;">

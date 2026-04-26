@@ -22,7 +22,7 @@ window.OdOrderMng = {
         members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
         pager.pageTotalCount = ordersRes.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = ordersRes.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        Object.assign(pager.pageCond, ordersRes.data?.data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -333,7 +333,7 @@ const isAppReady = computed(() => {
             {{ o.prodNm }}
             <span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:8px;background:#e5e7eb;color:#555;font-weight:700;margin-left:4px;vertical-align:middle;">{{ getItemCount(o) }}개</span>
           </td>
-          <td>{{ o.totalPrice.toLocaleString() }}원</td>
+          <td>{{ (o.totalPrice||0).toLocaleString() }}원</td>
           <td>
             <span :style="{
               fontSize:'11px',padding:'2px 8px',borderRadius:'10px',fontWeight:600,

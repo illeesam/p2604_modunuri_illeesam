@@ -162,18 +162,20 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           bundleList.splice(0, bundleList.length);
           return;
         }
-        const ids = [...new Set(bundleArray.map(b => b?.bundleProdId).filter(Boolean))];
-        const result = ids
-          .map(id => {
-            const items = bundleArray
-              .filter(b => b?.bundleProdId === id)
-              .sort((a, b) => (a?.sortOrd || 0) - (b?.sortOrd || 0));
-            const prod  = getProd(id);
-            const prodNm = getProdNm(id);
-
-    // ── return ───────────────────────────────────────────────────────────────
-
-            return { bundleProdId: id, prodNm, prod, items, itemCount: items.length };
+        // API 응답: prodId 기반 상품 목록 (prodTypeCd=BUNDLE)
+        const result = bundleArray
+          .map(b => {
+            const id = b?.prodId || b?.bundleProdId;
+            return {
+              bundleProdId: id,
+              prodNm: b?.prodNm || b?.prodName || getProdNm(id),
+              prod: b,
+              items: [],
+              itemCount: 0,
+              salePrice: b?.salePrice || 0,
+              prodStatusCd: b?.prodStatusCd || b?.status,
+              regDate: b?.regDate,
+            };
           })
           .filter(g => !kw || (g?.prodNm || '').toLowerCase().includes(kw));
         bundleList.splice(0, bundleList.length, ...result);

@@ -22,7 +22,7 @@ window.OdClaimMng = {
         members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
         pager.pageTotalCount = claimsRes.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = claimsRes.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        Object.assign(pager.pageCond, claimsRes.data?.data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -447,14 +447,14 @@ const isAppReady = computed(() => {
       </div>
       <div style="padding:20px 18px;">
         <div v-if="uiState.bulkTab==='status'">
-          <div v-for="t in CLAIM_TYPE_OPTIONS" :key="Math.random()" class="form-group" :style="{opacity: cfCheckedByType[t].length ? 1 : 0.4}">
+          <div v-for="t in CLAIM_TYPE_OPTIONS" :key="Math.random()" class="form-group" :style="{opacity: (cfCheckedByType[t]||[]).length ? 1 : 0.4}">
             <label class="form-label">
               <span :style="{display:'inline-block',fontSize:'10px',padding:'2px 8px',borderRadius:'10px',color:'#fff',fontWeight:700,marginRight:'6px',background: t==='취소'?'#ef4444':t==='반품'?'#FFBB00':'#3b82f6'}">{{ t }}</span>
               상태
-              <span style="font-size:11px;color:#1565c0;margin-left:4px;">(대상 {{ cfCheckedByType[t].length }}건)</span>
+              <span style="font-size:11px;color:#1565c0;margin-left:4px;">(대상 {{ (cfCheckedByType[t]||[]).length }}건)</span>
             </label>
-            <select class="form-control" v-model="bulkForm.statusByType[t]" :disabled="!cfCheckedByType[t].length">
-              <option value="">{{ cfCheckedByType[t].length ? '선택하세요 (미선택시 변경안함)' : '선택된 항목 없음' }}</option>
+            <select class="form-control" v-model="bulkForm.statusByType[t]" :disabled="!(cfCheckedByType[t]||[]).length">
+              <option value="">{{ (cfCheckedByType[t]||[]).length ? '선택하세요 (미선택시 변경안함)' : '선택된 항목 없음' }}</option>
               <option v-for="s in CLAIM_STATUS_BY_TYPE[t]" :key="Math.random()" :value="s">{{ s }}</option>
             </select>
           </div>

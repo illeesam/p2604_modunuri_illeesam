@@ -210,7 +210,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
               <td><span class="badge" :class="fnContentBadge(b.contentType)">{{ b.contentType || '-' }}</span></td>
               <td><span class="badge" :class="fnScopeBadge(b.scopeType)">{{ b.scopeType || '-' }}</span></td>
               <td><span class="badge" :class="fnYnBadge(b.allowLike)">{{ b.allowLike==='Y'?'허용':'불가' }}</span></td>
-              <td style="text-align:center;">{{ bbsCount(b.bbmId) }}</td>
+              <td style="text-align:center;">{{ b.bbsCount || 0 }}</td>
               <td style="text-align:center;">{{ b.sortOrd }}</td>
               <td><span class="badge" :class="fnYnBadge(b.useYn)">{{ b.useYn==='Y'?'사용':'미사용' }}</span></td>
               <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>

@@ -172,6 +172,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status
     };
     const fnDepthColor = (d) => ({0:'#e8587a',1:'#1677ff',2:'#3ba87a'}[d] || '#999');
     const fnDepthBullet = (d) => ['●','○','▪'][d] || '·';
+    const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
     /* ── 행 편집 ── */
     const focusedIdx = ref(-1);
@@ -302,6 +303,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status
       onSearch, onReset,
       catPickerModal, cfCatPickerList, onParentSelect, openParentModal, fnDepthColor, fnDepthBullet,
       focusedIdx, setFocused, addRow, addChildRow, cancelRow, cancelChecked, deleteRow, deleteRows, handleSave,
+      fnStatusClass,
     };
   },
 

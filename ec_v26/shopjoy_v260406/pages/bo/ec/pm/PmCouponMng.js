@@ -106,7 +106,7 @@ window.PmCouponMng = {
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
 
-    const discountLabel = c => c.discountTypeCd === 'rate' ? c.discountValue + '%' : c.discountTypeCd === 'shipping' ? '무료배송' : c.discountValue.toLocaleString() + '원';
+    const discountLabel = c => c.discountTypeCd === 'rate' ? (c.discountValue||0) + '%' : c.discountTypeCd === 'shipping' ? '무료배송' : (c.discountValue||0).toLocaleString() + '원';
     const fnStatusBadge = s => ({ '활성': 'badge-green', '만료': 'badge-red', '비활성': 'badge-gray' }[s] || 'badge-gray');
     const onSearch = async () => {
       pager.pageNo = 1;

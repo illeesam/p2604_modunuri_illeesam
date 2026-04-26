@@ -118,7 +118,7 @@ window.PdProdHist = {
           <td><span class="ref-link" @click="showRefModal('order', o.orderId)">{{ o.orderId }}</span></td>
           <td><span class="ref-link" @click="showRefModal('member', o.userId)">{{ o.userNm }}</span></td>
           <td>{{ o.orderDate.slice(0,10) }}</td>
-          <td>{{ o.totalPrice.toLocaleString() }}원</td>
+          <td>{{ (o.totalPrice||0).toLocaleString() }}원</td>
           <td>{{ o.status }}</td>
           <td><button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:o.orderId})">상세</button></td>
         </tr>

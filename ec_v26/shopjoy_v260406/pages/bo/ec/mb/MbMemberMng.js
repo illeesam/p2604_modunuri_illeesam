@@ -17,7 +17,7 @@ window.MbMemberMng = {
         members.splice(0, members.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        Object.assign(pager.pageCond, res.data?.data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -179,7 +179,7 @@ window.MbMemberMng = {
           <td><span class="badge" :class="fnStatusBadge(m.statusCd)">{{ m.statusCd }}</span></td>
           <td>{{ m.joinDate }}</td>
           <td>{{ m.orderCount }}건</td>
-          <td>{{ m.totalPurchase.toLocaleString() }}원</td>
+          <td>{{ (m.totalPurchase||0).toLocaleString() }}원</td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="handleLoadDetail(m.userId)">수정</button>

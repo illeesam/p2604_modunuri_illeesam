@@ -219,7 +219,7 @@ const isAppReady = computed(() => {
           <td>{{ p.productId }}</td>
           <td><span class="title-link" @click="handleLoadDetail(p.productId)" :style="selectedId===p.productId?'color:#e8587a;font-weight:700;':''">{{ p.prodNm }}<span v-if="selectedId===p.productId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td>{{ p.category }}</td>
-          <td>{{ p.price.toLocaleString() }}원</td>
+          <td>{{ (p.price||0).toLocaleString() }}원</td>
           <td>{{ p.stock }}개</td>
           <td>{{ p.brand }}</td>
           <td><span class="badge" :class="fnStatusBadge(p.status)">{{ p.status }}</span></td>

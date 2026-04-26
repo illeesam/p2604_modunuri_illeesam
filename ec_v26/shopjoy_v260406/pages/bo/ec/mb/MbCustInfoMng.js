@@ -122,10 +122,10 @@
           window.boApi.get('/bo/ec/pm/coupon-usage/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '고객종합정보', 'X-Cmd-Nm': '조회' } }),
           window.boApi.get('/bo/sy/alarm/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '고객종합정보', 'X-Cmd-Nm': '조회' } }),
         ]);
-        custInfos.splice(0, custInfos.length, ...(resCust.data?.data?.list || []));
-        loginHistory.splice(0, loginHistory.length, ...(resLogin.data?.data?.list || []));
-        couponUsage.splice(0, couponUsage.length, ...(resCoupon.data?.data?.list || []));
-        sendHistory.splice(0, sendHistory.length, ...(resSend.data?.data?.list || []));
+        custInfos.splice(0, custInfos.length, ...(resCust.data?.data?.pageList || []));
+        loginHistory.splice(0, loginHistory.length, ...(resLogin.data?.data?.pageList || []));
+        couponUsage.splice(0, couponUsage.length, ...(resCoupon.data?.data?.pageList || []));
+        sendHistory.splice(0, sendHistory.length, ...(resSend.data?.data?.pageList || []));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
