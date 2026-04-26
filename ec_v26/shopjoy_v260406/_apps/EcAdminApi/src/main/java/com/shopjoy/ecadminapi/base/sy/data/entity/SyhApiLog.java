@@ -28,6 +28,12 @@ public class SyhApiLog {
     @Column(name = "api_nm", length = 100)
     private String apiNm;
 
+    @Column(name = "ui_nm", length = 100)
+    private String uiNm;
+
+    @Column(name = "cmd_nm", length = 50)
+    private String cmdNm;
+
     @Column(name = "method_cd", length = 10)
     private String methodCd;
 

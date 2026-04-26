@@ -57,7 +57,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
           params: {
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          }
+          },
+          headers: { 'X-UI-Nm': '결제대사관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
         rows.splice(0, rows.length, ...(data?.list || rows));

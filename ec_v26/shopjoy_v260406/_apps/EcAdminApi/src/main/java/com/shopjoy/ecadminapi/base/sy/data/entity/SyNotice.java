@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.base.sy.data.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,10 +39,10 @@ public class SyNotice {
     private String attachGrpId;
 
     @Column(name = "start_date")
-    private LocalDateTime startDate;
+    private LocalDate startDate;
 
     @Column(name = "end_date")
-    private LocalDateTime endDate;
+    private LocalDate endDate;
 
     @Column(name = "notice_status_cd", length = 20)
     private String noticeStatusCd;

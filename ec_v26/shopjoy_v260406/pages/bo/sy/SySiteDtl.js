@@ -14,7 +14,8 @@ window.SySiteDtl = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/site/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: { pageNo: 1, pageSize: 10000 },
+          headers: { 'X-UI-Nm': '사이트상세', 'X-Cmd-Nm': '조회' }
         });
         sites = res.data?.data?.list || [];
         uiState.error = null;
@@ -107,7 +108,7 @@ window.SySiteDtl = {
         if (idx !== -1) Object.assign(sites[idx], { ...form });
       }
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/site`, { ...form }) : window.boApi.put(`/bo/sy/site/${form.siteId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/site`, { ...form }, { headers: { 'X-UI-Nm': '사이트관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/sy/site/${form.siteId}`, { ...form }, { headers: { 'X-UI-Nm': '사이트관리', 'X-Cmd-Nm': '저장' } }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('sySiteMng');

@@ -18,9 +18,10 @@ window.SyBbsMng = {
             params: {
               pageNo: pager.pageNo, pageSize: pager.pageSize,
               ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-            }
+            },
+            headers: { 'X-UI-Nm': '게시판관리', 'X-Cmd-Nm': '조회' }
           }),
-          window.boApi.get('/bo/sy/bbm/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/bbm/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '게시판관리', 'X-Cmd-Nm': '조회' } }),
         ]);
         const data = resBbs.data?.data;
         bbss.splice(0, bbss.length, ...(data?.list || []));
@@ -142,7 +143,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       if (idx !== -1) bbss.splice(idx, 1);
       if (detailModal.editId === b.bbsId) { detailModal.show = false; detailModal.editId = null; }
       try {
-        const res = await window.boApi.delete(`/bo/sy/bbs/${b.bbsId}`);
+        const res = await window.boApi.delete(`/bo/sy/bbs/${b.bbsId}`, { headers: { 'X-UI-Nm': '게시판관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

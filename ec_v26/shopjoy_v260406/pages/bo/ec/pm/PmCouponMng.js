@@ -64,7 +64,8 @@ window.PmCouponMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/coupon/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }
+          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) },
+          headers: { 'X-UI-Nm': '쿠폰관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
         coupons.splice(0, coupons.length, ...(data?.list || []));
@@ -125,7 +126,7 @@ window.PmCouponMng = {
       if (idx !== -1) coupons.splice(idx, 1);
       if (uiStateDetail.selectedId === c.couponId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/ec/pm/coupon/${c.couponId}`);
+        const res = await window.boApi.delete(`/bo/ec/pm/coupon/${c.couponId}`, { headers: { 'X-UI-Nm': '쿠폰관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

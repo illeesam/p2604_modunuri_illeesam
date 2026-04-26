@@ -79,7 +79,8 @@ window.PdCategoryProdMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/pd/category-prod/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...(searchType === 'PAGE_CLICK' ? pager.pageCond : searchParam) }
+          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...(searchType === 'PAGE_CLICK' ? pager.pageCond : searchParam) },
+          headers: { 'X-UI-Nm': '카테고리상품관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
         categoryProds.splice(0, categoryProds.length, ...(data?.list || []));

@@ -15,7 +15,8 @@ window.SyVendorDtl = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/vendor/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: { pageNo: 1, pageSize: 10000 },
+          headers: { 'X-UI-Nm': '업체상세', 'X-Cmd-Nm': '조회' }
         });
         vendors = res.data?.data?.list || [];
         uiState.error = null;
@@ -118,7 +119,7 @@ window.SyVendorDtl = {
         if (idx !== -1) Object.assign(vendors[idx], { ...form });
       }
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/vendor`, { ...form }) : window.boApi.put(`/bo/sy/vendor/${form.vendorId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/vendor`, { ...form }, { headers: { 'X-UI-Nm': '업체관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/sy/vendor/${form.vendorId}`, { ...form }, { headers: { 'X-UI-Nm': '업체관리', 'X-Cmd-Nm': '저장' } }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syVendorMng');

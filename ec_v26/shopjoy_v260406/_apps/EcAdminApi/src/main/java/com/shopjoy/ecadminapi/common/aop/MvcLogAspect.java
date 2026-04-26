@@ -174,6 +174,15 @@ public class MvcLogAspect {
                     sb.append("?").append(qs);
                 }
 
+                String uiNm  = request.getHeader("X-UI-Nm");
+                String cmdNm = request.getHeader("X-Cmd-Nm");
+                if (uiNm != null || cmdNm != null) {
+                    sb.append(" :: ");
+                    if (uiNm  != null) sb.append(uiNm);
+                    if (uiNm  != null && cmdNm != null) sb.append(" > ");
+                    if (cmdNm != null) sb.append(cmdNm);
+                }
+
                 String token = request.getHeader("Authorization");
                 if (token != null) {
                     sb.append(" [").append(token).append("]");

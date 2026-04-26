@@ -15,7 +15,8 @@ window.PdProdHist = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pd/prod/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: { pageNo: 1, pageSize: 10000 },
+          headers: { 'X-UI-Nm': '상품이력', 'X-Cmd-Nm': '이력조회' }
         });
         products.splice(0, products.length, ...(res.data?.data?.list || []));
         uiState.error = null;

@@ -5,6 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter @Setter @NoArgsConstructor
@@ -20,8 +21,8 @@ public class SyNoticeReq {
     private String isFixed;
     private String contentHtml;
     private String attachGrpId;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private String noticeStatusCd;
     private Integer viewCount;
     private String regBy;

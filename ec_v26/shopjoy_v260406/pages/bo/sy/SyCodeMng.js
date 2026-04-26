@@ -147,7 +147,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         uiState.loading = true;
-        const res = await window.boApi.get('/bo/sy/code/page', { params: { pageNo: 1, pageSize: 100000 } });
+        const res = await window.boApi.get('/bo/sy/code/page', { params: { pageNo: 1, pageSize: 100000 }, headers: { 'X-UI-Nm': '공통코드관리', 'X-Cmd-Nm': '조회' } });
         const list = res.data?.data?.list || [];
         codes.splice(0, codes.length, ...list);
         updateCodeGroups();

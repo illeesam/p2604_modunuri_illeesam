@@ -14,7 +14,8 @@ window.SyCodeDtl = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/code/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: { pageNo: 1, pageSize: 10000 },
+          headers: { 'X-UI-Nm': '공통코드상세', 'X-Cmd-Nm': '조회' }
         });
         codes = res.data?.data?.list || [];
         uiState.error = null;
@@ -79,7 +80,7 @@ window.SyCodeDtl = {
         if (idx !== -1) Object.assign(codes[idx], { ...form, sortOrd: Number(form.sortOrd) || 1 });
       }
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/code/${form.codeId}`, { ...form }) : window.boApi.put(`/bo/sy/code/${form.codeId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/code/${form.codeId}`, { ...form }, { headers: { 'X-UI-Nm': '공통코드관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/sy/code/${form.codeId}`, { ...form }, { headers: { 'X-UI-Nm': '공통코드관리', 'X-Cmd-Nm': '저장' } }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syCodeMng');

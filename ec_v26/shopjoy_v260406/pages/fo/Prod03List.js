@@ -60,7 +60,7 @@ window.Prod03List = {
     const handleLoadProducts = async () => {
       uiState.loading = true;
       try {
-        const res = await window.foApi.get('/fo/product/list');
+        const res = await window.foApi.get('/fo/product/list', { headers: { 'X-UI-Nm': '상품목록', 'X-Cmd-Nm': '조회' } });
         allProducts.splice(0, allProducts.length, ...res.data.map(p => assignImage({
           ...p,
           priceNum: p.price,

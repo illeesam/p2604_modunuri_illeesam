@@ -66,7 +66,9 @@
       const d = ev.detail || {};
       let msg = d.message || '오류가 발생했습니다.';
       if (d.method && d.url && d.status) {
-        msg = `${d.method} ${d.url} ${d.status}\n${msg}`;
+        let title = `${d.method} ${d.url} ${d.status}`;
+        if (d.uiLabel) title += ` :: ${d.uiLabel}`;
+        msg = `${title}\n${msg}`;
       }
       showToast(msg, 'error', 0, d.errorDetails || '');
     });
@@ -81,8 +83,14 @@
     window.addEventListener('api-error', (ev) => {
       const d = ev.detail || {};
       const st = d.status;
-      if (st === 401) { errorMessage.value = d.message || ''; page.value = 'error401'; }
-      else if (st >= 500 || st === 0) { errorMessage.value = d.message || ''; page.value = 'error500'; }
+      let label = '';
+      if (d.method && d.url) {
+        label = `${d.method} ${d.url} ${st}`;
+        if (d.uiLabel) label += ` :: ${d.uiLabel}`;
+      }
+      const msg = label ? `${label}\n${d.message || ''}` : (d.message || '');
+      if (st === 401) { errorMessage.value = msg; page.value = 'error401'; }
+      else if (st >= 500 || st === 0) { errorMessage.value = msg; page.value = 'error500'; }
     });
     const sidebarOpen = ref(true);
     const uiState = reactive({ mobileOpen: false, showLogin: false });

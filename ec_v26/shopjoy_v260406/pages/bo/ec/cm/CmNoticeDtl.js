@@ -32,22 +32,24 @@ window.CmNoticeDtl = {
     });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
+    const fnToday = () => new Date().toISOString().slice(0, 10);
+    const fnDateAfter = (days) => { const d = new Date(); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
     const form = reactive({
-      noticeId: null, title: '', noticeType: '', isFixed: false,
-      startDate: '', endDate: '', statusCd: '', contentHtml: '',
+      noticeId: null, noticeTitle: '', noticeTypeCd: '', isFixed: 'N',
+      startDate: fnToday(), endDate: fnDateAfter(7), noticeStatusCd: '', contentHtml: '',
       attachGrpId: null,
     });
     const errors = reactive({});
 
     const schema = yup.object({
-      title: yup.string().required('제목을 입력해주세요.'),
+      noticeTitle: yup.string().required('제목을 입력해주세요.'),
     });
     let quill = null;
 
     const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       try {
-        const res = await window.boApi.get(`/bo/ec/cm/notice/${props.editId}`);
+        const res = await window.boApi.get(`/bo/ec/cm/notice/${props.editId}`, { headers: { 'X-UI-Nm': '공지사항상세', 'X-Cmd-Nm': '상세조회' } });
         Object.assign(form, res.data?.data || {});
       } catch (err) {
         console.error('[handleSearchDetail]', err);
@@ -82,8 +84,8 @@ window.CmNoticeDtl = {
       if (!ok) return;
       try {
         const res = await (isNewNotice
-          ? window.boApi.post('/bo/ec/cm/notice', { ...form })
-          : window.boApi.put(`/bo/ec/cm/notice/${props.editId}`, { ...form }));
+          ? window.boApi.post('/bo/ec/cm/notice', { ...form }, { headers: { 'X-UI-Nm': '공지사항관리', 'X-Cmd-Nm': '등록' } })
+          : window.boApi.put(`/bo/ec/cm/notice/${props.editId}`, { ...form }, { headers: { 'X-UI-Nm': '공지사항관리', 'X-Cmd-Nm': '저장' } }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewNotice ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('cmNoticeMng');
@@ -104,19 +106,19 @@ window.CmNoticeDtl = {
     <div class="form-row">
       <div class="form-group" style="flex:2">
         <label class="form-label">제목 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.title" placeholder="공지 제목" :readonly="viewMode" :class="errors.title ? 'is-invalid' : ''" />
-        <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
+        <input class="form-control" v-model="form.noticeTitle" placeholder="공지 제목" :readonly="viewMode" :class="errors.noticeTitle ? 'is-invalid' : ''" />
+        <span v-if="errors.noticeTitle" class="field-error">{{ errors.noticeTitle }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">유형</label>
-        <select class="form-control" v-model="form.noticeType" :disabled="viewMode">
+        <select class="form-control" v-model="form.noticeTypeCd" :disabled="viewMode">
           <option value="">선택</option>
           <option v-for="c in codes.noticeTypes" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
+        <select class="form-control" v-model="form.noticeStatusCd" :disabled="viewMode">
           <option value="">선택</option>
           <option v-for="c in codes.noticeStatuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
@@ -133,7 +135,7 @@ window.CmNoticeDtl = {
       </div>
       <div class="form-group" style="display:flex;align-items:flex-end;gap:8px;">
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:4px;">
-          <input type="checkbox" v-model="form.isFixed" /> <span class="form-label" style="margin:0;">상단고정</span>
+          <input type="checkbox" :checked="form.isFixed === 'Y'" @change="form.isFixed = $event.target.checked ? 'Y' : 'N'" :disabled="viewMode" /> <span class="form-label" style="margin:0;">상단고정</span>
         </label>
       </div>
     </div>

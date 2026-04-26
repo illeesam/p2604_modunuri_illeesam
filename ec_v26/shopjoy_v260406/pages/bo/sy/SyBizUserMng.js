@@ -19,9 +19,9 @@ window.SyBizUserMng = {
     const handleLoadData = async () => {
       try {
         const [roleRes, menuRes, roleMenuRes] = await Promise.all([
-          window.boApi.get('/bo/sy/role/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/sy/menu/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/sy/role-menu/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/role/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '사업자사용자관리', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/sy/menu/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '사업자사용자관리', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/sy/role-menu/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '사업자사용자관리', 'X-Cmd-Nm': '조회' } }),
         ]);
         roles.splice(0, roles.length, ...(roleRes.data?.data?.list || []));
         menus.splice(0, menus.length, ...(menuRes.data?.data?.list || []));
@@ -68,7 +68,7 @@ window.SyBizUserMng = {
     const vendors = reactive([]);
     const handleLoadDetail = async () => {
       try {
-        const res = await window.boApi.get('/bo/sy/vendor/page', { params: { pageNo:1, pageSize:10000 } });
+        const res = await window.boApi.get('/bo/sy/vendor/page', { params: { pageNo:1, pageSize:10000 }, headers: { 'X-UI-Nm': '사업자사용자관리', 'X-Cmd-Nm': '조회' } });
         const list = res.data?.data?.list || [];
         vendors.splice(0, vendors.length, ...list);
       } catch(e) { console.warn('[SyBizUserMng] vendor load failed', e); }
@@ -157,7 +157,7 @@ window.SyBizUserMng = {
     const loadVendorUsers = async (vendorId) => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/base/sy/vendor-user', { params: { vendorId, pageSize:10000 } });
+        const res = await window.boApi.get('/base/sy/vendor-user', { params: { vendorId, pageSize:10000 }, headers: { 'X-UI-Nm': '사업자사용자관리', 'X-Cmd-Nm': '조회' } });
         const list = res.data?.data || [];
         vendorUsers.splice(0, vendorUsers.length, ...list);
       } catch(e) {
@@ -219,8 +219,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       if (!ok) return;
       try {
         const res = uiState.formMode === 'new'
-          ? await window.boApi.post('/base/sy/vendor-user', { ...formData })
-          : await window.boApi.put(`/base/sy/vendor-user/${formData.vendorUserId}`, { ...formData });
+          ? await window.boApi.post('/base/sy/vendor-user', { ...formData }, { headers: { 'X-UI-Nm': '사업자사용자관리', 'X-Cmd-Nm': '등록' } })
+          : await window.boApi.put(`/base/sy/vendor-user/${formData.vendorUserId}`, { ...formData }, { headers: { 'X-UI-Nm': '사업자사용자관리', 'X-Cmd-Nm': '저장' } });
         if (props.setApiRes) props.setApiRes({ ok:true, status:res.status, data:res.data });
         props.showToast(uiState.formMode==='new'?'등록되었습니다.':'저장되었습니다.', 'success');
         await loadVendorUsers(formData.vendorId);
@@ -242,7 +242,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       const ok = await props.showConfirm('삭제', `[${u.memberNm}] 사용자를 삭제하시겠습니까?`);
       if (!ok) return;
       try {
-        const res = await window.boApi.delete(`/base/sy/vendor-user/${u.vendorUserId}`);
+        const res = await window.boApi.delete(`/base/sy/vendor-user/${u.vendorUserId}`, { headers: { 'X-UI-Nm': '사업자사용자관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok:true, status:res.status, data:res.data });
         props.showToast('삭제되었습니다.', 'success');
         await loadVendorUsers(u.vendorId);
@@ -261,7 +261,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       if (!vendorUserId) return;
       uiState.roleLoading = true;
       try {
-        const res = await window.boApi.get('/base/sy/vendor-user-role', { params: { userId: vendorUserId } });
+        const res = await window.boApi.get('/base/sy/vendor-user-role', { params: { userId: vendorUserId }, headers: { 'X-UI-Nm': '사업자사용자관리', 'X-Cmd-Nm': '조회' } });
         userRoles.splice(0, userRoles.length, ...(res.data?.data || []));
       } catch(e) {
         props.showToast('역할 목록 로드 실패', 'error');
@@ -326,7 +326,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           vendorId: formData.vendorId,
           userId: formData.vendorUserId,
           roleId: rid,
-        });
+        }, { headers: { 'X-UI-Nm': '사업자사용자관리', 'X-Cmd-Nm': '등록' } });
         if (props.setApiRes) props.setApiRes({ ok:true, status:res.status, data:res.data });
         props.showToast('역할이 부여되었습니다.', 'success');
         await loadUserRoles(formData.vendorUserId);
@@ -341,7 +341,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       const ok = await props.showConfirm('역할 삭제', `[${r.roleNm}] 역할을 삭제하시겠습니까?`);
       if (!ok) return;
       try {
-        const res = await window.boApi.delete(`/base/sy/vendor-user-role/${r.vendorUserRoleId}`);
+        const res = await window.boApi.delete(`/base/sy/vendor-user-role/${r.vendorUserRoleId}`, { headers: { 'X-UI-Nm': '사업자사용자관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok:true, status:res.status, data:res.data });
         props.showToast('역할이 삭제되었습니다.', 'success');
         await loadUserRoles(formData.vendorUserId);

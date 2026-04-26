@@ -13,8 +13,8 @@ window.SyBatchHist = {
       uiState.loading = true;
       try {
         const [resBatch, resLogs] = await Promise.all([
-          window.boApi.get('/bo/sy/batch/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/sy/batch/log/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/batch/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '배치관리', 'X-Cmd-Nm': '이력조회' } }),
+          window.boApi.get('/bo/sy/batch/log/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '배치관리', 'X-Cmd-Nm': '이력조회' } }),
         ]);
         batches.splice(0, batches.length, ...(resBatch.data?.data?.list || []));
         batchLogs.splice(0, batchLogs.length, ...(resLogs.data?.data?.list || []));

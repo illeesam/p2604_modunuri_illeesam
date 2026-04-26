@@ -144,7 +144,7 @@ window.Contact = {
           orderNo: form.orderNo,
           inquiryType: form.inquiryType,
           desc: form.desc,
-        }).catch(() => {});
+        }, { headers: { 'X-UI-Nm': '고객문의', 'X-Cmd-Nm': '등록' } }).catch(() => {});
       }
       props.showToast('문의가 접수되었습니다. 빠르게 답변드리겠습니다!', 'success');
       Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });

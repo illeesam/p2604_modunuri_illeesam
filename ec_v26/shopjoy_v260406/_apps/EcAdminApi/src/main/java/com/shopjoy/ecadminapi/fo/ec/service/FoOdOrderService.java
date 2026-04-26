@@ -60,6 +60,8 @@ public class FoOdOrderService {
         entity.setOrderStatusCd("PENDING");
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         return repository.save(entity);
     }
 

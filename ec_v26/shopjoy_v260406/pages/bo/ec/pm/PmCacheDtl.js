@@ -16,7 +16,7 @@ window.PmCacheDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get(`/bo/ec/pm/cache/${props.editId}`);
+        const res = await window.boApi.get(`/bo/ec/pm/cache/${props.editId}`, { headers: { 'X-UI-Nm': '캐시상세', 'X-Cmd-Nm': '상세조회' } });
         const c = res.data?.data || res.data;
         if (c) Object.assign(form, { ...c });
         uiState.error = null;
@@ -89,7 +89,7 @@ window.PmCacheDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/cache/${form.cacheId}`, { ...form }) : window.boApi.put(`/bo/ec/pm/cache/${form.cacheId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/cache/${form.cacheId}`, { ...form }, { headers: { 'X-UI-Nm': '캐시관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/ec/pm/cache/${form.cacheId}`, { ...form }, { headers: { 'X-UI-Nm': '캐시관리', 'X-Cmd-Nm': '저장' } }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmCacheMng');

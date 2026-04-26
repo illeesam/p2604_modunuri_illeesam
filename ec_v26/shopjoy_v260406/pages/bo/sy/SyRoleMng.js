@@ -24,7 +24,8 @@ window.SyRoleMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/role/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: { pageNo: 1, pageSize: 10000 },
+          headers: { 'X-UI-Nm': '권한관리', 'X-Cmd-Nm': '조회' }
         });
         const list = res.data?.data?.list || [];
         roles.splice(0, roles.length, ...list);

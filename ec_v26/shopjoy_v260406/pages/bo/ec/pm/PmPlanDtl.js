@@ -15,8 +15,8 @@ window.PmPlanDtl = {
     const handleSearchDetail = async () => {
       uiState.loading = true;
       try {
-        const calls = [window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 } })];
-        if (!cfIsNew.value) calls.unshift(window.boApi.get(`/bo/ec/pm/plan/${props.editId}`));
+        const calls = [window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '기획전상세', 'X-Cmd-Nm': '조회' } })];
+        if (!cfIsNew.value) calls.unshift(window.boApi.get(`/bo/ec/pm/plan/${props.editId}`, { headers: { 'X-UI-Nm': '기획전상세', 'X-Cmd-Nm': '상세조회' } }));
         const results = await Promise.all(calls);
         if (!cfIsNew.value) {
           const p = results[0].data?.data || results[0].data;
@@ -214,7 +214,7 @@ window.PmPlanDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/plan`, form) : window.boApi.put(`/bo/ec/pm/plan/${props.editId}`, form));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/plan`, form, { headers: { 'X-UI-Nm': '기획전관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/ec/pm/plan/${props.editId}`, form, { headers: { 'X-UI-Nm': '기획전관리', 'X-Cmd-Nm': '저장' } }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmPlanMng');

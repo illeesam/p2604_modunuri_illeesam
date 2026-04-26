@@ -39,7 +39,8 @@ window.PmPlanMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/plan/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...(searchType === 'PAGE_CLICK' ? pager.pageCond : searchParam) }
+          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...(searchType === 'PAGE_CLICK' ? pager.pageCond : searchParam) },
+          headers: { 'X-UI-Nm': '기획전관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
         plans.splice(0, plans.length, ...(data?.list || []));
@@ -133,7 +134,7 @@ const CATEGORIES = [
       if (idx !== -1) plans.splice(idx, 1);
       if (uiStateDetail.selectedId === p.planId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/ec/pm/plan/${p.planId}`);
+        const res = await window.boApi.delete(`/bo/ec/pm/plan/${p.planId}`, { headers: { 'X-UI-Nm': '기획전관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

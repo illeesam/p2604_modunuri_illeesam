@@ -34,7 +34,8 @@ window.PdCategoryDtl = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pd/category/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: { pageNo: 1, pageSize: 10000 },
+          headers: { 'X-UI-Nm': '카테고리상세', 'X-Cmd-Nm': '조회' }
         });
         categories.splice(0, categories.length, ...(res.data?.data?.list || []));
         uiState.error = null;
@@ -59,7 +60,7 @@ window.PdCategoryDtl = {
     const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       try {
-        const res = await window.boApi.get(`/bo/ec/pd/category/${props.editId}`);
+        const res = await window.boApi.get(`/bo/ec/pd/category/${props.editId}`, { headers: { 'X-UI-Nm': '카테고리상세', 'X-Cmd-Nm': '상세조회' } });
         const c = res.data?.data || res.data;
         if (c) Object.assign(form, { ...c });
       } catch (err) {
@@ -101,7 +102,7 @@ window.PdCategoryDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pd/category/${form.categoryId}`, { ...form }) : window.boApi.put(`/bo/ec/pd/category/${form.categoryId}`, { ...form }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pd/category/${form.categoryId}`, { ...form }, { headers: { 'X-UI-Nm': '카테고리관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/ec/pd/category/${form.categoryId}`, { ...form }, { headers: { 'X-UI-Nm': '카테고리관리', 'X-Cmd-Nm': '저장' } }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pdCategoryMng');

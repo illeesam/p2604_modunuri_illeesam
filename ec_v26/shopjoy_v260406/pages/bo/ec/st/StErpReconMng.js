@@ -55,7 +55,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
           params: {
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          }
+          },
+          headers: { 'X-UI-Nm': 'ERP대사관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
         reconList.splice(0, reconList.length, ...(data?.list || reconList));
@@ -71,7 +72,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       if (!ok) return;
       r.erpAmt = r.sysAmt; r.diff = 0; r.diffStatus = '일치'; r.remark = '조정처리 완료';
       try {
-        const res = await window.boApi.put(`/bo/ec/st/erp/recon/${r.reconId}/fix`, {});
+        const res = await window.boApi.put(`/bo/ec/st/erp/recon/${r.reconId}/fix`, {}, { headers: { 'X-UI-Nm': 'ERP대사관리', 'X-Cmd-Nm': '저장' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('조정처리 되었습니다.', 'success');
       } catch (err) {

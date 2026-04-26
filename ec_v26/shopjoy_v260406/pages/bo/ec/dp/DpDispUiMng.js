@@ -39,7 +39,8 @@ window.DpDispUiMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/dp/ui/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: { pageNo: 1, pageSize: 10000 },
+          headers: { 'X-UI-Nm': '전시UI관리', 'X-Cmd-Nm': '조회' }
         });
         displays.splice(0, displays.length, ...(res.data?.data?.list || []));
         uiState.error = null;

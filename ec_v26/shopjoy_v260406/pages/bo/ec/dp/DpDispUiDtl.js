@@ -39,7 +39,8 @@ window.DpDispUiDtl = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/dp/ui/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: { pageNo: 1, pageSize: 10000 },
+          headers: { 'X-UI-Nm': '전시UI상세', 'X-Cmd-Nm': '조회' }
         });
         displays.splice(0, displays.length, ...(res.data?.data?.list || []));
         uiState.error = null;
@@ -298,7 +299,7 @@ window.DpDispUiDtl = {
         if (idx !== -1) Object.assign(codesData[idx], form);
       }
       try {
-        const res = await (isNewUi ? window.boApi.post('/bo/ec/dp/ui', { ...form }) : window.boApi.put(`/bo/ec/dp/ui/${form.codeId}`, { ...form }));
+        const res = await (isNewUi ? window.boApi.post('/bo/ec/dp/ui', { ...form }, { headers: { 'X-UI-Nm': '전시UI관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/ec/dp/ui/${form.codeId}`, { ...form }, { headers: { 'X-UI-Nm': '전시UI관리', 'X-Cmd-Nm': '저장' } }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispUiMng');

@@ -62,12 +62,29 @@
         }
       } catch (_) {}
     } catch (_) {}
-    console.log(TAG + ' → ' + (cfg.method || 'get').toUpperCase(), cfg.url, cfg.data || cfg.params || '');
+    /* X-UI-Nm / X-Cmd-Nm: 한글은 ISO-8859-1 불가 → encodeURIComponent로 인코딩 후 전송, 로그는 디코딩 */
+    try {
+      if (cfg.headers['X-UI-Nm'])  cfg.headers['X-UI-Nm']  = encodeURIComponent(cfg.headers['X-UI-Nm']);
+      if (cfg.headers['X-Cmd-Nm']) cfg.headers['X-Cmd-Nm'] = encodeURIComponent(cfg.headers['X-Cmd-Nm']);
+    } catch (_) {}
+    var uiNm  = (cfg.headers && (cfg.headers['X-UI-Nm']  || cfg.headers['x-ui-nm']))  || '';
+    var cmdNm = (cfg.headers && (cfg.headers['X-Cmd-Nm'] || cfg.headers['x-cmd-nm'])) || '';
+    try { uiNm  = uiNm  ? decodeURIComponent(uiNm)  : ''; } catch (_) {}
+    try { cmdNm = cmdNm ? decodeURIComponent(cmdNm) : ''; } catch (_) {}
+    var uiTag = uiNm ? (' [' + uiNm + (cmdNm ? ' > ' + cmdNm : '') + ']') : '';
+    console.log(TAG + ' → ' + (cfg.method || 'GET').toUpperCase() + uiTag, cfg.url, cfg.data || cfg.params || '');
     return cfg;
   }, function (err) {
     console.error(TAG + ' ✗ REQUEST ERROR', err && err.message);
     return Promise.reject(err);
   });
+
+  /* ── AxiosHeaders 호환 헤더 읽기 (axios 1.x는 키를 소문자로 정규화) + URL 디코딩 ── */
+  function getHdr(headers, key) {
+    if (!headers) return '';
+    var v = (typeof headers.get === 'function') ? (headers.get(key) || '') : (headers[key] || headers[key.toLowerCase()] || '');
+    try { return v ? decodeURIComponent(v) : ''; } catch (_) { return v; }
+  }
 
   /* ── Response: 로그 + 401 재갱신 ── */
   var isRefreshing = false;
@@ -77,7 +94,13 @@
 
   inst.interceptors.response.use(function (res) {
     try { if (typeof global._showProgress === 'function') global._showProgress(false); } catch (_) {}
-    console.log(TAG + ' ← ' + res.status, res.config && res.config.url);
+    var resCfg = res.config || {};
+    var resUiNm  = (resCfg.headers && (resCfg.headers['X-UI-Nm']  || resCfg.headers['x-ui-nm']))  || '';
+    var resCmdNm = (resCfg.headers && (resCfg.headers['X-Cmd-Nm'] || resCfg.headers['x-cmd-nm'])) || '';
+    try { resUiNm  = resUiNm  ? decodeURIComponent(resUiNm)  : ''; } catch (_) {}
+    try { resCmdNm = resCmdNm ? decodeURIComponent(resCmdNm) : ''; } catch (_) {}
+    var resUiTag = resUiNm ? (' [' + resUiNm + (resCmdNm ? ' > ' + resCmdNm : '') + ']') : '';
+    console.log(TAG + ' ← ' + res.status + resUiTag, resCfg.url);
     try {
       var cfg = res.config || {};
       var method = (cfg.method || 'get').toUpperCase();
@@ -89,8 +112,9 @@
       var paramStr = cfg.params ? JSON.stringify(cfg.params) : '';
       var dataStr  = cfg.data  ? (typeof cfg.data === 'string' ? cfg.data : JSON.stringify(cfg.data)) : '';
       var detail   = [paramStr && ('params: ' + paramStr), dataStr && ('data: ' + dataStr)].filter(Boolean).join('\n');
+      var uiLabel  = getHdr(cfg.headers, 'x-ui-nm') + (getHdr(cfg.headers, 'x-cmd-nm') ? ' > ' + getHdr(cfg.headers, 'x-cmd-nm') : '');
       global.dispatchEvent(new CustomEvent('api-success', {
-        detail: { scope: 'bo', method: method, url: displayUrl, status: res.status, detail: detail },
+        detail: { scope: 'bo', method: method, url: displayUrl, status: res.status, detail: detail, uiLabel: uiLabel },
       }));
     } catch (_) {}
     return res;
@@ -101,8 +125,11 @@
     var status = res && res.status;
     console.error(TAG + ' ✗ ' + (status || 'NETWORK'), cfg.url, err.message);
 
+    /* X-Skip-Error-Toast 헤더가 있으면 toast/이벤트 발생 생략 */
+    var skipToast = getHdr(cfg.headers, 'x-skip-error-toast') === 'true';
+
     /* 200-299 범위가 아닌 모든 응답 → toast 출력 */
-    if ((status && (status < 200 || status >= 300)) || !status) {
+    if (!skipToast && ((status && (status < 200 || status >= 300)) || !status)) {
       cfg._notified = true;
       var errMsg = (res && res.data && res.data.message) || err.message || '오류가 발생했습니다.';
       var errorDetails = '';
@@ -127,13 +154,14 @@
             displayUrl = ':' + portMatch[1] + (portMatch[2] || '');
           }
         }
+        var uiLabel = getHdr(cfg.headers, 'x-ui-nm') + (getHdr(cfg.headers, 'x-cmd-nm') ? ' > ' + getHdr(cfg.headers, 'x-cmd-nm') : '');
         global.dispatchEvent(new CustomEvent('api-validation-error', {
-          detail: { scope: 'bo', method: (cfg.method || 'get').toUpperCase(), url: displayUrl, status: status || 0, message: errMsg, errorDetails: errorDetails },
+          detail: { scope: 'bo', method: (cfg.method || 'get').toUpperCase(), url: displayUrl, status: status || 0, message: errMsg, errorDetails: errorDetails, uiLabel: uiLabel },
         }));
       } catch (_) {}
     }
 
-    if ((status === 0 || !status || status >= 500) && !cfg._notified) {
+    if (!skipToast && (status === 0 || !status || status >= 500) && !cfg._notified) {
       cfg._notified = true;
       try {
         // URL 정리 (localhost/127로 시작하면 :port/path 형태로 표시)
@@ -144,8 +172,9 @@
             displayUrl = ':' + portMatch[1] + (portMatch[2] || '');
           }
         }
+        var uiLabelE = getHdr(cfg.headers, 'x-ui-nm') + (getHdr(cfg.headers, 'x-cmd-nm') ? ' > ' + getHdr(cfg.headers, 'x-cmd-nm') : '');
         global.dispatchEvent(new CustomEvent('api-error', {
-          detail: { scope: 'bo', status: status || 0, url: displayUrl, message: err.message, method: (cfg.method || 'get').toUpperCase() },
+          detail: { scope: 'bo', status: status || 0, url: displayUrl, message: err.message, method: (cfg.method || 'get').toUpperCase(), uiLabel: uiLabelE },
         }));
       } catch (_) {}
     }

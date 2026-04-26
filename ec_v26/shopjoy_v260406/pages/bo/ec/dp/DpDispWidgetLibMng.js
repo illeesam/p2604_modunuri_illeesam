@@ -36,7 +36,8 @@ window.DpDispWidgetLibMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: { pageNo: 1, pageSize: 10000 },
+          headers: { 'X-UI-Nm': '위젯라이브러리관리', 'X-Cmd-Nm': '조회' }
         });
         widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.list || []));
         uiState.error = null;
@@ -190,7 +191,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
       if (idx !== -1) widgetLibs.splice(idx, 1);
       if (uiStateDetail.selectedId === lib.libId) { uiStateDetail.selectedId = null; }
       try {
-        const res = await window.boApi.delete(`/bo/ec/widget-lib/${lib.libId}`);
+        const res = await window.boApi.delete(`/bo/ec/widget-lib/${lib.libId}`, { headers: { 'X-UI-Nm': '위젯라이브러리관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

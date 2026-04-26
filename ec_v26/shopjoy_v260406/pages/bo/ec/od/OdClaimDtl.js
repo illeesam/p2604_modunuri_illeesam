@@ -67,7 +67,7 @@ window.OdClaimDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get(`/bo/ec/od/claim/${props.editId}`);
+        const res = await window.boApi.get(`/bo/ec/od/claim/${props.editId}`, { headers: { 'X-UI-Nm': '클레임상세', 'X-Cmd-Nm': '상세조회' } });
         const c = res.data?.data || res.data || {};
         Object.assign(form, { ...c });
         if (!form.claimId) form.claimId = props.editId;
@@ -102,8 +102,8 @@ window.OdClaimDtl = {
       if (!ok) return;
       try {
         const res = await (isNewClaim
-          ? window.boApi.post('/bo/ec/od/claim', { ...form, refundAmount: Number(form.refundAmount) })
-          : window.boApi.put(`/bo/ec/od/claim/${form.claimId}`, { ...form, refundAmount: Number(form.refundAmount) }));
+          ? window.boApi.post('/bo/ec/od/claim', { ...form, refundAmount: Number(form.refundAmount) }, { headers: { 'X-UI-Nm': '클레임관리', 'X-Cmd-Nm': '등록' } })
+          : window.boApi.put(`/bo/ec/od/claim/${form.claimId}`, { ...form, refundAmount: Number(form.refundAmount) }, { headers: { 'X-UI-Nm': '클레임관리', 'X-Cmd-Nm': '저장' } }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewClaim ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('odClaimMng');

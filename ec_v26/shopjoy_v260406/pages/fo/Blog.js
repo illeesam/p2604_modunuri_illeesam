@@ -34,7 +34,7 @@ window.Blog = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const params = { ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-        const res = await window.foApi.get('/fo/blog/list', { params });
+        const res = await window.foApi.get('/fo/blog/list', { params, headers: { 'X-UI-Nm': '블로그', 'X-Cmd-Nm': '조회' } });
         posts.splice(0, posts.length, ...res.data);
       } catch (e) {
         posts.splice(0, posts.length, ...[

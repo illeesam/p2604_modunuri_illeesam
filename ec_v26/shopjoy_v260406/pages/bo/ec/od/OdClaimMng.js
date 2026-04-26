@@ -15,8 +15,8 @@ window.OdClaimMng = {
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         const [claimsRes, membersRes] = await Promise.all([
-          window.boApi.get('/bo/ec/od/claim/page', { params }),
-          window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } })
+          window.boApi.get('/bo/ec/od/claim/page', { params, headers: { 'X-UI-Nm': '클레임관리', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '클레임관리', 'X-Cmd-Nm': '조회' } })
         ]);
         claims.splice(0, claims.length, ...(claimsRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
@@ -143,7 +143,7 @@ const isAppReady = computed(() => {
       if (idx !== -1) claims.splice(idx, 1);
       if (uiStateDetail.selectedId === c.claimId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/ec/od/claim/${c.claimId}`);
+        const res = await window.boApi.delete(`/bo/ec/od/claim/${c.claimId}`, { headers: { 'X-UI-Nm': '클레임관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -260,7 +260,7 @@ const isAppReady = computed(() => {
         checked = new Set();
         uiState.bulkOpen = false;
         try {
-          const res = await window.boApi.put('/bo/ec/od/claim/bulk-status', { changes });
+          const res = await window.boApi.put('/bo/ec/od/claim/bulk-status', { changes }, { headers: { 'X-UI-Nm': '클레임관리', 'X-Cmd-Nm': '일괄처리' } });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${totalCnt}건 변경되었습니다.`, 'success');
         } catch (err) {
@@ -279,7 +279,7 @@ const isAppReady = computed(() => {
         checked = new Set();
         uiState.bulkOpen = false;
         try {
-          const res = await window.boApi.put('/bo/ec/od/claim/bulk-type', { ids, type: val });
+          const res = await window.boApi.put('/bo/ec/od/claim/bulk-type', { ids, type: val }, { headers: { 'X-UI-Nm': '클레임관리', 'X-Cmd-Nm': '일괄처리' } });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 변경되었습니다.`, 'success');
         } catch (err) {
@@ -296,7 +296,7 @@ const isAppReady = computed(() => {
         window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) { c.apprStatus = bulkForm.apprAction; c.apprComment = bulkForm.apprComment; } });
         checked = new Set(); uiState.bulkOpen = false;
         try {
-          const res = await window.boApi.put('/bo/ec/od/claim/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment });
+          const res = await window.boApi.put('/bo/ec/od/claim/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment }, { headers: { 'X-UI-Nm': '클레임관리', 'X-Cmd-Nm': '결재처리' } });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 처리되었습니다.`, 'success');
         } catch (err) {
@@ -317,7 +317,7 @@ const isAppReady = computed(() => {
         } });
         checked = new Set(); uiState.bulkOpen = false;
         try {
-          const res = await window.boApi.put('/bo/ec/od/claim/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value });
+          const res = await window.boApi.put('/bo/ec/od/claim/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value }, { headers: { 'X-UI-Nm': '클레임관리', 'X-Cmd-Nm': '추가결재요청' } });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 요청되었습니다.`, 'success');
         } catch (err) {

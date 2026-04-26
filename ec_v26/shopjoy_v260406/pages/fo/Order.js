@@ -36,7 +36,7 @@ window.Order = {
     const allCoupons  = reactive([]);
     const handleLoadCoupons = async () => {
       try {
-        const res = await window.foApi.get('/fo/my/coupon/list');
+        const res = await window.foApi.get('/fo/my/coupon/list', { headers: { 'X-UI-Nm': '주문', 'X-Cmd-Nm': '쿠폰조회' } });
         allCoupons.splice(0, allCoupons.length, ...(res.data?.data || []).filter(c => !c.used));
       } catch (e) { allCoupons.length = 0; }
     };
@@ -89,7 +89,7 @@ window.Order = {
     /* ── 캐쉬 ── */
     const handleLoadCash = async () => {
       try {
-        const res = await window.foApi.get('/fo/my/cash/info');
+        const res = await window.foApi.get('/fo/my/cash/info', { headers: { 'X-UI-Nm': '주문', 'X-Cmd-Nm': '캐시조회' } });
         uiState.cashBalance = res.data?.data?.balance || 0;
       } catch (e) {}
     };
@@ -182,7 +182,7 @@ window.Order = {
           cashUsed:           cfAppliedCash.value,
           finalPrice:         cfFinalPrice.value,
         };
-        if (window.foApi) await window.foApi.post('/fo/order/create', payload).catch(() => {});
+        if (window.foApi) await window.foApi.post('/fo/order/create', payload, { headers: { 'X-UI-Nm': '주문', 'X-Cmd-Nm': '주문등록' } }).catch(() => {});
         uiState.resultData = payload;
         uiState.view = 'result';
         if (!props.instantOrder) props.clearCart(); // 바로구매는 장바구니 건드리지 않음

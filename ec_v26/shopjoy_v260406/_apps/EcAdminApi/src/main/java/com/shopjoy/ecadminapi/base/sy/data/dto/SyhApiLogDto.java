@@ -13,6 +13,8 @@ public class SyhApiLogDto {
     private String siteId;
     private String apiTypeCd;
     private String apiNm;
+    private String uiNm;
+    private String cmdNm;
     private String methodCd;
     private String endpoint;
     private String reqBody;

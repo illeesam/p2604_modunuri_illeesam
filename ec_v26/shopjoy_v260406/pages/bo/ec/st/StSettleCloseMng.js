@@ -38,9 +38,9 @@ window.StSettleCloseMng = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resO, resC, resV] = await Promise.all([
-          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '정산마감관리', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '정산마감관리', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '정산마감관리', 'X-Cmd-Nm': '조회' } }),
         ]);
         orders.splice(0, orders.length, ...(resO.data?.data?.list || []));
         claims.splice(0, claims.length, ...(resC.data?.data?.list || []));
@@ -92,7 +92,7 @@ window.StSettleCloseMng = {
         status: '마감완료', closeDate: new Date().toISOString().slice(0,10), regUserNm: '관리자',
       });
       try {
-        const res = await window.boApi.post('/bo/ec/st/close', { closeMon: thisMonth, sales: cfThisMonthSales.value, refund: cfThisMonthRefund.value, net: cfThisMonthNet.value, comm: cfThisMonthComm.value, promo: cfThisMonthPromo.value, settle: cfThisMonthSettle.value });
+        const res = await window.boApi.post('/bo/ec/st/close', { closeMon: thisMonth, sales: cfThisMonthSales.value, refund: cfThisMonthRefund.value, net: cfThisMonthNet.value, comm: cfThisMonthComm.value, promo: cfThisMonthPromo.value, settle: cfThisMonthSettle.value }, { headers: { 'X-UI-Nm': '정산마감관리', 'X-Cmd-Nm': '저장' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('정산마감이 완료되었습니다.', 'success');
       } catch (err) {
@@ -108,7 +108,7 @@ window.StSettleCloseMng = {
       if (!ok) return;
       r.status = '마감취소';
       try {
-        const res = await window.boApi.put(`/bo/ec/st/close/${r.closeId}/reopen`, {});
+        const res = await window.boApi.put(`/bo/ec/st/close/${r.closeId}/reopen`, {}, { headers: { 'X-UI-Nm': '정산마감관리', 'X-Cmd-Nm': '상태변경' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('마감이 취소되었습니다.', 'success');
       } catch (err) {

@@ -62,6 +62,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             MDC.put("req",        method + " " + host + path);  // logback 패턴 표시용
             MDC.put("reqStartMs", String.valueOf(System.currentTimeMillis()));  // 경과 시간 계산용
 
+            // 화면명·작업명 MDC (프론트에서 X-UI-Nm / X-Cmd-Nm 헤더로 전달)
+            String uiNm  = request.getHeader("X-UI-Nm");
+            String cmdNm = request.getHeader("X-Cmd-Nm");
+            MDC.put("uiNm",  uiNm  != null ? uiNm  : "");
+            MDC.put("cmdNm", cmdNm != null ? cmdNm : "");
+
             String token = extractToken(request);
 
             if (StringUtils.hasText(token) && jwtProvider.validate(token)) {

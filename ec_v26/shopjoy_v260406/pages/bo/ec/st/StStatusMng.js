@@ -61,11 +61,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resO, resC, resV, resCp, resCa] = await Promise.all([
-          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/ec/pm/coupon/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/ec/pm/cache/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '정산현황관리', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '정산현황관리', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '정산현황관리', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/ec/pm/coupon/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '정산현황관리', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/ec/pm/cache/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '정산현황관리', 'X-Cmd-Nm': '조회' } }),
         ]);
         orderList.splice(0, orderList.length, ...(resO.data?.data?.list || []));
         claimList.splice(0, claimList.length, ...(resC.data?.data?.list || []));

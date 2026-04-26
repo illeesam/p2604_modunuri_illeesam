@@ -40,6 +40,8 @@ public class FoCmContactService {
         String authId = SecurityUtil.isLogin() ? SecurityUtil.getAuthUser().authId() : "GUEST";
         entity.setRegBy(authId);
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(authId);
+        entity.setUpdDate(LocalDateTime.now());
         return repository.save(entity);
     }
 

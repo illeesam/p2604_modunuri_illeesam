@@ -36,7 +36,8 @@ window.DpDispAreaMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/dp/area/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: { pageNo: 1, pageSize: 10000 },
+          headers: { 'X-UI-Nm': '전시영역관리', 'X-Cmd-Nm': '조회' }
         });
         areas.splice(0, areas.length, ...(res.data?.data?.list || []));
         uiState.error = null;
@@ -85,7 +86,7 @@ const searchParam = reactive({
     const onSearch = async () => {
     try {
       const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      const res = await window.boApi.get('/bo/ec/resource/page', { params, headers: { 'X-UI-Nm': '전시영역관리', 'X-Cmd-Nm': '조회' } });
       // TODO: Update items array based on response
       pager.pageNo = 1;
       await handleSearchData();

@@ -13,7 +13,7 @@ window.MbMemGradeMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
-        const res = await window.boApi.get('/bo/ec/mb/member-grade/page', { params });
+        const res = await window.boApi.get('/bo/ec/mb/member-grade/page', { params, headers: { 'X-UI-Nm': '회원등급관리', 'X-Cmd-Nm': '조회' } });
         const list = res.data?.data?.list || [];
         grades.splice(0, grades.length, ...list);
         gridRows.splice(0);
@@ -88,7 +88,7 @@ const isAppReady = computed(() => {
       if (si !== -1) src.splice(si, 1);
       gridRows.splice(idx, 1);
       try {
-        const res = await window.boApi.delete(`/bo/ec/mb/member-grade/${row.gradeId}`);
+        const res = await window.boApi.delete(`/bo/ec/mb/member-grade/${row.gradeId}`, { headers: { 'X-UI-Nm': '회원등급관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -111,7 +111,7 @@ const isAppReady = computed(() => {
         else { const si = src.findIndex(g => g.gradeId === row.gradeId); if (si !== -1) Object.assign(src[si], row); }
         row._row_status = null;
         try {
-          const res = await (isNewRow ? window.boApi.post(`/bo/ec/mb/member-grade/${row.gradeId}`, { ...row }) : window.boApi.put(`/bo/ec/mb/member-grade/${row.gradeId}`, { ...row }));
+          const res = await (isNewRow ? window.boApi.post(`/bo/ec/mb/member-grade/${row.gradeId}`, { ...row }, { headers: { 'X-UI-Nm': '회원등급관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/ec/mb/member-grade/${row.gradeId}`, { ...row }, { headers: { 'X-UI-Nm': '회원등급관리', 'X-Cmd-Nm': '저장' } }));
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast('저장되었습니다.', 'success');
         } catch (err) {

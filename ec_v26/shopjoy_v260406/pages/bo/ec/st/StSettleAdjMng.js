@@ -44,12 +44,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resV, resA] = await Promise.all([
-          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '정산조정관리', 'X-Cmd-Nm': '조회' } }),
           window.boApi.get('/bo/ec/st/adj/page', {
             params: {
               pageNo: pager.pageNo, pageSize: pager.pageSize,
               ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-            }
+            },
+            headers: { 'X-UI-Nm': '정산조정관리', 'X-Cmd-Nm': '조회' }
           })
         ]);
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
@@ -121,7 +122,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       else { const idx = adjList.findIndex(x => x.adjId === form.adjId); if (idx !== -1) Object.assign(adjList[idx], { ...form }); }
       closeForm();
       try {
-        const res = await (uiState.isNew ? window.boApi.post('/bo/ec/st/adj', { ...form }) : window.boApi.put(`/bo/ec/st/adj/${form.adjId}`, { ...form }));
+        const res = await (uiState.isNew ? window.boApi.post('/bo/ec/st/adj', { ...form }, { headers: { 'X-UI-Nm': '정산조정관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/ec/st/adj/${form.adjId}`, { ...form }, { headers: { 'X-UI-Nm': '정산조정관리', 'X-Cmd-Nm': '저장' } }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {
@@ -137,7 +138,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       if (!ok) return;
       const idx = adjList.findIndex(x => x.adjId === r.adjId); if (idx !== -1) adjList.splice(idx, 1); if (uiState.selectedId === r.adjId) closeForm();
       try {
-        const res = await window.boApi.delete(`/bo/ec/st/adj/${r.adjId}`);
+        const res = await window.boApi.delete(`/bo/ec/st/adj/${r.adjId}`, { headers: { 'X-UI-Nm': '정산조정관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -153,7 +154,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       if (!ok) return;
       r.aprvStatus = '승인';
       try {
-        const res = await window.boApi.put(`/bo/ec/st/adj/${r.adjId}/approve`, { aprvStatus: '승인' });
+        const res = await window.boApi.put(`/bo/ec/st/adj/${r.adjId}/approve`, { aprvStatus: '승인' }, { headers: { 'X-UI-Nm': '정산조정관리', 'X-Cmd-Nm': '상태변경' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('승인되었습니다.', 'success');
       } catch (err) {

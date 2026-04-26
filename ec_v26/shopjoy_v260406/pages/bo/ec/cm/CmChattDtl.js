@@ -31,7 +31,7 @@ window.CmChattDtl = {
       if (!props.editId) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get(`/bo/ec/cm/chatt/${props.editId}`);
+        const res = await window.boApi.get(`/bo/ec/cm/chatt/${props.editId}`, { headers: { 'X-UI-Nm': '채팅상세', 'X-Cmd-Nm': '상세조회' } });
         uiState.chat = res.data?.data || null;
         if (uiState.chat) uiState.chat.unread = 0;
         scrollToBottom();
@@ -132,7 +132,7 @@ window.CmChattDtl = {
       const ok = await props.showConfirm('등록', '등록하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await window.boApi.post(`/bo/ec/cm/chatt`, { ...form });
+        const res = await window.boApi.post(`/bo/ec/cm/chatt`, { ...form }, { headers: { 'X-UI-Nm': '채팅관리', 'X-Cmd-Nm': '등록' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('등록되었습니다.', 'success');
         if (props.navigate) props.navigate('cmChattMng');

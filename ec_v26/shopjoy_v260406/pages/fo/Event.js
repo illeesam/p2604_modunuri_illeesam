@@ -23,7 +23,7 @@ window.EventPage = {
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await window.foApi.get('/fo/event/list');
+        const res = await window.foApi.get('/fo/event/list', { headers: { 'X-UI-Nm': '이벤트', 'X-Cmd-Nm': '조회' } });
         events.splice(0, events.length, ...res.data);
       } catch (e) {
         events.splice(0, events.length, ...[

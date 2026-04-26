@@ -14,7 +14,8 @@ window.SyMenuMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/menu/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: { pageNo: 1, pageSize: 10000 },
+          headers: { 'X-UI-Nm': '메뉴관리', 'X-Cmd-Nm': '조회' }
         });
         const list = res.data?.data?.list || [];
         menus.splice(0, menus.length, ...list);

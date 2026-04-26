@@ -37,8 +37,8 @@ window.DpDispWidgetMng = {
       uiState.loading = true;
       try {
         const [res, resLibs] = await Promise.all([
-          window.boApi.get('/bo/ec/dp/widget/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/dp/widget/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '전시위젯관리', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '전시위젯관리', 'X-Cmd-Nm': '조회' } }),
         ]);
         widgets.splice(0, widgets.length, ...(res.data?.data?.list || []));
         widgetLibs.splice(0, widgetLibs.length, ...(resLibs.data?.data?.list || []));
@@ -81,7 +81,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
     const onSearch = async () => {
     try {
       const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await window.boApi.get('/bo/ec/resource/page', { params });
+      const res = await window.boApi.get('/bo/ec/resource/page', { params, headers: { 'X-UI-Nm': '전시위젯관리', 'X-Cmd-Nm': '조회' } });
       // TODO: Update items array based on response
       pager.pageNo = 1;
       await handleSearchData();

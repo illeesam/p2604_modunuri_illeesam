@@ -46,7 +46,8 @@ window.PdDlivTmpltMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/pd/dliv-tmplt/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }
+          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) },
+          headers: { 'X-UI-Nm': '배송템플릿관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
         dlivTmplts.splice(0, dlivTmplts.length, ...(data?.list || []));
@@ -95,7 +96,7 @@ const applied      = reactive({ kw: '', method: '', use: '' });
       if (isNewTmplt) { form.dlivTmpltId = 'DT' + String(Date.now()).slice(-6); src.push({ ...form }); uiState.selectedId = form.dlivTmpltId; uiState.isNew = false; }
       else { const si = src.findIndex(t => t.dlivTmpltId === form.dlivTmpltId); if (si !== -1) Object.assign(src[si], form); }
       try {
-        const res = await (isNewTmplt ? window.boApi.post(`/bo/ec/pd/dliv-tmplt/${form.dlivTmpltId||''}`, { ...form }) : window.boApi.put(`/bo/ec/pd/dliv-tmplt/${form.dlivTmpltId||''}`, { ...form }));
+        const res = await (isNewTmplt ? window.boApi.post(`/bo/ec/pd/dliv-tmplt/${form.dlivTmpltId||''}`, { ...form }, { headers: { 'X-UI-Nm': '배송템플릿관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/ec/pd/dliv-tmplt/${form.dlivTmpltId||''}`, { ...form }, { headers: { 'X-UI-Nm': '배송템플릿관리', 'X-Cmd-Nm': '저장' } }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
         console.error('[catch-info]', err);
@@ -110,7 +111,7 @@ const applied      = reactive({ kw: '', method: '', use: '' });
       if (!ok) return;
       const si = dlivTmplts.findIndex(t => t.dlivTmpltId === cfSelectedRow.value.dlivTmpltId); if (si !== -1) dlivTmplts.splice(si, 1); closeDetail();
       try {
-        const res = await window.boApi.delete(`/bo/ec/pd/dliv-tmplt/${cfSelectedRow.value.dlivTmpltId}`);
+        const res = await window.boApi.delete(`/bo/ec/pd/dliv-tmplt/${cfSelectedRow.value.dlivTmpltId}`, { headers: { 'X-UI-Nm': '배송템플릿관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
         console.error('[catch-info]', err);

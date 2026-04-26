@@ -42,9 +42,9 @@ window.DpDispPanelDtl = {
       uiState.loading = true;
       try {
         const [panelsRes, displaysRes, eventsRes] = await Promise.all([
-          window.boApi.get('/bo/ec/dp/panel/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/ec/pm/event/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/dp/panel/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '전시패널상세', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '전시패널상세', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/ec/pm/event/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '전시패널상세', 'X-Cmd-Nm': '조회' } }),
         ]);
         panels.splice(0, panels.length, ...(panelsRes.data?.data?.list || []));
         displays.splice(0, displays.length, ...(displaysRes.data?.data?.list || []));
@@ -517,7 +517,7 @@ window.DpDispPanelDtl = {
         if (idx !== -1) Object.assign(displays[idx], payload);
       }
       try {
-        const res = await (isNewPanel ? window.boApi.post(`/bo/ec/dp/panel`, { ...form, rows: rows.map(r => ({ ...r })) }) : window.boApi.put(`/bo/ec/dp/panel/${form.dispId}`, { ...form, rows: rows.map(r => ({ ...r })) }));
+        const res = await (isNewPanel ? window.boApi.post(`/bo/ec/dp/panel`, { ...form, rows: rows.map(r => ({ ...r })) }, { headers: { 'X-UI-Nm': '전시패널관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/ec/dp/panel/${form.dispId}`, { ...form, rows: rows.map(r => ({ ...r })) }, { headers: { 'X-UI-Nm': '전시패널관리', 'X-Cmd-Nm': '저장' } }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewPanel ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispPanelMng');

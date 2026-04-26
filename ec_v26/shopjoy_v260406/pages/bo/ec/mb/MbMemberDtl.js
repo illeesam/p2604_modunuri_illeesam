@@ -38,7 +38,7 @@ window.MbMemberDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get(`/bo/ec/mb/member/${props.editId}`);
+        const res = await window.boApi.get(`/bo/ec/mb/member/${props.editId}`, { headers: { 'X-UI-Nm': '회원상세', 'X-Cmd-Nm': '상세조회' } });
         const m = res.data?.data || res.data || {};
         Object.assign(form, { ...m });
         uiState.error = null;
@@ -98,7 +98,7 @@ window.MbMemberDtl = {
       const ok = await props.showConfirm(isNewMember ? '등록' : '저장', isNewMember ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (isNewMember ? window.boApi.post(`/bo/ec/mb/member`, { ...form }) : window.boApi.put(`/bo/ec/mb/member/${form.userId}`, { ...form }));
+        const res = await (isNewMember ? window.boApi.post(`/bo/ec/mb/member`, { ...form }, { headers: { 'X-UI-Nm': '회원관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/ec/mb/member/${form.userId}`, { ...form }, { headers: { 'X-UI-Nm': '회원관리', 'X-Cmd-Nm': '저장' } }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewMember ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('mbMemberMng');

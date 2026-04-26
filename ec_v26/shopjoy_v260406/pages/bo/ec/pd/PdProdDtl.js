@@ -43,10 +43,10 @@ window.PdProdDtl = {
       uiState.loading = true;
       try {
         const calls = [
-          window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 } }),
-          window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 1000 } }),
+          window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 }, headers: { 'X-UI-Nm': '상품상세', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 1000 }, headers: { 'X-UI-Nm': '상품상세', 'X-Cmd-Nm': '조회' } }),
         ];
-        if (!cfIsNew.value) calls.push(window.boApi.get(`/bo/ec/pd/prod/${props.editId}`));
+        if (!cfIsNew.value) calls.push(window.boApi.get(`/bo/ec/pd/prod/${props.editId}`, { headers: { 'X-UI-Nm': '상품상세', 'X-Cmd-Nm': '상세조회' } }));
         const results = await Promise.all(calls);
         boUsers.splice(0, boUsers.length, ...(results[0].data?.data?.list || []));
         categories.splice(0, categories.length, ...(results[1].data?.data?.list || []));
@@ -508,7 +508,7 @@ window.PdProdDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }) : window.boApi.put(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }, { headers: { 'X-UI-Nm': '상품관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }, { headers: { 'X-UI-Nm': '상품관리', 'X-Cmd-Nm': '저장' } }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pdProdMng');

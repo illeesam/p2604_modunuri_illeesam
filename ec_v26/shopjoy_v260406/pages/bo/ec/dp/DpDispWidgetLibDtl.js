@@ -104,7 +104,7 @@ window.DpDispWidgetLibDtl = {
     /* ── 기존 데이터 로드 ── */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 } });
+        const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '위젯라이브러리상세', 'X-Cmd-Nm': '조회' } });
         widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.list || []));
       } catch (_) {}
       if (!cfIsNew.value) {
@@ -415,7 +415,7 @@ window.DpDispWidgetLibDtl = {
         if (idx >= 0) Object.assign(list[idx], { ...form });
       }
       try {
-        const res = await (isNewLib ? window.boApi.post('/bo/ec/dp/widget-lib', { ...form }) : window.boApi.put(`/bo/ec/dp/widget-lib/${form.libId}`, { ...form }));
+        const res = await (isNewLib ? window.boApi.post('/bo/ec/dp/widget-lib', { ...form }, { headers: { 'X-UI-Nm': '위젯라이브러리관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/ec/dp/widget-lib/${form.libId}`, { ...form }, { headers: { 'X-UI-Nm': '위젯라이브러리관리', 'X-Cmd-Nm': '저장' } }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispWidgetLibMng');
@@ -436,7 +436,7 @@ window.DpDispWidgetLibDtl = {
       const idx  = list.findIndex(d => d.libId == form.libId);
       if (idx >= 0) list.splice(idx, 1);
       try {
-        const res = await window.boApi.delete(`/bo/ec/dp/widget-lib/${form.libId}`);
+        const res = await window.boApi.delete(`/bo/ec/dp/widget-lib/${form.libId}`, { headers: { 'X-UI-Nm': '위젯라이브러리관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

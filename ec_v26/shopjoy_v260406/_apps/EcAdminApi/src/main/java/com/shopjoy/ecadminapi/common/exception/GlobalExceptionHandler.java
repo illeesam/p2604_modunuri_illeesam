@@ -119,7 +119,7 @@ public class GlobalExceptionHandler {
         StringBuilder filtered = new StringBuilder();
         for (String line : fullStack.split("\n")) {
             if (!line.contains("org.apache") && !line.contains("org.springframework") &&
-                !line.contains("jakarta.servlet") && !line.contains("java.base/")) {
+                !line.contains("jakarta.servlet") && !line.contains("java.base") && !line.contains("com.fasterxml")) {
                 filtered.append(line).append("\n");
             }
         }
@@ -146,6 +146,9 @@ public class GlobalExceptionHandler {
         String params = qs != null ? qs : "";
         if (params.length() > 200) params = params.substring(0, 200) + "…";
 
+        String uiNm  = CmUtil.nvl(req.getHeader("X-UI-Nm"),  "-");
+        String cmdNm = CmUtil.nvl(req.getHeader("X-Cmd-Nm"), "-");
+
         String auth      = req.getHeader("Authorization");
         String tokenTail = "-";
         if (auth != null && auth.length() >= 10) {
@@ -155,8 +158,8 @@ public class GlobalExceptionHandler {
         }
 
         return String.format(
-            "siteId=%s | userId=%s | userTypeCd=%s | roleId=%s | vendorId=%s | host=%s | url=%s | method=%s | params=%s | token=%s",
-            siteId, userId, userTypeCd, roleId, vendorId, host, url, method, params, tokenTail
+            "siteId=%s | userId=%s | userTypeCd=%s | roleId=%s | vendorId=%s | host=%s | url=%s | method=%s | uiNm=%s | cmdNm=%s | params=%s | token=%s",
+            siteId, userId, userTypeCd, roleId, vendorId, host, url, method, uiNm, cmdNm, params, tokenTail
         );
     }
 }

@@ -63,12 +63,13 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/cm/notice/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) }
+          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) },
+          headers: { 'X-UI-Nm': '공지사항관리', 'X-Cmd-Nm': '조회' }
         });
         notices.splice(0, notices.length, ...(res.data?.data?.list || []));
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        Object.assign(pager.pageCond, res.data?.data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -126,7 +127,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
       if (idx !== -1) notices.splice(idx, 1);
       if (uiStateDetail.selectedId === n.noticeId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/ec/cm/notice/${n.noticeId}`);
+        const res = await window.boApi.delete(`/bo/ec/cm/notice/${n.noticeId}`, { headers: { 'X-UI-Nm': '공지사항관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
         await handleSearchList();

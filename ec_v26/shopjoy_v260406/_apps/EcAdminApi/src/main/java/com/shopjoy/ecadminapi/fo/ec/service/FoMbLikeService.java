@@ -59,6 +59,8 @@ public class FoMbLikeService {
             like.setTargetId(targetId);
             like.setRegBy(authId);
             like.setRegDate(LocalDateTime.now());
+            like.setUpdBy(authId);
+            like.setUpdDate(LocalDateTime.now());
             repository.save(like);
             return true;
         }

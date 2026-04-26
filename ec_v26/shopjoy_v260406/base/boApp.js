@@ -187,25 +187,30 @@
       window.addEventListener('api-validation-error', (ev) => {
         const d = ev.detail || {};
         let msg = d.message || '오류가 발생했습니다.';
+        let title = '';
         if (d.method && d.url && d.status) {
-          msg = `${d.method} ${d.url} ${d.status}\n${msg}`;
+          title = `${d.method} ${d.url} ${d.status}`;
+          if (d.uiLabel) title += `  [${d.uiLabel}]`;
+          msg = `${title}\n${msg}`;
         }
         showToast(msg, 'error', 0, d.errorDetails || '');
       });
 
-      /* API 성공 → toast info 출력 (boAxios 에서 window.dispatchEvent('api-success')) */
-      window.addEventListener('api-success', (ev) => {
-        const d = ev.detail || {};
-        const msg = `${d.method} ${d.url} ${d.status}`;
-        showToast(msg, 'info', 3000, d.detail || '');
-      });
+      /* API 성공 → 로그만 기록 (toast 미출력) */
+      window.addEventListener('api-success', () => {});
 
       /* API 에러 → 오류 페이지 전환 (boAxios 에서 window.dispatchEvent('api-error')) */
       window.addEventListener('api-error', (ev) => {
         const d = ev.detail || {};
         const st = d.status;
-        if (st === 401) { errorMessage.value = d.message || ''; page.value = 'error401'; }
-        else if (st >= 500 || st === 0) { errorMessage.value = d.message || ''; page.value = 'error500'; }
+        let label = '';
+        if (d.method && d.url) {
+          label = `${d.method} ${d.url} ${st}`;
+          if (d.uiLabel) label += `  [${d.uiLabel}]`;
+        }
+        const msg = label ? `${label}\n${d.message || ''}` : (d.message || '');
+        if (st === 401) { errorMessage.value = msg; page.value = 'error401'; }
+        else if (st >= 500 || st === 0) { errorMessage.value = msg; page.value = 'error500'; }
       });
       const editId = ref(null);
 
@@ -473,7 +478,7 @@
 
       /* ── API 응답 패널 ── */
       const apiResPanel = reactive({ show: false, res: null });
-      const setApiRes = (res) => { apiResPanel.res = res; apiResPanel.show = true; };
+      const setApiRes = (res) => { apiResPanel.res = res; /* apiResPanel.show = true; */ };
       const closeApiResPanel = () => { apiResPanel.show = false; };
 
       /* ── Confirm ── */
@@ -561,7 +566,11 @@
           if (reqData) reqStr = JSON.stringify(typeof reqData === 'string' ? JSON.parse(reqData) : reqData, null, 2);
           if (resData) resStr = JSON.stringify(typeof resData === 'string' ? JSON.parse(resData) : resData, null, 2);
           if (reqHeaders) {
+            const uiNm  = reqHeaders['X-UI-Nm']  || reqHeaders['x-ui-nm']  || '';
+            const cmdNm = reqHeaders['X-Cmd-Nm'] || reqHeaders['x-cmd-nm'] || '';
             const headers = {
+              'X-UI-Nm':      uiNm  ? (function(v){ try{ return decodeURIComponent(v); }catch(_){ return v; } })(uiNm)  : '',
+              'X-Cmd-Nm':     cmdNm ? (function(v){ try{ return decodeURIComponent(v); }catch(_){ return v; } })(cmdNm) : '',
               'Content-Type': reqHeaders['Content-Type'] || '',
               'Authorization': reqHeaders['Authorization'] || ''
             };
@@ -728,7 +737,7 @@
           let userRoles = [];
           if (user.userId) {
             try {
-              const res = await window.boApi.get(`/bo/sy/user/${user.userId}/roles`);
+              const res = await window.boApi.get(`/bo/sy/user/${user.userId}/roles`, { headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '권한조회', 'X-Skip-Error-Toast': 'true' } });
               userRoles = res.data?.data || [];
             } catch (_) {}
           }
@@ -1512,7 +1521,7 @@
         </div>
 
         <!-- API 로그 호버 상세 레이어 -->
-        <div v-if="apiLogHoverDetail || apiLogLockedDetail" style="position: fixed; top: 200px; right: 220px; width: 650px; max-height: 660px; background: white; border: 2px solid #8b5cf6; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001; font-size: 11px; font-family: monospace; overflow: hidden; display: flex; flex-direction: column;">
+        <div v-if="apiLogHoverDetail || apiLogLockedDetail" style="position: fixed; top: 200px; right: 220px; width: 650px; max-height: 858px; background: white; border: 2px solid #8b5cf6; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001; font-size: 11px; font-family: monospace; overflow: hidden; display: flex; flex-direction: column;">
           <!-- 헤더 -->
           <div style="padding: 12px; background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); border-bottom: 1px solid #d1d5db; flex-shrink: 0;">
             <div style="font-weight: 700; color: #374151; font-size: 12px; margin-bottom: 6px;">📡 API 요청/응답 상세 <span style="color: #ef4444; margin-left: 4px;">#{{ apiLogs.findIndex(l => l === (apiLogLockedDetail || apiLogHoverDetail)) >= 0 ? apiLogs.length - apiLogs.findIndex(l => l === (apiLogLockedDetail || apiLogHoverDetail)) : '-' }}</span></div>
@@ -1544,10 +1553,15 @@
           </div>
 
           <!-- 요청/응답 데이터 -->
-          <div style="flex: 1; overflow: hidden; display: grid; grid-template-rows: 0.65fr 1fr 2fr; gap: 8px; padding: 8px; background: white;">
+          <div style="flex: 1; overflow: hidden; display: grid; grid-template-rows: 130px 1fr 2fr; gap: 8px; padding: 8px; background: white;">
             <!-- Headers -->
-            <div style="display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e5e7eb; border-radius: 2px;">
-              <div style="padding: 4px 6px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #6b7280; font-size: 10px;">📋 Headers</div>
+            <div style="display: flex; flex-direction: column; overflow: hidden; border: 1px solid #8b5cf6; border-radius: 2px;">
+              <div style="padding: 4px 6px; background: #ede9fe; border-bottom: 1px solid #8b5cf6; font-weight: 600; color: #5b21b6; font-size: 10px; display: flex; align-items: center; justify-content: space-between;">
+                <span>📋 Headers</span>
+                <span style="color: #7c3aed; font-size: 11px; font-weight: 700;">
+                  {{ (function(h){ try{ const o=JSON.parse(h||'{}'); const ui=o['X-UI-Nm']||''; const cmd=o['X-Cmd-Nm']||''; return ui ? (ui + (cmd ? ' > ' + cmd : '')) : ''; }catch(_){ return ''; } })((apiLogLockedDetail || apiLogHoverDetail).headers) }}
+                </span>
+              </div>
               <div style="flex: 1; overflow-y: auto; padding: 6px; background: #fafbfc; color: #374151; white-space: pre-wrap; word-break: break-word; line-height: 1.4; font-size: 10px;">{{ formatJsonData((apiLogLockedDetail || apiLogHoverDetail).headers) || '{}' }}</div>
             </div>
 

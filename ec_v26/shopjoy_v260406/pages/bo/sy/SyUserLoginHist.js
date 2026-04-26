@@ -22,7 +22,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 10000 } });
+        const res = await window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '이력조회' } });
         boUserList.splice(0, boUserList.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
