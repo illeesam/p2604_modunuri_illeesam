@@ -60,6 +60,8 @@ public class StSettleRawService {
         entity.setSettleRawId(CmUtil.generateId("st_settle_raw"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         StSettleRaw result = repository.save(entity);
         return result;
     }

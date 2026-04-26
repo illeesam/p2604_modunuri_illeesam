@@ -64,6 +64,8 @@ public class SyTemplateService {
         entity.setTemplateId(CmUtil.generateId("sy_template"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_template :: insert or update :: [orm:jpa]
         SyTemplate result = repository.save(entity);
         return result;

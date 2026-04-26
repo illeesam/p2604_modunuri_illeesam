@@ -60,6 +60,8 @@ public class PmPlanItemService {
         entity.setPlanItemId(CmUtil.generateId("pm_plan_item"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         PmPlanItem result = repository.save(entity);
         return result;
     }

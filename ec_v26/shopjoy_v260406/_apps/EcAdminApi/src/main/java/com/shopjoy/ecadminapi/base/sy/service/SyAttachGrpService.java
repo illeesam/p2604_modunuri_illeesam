@@ -64,6 +64,8 @@ public class SyAttachGrpService {
         entity.setAttachGrpId(CmUtil.generateId("sy_attach_grp"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_attach_grp :: insert or update :: [orm:jpa]
         SyAttachGrp result = repository.save(entity);
         return result;

@@ -64,6 +64,8 @@ public class SyBbmService {
         entity.setBbmId(CmUtil.generateId("sy_bbm"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_bbm :: insert or update :: [orm:jpa]
         SyBbm result = repository.save(entity);
         return result;

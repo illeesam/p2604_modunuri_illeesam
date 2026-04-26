@@ -64,6 +64,8 @@ public class PdReviewCommentService {
         entity.setReviewCommentId(CmUtil.generateId("pd_review_comment"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // pd_review_comment :: insert or update :: [orm:jpa]
         PdReviewComment result = repository.save(entity);
         return result;

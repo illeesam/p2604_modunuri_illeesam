@@ -63,6 +63,8 @@ public class PdProdSetItemService {
         entity.setSetItemId(CmUtil.generateId("pd_prod_set_item"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // pd_prod_set_item :: insert or update :: [orm:jpa]
         PdProdSetItem result = repository.save(entity);
         return result;

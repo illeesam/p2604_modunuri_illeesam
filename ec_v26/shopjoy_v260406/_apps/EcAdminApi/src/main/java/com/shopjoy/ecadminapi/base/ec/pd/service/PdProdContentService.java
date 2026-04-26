@@ -63,6 +63,8 @@ public class PdProdContentService {
         entity.setProdContentId(CmUtil.generateId("pd_prod_content"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // pd_prod_content :: insert or update :: [orm:jpa]
         PdProdContent result = repository.save(entity);
         return result;

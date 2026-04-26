@@ -62,6 +62,8 @@ public class CmBlogFileService {
         entity.setBlogImgId(CmUtil.generateId("cm_blog_file"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // cm_blog_file :: insert or update :: [orm:jpa]
         return repository.save(entity);
     }

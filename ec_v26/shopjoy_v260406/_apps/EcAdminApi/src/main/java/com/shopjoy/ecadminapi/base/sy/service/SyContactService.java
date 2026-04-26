@@ -64,6 +64,8 @@ public class SyContactService {
         entity.setContactId(CmUtil.generateId("sy_contact"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_contact :: insert or update :: [orm:jpa]
         SyContact result = repository.save(entity);
         return result;

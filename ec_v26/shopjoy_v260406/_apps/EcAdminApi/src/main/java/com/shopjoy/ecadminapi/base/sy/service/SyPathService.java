@@ -64,6 +64,8 @@ public class SyPathService {
         entity.setBizCd(CmUtil.generateId("sy_path"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_path :: insert or update :: [orm:jpa]
         SyPath result = repository.save(entity);
         return result;

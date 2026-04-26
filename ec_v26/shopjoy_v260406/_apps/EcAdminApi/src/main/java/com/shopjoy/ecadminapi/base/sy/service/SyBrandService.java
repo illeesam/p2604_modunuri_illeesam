@@ -64,6 +64,8 @@ public class SyBrandService {
         entity.setBrandId(CmUtil.generateId("sy_brand"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_brand :: insert or update :: [orm:jpa]
         SyBrand result = repository.save(entity);
         return result;

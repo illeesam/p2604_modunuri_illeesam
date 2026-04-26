@@ -59,6 +59,8 @@ public class OdClaimService {
         entity.setClaimId(CmUtil.generateId("od_claim"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         OdClaim result = repository.save(entity);
         return result;
     }

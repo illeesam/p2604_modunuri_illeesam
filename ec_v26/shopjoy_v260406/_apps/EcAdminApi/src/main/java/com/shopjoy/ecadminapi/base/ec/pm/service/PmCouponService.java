@@ -64,6 +64,8 @@ public class PmCouponService {
         entity.setCouponId(CmUtil.generateId("pm_coupon"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // pm_coupon :: insert or update :: [orm:jpa]
         PmCoupon result = repository.save(entity);
         return result;

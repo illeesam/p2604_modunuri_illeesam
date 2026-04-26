@@ -59,6 +59,8 @@ public class OdDlivService {
         entity.setDlivId(CmUtil.generateId("od_dliv"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         OdDliv result = repository.save(entity);
         return result;
     }

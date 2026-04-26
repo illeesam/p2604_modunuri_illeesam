@@ -60,6 +60,8 @@ public class StErpVoucherService {
         entity.setErpVoucherId(CmUtil.generateId("st_erp_voucher"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         StErpVoucher result = repository.save(entity);
         return result;
     }

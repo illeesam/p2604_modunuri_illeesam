@@ -63,6 +63,8 @@ public class PdProdImgService {
         entity.setProdImgId(CmUtil.generateId("pd_prod_img"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // pd_prod_img :: insert or update :: [orm:jpa]
         PdProdImg result = repository.save(entity);
         return result;

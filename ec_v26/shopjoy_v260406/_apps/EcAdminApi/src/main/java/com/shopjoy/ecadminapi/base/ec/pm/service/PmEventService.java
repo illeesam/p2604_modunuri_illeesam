@@ -64,6 +64,8 @@ public class PmEventService {
         entity.setEventId(CmUtil.generateId("pm_event"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // pm_event :: insert or update :: [orm:jpa]
         PmEvent result = repository.save(entity);
         return result;

@@ -63,6 +63,8 @@ public class DpUiService {
         entity.setUiId(CmUtil.generateId("dp_ui"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // dp_ui :: insert or update :: [orm:jpa]
         DpUi result = repository.save(entity);
         return result;

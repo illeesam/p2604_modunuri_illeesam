@@ -64,6 +64,8 @@ public class SyUserService {
         entity.setUserId(CmUtil.generateId("sy_user"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_user :: insert or update :: [orm:jpa]
         SyUser result = repository.save(entity);
         return result;

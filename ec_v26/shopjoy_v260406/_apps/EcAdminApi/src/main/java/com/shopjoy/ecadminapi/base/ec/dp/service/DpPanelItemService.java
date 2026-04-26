@@ -63,6 +63,8 @@ public class DpPanelItemService {
         entity.setPanelItemId(CmUtil.generateId("dp_panel_item"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // dp_panel_item :: insert or update :: [orm:jpa]
         DpPanelItem result = repository.save(entity);
         return result;

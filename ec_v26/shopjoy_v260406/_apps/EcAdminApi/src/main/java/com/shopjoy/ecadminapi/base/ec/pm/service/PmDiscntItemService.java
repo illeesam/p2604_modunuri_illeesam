@@ -64,6 +64,8 @@ public class PmDiscntItemService {
         entity.setDiscntItemId(CmUtil.generateId("pm_discnt_item"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // pm_discnt_item :: insert or update :: [orm:jpa]
         PmDiscntItem result = repository.save(entity);
         return result;

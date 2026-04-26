@@ -58,6 +58,8 @@ public class PmSaveItemService {
         entity.setSaveItemId(CmUtil.generateId("pm_save_item"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         return repository.save(entity);
     }
 

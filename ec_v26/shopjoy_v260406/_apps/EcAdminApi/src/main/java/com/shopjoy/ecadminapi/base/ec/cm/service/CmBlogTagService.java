@@ -63,6 +63,8 @@ public class CmBlogTagService {
         entity.setBlogTagId(CmUtil.generateId("cm_blog_tag"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // cm_blog_tag :: insert or update :: [orm:jpa]
         CmBlogTag result = repository.save(entity);
         return result;

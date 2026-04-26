@@ -64,6 +64,8 @@ public class PmDiscntUsageService {
         entity.setDiscntUsageId(CmUtil.generateId("pm_discnt_usage"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // pm_discnt_usage :: insert or update :: [orm:jpa]
         PmDiscntUsage result = repository.save(entity);
         return result;

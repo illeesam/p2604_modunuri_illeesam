@@ -59,6 +59,8 @@ public class OdRefundMethodService {
         entity.setRefundMethodId(CmUtil.generateId("od_refund_method"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         OdRefundMethod result = repository.save(entity);
         return result;
     }

@@ -63,6 +63,8 @@ public class DpWidgetLibService {
         entity.setWidgetLibId(CmUtil.generateId("dp_widget_lib"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // dp_widget_lib :: insert or update :: [orm:jpa]
         DpWidgetLib result = repository.save(entity);
         return result;

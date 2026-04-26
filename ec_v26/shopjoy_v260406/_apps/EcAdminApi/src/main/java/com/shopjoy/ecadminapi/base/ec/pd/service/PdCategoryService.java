@@ -64,6 +64,8 @@ public class PdCategoryService {
         entity.setCategoryId(CmUtil.generateId("pd_category"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // pd_category :: insert or update :: [orm:jpa]
         PdCategory result = repository.save(entity);
         return result;

@@ -65,6 +65,8 @@ public class CmBlogCateService {
         entity.setBlogCateId(CmUtil.generateId("cm_blog_cate"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // cm_blog_cate :: insert or update :: [orm:jpa]
         CmBlogCate result = repository.save(entity);
         return result;

@@ -55,6 +55,8 @@ public class BoSyMenuService {
         body.setMenuId("MN" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
         SyMenu saved = repository.save(body);
         menuCache.evictAll();
         return saved;

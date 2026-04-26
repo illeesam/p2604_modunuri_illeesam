@@ -64,6 +64,8 @@ public class SyI18nMsgService {
         entity.setI18nMsgId(CmUtil.generateId("sy_i18n_msg"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_i18n_msg :: insert or update :: [orm:jpa]
         SyI18nMsg result = repository.save(entity);
         return result;

@@ -40,6 +40,8 @@ public class FoOdCartService {
         entity.setMemberId(SecurityUtil.getAuthUser().authId());
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         return repository.save(entity);
     }
 

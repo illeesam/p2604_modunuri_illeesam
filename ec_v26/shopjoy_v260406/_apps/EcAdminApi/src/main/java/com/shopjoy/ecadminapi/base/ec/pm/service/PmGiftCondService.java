@@ -60,6 +60,8 @@ public class PmGiftCondService {
         entity.setGiftCondId(CmUtil.generateId("pm_gift_cond"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         PmGiftCond result = repository.save(entity);
         return result;
     }

@@ -64,6 +64,8 @@ public class PdRestockNotiService {
         entity.setRestockNotiId(CmUtil.generateId("pd_restock_noti"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // pd_restock_noti :: insert or update :: [orm:jpa]
         PdRestockNoti result = repository.save(entity);
         return result;

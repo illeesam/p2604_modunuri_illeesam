@@ -58,6 +58,8 @@ public class ZzSample0Service {
         entity.setSample0Id(CmUtil.generateId("zz_sample0"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // zz_sample0 :: insert or update :: [orm:jpa]
         return repository.save(entity);
     }

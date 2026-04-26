@@ -60,6 +60,8 @@ public class StErpVoucherLineService {
         entity.setErpVoucherLineId(CmUtil.generateId("st_erp_voucher_line"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         StErpVoucherLine result = repository.save(entity);
         return result;
     }

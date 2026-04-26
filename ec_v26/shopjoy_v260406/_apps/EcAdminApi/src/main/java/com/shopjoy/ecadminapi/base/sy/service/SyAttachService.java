@@ -64,6 +64,8 @@ public class SyAttachService {
         entity.setAttachId(CmUtil.generateId("sy_attach"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_attach :: insert or update :: [orm:jpa]
         SyAttach result = repository.save(entity);
         return result;

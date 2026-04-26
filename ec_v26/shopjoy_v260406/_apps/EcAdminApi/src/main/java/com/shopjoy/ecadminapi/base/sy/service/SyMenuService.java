@@ -64,6 +64,8 @@ public class SyMenuService {
         entity.setMenuId(CmUtil.generateId("sy_menu"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_menu :: insert or update :: [orm:jpa]
         SyMenu result = repository.save(entity);
         return result;

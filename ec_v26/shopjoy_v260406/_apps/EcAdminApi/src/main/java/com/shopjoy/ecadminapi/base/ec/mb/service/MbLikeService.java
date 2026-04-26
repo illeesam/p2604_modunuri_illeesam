@@ -59,6 +59,8 @@ public class MbLikeService {
         entity.setLikeId(CmUtil.generateId("mb_like"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         MbLike result = repository.save(entity);
         return result;
     }

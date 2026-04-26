@@ -63,6 +63,8 @@ public class DpUiAreaService {
         entity.setUiAreaId(CmUtil.generateId("dp_area"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // dp_ui_area :: insert or update :: [orm:jpa]
         DpUiArea result = repository.save(entity);
         return result;

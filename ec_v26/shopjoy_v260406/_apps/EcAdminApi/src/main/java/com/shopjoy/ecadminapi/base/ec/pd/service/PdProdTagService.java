@@ -63,6 +63,8 @@ public class PdProdTagService {
         entity.setProdTagId(CmUtil.generateId("pd_prod_tag"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // pd_prod_tag :: insert or update :: [orm:jpa]
         PdProdTag result = repository.save(entity);
         return result;

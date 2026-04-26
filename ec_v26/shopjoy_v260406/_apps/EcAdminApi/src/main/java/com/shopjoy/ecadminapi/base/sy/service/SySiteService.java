@@ -64,6 +64,8 @@ public class SySiteService {
         entity.setSiteId(CmUtil.generateId("sy_site"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_site :: insert or update :: [orm:jpa]
         SySite result = repository.save(entity);
         return result;

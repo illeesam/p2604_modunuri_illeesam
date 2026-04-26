@@ -64,6 +64,8 @@ public class SyVendorBrandService {
         entity.setVendorBrandId(CmUtil.generateId("sy_vendor_brand"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_vendor_brand :: insert or update :: [orm:jpa]
         SyVendorBrand result = repository.save(entity);
         return result;

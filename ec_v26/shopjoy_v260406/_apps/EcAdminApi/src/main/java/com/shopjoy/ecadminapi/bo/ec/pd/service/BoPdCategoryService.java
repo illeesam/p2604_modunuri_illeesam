@@ -56,6 +56,8 @@ public class BoPdCategoryService {
         body.setCategoryId("CT" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
         return repository.save(body);
     }
 
@@ -99,6 +101,8 @@ public class BoPdCategoryService {
             cp.setDispYn(row.get("dispYn") != null ? (String) row.get("dispYn") : "Y");
             cp.setRegBy(updBy);
             cp.setRegDate(LocalDateTime.now());
+            cp.setUpdBy(updBy);
+            cp.setUpdDate(LocalDateTime.now());
             categoryProdRepository.save(cp);
             seq++;
         }

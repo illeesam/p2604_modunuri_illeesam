@@ -64,6 +64,8 @@ public class SyCodeGrpService {
         entity.setCodeGrpId(CmUtil.generateId("sy_code_grp"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_code_grp :: insert or update :: [orm:jpa]
         SyCodeGrp result = repository.save(entity);
         return result;

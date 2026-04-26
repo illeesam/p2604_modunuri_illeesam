@@ -63,6 +63,8 @@ public class CmBlogReplyService {
         entity.setCommentId(CmUtil.generateId("cm_blog_reply"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // cm_blog_reply :: insert or update :: [orm:jpa]
         CmBlogReply result = repository.save(entity);
         return result;

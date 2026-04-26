@@ -60,6 +60,8 @@ public class PmGiftService {
         entity.setGiftId(CmUtil.generateId("pm_gift"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         PmGift result = repository.save(entity);
         return result;
     }

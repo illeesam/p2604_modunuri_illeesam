@@ -59,6 +59,8 @@ public class MbMemberAddrService {
         entity.setMemberAddrId(CmUtil.generateId("mb_member_addr"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         MbMemberAddr result = repository.save(entity);
         return result;
     }

@@ -64,6 +64,8 @@ public class PdDlivTmpltService {
         entity.setDlivTmpltId(CmUtil.generateId("pd_dliv_tmplt"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // pd_dliv_tmplt :: insert or update :: [orm:jpa]
         PdDlivTmplt result = repository.save(entity);
         return result;

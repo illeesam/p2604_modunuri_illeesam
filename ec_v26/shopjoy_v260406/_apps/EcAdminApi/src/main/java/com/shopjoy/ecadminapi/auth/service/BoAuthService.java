@@ -10,6 +10,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyhUserLoginLog;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhUserTokenLog;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -58,7 +59,10 @@ public class BoAuthService {
             + String.format("%04d", (int)(Math.random() * 10000)));
         body.setLoginPwdHash(passwordEncoder.encode(body.getLoginPwdHash()));
         body.setUserStatusCd("ACTIVE");
+        body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        body.setUpdDate(LocalDateTime.now());
         em.persist(body);
         return new BoJoinRes(body.getUserId(), body.getLoginId());
     }

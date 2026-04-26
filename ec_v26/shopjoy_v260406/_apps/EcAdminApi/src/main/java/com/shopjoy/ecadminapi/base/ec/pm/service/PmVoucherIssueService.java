@@ -60,6 +60,8 @@ public class PmVoucherIssueService {
         entity.setVoucherIssueId(CmUtil.generateId("pm_voucher_issue"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         PmVoucherIssue result = repository.save(entity);
         return result;
     }

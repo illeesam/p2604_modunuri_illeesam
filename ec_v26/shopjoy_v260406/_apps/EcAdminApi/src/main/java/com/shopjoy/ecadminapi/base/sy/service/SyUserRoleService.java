@@ -64,6 +64,8 @@ public class SyUserRoleService {
         entity.setUserRoleId(CmUtil.generateId("sy_user_role"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_user_role :: insert or update :: [orm:jpa]
         SyUserRole result = repository.save(entity);
         return result;

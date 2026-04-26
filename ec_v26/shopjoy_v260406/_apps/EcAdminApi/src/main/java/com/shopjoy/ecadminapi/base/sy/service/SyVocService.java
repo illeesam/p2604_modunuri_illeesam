@@ -64,6 +64,8 @@ public class SyVocService {
         entity.setVocId(CmUtil.generateId("sy_voc"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_voc :: insert or update :: [orm:jpa]
         SyVoc result = repository.save(entity);
         return result;

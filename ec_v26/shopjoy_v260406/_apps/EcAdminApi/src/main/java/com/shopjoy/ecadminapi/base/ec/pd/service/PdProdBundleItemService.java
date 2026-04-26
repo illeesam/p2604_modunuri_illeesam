@@ -63,6 +63,8 @@ public class PdProdBundleItemService {
         entity.setBundleItemId(CmUtil.generateId("pd_prod_bundle_item"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // pd_prod_bundle_item :: insert or update :: [orm:jpa]
         PdProdBundleItem result = repository.save(entity);
         return result;

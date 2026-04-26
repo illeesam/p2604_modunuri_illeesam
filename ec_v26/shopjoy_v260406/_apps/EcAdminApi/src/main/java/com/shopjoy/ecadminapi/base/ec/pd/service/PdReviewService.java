@@ -64,6 +64,8 @@ public class PdReviewService {
         entity.setReviewId(CmUtil.generateId("pd_review"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // pd_review :: insert or update :: [orm:jpa]
         PdReview result = repository.save(entity);
         return result;

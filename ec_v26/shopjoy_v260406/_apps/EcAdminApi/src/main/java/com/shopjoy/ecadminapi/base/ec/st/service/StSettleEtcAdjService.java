@@ -60,6 +60,8 @@ public class StSettleEtcAdjService {
         entity.setSettleEtcAdjId(CmUtil.generateId("st_settle_etc_adj"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         StSettleEtcAdj result = repository.save(entity);
         return result;
     }

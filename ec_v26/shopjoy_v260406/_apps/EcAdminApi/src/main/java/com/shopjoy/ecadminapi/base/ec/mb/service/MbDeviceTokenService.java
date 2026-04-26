@@ -62,6 +62,8 @@ public class MbDeviceTokenService {
         entity.setDeviceTokenId(CmUtil.generateId("mb_device_token"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // mb_device_token :: insert or update :: [orm:jpa]
         return repository.save(entity);
     }

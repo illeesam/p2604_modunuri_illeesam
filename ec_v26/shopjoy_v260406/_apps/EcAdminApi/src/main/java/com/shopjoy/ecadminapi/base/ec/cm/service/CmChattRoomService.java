@@ -63,6 +63,8 @@ public class CmChattRoomService {
         entity.setChattRoomId(CmUtil.generateId("cm_chatt_room"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // cm_chatt_room :: insert or update :: [orm:jpa]
         CmChattRoom result = repository.save(entity);
         return result;

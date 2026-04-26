@@ -64,6 +64,8 @@ public class SyVendorContentService {
         entity.setVendorContentId(CmUtil.generateId("sy_vendor_content"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_vendor_content :: insert or update :: [orm:jpa]
         SyVendorContent result = repository.save(entity);
         return result;

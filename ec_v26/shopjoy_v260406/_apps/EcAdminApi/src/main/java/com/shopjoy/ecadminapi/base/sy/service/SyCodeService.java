@@ -64,6 +64,8 @@ public class SyCodeService {
         entity.setCodeId(CmUtil.generateId("sy_code"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_code :: insert or update :: [orm:jpa]
         SyCode result = repository.save(entity);
         return result;

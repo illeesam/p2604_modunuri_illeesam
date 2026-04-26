@@ -64,6 +64,8 @@ public class PmCacheService {
         entity.setCacheId(CmUtil.generateId("pm_cache"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // pm_cache :: insert or update :: [orm:jpa]
         PmCache result = repository.save(entity);
         return result;

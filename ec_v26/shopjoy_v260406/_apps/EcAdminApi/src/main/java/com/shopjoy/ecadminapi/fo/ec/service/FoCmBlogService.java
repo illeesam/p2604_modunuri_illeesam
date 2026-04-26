@@ -65,6 +65,8 @@ public class FoCmBlogService {
         entity.setBlogId(CmUtil.generateId("cm_blog"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         if (entity.getUseYn() == null) entity.setUseYn("Y");
         if (entity.getViewCount() == null) entity.setViewCount(0);
         return repository.save(entity);

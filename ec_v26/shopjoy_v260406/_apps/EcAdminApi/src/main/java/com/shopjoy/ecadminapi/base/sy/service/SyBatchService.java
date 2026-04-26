@@ -64,6 +64,8 @@ public class SyBatchService {
         entity.setBatchId(CmUtil.generateId("sy_batch"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_batch :: insert or update :: [orm:jpa]
         SyBatch result = repository.save(entity);
         return result;

@@ -59,6 +59,8 @@ public class OdPayService {
         entity.setPayId(CmUtil.generateId("od_pay"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         OdPay result = repository.save(entity);
         return result;
     }

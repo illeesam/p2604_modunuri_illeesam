@@ -59,6 +59,8 @@ public class OdOrderItemService {
         entity.setOrderItemId(CmUtil.generateId("od_order_item"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         OdOrderItem result = repository.save(entity);
         return result;
     }

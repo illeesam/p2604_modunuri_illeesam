@@ -63,6 +63,8 @@ public class CmPathService {
         entity.setBizCd(CmUtil.generateId("cm_path"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // cm_path :: insert or update :: [orm:jpa]
         CmPath result = repository.save(entity);
         return result;

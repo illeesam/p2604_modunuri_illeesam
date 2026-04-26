@@ -60,6 +60,8 @@ public class PmSaveUsageService {
         entity.setSaveUsageId(CmUtil.generateId("pm_save_usage"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         PmSaveUsage result = repository.save(entity);
         return result;
     }

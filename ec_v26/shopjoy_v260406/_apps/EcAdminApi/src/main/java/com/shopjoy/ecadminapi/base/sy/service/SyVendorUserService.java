@@ -64,6 +64,8 @@ public class SyVendorUserService {
         entity.setVendorUserId(CmUtil.generateId("sy_vendor_user"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_vendor_user :: insert or update :: [orm:jpa]
         SyVendorUser result = repository.save(entity);
         return result;

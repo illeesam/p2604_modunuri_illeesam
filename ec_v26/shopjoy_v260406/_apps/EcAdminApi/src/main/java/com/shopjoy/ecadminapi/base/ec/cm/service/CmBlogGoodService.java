@@ -63,6 +63,8 @@ public class CmBlogGoodService {
         entity.setLikeId(CmUtil.generateId("cm_blog_good"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // cm_blog_good :: insert or update :: [orm:jpa]
         CmBlogGood result = repository.save(entity);
         return result;

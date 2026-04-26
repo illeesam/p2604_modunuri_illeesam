@@ -116,6 +116,8 @@ public class FoAuthService {
         body.setJoinDate(LocalDateTime.now());
         body.setRegBy(newId);
         body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(newId);
+        body.setUpdDate(LocalDateTime.now());
 
         memberRepository.save(body);
         return new FoJoinRes(newId, body.getLoginId());

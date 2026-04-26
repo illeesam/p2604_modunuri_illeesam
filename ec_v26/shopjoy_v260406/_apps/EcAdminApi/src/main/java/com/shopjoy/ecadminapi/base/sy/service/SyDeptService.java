@@ -64,6 +64,8 @@ public class SyDeptService {
         entity.setDeptId(CmUtil.generateId("sy_dept"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_dept :: insert or update :: [orm:jpa]
         SyDept result = repository.save(entity);
         return result;

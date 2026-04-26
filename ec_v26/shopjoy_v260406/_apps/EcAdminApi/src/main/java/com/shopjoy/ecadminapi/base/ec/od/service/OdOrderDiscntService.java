@@ -59,6 +59,8 @@ public class OdOrderDiscntService {
         entity.setOrderDiscntId(CmUtil.generateId("od_order_discnt"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         OdOrderDiscnt result = repository.save(entity);
         return result;
     }

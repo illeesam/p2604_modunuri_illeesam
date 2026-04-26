@@ -105,6 +105,8 @@ public class FoMyPageService {
         body.setMemberId(memberId);
         body.setRegBy(memberId);
         body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(memberId);
+        body.setUpdDate(LocalDateTime.now());
         return addrRepository.save(body);
     }
 

@@ -67,6 +67,8 @@ public class SyRoleMenuService {
         entity.setRoleMenuId(CmUtil.generateId("sy_role_menu"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // sy_role_menu :: insert or update :: [orm:jpa]
         SyRoleMenu result = repository.save(entity);
         roleMenuCache.evict(entity.getRoleId());

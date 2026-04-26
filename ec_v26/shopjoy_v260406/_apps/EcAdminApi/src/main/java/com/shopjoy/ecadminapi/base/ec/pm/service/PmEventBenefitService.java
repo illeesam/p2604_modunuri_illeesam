@@ -64,6 +64,8 @@ public class PmEventBenefitService {
         entity.setBenefitId(CmUtil.generateId("pm_event_benefit"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // pm_event_benefit :: insert or update :: [orm:jpa]
         PmEventBenefit result = repository.save(entity);
         return result;

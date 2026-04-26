@@ -63,6 +63,8 @@ public class DpWidgetService {
         entity.setWidgetId(CmUtil.generateId("dp_widget"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         // dp_widget :: insert or update :: [orm:jpa]
         DpWidget result = repository.save(entity);
         return result;

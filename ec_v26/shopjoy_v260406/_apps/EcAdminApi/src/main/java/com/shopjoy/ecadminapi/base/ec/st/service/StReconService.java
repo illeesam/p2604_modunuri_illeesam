@@ -60,6 +60,8 @@ public class StReconService {
         entity.setReconId(CmUtil.generateId("st_recon"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         StRecon result = repository.save(entity);
         return result;
     }

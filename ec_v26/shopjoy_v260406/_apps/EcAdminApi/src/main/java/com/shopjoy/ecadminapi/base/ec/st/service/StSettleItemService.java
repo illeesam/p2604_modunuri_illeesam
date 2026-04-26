@@ -60,6 +60,8 @@ public class StSettleItemService {
         entity.setSettleItemId(CmUtil.generateId("st_settle_item"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
         StSettleItem result = repository.save(entity);
         return result;
     }
