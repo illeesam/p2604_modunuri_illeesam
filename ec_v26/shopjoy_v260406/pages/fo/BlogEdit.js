@@ -14,20 +14,6 @@ window.BlogEdit = {
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
-    const fnLoadCodes = async () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
-
     const cfIsEdit = computed(() => !!props.editId);
     const form = reactive({
       title: '',
@@ -45,10 +31,12 @@ window.BlogEdit = {
     ];
 
     /* 수정 모드: 기존 데이터 로드 */
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      if (cfIsEdit.value) {
-        // 목업: editId에 따른 데이터 로드
+    const handleFetchData = async () => {
+      if (!cfIsEdit.value) return;
+      try {
+        const res = await window.foApi.get('/fo/blog/view', { params: { blogId: props.editId } });
+        Object.assign(form, res.data);
+      } catch (e) {
         Object.assign(form, {
           title: '2026 봄 트렌드 컬러 가이드',
           category: 'trend',
@@ -57,7 +45,24 @@ window.BlogEdit = {
           tags: '트렌드, 컬러, 2026SS',
         });
       }
+    };
+
+    const fnLoadCodes = async () => {
+      try {
+        uiState.isPageCodeLoad = true;
+        handleFetchData();
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+      }
     });
+
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     const handleSave = () => {
       if (!form.title.trim()) { props.showToast?.('제목을 입력해주세요.', 'error'); return; }

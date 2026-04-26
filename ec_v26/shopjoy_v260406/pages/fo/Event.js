@@ -14,9 +14,30 @@ window.EventPage = {
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
+    const events = reactive([]);
+
+    const handleFetchData = async () => {
+      try {
+        const res = await window.foApi.get('/fo/event/list');
+        events.splice(0, events.length, ...res.data);
+      } catch (e) {
+        events.splice(0, events.length, ...[
+          { id: 1, title: '봄 베스트 상품 달력이벤트 70% 혜택', status: 'ongoing', startDate: '2026.04.01', endDate: '2026.04.30', tag: '할인', tagColor: '#e8587a', bannerBg: '#111', bannerText: '#fff', bannerLine1: '26° Spring', bannerLine2: 'SALE', bannerStyle: 'sale' },
+          { id: 2, title: '4월 신한카드 특시할인', status: 'ongoing', startDate: '2026.04.08', endDate: '2026.04.30', tag: '카드혜택', tagColor: '#3b82f6', bannerBg: '#FDE047', bannerText: '#1a1a1a', bannerLine1: '신한카드', bannerLine2: '즉시할인 10%', bannerStyle: 'card' },
+          { id: 3, title: '4월 더플러스 : 봄 쇼핑 3만원 추가 혜택', status: 'ongoing', startDate: '2026.04.06', endDate: '2026.04.12', tag: '적립', tagColor: '#8b5cf6', bannerBg: '#0f172a', bannerText: '#38bdf8', bannerLine1: 'PLUS+', bannerLine2: '봄 쇼핑 혜택', bannerStyle: 'plus' },
+          { id: 4, title: '더플러스 서울점 : Sunlit Breeze', status: 'ongoing', startDate: '2026.04.01', endDate: '2026.04.20', tag: '매장', tagColor: '#10b981', bannerBg: '#f0fdf4', bannerText: '#064e3b', bannerLine1: 'Sunlit', bannerLine2: 'Breeze', bannerStyle: 'nature' },
+          { id: 5, title: '신상품 출시 기념 구매 혜택', status: 'ongoing', startDate: '2026.04.10', endDate: '2026.04.25', tag: '신상품', tagColor: '#f59e0b', bannerBg: '#1e1b4b', bannerText: '#fff', bannerLine1: 'NEW', bannerLine2: 'ARRIVALS', bannerStyle: 'new' },
+          { id: 6, title: '2026 S/S 컬렉션 선공개', status: 'ongoing', startDate: '2026.04.15', endDate: '2026.04.30', tag: '패션', tagColor: '#ec4899', bannerBg: '#fdf2f8', bannerText: '#831843', bannerLine1: '2026 S/S', bannerLine2: 'COLLECTION', bannerStyle: 'collection' },
+          { id: 7, title: '더핸드썸 THE 클럽 멤버십 혜택', status: 'ended', startDate: '2026.03.01', endDate: '2026.03.31', tag: '멤버십', tagColor: '#6b7280', bannerBg: '#1f2937', bannerText: '#d1d5db', bannerLine1: 'THE CLUB', bannerLine2: 'MEMBERSHIP', bannerStyle: 'club' },
+          { id: 8, title: '겨울 시즌오프 최대 80% SALE', status: 'ended', startDate: '2026.02.10', endDate: '2026.03.10', tag: '세일', tagColor: '#6b7280', bannerBg: '#374151', bannerText: '#f9fafb', bannerLine1: 'SEASON OFF', bannerLine2: 'UP TO 80%', bannerStyle: 'off' },
+        ]);
+      }
+    };
+
     const fnLoadCodes = async () => {
       try {
         uiState.isPageCodeLoad = true;
+        handleFetchData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -29,67 +50,6 @@ window.EventPage = {
     });
 
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
-     // ongoing | ended
-    const sortBy    = ref('latest');  // latest | deadline
-
-    const events = reactive([
-      {
-        id: 1, title: '봄 베스트 상품 달력이벤트 70% 혜택',
-        status: 'ongoing', startDate: '2026.04.01', endDate: '2026.04.30',
-        tag: '할인', tagColor: '#e8587a',
-        bannerBg: '#111', bannerText: '#fff',
-        bannerLine1: '26° Spring', bannerLine2: 'SALE', bannerStyle: 'sale',
-      },
-      {
-        id: 2, title: '4월 신한카드 특시할인',
-        status: 'ongoing', startDate: '2026.04.08', endDate: '2026.04.30',
-        tag: '카드혜택', tagColor: '#3b82f6',
-        bannerBg: '#FDE047', bannerText: '#1a1a1a',
-        bannerLine1: '신한카드', bannerLine2: '즉시할인 10%', bannerStyle: 'card',
-      },
-      {
-        id: 3, title: '4월 더플러스 : 봄 쇼핑 3만원 추가 혜택',
-        status: 'ongoing', startDate: '2026.04.06', endDate: '2026.04.12',
-        tag: '적립', tagColor: '#8b5cf6',
-        bannerBg: '#0f172a', bannerText: '#38bdf8',
-        bannerLine1: 'PLUS+', bannerLine2: '봄 쇼핑 혜택', bannerStyle: 'plus',
-      },
-      {
-        id: 4, title: '더플러스 서울점 : Sunlit Breeze',
-        status: 'ongoing', startDate: '2026.04.01', endDate: '2026.04.20',
-        tag: '매장', tagColor: '#10b981',
-        bannerBg: '#f0fdf4', bannerText: '#064e3b',
-        bannerLine1: 'Sunlit', bannerLine2: 'Breeze', bannerStyle: 'nature',
-      },
-      {
-        id: 5, title: '신상품 출시 기념 구매 혜택',
-        status: 'ongoing', startDate: '2026.04.10', endDate: '2026.04.25',
-        tag: '신상품', tagColor: '#f59e0b',
-        bannerBg: '#1e1b4b', bannerText: '#fff',
-        bannerLine1: 'NEW', bannerLine2: 'ARRIVALS', bannerStyle: 'new',
-      },
-      {
-        id: 6, title: '2026 S/S 컬렉션 선공개',
-        status: 'ongoing', startDate: '2026.04.15', endDate: '2026.04.30',
-        tag: '패션', tagColor: '#ec4899',
-        bannerBg: '#fdf2f8', bannerText: '#831843',
-        bannerLine1: '2026 S/S', bannerLine2: 'COLLECTION', bannerStyle: 'collection',
-      },
-      {
-        id: 7, title: '더핸드썸 THE 클럽 멤버십 혜택',
-        status: 'ended', startDate: '2026.03.01', endDate: '2026.03.31',
-        tag: '멤버십', tagColor: '#6b7280',
-        bannerBg: '#1f2937', bannerText: '#d1d5db',
-        bannerLine1: 'THE CLUB', bannerLine2: 'MEMBERSHIP', bannerStyle: 'club',
-      },
-      {
-        id: 8, title: '겨울 시즌오프 최대 80% SALE',
-        status: 'ended', startDate: '2026.02.10', endDate: '2026.03.10',
-        tag: '세일', tagColor: '#6b7280',
-        bannerBg: '#374151', bannerText: '#f9fafb',
-        bannerLine1: 'SEASON OFF', bannerLine2: 'UP TO 80%', bannerStyle: 'off',
-      },
-    ]);
 
     const cfFilteredEvents = computed(() => {
       let list = events.filter(e =>
