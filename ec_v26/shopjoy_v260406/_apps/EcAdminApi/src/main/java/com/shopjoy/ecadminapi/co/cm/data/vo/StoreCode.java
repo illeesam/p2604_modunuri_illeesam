@@ -33,5 +33,6 @@ public class StoreCode {
         private String codeVal;       // 코드값
         private String codeSortOrd;   // 정렬 순서
         private String codeRemark;    // 비고
+        private String useYn;         // 사용여부
     }
 }

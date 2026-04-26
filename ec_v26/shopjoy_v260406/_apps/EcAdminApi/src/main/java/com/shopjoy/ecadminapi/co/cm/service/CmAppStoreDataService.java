@@ -494,6 +494,7 @@ public class CmAppStoreDataService {
                     .codeVal(CmUtil.nvl(code.getCodeValue()))
                     .codeSortOrd(String.valueOf(code.getSortOrd() != null ? code.getSortOrd() : 0))
                     .codeRemark(CmUtil.nvl(code.getCodeRemark()))
+                    .useYn(CmUtil.nvl(code.getUseYn()))
                     .build();
 
             codes.add(codeInfo);
