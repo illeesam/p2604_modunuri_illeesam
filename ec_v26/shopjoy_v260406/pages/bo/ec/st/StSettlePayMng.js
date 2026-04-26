@@ -4,8 +4,7 @@ window.StSettlePayMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
+const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({
       settle_pay_statuses: [],
     });
@@ -35,14 +34,14 @@ window.StSettlePayMng = {
       try {
         const res = await window.boApi.get('/bo/ec/st/pay/page', {
           params: {
-            pageNo: pager.page, pageSize: pager.size,
+            pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           }
         });
         const data = res.data?.data;
         payList.splice(0, payList.length, ...(data?.list || payList));
-        pager.total = data?.total || payList.length;
-        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
+        pager.pageTotalCount = data?.total || payList.length;
+        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
       } catch (_) {
         console.error('[catch-info]', _);
       }
@@ -78,8 +77,8 @@ window.StSettlePayMng = {
     kw: '',
     status: ''
   });
-    const pager = reactive({ page: 1, size: 10, total: 0, totalPages: 1 });
-    const cfPageNums = computed(() => { const c=pager.page,l=pager.totalPages,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const cfSummary = computed(() => ({
       total:   payList.reduce((s, r) => s + r.settleAmt, 0),
@@ -105,11 +104,11 @@ window.StSettlePayMng = {
 
     const fnStatusBadge = s => ({ '지급완료':'badge-green', '지급대기':'badge-blue', '지급보류':'badge-orange', '지급오류':'badge-red' }[s] || 'badge-gray');
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
-    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const onSearch = () => { pager.pageNo = 1; handleFetchData(); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
-    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, payList, cfPageNums, cfSummary, doPay, fnStatusBadge, fmtW, onSearch, onReset, searchParam, PAGE_SIZES, setPage, onSizeChange };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, payList, cfPageNums, cfSummary, doPay, fnStatusBadge, fmtW, onSearch, onReset, searchParam, pager.pageSizes, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -154,7 +153,7 @@ window.StSettlePayMng = {
         <div style="font-size:18px;font-weight:700;color:#3498db">{{ fmtW(cfSummary.pending) }}</div>
       </div>
     </div>
-    <div class="toolbar"><span class="list-count">총 {{ pager.total }}건</span></div>
+    <div class="toolbar"><span class="list-count">총 {{ pager.pageTotalCount }}건</span></div>
     <table class="bo-table">
       <thead><tr><th>지급ID</th><th>지급일</th><th>업체명</th><th>정산월</th><th>정산액</th><th>지급액</th><th>은행</th><th>계좌번호</th><th>예금주</th><th>상태</th><th>담당자</th><th>액션</th></tr></thead>
       <tbody>
@@ -180,15 +179,15 @@ window.StSettlePayMng = {
     <div class="pagination">
          <div></div>
          <div class="pager">
-           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
+           <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+           <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
          </div>
          <div class="pager-right">
-           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
+           <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+             <option v-for="s in pager.pageSizes" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

@@ -73,8 +73,7 @@ window.PdBundleMng = {
       Object.assign(searchParamOrg, searchParam);
     });
 
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const pager    = reactive({ page: 1, size: 10 });
+const pager    = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     // 'edit' 시 bundleId는 uiState.editBundleId 사용
 
@@ -182,13 +181,13 @@ window.PdBundleMng = {
     watch(bundles, updateBundleList);
 
     const cfTotal    = computed(() => (bundleList || []).length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil((cfTotal.value || 0) / (pager.size || 10))));
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil((cfTotal.value || 0) / (pager.pageSize || 10))));
     const cfPageList   = computed(() => {
       try {
         const list = bundleList || [];
         if (!Array.isArray(list)) return [];
-        const start = ((pager.page || 1) - 1) * (pager.size || 10);
-        const end = start + (pager.size || 10);
+        const start = ((pager.pageNo || 1) - 1) * (pager.pageSize || 10);
+        const end = start + (pager.pageSize || 10);
         return list.slice(start, end) || [];
       } catch (e) {
         console.error('cfPageList error:', e);
@@ -197,8 +196,8 @@ window.PdBundleMng = {
     });
     const cfPageNums   = computed(() => {
       try {
-        const c = pager.page || 1;
-        const l = Math.max(1, cfTotalPages.value || 1);
+        const c = pager.pageNo || 1;
+        const l = Math.max(1, pager.pageTotalPage || 1);
         const s = Math.max(1, c - 2);
         const e = Math.min(l, s + 4);
         const len = Math.max(0, e - s + 1);
@@ -210,18 +209,18 @@ window.PdBundleMng = {
     });
 
     const onSearch = async () => {
-      pager.page = 1;
+      pager.pageNo = 1;
       await handleFetchData();
     };
 
     const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
-      pager.page = 1;
+      pager.pageNo = 1;
       await handleFetchData();
     };
 
-    const setPage  = async n => { if (n >= 1 && n <= cfTotalPages.value) { pager.page = n; await handleFetchData(); } };
-    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
+    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData(); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
 
     /* ── 신규등록 열기 ── */
     const openNew = () => {
@@ -413,7 +412,7 @@ window.PdBundleMng = {
       addItem, removeItem,
       cfPickerList,
       onDragStart, onDragOver, onDrop,
-      PAGE_SIZES, onSizeChange };
+      pager.pageSizes, onSizeChange };
   },
 
   template: `
@@ -511,15 +510,15 @@ window.PdBundleMng = {
     <div class="pagination">
          <div></div>
          <div class="pager">
-           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+           <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+           <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
+           <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
          </div>
          <div class="pager-right">
-           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
+           <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+             <option v-for="s in pager.pageSizes" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

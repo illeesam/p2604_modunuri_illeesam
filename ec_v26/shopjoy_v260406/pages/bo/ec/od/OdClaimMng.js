@@ -13,15 +13,15 @@ window.OdClaimMng = {
     const handleFetchData = async () => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.page, pageSize: pager.size, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         const [claimsRes, membersRes] = await Promise.all([
           window.boApi.get('/bo/ec/od/claim/page', { params }),
           window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } })
         ]);
         claims.splice(0, claims.length, ...(claimsRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
-        pager.total = claimsRes.data?.data?.total || 0;
-        pager.totalPages = claimsRes.data?.data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
+        pager.pageTotalCount = claimsRes.data?.data?.total || 0;
+        pager.pageTotalPage = claimsRes.data?.data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -63,13 +63,11 @@ window.OdClaimMng = {
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd = r ? r.to : '';
       }
-      pager.page = 1;
+      pager.pageNo = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const pager = reactive({ page: 1, size: 5, total: 0, totalPages: 1 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-
-    const isAppReady = computed(() => {
+    const pager = reactive({ pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
       const codeStore = window.getBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
@@ -112,7 +110,7 @@ window.OdClaimMng = {
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
     const cfPageNums = computed(() => {
-      const cur = pager.page, last = pager.totalPages;
+      const cur = pager.pageNo, last = pager.pageTotalPage;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
@@ -124,17 +122,17 @@ window.OdClaimMng = {
       '완료': 'badge-green', '거부': 'badge-red', '철회': 'badge-gray',
     }[s] || 'badge-gray');
     const onSearch = async () => {
-      pager.page = 1;
+      pager.pageNo = 1;
       await handleFetchData();
     };
     const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
-      pager.page = 1;
+      pager.pageNo = 1;
       await handleFetchData();
     };
 
-    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
 
     const handleDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.claimId}]를 삭제하시겠습니까?`);
@@ -331,7 +329,7 @@ window.OdClaimMng = {
     };
 
     const bulkOpen = Vue.toRef(uiState, 'bulkOpen');
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), claims, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), claims, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, pager.pageSizes, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>
@@ -354,7 +352,7 @@ window.OdClaimMng = {
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>클레임목록 <span class="list-count">{{ pager.total }}건</span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>클레임목록 <span class="list-count">{{ pager.pageTotalCount }}건</span>
         <span v-if="checked.size" style="margin-left:10px;font-size:12px;color:#1565c0;font-weight:700;">선택 {{ checked.size }}건</span>
       </span>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -399,15 +397,15 @@ window.OdClaimMng = {
     <div class="pagination">
       <div></div>
       <div class="pager">
-        <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-        <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+        <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
       </div>
       <div class="pager-right">
-        <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
+        <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+          <option v-for="s in pager.pageSizes" :key="Math.random()" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>

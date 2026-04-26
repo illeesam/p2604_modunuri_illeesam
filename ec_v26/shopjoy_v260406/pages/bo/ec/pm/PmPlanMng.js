@@ -39,11 +39,13 @@ window.PmPlanMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/plan/page', {
-          params: { pageNo: pager.page, pageSize: pager.size, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }
+          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...pager.pageCond }
         });
-        plans.splice(0, plans.length, ...(res.data?.data?.list || []));
-        pager.total = res.data?.data?.total || 0;
-        pager.totalPages = res.data?.data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
+        const data = res.data?.data;
+        plans.splice(0, plans.length, ...(data?.list || []));
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -59,14 +61,12 @@ window.PmPlanMng = {
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
       if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
-      pager.page = 1;
+      pager.pageNo = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
      // 'list' | 'card'
-    const pager = reactive({ page: 1, size: 5, total: 0, totalPages: 1 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-
-    const CATEGORIES = [
+    const pager = reactive({ pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const CATEGORIES = [
       { value: '', label: '전체' },
       { value: '패션', label: '패션' },
       { value: '스포츠', label: '스포츠' },
@@ -107,13 +107,14 @@ window.PmPlanMng = {
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
     const cfPageNums = computed(() => {
-      const cur = pager.page, last = pager.totalPages;
+      const cur = pager.pageNo, last = pager.pageTotalPage;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
     const fnStatusBadge = s => ({ '활성': 'badge-green', '예정': 'badge-blue', '비활성': 'badge-gray', '종료': 'badge-gray' }[s] || 'badge-gray');
     const onSearch = async () => {
-      pager.page = 1;
+      pager.pageNo = 1;
+      Object.assign(pager.pageCond, searchParam);
       await handleFetchData();
     };
 
@@ -122,8 +123,8 @@ window.PmPlanMng = {
       onSearch();
     };
 
-    const setPage = async n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; await handleFetchData(); } };
-    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
+    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData(); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
 
     const handleDelete = async (p) => {
       const ok = await props.showConfirm('삭제', `[${p.planNm}]을 삭제하시겠습니까?`);
@@ -146,7 +147,7 @@ window.PmPlanMng = {
     const exportExcel = () => window.boCmUtil.exportCsv(plans, [{label:'ID',key:'planId'},{label:'기획전명',key:'planNm'},{label:'카테고리',key:'category'},{label:'테마',key:'theme'},{label:'상품수',key:'productCount'},{label:'상태',key:'status'},{label:'조회수',key:'viewCount'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '기획전목록.csv');
 
     const viewMode = Vue.toRef(uiState, 'viewMode');
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), plans, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, CATEGORIES, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), plans, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, pager.pageSizes, CATEGORIES, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -165,7 +166,7 @@ window.PmPlanMng = {
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>기획전목록 <span class="list-count">{{ pager.total }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>기획전목록 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
       <div style="display:flex;gap:6px;align-items:center;">
         <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
           <button @click="viewMode='list'" style="font-size:11px;padding:4px 10px;border:none;cursor:pointer;transition:all .15s;"
@@ -234,15 +235,15 @@ window.PmPlanMng = {
     <div class="pagination">
       <div></div>
       <div class="pager">
-        <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-        <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+        <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
       </div>
       <div class="pager-right">
-        <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
+        <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+          <option v-for="s in pager.pageSizes" :key="Math.random()" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>

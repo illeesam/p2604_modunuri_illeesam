@@ -66,23 +66,21 @@ window.StRawMng = {
     moreOpen: ''
   });
 
-    const pager    = reactive({ page: 1, size: 10, total: 0, totalPages: 1 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-
-    const rawList = reactive([]);
+    const pager    = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const rawList = reactive([]);
 
     const handleFetchData = async () => {
       try {
         const res = await window.boApi.get('/bo/ec/st/raw/page', {
           params: {
-            pageNo: pager.page, pageSize: pager.size,
+            pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           }
         });
         const data = res.data?.data;
         rawList.splice(0, rawList.length, ...(data?.list || rawList));
-        pager.total = data?.total || rawList.length;
-        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
+        pager.pageTotalCount = data?.total || rawList.length;
+        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
       } catch (_) {
         console.error('[catch-info]', _);
       }
@@ -94,7 +92,7 @@ window.StRawMng = {
     });
 
 
-    const cfPageNums = computed(() => { const c = pager.page, l = pager.totalPages, s = Math.max(1, c-2), e = Math.min(l, s+4); return Array.from({length: e-s+1}, (_, i) => s+i); });
+    const cfPageNums = computed(() => { const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c-2), e = Math.min(l, s+4); return Array.from({length: e-s+1}, (_, i) => s+i); });
 
     const cfSummary = computed(() => ({
       totalAmt:   rawList.reduce((s, r) => s + (r.amount || 0), 0),
@@ -106,9 +104,9 @@ window.StRawMng = {
       confirmCnt: rawList.filter(r => r.buyConfirmYn === 'Y').length,
     }));
 
-    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
-    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const onSearch = () => { pager.pageNo = 1; handleFetchData(); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
 
     const expandedRows = reactive(new Set());
@@ -138,7 +136,7 @@ window.StRawMng = {
   return {
       uiState, handleDateRangeChange,
       DATE_RANGE_OPTIONS, searchParam,
-      pager, PAGE_SIZES, rawList, cfPageNums, cfSummary,
+      pager, pager.pageSizes, rawList, cfPageNums, cfSummary,
       setPage, onSizeChange, onSearch, onReset,
       expandedRows, toggleRow, isExpanded,
       fnStatusBadge, rawStatusLabel, fnRawStatusBadge, vendorTypeLabel, orderStatusLabel,
@@ -244,7 +242,7 @@ window.StRawMng = {
   <div style="display:grid;grid-template-columns:repeat(4,1fr) repeat(3,1fr);gap:8px;margin-bottom:12px">
     <div class="card" style="text-align:center;padding:10px;background:#f0f4ff;margin-bottom:0">
       <div style="font-size:11px;color:#888">수집건수</div>
-      <div style="font-size:18px;font-weight:700;color:#3498db">{{ pager.total.toLocaleString() }}건</div>
+      <div style="font-size:18px;font-weight:700;color:#3498db">{{ pager.pageTotalCount.toLocaleString() }}건</div>
     </div>
     <div class="card" style="text-align:center;padding:10px;background:#f0fff4;margin-bottom:0">
       <div style="font-size:11px;color:#888">정산대상</div>
@@ -275,7 +273,7 @@ window.StRawMng = {
   <!-- ── 목록 카드 ── -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-count">총 {{ pager.total.toLocaleString() }}건</span>
+      <span class="list-count">총 {{ pager.pageTotalCount.toLocaleString() }}건</span>
       <div style="margin-left:auto;display:flex;gap:6px">
         <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(!isExpanded(r.rawId)) toggleRow(r.rawId); }) }">▼ 전체펼치기</button>
         <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(isExpanded(r.rawId)) toggleRow(r.rawId); }) }">▲ 전체접기</button>
@@ -405,15 +403,15 @@ window.StRawMng = {
     <div class="pagination">
       <div></div>
       <div class="pager">
-        <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-        <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+        <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
       </div>
       <div class="pager-right">
-        <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
+        <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+          <option v-for="s in pager.pageSizes" :key="Math.random()" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>

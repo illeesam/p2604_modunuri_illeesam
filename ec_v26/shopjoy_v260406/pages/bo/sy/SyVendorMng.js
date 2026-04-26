@@ -14,14 +14,14 @@ window.SyVendorMng = {
       try {
         const res = await window.boApi.get('/bo/sy/vendor/page', {
           params: {
-            pageNo: pager.page, pageSize: pager.size,
+            pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           }
         });
         const data = res.data?.data;
         vendors.splice(0, vendors.length, ...(data?.list || []));
-        pager.total = data?.total || vendors.length;
-        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
+        pager.pageTotalCount = data?.total || vendors.length;
+        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -104,11 +104,10 @@ window.SyVendorMng = {
 
     const onDateRangeChange = () => {
       if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
-      pager.page = 1;
+      pager.pageNo = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const pager = reactive({ page: 1, size: 10, total: 0, totalPages: 1 });
+const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
     const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
@@ -125,17 +124,17 @@ window.SyVendorMng = {
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
     const cfPageNums = computed(() => {
-      const cur = pager.page, last = pager.totalPages;
+      const cur = pager.pageNo, last = pager.pageTotalPage;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
 
     const fnTypeBadge = t => ({ '판매업체': 'badge-blue', '배송업체': 'badge-orange' }[t] || 'badge-gray');
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
-    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const onSearch = () => { pager.pageNo = 1; handleFetchData(); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
 
     const handleDelete = async (v) => {
       const ok = await props.showConfirm('삭제', `[${v.vendorNm}] 업체를 삭제하시겠습니까?`);
@@ -160,7 +159,7 @@ window.SyVendorMng = {
     watch(() => uiState.selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), vendors, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, pager, pager.pageSizes, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -199,7 +198,7 @@ window.SyVendorMng = {
     <div>
 <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>거래처목록 <span class="list-count">{{ pager.total }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>거래처목록 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -234,15 +233,15 @@ window.SyVendorMng = {
     <div class="pagination">
       <div></div>
       <div class="pager">
-        <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-        <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+        <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
       </div>
       <div class="pager-right">
-        <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+        <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>

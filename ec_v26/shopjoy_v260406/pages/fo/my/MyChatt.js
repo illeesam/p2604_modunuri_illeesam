@@ -32,7 +32,7 @@ window.MyChatt = {
     });
     const { chats, expandedChat } = Pinia.storeToRefs(myStore);
 
-    const chatPager = reactive({ page: 1, size: 50 });
+    const chatPager = reactive({ pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const paginate = myStore.paginate;
 
     const { inRange, onDateSearch } = window.myDateFilterHelper();

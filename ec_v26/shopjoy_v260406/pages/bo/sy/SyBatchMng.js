@@ -101,9 +101,8 @@ window.SyBatchMng = {
     /* ── CRUD 그리드 ── */
     const gridRows = reactive([]);
     let _tempId = -1;
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const pager = reactive({ page: 1, size: 10 });
-    const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
+const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
 
     const EDIT_FIELDS = ['batchNm', 'batchCode', 'cron', 'statusCd', 'description'];
 
@@ -117,7 +116,7 @@ window.SyBatchMng = {
     const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
     const onSearch = async () => {
-      pager.page = 1;
+      pager.pageNo = 1;
       await handleFetchData();
     };
     const onReset = () => {
@@ -144,7 +143,7 @@ window.SyBatchMng = {
       const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(insertAt, 0, newRow);
       uiState.focusedIdx = insertAt;
-      pager.page = Math.ceil((insertAt + 1) / pager.size);
+      pager.pageNo = Math.ceil((insertAt + 1) / pager.pageSize);
     };
 
     const deleteRow = (idx) => {
@@ -363,11 +362,11 @@ window.SyBatchMng = {
     const fnStatusClass  = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
     const cfSiteNm     = computed(() => window.boCmUtil.getSiteNm());
 
-    const cfPagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
-    const cfPageNums   = computed(() => { const c = pager.page, l = cfTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setPage    = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+    const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageSize; return gridRows.slice(s, s + pager.pageSize); });
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.pageSize)));
+    const cfPageNums   = computed(() => { const c = pager.pageNo, l = pager.pageTotalPage; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
+    const setPage    = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const onSizeChange = () => { pager.pageNo = 1; };
 
     const exportExcel = () => window.boCmUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
@@ -381,7 +380,7 @@ window.SyBatchMng = {
     return { batches, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange,
-      gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, pager.pageSizes, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave, runNow,
       CRON_PRESETS, CRON_FIELDS, cronPicker, openCronPicker, applyCronPreset, applyCron, updateCronPreview, cfCronPresetLabel, cfCronDesc,
@@ -528,15 +527,15 @@ window.SyBatchMng = {
     <div class="pagination">
       <div></div>
       <div class="pager">
-        <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-        <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
+        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
-        <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+        <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>

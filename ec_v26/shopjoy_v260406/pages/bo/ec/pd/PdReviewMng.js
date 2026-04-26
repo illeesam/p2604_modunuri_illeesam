@@ -39,12 +39,12 @@ window.PdReviewMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pd/review/page', {
-          params: { pageNo: pager.page, pageSize: pager.size, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }
+          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }
         });
         const data = res.data?.data;
         reviews.splice(0, reviews.length, ...(data?.list || []));
-        pager.total = data?.total || 0;
-        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
+        pager.pageTotalCount = data?.total || 0;
+        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -57,8 +57,7 @@ window.PdReviewMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleFetchData();
     Object.assign(searchParamOrg, searchParam); });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const pager        = reactive({ page: 1, size: 20, total: 0, totalPages: 1 });
+const pager        = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId   = ref(null);
   const searchParam = reactive({
     kw: '',
@@ -78,7 +77,7 @@ window.PdReviewMng = {
     const getProdNm = id => { const p = (products||[]).find(p => p.productId === id); return p ? p.productName : id; };
     const getMemNm  = id => { const m = (members||[]).find(m => m.userId === id); return m ? m.name : id; };
 
-    const cfPageNums   = computed(() => { const c=pager.page,l=pager.totalPages,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfPageNums   = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const cfSelectedRow = computed(() => reviews.find(r => r.reviewId === selectedId.value) || null);
 
@@ -98,22 +97,22 @@ window.PdReviewMng = {
       }
     };
     const onSearch = async () => {
-      pager.page = 1;
+      pager.pageNo = 1;
       await handleFetchData();
     };
 
     const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
-      pager.page = 1;
+      pager.pageNo = 1;
       await handleFetchData();
     };
 
-    const setPage  = async n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; await handleFetchData(); } };
-    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
+    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData(); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
     const starStr  = r => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r));
 
     return { reviews, uiState, searchParam, searchParamOrg, pager, cfPageNums, setPage, onSearch, onReset,
-              selectedId, cfSelectedRow, openDetail, changeStatus, fnStatusBadge, STATUS_LIST, STATUS_LABEL, getProdNm, getMemNm, starStr , PAGE_SIZES , onSizeChange };
+              selectedId, cfSelectedRow, openDetail, changeStatus, fnStatusBadge, STATUS_LIST, STATUS_LABEL, getProdNm, getMemNm, starStr , pager.pageSizes , onSizeChange };
   },
   template: `
 <div>
@@ -140,7 +139,7 @@ window.PdReviewMng = {
     <div class="card">
       <div class="toolbar">
         <span class="list-title">상품리뷰 목록</span>
-        <span class="list-count">총 {{ pager.total }}건</span>
+        <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
       </div>
       <table class="bo-table">
         <thead><tr>
@@ -172,15 +171,15 @@ window.PdReviewMng = {
       <div class="pagination">
          <div></div>
          <div class="pager">
-           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
+           <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+           <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
          </div>
          <div class="pager-right">
-           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
+           <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+             <option v-for="s in pager.pageSizes" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

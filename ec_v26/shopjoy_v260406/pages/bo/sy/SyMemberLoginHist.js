@@ -4,8 +4,7 @@ window.SyMemberLoginHist = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'log', dateRange: '이번달', dateStart: '', dateEnd: '', searchKw: '', searchResult: '', searchIp: '', searchTokenAction: '' });
+const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'log', dateRange: '이번달', dateStart: '', dateEnd: '', searchKw: '', searchResult: '', searchIp: '', searchTokenAction: '' });
     const tab = Vue.toRef(uiState, 'tab');
     const activeTab = Vue.toRef(uiState, 'activeTab');
      // 'log' | 'hist' | 'token'
@@ -16,7 +15,7 @@ window.SyMemberLoginHist = {
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
-    const pager = reactive({ page: 1, size: 20 });
+    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const memberList = reactive([]);
     const cfMembers = computed(() => memberList);
@@ -154,9 +153,9 @@ window.SyMemberLoginHist = {
     });
 
     const cfTotal    = computed(() => cfFiltered.value.length);
-    const cfTotPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    const cfPageNums = computed(() => { const c=pager.page,l=cfTotPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfTotPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.pageSize)));
+    const cfPageList = computed(() => cfFiltered.value.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize));
+    const cfPageNums = computed(() => { const c=pager.pageNo,l=cfTotPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const cfSummary = computed(() => {
       const all = filterRows(cfLogList.value, 'logId');
@@ -180,17 +179,17 @@ window.SyMemberLoginHist = {
     const fnActionLabel = cd => ({ 'ISSUE':'발급','REFRESH':'갱신','REVOKE':'폐기','EXPIRE':'만료' }[cd] || cd);
     const fnTypeBadge   = cd => ({ 'ACCESS':'badge-purple','REFRESH':'badge-blue' }[cd] || 'badge-gray');
 
-    const onSearch     = async () => { pager.page = 1; await handleFetchData(); };
-    const onReset      = async () => { uiState.searchKw=''; uiState.searchResult=''; uiState.searchIp=''; uiState.searchTokenAction=''; uiState.dateRange='이번달'; onDateRangeChange(); pager.page=1; await handleFetchData(); };
-    const setPage      = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
-    const onTabChange  = tab => { uiState.activeTab = tab; pager.page = 1; };
+    const onSearch     = async () => { pager.pageNo = 1; await handleFetchData(); };
+    const onReset      = async () => { uiState.searchKw=''; uiState.searchResult=''; uiState.searchIp=''; uiState.searchTokenAction=''; uiState.dateRange='이번달'; onDateRangeChange(); pager.pageNo=1; await handleFetchData(); };
+    const setPage      = n => { if (n >= 1 && n <= cfTotPages.value) pager.pageNo = n; };
+    const onSizeChange = () => { pager.pageNo = 1; };
+    const onTabChange  = tab => { uiState.activeTab = tab; pager.pageNo = 1; };
 
     const searchTokenAction = Vue.toRef(uiState, 'searchTokenAction');
     return {
       uiState, onTabChange,
       DATE_RANGE_OPTIONS, onDateRangeChange,
-      pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, cfSummary,
+      pager, pager.pageSizes, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, cfSummary,
       expandedRows, toggleRow, isExpanded,
       fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge,
       onSearch, onReset, setPage, onSizeChange,
@@ -416,15 +415,15 @@ window.SyMemberLoginHist = {
     <div class="pagination">
       <div></div>
       <div class="pager">
-        <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-        <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===cfTotPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===cfTotPages" @click="setPage(cfTotPages)">»</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.pageNo===cfTotPages" @click="setPage(pager.pageNo+1)">›</button>
+        <button :disabled="pager.pageNo===cfTotPages" @click="setPage(cfTotPages)">»</button>
       </div>
       <div class="pager-right">
-        <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+        <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>

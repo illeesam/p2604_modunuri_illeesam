@@ -4,8 +4,7 @@ window.StErpReconMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
+const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({
       erp_recon_statuses: [],
     });
@@ -41,8 +40,8 @@ window.StErpReconMng = {
     const reconList = reactive([]);
     const searchParam = reactive({ diff: '', type: '', dateEnd: '' });
     const searchParamOrg = reactive({ diff: '', type: '' });
-    const pager = reactive({ page: 1, size: 10, total: 0, totalPages: 1 });
-    const cfPageNums = computed(() => { const c=pager.page,l=pager.totalPages,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const cfSummary = computed(() => ({
       match:     reconList.filter(r=>r.diffStatus==='일치').length,
       diff:      reconList.filter(r=>r.diffStatus==='차이').length,
@@ -54,14 +53,14 @@ window.StErpReconMng = {
       try {
         const res = await window.boApi.get('/bo/ec/st/erp/recon/page', {
           params: {
-            pageNo: pager.page, pageSize: pager.size,
+            pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           }
         });
         const data = res.data?.data;
         reconList.splice(0, reconList.length, ...(data?.list || reconList));
-        pager.total = data?.total || reconList.length;
-        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
+        pager.pageTotalCount = data?.total || reconList.length;
+        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
       } catch (_) { console.error('[catch-info]', _); }
     };
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleFetchData(); Object.assign(searchParamOrg, searchParam); });
@@ -85,11 +84,11 @@ window.StErpReconMng = {
     const fnDiffBadge = s => ({ '일치':'badge-green', '차이':'badge-orange', '미반영':'badge-red' }[s] || 'badge-gray');
     const fnTypeBadge = t => ({ '정산':'badge-blue', '수수료':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
     const fmtW = n => Number(n||0).toLocaleString() + '원';
-    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const onSearch = () => { pager.pageNo = 1; handleFetchData(); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
-    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, reconList, cfPageNums, cfSummary, doFix, fnDiffBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, PAGE_SIZES, setPage, onSizeChange };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, reconList, cfPageNums, cfSummary, doFix, fnDiffBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, pager.pageSizes, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -128,7 +127,7 @@ window.StErpReconMng = {
       <div class="card" style="text-align:center;padding:10px;background:#fff8f8"><div style="font-size:11px;color:#888">미반영</div><div style="font-size:20px;font-weight:700;color:#e74c3c">{{ cfSummary.noReflect }}건</div></div>
       <div class="card" style="text-align:center;padding:10px;background:#f8f9fa"><div style="font-size:11px;color:#888">차이금액 합계</div><div style="font-size:20px;font-weight:700;color:#333">{{ fmtW(cfSummary.diffAmt) }}</div></div>
     </div>
-    <div class="toolbar"><span class="list-count">총 {{ pager.total }}건</span></div>
+    <div class="toolbar"><span class="list-count">총 {{ pager.pageTotalCount }}건</span></div>
     <table class="bo-table">
       <thead><tr><th>대사ID</th><th>대사일자</th><th>전표ID</th><th>유형</th><th>시스템금액</th><th>ERP금액</th><th>차이금액</th><th>대사결과</th><th>비고</th><th>액션</th></tr></thead>
       <tbody>
@@ -152,15 +151,15 @@ window.StErpReconMng = {
     <div class="pagination">
          <div></div>
          <div class="pager">
-           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
+           <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+           <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
          </div>
          <div class="pager-right">
-           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
+           <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+             <option v-for="s in pager.pageSizes" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

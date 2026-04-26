@@ -72,21 +72,19 @@ window.DpDispWidgetLibMng = {
     /* ── 검색 ── */
     const searchParam = reactive({ kw: '', type: '', status: '' });
     const searchParamOrg = reactive({ kw: '', type: '', status: '' });
-    const pager = reactive({ page: 1, size: 5 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-
-    const applied = reactive({ kw: '', type: '', status: '' });
+    const pager = reactive({ pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const applied = reactive({ kw: '', type: '', status: '' });
     const onSearch = async () => {
       applied.kw     = searchParam.kw.trim().toLowerCase();
       applied.type   = searchParam.type;
       applied.status = searchParam.status;
-      pager.page = 1;
+      pager.pageNo = 1;
       await handleFetchData();
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);
       Object.assign(applied, { kw: '', type: '', status: '' });
-      pager.page = 1;
+      pager.pageNo = 1;
     };
 
     /* 검색 필터만 적용한 리스트 (트리 그룹화용) */
@@ -133,7 +131,7 @@ window.DpDispWidgetLibMng = {
       else openNodes.add(key);
     };
     const isOpen = (key) => openNodes.has(key);
-    const selectTree = (key) => { uiState.selectedTreeKey = uiState.selectedTreeKey === key ? '' : key; pager.page = 1; };
+    const selectTree = (key) => { uiState.selectedTreeKey = uiState.selectedTreeKey === key ? '' : key; pager.pageNo = 1; };
     const expandAll = () => {
       window.safeArrayUtils.safeForEach(cfTree, n => { openNodes.add(n.label); });
     };
@@ -163,12 +161,12 @@ window.DpDispWidgetLibMng = {
 
     const cfTotalCount  = computed(() => cfFiltered.value.length);
     const cfPageList    = computed(() => {
-      const s = (pager.page - 1) * pager.size;
-      return cfFiltered.value.slice(s, s + pager.size);
+      const s = (pager.pageNo - 1) * pager.pageSize;
+      return cfFiltered.value.slice(s, s + pager.pageSize);
     });
-    const cfTotalPages  = computed(() => Math.max(1, Math.ceil(cfTotalCount.value / pager.size)));
+    const cfTotalPages  = computed(() => Math.max(1, Math.ceil(cfTotalCount.value / pager.pageSize)));
     const cfPageNumbers = computed(() => {
-      const pages = []; const cur = pager.page; const tot = cfTotalPages.value;
+      const pages = []; const cur = pager.pageNo; const tot = pager.pageTotalPage;
       for (let i = Math.max(1, cur - 2); i <= Math.min(tot, cur + 2); i++) pages.push(i);
       return pages;
     });
@@ -183,8 +181,8 @@ window.DpDispWidgetLibMng = {
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
-    const setPage = (n) => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+    const setPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const onSizeChange = () => { pager.pageNo = 1; };
     const handleDelete = async (lib) => {
       const ok = await props.showConfirm('삭제', `[${lib.name}]을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -201,7 +199,7 @@ window.DpDispWidgetLibMng = {
       }
     };
 
-    return { widgetLibs, uiState, codes, searchParam, pager, PAGE_SIZES,
+    return { widgetLibs, uiState, codes, searchParam, pager, pager.pageSizes,
       applied, onSearch, onReset, setPage, onSizeChange,
       cfTree, openNodes, toggleNode, isOpen, selectTree, expandAll, collapseAll,
       cfFiltered, cfTotalCount, cfPageList, cfTotalPages, cfPageNumbers,
@@ -253,15 +251,15 @@ window.DpDispWidgetLibMng = {
     <div class="pagination">
       <div></div>
       <div class="pager">
-        <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-        <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in cfPageNumbers" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+        <button v-for="n in cfPageNumbers" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
+        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
-        <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+        <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>

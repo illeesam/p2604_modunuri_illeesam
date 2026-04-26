@@ -46,21 +46,20 @@ window.XsSample06 = {
     const toRow = d => ({ couponId: d.sample1Id, couponNm: d.cdNm || '', discountType: d.col01 || '정액', discountVal: Number(d.col02) || 0, minAmount: Number(d.col03) || 0, expDate: d.col04 || '', useYn: d.useYn || 'Y', regDate: d.regDt || '' });
     const toPayload = r => ({ cdGrp: CD_GRP, cdNm: r.couponNm, col01: r.discountType, col02: String(r.discountVal), col03: String(r.minAmount), col04: r.expDate, useYn: r.useYn });
     const makeRow = d => ({ ...d, _row_status: 'N', _row_check: false, _orig: { couponNm: d.couponNm, discountType: d.discountType, discountVal: d.discountVal, minAmount: d.minAmount, useYn: d.useYn, expDate: d.expDate } });
-    const pager      = reactive({ page: 1, size: 20 });
-    const PAGE_SIZES = [10, 20, 50];
-    const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
-    const cfPagedRows  = computed(() => gridRows.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
-    const cfPageNums   = computed(() => { const c = pager.page, l = cfTotalPages.value, s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setPage    = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const getRealIdx = i => (pager.page - 1) * pager.size + i;
+    const pager      = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
+    const cfPagedRows  = computed(() => gridRows.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.pageSize)));
+    const cfPageNums   = computed(() => { const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
+    const setPage    = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const getRealIdx = i => (pager.pageNo - 1) * pager.pageSize + i;
     const handleFetchData = async () => {
       try {
         const res = await api.get(API, { cdGrp: CD_GRP });
         const list = res?.data?.data ?? res?.data ?? [];
         allData.splice(0, allData.length, ...list.map(toRow));
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
-      gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
+      gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
       allData.filter(d => {
         const kw = searchParam.kw.toLowerCase();
         if (kw && !String(d.couponNm || '').toLowerCase().includes(kw)) return false;
@@ -73,14 +72,14 @@ window.XsSample06 = {
       if (isAppReady.value) fnLoadCodes();
       Object.assign(searchParamOrg, searchParam);
     });
-    const onSearch = async () => { pager.page = 1; await handleFetchData(); };
-    const onReset  = async () => { Object.assign(searchParam, { kw: '', discountType: '', useYn: '' }); pager.page = 1; await handleFetchData(); };
+    const onSearch = async () => { pager.pageNo = 1; await handleFetchData(); };
+    const onReset  = async () => { Object.assign(searchParam, { kw: '', discountType: '', useYn: '' }); pager.pageNo = 1; await handleFetchData(); };
     const setFocused   = idx => { uiState.focusedIdx = idx; };
     const onCellChange = row => { if (row._row_status === 'I' || row._row_status === 'D') return; row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._orig[f])) ? 'U' : 'N'; };
     const addRow = () => {
       const at = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(at, 0, { couponId: _tempId--, couponNm: '', discountType: '정액', discountVal: 0, minAmount: 0, useYn: 'Y', expDate: '', _row_status: 'I', _row_check: false, _orig: null });
-      uiState.focusedIdx = at; pager.page = Math.ceil((at + 1) / pager.size);
+      uiState.focusedIdx = at; pager.pageNo = Math.ceil((at + 1) / pager.pageSize);
     };
     const deleteRow = idx => { const row = gridRows[idx]; if (row._row_status === 'I') { gridRows.splice(idx, 1); if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); } else row._row_status = 'D'; };
     const cancelRow = idx => { const row = gridRows[idx]; if (row._row_status === 'I') { gridRows.splice(idx, 1); if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); } else { if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; } };
@@ -100,7 +99,7 @@ window.XsSample06 = {
         const res = await api.get(API, { cdGrp: CD_GRP });
         const list = res?.data?.data ?? res?.data ?? [];
         allData.splice(0, allData.length, ...list.map(toRow));
-        gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
+        gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
         allData.filter(d => {
           const kw = searchParam.kw.toLowerCase();
           if (kw && !String(d.couponNm || '').toLowerCase().includes(kw)) return false;
@@ -119,7 +118,7 @@ window.XsSample06 = {
     const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
     return {
       toast, searchParam, onSearch, onReset,
-      gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, pager.pageSizes, cfTotalPages, cfPageNums, setPage, getRealIdx,
       setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
       onDragStart, onDragOver, onDragEnd,
@@ -219,14 +218,14 @@ window.XsSample06 = {
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1px solid #f0f0f0;">
       <div style="font-size:11px;color:#aaa;">총 {{ cfTotal }}건</div>
       <div style="display:flex;gap:3px;">
-        <button :disabled="pager.page===1" @click="setPage(1)" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">«</button>
-        <button :disabled="pager.page===1" @click="setPage(pager.page-1)" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">‹</button>
-        <button v-for="n in cfPageNums" :key="n" @click="setPage(n)" style="font-size:11px;padding:3px 8px;border:1px solid #ddd;border-radius:4px;cursor:pointer;" :style="pager.page===n?'background:#e8587a;color:#fff;border-color:#e8587a;':'background:#fff;'">{{ n }}</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">›</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">»</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(1)" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">«</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">‹</button>
+        <button v-for="n in cfPageNums" :key="n" @click="setPage(n)" style="font-size:11px;padding:3px 8px;border:1px solid #ddd;border-radius:4px;cursor:pointer;" :style="pager.pageNo===n?'background:#e8587a;color:#fff;border-color:#e8587a;':'background:#fff;'">{{ n }}</button>
+        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">›</button>
+        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)" style="font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">»</button>
       </div>
-      <select v-model.number="pager.size" @change="()=>{pager.page=1;}" style="font-size:11px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;">
-        <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+      <select v-model.number="pager.pageSize" @change="()=>{pager.pageNo=1;}" style="font-size:11px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;">
+        <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
       </select>
     </div>
   </div>

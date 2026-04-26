@@ -31,9 +31,8 @@ window.SyCodeMng = {
     let   _tempId    = -1;
     
     /* ── 페이징 ── */
-    const pager      = reactive({ page: 1, size: 10 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
+    const pager      = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
 
     const EDIT_FIELDS = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'remark', 'parentCodeValue'];
 
@@ -153,7 +152,7 @@ window.SyCodeMng = {
         codes.splice(0, codes.length, ...list);
         updateCodeGroups();
         loadGrp();
-        gridRows.splice(0); uiState.focusedIdx = null; pager.page = 1;
+        gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
         codes.forEach(c => gridRows.push(makeRow(c)));
       } catch (_) {}  finally { uiState.loading = false; }
       const initSet = window.boCmUtil.collectExpandedToDepth(cfGrpTree.value, 2);
@@ -172,7 +171,7 @@ window.SyCodeMng = {
     });
 
     /* 공통코드그룹 페이징 (default 5건) */
-    const grpPager = reactive({ page: 1, size: 5 });
+    const grpPager = reactive({ pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const GRP_PAGE_SIZES = [5, 10, 20, 50, 100];
     const cfGrpTotalPages = computed(() => Math.max(1, Math.ceil(cfFilteredGrpRows.value.length / grpPager.size)));
     const cfGrpPageNums = computed(() => { const c = grpPager.page, l = cfGrpTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
@@ -206,7 +205,7 @@ window.SyCodeMng = {
     const closeDetail = () => { uiState.selectedCodeId = null; };
 
     /* 트리 탭 페이징 */
-    const treePager = reactive({ page: 1, size: 10 });
+    const treePager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const TREE_PAGE_SIZES = [5, 10, 20, 50, 100];
     const cfTreeTotalPages = computed(() => Math.max(1, Math.ceil(cfFlatTreeRows.value.length / treePager.size)));
     const cfTreePageNums = computed(() => { const c = treePager.page, l = cfTreeTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
@@ -259,7 +258,7 @@ window.SyCodeMng = {
     });
 
     const onSearch = async () => {
-      pager.page = 1;
+      pager.pageNo = 1;
       await handleFetchData();
     };
     const onReset = () => {
@@ -290,7 +289,7 @@ window.SyCodeMng = {
       const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(insertAt, 0, newRow);
       uiState.focusedIdx = insertAt;
-      pager.page = Math.ceil((insertAt + 1) / pager.size);
+      pager.pageNo = Math.ceil((insertAt + 1) / pager.pageSize);
     };
 
     /* ── 행 단건 삭제 버튼: N/U 에 표시 (I는 표시 안함) ── */
@@ -421,11 +420,11 @@ window.SyCodeMng = {
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
-    const cfPagedRows  = computed(() => { const s = (pager.page - 1) * pager.size; return gridRows.slice(s, s + pager.size); });
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.size)));
-    const cfPageNums   = computed(() => { const c = pager.page, l = cfTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setPage    = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+    const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageSize; return gridRows.slice(s, s + pager.pageSize); });
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.pageSize)));
+    const cfPageNums   = computed(() => { const c = pager.pageNo, l = pager.pageTotalPage; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
+    const setPage    = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const onSizeChange = () => { pager.pageNo = 1; };
 
     const exportExcel = () => window.boCmUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
@@ -483,7 +482,7 @@ window.SyCodeMng = {
       uiState, pageCodeGroups,
       cfSiteNm,
       searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfGrpOptions,
-      gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, pager.pageSizes, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       dragSrc, onDragStart, onDragOver, onDragEnd,
@@ -742,15 +741,15 @@ window.SyCodeMng = {
     <div class="pagination">
       <div></div>
       <div class="pager">
-        <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-        <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
+        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
-        <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+        <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>

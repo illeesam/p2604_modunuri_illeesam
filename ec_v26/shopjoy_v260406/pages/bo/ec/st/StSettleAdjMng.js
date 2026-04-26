@@ -4,8 +4,7 @@ window.StSettleAdjMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '', selectedId: null, isNew: false});
+const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '', selectedId: null, isNew: false});
     const codes = reactive({
       settle_adj_types: [],
     });
@@ -48,7 +47,7 @@ window.StSettleAdjMng = {
           window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } }),
           window.boApi.get('/bo/ec/st/adj/page', {
             params: {
-              pageNo: pager.page, pageSize: pager.size,
+              pageNo: pager.pageNo, pageSize: pager.pageSize,
               ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
             }
           })
@@ -56,8 +55,8 @@ window.StSettleAdjMng = {
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
         const data = resA.data?.data;
         adjList.splice(0, adjList.length, ...(data?.list || adjList));
-        pager.total = data?.total || adjList.length;
-        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
+        pager.pageTotalCount = data?.total || adjList.length;
+        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
       } catch (_) {
         console.error('[catch-info]', _);
       }
@@ -76,9 +75,9 @@ window.StSettleAdjMng = {
       { adjId: 'ADJ-2026-005', adjDate: '2026-03-15', vendorId: 1, vendorNm: '패션스타일 주식회사', adjType: '매출조정', adjAmt: 30000, reason: '오주문 처리 수기 조정', aprvStatus: '승인', regUserNm: '김담당자' },
     ]);
 
-    const pager = reactive({ page: 1, size: 10, total: 0, totalPages: 1 });
+    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    const cfPageNums = computed(() => { const c=pager.page,l=pager.totalPages,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
         const form = reactive({});
     const errors = reactive({});
@@ -168,11 +167,11 @@ window.StSettleAdjMng = {
     const fnTypeBadge = t => ({ '매출조정':'badge-blue', '수수료조정':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
     const fmtW = n => (n >= 0 ? '' : '-') + Math.abs(Number(n)).toLocaleString() + '원';
 
-    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const onSearch = () => { pager.pageNo = 1; handleFetchData(); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
-    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, adjList, cfPageNums, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, doApprove, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, PAGE_SIZES, setPage, onSizeChange };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, adjList, cfPageNums, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, doApprove, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, pager.pageSizes, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -209,7 +208,7 @@ window.StSettleAdjMng = {
   </div>
   <div class="card" style="margin-top:12px">
     <div class="toolbar">
-      <span class="list-count">총 {{ pager.total }}건</span>
+      <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
       <div style="margin-left:auto"><button class="btn btn-primary" @click="openNew">+ 조정 추가</button></div>
     </div>
     <table class="bo-table">
@@ -236,15 +235,15 @@ window.StSettleAdjMng = {
     <div class="pagination">
          <div></div>
          <div class="pager">
-           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
+           <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+           <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
          </div>
          <div class="pager-right">
-           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
+           <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+             <option v-for="s in pager.pageSizes" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

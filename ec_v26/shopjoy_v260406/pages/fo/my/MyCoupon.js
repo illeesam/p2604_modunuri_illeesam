@@ -31,7 +31,7 @@ window.MyCoupon = {
     const myStore = window.useFoMyStore();
     const { coupons, couponCode } = Pinia.storeToRefs(myStore);
 
-    const couponPager = reactive({ page: 1, size: 50 });
+    const couponPager = reactive({ pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const paginate = myStore.paginate;
 
     /* ── 탭: 미사용 | 사용 ── */

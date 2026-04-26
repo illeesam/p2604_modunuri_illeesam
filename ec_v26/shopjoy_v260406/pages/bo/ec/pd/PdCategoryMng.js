@@ -100,9 +100,8 @@ window.PdCategoryMng = {
     /* ── 그리드 ── */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
-        const pager      = reactive({ page: 1, size: 10 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status'];
+        const pager      = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status'];
 
     /* 그리드 트리 평탄화 */
     const buildTreeRows = (items) => {
@@ -129,18 +128,18 @@ window.PdCategoryMng = {
 
 
     const cfTotal      = computed(() => window.safeArrayUtils.safeFilter((gridRows || []), r => r._row_status !== 'D').length);
-    const cfPagedRows  = computed(() => (gridRows || []).slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil((gridRows || []).length / pager.size)));
+    const cfPagedRows  = computed(() => (gridRows || []).slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil((gridRows || []).length / pager.pageSize)));
     const cfPageNums   = computed(() => {
-      const c = pager.page, l = cfTotalPages.value, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
-    const setPage       = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange  = () => { pager.page = 1; };
-    const getRealIdx    = localIdx => (pager.page - 1) * pager.size + localIdx;
+    const setPage       = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const onSizeChange  = () => { pager.pageNo = 1; };
+    const getRealIdx    = localIdx => (pager.pageNo - 1) * pager.pageSize + localIdx;
 
     const onSearch = async () => {
-      pager.page = 1;
+      pager.pageNo = 1;
       await handleFetchData();
     };
   
@@ -188,7 +187,7 @@ window.PdCategoryMng = {
         _row_status: 'N',
         _row_check: false,
       });
-      pager.page = 1;
+      pager.pageNo = 1;
     };
     const addChildRow = (row, idx) => {
       const depth = (row.depth || row._depth || 0) + 1;
@@ -292,7 +291,7 @@ window.PdCategoryMng = {
       expandedSet, isExpanded, toggleNode, expandAll, collapseAll, cfCatTreeFlat,
       selectNode,
       searchParam, searchParamOrg,
-      gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, pager.pageSizes, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       onSearch, onReset,
       catPickerModal, cfCatPickerList, onParentSelect, openParentModal, fnDepthColor, fnDepthBullet,
       focusedIdx, setFocused, addRow, addChildRow, cancelRow, cancelChecked, deleteRow, deleteRows, handleSave,
@@ -517,15 +516,15 @@ window.PdCategoryMng = {
       <div class="pagination">
         <div></div>
         <div class="pager">
-          <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-          <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-          <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-          <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-          <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+          <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+          <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+          <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+          <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
+          <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
         </div>
         <div class="pager-right">
-          <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-            <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
+          <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+            <option v-for="s in pager.pageSizes" :key="Math.random()" :value="s">{{ s }}개</option>
           </select>
         </div>
       </div>

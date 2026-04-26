@@ -73,10 +73,8 @@ window.DpDispUiMng = {
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    const pager = reactive({ page: 1, size: 5 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-
-  const searchParam = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateEnd: '', dateRange: '' });
+    const pager = reactive({ pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const searchParam = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateEnd: '', dateRange: '' });
   const searchParamOrg = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateEnd: '', dateRange: '' });
 
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
@@ -101,16 +99,16 @@ window.DpDispUiMng = {
       });
     });
     const cfTotal      = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.pageSize)));
+    const cfPageList   = computed(() => cfFiltered.value.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
+    const cfPageNums   = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const onSearch = async () => { pager.page = 1; await handleFetchData(); };
-    const onReset  = () => { Object.assign(searchParam, searchParamOrg); pager.page = 1; };
-    const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+    const onSearch = async () => { pager.pageNo = 1; await handleFetchData(); };
+    const onReset  = () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; };
+    const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const onSizeChange = () => { pager.pageNo = 1; };
 
-    return { displays, uiState, codes, pager, PAGE_SIZES, searchParam, DATE_RANGE_OPTIONS,
+    return { displays, uiState, codes, pager, pager.pageSizes, searchParam, DATE_RANGE_OPTIONS,
       cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums,
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange, cfSiteNm,
       uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId };
@@ -138,8 +136,8 @@ window.DpDispUiMng = {
     <div class="toolbar">
       <span class="list-count">총 {{ cfTotal }}건</span>
       <button class="btn btn-primary btn-sm" @click="openNew">✚ 신규등록</button>
-      <select class="form-control" v-model.number="pager.size" @change="onSizeChange" style="width:80px;">
-        <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}건</option>
+      <select class="form-control" v-model.number="pager.pageSize" @change="onSizeChange" style="width:80px;">
+        <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}건</option>
       </select>
     </div>
     <table class="admin-table">
@@ -163,9 +161,9 @@ window.DpDispUiMng = {
       </tbody>
     </table>
     <div class="pagination">
-      <button class="pager" @click="setPage(pager.page-1)" :disabled="pager.page===1">◀</button>
-      <button v-for="n in cfPageNums" :key="n" class="pager" :class="{active:n===pager.page}" @click="setPage(n)">{{ n }}</button>
-      <button class="pager" @click="setPage(pager.page+1)" :disabled="pager.page===cfTotalPages">▶</button>
+      <button class="pager" @click="setPage(pager.pageNo-1)" :disabled="pager.pageNo===1">◀</button>
+      <button v-for="n in cfPageNums" :key="n" class="pager" :class="{active:n===pager.pageNo}" @click="setPage(n)">{{ n }}</button>
+      <button class="pager" @click="setPage(pager.pageNo+1)" :disabled="pager.pageNo===cfTotalPages">▶</button>
     </div>
   </div>
   <div v-if="uiStateDetail.selectedId" class="card" style="margin-top:10px;">

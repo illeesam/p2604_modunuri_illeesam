@@ -32,7 +32,7 @@ window.MyOrder = {
     const claimsByOrderId = cfClaimsByOrderId;
 
     /* ── 로컬 페이저 ── */
-    const orderPager = reactive({ page: 1, size: 50 });
+    const orderPager = reactive({ pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const paginate = myStore.paginate;
 
     /* ── 배송조회 ── */

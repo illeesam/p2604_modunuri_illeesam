@@ -151,7 +151,7 @@ window.Prod03List = {
       return cfFilteredProducts.value.slice(s, s + PAGE_SIZE);
     });
     const cfPageNums = computed(() => {
-      const t = cfTotalPages.value;
+      const t = pager.pageTotalPage;
       const c = uiState.currentPage;
       if (t <= 7) return Array.from({ length: t }, (_, i) => i + 1);
       const set = new Set([1, t, c-2, c-1, c, c+1, c+2].filter(n => n >= 1 && n <= t));

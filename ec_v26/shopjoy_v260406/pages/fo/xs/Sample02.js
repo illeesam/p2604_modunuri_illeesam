@@ -111,8 +111,8 @@ window.XsSample02 = {
       if (_observer) _observer.disconnect();
     });
 
-    const onSearch = async () => { pager.page = 1; await handleFetchData(); };
-    const onReset  = async () => { Object.assign(searchParam, searchParamOrg); pager.page = 1; await handleFetchData(); };
+    const onSearch = async () => { pager.pageNo = 1; await handleFetchData(); };
+    const onReset  = async () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; await handleFetchData(); };
 
     const setFocused   = idx => { uiState.focusedIdx = idx; };
     const onCellChange = row => {

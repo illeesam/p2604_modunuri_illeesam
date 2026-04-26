@@ -4,8 +4,7 @@ window.StStatusMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, activeTab: 'vendor', dateRange: '이번달', dateStart: '', dateEnd: '', vendorSearchKw: '', orderSearchKw: '', orderSearchStatus: '', claimSearchType: '', claimSearchStatus: '', promoSearchKw: '', promoSearchType: '', settleSearchMonth: ''});;
+const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, activeTab: 'vendor', dateRange: '이번달', dateStart: '', dateEnd: '', vendorSearchKw: '', orderSearchKw: '', orderSearchStatus: '', claimSearchType: '', claimSearchStatus: '', promoSearchKw: '', promoSearchType: '', settleSearchMonth: ''});;
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const codes = reactive({});
 
@@ -96,7 +95,7 @@ window.StStatusMng = {
      * 1. 업체별현황
      * ════════════════════════════════════════════════ */
     const vendorSearchKw  = ref('');
-    const vendorPager     = reactive({ page: 1, size: 10 });
+    const vendorPager     = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfVendorRows = computed(() => {
       const filteredOrders = window.safeArrayUtils.safeFilter(cfOrders.value, o => inRange(o.orderDate) && o.status !== '취소됨');
@@ -121,7 +120,7 @@ window.StStatusMng = {
      * 2. 주문별현황
      * ════════════════════════════════════════════════ */
     const orderSearchKw  = ref('');
-        const orderPager     = reactive({ page: 1, size: 10 });
+        const orderPager     = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfOrderRows = computed(() => {
       const kw = uiState.orderSearchKw.trim().toLowerCase();
@@ -150,7 +149,7 @@ window.StStatusMng = {
      * 3. 클레임별현황
      * ════════════════════════════════════════════════ */
     const claimSearchType   = ref('');
-        const claimPager        = reactive({ page: 1, size: 10 });
+        const claimPager        = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfClaimRows = computed(() => {
       return window.safeArrayUtils.safeFilter(cfClaims.value, c => {
@@ -180,7 +179,7 @@ window.StStatusMng = {
      * 4. 프로모션별현황
      * ════════════════════════════════════════════════ */
     const promoSearchKw   = ref('');
-        const promoPager      = reactive({ page: 1, size: 10 });
+        const promoPager      = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfPromoRows = computed(() => {
       const kw = uiState.promoSearchKw.trim().toLowerCase();
@@ -217,7 +216,7 @@ window.StStatusMng = {
     /* ════════════════════════════════════════════════
      * 5. 정산별현황 (월별 요약)
      * ════════════════════════════════════════════════ */
-        const settlePager       = reactive({ page: 1, size: 10 });
+        const settlePager       = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfSettleRows = computed(() => {
       const monthMap = {};
@@ -291,7 +290,7 @@ window.StStatusMng = {
       /* promo  */ promoPager, cfPromoRows, cfPromoTotal, cfPromoPages, cfPromoPageList, cfPromoSummary,
       /* settle */ settlePager, cfSettleRows, cfSettleTotal, cfSettlePages, cfSettlePageList, cfSettleSummary,
       fmt, fmtW, fnStatusBadge, fnTypeBadge, onSearch, onReset, pageNums, exportTab, COMM_RATE,
-      PAGE_SIZES,
+      pager.pageSizes,
       setVendorPage, onVendorSizeChange,
       setOrderPage, onOrderSizeChange,
       setClaimPage, onClaimSizeChange,
@@ -391,7 +390,7 @@ window.StStatusMng = {
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="vendorPager.size" @change="onVendorSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
+             <option v-for="s in pager.pageSizes" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>
@@ -456,7 +455,7 @@ window.StStatusMng = {
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="orderPager.size" @change="onOrderSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
+             <option v-for="s in pager.pageSizes" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>
@@ -526,7 +525,7 @@ window.StStatusMng = {
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="claimPager.size" @change="onClaimSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
+             <option v-for="s in pager.pageSizes" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>
@@ -586,7 +585,7 @@ window.StStatusMng = {
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="promoPager.size" @change="onPromoSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
+             <option v-for="s in pager.pageSizes" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>
@@ -646,7 +645,7 @@ window.StStatusMng = {
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="settlePager.size" @change="onSettleSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
+             <option v-for="s in pager.pageSizes" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

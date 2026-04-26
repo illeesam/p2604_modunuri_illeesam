@@ -12,14 +12,14 @@ window.MbMemGroupMng = {
     const handleFetchData = async () => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.page, pageSize: pager.size, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         const res = await window.boApi.get('/bo/ec/mb/member-group/page', { params });
         const list = res.data?.data?.list || [];
         groups.splice(0, groups.length, ...list);
         gridRows.splice(0);
         list.forEach(g => gridRows.push({ ...g, _row_status: null }));
-        pager.total = res.data?.data?.total || 0;
-        pager.totalPages = res.data?.data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
+        pager.pageTotalCount = res.data?.data?.total || 0;
+        pager.pageTotalPage = res.data?.data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -32,9 +32,7 @@ window.MbMemGroupMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleFetchData();
     Object.assign(searchParamOrg, searchParam); });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-
-    const isAppReady = computed(() => {
+const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
       const codeStore = window.getBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
@@ -65,9 +63,9 @@ window.MbMemGroupMng = {
     kw: '',
     use: ''
   });
-    const pager     = reactive({ page: 1, size: 20, total: 0, totalPages: 1 });
+    const pager     = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    const cfPageNums   = computed(() => { const c=pager.page,l=pager.totalPages,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfPageNums   = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const gridRows   = reactive([]);
     let   _tempId    = -1;
@@ -120,7 +118,7 @@ window.MbMemGroupMng = {
       }
     };
     const onSearch = async () => {
-      pager.page = 1;
+      pager.pageNo = 1;
       await handleFetchData();
     };
 
@@ -129,12 +127,12 @@ window.MbMemGroupMng = {
       onSearch();
     };
 
-    const setPage  = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
+    const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     return { groups, uiState, codes, searchParam, searchParamOrg, pager, cfPageNums, setPage, onSearch, onReset,
-             gridRows, addRow, onCellChange, handleDeleteRow, handleSaveAll, fnYnBadge, PAGE_SIZES, onSizeChange };
+             gridRows, addRow, onCellChange, handleDeleteRow, handleSaveAll, fnYnBadge, pager.pageSizes, onSizeChange };
   },
   template: `
 <div>
@@ -154,7 +152,7 @@ window.MbMemGroupMng = {
     <div class="card">
       <div class="toolbar">
         <span class="list-title">회원그룹 목록</span>
-        <span class="list-count">총 {{ pager.total }}건</span>
+        <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
         <div style="margin-left:auto;display:flex;gap:6px;">
           <button class="btn btn-primary btn-sm" @click="addRow">+ 행추가</button>
           <button class="btn btn-blue btn-sm" @click="handleSaveAll">저장</button>
@@ -184,15 +182,15 @@ window.MbMemGroupMng = {
       <div class="pagination">
          <div></div>
          <div class="pager">
-           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
+           <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+           <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
          </div>
          <div class="pager-right">
-           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="Math.random()" :value="s">{{ s }}개</option>
+           <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+             <option v-for="s in pager.pageSizes" :key="Math.random()" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

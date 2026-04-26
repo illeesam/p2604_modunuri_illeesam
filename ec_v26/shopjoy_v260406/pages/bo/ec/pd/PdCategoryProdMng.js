@@ -72,27 +72,29 @@ window.PdCategoryProdMng = {
     const defaultDispStartDate = () => new Date().toISOString().slice(0, 10);
 
     /* ── 검색 ── */
-    const pager = reactive({ page: 1, size: 20 });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const searchParam = reactive({ prodNm: '' });
+    const searchParamOrg = reactive({ prodNm: '' });
 
-  const searchParam = reactive({
-    prodNm: ''
-  });
-  const searchParamOrg = reactive({
-    prodNm: ''
-  });
+    const handleFetchData = async () => {
+      try {
+        const res = await window.boApi.get('/bo/ec/pd/category-prod/page', {
+          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...pager.pageCond }
+        });
+        const data = res.data?.data;
+        categoryProds.splice(0, categoryProds.length, ...(data?.list || []));
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+      } catch (err) {
+        console.error('[catch-info]', err);
+      }
+    };
 
-    const onSearch = async () => {
-    try {
-      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await window.boApi.get('/bo/ec/resource/page', { params });
-      // TODO: Update items array based on response
-      pager.page = 1;
-    } catch (err) {
-      console.error('[catch-info]', err);
-      if (props.showToast) props.showToast('조회 실패', 'error');
-    }
-  };
+    const onSearch = () => {
+      pager.pageNo = 1;
+      Object.assign(pager.pageCond, searchParam);
+      handleFetchData();
+    };
   
     const onReset = () => {
     Object.assign(searchParam, searchParamOrg);
@@ -106,7 +108,7 @@ window.PdCategoryProdMng = {
       TYPE_TABS, EMPHASIS_OPTS, parseEmphasis, hasEmphasis, toggleEmphasis,
       defaultDispStartDate, defaultDispEndDate,
       searchParam, searchParamOrg, onSearch, onReset,
-      PAGE_SIZES, pager,
+      pager,
       cfCatTreeFlat, cfFilteredRows, cfPickerList,
     };
   },

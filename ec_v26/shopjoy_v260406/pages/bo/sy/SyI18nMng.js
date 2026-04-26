@@ -44,10 +44,9 @@ window.SyI18nMng = {
         fnLoadCodes();
       }
     });
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const searchParam = reactive({ kw: '', scope: '', use: '' });
+const searchParam = reactive({ kw: '', scope: '', use: '' });
     const applied     = reactive({ kw: '', scope: '', use: '' });
-    const pager       = reactive({ page: 1, size: 20 });
+    const pager       = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId  = ref(null);
 
     const SCOPES      = ['COMMON','FO','BO'];
@@ -65,9 +64,9 @@ window.SyI18nMng = {
       });
     });
     const cfTotal      = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.pageSize)));
+    const cfPageList   = computed(() => cfFiltered.value.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
+    const cfPageNums   = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const cfSelectedKey = computed(() => (i18nKeys||[]).find(k => k.i18nId === uiState.selectedId) || null);
     const cfSelectedMsgs = computed(() => {
@@ -112,15 +111,15 @@ window.SyI18nMng = {
       const m = (i18nMsgs||[]).find(m => m.i18nId === i18nId && m.langCd === lang);
       return m ? m.i18nMsg : '';
     };
-    const onSearch = async () => { Object.assign(applied, { kw: searchParam.kw, scope: searchParam.scope, use: searchParam.use }); pager.page = 1; await handleFetchData(); };
-    const onReset  = () => { searchParam.kw = ''; searchParam.scope = ''; searchParam.use = ''; Object.assign(applied, { kw: '', scope: '', use: '' }); pager.page = 1; };
-    const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+    const onSearch = async () => { Object.assign(applied, { kw: searchParam.kw, scope: searchParam.scope, use: searchParam.use }); pager.pageNo = 1; await handleFetchData(); };
+    const onReset  = () => { searchParam.kw = ''; searchParam.scope = ''; searchParam.use = ''; Object.assign(applied, { kw: '', scope: '', use: '' }); pager.pageNo = 1; };
+    const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const onSizeChange = () => { pager.pageNo = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     return { uiState, codes, searchParam, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
              selectedId, cfSelectedKey, cfSelectedMsgs, msgForm, openDetail, saveMsgs, getLangMsg,
-             SCOPES, LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, PAGE_SIZES, onSizeChange };
+             SCOPES, LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, pager.pageSizes, onSizeChange };
   },
   template: `
 <div>
@@ -173,15 +172,15 @@ window.SyI18nMng = {
       <div class="pagination">
          <div></div>
          <div class="pager">
-           <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-           <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-           <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+           <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+           <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+           <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+           <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
+           <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
          </div>
          <div class="pager-right">
-           <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-             <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+           <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+             <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
            </select>
          </div>
        </div>

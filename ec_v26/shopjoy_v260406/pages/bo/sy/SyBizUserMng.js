@@ -121,7 +121,7 @@ window.SyBizUserMng = {
       if (uiState.bizVendorFlt && v.vendorTypeCd !== uiState.bizVendorFlt) return false;
       return true;
     }));
-    const bizPager = reactive({ page:1, size:5 });
+    const bizPager = reactive({ pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const cfBizTotalPages = computed(() => Math.max(1, Math.ceil(cfVendorList.value.length / bizPager.size)));
     const cfBizPageNums   = computed(() => { const c=bizPager.page,l=cfBizTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const cfBizPagedRows  = computed(() => cfVendorList.value.slice((bizPager.page-1)*bizPager.size, bizPager.page*bizPager.size));
@@ -140,7 +140,7 @@ window.SyBizUserMng = {
       uiState.treeRoleCat = ({ SALES:'SALES', DELIVERY:'DELIVERY', CS:'CS', SITE:'SITE', PROG:'PROG',
                               PARTNER:'SITE', INTERNAL:'SITE' })[v.vendorTypeCd] || '';
       loadVendorUsers(v.vendorId);
-      pager.page = 1;
+      pager.pageNo = 1;
     };
 
     const onSearch = () => { bizPager.page = 1; };
@@ -183,13 +183,12 @@ window.SyBizUserMng = {
       return true;
     }));
 
-    const PAGE_SIZES = [5, 10, 20, 30, 50, 100];
-    const pager = reactive({ page:1, size:10 });
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfFiltered.value.length / pager.size)));
-    const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
-    const setPage    = n => { if(n>=1&&n<=cfTotalPages.value) pager.page=n; };
-    const onSizeChange = () => { pager.page=1; };
-    const cfPagedRows  = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
+const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfFiltered.value.length / pager.pageSize)));
+    const cfPageNums   = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const setPage    = n => { if(n>=1&&n<=pager.pageTotalPage) pager.pageNo=n; };
+    const onSizeChange = () => { pager.pageNo=1; };
+    const cfPagedRows  = computed(() => cfFiltered.value.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize));
 
     /* ── 인라인 폼 (사용자 등록/수정) ── */
         const formData = reactive({});
@@ -384,7 +383,7 @@ window.SyBizUserMng = {
       onVendorPicked, VENDOR_TYPES,
       cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
       STATUS, fnStatusBadge, fnStatusLabel,
-      cfFiltered, cfPagedRows, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange,
+      cfFiltered, cfPagedRows, pager, pager.pageSizes, cfTotalPages, cfPageNums, setPage, onSizeChange,
       formData, openNew, openEdit, closeForm, handleSaveForm, handleDeleteRow,
       userRoles, roleTreeExpanded,
       openRoleModal, closeRoleModal, confirmRoleModal, handleDeleteRole,
@@ -507,15 +506,15 @@ window.SyBizUserMng = {
         <div class="pagination">
           <div></div>
           <div class="pager">
-            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
-            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
-            <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-            <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-            <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+            <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+            <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+            <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+            <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
+            <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
           </div>
           <div class="pager-right">
-            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-              <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
+            <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+              <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
             </select>
           </div>
         </div>
