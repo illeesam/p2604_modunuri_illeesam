@@ -45,6 +45,8 @@ window.SyDeptMng = {
     const cfTree = computed(() => window.boCmUtil.buildDeptTree());
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -70,6 +72,8 @@ window.SyDeptMng = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -80,6 +84,7 @@ window.SyDeptMng = {
       if (uiState.selectedTreeId == null) return null;
       return window.boCmUtil.collectDescendantIds(depts, 'deptId', 'parentId', uiState.selectedTreeId);
     });
+
     watch(() => uiState.selectedTreeId, () => { handleSearchList(); });
 
 
@@ -255,6 +260,8 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
       '부서목록.csv'
     );
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { depts, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, searchParamOrg, cfTypeOptions, DEPT_TYPES,
       cfSiteNm,
@@ -344,7 +351,7 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
           <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
           <td><input class="grid-input grid-mono" v-model="row.deptCode" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
 
-          <!-- 부서명 (불릿 트리) -->
+          <!-- ── 부서명 (불릿 트리) ──────────────────────────────────────────── -->
           <td style="padding:3px 6px;">
             <div style="display:flex;align-items:center;">
               <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
@@ -355,7 +362,7 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
             </div>
           </td>
 
-          <!-- 상위부서 -->
+          <!-- ── 상위부서 ─────────────────────────────────────────────────── -->
           <td style="padding:3px 8px;">
             <div style="display:flex;align-items:center;gap:5px;">
               <span v-if="row.parentId"

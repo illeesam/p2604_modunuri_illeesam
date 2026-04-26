@@ -38,8 +38,11 @@ window.SyBatchHist = {
       handleSearchData();
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
 const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -84,6 +87,9 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     };
 
     const expandedId = Vue.toRef(uiState, 'expandedId');
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { batches, uiState, cfBatchOptions,
       cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, pager,
       setPage, onSizeChange, onFilter,
@@ -130,7 +136,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       </tr>
 
       <template v-for="log in cfPageList" :key="log.logId">
-        <!-- 데이터 행 -->
+        <!-- ── 데이터 행 ──────────────────────────────────────────────────── -->
         <tr :style="log.runStatus==='실패' ? 'background:#fff5f5;' : log.runStatus==='실행중' ? 'background:#f0f8ff;' : ''">
           <td style="color:#aaa;">{{ log.logId }}</td>
           <td style="font-weight:500;">{{ log.batchNm }}</td>
@@ -153,12 +159,12 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           </td>
         </tr>
 
-        <!-- 상세 펼침 행 -->
+        <!-- ── 상세 펼침 행 ────────────────────────────────────────────────── -->
         <tr v-if="expandedId===log.logId"
           :style="log.runStatus==='실패' ? 'background:#fff0f0;' : 'background:#f8faff;'">
           <td colspan="8" style="padding:0;">
             <div style="padding:12px 16px 14px;border-top:1px dashed #e0e0e0;">
-              <!-- 요약 메타 -->
+              <!-- ── 요약 메타 ────────────────────────────────────────────── -->
               <div style="display:flex;gap:24px;margin-bottom:10px;flex-wrap:wrap;">
                 <div>
                   <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">배치명</span>
@@ -181,13 +187,13 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
                   <span class="badge badge-xs" :class="fnRunBadge(log.runStatus)">{{ log.runStatus }}</span>
                 </div>
               </div>
-              <!-- 메시지 전체 -->
+              <!-- ── 메시지 전체 ───────────────────────────────────────────── -->
               <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:4px;">메시지</div>
               <div style="font-size:12px;padding:8px 12px;border-radius:5px;line-height:1.7;white-space:pre-wrap;word-break:break-all;"
                 :style="log.runStatus==='실패'
                   ? 'background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-family:monospace;'
                   : 'background:#f1f5f9;border:1px solid #e2e8f0;color:#374151;'">{{ log.message }}</div>
-              <!-- 상세 내용 (detail 있을 때만) -->
+              <!-- ── 상세 내용 (detail 있을 때만) ─────────────────────────────── -->
               <template v-if="log.detail">
                 <div style="font-size:11px;font-weight:600;color:#888;margin:10px 0 4px;">상세 내용</div>
                 <pre style="margin:0;font-size:11px;padding:10px 12px;border-radius:5px;white-space:pre-wrap;word-break:break-all;line-height:1.65;font-family:monospace;"

@@ -28,6 +28,8 @@ window.PdQnaMng = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -58,6 +60,8 @@ window.PdQnaMng = {
     };
     const searchParam = reactive({ kw: '', status: '', prod: '' });
     const searchParamOrg = reactive({ kw: '', status: '', prod: '' });
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
@@ -73,6 +77,8 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
     const getMemNm  = id => { const m = (members||[]).find(m => m.memberId === id); return m ? m.memberNm : (id||''); };
     const fnStatusBadge = s => ({ WAIT:'badge-orange', ANSWER:'badge-green', CLOSE:'badge-gray' }[s] || 'badge-gray');
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return { qnas, uiState, codes, pager, searchParam,
       cfPageNums,

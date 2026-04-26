@@ -25,6 +25,8 @@ window.StSettleCloseMng = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -47,6 +49,8 @@ window.StSettleCloseMng = {
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
       } catch (_) {}
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
@@ -128,6 +132,8 @@ window.StSettleCloseMng = {
       return true;
     }));
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { uiState, closeList, cfFilteredClose, searchKw, searchStatus, onSearch, onReset, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW };
   },
   template: /* html */`
@@ -142,7 +148,7 @@ window.StSettleCloseMng = {
 • 자동마감 설정(StConfigMng) 시 지급일에 자동 마감됩니다.</div>
   </div>
 
-  <!-- 이번달 마감 대상 -->
+  <!-- ── 이번달 마감 대상 ────────────────────────────────────────────────────── -->
   <div class="card">
     <div style="font-weight:700;font-size:15px;margin-bottom:12px">{{ thisMonth }} 정산마감 대상</div>
     <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px">
@@ -177,7 +183,7 @@ window.StSettleCloseMng = {
     </div>
   </div>
 
-  <!-- 마감 이력 -->
+  <!-- ── 마감 이력 ────────────────────────────────────────────────────────── -->
   <div class="card" style="margin-top:12px">
     <div class="search-bar" style="margin-bottom:12px">
       <input v-model="searchKw" placeholder="정산월 / 담당자 검색" style="width:180px" @keyup.enter="onSearch" />

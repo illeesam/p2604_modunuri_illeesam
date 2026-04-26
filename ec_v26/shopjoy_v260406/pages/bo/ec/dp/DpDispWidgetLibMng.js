@@ -25,6 +25,9 @@ window.DpDispWidgetLibMng = {
     };
 
     // App 초기화 감시
+
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (ready) => {
       if (ready) {
         fnLoadCodes();
@@ -49,6 +52,8 @@ window.DpDispWidgetLibMng = {
         uiState.loading = false;
       }
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -199,6 +204,8 @@ const applied = reactive({ kw: '', type: '', status: '' });
         if (props.showToast) props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return { widgetLibs, uiState, codes, searchParam, pager,
       applied, onSearch, onReset, setPage, onSizeChange,

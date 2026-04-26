@@ -49,6 +49,8 @@ window.SyMenuMng = {
     const cfTree = computed(() => window.boCmUtil.buildMenuTree());
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -75,6 +77,8 @@ window.SyMenuMng = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -85,6 +89,7 @@ window.SyMenuMng = {
       if (uiState.selectedTreeId == null) return null;
       return window.boCmUtil.collectDescendantIds(menus, 'menuId', 'parentId', uiState.selectedTreeId);
     });
+
     watch(() => uiState.selectedTreeId, () => { handleSearchList(); });
 
 
@@ -261,6 +266,8 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
       '메뉴목록.csv'
     );
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { menus, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, searchParamOrg, MENU_TYPES,
       cfSiteNm,
@@ -352,7 +359,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
           <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
           <td><input class="grid-input grid-mono" v-model="row.menuCode" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
 
-          <!-- 메뉴명 (블릿 트리) -->
+          <!-- ── 메뉴명 (블릿 트리) ──────────────────────────────────────────── -->
           <td style="padding:3px 6px;">
             <div style="display:flex;align-items:center;">
               <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
@@ -363,7 +370,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
             </div>
           </td>
 
-          <!-- 상위메뉴 -->
+          <!-- ── 상위메뉴 ─────────────────────────────────────────────────── -->
           <td style="padding:3px 8px;">
             <div style="display:flex;align-items:center;gap:5px;">
               <span v-if="row.parentId"

@@ -30,6 +30,8 @@ window.MbMemGroupMng = {
         uiState.loading = false;
       }
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
@@ -49,6 +51,8 @@ const isAppReady = computed(() => {
         console.error('[fnLoadCodes]', err);
       }
     };
+
+    // ── watch ────────────────────────────────────────────────────────────────
 
     watch(isAppReady, (newVal) => {
       if (newVal) {
@@ -131,6 +135,8 @@ const isAppReady = computed(() => {
     const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return { groups, uiState, codes, searchParam, searchParamOrg, pager, cfPageNums, setPage, onSearch, onReset,
              gridRows, addRow, onCellChange, handleDeleteRow, handleSaveAll, fnYnBadge, onSizeChange };

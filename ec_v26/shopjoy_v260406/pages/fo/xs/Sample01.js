@@ -26,6 +26,8 @@ window.XsSample01 = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -104,6 +106,8 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
         return true;
       }).forEach(d => gridRows.push(makeRow(d)));
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       Object.assign(searchParamOrg, searchParam);
@@ -185,6 +189,8 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
     const fnStatusBadge = s => ({ N: 'background:#f0f0f0;color:#666;', I: 'background:#dbeafe;color:#1e40af;', U: 'background:#fef3c7;color:#92400e;', D: 'background:#fee2e2;color:#991b1b;' }[s] || '');
     const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return {
       toast, searchParam, onSearch, onReset,
       gridRows, cfPagedRows, cfTotal, pager, pager.pageSizes, cfTotalPages, cfPageNums, setPage, getRealIdx,
@@ -197,19 +203,19 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
   template: /* html */`
 <div style="padding:clamp(12px,3vw,24px);">
 
-  <!-- Toast -->
+  <!-- ── Toast ────────────────────────────────────────────────────────── -->
   <div v-if="toast.show" style="position:fixed;top:20px;right:20px;z-index:9999;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.15);pointer-events:none;"
     :style="toast.type==='error'?'background:#fee2e2;color:#991b1b;':toast.type==='info'?'background:#dbeafe;color:#1e40af;':'background:#d1fae5;color:#065f46;'">
     {{ toast.msg }}
   </div>
 
-  <!-- 제목 -->
+  <!-- ── 제목 ───────────────────────────────────────────────────────────── -->
   <div style="font-size:16px;font-weight:700;margin-bottom:12px;">
     01. 회원 관리
     <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">CRUD Grid 예제</span>
   </div>
 
-  <!-- 검색 -->
+  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <input v-model="searchParam.kw" placeholder="이름 / 이메일 / 전화번호 검색" @keyup.enter="onSearch"
@@ -226,9 +232,9 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
     </div>
   </div>
 
-  <!-- CRUD Grid -->
+  <!-- ── CRUD Grid ────────────────────────────────────────────────────── -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
-    <!-- 툴바 -->
+    <!-- ── 툴바 ─────────────────────────────────────────────────────────── -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #f0f0f0;">
       <span style="font-size:12px;font-weight:700;">회원 목록 <span style="color:#e8587a;margin-left:4px;">{{ cfTotal }}건</span></span>
       <div style="display:flex;gap:5px;">
@@ -238,7 +244,7 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
         <button @click="handleSave"        style="font-size:11px;padding:4px 10px;border:none;border-radius:5px;background:#e8587a;color:#fff;cursor:pointer;font-weight:600;">저장</button>
       </div>
     </div>
-    <!-- 테이블 -->
+    <!-- ── 테이블 ────────────────────────────────────────────────────────── -->
     <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:700px;">
         <thead>
@@ -309,7 +315,7 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
         </tbody>
       </table>
     </div>
-    <!-- 페이지네이션 -->
+    <!-- ── 페이지네이션 ─────────────────────────────────────────────────────── -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1px solid #f0f0f0;">
       <div style="font-size:11px;color:#aaa;">총 {{ cfTotal }}건</div>
       <div style="display:flex;gap:3px;">

@@ -29,6 +29,9 @@ window.DpDispUiMng = {
     };
 
     // App 초기화 감시
+
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (ready) => {
       if (ready) {
         fnLoadCodes();
@@ -53,6 +56,7 @@ window.DpDispUiMng = {
       }
     };
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       if (isAppReady.value) {
@@ -108,6 +112,8 @@ const searchParam = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateE
     const onReset  = () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; };
     const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return { displays, uiState, codes, pager, searchParam, DATE_RANGE_OPTIONS,
       cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums,

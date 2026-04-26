@@ -28,6 +28,8 @@ window.PdRestockNotiMng = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -56,6 +58,8 @@ window.PdRestockNotiMng = {
         uiState.loading = false;
       }
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
@@ -112,6 +116,8 @@ const searchParam = reactive({
     const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return { restockNotis, uiState, searchParam, searchParamOrg, pager, cfPageNums, setPage, onSearch, onReset,
              checkedIds, checkedCount, allChecked, toggleAll, toggleOne, handleSend, fnYnBadge, getProdNm, getMemNm  , onSizeChange };

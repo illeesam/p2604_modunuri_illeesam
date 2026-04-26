@@ -38,6 +38,8 @@ window.SyBbsDtl = {
       handleSearchList();
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
@@ -90,6 +92,8 @@ window.SyBbsDtl = {
     const cfAllowAttach = computed(() => uiState.selectedBbm?.allowAttach || '불가');
 
     /* ── 초기화 ── */
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) {
@@ -106,6 +110,7 @@ window.SyBbsDtl = {
     });
 
     /* cfContentType 변화 감지 → Quill 초기화 */
+
     watch(cfContentType, (val) => {
       if (!props.viewMode && val === 'htmleditor') {
         nextTick(() => { initQuill(); });
@@ -156,6 +161,9 @@ window.SyBbsDtl = {
 
     const selectedBbm = computed(() => uiState.selectedBbm);
     const showBbmDetail = Vue.toRef(uiState, 'showBbmDetail');
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { bbss, uiState, codes, cfIsNew, form, errors, selectedBbm, cfContentType, cfAllowAttach, cfAttachMaxCount,
       showBbmModal, onBbmSelect, handleSave, cfSiteNm,
     };
@@ -171,22 +179,22 @@ window.SyBbsDtl = {
       </div>
     </div>
 
-    <!-- 게시판 선택 -->
+    <!-- ── 게시판 선택 ─────────────────────────────────────────────────────── -->
     <div class="form-group">
       <label class="form-label">게시판 <span v-if="!viewMode" class="req">*</span></label>
       <div style="display:flex;align-items:center;gap:8px;">
-        <!-- 신규: 선택 버튼 -->
+        <!-- ── 신규: 선택 버튼 ──────────────────────────────────────────────── -->
         <template v-if="cfIsNew && !viewMode">
           <button class="btn btn-secondary btn-sm" type="button" @click="showBbmModal=true">📋 게시판 선택</button>
           <button v-if="selectedBbm" class="btn btn-blue btn-sm" type="button" @click="showBbmDetail=true" title="게시판 상세보기">🔍</button>
         </template>
-        <!-- 수정 또는 viewMode: 변경 불가 -->
+        <!-- ── 수정 또는 viewMode: 변경 불가 ──────────────────────────────────── -->
         <template v-else>
           <button class="btn btn-secondary btn-sm" type="button" disabled style="opacity:.5;cursor:not-allowed;">📋 게시판 선택</button>
           <button v-if="selectedBbm" class="btn btn-blue btn-sm" type="button" @click="showBbmDetail=true" title="게시판 상세보기">🔍</button>
         </template>
 
-        <!-- 선택된 게시판 표시 -->
+        <!-- ── 선택된 게시판 표시 ─────────────────────────────────────────────── -->
         <span v-if="selectedBbm" style="display:flex;align-items:center;gap:6px;font-size:13px;">
           <b style="color:#1a1a2e;">{{ selectedBbm.bbmNm }}</b>
           <code style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 6px;border-radius:4px;">{{ selectedBbm.bbmCode }}</code>
@@ -197,7 +205,7 @@ window.SyBbsDtl = {
       <span v-if="errors.bbmId" class="field-error">{{ errors.bbmId }}</span>
     </div>
 
-    <!-- 기본 정보 -->
+    <!-- ── 기본 정보 ──────────────────────────────────────────────────────── -->
     <div class="form-row">
       <div class="form-group" style="flex:2">
         <label class="form-label">제목 <span v-if="!viewMode" class="req">*</span></label>
@@ -216,7 +224,7 @@ window.SyBbsDtl = {
       </div>
     </div>
 
-    <!-- 내용 입력 (contentType 에 따라 렌더링) -->
+    <!-- ── 내용 입력 (contentType 에 따라 렌더링) ───────────────────────────────── -->
     <div v-if="!selectedBbm" class="form-group">
       <label class="form-label">내용</label>
       <div style="color:#bbb;font-size:13px;padding:12px 0;">게시판을 먼저 선택하세요.</div>
@@ -235,7 +243,7 @@ window.SyBbsDtl = {
       <div v-else id="bbs-editor" style="min-height:300px;background:#fff;"></div>
     </div>
 
-    <!-- 첨부파일 -->
+    <!-- ── 첨부파일 ───────────────────────────────────────────────────────── -->
     <div v-if="selectedBbm && cfAttachMaxCount > 0" class="form-group">
       <label class="form-label">
         첨부파일
@@ -270,13 +278,13 @@ window.SyBbsDtl = {
     </div>
   </div>
 
-  <!-- 게시판 선택 팝업 -->
+  <!-- ── 게시판 선택 팝업 ────────────────────────────────────────────────────── -->
   <bbm-select-modal
     v-if="showBbmModal" @select="onBbmSelect"
     @close="showBbmModal=false"
   />
 
-  <!-- 게시판 상세보기 팝업 -->
+  <!-- ── 게시판 상세보기 팝업 ──────────────────────────────────────────────────── -->
   <div v-if="showBbmDetail && selectedBbm" class="modal-overlay" @click.self="showBbmDetail=false">
     <div class="modal-box" style="max-width:420px;">
       <div class="modal-header">

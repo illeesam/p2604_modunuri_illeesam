@@ -32,6 +32,8 @@ window.PdBundleMng = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -67,6 +69,7 @@ window.PdBundleMng = {
       nm: ''
     });
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchData('DEFAULT');
@@ -167,6 +170,9 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
               .sort((a, b) => (a?.sortOrd || 0) - (b?.sortOrd || 0));
             const prod  = getProd(id);
             const prodNm = getProdNm(id);
+
+    // ── return ───────────────────────────────────────────────────────────────
+
             return { bundleProdId: id, prodNm, prod, items, itemCount: items.length };
           })
           .filter(g => !kw || (g?.prodNm || '').toLowerCase().includes(kw));
@@ -177,7 +183,9 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       }
     };
     updateBundleList();
+
     watch(() => searchParam.nm, updateBundleList);
+
     watch(bundles, updateBundleList);
 
     const cfTotal    = computed(() => (bundleList || []).length);
@@ -398,6 +406,8 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     };
 
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return {
       codes, uiState, bundles, bundleList,
       searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList,
@@ -428,7 +438,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     </div>
   </div>
 
-  <!-- 검색 -->
+  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="search-bar">
       <label class="search-label">묶음상품명</label>
@@ -441,7 +451,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     </div>
   </div>
 
-  <!-- 목록 -->
+  <!-- ── 목록 ───────────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title">묶음상품 목록</span>
@@ -523,11 +533,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
        </div>
   </div>
 
-  <!-- 신규등록 / 구성관리 (인라인 Dtl) -->
+  <!-- ── 신규등록 / 구성관리 (인라인 Dtl) ────────────────────────────────────────── -->
   <div v-if="uiState.dtlMode !== null" class="card"
        :style="uiState.dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #1677ff'">
 
-    <!-- Dtl 헤더 -->
+    <!-- ── Dtl 헤더 ─────────────────────────────────────────────────────── -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0">
       <div style="display:flex;align-items:center;gap:10px">
         <span :class="['badge', uiState.dtlMode==='new' ? 'badge-green' : 'badge-blue']">
@@ -550,7 +560,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       </div>
     </div>
 
-    <!-- ① 기본정보 (신규 시만 표시) -->
+    <!-- ── ① 기본정보 (신규 시만 표시) ──────────────────────────────────────────── -->
     <div v-if="uiState.dtlMode==='new'" style="background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:16px 20px;margin-bottom:20px">
       <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:12px">묶음상품 기본정보 (pd_prod)</div>
       <div class="form-row">
@@ -605,7 +615,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     </div>
 
-    <!-- ② 카테고리 N개 (신규/편집 공통) -->
+    <!-- ── ② 카테고리 N개 (신규/편집 공통) ───────────────────────────────────────── -->
     <div class="form-row" style="margin-bottom:16px">
       <div class="form-group">
         <label class="form-label">카테고리 <span style="font-size:11px;color:#aaa;font-weight:400">N개 등록 · 첫 번째 = 대표</span></label>
@@ -627,7 +637,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       </div>
     </div>
 
-    <!-- ③ 구성품 목록 -->
+    <!-- ── ③ 구성품 목록 ───────────────────────────────────────────────────── -->
     <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:10px">
       구성품 목록 (pd_prod_bundle_item)
       <span style="font-weight:400;color:#aaa;margin-left:6px">※ 안분율 합계 = 100% 필수</span>
@@ -696,7 +706,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       </tbody>
     </table>
 
-    <!-- 구성품 추가 / 안분율 안내 -->
+    <!-- ── 구성품 추가 / 안분율 안내 ────────────────────────────────────────────── -->
     <div style="margin-top:12px;display:flex;align-items:flex-start;gap:12px">
       <button class="btn btn-secondary btn-sm" style="flex-shrink:0" @click="uiState.pickerOpen=true;uiState.pickerSearch=''">
         + 구성품 추가
@@ -713,7 +723,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     </div>
   </div>
 
-  <!-- 구성품 Picker Modal -->
+  <!-- ── 구성품 Picker Modal ─────────────────────────────────────────────── -->
   <teleport to="body" v-if="uiState.pickerOpen">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
          @click.self="uiState.pickerOpen=false">
@@ -753,7 +763,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     </div>
   </teleport>
 
-  <!-- 카테고리 피커 모달 -->
+  <!-- ── 카테고리 피커 모달 ───────────────────────────────────────────────────── -->
   <teleport to="body">
     <div v-if="uiState.catPickerOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center;" @click.self="uiState.catPickerOpen=false">
       <div style="background:#fff;border-radius:12px;width:420px;max-height:520px;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.18);">

@@ -98,6 +98,8 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -282,6 +284,8 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -289,7 +293,10 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
     });
+
     watch(() => uiState.selectedPath, () => handleSearchList());
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return { brands, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange,
@@ -305,7 +312,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
 <div>
   <div class="page-title">브랜드관리</div>
 
-  <!-- 검색 -->
+  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="브랜드코드 / 브랜드명 / 영문명 검색" />
@@ -329,7 +336,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
     </div>
   </div>
 
-  <!-- 좌 트리 + 우 그리드 -->
+  <!-- ── 좌 트리 + 우 그리드 ─────────────────────────────────────────────────── -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;">
@@ -345,7 +352,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
       </div>
     </div>
 
-  <!-- CRUD 그리드 -->
+  <!-- ── CRUD 그리드 ─────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title">
@@ -475,7 +482,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
       </div>
     </div>
   </div>
-  </div><!-- /grid 25/75 -->
+  </div><!-- ── /grid 25/75 ────────────────────────────────────────────────────── -->
 
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_brand"
     :value="pathPickModal.row ? pathPickModal.row.pathId : null"

@@ -39,6 +39,8 @@ window.SyUserDtl = {
       handleSearchList();
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
@@ -59,6 +61,7 @@ window.SyUserDtl = {
       email:   yup.string().required('이메일을 입력해주세요.'),
     });
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) {
@@ -144,6 +147,8 @@ window.SyUserDtl = {
       }
     };
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { users, uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm,
              addrDetailRef, openKakaoPostcode,
              deptModal, openDeptModal, onDeptSelect, clearDept,
@@ -218,7 +223,7 @@ window.SyUserDtl = {
       </div>
     </div>
 
-    <!-- 주소 영역 -->
+    <!-- ── 주소 영역 ──────────────────────────────────────────────────────── -->
     <div class="form-group">
       <label class="form-label">주소</label>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
@@ -245,7 +250,7 @@ window.SyUserDtl = {
     </div>
   </div>
 
-  <!-- 적용 역할 목록 -->
+  <!-- ── 적용 역할 목록 ─────────────────────────────────────────────────────── -->
   <div v-if="!cfIsNew" class="card">
     <div class="toolbar" style="margin-bottom:12px;">
       <span class="list-title">
@@ -292,7 +297,7 @@ window.SyUserDtl = {
     </table>
   </div>
 
-  <!-- 부서 선택 팝업 -->
+  <!-- ── 부서 선택 팝업 ─────────────────────────────────────────────────────── -->
   <dept-tree-modal
     v-if="deptModal && deptModal.show" :exclude-id="null"
     @select="onDeptSelect"

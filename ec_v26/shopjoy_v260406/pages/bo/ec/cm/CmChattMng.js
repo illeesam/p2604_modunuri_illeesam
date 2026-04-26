@@ -32,6 +32,8 @@ const isAppReady = computed(() => {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const searchParam = reactive({ kw: '', dateRange: '', dateStart: '', dateEnd: '', status: '' });
@@ -62,6 +64,7 @@ const isAppReady = computed(() => {
       }
     };
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -115,6 +118,8 @@ const isAppReady = computed(() => {
     };
 
     const exportExcel = () => window.boCmUtil.exportCsv(chatts, [{label:'채팅ID',key:'chattId'},{label:'회원명',key:'userNm'},{label:'상태',key:'status'},{label:'마지막메시지',key:'lastMessage'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return {
       chatts, uiState, codes, searchParam, searchParamOrg,
@@ -191,7 +196,7 @@ const isAppReady = computed(() => {
     </div>
   </div>
 
-  <!-- 하단 상세: ChattDtl 임베드 -->
+  <!-- ── 하단 상세: ChattDtl 임베드 ──────────────────────────────────────────── -->
   <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

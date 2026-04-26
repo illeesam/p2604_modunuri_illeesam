@@ -39,6 +39,8 @@ window.SyBatchDtl = {
       handleSearchList();
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
@@ -54,6 +56,7 @@ window.SyBatchDtl = {
       cron: yup.string().required('Cron 표현식을 입력해주세요.'),
     });
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) {
@@ -102,6 +105,8 @@ window.SyBatchDtl = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return { batches, uiState, codes, cfIsNew, form, errors, handleSave, CRON_PRESETS, cfSiteNm };
   },

@@ -25,6 +25,8 @@ window.MbMemberDtl = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -76,6 +78,8 @@ window.MbMemberDtl = {
         _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
       }
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
       await handleSearchDetail();
@@ -111,14 +115,18 @@ window.MbMemberDtl = {
     };
 
     const memoEl = ref(null);
+
     watch(memoEl, (el) => { uiState.memoEl = el; });
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { cfIsNew, form, errors, handleSave, memoEl, codes, uiState };
   },
   template: /* html */`
 <div>
   <div class="page-title">{{ cfIsNew ? '회원 등록' : (viewMode ? '회원 상세' : '회원 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.userId }}</span></div>
   <div class="card">
-    <!-- 기본정보 폼 -->
+    <!-- ── 기본정보 폼 ─────────────────────────────────────────────────────── -->
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">이메일 <span v-if="!viewMode" class="req">*</span></label>
@@ -172,7 +180,7 @@ window.MbMemberDtl = {
     </div>
   </div>
 
-  <!-- 연관 이력 -->
+  <!-- ── 연관 이력 ────────────────────────────────────────────────────────── -->
   <div v-if="!cfIsNew" style="margin-top:20px;">
     <mb-member-hist
       :navigate="navigate" :show-ref-modal="showRefModal"

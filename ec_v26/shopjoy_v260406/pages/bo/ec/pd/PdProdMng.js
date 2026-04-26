@@ -31,6 +31,7 @@ window.PdProdMng = {
       }
     };
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -84,6 +85,8 @@ const isAppReady = computed(() => {
         console.error('[fnLoadCodes]', err);
       }
     };
+
+    // ── watch ────────────────────────────────────────────────────────────────
 
     watch(isAppReady, (newVal) => {
       if (newVal) {
@@ -163,6 +166,9 @@ const isAppReady = computed(() => {
 
 
     const selectedId = computed(() => uiStateDetail.selectedId);
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { uiStateDetail, selectedId, products, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel };
   },
   template: /* html */`
@@ -244,14 +250,14 @@ const isAppReady = computed(() => {
     </div>
   </div>
 
-  <!-- 카테고리 선택 모달 -->
+  <!-- ── 카테고리 선택 모달 ───────────────────────────────────────────────────── -->
   <category-tree-modal
     v-if="catModal && catModal.show"
     :exclude-id="null"
     @select="onCatSelect"
     @close="catModal.show=false" />
 
-  <!-- 하단 상세: ProdDtl 임베드 -->
+  <!-- ── 하단 상세: ProdDtl 임베드 ───────────────────────────────────────────── -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

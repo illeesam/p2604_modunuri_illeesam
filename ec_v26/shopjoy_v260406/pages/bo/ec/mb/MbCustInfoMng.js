@@ -104,6 +104,8 @@
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -133,6 +135,8 @@
         uiState.loading = false;
       }
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
@@ -149,7 +153,9 @@
       /* ── 탭 / 뷰모드 (영속화) ── */
       const histTab  = Vue.ref(window._mbCustInfoState.tab      || 'orders');
       const viewMode2 = Vue.ref(window._mbCustInfoState.viewMode || '3col');
+
       watch(histTab,   v => { window._mbCustInfoState.tab      = v; });
+
       watch(() => uiState.viewMode2, v => { window._mbCustInfoState.viewMode = v; });
       const showTab = (id) => viewMode2.value !== 'tab' || histTab.value === id;
 
@@ -157,6 +163,7 @@
       const clearCustomer = () => { uiState.customer = null; uiState.searchInput = ''; };
 
       /* period 변경 시 custom 초기값 세팅 */
+
       watch(() => searchParam.period, v => {
         if (v === 'custom') {
           const d = new Date(); d.setFullYear(d.getFullYear() - 1);
@@ -240,6 +247,9 @@
       const onSearch = async () => {
         await handleSearchData('DEFAULT');
       };
+
+    // ── return ───────────────────────────────────────────────────────────────
+
   return { custInfos, uiState, SEARCH_MODES, memberModal,
         searchParam, searchParamOrg, PERIOD_OPTS, cfDateFrom, cfDateTo,
         cfCustOrders, cfCustClaims, cfCustDeliveries, cfCustCache, cfCustCacheBalance,
@@ -259,7 +269,7 @@
 
   <!-- ── 검색 바 ── -->
   <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;padding:14px 20px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-    <!-- 모드 세그먼트 -->
+    <!-- ── 모드 세그먼트 ────────────────────────────────────────────────────── -->
     <div style="display:flex;background:#f0f2f5;border-radius:8px;padding:3px;gap:2px;flex-shrink:0;">
       <button v-for="m in SEARCH_MODES" :key="m?.id"
         @click="uiState.searchMode=m.id;uiState.searchInput=''"
@@ -270,7 +280,7 @@
       </button>
     </div>
 
-    <!-- 고객 선택 -->
+    <!-- ── 고객 선택 ──────────────────────────────────────────────────────── -->
     <template v-if="uiState.searchMode==='member'">
       <button @click="openMemberModal"
         style="display:flex;align-items:center;gap:6px;background:#fff;border:1.5px solid #1976d2;color:#1976d2;border-radius:8px;padding:7px 18px;font-size:13px;font-weight:600;cursor:pointer;">
@@ -279,7 +289,7 @@
       <span style="font-size:12px;color:#aaa;">이름 · 이메일 · 전화번호로 검색</span>
     </template>
 
-    <!-- 번호 입력 -->
+    <!-- ── 번호 입력 ──────────────────────────────────────────────────────── -->
     <template v-else>
       <div style="display:flex;align-items:center;gap:0;background:#f8f9fa;border:1.5px solid #ddd;border-radius:8px;overflow:hidden;flex:1;max-width:360px;">
         <input type="text" v-model="uiState.searchInput"
@@ -336,14 +346,14 @@
 
     <!-- ── 1. 고객 프로필 카드 ── -->
     <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);overflow:hidden;">
-      <!-- 상단 컬러 배너 -->
+      <!-- ── 상단 컬러 배너 ─────────────────────────────────────────────────── -->
       <div :style="'height:6px;background:'+(uiState.customer.grade==='VIP'?'linear-gradient(90deg,#9c27b0,#e040fb)':uiState.customer.grade==='우수'?'linear-gradient(90deg,#1976d2,#42a5f5)':'linear-gradient(90deg,#78909c,#b0bec5)')"></div>
       <div style="display:flex;align-items:flex-start;gap:20px;padding:20px 24px;">
-        <!-- 아바타 -->
+        <!-- ── 아바타 ────────────────────────────────────────────────────── -->
         <div :style="'width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;flex-shrink:0;'+(uiState.customer.grade==='VIP'?'background:linear-gradient(135deg,#9c27b0,#e040fb);':uiState.customer.grade==='우수'?'background:linear-gradient(135deg,#1976d2,#42a5f5);':'background:linear-gradient(135deg,#78909c,#b0bec5);')">
           {{ uiState.customer.memberNm ? uiState.customer.memberNm[0] : '' }}
         </div>
-        <!-- 이름/등급/상태 -->
+        <!-- ── 이름/등급/상태 ───────────────────────────────────────────────── -->
         <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
             <span style="font-size:20px;font-weight:700;color:#212121;">{{ uiState.customer.memberNm }}</span>
@@ -357,7 +367,7 @@
             <span style="color:#999;">최근로그인 {{ uiState.customer.lastLogin }}</span>
           </div>
         </div>
-        <!-- 핵심 지표 -->
+        <!-- ── 핵심 지표 ──────────────────────────────────────────────────── -->
         <div style="display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap;">
           <div style="background:#f0f7ff;border:1px solid #bbdefb;border-radius:8px;padding:10px 18px;text-align:center;min-width:88px;">
             <div style="font-size:11px;color:#1976d2;font-weight:600;margin-bottom:2px;">총 주문</div>
@@ -652,7 +662,7 @@
         </div>
       </div>
 
-    </div><!-- /grid -->
+    </div><!-- ── /grid ──────────────────────────────────────────────────────────── -->
   </template>
 
   <!-- ── 고객 선택 모달 ── -->

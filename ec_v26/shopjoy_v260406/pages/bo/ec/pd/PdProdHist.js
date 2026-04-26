@@ -28,7 +28,11 @@ window.PdProdHist = {
         uiState.loading = false;
       }
     };
+
+    // ── watch ────────────────────────────────────────────────────────────────
+
         watch(botTab, v => { window._ecProdHistState.tab = v; });
+
         watch(() => uiState.viewMode2, v => { window._ecProdHistState.viewMode = v; });
 
     const isAppReady = computed(() => {
@@ -51,6 +55,7 @@ window.PdProdHist = {
     const changeHistory = reactive([]);
     const priceHistory  = reactive([]);
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       const p = getProduct.value(props.prodId);
@@ -77,6 +82,9 @@ window.PdProdHist = {
     });
 
     const botTab = Vue.toRef(uiState, 'botTab');
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { products, uiState, stockHistory, statusHistory, changeHistory, priceHistory, cfRelatedOrders, showTab };
   },
   template: /* html */`
@@ -100,7 +108,7 @@ window.PdProdHist = {
   </div>
   <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
-  <!-- 연관 주문 -->
+  <!-- ── 연관 주문 ────────────────────────────────────────────────────────── -->
   <div class="card" v-show="showTab('orders')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ cfRelatedOrders.length }}</span></div>
     <table class="bo-table" v-if="cfRelatedOrders.length">
@@ -119,7 +127,7 @@ window.PdProdHist = {
     <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">연관 주문이 없습니다.</div>
   </div>
 
-  <!-- 재고 이력 -->
+  <!-- ── 재고 이력 ────────────────────────────────────────────────────────── -->
   <div class="card" v-show="showTab('stock')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📦 재고 이력 <span class="tab-count">{{ stockHistory.length }}</span></div>
     <table class="bo-table" v-if="stockHistory.length">
@@ -139,7 +147,7 @@ window.PdProdHist = {
     <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">재고 이력이 없습니다.</div>
   </div>
 
-  <!-- 가격변경이력 -->
+  <!-- ── 가격변경이력 ───────────────────────────────────────────────────────── -->
   <div class="card" v-show="showTab('price')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💰 가격변경이력 <span class="tab-count">{{ priceHistory.length }}</span></div>
     <table class="bo-table" v-if="priceHistory.length">
@@ -157,7 +165,7 @@ window.PdProdHist = {
     <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">가격 변경 이력이 없습니다.</div>
   </div>
 
-  <!-- 상품상태 이력 -->
+  <!-- ── 상품상태 이력 ──────────────────────────────────────────────────────── -->
   <div class="card" v-show="showTab('status')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🏷 상품상태 이력 <span class="tab-count">{{ statusHistory.length }}</span></div>
     <table class="bo-table" v-if="statusHistory.length">
@@ -174,7 +182,7 @@ window.PdProdHist = {
     <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">상태 변경 이력이 없습니다.</div>
   </div>
 
-  <!-- 상품정보 변경이력 -->
+  <!-- ── 상품정보 변경이력 ────────────────────────────────────────────────────── -->
   <div class="card" v-show="showTab('changes')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 상품정보 변경이력 <span class="tab-count">{{ changeHistory.length }}</span></div>
     <table class="bo-table" v-if="changeHistory.length">

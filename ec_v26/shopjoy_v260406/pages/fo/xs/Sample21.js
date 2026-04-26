@@ -20,13 +20,19 @@ window.XsSample21 = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
       }
     });
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { uiState, codes };
   },
   template: `<div style="padding:40px;">pages/fo/xs/Sample21.js</div>`,

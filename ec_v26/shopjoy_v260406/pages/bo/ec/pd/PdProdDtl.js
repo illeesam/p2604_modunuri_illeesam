@@ -32,6 +32,8 @@ window.PdProdDtl = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -66,7 +68,9 @@ window.PdProdDtl = {
     const cfIsNew = computed(() => !props.editId);
     const topTab = ref(uiState.topTab);
     const viewMode2 = ref(uiState.viewMode2);
+
     watch(topTab, v => { uiState.topTab = v; window._pdProdDtlState.tab = v; });
+
     watch(viewMode2, v => { uiState.viewMode2 = v; window._pdProdDtlState.viewMode = v; });
     const showTab = id => viewMode2.value !== 'tab' || topTab.value === id;
 
@@ -488,6 +492,8 @@ window.PdProdDtl = {
       document.addEventListener('mousemove', _divMoveH);
       document.addEventListener('mouseup', _divUpH);
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
       await handleLoadData();
@@ -544,6 +550,9 @@ window.PdProdDtl = {
     const skuFilterStock = Vue.toRef(uiState, 'skuFilterStock');
     const splitPct = Vue.toRef(uiState, 'splitPct');
     const useOpt = Vue.toRef(uiState, 'useOpt');
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { cfIsNew, showTab, topTab, viewMode2, form, errors, handleSave,
       uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
       clearOpt, optGroups, skus, cfTotalStock, generateSkus,
@@ -570,7 +579,7 @@ window.PdProdDtl = {
 <div>
   <div class="page-title">{{ cfIsNew ? '상품 등록' : '상품 수정' }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.prodId }}</span></div>
 
-  <!-- 탭바 -->
+  <!-- ── 탭바 ───────────────────────────────────────────────────────────── -->
   <div class="tab-bar-row">
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:topTab==='info'}"    :disabled="viewMode2!=='tab'" @click="topTab='info'">📋 기본정보</button>
@@ -597,7 +606,7 @@ window.PdProdDtl = {
   <div class="card" v-show="showTab('info')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
 
-    <!-- 상품명 / 상품코드 -->
+    <!-- ── 상품명 / 상품코드 ─────────────────────────────────────────────────── -->
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">상품명 <span class="req">*</span></label>
@@ -610,7 +619,7 @@ window.PdProdDtl = {
       </div>
     </div>
 
-    <!-- 카테고리 / 브랜드 -->
+    <!-- ── 카테고리 / 브랜드 ─────────────────────────────────────────────────── -->
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">카테고리</label>
@@ -641,7 +650,7 @@ window.PdProdDtl = {
       </div>
     </div>
 
-    <!-- 카테고리 피커 모달 -->
+    <!-- ── 카테고리 피커 모달 ─────────────────────────────────────────────────── -->
     <teleport to="body">
       <div v-if="catPickerOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center;" @click.self="catPickerOpen=false">
         <div style="background:#fff;border-radius:12px;width:420px;max-height:520px;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
@@ -666,7 +675,7 @@ window.PdProdDtl = {
       </div>
     </teleport>
 
-    <!-- 업체 / 상품유형 -->
+    <!-- ── 업체 / 상품유형 ──────────────────────────────────────────────────── -->
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">업체</label>
@@ -685,7 +694,7 @@ window.PdProdDtl = {
       </div>
     </div>
 
-    <!-- 담당MD / 배송템플릿 -->
+    <!-- ── 담당MD / 배송템플릿 ───────────────────────────────────────────────── -->
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">담당MD (md_user_id)</label>
@@ -705,22 +714,22 @@ window.PdProdDtl = {
       </div>
     </div>
 
-    <!-- 담당MD 선택 모달 -->
+    <!-- ── 담당MD 선택 모달 ─────────────────────────────────────────────────── -->
     <teleport to="body">
       <div v-if="mdModalOpen"
         style="position:fixed;inset:0;background:rgba(10,20,40,0.45);backdrop-filter:blur(2px);z-index:9000;display:flex;align-items:center;justify-content:center;"
         @click.self="mdModalOpen=false">
         <div class="modal-box" style="width:480px;max-height:560px;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
-          <!-- 헤더 -->
+          <!-- ── 헤더 ───────────────────────────────────────────────────── -->
           <div class="tree-modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;flex-shrink:0;">
             <span style="font-size:15px;font-weight:700;">담당MD 선택</span>
             <button @click="mdModalOpen=false" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;" class="modal-close-btn">✕</button>
           </div>
-          <!-- 검색 -->
+          <!-- ── 검색 ───────────────────────────────────────────────────── -->
           <div style="padding:12px 20px;flex-shrink:0;border-bottom:1px solid #f0f0f0;">
             <input class="form-control" v-model="mdSearch" placeholder="이름 · 부서 · 역할 검색" autofocus style="font-size:13px;" />
           </div>
-          <!-- 목록 -->
+          <!-- ── 목록 ───────────────────────────────────────────────────── -->
           <div style="overflow-y:auto;flex:1;padding:8px 12px;">
             <table class="bo-table" style="font-size:13px;">
               <thead>
@@ -746,7 +755,7 @@ window.PdProdDtl = {
               </tbody>
             </table>
           </div>
-          <!-- 푸터 -->
+          <!-- ── 푸터 ───────────────────────────────────────────────────── -->
           <div style="padding:12px 20px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;">
             <button class="btn btn-secondary btn-sm" @click="mdModalOpen=false">닫기</button>
           </div>
@@ -754,7 +763,7 @@ window.PdProdDtl = {
       </div>
     </teleport>
 
-    <!-- 상태 -->
+    <!-- ── 상태 ─────────────────────────────────────────────────────────── -->
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">상태 (prod_status_cd)</label>
@@ -772,7 +781,7 @@ window.PdProdDtl = {
       </div>
     </div>
 
-    <!-- 판매기간 -->
+    <!-- ── 판매기간 ───────────────────────────────────────────────────────── -->
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">판매 시작일시 <span style="color:#aaa;font-size:11px;font-weight:400;">(NULL=즉시)</span></label>
@@ -784,7 +793,7 @@ window.PdProdDtl = {
       </div>
     </div>
 
-    <!-- 무게 / 사이즈 -->
+    <!-- ── 무게 / 사이즈 ───────────────────────────────────────────────────── -->
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">무게 (kg)</label>
@@ -799,7 +808,7 @@ window.PdProdDtl = {
       </div>
     </div>
 
-    <!-- 체크박스 그룹 -->
+    <!-- ── 체크박스 그룹 ────────────────────────────────────────────────────── -->
     <div style="display:flex;flex-wrap:wrap;gap:20px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:16px;">
       <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
         <input type="checkbox" :checked="form.isNew_==='Y'" @change="form.isNew_=$event.target.checked?'Y':'N'" />신상품
@@ -831,10 +840,10 @@ window.PdProdDtl = {
   <div class="card" v-show="showTab('option')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">⚙ 옵션설정</div>
 
-    <!-- 옵션 사용 토글 + OPT_TYPE 2레벨 트리 선택 -->
+    <!-- ── 옵션 사용 토글 + OPT_TYPE 2레벨 트리 선택 ──────────────────────────────── -->
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;padding:12px 14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;">
 
-      <!-- 옵션 사용 체크박스 -->
+      <!-- ── 옵션 사용 체크박스 ───────────────────────────────────────────────── -->
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;font-weight:600;flex-shrink:0;">
         <input type="checkbox" v-model="useOpt" @change="!useOpt && clearOpt()" style="width:16px;height:16px;" />
         옵션 사용
@@ -844,7 +853,7 @@ window.PdProdDtl = {
       <template v-if="useOpt">
         <span style="font-size:11px;color:#ddd;flex-shrink:0;">│</span>
 
-        <!-- STEP 1: OPT_TYPE 1레벨 (카테고리) 선택 — pd_prod_opt.opt_type_cd 레벨 1 -->
+        <!-- ── STEP 1: OPT_TYPE 1레벨 (카테고리) 선택 — pd_prod_opt.opt_type_cd 레벨 1 ──── -->
         <div style="display:flex;align-items:center;gap:6px;">
           <span style="font-size:12px;color:#555;font-weight:600;flex-shrink:0;">옵션 카테고리</span>
           <select class="form-control" v-model="prodOptCategoryTypeCd"
@@ -855,7 +864,7 @@ window.PdProdDtl = {
           </select>
         </div>
 
-        <!-- STEP 2: OPT_TYPE 2레벨 (1단/2단 유형) — 1레벨 선택 후 활성화 -->
+        <!-- ── STEP 2: OPT_TYPE 2레벨 (1단/2단 유형) — 1레벨 선택 후 활성화 ─────────── -->
         <template v-if="prodOptCategoryTypeCd && optGroups.length>0">
           <span style="font-size:11px;color:#ddd;flex-shrink:0;">│</span>
           <div v-for="(grp, gi) in optGroups" :key="'typeCd-'+grp._id"
@@ -875,17 +884,17 @@ window.PdProdDtl = {
       </template>
     </div>
 
-    <!-- 옵션 미사용 안내 -->
+    <!-- ── 옵션 미사용 안내 ──────────────────────────────────────────────────── -->
     <template v-if="!useOpt">
       <div style="padding:10px 14px;background:#f9f0ff;border-radius:8px;border:1px solid #d3adf7;font-size:12px;color:#531dab;margin-bottom:8px;">
         💡 옵션 미사용 — 재고는 <strong>💰 옵션(가격/재고)</strong> 탭에서 관리합니다.
       </div>
     </template>
 
-    <!-- 옵션 사용 -->
+    <!-- ── 옵션 사용 ──────────────────────────────────────────────────────── -->
     <template v-else>
 
-      <!-- 옵션 차원 헤더 -->
+      <!-- ── 옵션 차원 헤더 ─────────────────────────────────────────────────── -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;">
           옵션 차원 <span style="color:#888;font-weight:400;font-size:11px;">(pd_prod_opt, 최대 2단)</span>
@@ -893,11 +902,11 @@ window.PdProdDtl = {
         <button class="btn btn-sm btn-secondary" @click="addOptGroup" :disabled="optGroups.length>=2">+ 차원 추가</button>
       </div>
 
-      <!-- 차원별 블록 -->
+      <!-- ── 차원별 블록 ───────────────────────────────────────────────────── -->
       <div v-for="(grp, gi) in optGroups" :key="grp?._id"
         style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;margin-bottom:16px;background:#fafafa;">
 
-        <!-- 차원 설정 행 (typeCd는 위 "옵션사용" 행에서 관리) -->
+        <!-- ── 차원 설정 행 (typeCd는 위 "옵션사용" 행에서 관리) ──────────────────────── -->
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
           <span class="badge badge-blue" style="flex-shrink:0;font-size:12px;">{{ grp.level }}단</span>
           <span v-if="grp.typeCd" class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ window.safeArrayUtils.safeFind(cfOptTypeCodes, c=>c.codeValue===grp.typeCd)?.codeLabel||grp.typeCd }}</span>
@@ -909,7 +918,7 @@ window.PdProdDtl = {
           <button class="btn btn-xs btn-danger" @click="removeOptGroup(gi)">삭제</button>
         </div>
 
-        <!-- 옵션 값 테이블 (pd_prod_opt_item) -->
+        <!-- ── 옵션 값 테이블 (pd_prod_opt_item) ────────────────────────────── -->
         <div style="font-size:11px;color:#888;margin-bottom:6px;">
           옵션 값 목록 (pd_prod_opt_item)
           <span v-if="grp.typeCd && getOptValCodes(grp.typeCd).length>0" style="color:#1677ff;margin-left:6px;">
@@ -942,11 +951,11 @@ window.PdProdDtl = {
                 ? 'background:#dbeafe;'
                 : (ii%2===1 ? 'background:#fafafa;' : '')">
 
-              <!-- 햄버거 핸들 -->
+              <!-- ── 햄버거 핸들 ───────────────────────────────────────────── -->
               <td style="padding:2px 2px;text-align:center;cursor:grab;color:#ccc;font-size:14px;user-select:none;letter-spacing:-2px;" title="드래그로 순서 변경">≡</td>
               <td style="padding:2px 4px;text-align:center;color:#bbb;font-size:11px;">{{ ii+1 }}</td>
 
-              <!-- 2단: 상위 옵션값 -->
+              <!-- ── 2단: 상위 옵션값 ───────────────────────────────────────── -->
               <td v-if="grp.level===2 && window.safeArrayUtils.safeFirst(optGroups)?.items.length>0" style="padding:2px 4px;">
                 <select v-model="item.parentOptItemId"
                   style="width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:24px;">
@@ -955,14 +964,14 @@ window.PdProdDtl = {
                 </select>
               </td>
 
-              <!-- 표시명 -->
+              <!-- ── 표시명 ──────────────────────────────────────────────── -->
               <td style="padding:2px 4px;">
                 <input v-model="item.nm" placeholder="예: 블랙"
                   style="width:100%;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;"
                   @blur="generateSkus" />
               </td>
 
-              <!-- 공통코드ID -->
+              <!-- ── 공통코드ID ───────────────────────────────────────────── -->
               <td style="padding:2px 4px;">
                 <select v-model="item.valCodeId"
                   style="width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:24px;"
@@ -972,7 +981,7 @@ window.PdProdDtl = {
                 </select>
               </td>
 
-              <!-- 저장값 -->
+              <!-- ── 저장값 ──────────────────────────────────────────────── -->
               <td style="padding:2px 4px;">
                 <input v-model="item.val"
                   :placeholder="item.valCodeId ? '자동입력' : 'MY_VAL'"
@@ -1017,7 +1026,7 @@ window.PdProdDtl = {
   <div class="card" v-show="showTab('content')" style="margin:0;padding:0;overflow:hidden;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title" style="padding:14px 20px;">📄 상품설명</div>
 
-    <!-- 상단 툴바: 블록 추가 버튼 -->
+    <!-- ── 상단 툴바: 블록 추가 버튼 ────────────────────────────────────────────── -->
     <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafafa;flex-wrap:wrap;">
       <span style="font-size:13px;font-weight:700;color:#333;margin-right:4px;">상품설명 블록</span>
       <button class="btn btn-secondary btn-sm" @click="addContentBlock('file')">+ 첨부 이미지</button>
@@ -1026,17 +1035,17 @@ window.PdProdDtl = {
       <span style="font-size:12px;color:#aaa;margin-left:4px;">{{ contentBlocks.length }}개 블록 · 좌측 ≡ 드래그로 순서 변경</span>
     </div>
 
-    <!-- 스플릿 패널 (편집 좌 + 미리보기 우) -->
+    <!-- ── 스플릿 패널 (편집 좌 + 미리보기 우) ─────────────────────────────────────── -->
     <div ref="contentSplitRef" style="display:flex;height:520px;overflow:hidden;">
 
-      <!-- 좌: 블록 편집 영역 -->
+      <!-- ── 좌: 블록 편집 영역 ──────────────────────────────────────────────── -->
       <div :style="{ width: splitPct + '%', overflowY: 'auto', padding: '12px 14px', flexShrink: 0 }">
         <div v-if="contentBlocks.length === 0"
           style="border:2px dashed #e0e0e0;border-radius:10px;padding:40px 20px;text-align:center;color:#bbb;font-size:13px;">
           위 버튼으로 블록을 추가해주세요.
         </div>
 
-        <!-- 블록 리스트 -->
+        <!-- ── 블록 리스트 ─────────────────────────────────────────────────── -->
         <div v-for="(block, bi) in contentBlocks" :key="block?._id"
           draggable="true"
           @dragstart="onBlockDragStart(bi)"
@@ -1046,9 +1055,9 @@ window.PdProdDtl = {
           style="border:1px solid #e8e8e8;border-radius:10px;margin-bottom:10px;background:#fff;transition:border-color 0.15s,background 0.15s;overflow:hidden;"
           :style="dragoverBlockIdx===bi && dragBlockIdx!==bi ? 'border-color:#1677ff;background:#e6f4ff;' : ''">
 
-          <!-- 블록 헤더 -->
+          <!-- ── 블록 헤더 ────────────────────────────────────────────────── -->
           <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f9f9f9;border-bottom:1px solid #f0f0f0;">
-            <!-- 햄버거 핸들 -->
+            <!-- ── 햄버거 핸들 ─────────────────────────────────────────────── -->
             <span style="cursor:grab;color:#ccc;font-size:16px;user-select:none;letter-spacing:-2px;flex-shrink:0;" title="드래그로 순서 변경">≡</span>
             <span class="badge" :class="block.type==='file'?'badge-green':block.type==='url'?'badge-blue':'badge-orange'" style="font-size:11px;flex-shrink:0;">
               {{ block.type==='file' ? '📎 첨부' : block.type==='url' ? '🔗 URL' : '✏ HTML' }}
@@ -1057,7 +1066,7 @@ window.PdProdDtl = {
             <button class="btn btn-xs btn-danger" @click="removeContentBlock(bi)" title="삭제">✕</button>
           </div>
 
-          <!-- 첨부 방식 -->
+          <!-- ── 첨부 방식 ────────────────────────────────────────────────── -->
           <div v-if="block.type==='file'" style="padding:12px;">
             <div v-if="block.content" style="margin-bottom:8px;">
               <img :src="block.content" style="max-width:100%;max-height:200px;border-radius:6px;border:1px solid #e0e0e0;" />
@@ -1070,7 +1079,7 @@ window.PdProdDtl = {
             <button v-if="block.content" class="btn btn-xs btn-danger" @click="block.content='';block.fileName=''" style="margin-left:6px;">삭제</button>
           </div>
 
-          <!-- URL 방식 -->
+          <!-- ── URL 방식 ───────────────────────────────────────────────── -->
           <div v-else-if="block.type==='url'" style="padding:12px;">
             <input class="form-control" v-model="block.content" placeholder="이미지 URL (https://...)" style="font-size:13px;margin-bottom:8px;" />
             <div v-if="block.content" style="margin-top:4px;">
@@ -1079,14 +1088,14 @@ window.PdProdDtl = {
             </div>
           </div>
 
-          <!-- HTML 에디터 방식 -->
+          <!-- ── HTML 에디터 방식 ──────────────────────────────────────────── -->
           <div v-else-if="block.type==='html'" style="padding:12px;">
             <div :id="'quill-block-'+block._id" style="min-height:180px;background:#fff;"></div>
           </div>
         </div>
       </div>
 
-      <!-- 드래그 구분선 -->
+      <!-- ── 드래그 구분선 ──────────────────────────────────────────────────── -->
       <div @mousedown="onDividerMousedown"
         style="width:5px;flex-shrink:0;background:#e8e8e8;cursor:col-resize;transition:background 0.15s;position:relative;z-index:1;"
         :style="isDraggingDivider ? 'background:#1677ff;' : ''"
@@ -1094,16 +1103,16 @@ window.PdProdDtl = {
         <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#ccc;font-size:11px;writing-mode:vertical-rl;user-select:none;">⋮</div>
       </div>
 
-      <!-- 우: 미리보기 영역 -->
+      <!-- ── 우: 미리보기 영역 ───────────────────────────────────────────────── -->
       <div :style="{ width: (100 - splitPct) + '%', flexShrink: 0, display: 'flex', flexDirection: 'column', borderLeft: '1px solid #f0f0f0' }">
-        <!-- 디바이스 탭 -->
+        <!-- ── 디바이스 탭 ─────────────────────────────────────────────────── -->
         <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #f0f0f0;background:#fafafa;flex-shrink:0;">
           <span style="font-size:11px;color:#aaa;margin-right:4px;">미리보기</span>
           <button class="btn btn-xs" :class="previewDevice==='pc'?'btn-primary':'btn-secondary'" @click="previewDevice='pc'" style="font-size:11px;padding:2px 8px;">🖥 PC</button>
           <button class="btn btn-xs" :class="previewDevice==='tablet'?'btn-primary':'btn-secondary'" @click="previewDevice='tablet'" style="font-size:11px;padding:2px 8px;">📱 태블릿</button>
           <button class="btn btn-xs" :class="previewDevice==='mobile'?'btn-primary':'btn-secondary'" @click="previewDevice='mobile'" style="font-size:11px;padding:2px 8px;">📲 모바일</button>
         </div>
-        <!-- 미리보기 뷰 -->
+        <!-- ── 미리보기 뷰 ─────────────────────────────────────────────────── -->
         <div style="flex:1;overflow-y:auto;padding:12px;background:#f5f5f5;display:flex;justify-content:center;">
           <div :style="{
             width: previewDevice==='pc' ? '100%' : previewDevice==='tablet' ? '768px' : '375px',
@@ -1141,7 +1150,7 @@ window.PdProdDtl = {
   <div class="card" v-show="showTab('detail')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 상세설정</div>
 
-    <!-- 홍보문구 -->
+    <!-- ── 홍보문구 ───────────────────────────────────────────────────────── -->
     <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">홍보문구 (advrt_stmt)</div>
     <div class="form-group">
       <input class="form-control" v-model="form.advrtStmt" placeholder="예: 이번 주 한정 20% 할인!" maxlength="500" />
@@ -1158,7 +1167,7 @@ window.PdProdDtl = {
       </div>
     </div>
 
-    <!-- 구매 제한 -->
+    <!-- ── 구매 제한 ──────────────────────────────────────────────────────── -->
     <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">
       구매 제한 <span style="color:#aaa;font-size:11px;font-weight:400;">(NULL = 무제한)</span>
     </div>
@@ -1183,7 +1192,7 @@ window.PdProdDtl = {
       </div>
     </div>
 
-    <!-- 혜택 적용 여부 -->
+    <!-- ── 혜택 적용 여부 ───────────────────────────────────────────────────── -->
     <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">혜택 적용 여부</div>
     <div style="display:flex;gap:24px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;flex-wrap:wrap;">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
@@ -1229,23 +1238,23 @@ window.PdProdDtl = {
       style="display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid #e8e8e8;border-radius:10px;margin-bottom:10px;background:#fff;transition:border-color 0.15s,background 0.15s;"
       :style="img.isMain ? 'border-color:#e8587a;background:#fff8f9;' : (dragoverImgIdx===idx && dragImgIdx!==idx ? 'border-color:#1677ff;background:#e6f4ff;' : '')">
 
-      <!-- 드래그 핸들 -->
+      <!-- ── 드래그 핸들 ───────────────────────────────────────────────────── -->
       <div style="flex-shrink:0;display:flex;align-items:center;justify-content:center;width:20px;height:90px;cursor:grab;color:#ccc;font-size:15px;user-select:none;letter-spacing:-2px;" title="드래그로 순서 변경">⋮⋮</div>
 
-      <!-- 썸네일 -->
+      <!-- ── 썸네일 ──────────────────────────────────────────────────────── -->
       <div style="flex-shrink:0;width:90px;height:90px;border-radius:8px;overflow:hidden;background:#f5f5f5;border:1px solid #e0e0e0;display:flex;align-items:center;justify-content:center;">
         <img v-if="img.previewUrl" :src="img.previewUrl" style="width:100%;height:100%;object-fit:cover;" />
         <span v-else style="font-size:11px;color:#bbb;text-align:center;">미리보기 없음</span>
       </div>
 
-      <!-- 입력 영역 -->
+      <!-- ── 입력 영역 ────────────────────────────────────────────────────── -->
       <div style="flex:1;min-width:0;">
         <div v-if="!img.previewUrl||img.previewUrl.startsWith('http')" class="form-group" style="margin-bottom:8px;">
           <label class="form-label" style="font-size:11px;">이미지 URL</label>
           <input class="form-control" v-model="img.previewUrl" placeholder="https://..." style="font-size:12px;" />
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <!-- opt_item_id_1: 옵션 1단 select -->
+          <!-- ── opt_item_id_1: 옵션 1단 select ──────────────────────────── -->
           <div class="form-group" style="flex:1;min-width:140px;margin-bottom:4px;">
             <label class="form-label" style="font-size:11px;">opt_item_id_1 <span style="color:#aaa;">(NULL=공통)</span></label>
             <select class="form-control" v-model="img.optItemId1" style="font-size:12px;" @change="img.optItemId2=''">
@@ -1254,7 +1263,7 @@ window.PdProdDtl = {
               <option v-for="item in (window.safeArrayUtils.safeGet(optGroups, 0)?.items||[])" :key="item?._id" :value="item.val||String(item._id)">{{ item.nm + (item.val ? ' (' + item.val + ')' : '') }}</option>
             </select>
           </div>
-          <!-- opt_item_id_2: 옵션 2단 select (1단 선택 후 연동) -->
+          <!-- ── opt_item_id_2: 옵션 2단 select (1단 선택 후 연동) ─────────────── -->
           <div class="form-group" style="flex:1;min-width:140px;margin-bottom:4px;">
             <label class="form-label" style="font-size:11px;">opt_item_id_2 <span style="color:#aaa;">(NULL=옵션1 공통)</span></label>
             <select class="form-control" v-model="img.optItemId2" style="font-size:12px;" :disabled="!img.optItemId1&&optGroups.length<2">
@@ -1266,7 +1275,7 @@ window.PdProdDtl = {
         </div>
       </div>
 
-      <!-- 우측 버튼 -->
+      <!-- ── 우측 버튼 ────────────────────────────────────────────────────── -->
       <div style="flex-shrink:0;display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
         <button v-if="!img.isMain" class="btn btn-sm btn-secondary" @click="setMain(img.id)" style="font-size:11px;">대표 설정</button>
         <span v-else style="font-size:11px;font-weight:700;color:#e8587a;padding:4px 8px;background:#fde8ee;border-radius:4px;">★ 대표</span>
@@ -1389,22 +1398,22 @@ window.PdProdDtl = {
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
 
-    <!-- 상품 추가 피커 모달 (연관상품/코드상품 공용) -->
+    <!-- ── 상품 추가 피커 모달 (연관상품/코드상품 공용) ─────────────────────────────────── -->
     <teleport to="body">
       <div v-if="prodPickerOpen"
         style="position:fixed;inset:0;background:rgba(10,20,40,0.45);backdrop-filter:blur(2px);z-index:9000;display:flex;align-items:center;justify-content:center;"
         @click.self="prodPickerOpen=''">
         <div class="modal-box" style="width:580px;max-height:580px;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
-          <!-- 헤더 -->
+          <!-- ── 헤더 ───────────────────────────────────────────────────── -->
           <div class="tree-modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;flex-shrink:0;">
             <span style="font-size:15px;font-weight:700;">{{ prodPickerOpen==='rel' ? '연관상품' : '코디상품' }} 추가</span>
             <button @click="prodPickerOpen=''" class="modal-close-btn" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;">✕</button>
           </div>
-          <!-- 검색 -->
+          <!-- ── 검색 ───────────────────────────────────────────────────── -->
           <div style="padding:12px 20px;flex-shrink:0;border-bottom:1px solid #f0f0f0;">
             <input class="form-control" v-model="prodPickerSearch" placeholder="상품명 · ID · 카테고리 검색" style="font-size:13px;" />
           </div>
-          <!-- 목록 -->
+          <!-- ── 목록 ───────────────────────────────────────────────────── -->
           <div style="overflow-y:auto;flex:1;padding:8px 12px;">
             <table class="bo-table" style="font-size:12px;">
               <thead>
@@ -1429,7 +1438,7 @@ window.PdProdDtl = {
               </tbody>
             </table>
           </div>
-          <!-- 푸터 -->
+          <!-- ── 푸터 ───────────────────────────────────────────────────── -->
           <div style="padding:12px 20px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;">
             <button class="btn btn-secondary btn-sm" @click="prodPickerOpen=''">닫기</button>
           </div>
@@ -1446,16 +1455,16 @@ window.PdProdDtl = {
 
     <!-- ─── 섹션1: SKU별 가격·재고 (옵션 사용 시) ─── -->
     <template v-if="useOpt">
-      <!-- 헤더 행 -->
+      <!-- ── 헤더 행 ─────────────────────────────────────────────────────── -->
       <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;flex-shrink:0;">
           SKU별 가격·재고 <span style="color:#888;font-weight:400;font-size:11px;">(pd_prod_sku)</span>
           <span class="badge badge-blue" style="margin-left:6px;">{{ window.safeArrayUtils.safeFilter(cfSkusFiltered, s=>s.useYn==='Y').length }}개 활성</span>
           <span v-if="cfSkusFiltered.length < skus.length" class="badge badge-orange" style="margin-left:4px;font-size:10px;">필터 {{ cfSkusFiltered.length }}/{{ skus.length }}</span>
         </div>
-        <!-- 필터 영역 -->
+        <!-- ── 필터 영역 ──────────────────────────────────────────────────── -->
         <div style="display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end;flex-wrap:wrap;">
-          <!-- 1단 필터 -->
+          <!-- ── 1단 필터 ────────────────────────────────────────────────── -->
           <div style="display:flex;align-items:center;gap:4px;">
             <span class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ window.safeArrayUtils.safeGet(optGroups, 0)?.grpNm||'1단' }}</span>
             <select v-model="skuFilter1" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;"
@@ -1464,7 +1473,7 @@ window.PdProdDtl = {
               <option v-for="v in cfSkuFilter1Options" :key="Math.random()" :value="v">{{ v }}</option>
             </select>
           </div>
-          <!-- 2단 필터 (2단 옵션 있을 때만) -->
+          <!-- ── 2단 필터 (2단 옵션 있을 때만) ──────────────────────────────────── -->
           <div v-if="optGroups.length>1" style="display:flex;align-items:center;gap:4px;">
             <span class="badge badge-blue" style="font-size:11px;flex-shrink:0;">{{ optGroups[1]?.grpNm||'2단' }}</span>
             <select v-model="skuFilter2" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;">
@@ -1472,7 +1481,7 @@ window.PdProdDtl = {
               <option v-for="v in cfSkuFilter2Options" :key="Math.random()" :value="v">{{ v }}</option>
             </select>
           </div>
-          <!-- 재고 필터 -->
+          <!-- ── 재고 필터 ────────────────────────────────────────────────── -->
           <div style="display:flex;align-items:center;gap:4px;">
             <span style="font-size:11px;color:#555;flex-shrink:0;">재고</span>
             <select v-model="skuFilterStock" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;">
@@ -1481,7 +1490,7 @@ window.PdProdDtl = {
               <option value="out">품절(0)</option>
             </select>
           </div>
-          <!-- 필터 초기화 -->
+          <!-- ── 필터 초기화 ───────────────────────────────────────────────── -->
           <button v-if="skuFilter1||skuFilter2||skuFilterStock" class="btn btn-xs btn-secondary"
             @click="skuFilter1='';skuFilter2='';skuFilterStock=''">✕ 초기화</button>
           <span style="font-size:12px;color:#555;margin-left:4px;">총 재고: <strong>{{ cfTotalStock }}</strong>개</span>
@@ -1602,7 +1611,7 @@ window.PdProdDtl = {
       </div>
     </div>
 
-    <!-- 가격 요약 카드 -->
+    <!-- ── 가격 요약 카드 ───────────────────────────────────────────────────── -->
     <div style="padding:16px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;margin-bottom:16px;">
       <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:12px;">가격 요약</div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center;">
@@ -1630,7 +1639,7 @@ window.PdProdDtl = {
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
 
-    <!-- 판매계획 -->
+    <!-- ── 판매계획 ───────────────────────────────────────────────────────── -->
     <div style="margin-top:24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;">판매계획 <span style="font-size:12px;font-weight:400;color:#888;">{{ cfPlanVisible.length }}건</span></div>
@@ -1690,9 +1699,9 @@ window.PdProdDtl = {
     </div>
   </div>
 
-  </div><!-- /dtl-tab-grid -->
+  </div><!-- ── /dtl-tab-grid ──────────────────────────────────────────────────── -->
 
-  <!-- 이력 -->
+  <!-- ── 이력 ───────────────────────────────────────────────────────────── -->
   <div v-if="!cfIsNew" style="margin-top:20px;">
     <pd-prod-hist :prod-id="editId" :navigate="navigate" :show-ref-modal="showRefModal" />
   </div>

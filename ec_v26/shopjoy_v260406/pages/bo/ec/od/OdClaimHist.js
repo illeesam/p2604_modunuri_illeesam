@@ -19,6 +19,8 @@ window.OdClaimHist = {
       uiState.isPageCodeLoad = true;
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
         watch(botTab, v => { window._odClaimHistState.tab = v; });
@@ -45,6 +47,7 @@ window.OdClaimHist = {
 
         const relatedDliv  = ref(null);
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       const c = getClaim.value(props.claimId);
@@ -93,6 +96,9 @@ window.OdClaimHist = {
 
     const botTab = Vue.toRef(uiState, 'botTab');
     const relatedOrder = Vue.toRef(uiState, 'relatedOrder');
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { botTab, claimItems, addClaimItem, removeClaimItem, processForm, handleSaveProcess, cfStatusOptions, relatedOrder, relatedDliv, viewMode2, showTab };
   },
   template: /* html */`
@@ -107,7 +113,7 @@ window.OdClaimHist = {
     </div>
   <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
-  <!-- 클레임 항목 -->
+  <!-- ── 클레임 항목 ───────────────────────────────────────────────────────── -->
   <div class="card" v-show="showTab('items')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">↩ 클레임 항목 <span class="tab-count">{{ claimItems.length }}</span></div>
     <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
@@ -185,7 +191,7 @@ window.OdClaimHist = {
     <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">클레임 항목이 없습니다.</div>
   </div>
 
-  <!-- 처리 정보 -->
+  <!-- ── 처리 정보 ────────────────────────────────────────────────────────── -->
   <div class="card" v-show="showTab('process')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">⚙ 처리 정보</div>
     <div class="form-row">
@@ -209,7 +215,7 @@ window.OdClaimHist = {
     </div>
   </div>
 
-  <!-- 연관 주문 -->
+  <!-- ── 연관 주문 ────────────────────────────────────────────────────────── -->
   <div class="card" v-show="showTab('order')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ relatedOrder ? 1 : 0 }}</span></div>
     <template v-if="relatedOrder">

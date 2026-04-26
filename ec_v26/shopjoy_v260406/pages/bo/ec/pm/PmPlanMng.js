@@ -28,6 +28,8 @@ window.PmPlanMng = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -56,6 +58,8 @@ window.PmPlanMng = {
         uiState.loading = false;
       }
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
@@ -148,6 +152,9 @@ const CATEGORIES = [
     const exportExcel = () => window.boCmUtil.exportCsv(plans, [{label:'ID',key:'planId'},{label:'기획전명',key:'planNm'},{label:'카테고리',key:'category'},{label:'테마',key:'theme'},{label:'상품수',key:'productCount'},{label:'상태',key:'status'},{label:'조회수',key:'viewCount'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '기획전목록.csv');
 
     const viewMode = Vue.toRef(uiState, 'viewMode');
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), plans, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, CATEGORIES, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
@@ -179,7 +186,7 @@ const CATEGORIES = [
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <!-- 리스트 뷰 -->
+    <!-- ── 리스트 뷰 ──────────────────────────────────────────────────────── -->
     <table class="bo-table" v-if="viewMode==='list'">
       <thead><tr><th>ID</th><th>기획전명</th><th>카테고리</th><th>테마</th><th>상품수</th><th>상태</th><th>조회수</th><th>기간</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
@@ -204,13 +211,13 @@ const CATEGORIES = [
       </tbody>
     </table>
 
-    <!-- 카드 뷰 -->
+    <!-- ── 카드 뷰 ───────────────────────────────────────────────────────── -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="plans.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
       <div v-for="p in plans" :key="p?.planId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="selectedId===p.planId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleLoadDetail(p.planId)">
-        <!-- 배너 이미지 -->
+        <!-- ── 배너 이미지 ─────────────────────────────────────────────────── -->
         <div v-if="p.bannerImage" style="padding:12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;" v-html="p.bannerImage"></div>
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">기획전 #{{ p.planId }}</div>
@@ -250,7 +257,7 @@ const CATEGORIES = [
     </div>
   </div>
 
-  <!-- 하단 상세: PlanDtl 임베드 -->
+  <!-- ── 하단 상세: PlanDtl 임베드 ───────────────────────────────────────────── -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

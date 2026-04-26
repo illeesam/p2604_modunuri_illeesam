@@ -27,6 +27,8 @@ window.Prod02List = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -175,6 +177,7 @@ window.Prod02List = {
     window.addEventListener('resize', onResize);
 
     /* ── 필터 변경 시 페이지 리셋 ── */
+
     watch([
       () => uiState.searchText,
       () => uiState.priceMin,
@@ -212,11 +215,15 @@ window.Prod02List = {
       await handleLoadProducts();
       setupObserver();
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     onBeforeUnmount(() => {
       if (observer) observer.disconnect();
       window.removeEventListener('resize', onResize);
     });
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return { pager,
       uiState,
@@ -236,14 +243,14 @@ window.Prod02List = {
   template: /* html */ `
 <div class="page-wrap">
 
-  <!-- Site 02 Edition Ribbon -->
+  <!-- ── Site 02 Edition Ribbon ───────────────────────────────────────── -->
   <div style="background:linear-gradient(135deg,#2e7d6b 0%,#4a9b7e 50%,#5b9279 100%);color:#fff;padding:10px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;">
     <span style="letter-spacing:2.5px;padding:2px 8px;border:1px solid rgba(255,255,255,0.4);">MINT</span>
     <span>🌿 세이지 그린 큐레이션 — 지속 가능한 소재</span>
     <span style="margin-left:auto;opacity:0.85;">SITE 02</span>
   </div>
 
-  <!-- 페이지 타이틀 배너 -->
+  <!-- ── 페이지 타이틀 배너 ───────────────────────────────────────────────────── -->
   <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-2.jpg" alt="상품목록"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
@@ -309,7 +316,7 @@ window.Prod02List = {
   <div v-show="uiState.filterOpen"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:clamp(12px,2vw,18px);margin-bottom:20px;">
 
-    <!-- 가격 구간 -->
+    <!-- ── 가격 구간 ──────────────────────────────────────────────────────── -->
     <div style="margin-bottom:16px;">
       <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.05em;">💰 판매가 구간</div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -339,7 +346,7 @@ window.Prod02List = {
       </div>
     </div>
 
-    <!-- 색상 -->
+    <!-- ── 색상 ─────────────────────────────────────────────────────────── -->
     <div style="margin-bottom:16px;">
       <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.05em;">🎨 색상 <span style="font-weight:400;font-size:0.72rem;">(복수선택)</span></div>
       <div style="display:flex;flex-wrap:wrap;gap:8px;">
@@ -356,7 +363,7 @@ window.Prod02List = {
       </div>
     </div>
 
-    <!-- 사이즈 -->
+    <!-- ── 사이즈 ────────────────────────────────────────────────────────── -->
     <div style="margin-bottom:12px;">
       <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.05em;">📏 사이즈 <span style="font-weight:400;font-size:0.72rem;">(복수선택)</span></div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;">
@@ -371,7 +378,7 @@ window.Prod02List = {
       </div>
     </div>
 
-    <!-- 필터 초기화 -->
+    <!-- ── 필터 초기화 ─────────────────────────────────────────────────────── -->
     <div style="display:flex;justify-content:flex-end;">
       <button v-if="cfHasFilter" @click="clearFilters"
         style="padding:6px 16px;border:1.5px solid #ef4444;border-radius:8px;background:transparent;color:#ef4444;cursor:pointer;font-size:0.8rem;font-weight:600;transition:all 0.15s;">
@@ -380,7 +387,7 @@ window.Prod02List = {
     </div>
   </div>
 
-  <!-- 결과 요약 -->
+  <!-- ── 결과 요약 ────────────────────────────────────────────────────────── -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
     <div style="font-size:0.85rem;color:var(--text-secondary);">
       총 <strong style="color:var(--text-primary);">{{ cfFilteredProducts.length }}</strong>개 상품
@@ -409,7 +416,7 @@ window.Prod02List = {
     <div v-for="p in (uiState.isMobile ? cfMobileProducts : cfPagedProducts)" :key="p.productId"
       class="product-card" style="cursor:pointer;" @click="selectProduct(p)">
 
-      <!-- 썸네일 -->
+      <!-- ── 썸네일 ──────────────────────────────────────────────────────── -->
       <div style="height:220px;overflow:hidden;background:#f5f0eb;position:relative;display:flex;align-items:center;justify-content:center;">
         <img v-if="p.image" :src="p.image" :alt="p.prodNm" style="width:100%;height:100%;object-fit:cover;transition:transform .3s;"
           @mouseenter="$event.target.style.transform='scale(1.05)'"
@@ -422,7 +429,7 @@ window.Prod02List = {
           style="position:absolute;top:12px;right:12px;background:#ef4444;color:#fff;font-size:0.7rem;font-weight:800;padding:3px 7px;border-radius:10px;">
           {{ Math.round((1-p.priceNum/p.originalPrice)*100) }}%
         </span>
-        <!-- 좋아요 버튼 -->
+        <!-- ── 좋아요 버튼 ─────────────────────────────────────────────────── -->
         <button v-if="toggleLike" @click.stop="toggleLike(p.productId)"
           style="position:absolute;bottom:10px;right:10px;width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;"
           title="위시리스트">
@@ -434,16 +441,16 @@ window.Prod02List = {
       </div>
 
       <div style="padding:16px;">
-        <!-- 상품명 + 카테고리 -->
+        <!-- ── 상품명 + 카테고리 ─────────────────────────────────────────────── -->
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:6px;">
           <span style="font-weight:700;color:var(--text-primary);font-size:0.92rem;flex:1;line-height:1.4;">{{ p.prodNm }}</span>
           <span class="badge badge-cat" style="flex-shrink:0;margin-top:2px;">{{ fnCategoryLabel(p) }}</span>
         </div>
 
-        <!-- 설명 -->
+        <!-- ── 설명 ─────────────────────────────────────────────────────── -->
         <p style="font-size:0.8rem;color:var(--text-secondary);line-height:1.5;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ p.desc }}</p>
 
-        <!-- 색상 스와치 -->
+        <!-- ── 색상 스와치 ─────────────────────────────────────────────────── -->
         <div style="display:flex;align-items:center;gap:5px;margin-bottom:8px;flex-wrap:wrap;">
           <div v-for="c in (p.opt1s||[]).slice(0,6)" :key="c.name"
             :style="{ width:'16px', height:'16px', borderRadius:'50%', background:c.hex, border:'1.5px solid rgba(0,0,0,0.12)', flexShrink:0 }"
@@ -451,14 +458,14 @@ window.Prod02List = {
           <span v-if="(p.opt1s||[]).length>6" style="font-size:0.68rem;color:var(--text-muted);">+{{ (p.opt1s||[]).length-6 }}</span>
         </div>
 
-        <!-- 사이즈 -->
+        <!-- ── 사이즈 ────────────────────────────────────────────────────── -->
         <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;">
           <span v-for="s in (p.opt2s||[]).slice(0,5)" :key="s"
             style="font-size:0.68rem;padding:2px 5px;border-radius:4px;border:1px solid var(--border);color:var(--text-muted);">{{ s }}</span>
           <span v-if="(p.opt2s||[]).length>5" style="font-size:0.68rem;color:var(--text-muted);">+{{ (p.opt2s||[]).length-5 }}</span>
         </div>
 
-        <!-- 가격 영역 -->
+        <!-- ── 가격 영역 ──────────────────────────────────────────────────── -->
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
           <span style="font-size:0.95rem;font-weight:800;color:var(--blue);">{{ p.price }}</span>
           <template v-if="p.originalPrice">
@@ -471,7 +478,7 @@ window.Prod02List = {
     </div>
   </div>
 
-  <!-- 결과 없음 -->
+  <!-- ── 결과 없음 ────────────────────────────────────────────────────────── -->
   <div v-if="!uiState.loading && cfFilteredProducts.length===0"
     style="text-align:center;padding:60px 0;color:var(--text-muted);">
     <div style="font-size:3rem;margin-bottom:12px;">🔍</div>

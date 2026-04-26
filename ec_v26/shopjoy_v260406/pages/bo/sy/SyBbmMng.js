@@ -41,6 +41,8 @@ window.SyBbmMng = {
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     /* _expand3: 기본 3레벨 펼침 */
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -66,6 +68,8 @@ window.SyBbmMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
+
+    // ── watch ────────────────────────────────────────────────────────────────
 
     watch(isAppReady, (newVal) => {
       if (newVal) {
@@ -139,6 +143,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     };
     const exportExcel = () => window.boCmUtil.exportCsv(bbms, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { bbms, uiState, codes, cfSiteNm, searchParam, pager, cfPageNums, fnTypeBadge, fnYnBadge, fnCommentBadge, fnAttachBadge, fnContentBadge, fnScopeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
@@ -159,7 +165,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   </div>
 
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
-    <!-- 좌: 표시경로 트리 -->
+    <!-- ── 좌: 표시경로 트리 ─────────────────────────────────────────────────── -->
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
       <div style="display:flex;gap:4px;margin-bottom:8px;">
@@ -172,7 +178,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       </div>
     </div>
 
-    <!-- 우: 목록 + 상세 -->
+    <!-- ── 우: 목록 + 상세 ─────────────────────────────────────────────────── -->
     <div>
       <div class="card">
         <div class="toolbar">

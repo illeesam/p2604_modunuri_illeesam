@@ -54,6 +54,9 @@ window.SyBizUserMng = {
         const wantRoot = CAT_ROOT_MAP[uiState.treeRoleCat];
         kids = kids.filter(k => k._raw && k._raw.roleCode === wantRoot);
       }
+
+    // ── return ───────────────────────────────────────────────────────────────
+
       return { pathId: null, path: null, name: '전체', pathLabel: '전체', children: kids };
     });
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
@@ -73,6 +76,8 @@ window.SyBizUserMng = {
         vendors.splice(0, vendors.length, ...list);
       } catch(e) { console.warn('[SyBizUserMng] vendor load failed', e); }
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleLoadData();
@@ -96,6 +101,8 @@ window.SyBizUserMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
+
+    // ── watch ────────────────────────────────────────────────────────────────
 
     watch(isAppReady, (newVal) => {
       if (newVal) {
@@ -285,6 +292,9 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         .map(r => {
           const isAllowedRoot = r.parentId===null && r.roleCode===allowedRootCode;
           const branchAllowed = allowed || isAllowedRoot;
+
+    // ── return ───────────────────────────────────────────────────────────────
+
           return { roleId:r.roleId, roleCode:r.roleCode, roleNm:r.roleNm,
                    isRoot:r.parentId===null, allowed: branchAllowed && r.parentId!==null,
                    children: buildBranch(r.roleId, branchAllowed) };
@@ -373,6 +383,9 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const fnPermBadgeColor = (p) => ({관리:'#f59e0b',쓰기:'#16a34a',읽기:'#2563eb',차단:'#e8587a'}[p]||'#9ca3af');
 
     const searchVendorId = Vue.toRef(uiState, 'searchVendorId');
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return {
       uiState, codes,
       vendorUsers, cfVendorMap, fnVendorNm, fnVendorTypeCd, fnVendorSummary,
@@ -403,7 +416,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 <div>
   <div class="page-title">업체사용자</div>
 
-  <!-- 업체 검색 -->
+  <!-- ── 업체 검색 ────────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="search-bar">
       <span class="search-label">업체</span>
@@ -424,7 +437,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </div>
   </div>
 
-  <!-- 업체 목록 -->
+  <!-- ── 업체 목록 ────────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>업체목록 <span class="list-count">{{ cfVendorList.length }}건</span></span>
@@ -462,7 +475,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </div>
   </div>
 
-  <!-- 역할트리 + 사용자목록 -->
+  <!-- ── 역할트리 + 사용자목록 ─────────────────────────────────────────────────── -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 역할정보</span></div>
@@ -520,7 +533,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         </div>
       </div>
 
-      <!-- 인라인 폼 -->
+      <!-- ── 인라인 폼 ────────────────────────────────────────────────────── -->
       <div v-if="uiState.formMode" class="card" style="margin-top:16px;border:2px solid #e8587a;">
         <div class="toolbar">
           <span class="list-title">
@@ -585,7 +598,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           </div>
         </div>
 
-        <!-- 역할 목록 (수정 모드에서만) -->
+        <!-- ── 역할 목록 (수정 모드에서만) ───────────────────────────────────────── -->
         <div v-if="uiState.formMode==='edit'" style="padding:0 16px 16px;">
           <div class="toolbar" style="margin-bottom:8px;">
             <span class="list-title" style="font-size:13px;">🎭 부여된 역할 <span class="list-count">{{ userRoles.length }}개</span></span>
@@ -614,7 +627,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </div>
   </div>
 
-  <!-- 역할 선택 모달 -->
+  <!-- ── 역할 선택 모달 ─────────────────────────────────────────────────────── -->
   <div v-if="uiState.roleModalOpen" class="modal-overlay" @click.self="closeRoleModal">
     <div style="background:#fff;border-radius:16px;width:min(1000px,95vw);height:min(720px,90vh);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25);">
       <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 22px;background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 60%,#bfdbfe 100%);border-bottom:1px solid #bfdbfe;">
@@ -631,7 +644,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           @mouseout="$event.currentTarget.style.background='transparent';$event.currentTarget.style.color='#6b7280'">✕</span>
       </div>
       <div style="display:grid;grid-template-columns:300px 1fr;flex:1;overflow:hidden;background:#fafbfc;">
-        <!-- 좌: 역할 트리 -->
+        <!-- ── 좌: 역할 트리 ───────────────────────────────────────────────── -->
         <div style="border-right:1px solid #eef0f3;background:#fff;overflow:auto;">
           <div style="position:sticky;top:0;background:#fff;padding:12px 14px 8px;border-bottom:1px solid #f3f4f6;font-size:12px;font-weight:700;color:#374151;">📂 역할 트리</div>
           <div style="padding:6px 8px;">
@@ -662,7 +675,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
             </template>
           </div>
         </div>
-        <!-- 우: 메뉴 접근권한 -->
+        <!-- ── 우: 메뉴 접근권한 ─────────────────────────────────────────────── -->
         <div style="overflow:auto;background:#fff;">
           <div style="position:sticky;top:0;background:#fff;padding:12px 16px 8px;border-bottom:1px solid #f3f4f6;">
             <div style="font-size:12px;font-weight:700;color:#374151;">🔐 메뉴 접근권한

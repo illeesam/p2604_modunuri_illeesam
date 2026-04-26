@@ -33,6 +33,8 @@ window.SyContactMng = {
         uiState.loading = false;
       }
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -55,6 +57,8 @@ window.SyContactMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
+
+    // ── watch ────────────────────────────────────────────────────────────────
 
     watch(isAppReady, (newVal) => {
       if (newVal) {
@@ -126,6 +130,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
 
     const exportExcel = () => window.boCmUtil.exportCsv(contacts, [{label:'ID',key:'inquiryId'},{label:'회원명',key:'userNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'title'},{label:'상태',key:'statusCd'},{label:'등록일',key:'date'}], '문의목록.csv');
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { contacts, uiState, codes, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
@@ -195,7 +201,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
     </div>
   </div>
 
-  <!-- 하단 상세: ContactDtl 임베드 -->
+  <!-- ── 하단 상세: ContactDtl 임베드 ────────────────────────────────────────── -->
   <div v-if="detailModal.show" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

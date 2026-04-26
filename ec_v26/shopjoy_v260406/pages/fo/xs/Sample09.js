@@ -26,6 +26,8 @@ window.XsSample09 = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -68,6 +70,8 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
         return true;
       }).forEach(d => gridRows.push(makeRow(d)));
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       Object.assign(searchParamOrg, searchParam);
@@ -117,6 +121,9 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
     const fnStatusBadge = s => ({ N: 'background:#f0f0f0;color:#666;', I: 'background:#dbeafe;color:#1e40af;', U: 'background:#fef3c7;color:#92400e;', D: 'background:#fee2e2;color:#991b1b;' }[s] || '');
     const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return {
       toast, searchKw, searchCategory, searchStatus, onSearch, onReset,
       gridRows, cfPagedRows, cfTotal, pager, pager.pageSizes, cfTotalPages, cfPageNums, setPage, getRealIdx,

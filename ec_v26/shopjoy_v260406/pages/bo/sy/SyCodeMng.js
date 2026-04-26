@@ -3,97 +3,197 @@ window.SyCodeMng = {
   name: 'SyCodeMng',
   props: ['navigate', 'showToast', 'showConfirm'],
   setup(props) {
-    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const codes = reactive([]);
-    const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false, selectedGrp: '', grpSelectedPath: '', focusedIdx: null, selectedCodeId: null, dragSrc: null, activeCodeTab: '일반'});
-    const pageCodeGroups = reactive({});
 
-    /* ── 트리/그룹 선택 상태 (loadGrid 보다 먼저 선언) ── */
-        
-    /* ── 검색 ── */
-    const searchParam = reactive({
-      kw: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: '', dragSrc: null});;
-    const searchParamOrg = reactive({
-      kw: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
+    // ── 선언부 ────────────────────────────────────────────────────────────────
+
+    const codes          = reactive([]);                    // 전체 코드 목록 (DB 기준)
+    const codeGroups     = reactive([]);                    // 코드그룹 목록 (codes 에서 추출)
+    const pageCodeGroups = reactive({});                    // 페이지 전용 코드 캐시
+    const uiState        = reactive({                       // UI 상태
+      checkAll: false, dragMoved: false, loading: false, error: null,
+      isPageCodeLoad: false, selectedGrp: '', grpSelectedPath: '',
+      focusedIdx: null, selectedCodeId: null, dragSrc: null, activeCodeTab: '일반',
+    });
+
+    const searchParam    = reactive({                       // 검색 조건
+      kw: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: '', dragSrc: null,
+    });
+    const searchParamOrg = reactive({                       // 검색 초기값 (리셋용)
+      kw: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: '',
     });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const handleDateRangeChange = () => {
-      if (searchParam.dateRange) {
-        const r = window.boCmUtil.getDateRange(searchParam.dateRange);
-        searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : '';
-      }
-    };
-    const cfGrpOptions  = computed(() => [...new Set(codes.map(c => c.codeGrp))].sort());
 
-    /* ── CRUD 그리드 데이터 ── */
-    const gridRows   = reactive([]);
-    let   _tempId    = -1;
-    
-    /* ── 페이징 ── */
-    const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
+    const gridRows  = reactive([]);                         // 코드 CRUD 그리드 행
+    const grpRows   = reactive([]);                         // 코드그룹 CRUD 그리드 행
+    const dragSrc   = ref(null);                            // 드래그 소스 인덱스
+    const pager     = reactive({                            // 코드 목록 페이징
+      pageType: 'PAGE', pageNo: 1, pageSize: 10,
+      pageTotalCount: 0, pageTotalPage: 1,
+      pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {},
+    });
+    const grpPager  = reactive({                            // 코드그룹 페이징
+      pageType: 'PAGE', page: 1, size: 5,
+      pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {},
+    });
+    const treePager = reactive({                            // 트리 탭 페이징
+      pageType: 'PAGE', page: 1, size: 10,
+      pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {},
+    });
+    const pathPickModal     = reactive({ show: false, row: null }); // 표시경로 선택 모달
+    const grpExpanded       = reactive(new Set(['']));              // 그룹 트리 펼침 상태
+    const cfCodeTreeExpanded = reactive(new Set());                 // 코드 트리 펼침 상태
 
-    const EDIT_FIELDS = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'remark', 'parentCodeValue'];
+    let _tempId    = -1;
+    let _grpTempId = -1;
+    const EDIT_FIELDS  = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'remark', 'parentCodeValue'];
+    const GRP_FIELDS   = ['codeGrp', 'grpNm', 'pathId', 'description', 'type', 'useYn'];
+    const GRP_PAGE_SIZES  = [5, 10, 20, 50, 100];
+    const TREE_PAGE_SIZES = [5, 10, 20, 50, 100];
 
-    const isAppReady = computed(() => {
+    const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
+
+    // ── computed ──────────────────────────────────────────────────────────────
+
+    const isAppReady = computed(() => {                     // 앱 초기화 완료 여부
       const initStore = window.useBoAppInitStore?.();
       const codeStore = window.getBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
-    const fnLoadCodes = async () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
+    const cfSiteNm         = computed(() => window.boCmUtil.getSiteNm()); // 현재 사이트명
+    const cfGrpOptions     = computed(() => [...new Set(codes.map(c => c.codeGrp))].sort()); // 그룹 선택 옵션
+    const cfTotal          = computed(() => gridRows.filter(r => r._row_status !== 'D').length); // 코드 유효 건수
+    const cfGrpDirty       = computed(() => grpRows.filter(r => r._row_status !== 'N').length); // 그룹 변경 건수
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
+    const cfGrpTree        = computed(() => window.boCmUtil.buildPathTree('sy_code_grp')); // 표시경로 트리
+    const cfFilteredGrpRows = computed(() => {              // 트리 선택 경로로 필터된 그룹 행
+      const sp = uiState.grpSelectedPath;
+      if (!sp) return grpRows;
+      return grpRows.filter(r => (r.dispPath || '').startsWith(sp));
     });
 
-    /* ═══════════════════════════════════════════════════════
-       상단 섹션: 표시경로 트리 + 코드그룹 CRUD 그리드
-    ═══════════════════════════════════════════════════════ */
-    const grpRows = reactive([]);
-    let _grpTempId = -1;
-    const GRP_FIELDS = ['codeGrp', 'grpNm', 'pathId', 'description', 'type', 'useYn'];
+    const cfGrpTotalPages  = computed(() => Math.max(1, Math.ceil(cfFilteredGrpRows.value.length / grpPager.size)));
+    const cfGrpPageNums    = computed(() => {               // 그룹 페이지 번호 배열
+      const c = grpPager.page, l = cfGrpTotalPages.value;
+      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    });
+    const cfGrpPagedRows   = computed(() => {               // 그룹 현재 페이지 행
+      const s = (grpPager.page - 1) * grpPager.size;
+      return cfFilteredGrpRows.value.slice(s, s + grpPager.size);
+    });
 
-    // 코드그룹 (codes에서 그룹 고유값 추출)
-    const codeGroups = reactive([]);
+    const cfPagedRows      = computed(() => {               // 코드 현재 페이지 행
+      const s = (pager.pageNo - 1) * pager.pageSize;
+      return gridRows.slice(s, s + pager.pageSize);
+    });
+    const cfTotalPages     = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.pageSize)));
+    const cfPageNums       = computed(() => {               // 코드 페이지 번호 배열
+      const c = pager.pageNo, l = pager.pageTotalPage;
+      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    });
+
+    const cfIsTreeTypeGrp  = computed(() => {               // 선택 그룹이 트리형 여부
+      if (!uiState.selectedGrp || !codeGroups?.length) return false;
+      const grp = codeGroups.find(g => g.codeGrp === uiState.selectedGrp);
+      return grp?.type === '트리';
+    });
+
+    const cfParentCodeOptions = computed(() => {            // 트리형 상위코드 선택 옵션
+      if (!cfIsTreeTypeGrp.value) return [];
+      const rows = gridRows.filter(r => r._row_status !== 'D');
+      const byValue = new Map(rows.map(c => [c.codeValue, c]));
+      return rows.map(r => {
+        let depth = 0;
+        let current = r.parentCodeValue ? byValue.get(r.parentCodeValue) : null;
+        while (current) { depth++; current = current.parentCodeValue ? byValue.get(current.parentCodeValue) : null; }
+        const indent = '　'.repeat(depth);
+        return {
+          label: `${r.codeLabel}(${r.codeValue})`,
+          value: r.codeValue,
+          path: getCodeHierarchyPath(r.codeValue),
+          displayLabel: `${indent}${r.codeLabel}(${r.codeValue})`,
+        };
+      });
+    });
+
+    const cfCodeTree       = computed(() => {               // 코드 트리 구조
+      if (!uiState.selectedGrp) return { value: '__root__', label: 'Root', children: [], count: 0 };
+      const visible = gridRows.filter(r => r._row_status !== 'D');
+      const byValue = new Map();
+      visible.forEach(c => { byValue.set(c.codeValue, c); });
+      const roots = [];
+      const children = new Map();
+      visible.forEach(c => {
+        const parentVal = c.parentCodeValue || null;
+        if (!parentVal || !byValue.has(parentVal)) { roots.push(c); }
+        else {
+          if (!children.has(parentVal)) children.set(parentVal, []);
+          children.get(parentVal).push(c);
+        }
+      });
+      const build = (c) => ({
+        value: c.codeValue, label: c.codeLabel, code: c,
+        children: (children.get(c.codeValue) || []).map(build),
+      });
+      const walk = (nodes) => nodes.length + nodes.reduce((sum, n) => sum + walk(n.children), 0);
+      const rootNodes = roots.map(build);
+      return { value: '__root__', label: 'Root', children: rootNodes, count: walk(rootNodes) };
+    });
+
+    const cfFlatTreeRows   = computed(() => {               // 트리 평탄화 행 목록 (렌더링용)
+      const result = [];
+      const walk = (node, depth) => {
+        result.push({ node, depth, isExpanded: cfCodeTreeExpanded.has(node.value) });
+        if (cfCodeTreeExpanded.has(node.value)) node.children.forEach(child => walk(child, depth + 1));
+      };
+      cfCodeTree.value.children.forEach(node => walk(node, 0));
+      return result;
+    });
+
+    const cfTreeTotalPages = computed(() => Math.max(1, Math.ceil(cfFlatTreeRows.value.length / treePager.size)));
+    const cfTreePageNums   = computed(() => {               // 트리 페이지 번호 배열
+      const c = treePager.page, l = cfTreeTotalPages.value;
+      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    });
+    const cfPagedTreeRows  = computed(() => {               // 트리 현재 페이지 행
+      const s = (treePager.page - 1) * treePager.size;
+      return cfFlatTreeRows.value.slice(s, s + treePager.size);
+    });
+
+    // ── watch ─────────────────────────────────────────────────────────────────
+
+    // 앱 준비 완료 시 코드 로드 트리거
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
+    // 그룹 필터 결과 변경 시 페이지 초과 방지
+    watch(() => cfFilteredGrpRows.value.length, () => {
+      if (grpPager.page > cfGrpTotalPages.value) grpPager.page = Math.max(1, cfGrpTotalPages.value);
+    });
+
+    // 트리 path 변경 시 — 그룹 페이지 리셋 + selectedGrp 해제 + 코드목록 재조회
+    watch(() => uiState.grpSelectedPath, () => { grpPager.page = 1; uiState.selectedGrp = ''; handleSearchList(); });
+
+    // selectedGrp 변경 시 코드목록 재조회
+    watch(() => uiState.selectedGrp, () => handleSearchList());
+
+    // ── 초기화부 ──────────────────────────────────────────────────────────────
+
+    // 코드그룹 목록 갱신 — codes 배열 기준으로 codeGroups 동기화
     const updateCodeGroups = () => {
       const grps = new Map();
       codes.forEach(c => {
         if (c.codeGrp && !grps.has(c.codeGrp)) {
-          grps.set(c.codeGrp, {
-            codeGrp: c.codeGrp,
-            grpNm: c.codeGrp,
-            type: 'general',
-            useYn: 'Y',
-            pathId: null,
-          });
+          grps.set(c.codeGrp, { codeGrp: c.codeGrp, grpNm: c.codeGrp, type: 'general', useYn: 'Y', pathId: null });
         }
       });
       codeGroups.splice(0, codeGroups.length, ...Array.from(grps.values()));
     };
-    updateCodeGroups();
 
-    /* ── 표시경로 선택 모달 (sy_path) ── */
-    const pathPickModal = reactive({ show: false, row: null });
-    const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
-    const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
-    const onPathPicked = (pathId) => {
-      const row = pathPickModal.row;
-      if (row) {
-        row.pathId = pathId;
-        if (row._row_status === 'N') row._row_status = 'U';
-      }
-    };
-    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    // 코드그룹 그리드 행 초기화
     const loadGrp = () => {
       grpRows.splice(0);
       (codeGroups || []).forEach(g => grpRows.push({
@@ -103,29 +203,241 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
         _orig: { codeGrp: g.codeGrp, grpNm: g.grpNm, pathId: g.pathId == null ? null : g.pathId, description: g.description || '', type: g.type || '일반', useYn: g.useYn || 'Y' },
       }));
     };
-    loadGrp();
+
+    // 페이지 진입 시 코드 로드 상태 플래그 설정
+    const fnLoadCodes = async () => {
+      try { uiState.isPageCodeLoad = true; }
+      catch (err) { console.error('[fnLoadCodes]', err); }
+    };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      updateCodeGroups();
+      loadGrp();
+      handleSearchList('DEFAULT');
+      Object.assign(searchParamOrg, searchParam);
+      const initSet = window.boCmUtil.collectExpandedToDepth(cfGrpTree.value, 2);
+      grpExpanded.clear(); initSet.forEach(v => grpExpanded.add(v));
+    });
+
+    // ── 이벤트 함수 모음 ──────────────────────────────────────────────────────
+
+    // 조회 버튼 클릭
+    const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
+
+    // 초기화 버튼 클릭
+    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+
+    // 날짜 범위 옵션 변경
+    const handleDateRangeChange = () => {
+      if (searchParam.dateRange) {
+        const r = window.boCmUtil.getDateRange(searchParam.dateRange);
+        searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : '';
+      }
+    };
+
+    // 셀 내용 변경 → 행 상태 갱신
+    const onCellChange = (row) => {
+      if (row._row_status === 'I' || row._row_status === 'D') return;
+      const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._orig[f]));
+      row._row_status = changed ? 'U' : 'N';
+    };
+
+    // 그룹 셀 변경 → 그룹 행 상태 갱신
     const onGrpChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
       const changed = GRP_FIELDS.some(f => String(row[f] || '') !== String(row._orig[f] || ''));
       row._row_status = changed ? 'U' : 'N';
     };
+
+    // 그룹 행 클릭 → 코드목록 필터 토글
+    const onGrpRowClick = (g) => {
+      uiState.selectedGrp = (uiState.selectedGrp === g.codeGrp) ? '' : g.codeGrp;
+    };
+
+    // 표시경로 선택 완료
+    const onPathPicked = (pathId) => {
+      const row = pathPickModal.row;
+      if (row) { row.pathId = pathId; if (row._row_status === 'N') row._row_status = 'U'; }
+    };
+
+    // 드래그 시작
+    const onDragStart = (idx) => { uiState.dragSrc = idx; uiState.dragMoved = false; };
+
+    // 드래그 이동 중 — 행 순서 즉시 변경
+    const onDragOver = (e, idx) => {
+      e.preventDefault();
+      if (uiState.dragSrc === null || uiState.dragSrc === idx) return;
+      const moved = gridRows.splice(uiState.dragSrc, 1)[0];
+      gridRows.splice(idx, 0, moved);
+      uiState.dragSrc = idx;
+      uiState.dragMoved = true;
+    };
+
+    // 드래그 완료 — 이동 시 토스트
+    const onDragEnd = () => {
+      if (uiState.dragMoved) props.showToast('정렬정보가 저장되었습니다.');
+      uiState.dragSrc = null; uiState.dragMoved = false;
+    };
+
+    // 전체 체크 토글
+    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
+
+    // 페이지 크기 변경
+    const onSizeChange    = () => { pager.pageNo = 1; };
+    const onGrpSizeChange = () => { grpPager.page = 1; };
+    const onTreeSizeChange = () => { treePager.page = 1; };
+
+    // ── 일반 함수 모음 ────────────────────────────────────────────────────────
+
+    // 코드 목록 조회 — API 호출 후 gridRows/codeGroups 갱신
+    const handleSearchList = async (searchType = 'DEFAULT') => {
+      try {
+        uiState.loading = true;
+        const res = await window.boApi.get('/bo/sy/code/page', {
+          params: { pageNo: 1, pageSize: 100000 },
+          headers: { 'X-UI-Nm': '공통코드관리', 'X-Cmd-Nm': '조회' },
+        });
+        const list = res.data?.data?.list || [];
+        codes.splice(0, codes.length, ...list);
+        updateCodeGroups();
+        loadGrp();
+        gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
+        codes.forEach(c => gridRows.push(makeRow(c)));
+      } catch (_) {} finally { uiState.loading = false; }
+    };
+
+    // 코드 행 생성 헬퍼
+    const makeRow = (c) => ({
+      ...c,
+      _row_status: 'N',
+      _row_check: false,
+      _orig: { codeGrp: c.codeGrp, codeLabel: c.codeLabel, codeValue: c.codeValue,
+               sortOrd: c.sortOrd, useYn: c.useYn, remark: c.remark, parentCodeValue: c.parentCodeValue || null },
+    });
+
+    // 코드값 계층 경로 반환 — 루트부터 현재까지 > 연결
+    const getCodeHierarchyPath = (codeValue) => {
+      if (!codeValue) return '';
+      const rows = gridRows.filter(r => r._row_status !== 'D');
+      const byValue = new Map(rows.map(c => [c.codeValue, c]));
+      const path = [];
+      let current = byValue.get(codeValue);
+      while (current) {
+        path.unshift(`${current.codeLabel}(${current.codeValue})`);
+        current = current.parentCodeValue ? byValue.get(current.parentCodeValue) : null;
+      }
+      return path.length > 0 ? path.join(' > ') : '';
+    };
+
+    // 포커스 행 설정
+    const setFocused = (idx) => { uiState.focusedIdx = idx; };
+
+    // 행 추가 — 포커스 행 아래 삽입, 없으면 끝에 추가
+    const addRow = () => {
+      const ref = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
+      const newRow = {
+        codeId: _tempId--, codeGrp: ref ? ref.codeGrp : '', codeLabel: '', codeValue: '',
+        sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1, useYn: 'Y', remark: '', parentCodeValue: null,
+        _row_status: 'I', _row_check: false,
+        _orig: { codeGrp: ref ? ref.codeGrp : '', codeLabel: '', codeValue: '', sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1, useYn: 'Y', remark: '', parentCodeValue: null },
+      };
+      const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
+      gridRows.splice(insertAt, 0, newRow);
+      uiState.focusedIdx = insertAt;
+      pager.pageNo = Math.ceil((insertAt + 1) / pager.pageSize);
+    };
+
+    // 행 단건 삭제 — I면 제거, 나머지는 D 표시
+    const deleteRow = (idx) => {
+      const row = gridRows[idx];
+      if (row._row_status === 'I') {
+        gridRows.splice(idx, 1);
+        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
+      } else { row._row_status = 'D'; }
+    };
+
+    // 행 단건 취소 — I면 제거, U/D면 원래값 복원
+    const cancelRow = (idx) => {
+      const row = gridRows[idx];
+      if (row._row_status === 'I') {
+        gridRows.splice(idx, 1);
+        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
+      } else { if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; }
+    };
+
+    // 체크된 행 일괄 취소
+    const cancelChecked = () => {
+      const checkedIds = new Set(gridRows.filter(r => r._row_check).map(r => r.codeId));
+      if (!checkedIds.size) { props.showToast('취소할 행을 선택해주세요.', 'info'); return; }
+      for (let i = gridRows.length - 1; i >= 0; i--) {
+        const row = gridRows[i];
+        if (!checkedIds.has(row.codeId) || row._row_status === 'N') continue;
+        if (row._row_status === 'I') { gridRows.splice(i, 1); }
+        else { if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; }
+      }
+    };
+
+    // 체크된 행 일괄 삭제
+    const deleteRows = () => {
+      for (let i = gridRows.length - 1; i >= 0; i--) {
+        if (!gridRows[i]._row_check) continue;
+        if (gridRows[i]._row_status === 'I') gridRows.splice(i, 1);
+        else gridRows[i]._row_status = 'D';
+      }
+    };
+
+    // 코드 저장 — I/U/D 행 분류 후 확인 → 코드 배열 직접 반영
+    const handleSave = async () => {
+      const iRows = gridRows.filter(r => r._row_status === 'I');
+      const uRows = gridRows.filter(r => r._row_status === 'U');
+      const dRows = gridRows.filter(r => r._row_status === 'D');
+      if (!iRows.length && !uRows.length && !dRows.length) { props.showToast('변경된 데이터가 없습니다.', 'error'); return; }
+      for (const r of [...iRows, ...uRows]) {
+        if (!r.codeGrp || !r.codeLabel || !r.codeValue) { props.showToast('코드그룹, 코드라벨, 코드값은 필수 항목입니다.', 'error'); return; }
+      }
+      const details = [];
+      if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
+      if (uRows.length) details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' });
+      if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
+      const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
+      if (!ok) return;
+      dRows.forEach(r => { const idx = codes.findIndex(c => c.codeId === r.codeId); if (idx !== -1) codes.splice(idx, 1); });
+      uRows.forEach(r => { const idx = codes.findIndex(c => c.codeId === r.codeId); if (idx !== -1) Object.assign(codes[idx], { codeGrp: r.codeGrp, codeLabel: r.codeLabel, codeValue: r.codeValue, sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark, parentCodeValue: r.parentCodeValue || null }); });
+      let nextId = Math.max(...codes.map(c => c.codeId), 0);
+      iRows.forEach(r => { codes.push({ codeId: ++nextId, codeGrp: r.codeGrp, codeLabel: r.codeLabel, codeValue: r.codeValue, sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark, parentCodeValue: r.parentCodeValue || null, regDate: new Date().toISOString().slice(0, 10) }); });
+      const toastParts = [];
+      if (iRows.length) toastParts.push(`등록 ${iRows.length}건`);
+      if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
+      if (dRows.length) toastParts.push(`삭제 ${dRows.length}건`);
+      props.showToast(`${toastParts.join(', ')} 저장되었습니다.`);
+      await handleSearchList();
+    };
+
+    // 코드그룹 행 추가
     const addGrp = () => {
       grpRows.push({
         codeGrp: 'NEW_GRP', grpNm: '신규 그룹', pathId: null, dispPath: 'new.path', description: '', type: '일반', useYn: 'Y',
         _row_status: 'I', _tempId: _grpTempId--, _orig: {},
       });
     };
+
+    // 코드그룹 행 삭제
     const handleDeleteGrp = (idx) => {
       const r = grpRows[idx];
       if (r._row_status === 'I') grpRows.splice(idx, 1);
       else r._row_status = r._row_status === 'D' ? 'N' : 'D';
     };
+
+    // 코드그룹 행 취소
     const cancelGrp = (idx) => {
       const r = grpRows[idx];
       if (r._row_status === 'I') { grpRows.splice(idx, 1); return; }
       Object.assign(r, r._orig); r._row_status = 'N';
     };
-    const cfGrpDirty = computed(() => grpRows.filter(r => r._row_status !== 'N').length);
+
+    // 코드그룹 저장
     const handleSaveGrp = async () => {
       if (!cfGrpDirty.value) { props.showToast('변경된 행이 없습니다.', 'warning'); return; }
       const ok = await props.showConfirm('저장', `${cfGrpDirty.value}건 저장하시겠습니까?`);
@@ -137,373 +449,73 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
       props.showToast('저장되었습니다.', 'success');
     };
 
-    /* 좌측 표시경로 트리 (codeGroups의 dispPath 기반) */
-    const grpExpanded = reactive(new Set(['']));
-    const grpToggleNode = (path) => { if (grpExpanded.has(path)) grpExpanded.delete(path); else grpExpanded.add(path); };
-    const grpSelectNode = (path) => { uiState.grpSelectedPath = path; };
-    const grpExpandAll = () => { const walk = (n) => { grpExpanded.add(n.path); n.children.forEach(walk); }; walk(cfGrpTree.value); };
+    // 표시경로 선택 모달 열기/닫기
+    const openPathPick  = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
+    const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
+
+    // 그룹 트리 펼침/닫힘/선택
+    const grpToggleNode  = (path) => { if (grpExpanded.has(path)) grpExpanded.delete(path); else grpExpanded.add(path); };
+    const grpSelectNode  = (path) => { uiState.grpSelectedPath = path; };
+    const grpExpandAll   = () => { const walk = (n) => { grpExpanded.add(n.path); n.children.forEach(walk); }; walk(cfGrpTree.value); };
     const grpCollapseAll = () => { grpExpanded.clear(); grpExpanded.add(''); };
-    /* _expand3_grp: 그룹 트리 3레벨 펼침 */
-    const handleSearchList = async (searchType = 'DEFAULT') => {
-      try {
-        uiState.loading = true;
-        const res = await window.boApi.get('/bo/sy/code/page', { params: { pageNo: 1, pageSize: 100000 }, headers: { 'X-UI-Nm': '공통코드관리', 'X-Cmd-Nm': '조회' } });
-        const list = res.data?.data?.list || [];
-        codes.splice(0, codes.length, ...list);
-        updateCodeGroups();
-        loadGrp();
-        gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
-        codes.forEach(c => gridRows.push(makeRow(c)));
-      } catch (_) {}  finally { uiState.loading = false; }
-      const initSet = window.boCmUtil.collectExpandedToDepth(cfGrpTree.value, 2);
-      grpExpanded.clear(); initSet.forEach(v => grpExpanded.add(v));
-    };
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      handleSearchList('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
-    });
-    const cfGrpTree = computed(() => window.boCmUtil.buildPathTree('sy_code_grp'));
-    const cfFilteredGrpRows = computed(() => {
-      const sp = uiState.grpSelectedPath;
-      if (!sp) return grpRows;
-      return grpRows.filter(r => (r.dispPath || '').startsWith(sp));
-    });
 
-    /* 공통코드그룹 페이징 (default 5건) */
-    const grpPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const GRP_PAGE_SIZES = [5, 10, 20, 50, 100];
-    const cfGrpTotalPages = computed(() => Math.max(1, Math.ceil(cfFilteredGrpRows.value.length / grpPager.size)));
-    const cfGrpPageNums = computed(() => { const c = grpPager.page, l = cfGrpTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setGrpPage = n => { if (n >= 1 && n <= cfGrpTotalPages.value) grpPager.page = n; };
-    const onGrpSizeChange = () => { grpPager.page = 1; };
-    const cfGrpPagedRows = computed(() => { const s = (grpPager.page - 1) * grpPager.size; return cfFilteredGrpRows.value.slice(s, s + grpPager.size); });
-    watch(() => cfFilteredGrpRows.value.length, () => { if (grpPager.page > cfGrpTotalPages.value) grpPager.page = Math.max(1, cfGrpTotalPages.value); });
-    /* 트리 path 변경 시: 그룹 페이지 리셋 + selectedGrp 해제 + 코드목록 재조회 */
-    watch(() => uiState.grpSelectedPath, () => { grpPager.page = 1; uiState.selectedGrp = ''; handleSearchList(); });
-    /* selectedGrp 변경 시 코드목록 재조회 */
-    watch(() => uiState.selectedGrp, () => handleSearchList());
-
-    /* 그룹 행 클릭 → 코드목록 필터 (토글) */
-    const onGrpRowClick = (g) => {
-      uiState.selectedGrp = (uiState.selectedGrp === g.codeGrp) ? '' : g.codeGrp;
-    };
-
-    const makeRow = (c) => ({
-      ...c,
-      _row_status: 'N',
-      _row_check:  false,
-      _orig: { codeGrp: c.codeGrp, codeLabel: c.codeLabel, codeValue: c.codeValue,
-               sortOrd: c.sortOrd, useYn: c.useYn, remark: c.remark, parentCodeValue: c.parentCodeValue || null },
-    });
-
-
-    const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
-
-    /* 상세 조회 */
-        const handleLoadDetail = (codeId) => { uiState.selectedCodeId = codeId; };
-    const closeDetail = () => { uiState.selectedCodeId = null; };
-
-    /* 트리 탭 페이징 */
-    const treePager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const TREE_PAGE_SIZES = [5, 10, 20, 50, 100];
-    const cfTreeTotalPages = computed(() => Math.max(1, Math.ceil(cfFlatTreeRows.value.length / treePager.size)));
-    const cfTreePageNums = computed(() => { const c = treePager.page, l = cfTreeTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setTreePage = n => { if (n >= 1 && n <= cfTreeTotalPages.value) treePager.page = n; };
-    const onTreeSizeChange = () => { treePager.page = 1; };
-    const cfPagedTreeRows = computed(() => { const s = (treePager.page - 1) * treePager.size; return cfFlatTreeRows.value.slice(s, s + treePager.size); });
-
-    /* 현재 선택된 그룹이 트리형인지 여부 */
-    const cfIsTreeTypeGrp = computed(() => {
-      if (!uiState.selectedGrp || !codeGroups?.length) return false;
-      const grp = codeGroups.find(g => g.codeGrp === uiState.selectedGrp);
-      return grp?.type === '트리';
-    });
-
-    /* 코드값으로 전체 계층 경로 구성 (루트부터 현재까지) */
-    const getCodeHierarchyPath = (codeValue) => {
-      if (!codeValue) return '';
-      const codes = gridRows.filter(r => r._row_status !== 'D');
-      const byValue = new Map(codes.map(c => [c.codeValue, c]));
-      const path = [];
-      let current = byValue.get(codeValue);
-      while (current) {
-        path.unshift(`${current.codeLabel}(${current.codeValue})`);
-        current = current.parentCodeValue ? byValue.get(current.parentCodeValue) : null;
-      }
-      return path.length > 0 ? path.join(' > ') : '';
-    };
-
-    /* 트리형 코드 그룹일 때 상위코드 목록 (트리 형식 표시용) */
-    const cfParentCodeOptions = computed(() => {
-      if (!cfIsTreeTypeGrp.value) return [];
-      const codes = gridRows.filter(r => r._row_status !== 'D');
-      const byValue = new Map(codes.map(c => [c.codeValue, c]));
-
-      return codes.map(r => {
-        // 계층 깊이 계산
-        let depth = 0;
-        let current = r.parentCodeValue ? byValue.get(r.parentCodeValue) : null;
-        while (current) {
-          depth++;
-          current = current.parentCodeValue ? byValue.get(current.parentCodeValue) : null;
-        }
-        const indent = '　'.repeat(depth); // 전각 공백으로 들여쓰기
-        return { label: `${r.codeLabel}(${r.codeValue})`,
-          value: r.codeValue,
-          path: getCodeHierarchyPath(r.codeValue),
-          displayLabel: `${indent}${r.codeLabel}(${r.codeValue})`
-        };
-      });
-    });
-
-    const onSearch = async () => {
-      pager.pageNo = 1;
-      await handleSearchList('DEFAULT');
-    };
-    const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
-      onSearch();
-    };
-
-    /* ── 포커스 행 설정 ── */
-    const setFocused = (idx) => { uiState.focusedIdx = idx; };
-
-    /* ── 셀 변경 → 행상태 갱신 ── */
-    const onCellChange = (row) => {
-      if (row._row_status === 'I' || row._row_status === 'D') return;
-      const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._orig[f]));
-      row._row_status = changed ? 'U' : 'N';
-    };
-
-    /* ── 행추가: 포커스 행 아래 삽입, 없으면 끝에 추가 ── */
-    const addRow = () => {
-      const ref = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
-      const newRow = {
-        codeId: _tempId--, codeGrp: ref ? ref.codeGrp : '', codeLabel: '', codeValue: '',
-        sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
-        useYn: 'Y', remark: '', parentCodeValue: null,
-        _row_status: 'I', _row_check: false,
-        _orig: { codeGrp: ref ? ref.codeGrp : '', codeLabel: '', codeValue: '', sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1, useYn: 'Y', remark: '', parentCodeValue: null },
-      };
-      const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
-      gridRows.splice(insertAt, 0, newRow);
-      uiState.focusedIdx = insertAt;
-      pager.pageNo = Math.ceil((insertAt + 1) / pager.pageSize);
-    };
-
-    /* ── 행 단건 삭제 버튼: N/U 에 표시 (I는 표시 안함) ── */
-    const deleteRow = (idx) => {
-      const row = gridRows[idx];
-      if (row._row_status === 'I') {
-        gridRows.splice(idx, 1);
-        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
-      } else {
-        row._row_status = 'D';
-      }
-    };
-
-    /* ── 취소 버튼: U/I/D 에 표시 ── */
-    const cancelRow = (idx) => {
-      const row = gridRows[idx];
-      if (row._row_status === 'I') {
-        gridRows.splice(idx, 1);
-        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
-      } else {
-        // U / D: 원래값 복원 → N
-        if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
-        row._row_status = 'N';
-      }
-    };
-
-    /* ── 툴바 [취소]: 체크된 행만 취소, 없으면 변경된 전체 취소 ── */
-    const cancelChecked = () => {
-      const checkedIds = new Set(gridRows.filter(r => r._row_check).map(r => r.codeId));
-      if (!checkedIds.size) {
-        props.showToast('취소할 행을 선택해주세요.', 'info');
-        return;
-      }
-      for (let i = gridRows.length - 1; i >= 0; i--) {
-        const row = gridRows[i];
-        if (!checkedIds.has(row.codeId)) continue;
-        if (row._row_status === 'N') continue;
-        if (row._row_status === 'I') {
-          gridRows.splice(i, 1);
-        } else if (row._row_status === 'U' || row._row_status === 'D') {
-          if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
-          row._row_status = 'N';
-        }
-      }
-    };
-
-    /* ── 체크된 행 일괄 삭제 ── */
-    const deleteRows = () => {
-      for (let i = gridRows.length - 1; i >= 0; i--) {
-        if (!gridRows[i]._row_check) continue;
-        if (gridRows[i]._row_status === 'I') {
-          gridRows.splice(i, 1);
-        } else {
-          gridRows[i]._row_status = 'D';
-        }
-      }
-    };
-
-    /* ── 저장 ── */
-    const handleSave = async () => {
-      const iRows = gridRows.filter(r => r._row_status === 'I');
-      const uRows = gridRows.filter(r => r._row_status === 'U');
-      const dRows = gridRows.filter(r => r._row_status === 'D');
-      if (!iRows.length && !uRows.length && !dRows.length) {
-        props.showToast('변경된 데이터가 없습니다.', 'error'); return;
-      }
-      for (const r of [...iRows, ...uRows]) {
-        if (!r.codeGrp || !r.codeLabel || !r.codeValue) {
-          props.showToast('코드그룹, 코드라벨, 코드값은 필수 항목입니다.', 'error'); return;
-        }
-      }
-      const details = [];
-      if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
-      if (uRows.length) details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' });
-      if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
-      const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?',
-        { details, btnOk: '예', btnCancel: '아니오' });
-      if (!ok) return;
-
-      dRows.forEach(r => {
-        const idx = codes.findIndex(c => c.codeId === r.codeId);
-        if (idx !== -1) codes.splice(idx, 1);
-      });
-      uRows.forEach(r => {
-        const idx = codes.findIndex(c => c.codeId === r.codeId);
-        if (idx !== -1) Object.assign(codes[idx],
-          { codeGrp: r.codeGrp, codeLabel: r.codeLabel, codeValue: r.codeValue,
-            sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark, parentCodeValue: r.parentCodeValue || null });
-      });
-      let nextId = Math.max(...codes.map(c => c.codeId), 0);
-      iRows.forEach(r => {
-        codes.push({
-          codeId: ++nextId, codeGrp: r.codeGrp, codeLabel: r.codeLabel, codeValue: r.codeValue,
-          sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark, parentCodeValue: r.parentCodeValue || null,
-          regDate: new Date().toISOString().slice(0, 10),
-        });
-      });
-      const toastParts = [];
-      if (iRows.length) toastParts.push(`등록 ${iRows.length}건`);
-      if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
-      if (dRows.length) toastParts.push(`삭제 ${dRows.length}건`);
-      props.showToast(`${toastParts.join(', ')} 저장되었습니다.`);
-      await handleSearchList();
-    };
-
-    /* ── 드래그 이동 ── */
-    const dragSrc  = ref(null);
-    const onDragStart = (idx) => { uiState.dragSrc = idx; uiState.dragMoved = false; };
-    const onDragOver  = (e, idx) => {
-      e.preventDefault();
-      if (uiState.dragSrc === null || uiState.dragSrc === idx) return;
-      const moved = gridRows.splice(uiState.dragSrc, 1)[0];
-      gridRows.splice(idx, 0, moved);
-      uiState.dragSrc = idx;
-      uiState.dragMoved = true;
-    };
-    const onDragEnd = () => {
-      if (uiState.dragMoved) props.showToast('정렬정보가 저장되었습니다.');
-      uiState.dragSrc = null;
-      uiState.dragMoved = false;
-    };
-
-    /* ── 전체 체크 (D 행 포함) ── */
-    const toggleCheckAll = () => {
-      gridRows.forEach(r => { r._row_check = uiState.checkAll; });
-    };
-
-    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
-
-    const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageSize; return gridRows.slice(s, s + pager.pageSize); });
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.pageSize)));
-    const cfPageNums   = computed(() => { const c = pager.pageNo, l = pager.pageTotalPage; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setPage    = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
-    const onSizeChange = () => { pager.pageNo = 1; };
-
-    const exportExcel = () => window.boCmUtil.exportCsv(
-      gridRows.filter(r => r._row_status !== 'D'),
-      [{label:'ID',key:'codeId'},{label:'코드그룹',key:'codeGrp'},{label:'코드레이블',key:'codeLabel'},{label:'코드값',key:'codeValue'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'remark'}],
-      '공통코드목록.csv'
-    );
-
-    /* ── 코드 트리 탭 ── */
-        const cfCodeTreeExpanded = reactive(new Set());
+    // 코드 트리 노드 펼침 토글
     const codeToggleNode = (codeValue) => {
       if (cfCodeTreeExpanded.has(codeValue)) cfCodeTreeExpanded.delete(codeValue);
       else cfCodeTreeExpanded.add(codeValue);
     };
-    const cfCodeTree = computed(() => {
-      if (!uiState.selectedGrp) return { value: '__root__', label: 'Root', children: [], count: 0 };
-      const visible = gridRows.filter(r => r._row_status !== 'D');
-      const byValue = new Map();
-      visible.forEach(c => { byValue.set(c.codeValue, c); });
-      const roots = [];
-      const children = new Map(); // parentValue -> [children]
-      visible.forEach(c => {
-        const parentVal = c.parentCodeValue || null;
-        if (!parentVal || !byValue.has(parentVal)) {
-          roots.push(c);
-        } else {
-          if (!children.has(parentVal)) children.set(parentVal, []);
-          children.get(parentVal).push(c);
-        }
-      });
-      const build = (c) => ({
-        value: c.codeValue,
-        label: c.codeLabel,
-        code: c,
-        children: (children.get(c.codeValue) || []).map(build),
-      });
-      const walk = (nodes) => nodes.length + nodes.reduce((sum, n) => sum + walk(n.children), 0);
-      const rootNodes = roots.map(build);
-      return { value: '__root__', label: 'Root', children: rootNodes, count: walk(rootNodes) };
-    });
 
-    /* 트리를 평탄화된 행 목록으로 변환 (렌더링용) */
-    const cfFlatTreeRows = computed(() => {
-      const result = [];
-      const walk = (node, depth) => {
-        result.push({ node, depth, isExpanded: cfCodeTreeExpanded.has(node.value) });
-        if (cfCodeTreeExpanded.has(node.value)) {
-          node.children.forEach(child => walk(child, depth + 1));
-        }
-      };
-      cfCodeTree.value.children.forEach(node => walk(node, 0));
-      return result;
-    });
+    // 상세 조회/닫기
+    const handleLoadDetail = (codeId) => { uiState.selectedCodeId = codeId; };
+    const closeDetail       = () => { uiState.selectedCodeId = null; };
+
+    // 페이지 이동
+    const setPage     = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const setGrpPage  = n => { if (n >= 1 && n <= cfGrpTotalPages.value) grpPager.page = n; };
+    const setTreePage = n => { if (n >= 1 && n <= cfTreeTotalPages.value) treePager.page = n; };
+
+    // 상태 배지 클래스
+    const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
+
+    // 엑셀 내보내기
+    const exportExcel = () => window.boCmUtil.exportCsv(
+      gridRows.filter(r => r._row_status !== 'D'),
+      [{ label: 'ID', key: 'codeId' }, { label: '코드그룹', key: 'codeGrp' }, { label: '코드라벨', key: 'codeLabel' },
+       { label: '코드값', key: 'codeValue' }, { label: '순서', key: 'sortOrd' }, { label: '사용여부', key: 'useYn' }, { label: '비고', key: 'remark' }],
+      '공통코드목록.csv'
+    );
+
+    // 표시경로 라벨 반환
+    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+
+    // ── return ────────────────────────────────────────────────────────────────
 
     return {
       uiState, pageCodeGroups,
-      cfSiteNm,
-      searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfGrpOptions,
-      gridRows, cfPagedRows, cfTotal, pager, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
-      setFocused, onSearch, onReset, onCellChange,
+      cfSiteNm, cfGrpOptions, cfTotal, cfGrpDirty,
+      searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange,
+      gridRows, cfPagedRows, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
+      pager, setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
-      dragSrc, onDragStart, onDragOver, onDragEnd,
-      toggleCheckAll, fnStatusClass,
-      exportExcel,
+      dragSrc, onDragStart, onDragOver, onDragEnd, toggleCheckAll, fnStatusClass, exportExcel,
       codeGroups,
-      grpRows, cfGrpDirty, addGrp, handleDeleteGrp, cancelGrp, handleSaveGrp, onGrpChange,
-      cfGrpTree, grpExpanded, grpToggleNode, grpSelectNode, grpExpandAll, grpCollapseAll, cfFilteredGrpRows,
-      grpPager, GRP_PAGE_SIZES, cfGrpTotalPages, cfGrpPageNums, setGrpPage, onGrpSizeChange, cfGrpPagedRows,
-      onGrpRowClick,
+      grpRows, addGrp, handleDeleteGrp, cancelGrp, handleSaveGrp, onGrpChange,
+      cfGrpTree, grpExpanded, grpToggleNode, grpSelectNode, grpExpandAll, grpCollapseAll,
+      cfFilteredGrpRows, cfGrpPagedRows, cfGrpTotalPages, cfGrpPageNums,
+      grpPager, GRP_PAGE_SIZES, setGrpPage, onGrpSizeChange, onGrpRowClick,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      cfCodeTree, cfCodeTreeExpanded, codeToggleNode, cfFlatTreeRows, cfParentCodeOptions, cfIsTreeTypeGrp,
-      handleLoadDetail, closeDetail, getCodeHierarchyPath,
-      treePager, TREE_PAGE_SIZES, cfTreeTotalPages, cfTreePageNums, setTreePage, onTreeSizeChange, cfPagedTreeRows,
+      cfCodeTree, cfCodeTreeExpanded, codeToggleNode, cfFlatTreeRows,
+      cfParentCodeOptions, cfIsTreeTypeGrp, getCodeHierarchyPath,
+      cfPagedTreeRows, cfTreeTotalPages, cfTreePageNums,
+      treePager, TREE_PAGE_SIZES, setTreePage, onTreeSizeChange,
+      handleLoadDetail, closeDetail,
     };
   },
   template: /* html */`
 <div>
   <div class="page-title">공통코드관리</div>
 
-  <!-- 검색 -->
+  <!-- ── 검색 영역 ──────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="코드그룹 / 라벨 / 코드값 검색" />
@@ -529,7 +541,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
     </div>
   </div>
 
-  <!-- ═══ 상단: 표시경로 트리 + 코드그룹 CRUD ═══ -->
+  <!-- ── 표시경로 트리 + 코드그룹 CRUD ─────────────────────────────────── -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;margin-bottom:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;">
@@ -621,6 +633,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
         </tbody>
       </table>
 
+      <!-- ── 그룹 페이징 ───────────────────────────────────────────────── -->
       <div class="pagination">
         <div></div>
         <div class="pager">
@@ -639,8 +652,9 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
     </div>
   </div>
 
-  <!-- CRUD 그리드 -->
+  <!-- ── 코드 목록 영역 ──────────────────────────────────────────────────── -->
   <div class="card">
+    <!-- ── 툴바 ──────────────────────────────────────────────────────────── -->
     <div class="toolbar">
       <span class="list-title">
         <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>코드목록
@@ -657,7 +671,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
       </div>
     </div>
 
-    <!-- 일반/트리 탭 -->
+    <!-- ── 일반/트리 탭 ──────────────────────────────────────────────────── -->
     <div style="display:flex;gap:8px;padding:12px;border-bottom:1px solid #e5e7eb;background:#f9fafb;">
       <button @click="uiState.activeCodeTab='일반'" :class="{active: uiState.activeCodeTab==='일반'}"
         style="padding:8px 16px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:#6b7280;font-weight:500;transition:all 0.2s;"
@@ -668,7 +682,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
         :disabled="!uiState.selectedGrp">트리</button>
     </div>
 
-    <!-- 일반 탭: 테이블 -->
+    <!-- ── 일반 탭: 테이블 ───────────────────────────────────────────────── -->
     <table v-if="uiState.activeCodeTab==='일반'" class="bo-table crud-grid">
       <thead>
         <tr>
@@ -700,7 +714,6 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
           @dragstart="onDragStart(getRealIdx(idx))"
           @dragover="onDragOver($event, getRealIdx(idx))"
           @dragend="onDragEnd">
-
           <td class="drag-handle" title="드래그로 순서 변경">⠿</td>
           <td class="col-id-val">{{ row.codeId > 0 ? row.codeId : 'NEW' }}</td>
           <td class="col-status-val">
@@ -738,6 +751,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
       </tbody>
     </table>
 
+    <!-- ── 페이징 ────────────────────────────────────────────────────────── -->
     <div class="pagination">
       <div></div>
       <div class="pager">
@@ -754,7 +768,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
       </div>
     </div>
 
-    <!-- 트리 탭: 편집 가능한 테이블 형식 -->
+    <!-- ── 트리 탭: 편집 가능한 테이블 ──────────────────────────────────── -->
     <div v-if="uiState.activeCodeTab==='트리' && uiState.selectedGrp">
       <div class="toolbar" style="background:#f9fafb;padding:12px;border-bottom:1px solid #e5e7eb;">
         <span class="list-title">트리 형식 편집</span>
@@ -833,6 +847,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
         </tbody>
       </table>
 
+      <!-- ── 트리 페이징 ────────────────────────────────────────────────── -->
       <div class="pagination">
         <div></div>
         <div class="pager">
@@ -851,13 +866,13 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
     </div>
   </div>
 
-  <!-- 표시경로 선택 모달 -->
+  <!-- ── 표시경로 선택 모달 ────────────────────────────────────────────── -->
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_code_grp"
     :value="pathPickModal.row ? pathPickModal.row.pathId : null"
     title="공통코드그룹 표시경로 선택"
     @select="onPathPicked" @close="closePathPick" />
 
-  <!-- 코드 상세 조회 (인라인 임베드) -->
+  <!-- ── 코드 상세 패널 (인라인 임베드) ───────────────────────────────── -->
   <div v-if="uiState.selectedCodeId" style="margin-top:20px;padding:20px;background:#fff;border-radius:8px;border:1px solid #e5e7eb;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb;">
       <h3 style="margin:0;font-size:16px;font-weight:600;color:#1f2937;">코드 상세</h3>

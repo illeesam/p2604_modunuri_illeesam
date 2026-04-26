@@ -28,6 +28,8 @@ window.SyAttachMng = {
         uiState.loading = false;
       }
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
 
@@ -47,6 +49,8 @@ window.SyAttachMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
+
+    // ── watch ────────────────────────────────────────────────────────────────
 
     watch(isAppReady, (newVal) => {
       if (newVal) {
@@ -179,6 +183,9 @@ window.SyAttachMng = {
 
     const fileEditMode = Vue.toRef(uiState, 'fileEditMode');
     const grpEditMode = Vue.toRef(uiState, 'grpEditMode');
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { attaches, uiState, codes, searchParam, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm,
       attachGrps, grpForm, cfTotal,
       selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
@@ -191,7 +198,7 @@ window.SyAttachMng = {
   <div class="page-title">첨부관리</div>
   <div style="display:flex;gap:16px;align-items:flex-start;">
 
-    <!-- 좌: 첨부그룹관리 (30%) -->
+    <!-- ── 좌: 첨부그룹관리 (30%) ────────────────────────────────────────────── -->
     <div style="flex:0 0 30%;min-width:260px;">
       <div class="card" style="margin-bottom:0;">
         <div class="toolbar">
@@ -199,7 +206,7 @@ window.SyAttachMng = {
           <button class="btn btn-primary btn-sm" @click="openGrpNew">+ 신규</button>
         </div>
 
-        <!-- 그룹 폼 -->
+        <!-- ── 그룹 폼 ───────────────────────────────────────────────────── -->
         <div v-if="uiState.grpEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:12px;">
           <div style="font-size:13px;font-weight:600;margin-bottom:8px;">{{ uiState.grpEditId===null ? '그룹 등록' : '그룹 수정' }}</div>
           <div class="form-group" style="margin-bottom:6px;">
@@ -236,7 +243,7 @@ window.SyAttachMng = {
           </div>
         </div>
 
-        <!-- 그룹 목록 -->
+        <!-- ── 그룹 목록 ──────────────────────────────────────────────────── -->
         <div v-for="g in attachGrps" :key="g.attachGrpId"
           style="padding:10px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer;border-radius:4px;transition:background .15s;"
           :style="uiState.selectedGrpId===g.attachGrpId?'background:#fff0f4;border-left:3px solid #e8587a;':'' "
@@ -261,7 +268,7 @@ window.SyAttachMng = {
       </div>
     </div>
 
-    <!-- 우: 첨부파일관리 (70%) -->
+    <!-- ── 우: 첨부파일관리 (70%) ────────────────────────────────────────────── -->
     <div style="flex:1;">
       <div class="card" style="margin-bottom:0;">
         <div class="toolbar">
@@ -282,7 +289,7 @@ window.SyAttachMng = {
         </div>
         <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>첨부파일목록 <span class="list-count">{{ cfTotal }}건</span></span>
 
-        <!-- 파일 폼 -->
+        <!-- ── 파일 폼 ───────────────────────────────────────────────────── -->
         <div v-if="uiState.fileEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:12px;">
           <div style="font-size:13px;font-weight:600;margin-bottom:8px;">{{ uiState.fileEditId===null ? '파일 등록' : '파일 수정' }}</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">

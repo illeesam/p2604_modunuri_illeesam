@@ -31,6 +31,9 @@ window.DpDispPanelDtl = {
     };
 
     // App 초기화 감시
+
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (ready) => {
       if (ready) {
         fnLoadCodes();
@@ -77,6 +80,7 @@ window.DpDispPanelDtl = {
       return (m?.width || 480) + 'px';
     });
     /* 패널 폭(스플리터 드래그 반영). 모드 변경 시 자동 갱신 */
+
         watch(previewMode, (m) => {
       const info = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === m);
       uiState.previewPaneWidth = (info?.width || 480) + 40;
@@ -471,6 +475,8 @@ window.DpDispPanelDtl = {
       /* Quill 초기화 (기본정보 탭이 기본) */
       initQuillDesc();
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleLoadData();
@@ -478,6 +484,7 @@ window.DpDispPanelDtl = {
     });
 
     /* 탭 전환 시 Quill 초기화/싱크 */
+
     watch(() => uiState.tab, async (newTab) => {
       await nextTick();
       if (newTab === 'info') {
@@ -488,6 +495,7 @@ window.DpDispPanelDtl = {
     });
 
     /* 위젯 유형이 html_editor로 바뀔 때 */
+
     watch(cfIsHtmlEditor, async (val) => {
       if (!val) return;
       await nextTick();
@@ -495,6 +503,7 @@ window.DpDispPanelDtl = {
     });
 
     /* 행 전환 시 Quill 내용 싱크 */
+
     watch(cfActiveRowIdx, async () => {
       if (!cfIsHtmlEditor.value) return;
       await nextTick();
@@ -709,6 +718,9 @@ window.DpDispPanelDtl = {
     const rowCopyOpen = Vue.toRef(uiState, 'rowCopyOpen');
     const showComponentTooltip = Vue.toRef(uiState, 'showComponentTooltip');
     const viewAll = Vue.toRef(uiState, 'viewAll');
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { panels, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
       libPickMode, openLibPick, onLibPicked,
       onRowCopy,
@@ -759,10 +771,10 @@ window.DpDispPanelDtl = {
   </div>
   <div class="card">
 
-    <!-- ═══════════════════ 탭 모드 ═══════════════════ -->
+    <!-- ── ═══════════════════ 탭 모드 ═══════════════════ ───────────────── -->
     <div v-if="!viewAll" style="display:flex;gap:0;flex-direction:column;min-height:400px;">
 
-      <!-- 안내 배너 -->
+      <!-- ── 안내 배너 ────────────────────────────────────────────────────── -->
       <div style="background:linear-gradient(135deg,#e3f2fd 0%,#f3e5f5 100%);border-bottom:1px solid #90caf9;padding:12px 14px;font-size:11px;color:#444;line-height:1.6;">
         <div style="font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
           <span>ℹ️ 여부 및 기간 관리 안내</span>
@@ -775,7 +787,7 @@ window.DpDispPanelDtl = {
 
       <div style="display:flex;gap:0;flex:1;overflow:hidden;">
 
-      <!-- 좌측 탭 메뉴 (UI 스타일) -->
+      <!-- ── 좌측 탭 메뉴 (UI 스타일) ─────────────────────────────────────────── -->
       <div style="width:160px;min-width:160px;background:#f4f5f8;border-right:1px solid #e8ebef;padding:12px 8px;flex-shrink:0;">
         <div v-for="(t, tIdx) in cfTabLabels" :key="t?.key"
           @click="tab=t.key"
@@ -803,7 +815,7 @@ window.DpDispPanelDtl = {
             @mouseenter="$event.currentTarget.style.color='#e8587a'"
             @mouseleave="$event.currentTarget.style.color='#bbb'">✕</button>
         </div>
-        <!-- 추가 버튼 -->
+        <!-- ── 추가 버튼 ──────────────────────────────────────────────────── -->
         <div v-if="rows.length < MAX_WIDGETS" style="margin-top:8px;">
           <button @click="!cfIsNew && addWidget()" :disabled="cfIsNew"
             :title="cfIsNew ? '저장 후 전시항목을 추가할 수 있습니다.' : ''"
@@ -813,16 +825,16 @@ window.DpDispPanelDtl = {
         </div>
       </div>
 
-      <!-- 우측 콘텐츠 + 미리보기 -->
+      <!-- ── 우측 콘텐츠 + 미리보기 ────────────────────────────────────────────── -->
       <div style="flex:1;display:flex;overflow:hidden;min-width:0;">
 
-      <!-- 폼 영역 (75%) -->
+      <!-- ── 폼 영역 (75%) ───────────────────────────────────────────────── -->
       <div style="flex:3;padding-left:20px;padding-top:4px;overflow-y:auto;min-width:0;">
 
         <!-- ── 기본정보 ── -->
         <div v-show="tab==='info'">
 
-          <!-- ■ 설정 -->
+          <!-- ── ■ 설정 ─────────────────────────────────────────────────── -->
           <div style="margin-bottom:14px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
             <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
               <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
@@ -910,9 +922,9 @@ window.DpDispPanelDtl = {
               <span style="color:#aaa;font-size:13px;padding:0 4px;">~</span>
               <input type="date" class="form-control" v-model="form.useEndDate" style="width:150px;margin:0;" :readonly="viewMode" />
             </div>
-          </div><!-- /설정 -->
+          </div><!-- ── /설정 ────────────────────────────────────────────────────────────── -->
 
-          <!-- ■ 제목 -->
+          <!-- ── ■ 제목 ─────────────────────────────────────────────────── -->
           <div style="margin-bottom:14px;padding:14px;background:#faf8ff;border:1px solid #e9d5ff;border-radius:8px;">
             <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
               <span style="display:inline-block;width:4px;height:16px;background:#7c3aed;border-radius:2px;"></span>
@@ -932,9 +944,9 @@ window.DpDispPanelDtl = {
               <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="viewMode"
                 style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
             </div>
-          </div><!-- /제목 -->
+          </div><!-- ── /제목 ────────────────────────────────────────────────────────────── -->
 
-          <!-- ■ 내용 (HTML 설명) -->
+          <!-- ── ■ 내용 (HTML 설명) ───────────────────────────────────────── -->
           <div style="margin-bottom:14px;padding:14px;background:#fff8fa;border:1px solid #fce4ec;border-radius:8px;">
             <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
               <span style="display:inline-block;width:4px;height:16px;background:#e8587a;border-radius:2px;"></span>
@@ -947,7 +959,7 @@ window.DpDispPanelDtl = {
               <span v-else style="color:#bbb;">내용 없음</span>
             </div>
             <div v-else ref="htmlDescEl"></div>
-          </div><!-- /내용 -->
+          </div><!-- ── /내용 ────────────────────────────────────────────────────────────── -->
 
           <div class="form-actions">
             <template v-if="viewMode">
@@ -963,7 +975,7 @@ window.DpDispPanelDtl = {
         <!-- ── 1~5행 콘텐츠 ── -->
         <div v-if="cfActiveRow">
 
-          <!-- ■ 섹션 1: 설정 -->
+          <!-- ── ■ 섹션 1: 설정 ───────────────────────────────────────────── -->
           <div style="margin-bottom:14px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
             <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
               <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
@@ -978,7 +990,7 @@ window.DpDispPanelDtl = {
               </span>
             </div>
 
-            <!-- 🔗 참조 정보 -->
+            <!-- ── 🔗 참조 정보 ────────────────────────────────────────────── -->
             <div v-if="cfActiveRow.refLibId"
               style="background:linear-gradient(135deg,#f3e5f5 0%,#fff 100%);border:1px dashed #ce93d8;border-radius:10px;padding:12px 14px;margin-bottom:14px;">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
@@ -1007,7 +1019,7 @@ window.DpDispPanelDtl = {
               </div>
             </div>
 
-            <!-- 노출순서 + 전시여부 -->
+            <!-- ── 노출순서 + 전시여부 ────────────────────────────────────────── -->
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
               <div style="display:flex;align-items:center;gap:8px;">
                 <label style="font-size:12px;font-weight:600;color:#555;white-space:nowrap;">노출 순서</label>
@@ -1022,7 +1034,7 @@ window.DpDispPanelDtl = {
               <span style="font-size:10px;color:#aaa;">(배치로 자동 관리됨)</span>
             </div>
 
-            <!-- 전시기간 -->
+            <!-- ── 전시기간 ───────────────────────────────────────────────── -->
             <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
               📅 전시기간 <span style="font-size:10px;color:#aaa;font-weight:400;">(미설정 시 패널 기간 사용)</span>
             </div>
@@ -1039,7 +1051,7 @@ window.DpDispPanelDtl = {
               </div>
             </div>
 
-            <!-- 전시환경 -->
+            <!-- ── 전시환경 ───────────────────────────────────────────────── -->
             <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🌍 전시환경</div>
             <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
               <label v-for="opt in dispEnvOptions" :key="opt?.code"
@@ -1059,7 +1071,7 @@ window.DpDispPanelDtl = {
               </label>
             </div>
 
-            <!-- 공개대상 -->
+            <!-- ── 공개대상 ───────────────────────────────────────────────── -->
             <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🔒 공개대상 (하나라도 해당하면 노출)</div>
             <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
               <label v-for="opt in cfVisibilityOptions" :key="opt?.codeValue"
@@ -1079,9 +1091,9 @@ window.DpDispPanelDtl = {
               </label>
             </div>
             <div v-if="!cfActiveRow.visibilityTargets" style="font-size:11px;color:#d32f2f;margin-bottom:4px;">⚠ 선택 없음 — 아무에게도 노출되지 않습니다.</div>
-          </div><!-- /설정 영역 -->
+          </div><!-- ── /설정 영역 ─────────────────────────────────────────────────────────── -->
 
-          <!-- ■ 섹션 2: 제목 -->
+          <!-- ── ■ 섹션 2: 제목 ───────────────────────────────────────────── -->
           <div style="margin-bottom:14px;padding:14px;background:#faf8ff;border:1px solid #e9d5ff;border-radius:8px;">
             <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
               <span style="display:inline-block;width:4px;height:16px;background:#7c3aed;border-radius:2px;"></span>
@@ -1101,9 +1113,9 @@ window.DpDispPanelDtl = {
               <input v-model="cfActiveRow.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="viewMode"
                 style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
             </div>
-          </div><!-- /제목 영역 -->
+          </div><!-- ── /제목 영역 ─────────────────────────────────────────────────────────── -->
 
-          <!-- ■ 섹션 3: 내용 -->
+          <!-- ── ■ 섹션 3: 내용 ───────────────────────────────────────────── -->
           <div style="margin-bottom:14px;padding:14px;background:#fff8fa;border:1px solid #fce4ec;border-radius:8px;">
             <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
               <span style="display:inline-block;width:4px;height:16px;background:#e8587a;border-radius:2px;flex-shrink:0;"></span>
@@ -1117,7 +1129,7 @@ window.DpDispPanelDtl = {
               </span>
             </div>
 
-            <!-- HTML 에디터 (Quill) -->
+            <!-- ── HTML 에디터 (Quill) ───────────────────────────────────── -->
             <div v-if="cfIsHtmlEditor" style="margin-bottom:20px;">
               <div v-if="viewMode"
                 style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;">
@@ -1138,7 +1150,7 @@ window.DpDispPanelDtl = {
               </template>
             </div>
 
-            <!-- 파일목록 -->
+            <!-- ── 파일목록 ───────────────────────────────────────────────── -->
             <div v-else-if="cfIsFileList" style="margin-bottom:20px;">
               <div v-if="viewMode">
                 <div v-if="cfFileListItems.length===0" style="color:#bbb;padding:12px 0;font-size:13px;">첨부파일 없음</div>
@@ -1194,7 +1206,7 @@ window.DpDispPanelDtl = {
               </div>
             </div>
 
-            <!-- 일반 표현 설정 테이블 (조건상품 포함) -->
+            <!-- ── 일반 표현 설정 테이블 (조건상품 포함) ─────────────────────────────── -->
             <div v-else-if="cfDisplayRows.length===0" style="color:#bbb;text-align:center;padding:20px 0 24px;font-size:13px;">
               위젯 유형을 선택하면 표현 설정 항목이 표시됩니다.
             </div>
@@ -1252,7 +1264,7 @@ window.DpDispPanelDtl = {
               </tbody>
             </table>
 
-            <!-- 클릭동작 -->
+            <!-- ── 클릭동작 ───────────────────────────────────────────────── -->
             <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:8px;">👆 클릭동작</div>
             <table class="bo-table" style="margin-bottom:8px;">
               <thead><tr><th style="width:180px;">항목</th><th>값</th></tr></thead>
@@ -1282,7 +1294,7 @@ window.DpDispPanelDtl = {
                 </tr>
               </tbody>
             </table>
-          </div><!-- /내용 영역 -->
+          </div><!-- ── /내용 영역 ─────────────────────────────────────────────────────────── -->
 
           <div class="form-actions">
             <template v-if="viewMode">
@@ -1295,21 +1307,21 @@ window.DpDispPanelDtl = {
           </div>
         </div>
 
-      </div><!-- /폼 영역 -->
+      </div><!-- ── /폼 영역 ──────────────────────────────────────────────────────────── -->
 
-      <!-- 스플리터 -->
+      <!-- ── 스플리터 ─────────────────────────────────────────────────────── -->
       <div @mousedown="onSplitDrag"
         style="width:6px;cursor:col-resize;background:#e8e8e8;flex-shrink:0;position:relative;"
         title="드래그로 폭 조절">
         <div style="position:absolute;top:50%;left:1px;transform:translateY(-50%);width:4px;height:32px;background:#bbb;border-radius:2px;"></div>
       </div>
-      <!-- 위젯미리보기 패널 -->
+      <!-- ── 위젯미리보기 패널 ────────────────────────────────────────────────── -->
       <div :style="{
         width: previewPaneWidth + 'px', flexShrink:0,
         borderLeft:'1px solid #e8e8e8', background:'#f7f8fb',
         display:'flex', flexDirection:'column', overflow:'hidden',
       }">
-        <!-- 위젯미리보기 타이틀 -->
+        <!-- ── 위젯미리보기 타이틀 ─────────────────────────────────────────────── -->
         <div style="padding:10px 14px;border-bottom:1px solid #e0e0e0;background:#f0f2f7;flex-shrink:0;display:flex;align-items:center;gap:6px;">
           <span style="font-size:11px;font-weight:700;color:#555;letter-spacing:.5px;cursor:help;position:relative;"
             @mouseenter="showComponentTooltip=true" @mouseleave="showComponentTooltip=false">
@@ -1322,7 +1334,7 @@ window.DpDispPanelDtl = {
             {{ tab==='info' ? '전체 전시항목' : (window.safeArrayUtils.safeFind(cfTabLabels, t=>t.key===tab)||{}).label }}
           </span>
         </div>
-        <!-- 디바이스 모드 버튼 -->
+        <!-- ── 디바이스 모드 버튼 ─────────────────────────────────────────────── -->
         <div style="padding:8px 10px 0;">
           <div style="display:flex;gap:4px;padding:3px;background:#eef0f3;border-radius:6px;">
             <button v-for="m in PREVIEW_MODES" :key="m?.value"
@@ -1336,14 +1348,14 @@ window.DpDispPanelDtl = {
               }">{{ m.label }}</button>
           </div>
         </div>
-        <!-- 위젯미리보기 내용 (디바이스 프레임) -->
+        <!-- ── 위젯미리보기 내용 (디바이스 프레임) ───────────────────────────────────── -->
         <div style="flex:1;overflow:auto;padding:10px;">
         <div :style="{
           width: cfPreviewFrameWidth, margin:'0 auto', border:'1px solid #d0d7de', borderRadius:'8px',
           background:'#fff', padding:'8px', transition:'width .2s',
           display:'flex', flexDirection:'column', gap:'10px',
         }">
-          <!-- 패널기본정보: 패널 전체 렌더 -->
+          <!-- ── 패널기본정보: 패널 전체 렌더 ─────────────────────────────────────── -->
           <template v-if="tab==='info'">
             <disp-x03-panel
               :params="{ }"
@@ -1352,7 +1364,7 @@ window.DpDispPanelDtl = {
               :show-header="true"
             />
           </template>
-          <!-- 위젯1~5: 해당 위젯만 -->
+          <!-- ── 위젯1~5: 해당 위젯만 ────────────────────────────────────────── -->
           <template v-else-if="cfActiveRow">
             <disp-x04-widget
               :params="{ }"
@@ -1360,19 +1372,19 @@ window.DpDispPanelDtl = {
               :widget-item="{...cfActiveRow, widgetNm: cfActiveRow.widgetNm||(window.safeArrayUtils.safeFind(cfTabLabels, t=>t.key===tab)||{}).label||'위젯', status:'활성', condition:'항상 표시'}"
             />
           </template>
-        </div><!-- /device frame -->
+        </div><!-- ── /device frame ──────────────────────────────────────────────────── -->
         </div>
-      </div><!-- /위젯미리보기 패널 -->
+      </div><!-- ── /위젯미리보기 패널 ─────────────────────────────────────────────────────── -->
 
-      </div><!-- /우측 콘텐츠 -->
-    </div><!-- /탭 모드 flex -->
-    </div><!-- /내부 flex -->
+      </div><!-- ── /우측 콘텐츠 ────────────────────────────────────────────────────────── -->
+    </div><!-- ── /탭 모드 flex ─────────────────────────────────────────────────────── -->
+    </div><!-- ── /내부 flex ───────────────────────────────────────────────────────── -->
 
-    <!-- ═══════════════════ 펼치기(아코디언) 모드 ═══════════════════ -->
+    <!-- ── ═══════════════════ 펼치기(아코디언) 모드 ═══════════════════ ───────── -->
     <div v-else>
       <div v-for="(t, tIdx) in cfTabLabels" :key="'va_'+t.key" style="margin-bottom:4px;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
 
-        <!-- 섹션 헤더 -->
+        <!-- ── 섹션 헤더 ──────────────────────────────────────────────────── -->
         <div @click="toggleSection(t.key)"
           style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;cursor:pointer;user-select:none;transition:background .15s;"
           :style="isSectionExpanded(t.key) ? 'background:#fff0f4;' : 'background:#f2f2f2;'">
@@ -1380,7 +1392,7 @@ window.DpDispPanelDtl = {
             <span style="font-size:13px;font-weight:700;" :style="isSectionExpanded(t.key) ? 'color:#e8587a;' : 'color:#555;'">
               {{ t.label }}
             </span>
-            <!-- 위젯 이동 버튼: 위젯 섹션이 열려 있을 때만 표시 -->
+            <!-- ── 위젯 이동 버튼: 위젯 섹션이 열려 있을 때만 표시 ───────────────────────── -->
             <template v-if="t.key !== 'info' && isSectionExpanded(t.key)">
               <button @click.stop="moveRowAt(cfTabRowMap[t.key], -1)" :disabled="cfTabRowMap[t.key]===0"
                 style="font-size:10px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 6px;color:#888;"
@@ -1388,7 +1400,7 @@ window.DpDispPanelDtl = {
               <button @click.stop="moveRowAt(cfTabRowMap[t.key], 1)" :disabled="cfTabRowMap[t.key]===rows.length-1"
                 style="font-size:10px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 6px;color:#888;"
                 :style="cfTabRowMap[t.key]===rows.length-1?'opacity:0.3;cursor:default;':''">▼</button>
-              <!-- 삭제 버튼 (위젯2부터) -->
+              <!-- ── 삭제 버튼 (위젯2부터) ────────────────────────────────────── -->
               <button v-if="tIdx >= 2" @click.stop="removeWidget(cfTabRowMap[t.key])"
                 style="font-size:11px;padding:1px 7px;border:1px solid #fca5a5;border-radius:4px;background:#fff0f0;color:#dc2626;cursor:pointer;">✕</button>
             </template>
@@ -1404,7 +1416,7 @@ window.DpDispPanelDtl = {
           </div>
         </div>
 
-        <!-- 섹션 콘텐츠 -->
+        <!-- ── 섹션 콘텐츠 ─────────────────────────────────────────────────── -->
         <div v-show="isSectionExpanded(t.key)" style="padding:20px 24px;background:#fff;border-top:1px solid #f0f0f0;">
 
           <!-- ── 패널정보 ── -->
@@ -1447,7 +1459,7 @@ window.DpDispPanelDtl = {
                 <option>활성</option><option>비활성</option>
               </select>
             </div>
-            <!-- 타이틀 설정 -->
+            <!-- ── 타이틀 설정 ─────────────────────────────────────────────── -->
             <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">🏷 타이틀 설정</div>
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
               <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀 표시</label>
@@ -1481,7 +1493,7 @@ window.DpDispPanelDtl = {
           </div>
 
           <!-- ── 위젯 1~5: 각 섹션이 독립 row 바인딩 ── -->
-          <!-- v-for 단일 아이템 트릭으로 r 로컬 변수 생성 -->
+          <!-- ── v-for 단일 아이템 트릭으로 r 로컬 변수 생성 ─────────────────────────── -->
           <template v-else-if="t.key !== 'info'" v-for="r in [rows[cfTabRowMap[t.key]]]" :key="'r_'+t.key">
             <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">📐 위젯 설정</div>
             <div class="form-row" style="margin-bottom:16px;">
@@ -1512,7 +1524,7 @@ window.DpDispPanelDtl = {
             </div>
 
             <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">🎨 표현 설정</div>
-            <!-- HTML 에디터: 펼치기 모드에서는 textarea로 표시 -->
+            <!-- ── HTML 에디터: 펼치기 모드에서는 textarea로 표시 ───────────────────── -->
             <div v-if="fnRowIsHtmlEditor(r)" style="margin-bottom:20px;">
               <div v-if="viewMode" style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;">
                 <span v-if="r.htmlContent" v-html="r.htmlContent"></span>
@@ -1520,7 +1532,7 @@ window.DpDispPanelDtl = {
               </div>
               <textarea v-else class="form-control" v-model="r.htmlContent" rows="6" style="font-family:monospace;font-size:12px;" placeholder="HTML 코드를 입력하세요 (탭 모드에서 Quill 에디터 사용 가능)"></textarea>
             </div>
-            <!-- 파일목록 -->
+            <!-- ── 파일목록 ───────────────────────────────────────────────── -->
             <div v-else-if="fnRowIsFileList(r)" style="margin-bottom:20px;">
               <div v-if="viewMode">
                 <div v-if="fnGetFileListItems(r).length===0" style="color:#bbb;padding:12px 0;font-size:13px;">첨부파일 없음</div>
@@ -1546,7 +1558,7 @@ window.DpDispPanelDtl = {
                 <button @click="fnAddFileItemAt(r)" style="font-size:12px;padding:5px 12px;border:1px dashed #aaa;border-radius:5px;background:#fafafa;cursor:pointer;color:#555;">+ 파일 추가</button>
               </div>
             </div>
-            <!-- 일반 표현 설정 -->
+            <!-- ── 일반 표현 설정 ───────────────────────────────────────────── -->
             <div v-else-if="fnGetDisplayRows(r).length===0" style="color:#bbb;text-align:center;padding:20px 0 24px;font-size:13px;">위젯 유형을 선택하면 표현 설정 항목이 표시됩니다.</div>
             <table v-else class="bo-table" style="margin-bottom:20px;">
               <thead><tr><th style="width:180px;">항목</th><th>값</th></tr></thead>
@@ -1639,9 +1651,9 @@ window.DpDispPanelDtl = {
             </div>
           </template>
 
-        </div><!-- /섹션 콘텐츠 -->
-      </div><!-- /v-for 섹션 -->
-      <!-- 위젯 추가 버튼 (펼치기 모드) -->
+        </div><!-- ── /섹션 콘텐츠 ────────────────────────────────────────────────────────── -->
+      </div><!-- ── /v-for 섹션 ──────────────────────────────────────────────────────── -->
+      <!-- ── 위젯 추가 버튼 (펼치기 모드) ────────────────────────────────────────── -->
       <div v-if="rows.length < MAX_WIDGETS" style="margin-top:6px;">
         <button @click="!cfIsNew && addWidget()" :disabled="cfIsNew"
           :title="cfIsNew ? '저장 후 전시항목을 추가할 수 있습니다.' : ''"
@@ -1649,11 +1661,11 @@ window.DpDispPanelDtl = {
           + 위젯 추가
         </button>
       </div>
-    </div><!-- /펼치기 아코디언 모드 -->
+    </div><!-- ── /펼치기 아코디언 모드 ───────────────────────────────────────────────────── -->
 
   </div>
 
-  <!-- 위젯미리보기 모달 -->
+  <!-- ── 위젯미리보기 모달 ────────────────────────────────────────────────────── -->
   <disp-preview-modal
     :show="preview.show"
     mode="single"
@@ -1664,27 +1676,27 @@ window.DpDispPanelDtl = {
     @close="closePreview"
   />
 
-  <!-- 패널미리보기 오버레이 -->
+  <!-- ── 패널미리보기 오버레이 ──────────────────────────────────────────────────── -->
   <div v-if="cardPreview && cardPreview.show"
     @click.self="closeCardPreview"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:14px;width:520px;max-width:92vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.35);">
-      <!-- 헤더 -->
+      <!-- ── 헤더 ───────────────────────────────────────────────────────── -->
       <div style="background:linear-gradient(135deg,#e8587a,#c0395e);color:#fff;padding:15px 20px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:14px;font-weight:700;">🖼 패널미리보기</span>
         <button @click="closeCardPreview" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;opacity:0.85;line-height:1;padding:0;">×</button>
       </div>
-      <!-- 카드 본문 -->
+      <!-- ── 카드 본문 ────────────────────────────────────────────────────── -->
       <div style="padding:24px;">
-        <!-- 영역 + 상태 배지 -->
+        <!-- ── 영역 + 상태 배지 ─────────────────────────────────────────────── -->
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
           <code style="font-size:11px;background:#f0f2f5;color:#555;padding:3px 8px;border-radius:4px;letter-spacing:.3px;">{{ form.area }}</code>
           <span style="font-size:12px;background:#e8f4fd;color:#1565c0;border-radius:10px;padding:2px 10px;">{{ cfCurrentAreaLabel }}</span>
           <span class="badge" :class="form.status==='활성'?'badge-green':'badge-gray'" style="font-size:12px;">{{ form.status }}</span>
         </div>
-        <!-- 패널명 -->
+        <!-- ── 패널명 ────────────────────────────────────────────────────── -->
         <div style="font-size:22px;font-weight:800;color:#222;margin-bottom:16px;line-height:1.3;">{{ form.name || '(패널명 없음)' }}</div>
-        <!-- 위젯 구성 -->
+        <!-- ── 위젯 구성 ──────────────────────────────────────────────────── -->
         <div style="border-top:1px solid #f0f0f0;padding-top:14px;">
           <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:10px;">📐 위젯 구성</div>
           <div v-for="(r, i) in rows" :key="Math.random()"
@@ -1697,20 +1709,20 @@ window.DpDispPanelDtl = {
           </div>
         </div>
       </div>
-      <!-- 푸터 -->
+      <!-- ── 푸터 ───────────────────────────────────────────────────────── -->
       <div style="padding:12px 20px;background:#f8f8f8;border-top:1px solid #f0f0f0;border-radius:0 0 14px 14px;text-align:right;">
         <button @click="closeCardPreview" class="btn btn-secondary btn-sm">닫기</button>
       </div>
     </div>
   </div>
 
-  <!-- 전시위젯Lib 선택 팝업 -->
+  <!-- ── 전시위젯Lib 선택 팝업 ────────────────────────────────────────────────── -->
   <widget-lib-pick-modal v-if="libPickOpen" :mode="libPickMode"
     :widget-libs="[] || []"
     @close="libPickOpen=false"
     @pick="onLibPicked" />
 
-  <!-- 전시항목 복사 팝업 -->
+  <!-- ── 전시항목 복사 팝업 ───────────────────────────────────────────────────── -->
   <row-pick-modal v-if="rowCopyOpen"
     :title="'전시항목 복사 [' + (form.name || '현재 패널') + ']'"
     :displays="[] || []"

@@ -39,6 +39,8 @@ window.SyBizMng = {
     const cfTree = computed(() => window.boCmUtil.buildPathTree('sy_biz'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -63,6 +65,8 @@ window.SyBizMng = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -81,6 +85,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage; const s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const setPage = n => { if(n>=1 && n<=pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
     watch(() => uiState.selectedPath, () => { pager.pageNo = 1; handleSearchList('DEFAULT'); });
 
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
@@ -137,6 +142,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const openPathPick = () => { pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; };
     const onPathPicked = (pathId) => { formData.pathId = pathId; };
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return { bizs, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, STATUS, BIZ_CLASS, VENDOR_TYPES,
@@ -229,7 +236,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         </div>
       </div>
 
-      <!-- 인라인 신규/수정 폼 -->
+      <!-- ── 인라인 신규/수정 폼 ──────────────────────────────────────────────── -->
       <div v-if="uiState.formMode" class="card" style="margin-top:16px;border:2px solid #e8587a;">
         <div class="toolbar">
           <span class="list-title">

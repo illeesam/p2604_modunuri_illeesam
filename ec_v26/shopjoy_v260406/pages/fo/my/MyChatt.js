@@ -25,6 +25,8 @@ window.MyChatt = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -42,7 +44,11 @@ window.MyChatt = {
       if (dateParams) onDateSearch(dateParams);
       await myStore.loadChats();
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return { myStore, chats, expandedChat, chatPager, paginate, cfDateFilteredChats, onDateSearch, onSearch, uiState, codes };
   },

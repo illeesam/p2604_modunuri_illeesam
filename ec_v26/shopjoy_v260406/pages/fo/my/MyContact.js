@@ -25,6 +25,8 @@ window.MyContact = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -50,7 +52,11 @@ window.MyContact = {
       if (dateParams) onDateSearch(dateParams);
       await myStore.loadInquiries();
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return {
       myStore, inquiries, expandedInquiry,

@@ -23,12 +23,15 @@ window.Cart = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
       }
     });
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     /* ── 체크박스 ── */
     const isChecked = (idx) => uiState.checkedIdxs.has(idx);
@@ -110,6 +113,8 @@ window.Cart = {
       if (ok) { props.clearCart(); uiState.checkedIdxs.clear(); }
     };
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return {
       isChecked, toggleCheck, cfAllChecked, cfSomeChecked, toggleAll,
       removeItem, goOrder,
@@ -119,7 +124,7 @@ window.Cart = {
 
   template: /* html */ `
 <div class="page-wrap">
-  <!-- 페이지 타이틀 배너 -->
+  <!-- ── 페이지 타이틀 배너 ───────────────────────────────────────────────────── -->
   <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-1.jpg" alt="장바구니"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 60%;" />
@@ -135,20 +140,20 @@ window.Cart = {
     </div>
   </div>
 
-  <!-- 빈 장바구니 -->
+  <!-- ── 빈 장바구니 ───────────────────────────────────────────────────────── -->
   <div v-if="cart.length===0" style="text-align:center;padding:80px 20px;">
     <div style="font-size:4rem;margin-bottom:20px;">🛒</div>
     <p style="color:var(--text-muted);font-size:1rem;margin-bottom:24px;">장바구니가 비어 있어요</p>
     <button class="btn-blue" @click="navigate('prodList')" style="padding:12px 28px;">쇼핑하러 가기</button>
   </div>
 
-  <!-- 장바구니 목록 -->
+  <!-- ── 장바구니 목록 ──────────────────────────────────────────────────────── -->
   <template v-else>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(12px,2vw,24px);align-items:start;" class="order-grid">
-      <!-- 왼쪽: 상품 목록 -->
+      <!-- ── 왼쪽: 상품 목록 ────────────────────────────────────────────────── -->
       <div>
         <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px;">
-          <!-- 전체 선택/삭제 헤더 -->
+          <!-- ── 전체 선택/삭제 헤더 ──────────────────────────────────────────── -->
           <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
             <label style="display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;">
               <input type="checkbox" :checked="cfAllChecked" :indeterminate.prop="cfSomeChecked"
@@ -170,24 +175,24 @@ window.Cart = {
             </button>
           </div>
 
-          <!-- 각 상품 -->
+          <!-- ── 각 상품 ─────────────────────────────────────────────────── -->
           <div v-for="(item, idx) in cart" :key="idx"
             style="padding:20px;display:flex;gap:12px;align-items:flex-start;"
             :style="{ borderBottom: idx===cart.length-1 ? 'none' : '1px solid var(--border)',
                       background: isChecked(idx) ? 'var(--blue-dim)' : '' }">
 
-            <!-- 체크박스 -->
+            <!-- ── 체크박스 ───────────────────────────────────────────────── -->
             <div style="padding-top:4px;flex-shrink:0;">
               <input type="checkbox" :checked="isChecked(idx)" @change="toggleCheck(idx)"
                 style="width:17px;height:17px;cursor:pointer;accent-color:var(--blue);" />
             </div>
 
-            <!-- 상품 이미지 -->
+            <!-- ── 상품 이미지 ─────────────────────────────────────────────── -->
             <div style="width:80px;height:80px;border-radius:12px;flex-shrink:0;overflow:hidden;background:var(--bg-base);">
               <img v-if="item.product.image" :src="item.product.image" :alt="item.product.prodNm" style="width:100%;height:100%;object-fit:cover;" />
             </div>
 
-            <!-- 상품 정보 -->
+            <!-- ── 상품 정보 ──────────────────────────────────────────────── -->
             <div style="flex:1;min-width:0;">
               <div style="font-weight:700;color:var(--text-primary);font-size:0.95rem;margin-bottom:4px;">
                 {{ item.product.prodNm }}
@@ -211,7 +216,7 @@ window.Cart = {
               </div>
             </div>
 
-            <!-- 삭제 버튼 -->
+            <!-- ── 삭제 버튼 ──────────────────────────────────────────────── -->
             <button @click="removeItem(idx)"
               style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.2rem;padding:0;flex-shrink:0;transition:color 0.2s;"
               @mouseenter="$event.currentTarget.style.color='#e53e3e'"
@@ -223,7 +228,7 @@ window.Cart = {
         <button class="btn-outline" @click="navigate('prodList')" style="padding:10px 20px;">← 계속 쇼핑하기</button>
       </div>
 
-      <!-- 오른쪽: 주문 요약 -->
+      <!-- ── 오른쪽: 주문 요약 ───────────────────────────────────────────────── -->
       <div>
         <div class="card" style="padding:clamp(12px,3vw,24px);position:sticky;top:76px;">
           <h2 style="font-size:1rem;font-weight:700;margin-bottom:18px;color:var(--text-primary);">📋 주문 요약</h2>

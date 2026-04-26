@@ -22,6 +22,8 @@ window.StRawMng = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -87,6 +89,8 @@ const rawList = reactive([]);
         console.error('[catch-info]', _);
       }
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -135,6 +139,8 @@ const rawList = reactive([]);
       }
     };
 
+    // ── return ───────────────────────────────────────────────────────────────
+
   return {
       uiState, handleDateRangeChange,
       DATE_RANGE_OPTIONS, searchParam,
@@ -159,7 +165,7 @@ const rawList = reactive([]);
 
   <!-- ── 검색 카드 ── -->
   <div class="card">
-    <!-- 1행: 기간 + 기본 필터 -->
+    <!-- ── 1행: 기간 + 기본 필터 ─────────────────────────────────────────────── -->
     <div class="search-bar" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">
       <select v-model="uiState.dateRange" @change="handleDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
@@ -180,7 +186,7 @@ const rawList = reactive([]);
       </select>
       <input v-model="searchParam.kw" placeholder="원장ID / 소스ID / 업체명 / 상품명 / 브랜드" style="width:230px" @keyup.enter="() => onSearch?.()" />
     </div>
-    <!-- 2행: 추가 필터 -->
+    <!-- ── 2행: 추가 필터 ──────────────────────────────────────────────────── -->
     <div class="search-bar" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">
       <select v-model="searchParam.vendorType" style="width:110px">
         <option value="">업체구분 전체</option>
@@ -221,7 +227,7 @@ const rawList = reactive([]);
         </button>
       </div>
     </div>
-    <!-- 3행: 상세검색 펼치기 -->
+    <!-- ── 3행: 상세검색 펼치기 ───────────────────────────────────────────────── -->
     <div v-if="uiState.searchMoreOpen" class="search-bar" style="flex-wrap:wrap;gap:8px;padding-top:8px;border-top:1px solid #f0f0f0">
       <select v-model="searchParam.orderStatus" style="width:120px">
         <option value="">주문상태 전체</option>
@@ -303,7 +309,7 @@ const rawList = reactive([]);
       </thead>
       <tbody>
         <template v-for="r in rawList" :key="r?.rawId">
-          <!-- 기본 행 -->
+          <!-- ── 기본 행 ─────────────────────────────────────────────────── -->
           <tr :style="isExpanded(r.rawId) ? 'background:#fafbff' : ''" style="cursor:pointer" @click="toggleRow(r.rawId)">
             <td style="text-align:center;color:#aaa;font-size:11px;user-select:none">
               {{ isExpanded(r.rawId) ? '▲' : '▼' }}
@@ -328,11 +334,11 @@ const rawList = reactive([]);
             <td><span class="badge" :class="r.closeYn==='Y'?'badge-purple':'badge-gray'">{{ r.closeYn==='Y'?'마감':'미마감' }}</span></td>
             <td><span class="badge" :class="r.erpSendYn==='Y'?'badge-green':'badge-gray'">{{ r.erpSendYn==='Y'?'전송':'미전송' }}</span></td>
           </tr>
-          <!-- 펼침 상세 행 -->
+          <!-- ── 펼침 상세 행 ──────────────────────────────────────────────── -->
           <tr v-if="isExpanded(r.rawId)">
             <td colspan="14" style="background:#f4f6fb;padding:12px 20px;border-top:none">
               <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;font-size:12px">
-                <!-- 주문정보 -->
+                <!-- ── 주문정보 ───────────────────────────────────────────── -->
                 <div>
                   <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">주문 정보</div>
                   <table style="width:100%;border-collapse:collapse">
@@ -347,7 +353,7 @@ const rawList = reactive([]);
                     <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">정산기간</td><td>{{ r.settlePeriod }}</td></tr>
                   </table>
                 </div>
-                <!-- 상품/가격 정보 -->
+                <!-- ── 상품/가격 정보 ───────────────────────────────────────── -->
                 <div>
                   <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">상품 · 가격</div>
                   <table style="width:100%;border-collapse:collapse">
@@ -360,7 +366,7 @@ const rawList = reactive([]);
                     <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">소계</td><td style="font-weight:600">{{ fmtW(r.itemPrice) }}</td></tr>
                   </table>
                 </div>
-                <!-- 할인/혜택 -->
+                <!-- ── 할인/혜택 ──────────────────────────────────────────── -->
                 <div>
                   <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">할인 · 혜택</div>
                   <table style="width:100%;border-collapse:collapse">
@@ -374,7 +380,7 @@ const rawList = reactive([]);
                     <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">적립예정</td><td style="color:#27ae60">{{ r.saveSchdAmt ? fmtW(r.saveSchdAmt) : '-' }}</td></tr>
                   </table>
                 </div>
-                <!-- 정산/마감/ERP -->
+                <!-- ── 정산/마감/ERP ──────────────────────────────────────── -->
                 <div>
                   <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">정산 · 마감 · ERP</div>
                   <table style="width:100%;border-collapse:collapse">

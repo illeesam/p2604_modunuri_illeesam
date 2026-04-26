@@ -26,6 +26,8 @@ window.XsSample02 = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -104,6 +106,8 @@ window.XsSample02 = {
       }).forEach(d => gridRows.push(makeRow(d)));
       Vue.nextTick(setupObserver);
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       Object.assign(searchParamOrg, searchParam);
@@ -210,6 +214,8 @@ window.XsSample02 = {
     const cfTotal        = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
     const CATEGORY_OPTS = ['상의', '하의', '아우터', '원피스', '신발', '가방'];
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return {
       toast, searchParam, CATEGORY_OPTS, onSearch, onReset,
       gridRows, cfVisibleRows, cfTotal, visibleCount, cfHasMore, loadMore: handleLoadMore, sentinelEl,
@@ -222,19 +228,19 @@ window.XsSample02 = {
   template: /* html */`
 <div style="padding:clamp(12px,3vw,24px);">
 
-  <!-- Toast -->
+  <!-- ── Toast ────────────────────────────────────────────────────────── -->
   <div v-if="toast.show" style="position:fixed;top:20px;right:20px;z-index:9999;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.15);pointer-events:none;"
     :style="toast.type==='error'?'background:#fee2e2;color:#991b1b;':toast.type==='info'?'background:#dbeafe;color:#1e40af;':'background:#d1fae5;color:#065f46;'">
     {{ toast.msg }}
   </div>
 
-  <!-- 제목 -->
+  <!-- ── 제목 ───────────────────────────────────────────────────────────── -->
   <div style="font-size:16px;font-weight:700;margin-bottom:12px;">
     02. 상품 관리
     <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">Infinity Scroll CRUD Grid</span>
   </div>
 
-  <!-- 검색 -->
+  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <input v-model="searchParam.kw" placeholder="상품명 검색" @keyup.enter="onSearch"
@@ -251,9 +257,9 @@ window.XsSample02 = {
     </div>
   </div>
 
-  <!-- CRUD Grid -->
+  <!-- ── CRUD Grid ────────────────────────────────────────────────────── -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
-    <!-- 툴바 -->
+    <!-- ── 툴바 ─────────────────────────────────────────────────────────── -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #f0f0f0;">
       <span style="font-size:12px;font-weight:700;">
         상품 목록
@@ -268,7 +274,7 @@ window.XsSample02 = {
       </div>
     </div>
 
-    <!-- 테이블 -->
+    <!-- ── 테이블 ────────────────────────────────────────────────────────── -->
     <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:720px;">
         <thead>
@@ -346,7 +352,7 @@ window.XsSample02 = {
       </table>
     </div>
 
-    <!-- 로딩 표시 (IntersectionObserver sentinel) -->
+    <!-- ── 로딩 표시 (IntersectionObserver sentinel) ──────────────────────── -->
     <div v-if="cfHasMore" ref="sentinelEl" style="padding:14px;text-align:center;font-size:12px;color:#aaa;border-top:1px solid #f5f5f5;">
       <span style="display:inline-flex;align-items:center;gap:6px;">
         <span style="display:inline-block;width:14px;height:14px;border:2px solid #e8587a;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;"></span>

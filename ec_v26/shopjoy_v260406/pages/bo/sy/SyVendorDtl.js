@@ -39,6 +39,8 @@ window.SyVendorDtl = {
       handleLoadData();
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
@@ -75,6 +77,8 @@ window.SyVendorDtl = {
         _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
       }
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleInitForm();
@@ -133,6 +137,9 @@ window.SyVendorDtl = {
 
     const memoEl = Vue.ref(null);
     Vue.watch(memoEl, (el) => { if (uiState) uiState.memoEl = el; });
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { vendors, uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, addrDetailRef, openKakaoPostcode, memoEl };
   },
   template: /* html */`
@@ -180,7 +187,7 @@ window.SyVendorDtl = {
       </div>
     </div>
 
-    <!-- 주소 영역 -->
+    <!-- ── 주소 영역 ──────────────────────────────────────────────────────── -->
     <div class="form-group">
       <label class="form-label">주소</label>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">

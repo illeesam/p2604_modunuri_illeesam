@@ -89,6 +89,8 @@ window.SyRoleMng = {
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -113,6 +115,8 @@ window.SyRoleMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
+
+    // ── watch ────────────────────────────────────────────────────────────────
 
     watch(isAppReady, (newVal) => {
       if (newVal) {
@@ -206,6 +210,9 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
 
     const makeRow = (r) => {
       const cat = Array.isArray(r.roleCat) ? [...r.roleCat] : [];
+
+    // ── return ───────────────────────────────────────────────────────────────
+
       return { ...r, _depth: r._depth || 0, _row_status: 'N', _row_check: false,
         restrictPerm: r.restrictPerm || '없음',
         roleCat: cat,
@@ -445,9 +452,13 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
       '역할목록.csv'
     );
     /* 트리 path 변경 시 자동 fetch */
+
     watch(() => uiState.selectedPath, () => { handleSearchList(); });
+
     watch(() => searchParam.treeCatFilter, () => { handleSearchList(); });
 
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return {
       uiState, codes,
@@ -468,7 +479,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
   },
   template: /* html */`
 <div>
-  <div class="page-title">역할관리</div>  <!-- 검색 -->
+  <div class="page-title">역할관리</div>  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="역할코드 / 역할명 검색" />
@@ -491,7 +502,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
 
 
 
-  <!-- 좌 트리 + 우 영역 -->
+  <!-- ── 좌 트리 + 우 영역 ──────────────────────────────────────────────────── -->
   <div style="display:grid;grid-template-columns:20fr 80fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 역할</span></div>
@@ -508,7 +519,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
       </div>
     </div>
     <div>
-<!-- CRUD 그리드 -->
+<!-- ── CRUD 그리드 ───────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>역할목록 <span class="list-count">{{ cfTotal }}건</span></span>
@@ -551,7 +562,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
           <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
           <td><input class="grid-input grid-mono" v-model="row.roleCode" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
 
-          <!-- 역할명 (블릿 트리) -->
+          <!-- ── 역할명 (블릿 트리) ──────────────────────────────────────────── -->
           <td style="padding:3px 6px;">
             <div style="display:flex;align-items:center;">
               <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
@@ -562,7 +573,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
             </div>
           </td>
 
-          <!-- 상위역할 -->
+          <!-- ── 상위역할 ─────────────────────────────────────────────────── -->
           <td style="padding:3px 8px;">
             <div style="display:flex;align-items:center;gap:5px;">
               <span v-if="row.parentId"
@@ -620,10 +631,10 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
     </div>
   </div>
 
-  <!-- 하단: 메뉴 배분 + 사용자 배분 -->
+  <!-- ── 하단: 메뉴 배분 + 사용자 배분 ───────────────────────────────────────────── -->
   <div style="display:flex;gap:16px;align-items:flex-start;">
 
-    <!-- 좌: 메뉴목록 -->
+    <!-- ── 좌: 메뉴목록 ────────────────────────────────────────────────────── -->
     <div style="flex:1;">
       <div class="card" style="margin-bottom:0;">
         <div class="toolbar" style="flex-wrap:wrap;gap:6px;">
@@ -644,19 +655,19 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
           </div>
         </div>
 
-        <!-- 메뉴 검색 -->
+        <!-- ── 메뉴 검색 ──────────────────────────────────────────────────── -->
         <div v-if="uiState.selectedRoleId" style="padding:8px 0 6px;">
           <input class="form-control" v-model="uiState.menuSearchKw" placeholder="메뉴명 또는 메뉴코드 검색"
             style="font-size:12px;padding:5px 10px;" />
         </div>
 
-        <!-- 메뉴 트리 목록 -->
+        <!-- ── 메뉴 트리 목록 ───────────────────────────────────────────────── -->
         <div v-if="uiState.selectedRoleId" style="max-height:340px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px;">
           <div v-if="!cfMenuTree.length" style="text-align:center;color:#bbb;padding:20px;font-size:13px;">메뉴가 없습니다.</div>
           <div v-for="m in cfMenuTree" :key="m.menuId"
             style="display:flex;align-items:center;padding:6px 10px;border-bottom:1px solid #f8f8f8;transition:background .1s;"
             :style="{ background: isMenuChecked(m.menuId) ? '#fff8f9' : '' }">
-            <!-- 블릿 트리 들여쓰기 -->
+            <!-- ── 블릿 트리 들여쓰기 ─────────────────────────────────────────── -->
             <span :style="{ marginLeft:(m._depth*14)+'px', marginRight:'5px', fontWeight:'700',
                             fontSize: m._depth===0?'7px':'11px', flexShrink:0,
                             color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(m._depth,3)] }">
@@ -664,7 +675,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
             </span>
             <span style="font-size:13px;color:#333;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ m.menuNm }}</span>
             <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin:0 8px;flex-shrink:0;">{{ m.menuCode }}</code>
-            <!-- 권한 레벨 토글 버튼 -->
+            <!-- ── 권한 레벨 토글 버튼 ────────────────────────────────────────── -->
             <div style="display:flex;gap:2px;flex-shrink:0;">
               <button v-for="p in PERM_LEVELS" :key="p"
                 style="font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid;cursor:pointer;font-weight:600;transition:all .1s;"
@@ -681,7 +692,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
       </div>
     </div>
 
-    <!-- 우: 대상사용자 -->
+    <!-- ── 우: 대상사용자 ───────────────────────────────────────────────────── -->
     <div style="flex:1;">
       <div class="card" style="margin-bottom:0;">
         <div class="toolbar">
@@ -694,7 +705,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
             @click="uiState.userSelectOpen=true">+ 사용자 추가</button>
         </div>
 
-        <!-- 선택된 사용자 목록 -->
+        <!-- ── 선택된 사용자 목록 ─────────────────────────────────────────────── -->
         <div v-if="uiState.selectedRoleId">
           <div v-if="!cfRoleUsersList.length"
             style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;border:1px dashed #e0e0e0;border-radius:6px;">
@@ -725,11 +736,11 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
     </div>
   </div>
 
-  <!-- 사용자 선택 모달 -->
+  <!-- ── 사용자 선택 모달 ────────────────────────────────────────────────────── -->
   <bo-user-select-modal v-if="uiState.userSelectOpen" @select="onUserSelect"
     @close="uiState.userSelectOpen=false" />
 
-  <!-- 상위역할 선택 모달 -->
+  <!-- ── 상위역할 선택 모달 ───────────────────────────────────────────────────── -->
   <role-tree-modal
     v-if="roleTreeModal && roleTreeModal.show" :exclude-id="roleTreeModal.targetRow && roleTreeModal.targetRow.roleId > 0 ? roleTreeModal.targetRow.roleId : null"
     @select="onParentSelect"

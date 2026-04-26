@@ -28,7 +28,11 @@ window.PmSaveDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
+
+    // ── watch ────────────────────────────────────────────────────────────────
+
         watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
+
         watch(() => uiState.viewMode2, v => { window._pmSaveDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
@@ -73,6 +77,7 @@ window.PmSaveDtl = {
       saveVal: yup.number().min(0, '적립값은 0 이상이어야 합니다.').required('적립값을 입력해주세요.'),
     });
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchDetail();
@@ -123,6 +128,9 @@ window.PmSaveDtl = {
     };
 
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { saves, uiState, codes, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
@@ -144,7 +152,7 @@ window.PmSaveDtl = {
   </div>
   <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
-    <!-- 기본정보 -->
+    <!-- ── 기본정보 ───────────────────────────────────────────────────────── -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <div class="form-group">
@@ -220,7 +228,7 @@ window.PmSaveDtl = {
         </div>
       </div>
 
-      <!-- 판매업체 선택 모달 -->
+      <!-- ── 판매업체 선택 모달 ───────────────────────────────────────────────── -->
       <div v-if="showVendorModal" class="modal-overlay" @click.self="showVendorModal=false">
         <div class="modal-box" style="width:400px;">
           <div class="modal-header">
@@ -250,7 +258,7 @@ window.PmSaveDtl = {
       </div>
     </div>
 
-    <!-- 공개대상 -->
+    <!-- ── 공개대상 ───────────────────────────────────────────────────────── -->
     <div class="card" v-show="showTab('visibility')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🔒 공개대상</div>
       <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">하나라도 해당하면 노출</div>
@@ -267,7 +275,7 @@ window.PmSaveDtl = {
       </div>
     </div>
 
-    <!-- 미리보기 -->
+    <!-- ── 미리보기 ───────────────────────────────────────────────────────── -->
     <div class="card" v-show="showTab('preview')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
       <div style="background:#f9f9f9;border-radius:10px;padding:20px;border:1px solid #e8e8e8;max-width:600px;">

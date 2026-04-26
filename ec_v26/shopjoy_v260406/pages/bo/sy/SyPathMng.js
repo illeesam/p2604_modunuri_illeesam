@@ -23,6 +23,8 @@ window.SyPathMng = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -64,6 +66,8 @@ window.SyPathMng = {
         if (props.showToast) props.showToast('표시경로 데이터 로드 실패', 'error');
       }
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
 
@@ -124,8 +128,11 @@ const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.lengt
     const setPage = n => { if (n>=1 && n<=pager.pageTotalPage) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
     const cfPagedRows = computed(() => { const s = (pager.pageNo-1)*pager.pageSize; return cfGridRows.value.slice(s, s+pager.pageSize); });
+
     watch(() => cfGridRows.value.length, () => { if (pager.pageNo > pager.pageTotalPage) pager.pageNo = Math.max(1, pager.pageTotalPage); });
+
     watch(() => uiState.selectedBiz, () => { uiState.selectedPathId = null; pager.pageNo = 1; });
+
     watch(() => uiState.selectedPathId, () => { pager.pageNo = 1; });
 
     /* ── CRUD ── */
@@ -245,6 +252,8 @@ const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.lengt
       return r ? r.pathLabel : '';
     };
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return {
       uiState, codes,
       searchParam, BIZ_OPTIONS, bizLabel,
@@ -260,7 +269,7 @@ const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.lengt
 <div class="bo-wrap">
   <div class="page-title">표시경로</div>
 
-  <!-- 검색 -->
+  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
   <div class="card" style="padding:12px;margin-bottom:12px;">
     <div class="search-bar">
       <span class="search-label">업무코드 (biz_cd)</span>
@@ -280,10 +289,10 @@ const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.lengt
     </div>
   </div>
 
-  <!-- 좌 트리 + 우 그리드 -->
+  <!-- ── 좌 트리 + 우 그리드 ─────────────────────────────────────────────────── -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
 
-    <!-- 트리 -->
+    <!-- ── 트리 ─────────────────────────────────────────────────────────── -->
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;">
         <span class="list-title" style="font-size:13px;">📂 {{ bizLabel(uiState.selectedBiz) }} 경로 트리</span>
@@ -298,7 +307,7 @@ const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.lengt
       </div>
     </div>
 
-    <!-- CRUD 그리드 -->
+    <!-- ── CRUD 그리드 ───────────────────────────────────────────────────── -->
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:10px;">
         <span class="list-title">
@@ -385,7 +394,7 @@ const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.lengt
     </div>
   </div>
 
-  <!-- 부모경로 선택 모달 -->
+  <!-- ── 부모경로 선택 모달 ───────────────────────────────────────────────────── -->
   <div v-if="parentModalState.show" class="modal-overlay" @click.self="closeParentModal">
     <div class="modal-box" style="max-width:400px;">
       <div class="modal-header">

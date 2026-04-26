@@ -42,7 +42,11 @@ window.PmEventDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
+
+    // ── watch ────────────────────────────────────────────────────────────────
+
         watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
+
         watch(() => uiState.viewMode2, v => { window._ecEventDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
@@ -130,6 +134,7 @@ window.PmEventDtl = {
       }
     };
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchDetail();
@@ -209,6 +214,9 @@ window.PmEventDtl = {
     const prodSearch = Vue.toRef(uiState, 'prodSearch');
     const showProdPopup = Vue.toRef(uiState, 'showProdPopup');
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { events, uiState, codes, cfIsNew, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, viewMode2, showTab, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
@@ -234,7 +242,7 @@ window.PmEventDtl = {
     </div>
     <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
-    <!-- 배너이미지 -->
+    <!-- ── 배너이미지 ──────────────────────────────────────────────────────── -->
     <div class="card" v-show="showTab('banner')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🎨 배너이미지</div>
       <div style="margin-bottom:12px;">
@@ -253,7 +261,7 @@ window.PmEventDtl = {
       </div>
     </div>
 
-    <!-- 기본정보 -->
+    <!-- ── 기본정보 ───────────────────────────────────────────────────────── -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <div class="form-group">
@@ -323,7 +331,7 @@ window.PmEventDtl = {
         </div>
       </div>
 
-      <!-- 판매업체 선택 모달 -->
+      <!-- ── 판매업체 선택 모달 ───────────────────────────────────────────────── -->
       <div v-if="showVendorModal" class="modal-overlay" @click.self="showVendorModal=false">
         <div class="modal-box" style="width:400px;">
           <div class="modal-header">
@@ -360,7 +368,7 @@ window.PmEventDtl = {
       </div>
     </div>
 
-    <!-- 이벤트 내용 (HTML 에디터) -->
+    <!-- ── 이벤트 내용 (HTML 에디터) ──────────────────────────────────────────── -->
     <div class="card" v-show="showTab('content')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 이벤트 내용</div>
       <div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;">
@@ -393,7 +401,7 @@ window.PmEventDtl = {
       </div>
     </div>
 
-    <!-- 대상 상품 -->
+    <!-- ── 대상 상품 ──────────────────────────────────────────────────────── -->
     <div class="card" v-show="showTab('products')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🛍 대상 상품 <span class="tab-count">{{ form.targetProducts.length }}</span></div>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
@@ -427,11 +435,11 @@ window.PmEventDtl = {
       </div>
     </div>
 
-    <!-- 미리보기 -->
+    <!-- ── 미리보기 ───────────────────────────────────────────────────────── -->
     <div class="card" v-show="showTab('preview')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
       <div style="background:#f9f9f9;border-radius:10px;padding:20px;border:1px solid #e8e8e8;max-width:600px;">
-        <!-- 배너 미리보기 -->
+        <!-- ── 배너 미리보기 ────────────────────────────────────────────────── -->
         <div v-if="form.bannerImage" style="margin-bottom:20px;padding:12px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;overflow:hidden;" v-html="form.bannerImage"></div>
 
         <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">{{ form.title || '이벤트 제목' }}</div>
@@ -463,7 +471,7 @@ window.PmEventDtl = {
     </div>
   </div>
 
-  <!-- 상품 선택 팝업 -->
+  <!-- ── 상품 선택 팝업 ─────────────────────────────────────────────────────── -->
   <div v-if="showProdPopup" class="modal-overlay" @click.self="showProdPopup=false">
     <div class="modal-box">
       <div class="modal-header">

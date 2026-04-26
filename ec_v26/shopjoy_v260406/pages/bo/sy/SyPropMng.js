@@ -22,6 +22,8 @@ window.SyPropMng = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -89,6 +91,8 @@ window.SyPropMng = {
     };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -123,6 +127,7 @@ const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.lengt
     const setPage    = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
     const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageSize; return cfGridRows.value.slice(s, s + pager.pageSize); });
+
     watch(() => cfGridRows.value.length, () => { if (pager.pageNo > pager.pageTotalPage) pager.pageNo = Math.max(1, pager.pageTotalPage); });
 
     /* ── 행 변경 추적 ── */
@@ -216,6 +221,8 @@ const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.lengt
       URL.revokeObjectURL(url);
     };
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return {
       uiState, codes,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
@@ -230,7 +237,7 @@ const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.lengt
 <div class="bo-wrap">
   <div class="page-title">프로퍼티관리</div>
 
-  <!-- 검색 바 -->
+  <!-- ── 검색 바 ─────────────────────────────────────────────────────────── -->
   <div class="card" style="padding:12px;margin-bottom:12px;">
     <div class="search-bar">
       <input class="form-control" v-model="searchParam.kw" placeholder="표시경로 / 키 / 값 / 라벨 검색" style="min-width:280px;flex:1;max-width:420px;">
@@ -251,10 +258,10 @@ const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.lengt
     </div>
   </div>
 
-  <!-- 좌 트리 + 우 그리드 -->
+  <!-- ── 좌 트리 + 우 그리드 ─────────────────────────────────────────────────── -->
   <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:flex-start;">
 
-    <!-- 트리 -->
+    <!-- ── 트리 ─────────────────────────────────────────────────────────── -->
     <div class="card" style="padding:12px;">
       <div style="display:flex;gap:4px;margin-bottom:8px;">
         <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
@@ -266,7 +273,7 @@ const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.lengt
       </div>
     </div>
 
-    <!-- 그리드 -->
+    <!-- ── 그리드 ────────────────────────────────────────────────────────── -->
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:10px;">
         <div class="list-title">

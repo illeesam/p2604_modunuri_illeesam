@@ -38,8 +38,11 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
       handleSearchList();
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     const OS_LIST      = ['Windows 11','Windows 10','macOS 14','macOS 13','iOS 17'];
@@ -165,6 +168,9 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
       const all = filterRows(cfLogList.value, 'logId');
       const tk  = filterRows(cfTokenList.value, 'tokenLogId');
       const uniqueUsers = new Set(all.filter(r=>r.resultCd==='SUCCESS').map(r=>r.userId)).size;
+
+    // ── return ───────────────────────────────────────────────────────────────
+
       return {
         total:       all.length,
         success:     all.filter(r => r.resultCd === 'SUCCESS').length,
@@ -191,6 +197,8 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
     const onSizeChange = () => { pager.pageNo = 1; };
     const onTabChange  = tab => { uiState.activeTab = tab; pager.pageNo = 1; };
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return {
       uiState, onTabChange,
       DATE_RANGE_OPTIONS, onDateRangeChange,
@@ -213,7 +221,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
 • 이상 로그인(외부IP/연속실패/REVOKE)은 보안 담당자에게 즉시 보고하세요.</div>
   </div>
 
-  <!-- 검색 -->
+  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
       <select v-model="uiState.dateRange" @change="onDateRangeChange" style="min-width:110px">
@@ -240,7 +248,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
     </div>
   </div>
 
-  <!-- 집계 -->
+  <!-- ── 집계 ───────────────────────────────────────────────────────────── -->
   <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:12px 0">
     <div class="card" style="text-align:center;padding:12px;background:#f0f4ff;margin-bottom:0">
       <div style="font-size:11px;color:#888">총 시도</div>
@@ -268,7 +276,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
     </div>
   </div>
 
-  <!-- 탭 + 목록 -->
+  <!-- ── 탭 + 목록 ───────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="tab-nav" style="margin-bottom:16px">
       <button class="tab-btn" :class="{active:uiState.activeTab==='log'}"   @click="onTabChange('log')">로그인 로그 <span class="tab-count" v-if="uiState.activeTab==='log'">{{ cfTotal }}</span></button>

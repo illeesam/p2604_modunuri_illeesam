@@ -5,7 +5,7 @@ window.Faq = {
   emits: [],
   template: /* html */ `
 <div class="page-wrap">
-  <!-- 페이지 타이틀 배너 -->
+  <!-- ── 페이지 타이틀 배너 ───────────────────────────────────────────────────── -->
   <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-1.jpg" alt="FAQ"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
@@ -53,12 +53,19 @@ window.Faq = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
       }
     });
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { uiState, codes };
   }
 };

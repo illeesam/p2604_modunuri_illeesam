@@ -55,6 +55,8 @@ window.SyTemplateMng = {
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -79,6 +81,8 @@ window.SyTemplateMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
+
+    // ── watch ────────────────────────────────────────────────────────────────
 
     watch(isAppReady, (newVal) => {
       if (newVal) {
@@ -175,7 +179,10 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     const exportExcel = () => window.boCmUtil.exportCsv(templates, [{label:'ID',key:'templateId'},{label:'템플릿명',key:'templateNm'},{label:'유형',key:'templateTypeCd'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '템플릿목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
+
     watch(() => uiState.selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), templates, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, TEMPLATE_TYPES, pager, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnUseYnBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewModal, showPreview, closePreview, sendModal, openSend, closeSend, exportExcel };
@@ -203,7 +210,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
 
 
-  <!-- 좌 트리 + 우 영역 -->
+  <!-- ── 좌 트리 + 우 영역 ──────────────────────────────────────────────────── -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
@@ -273,13 +280,13 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     <sy-template-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="cfDetailEditId" />
   </div>
 
-  <!-- 미리보기 모달 -->
+  <!-- ── 미리보기 모달 ──────────────────────────────────────────────────────── -->
   <template-preview-modal v-if="previewModal && previewModal.show"
     :tmpl="previewModal.template"
     :sample-params="previewModal.template?.sampleParams || '{}'"
     @close="closePreview" />
 
-  <!-- 발송하기 모달 -->
+  <!-- ── 발송하기 모달 ──────────────────────────────────────────────────────── -->
   <template-send-modal v-if="sendModal && sendModal.show"
     :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm"
     @close="closeSend" />

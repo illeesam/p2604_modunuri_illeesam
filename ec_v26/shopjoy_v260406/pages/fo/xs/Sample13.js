@@ -21,11 +21,15 @@ window.XsSample13 = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
       }
     });
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     const today = new Date().toISOString().slice(0, 10);
     const selectedAreas = reactive(new Set());
@@ -108,6 +112,9 @@ window.XsSample13 = {
         const panels = []
           .filter(p => p.area === area.codeValue && panelFilter(p))
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+
+    // ── return ───────────────────────────────────────────────────────────────
+
         return { area, panels , uiState, codes };
       })
     );
@@ -175,6 +182,9 @@ window.XsSample13 = {
       uiState.previewDate = today;
       uiState.previewTime = new Date().toTimeString().slice(0, 5);
     };
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return {
       uiState, previewDate, previewTime,
       selectedAreas, cfAllAreas, cfAreaBtnLabel,
@@ -188,7 +198,7 @@ window.XsSample13 = {
   },
   template: /* html */`
 <div style="padding:clamp(12px,3vw,24px);">
-  <!-- 제목 -->
+  <!-- ── 제목 ───────────────────────────────────────────────────────────── -->
   <div style="display:flex;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
     <div style="font-size:16px;font-weight:700;">
       13. 전시영역 소스 보기
@@ -199,7 +209,7 @@ window.XsSample13 = {
       {{ copied ? '✓ 전체 복사됨' : '📋 전체 소스 복사' }}
     </button>
   </div>
-  <!-- 필터 바 -->
+  <!-- ── 필터 바 ─────────────────────────────────────────────────────────── -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:12px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <div style="display:flex;align-items:center;gap:5px;">
@@ -209,7 +219,7 @@ window.XsSample13 = {
         <button @click="resetDate" style="font-size:11px;padding:3px 8px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;color:#555;">현재</button>
       </div>
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>
-      <!-- 상태 -->
+      <!-- ── 상태 ───────────────────────────────────────────────────────── -->
       <div style="display:flex;align-items:center;gap:4px;">
         <span style="font-size:12px;font-weight:600;color:#555;">상태</span>
         <select v-model="searchParam.status" style="font-size:12px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;width:76px;">
@@ -218,7 +228,7 @@ window.XsSample13 = {
           <option value="비활성">비활성</option>
         </select>
       </div>
-      <!-- 노출조건 -->
+      <!-- ── 노출조건 ─────────────────────────────────────────────────────── -->
       <div style="display:flex;align-items:center;gap:4px;">
         <span style="font-size:12px;font-weight:600;color:#555;">노출조건</span>
         <select v-model="searchParam.condition" style="font-size:12px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;width:112px;">
@@ -226,7 +236,7 @@ window.XsSample13 = {
           <option v-for="c in CONDITION_OPTS" :key="c" :value="c">{{ c }}</option>
         </select>
       </div>
-      <!-- 인증필요 -->
+      <!-- ── 인증필요 ─────────────────────────────────────────────────────── -->
       <div style="display:flex;align-items:center;gap:4px;">
         <span style="font-size:12px;font-weight:600;color:#555;">인증필요</span>
         <select v-model="searchParam.authrequired" style="font-size:12px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;width:72px;">
@@ -235,7 +245,7 @@ window.XsSample13 = {
           <option value="N">불필요</option>
         </select>
       </div>
-      <!-- 등급제한 -->
+      <!-- ── 등급제한 ─────────────────────────────────────────────────────── -->
       <div style="display:flex;align-items:center;gap:4px;">
         <span style="font-size:12px;font-weight:600;color:#555;">등급제한</span>
         <select v-model="searchParam.authgrade" style="font-size:12px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;width:72px;">
@@ -243,13 +253,13 @@ window.XsSample13 = {
           <option v-for="g in AUTH_GRADE_OPTS" :key="g" :value="g">{{ g }}↑</option>
         </select>
       </div>
-      <!-- 카테고리 -->
+      <!-- ── 카테고리 ─────────────────────────────────────────────────────── -->
       <button @click="showCatModal=true"
         style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;"
         :style="selectedCatIds.size>0?'border-color:#8e44ad;color:#8e44ad;font-weight:600;':''">
         📂 {{ cfCatBtnLabel }}
       </button>
-      <!-- 화면영역 멀티선택 -->
+      <!-- ── 화면영역 멀티선택 ────────────────────────────────────────────────── -->
       <div style="position:relative;">
         <button @click="showAreaDrop=!showAreaDrop"
           style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;"
@@ -279,13 +289,13 @@ window.XsSample13 = {
         </div>
       </div>
     </div>
-    <!-- 카테고리 선택 현황 -->
+    <!-- ── 카테고리 선택 현황 ─────────────────────────────────────────────────── -->
     <div v-if="selectedCatIds.size>0" style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
       <span style="font-size:11px;color:#8e44ad;font-weight:600;">📂 카테고리 필터:</span>
       <span v-for="nm in cfSelectedCatNames" :key="nm"
         style="font-size:11px;background:#f3e5f5;color:#8e44ad;border-radius:8px;padding:2px 8px;">{{ nm }}</span>
     </div>
-    <!-- 현재 사용자 정보 -->
+    <!-- ── 현재 사용자 정보 ──────────────────────────────────────────────────── -->
     <div style="margin-top:8px;padding:7px 12px;background:#f8f9fa;border-radius:6px;border-left:3px solid #aaa;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <span style="font-size:11px;color:#888;font-weight:600;">현재 사용자</span>
       <span v-if="isLoggedIn" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:6px;padding:1px 7px;font-weight:600;">로그인</span>
@@ -296,27 +306,27 @@ window.XsSample13 = {
       <span v-for="c in cfAccessibleConds" :key="c" style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:6px;padding:1px 7px;">{{ c }}</span>
     </div>
   </div>
-  <!-- 영역별 패널+소스 목록 -->
+  <!-- ── 영역별 패널+소스 목록 ─────────────────────────────────────────────────── -->
   <div v-if="cfPanelsByArea.length===0" style="text-align:center;padding:48px;color:#ccc;font-size:13px;">
     조건에 맞는 영역/패널이 없습니다.
   </div>
   <div v-for="{ area, panels } in cfPanelsByArea" :key="area.codeValue" style="margin-bottom:14px;">
-    <!-- 영역 헤더 -->
+    <!-- ── 영역 헤더 ──────────────────────────────────────────────────────── -->
     <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:#1e3a5f;color:#fff;border-radius:6px 6px 0 0;">
       <span style="font-size:10px;background:rgba(255,255,255,.18);border-radius:4px;padding:2px 8px;font-family:monospace;letter-spacing:.5px;">{{ area.codeValue }}</span>
       <span style="font-size:13px;font-weight:700;">{{ area.codeLabel }}</span>
       <span style="margin-left:auto;font-size:11px;background:rgba(255,255,255,.15);border-radius:8px;padding:2px 9px;">패널 {{ panels.length }}개</span>
     </div>
-    <!-- 패널 없음 -->
+    <!-- ── 패널 없음 ──────────────────────────────────────────────────────── -->
     <div v-if="panels.length===0"
       style="padding:18px;text-align:center;font-size:12px;color:#bbb;background:#f9f9f9;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 6px 6px;">
       해당 조건의 패널이 없습니다.
     </div>
-    <!-- 패널별 카드 (좌: 패널정보 | 중앙: 위젯 콘텐츠 | 우: 소스) -->
+    <!-- ── 패널별 카드 (좌: 패널정보 | 중앙: 위젯 콘텐츠 | 우: 소스) ──────────────────────── -->
     <div v-for="(panel, pi) in panels" :key="panel.dispId"
       style="display:flex;flex-wrap:wrap;border:1px solid #e0e0e0;border-top:none;"
       :style="pi===panels.length-1?'border-radius:0 0 6px 6px;overflow:hidden;':''">
-      <!-- 좌: 패널 정보 -->
+      <!-- ── 좌: 패널 정보 ─────────────────────────────────────────────────── -->
       <div style="width:155px;flex-shrink:0;padding:10px 12px;background:#fafafa;border-right:1px solid #e8e8e8;">
         <div style="font-size:9px;background:#e8f0fe;color:#1a73e8;border-radius:3px;padding:1px 5px;display:inline-block;margin-bottom:5px;font-weight:600;">DispPanel</div>
         <code style="display:block;font-size:10px;color:#888;margin-bottom:4px;">#{{ String(panel.dispId).padStart(4,'0') }}</code>
@@ -333,19 +343,19 @@ window.XsSample13 = {
         </div>
         <div style="font-size:9px;color:#bbb;margin-top:6px;">위젯 {{ (panel.rows||[]).length }}개</div>
       </div>
-      <!-- 중앙: 위젯 콘텐츠 미리보기 -->
+      <!-- ── 중앙: 위젯 콘텐츠 미리보기 ──────────────────────────────────────────── -->
       <div style="flex:1;min-width:0;background:#fff;border-right:1px solid #e8e8e8;">
         <div v-if="!panel.rows||panel.rows.length===0"
           style="padding:24px;text-align:center;font-size:12px;color:#ccc;">(위젯 없음)</div>
         <div v-for="(w, wi) in (panel.rows||[])" :key="wi"
           style="border-bottom:1px solid #f0f0f0;padding:10px 14px;">
-          <!-- 위젯 헤더 -->
+          <!-- ── 위젯 헤더 ────────────────────────────────────────────────── -->
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
             <span style="font-size:10px;color:#bbb;">위젯{{ wi+1 }}</span>
             <span style="font-size:10px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:1px 5px;white-space:nowrap;">{{ fnWIcon(w.widgetType) }} {{ fnWLabel(w.widgetType) }}</span>
             <span v-if="w.widgetNm" style="font-size:11px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ w.widgetNm }}</span>
           </div>
-          <!-- 위젯 콘텐츠 렌더링 -->
+          <!-- ── 위젯 콘텐츠 렌더링 ───────────────────────────────────────────── -->
           <div v-if="w.widgetType==='image_banner'"
             style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:8px;padding:22px 14px;text-align:center;color:#fff;">
             <div style="font-size:26px;">🖼</div>
@@ -453,7 +463,7 @@ window.XsSample13 = {
           </div>
         </div>
       </div>
-      <!-- 우: 소스 코드 -->
+      <!-- ── 우: 소스 코드 ─────────────────────────────────────────────────── -->
       <div style="width:260px;flex-shrink:0;background:#161b22;position:relative;display:flex;flex-direction:column;">
         <button @click="copyPanel(panel)"
           style="position:absolute;top:6px;right:8px;font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid;cursor:pointer;z-index:1;"

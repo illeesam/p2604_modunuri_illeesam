@@ -25,6 +25,8 @@ window.CmNoticeDtl = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -56,6 +58,7 @@ window.CmNoticeDtl = {
       }
     };
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
       await handleSearchDetail();
@@ -96,6 +99,8 @@ window.CmNoticeDtl = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return { cfIsNew, form, errors, handleSave, codes };
   },

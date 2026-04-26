@@ -24,11 +24,15 @@ window.Login = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
       }
     });
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     // login | terms | signup | sns-signup  → uiState.step 사용
@@ -75,6 +79,7 @@ window.Login = {
     /* ── 약관 ── */
     const terms = reactive({ all: false, t1: false, t2: false, t3: false, t4: false });
     const toggleAll = () => { terms.t1 = terms.t2 = terms.t3 = terms.t4 = terms.all; };
+
     watch(() => [terms.t1, terms.t2, terms.t3, terms.t4], () => {
       terms.all = terms.t1 && terms.t2 && terms.t3 && terms.t4;
     });
@@ -195,6 +200,8 @@ window.Login = {
     /* ── 공통 인풋 스타일 ── */
     const IS = 'width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;';
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return {
       uiState, form, doLogin, doSocial, startSnsSignup,
       terms, toggleAll, goNextFromTerms,
@@ -210,7 +217,7 @@ window.Login = {
   <div class="modal-box" style="max-width:460px;width:92%;padding:clamp(16px,4vw,32px) clamp(14px,3vw,28px);position:relative;max-height:92vh;overflow-y:auto;">
     <button @click="$emit('close')" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>
 
-    <!-- ════ 로그인 ════ -->
+    <!-- ── ════ 로그인 ════ ──────────────────────────────────────────────── -->
     <template v-if="uiState.step==='login'">
       <div style="text-align:center;margin-bottom:24px;">
         <div style="font-size:2rem;">👗</div>
@@ -268,7 +275,7 @@ window.Login = {
       </div>
     </template>
 
-    <!-- ════ 약관 ════ -->
+    <!-- ── ════ 약관 ════ ───────────────────────────────────────────────── -->
     <template v-else-if="uiState.step==='terms'">
       <div style="text-align:center;margin-bottom:20px;">
         <div v-if="uiState.snsProvider" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;margin-bottom:10px;"
@@ -305,19 +312,19 @@ window.Login = {
       </div>
     </template>
 
-    <!-- ════ 이메일 회원가입 ════ -->
+    <!-- ── ════ 이메일 회원가입 ════ ─────────────────────────────────────────── -->
     <template v-else-if="uiState.step==='signup'">
       <div style="text-align:center;margin-bottom:16px;">
         <div style="font-size:1.3rem;font-weight:800;color:var(--text-primary);">회원가입</div>
         <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">정보를 입력하고 인증을 완료해 주세요</div>
       </div>
 
-      <!-- 필수 -->
+      <!-- ── 필수 ───────────────────────────────────────────────────────── -->
       <div style="font-size:0.78rem;font-weight:700;color:var(--blue);margin-bottom:8px;padding:6px 10px;background:var(--blue-dim);border-radius:6px;">필수 정보</div>
       <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:16px;">
         <input v-model="sf.memberNm" type="text" placeholder="이름 *" :style="IS">
 
-        <!-- 이메일 인증 -->
+        <!-- ── 이메일 인증 ─────────────────────────────────────────────────── -->
         <div>
           <div style="display:flex;gap:8px;">
             <input v-model="sf.email" type="email" placeholder="이메일 *" :disabled="sf.emailVerified"
@@ -336,7 +343,7 @@ window.Login = {
           <div v-if="sf.emailVerified" style="font-size:0.8rem;color:#22c55e;margin-top:4px;">✓ 이메일 인증 완료</div>
         </div>
 
-        <!-- 휴대폰 인증 -->
+        <!-- ── 휴대폰 인증 ─────────────────────────────────────────────────── -->
         <div>
           <div style="display:flex;gap:8px;">
             <input v-model="sf.phone" type="tel" placeholder="휴대폰 번호 (010-0000-0000) *" :disabled="sf.phoneVerified"
@@ -359,11 +366,11 @@ window.Login = {
         <input v-model="sf.password2" type="password" placeholder="비밀번호 확인 *" :style="IS">
       </div>
 
-      <!-- 선택 -->
+      <!-- ── 선택 ───────────────────────────────────────────────────────── -->
       <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;padding:6px 10px;background:var(--bg-base);border-radius:6px;">선택 정보 (입력하면 주문 시 자동 완성)</div>
       <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:16px;">
 
-        <!-- 주소 -->
+        <!-- ── 주소 ─────────────────────────────────────────────────────── -->
         <div>
           <div style="display:flex;gap:8px;margin-bottom:6px;">
             <input v-model="sf.postcode" placeholder="우편번호" readonly
@@ -378,7 +385,7 @@ window.Login = {
           <input v-model="sf.addressDetail" placeholder="상세 주소 (동/호수 등)" :style="IS.replace('0.9rem','0.88rem')">
         </div>
 
-        <!-- 생년월일 + 성별 -->
+        <!-- ── 생년월일 + 성별 ──────────────────────────────────────────────── -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
           <div>
             <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">생년월일</div>
@@ -406,7 +413,7 @@ window.Login = {
       </div>
     </template>
 
-    <!-- ════ SNS 회원가입 추가 정보 ════ -->
+    <!-- ── ════ SNS 회원가입 추가 정보 ════ ───────────────────────────────────── -->
     <template v-else-if="uiState.step==='sns-signup'">
       <div style="text-align:center;margin-bottom:16px;">
         <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:20px;margin-bottom:10px;"
@@ -417,11 +424,11 @@ window.Login = {
         <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">가입 완료를 위해 추가 정보를 입력하세요</div>
       </div>
 
-      <!-- 필수 -->
+      <!-- ── 필수 ───────────────────────────────────────────────────────── -->
       <div style="font-size:0.78rem;font-weight:700;color:var(--blue);margin-bottom:8px;padding:6px 10px;background:var(--blue-dim);border-radius:6px;">필수 정보</div>
       <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:16px;">
         <input v-model="uiState.snsNickname" type="text" placeholder="이름 / 닉네임 *" :style="IS">
-        <!-- 휴대폰 인증 -->
+        <!-- ── 휴대폰 인증 ─────────────────────────────────────────────────── -->
         <div>
           <div style="display:flex;gap:8px;">
             <input v-model="snsPhone" type="tel" placeholder="휴대폰 번호 (010-0000-0000) *" :disabled="uiState.snsPhoneVerified"
@@ -441,10 +448,10 @@ window.Login = {
         </div>
       </div>
 
-      <!-- 선택 -->
+      <!-- ── 선택 ───────────────────────────────────────────────────────── -->
       <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;padding:6px 10px;background:var(--bg-base);border-radius:6px;">선택 정보</div>
       <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:16px;">
-        <!-- 주소 -->
+        <!-- ── 주소 ─────────────────────────────────────────────────────── -->
         <div>
           <div style="display:flex;gap:8px;margin-bottom:6px;">
             <input v-model="snsSf.postcode" placeholder="우편번호" readonly
@@ -458,7 +465,7 @@ window.Login = {
             style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.88rem;cursor:default;outline:none;margin-bottom:6px;">
           <input v-model="snsSf.addressDetail" placeholder="상세 주소 (동/호수 등)" :style="IS.replace('0.9rem','0.88rem')">
         </div>
-        <!-- 생년월일 + 성별 -->
+        <!-- ── 생년월일 + 성별 ──────────────────────────────────────────────── -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
           <div>
             <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">생년월일</div>

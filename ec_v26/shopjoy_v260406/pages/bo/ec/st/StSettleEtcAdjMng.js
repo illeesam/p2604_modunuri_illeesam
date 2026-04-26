@@ -25,6 +25,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -63,6 +65,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         console.error('[catch-info]', _);
       }
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchData('DEFAULT');
@@ -149,6 +153,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, etcAdjList, cfPageNums, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`

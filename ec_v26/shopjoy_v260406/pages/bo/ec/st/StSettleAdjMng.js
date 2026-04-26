@@ -25,6 +25,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -63,6 +65,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         console.error('[catch-info]', _);
       }
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchData('DEFAULT');
@@ -173,6 +177,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, adjList, cfPageNums, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, doApprove, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
@@ -251,7 +258,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
        </div>
   </div>
 
-  <!-- 편집 폼 -->
+  <!-- ── 편집 폼 ─────────────────────────────────────────────────────────── -->
   <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
     <div style="font-weight:700;margin-bottom:16px">{{ uiState.isNew ? '조정 추가' : '조정 수정' }}</div>
     <div class="form-row">

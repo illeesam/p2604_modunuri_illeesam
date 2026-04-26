@@ -22,6 +22,8 @@ window.DpDispUiSimul = {
         members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
       } catch (_) {}
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     /* ── 오늘 날짜 ── */
@@ -45,6 +47,8 @@ window.DpDispUiSimul = {
       uiState.isPageCodeLoad = true;
       handleSearchData();
     };
+
+    // ── watch ────────────────────────────────────────────────────────────────
 
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
@@ -174,6 +178,9 @@ window.DpDispUiSimul = {
         const panels = (Array.isArray(displays) ? displays : [])
           .filter(p => p.area === area.codeValue && panelFilter(p))
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+
+    // ── return ───────────────────────────────────────────────────────────────
+
         return { ...area, panels };
       }).filter(a => selectedAreas.size === 0 || selectedAreas.has(a.codeValue))
     );
@@ -681,6 +688,9 @@ window.DpDispUiSimul = {
 
     const cfDispUiParamObj = computed(() => {
       const viewOpts = ['content','struct','source'].filter(k => dispUiViewOpts[k]).join(',');
+
+    // ── return ───────────────────────────────────────────────────────────────
+
       return {
         areas:        [...dispUiForm.areas],
         date:         dispUiForm.date,
@@ -794,6 +804,9 @@ window.DpDispUiSimul = {
     const structSpanPopupIdx = Vue.toRef(uiState, 'structSpanPopupIdx');
     const structViewport = Vue.toRef(uiState, 'structViewport');
     const viewMode = Vue.toRef(uiState, 'viewMode');
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return {
       today, cfSiteNm,
       uiState, switchTab,
@@ -853,7 +866,7 @@ window.DpDispUiSimul = {
   <div class="card" style="padding:14px 18px;margin-bottom:0;border-radius:8px 8px 0 0;border-bottom:none;">
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
 
-      <!-- 전시일시 -->
+      <!-- ── 전시일시 ─────────────────────────────────────────────────────── -->
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:12px;font-weight:600;color:#555;">📅 전시일시</span>
         <input type="date" v-model="searchParam.previewDate" class="form-control" style="width:148px;margin:0;font-size:13px;" />
@@ -862,7 +875,7 @@ window.DpDispUiSimul = {
       </div>
       <div style="width:1px;height:28px;background:#e0e0e0;"></div>
 
-      <!-- 상태 -->
+      <!-- ── 상태 ───────────────────────────────────────────────────────── -->
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">상태</span>
         <select v-model="searchParam.status" class="form-control" style="width:90px;margin:0;font-size:12px;">
@@ -872,7 +885,7 @@ window.DpDispUiSimul = {
         </select>
       </div>
 
-      <!-- 공개대상 -->
+      <!-- ── 공개대상 ─────────────────────────────────────────────────────── -->
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">공개대상</span>
         <select v-model="searchParam.visibility" class="form-control" style="width:100px;margin:0;font-size:12px;">
@@ -881,7 +894,7 @@ window.DpDispUiSimul = {
       </div>
       <div style="width:1px;height:28px;background:#e0e0e0;"></div>
 
-      <!-- 보기모드 (Tab1에서만 활성) -->
+      <!-- ── 보기모드 (Tab1에서만 활성) ────────────────────────────────────────── -->
       <div style="display:flex;align-items:center;gap:6px;" :style="uiState.mainTab!=='preview' ? 'opacity:.4;pointer-events:none;' : ''">
         <span style="font-size:12px;font-weight:600;color:#555;">보기</span>
         <div style="display:flex;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
@@ -897,14 +910,14 @@ window.DpDispUiSimul = {
       </div>
       <div style="width:1px;height:28px;background:#e0e0e0;" :style="uiState.mainTab!=='preview' ? 'opacity:.4;' : ''"></div>
 
-      <!-- 설명보기 (Tab1에서만) -->
+      <!-- ── 설명보기 (Tab1에서만) ───────────────────────────────────────────── -->
       <button v-if="uiState.mainTab==='preview'" @click="uiState.showDesc=!uiState.showDesc"
         style="font-size:11px;padding:4px 12px;border-radius:10px;border:1px solid #ddd;cursor:pointer;transition:all .15s;"
         :style="showDesc ? 'background:#e3f2fd;border-color:#90caf9;color:#1565c0;' : 'background:#fff;color:#999;'">
         {{ showDesc ? '📋 설명 숨기기' : '📋 설명 보기' }}
       </button>
 
-      <!-- 화면 영역 멀티선택 (오른쪽) -->
+      <!-- ── 화면 영역 멀티선택 (오른쪽) ─────────────────────────────────────────── -->
       <div style="margin-left:auto;position:relative;">
         <button @click="showAreaDrop=!showAreaDrop"
           style="font-size:12px;padding:5px 14px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;color:#333;min-width:140px;justify-content:space-between;"
@@ -936,7 +949,7 @@ window.DpDispUiSimul = {
       </div>
     </div>
 
-    <!-- 선택 영역 배지 -->
+    <!-- ── 선택 영역 배지 ───────────────────────────────────────────────────── -->
     <div v-if="selectedAreas.size>0" style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center;">
       <span style="font-size:11px;color:#aaa;">선택 영역:</span>
       <span v-for="code in [...selectedAreas]" :key="code"
@@ -945,7 +958,7 @@ window.DpDispUiSimul = {
       </span>
     </div>
 
-    <!-- 조건 요약 -->
+    <!-- ── 조건 요약 ──────────────────────────────────────────────────────── -->
     <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center;" :style="selectedAreas.size>0?'margin-top:6px;':''">
       <span style="font-size:11px;color:#aaa;">조회 조건:</span>
       <span style="font-size:12px;background:#fff8e1;color:#f57c00;border-radius:10px;padding:2px 10px;">📅 {{ previewDate }} {{ previewTime }}</span>
@@ -961,7 +974,7 @@ window.DpDispUiSimul = {
       </div>
     </div>
 
-    <!-- Ui미리보기 파라미터 레이어 -->
+    <!-- ── Ui미리보기 파라미터 레이어 ────────────────────────────────────────────── -->
     <div v-if="uiState.dispUiLayerOpen"
       style="margin-top:8px;background:#faf8ff;border:1px solid #b39ddb;border-radius:10px;padding:14px 18px;">
       <div style="font-size:12px;font-weight:700;color:#4a148c;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
@@ -972,13 +985,13 @@ window.DpDispUiSimul = {
         </button>
       </div>
 
-      <!-- ① 전시영역 (필수) — 메인 필터와 동일한 드롭다운 방식 -->
+      <!-- ── ① 전시영역 (필수) — 메인 필터와 동일한 드롭다운 방식 ─────────────────────────── -->
       <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <span style="font-size:11px;font-weight:600;color:#555;white-space:nowrap;">
           전시영역
           <span style="font-size:10px;background:#fce4ec;color:#c62828;border-radius:4px;padding:1px 5px;margin-left:4px;">필수</span>
         </span>
-        <!-- 드롭다운 버튼 -->
+        <!-- ── 드롭다운 버튼 ────────────────────────────────────────────────── -->
         <div style="position:relative;">
           <button @click="dispUiAreaDrop=!dispUiAreaDrop"
             style="font-size:12px;padding:5px 14px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;color:#333;min-width:140px;justify-content:space-between;"
@@ -1008,7 +1021,7 @@ window.DpDispUiSimul = {
             </div>
           </div>
         </div>
-        <!-- 선택된 영역 태그 -->
+        <!-- ── 선택된 영역 태그 ──────────────────────────────────────────────── -->
         <span v-for="code in dispUiForm.areas" :key="code"
           style="font-size:11px;background:#fce4ec;color:#c62828;border-radius:10px;padding:2px 8px;display:flex;align-items:center;gap:4px;">
           {{ code }}<span @click="dispUiToggleArea(code)" style="cursor:pointer;font-weight:700;">×</span>
@@ -1016,7 +1029,7 @@ window.DpDispUiSimul = {
         <span v-if="uiState.dispUiAreaErr" style="font-size:11px;color:#e8587a;">⚠ 1개 이상 선택하세요</span>
       </div>
 
-      <!-- ② 조건 행 1: 전시일시 · 상태 · 노출조건 · 인증필요 · 등급제한 -->
+      <!-- ── ② 조건 행 1: 전시일시 · 상태 · 노출조건 · 인증필요 · 등급제한 ─────────────────── -->
       <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #ece8f8;">
         <span class="search-label" style="font-size:11px;">전시일시</span>
         <input type="date" v-model="dispUiForm.date"
@@ -1037,9 +1050,9 @@ window.DpDispUiSimul = {
         </select>
       </div>
 
-      <!-- ③ 조건 행 2: 사이트 · 회원 -->
+      <!-- ── ③ 조건 행 2: 사이트 · 회원 ───────────────────────────────────────── -->
       <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #ece8f8;">
-        <!-- 사이트 -->
+        <!-- ── 사이트 ────────────────────────────────────────────────────── -->
         <span class="search-label" style="font-size:11px;">사이트</span>
         <div style="display:flex;align-items:center;gap:5px;">
           <span v-if="dispUiForm.siteNm"
@@ -1055,7 +1068,7 @@ window.DpDispUiSimul = {
             style="font-size:10px;padding:2px 6px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#999;cursor:pointer;">×</button>
         </div>
         <div style="width:1px;height:20px;background:#e0e0e0;margin:0 4px;"></div>
-        <!-- 회원 -->
+        <!-- ── 회원 ─────────────────────────────────────────────────────── -->
         <span class="search-label" style="font-size:11px;">회원</span>
         <div style="display:flex;align-items:center;gap:5px;">
           <span v-if="dispUiForm.memberNm"
@@ -1072,7 +1085,7 @@ window.DpDispUiSimul = {
         </div>
       </div>
 
-      <!-- 보기옵션 -->
+      <!-- ── 보기옵션 ─────────────────────────────────────────────────────── -->
       <div style="padding:8px 0;border-top:1px solid #e8e0f8;margin-top:4px;">
         <div style="font-size:11px;font-weight:700;color:#6a1b9a;margin-bottom:6px;">📑 보기옵션 <span style="font-weight:400;color:#aaa;">— 없으면 내용보기만 탭없이 표시</span></div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -1091,7 +1104,7 @@ window.DpDispUiSimul = {
         </div>
       </div>
 
-      <!-- 실행 버튼 -->
+      <!-- ── 실행 버튼 ────────────────────────────────────────────────────── -->
       <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:8px;border-top:1px solid #e8e0f8;">
         <button @click="uiState.dispUiLayerOpen=false"
           style="font-size:12px;padding:5px 14px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#888;">
@@ -1114,7 +1127,7 @@ window.DpDispUiSimul = {
             style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;font-weight:600;">
             🌐 기타오픈 <span style="font-size:10px;margin-left:2px;">▾</span>
           </button>
-          <!-- 드롭다운 layer -->
+          <!-- ── 드롭다운 layer ───────────────────────────────────────────── -->
           <div v-if="uiState.otherMenuOpen" style="position:fixed;inset:0;z-index:4999;" @click="closeOtherMenu"></div>
           <div v-if="uiState.otherMenuOpen" @click.stop
             style="position:absolute;top:calc(100% + 4px);right:0;z-index:5000;background:#fff;border:1px solid #d0d7de;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.15);min-width:320px;padding:6px;max-height:400px;overflow-y:auto;">
@@ -1132,7 +1145,7 @@ window.DpDispUiSimul = {
     </div>
   </div>
 
-  <!-- DispUi 모달 -->
+  <!-- ── DispUi 모달 ────────────────────────────────────────────────────── -->
   <disp-ui-modal
     :show="uiState.dispUiModalOpen"
     :params="cfDispUiParamObj" :disp-opt="cfDispOpt"
@@ -1141,22 +1154,22 @@ window.DpDispUiSimul = {
     @open-popup="(scope) => { openDispUiPopup(scope || 'fo'); uiState.dispUiModalOpen=false; }"
   />
 
-  <!-- DispUi 사이트 선택 모달 -->
+  <!-- ── DispUi 사이트 선택 모달 ─────────────────────────────────────────────── -->
   <div v-if="dispUiSiteModalOpen"
     @click.self="dispUiSiteModalOpen=false"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.52);z-index:10000;display:flex;align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:12px;width:520px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 16px 56px rgba(0,0,0,0.36);">
-      <!-- 헤더 -->
+      <!-- ── 헤더 ───────────────────────────────────────────────────────── -->
       <div style="padding:14px 18px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;">
         <span style="font-size:14px;font-weight:700;color:#1565c0;">🌐 사이트 선택</span>
         <button @click="dispUiSiteModalOpen=false" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;line-height:1;padding:0;">×</button>
       </div>
-      <!-- 검색 -->
+      <!-- ── 검색 ───────────────────────────────────────────────────────── -->
       <div style="padding:10px 18px;border-bottom:1px solid #f0f0f0;">
         <input v-model="uiState.dispUiSiteSearch" type="text" placeholder="사이트명 또는 도메인 검색..."
           style="width:100%;font-size:12px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:7px;outline:none;" />
       </div>
-      <!-- 목록 -->
+      <!-- ── 목록 ───────────────────────────────────────────────────────── -->
       <div style="overflow-y:auto;flex:1;padding:6px 0;">
         <div v-if="cfDispUiSiteList.length===0" style="text-align:center;padding:30px;color:#bbb;font-size:13px;">검색 결과 없음</div>
         <div v-for="site in cfDispUiSiteList" :key="site?.siteId"
@@ -1171,29 +1184,29 @@ window.DpDispUiSimul = {
           <span :style="String(site.siteId)===dispUiForm.siteId?'color:#1565c0;font-weight:700;':'color:#ccc;'">✓</span>
         </div>
       </div>
-      <!-- 푸터 -->
+      <!-- ── 푸터 ───────────────────────────────────────────────────────── -->
       <div style="padding:10px 18px;border-top:1px solid #eee;display:flex;justify-content:flex-end;">
         <button @click="dispUiSiteModalOpen=false" class="btn btn-secondary btn-sm">닫기</button>
       </div>
     </div>
   </div>
 
-  <!-- DispUi 회원 선택 모달 -->
+  <!-- ── DispUi 회원 선택 모달 ──────────────────────────────────────────────── -->
   <div v-if="dispUiMemberModalOpen"
     @click.self="dispUiMemberModalOpen=false"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.52);z-index:10000;display:flex;align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:12px;width:520px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 16px 56px rgba(0,0,0,0.36);">
-      <!-- 헤더 -->
+      <!-- ── 헤더 ───────────────────────────────────────────────────────── -->
       <div style="padding:14px 18px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;">
         <span style="font-size:14px;font-weight:700;color:#1565c0;">👤 회원 선택</span>
         <button @click="dispUiMemberModalOpen=false" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;line-height:1;padding:0;">×</button>
       </div>
-      <!-- 검색 -->
+      <!-- ── 검색 ───────────────────────────────────────────────────────── -->
       <div style="padding:10px 18px;border-bottom:1px solid #f0f0f0;">
         <input v-model="uiState.dispUiMemberSearch" type="text" placeholder="이름 또는 이메일 검색..."
           style="width:100%;font-size:12px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:7px;outline:none;" />
       </div>
-      <!-- 목록 -->
+      <!-- ── 목록 ───────────────────────────────────────────────────────── -->
       <div style="overflow-y:auto;flex:1;padding:6px 0;">
         <div v-if="cfDispUiMemberList.length===0" style="text-align:center;padding:30px;color:#bbb;font-size:13px;">검색 결과 없음</div>
         <div v-for="m in cfDispUiMemberList" :key="m?.userId"
@@ -1208,7 +1221,7 @@ window.DpDispUiSimul = {
           <span :style="String(m.userId)===dispUiForm.memberId?'color:#1565c0;font-weight:700;':'color:#ccc;'">✓</span>
         </div>
       </div>
-      <!-- 푸터 -->
+      <!-- ── 푸터 ───────────────────────────────────────────────────────── -->
       <div style="padding:10px 18px;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
         <button v-if="dispUiForm.memberId" @click="dispUiForm.memberId='';dispUiForm.memberNm='';dispUiMemberModalOpen=false;"
           style="font-size:11px;padding:4px 12px;border:1px solid #ddd;border-radius:7px;background:#fff;color:#888;cursor:pointer;">
@@ -1262,9 +1275,9 @@ window.DpDispUiSimul = {
   <div v-else-if="uiState.mainTab==='struct'" style="margin-top:4px;">
     <div style="display:flex;gap:12px;align-items:stretch;">
 
-      <!-- 좌: 구조 트리 -->
+      <!-- ── 좌: 구조 트리 ─────────────────────────────────────────────────── -->
       <div style="flex:4;min-width:0;">
-        <!-- 트리 조작 바 -->
+        <!-- ── 트리 조작 바 ────────────────────────────────────────────────── -->
         <div class="card" style="padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <span style="font-size:12px;font-weight:600;color:#555;">패널 선택</span>
           <button @click="checkAllPanels" style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:8px;background:#e3f2fd;color:#1565c0;cursor:pointer;">전체선택</button>
@@ -1277,17 +1290,17 @@ window.DpDispUiSimul = {
           <span style="font-size:11px;color:#aaa;">{{ cfCheckedWidgetCount }}개 선택됨</span>
         </div>
 
-        <!-- 트리 -->
+        <!-- ── 트리 ─────────────────────────────────────────────────────── -->
         <div v-if="cfStructAreaList.length===0" style="text-align:center;padding:40px;color:#ccc;font-size:13px;">등록된 영역이 없습니다.</div>
 
         <div v-for="area in cfStructAreaList" :key="area?.codeValue" class="card" style="padding:0;margin-bottom:8px;overflow:hidden;">
-          <!-- 영역 헤더 -->
+          <!-- ── 영역 헤더 ────────────────────────────────────────────────── -->
           <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:linear-gradient(90deg,#2d2d2d,#444);color:#fff;cursor:grab;user-select:none;"
             draggable="true"
             @dragstart="onAreaDragStart($event, area)"
             @dragend="onAreaDragEnd"
             @click="toggleAreaExpand(area.codeValue)">
-            <!-- 영역 전체 체크 -->
+            <!-- ── 영역 전체 체크 ───────────────────────────────────────────── -->
             <div @click.stop="checkAreaPanels(area)" style="width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;"
               :style="isAreaAllChecked(area) ? 'border-color:#f6ad55;background:#f6ad55;' : 'border-color:rgba(255,255,255,.5);background:transparent;'">
               <span v-if="isAreaAllChecked(area)" style="color:#333;font-size:11px;line-height:1;">✓</span>
@@ -1295,12 +1308,12 @@ window.DpDispUiSimul = {
             <span style="font-size:9px;background:rgba(99,179,237,.35);color:#bee3f8;border:1px solid rgba(99,179,237,.4);border-radius:4px;padding:1px 5px;flex-shrink:0;">DispX02Area</span>
             <code style="font-size:11px;background:rgba(255,255,255,.15);padding:2px 8px;border-radius:4px;">{{ area.codeValue }}</code>
             <span style="font-size:13px;font-weight:700;">{{ area.codeLabel }}</span>
-            <!-- 레이아웃 배지 -->
+            <!-- ── 레이아웃 배지 ────────────────────────────────────────────── -->
             <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:rgba(255,255,255,.15);color:#e2e8f0;white-space:nowrap;">
               {{ area.layoutType==='dashboard' ? '🧩 대시보드' : ('🔲 grid ' + (area.gridCols||1) + '열') }}
             </span>
             <span style="margin-left:auto;font-size:11px;opacity:.6;">패널 {{ area.panels.length }}개</span>
-            <!-- 캔버스 적용 버튼 -->
+            <!-- ── 캔버스 적용 버튼 ──────────────────────────────────────────── -->
             <button @click.stop="applyAreaLayout(area)"
               title="이 영역의 레이아웃을 캔버스에 적용"
               style="font-size:11px;padding:2px 7px;border-radius:5px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);color:#e2e8f0;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;"
@@ -1310,7 +1323,7 @@ window.DpDispUiSimul = {
             <span style="font-size:11px;opacity:.5;">{{ expandedAreas.has(area.codeValue) ? '▲' : '▼' }}</span>
           </div>
 
-          <!-- 패널 목록 -->
+          <!-- ── 패널 목록 ────────────────────────────────────────────────── -->
           <div v-show="expandedAreas.has(area.codeValue)">
             <div v-if="area.panels.length===0" style="padding:14px 20px;font-size:12px;color:#bbb;">해당 날짜 활성 패널 없음</div>
 
@@ -1321,14 +1334,14 @@ window.DpDispUiSimul = {
               @click="togglePanelCheck(p)"
               style="display:flex;align-items:flex-start;gap:10px;padding:10px 16px;cursor:grab;user-select:none;border-top:1px solid #f0f0f0;transition:background .1s;"
               :style="checkedPanelIds.has(p.dispId) ? 'background:#fff8e1;' : ''">
-              <!-- 체크박스 (full=패널+위젯 모두, partial=패널만) -->
+              <!-- ── 체크박스 (full=패널+위젯 모두, partial=패널만) ────────────────── -->
               <div style="margin-top:2px;width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
                 :style="isPanelAllChecked(p) ? 'border-color:#f59e0b;background:#f59e0b;' : checkedPanelIds.has(p.dispId) ? 'border-color:#f59e0b;background:#fde68a;' : 'border-color:#ccc;background:#fff;'">
                 <span v-if="isPanelAllChecked(p)" style="color:#fff;font-size:11px;line-height:1;">✓</span>
                 <span v-else-if="checkedPanelIds.has(p.dispId)" style="color:#f59e0b;font-size:11px;font-weight:900;line-height:1;">−</span>
               </div>
 
-              <!-- 패널 정보 -->
+              <!-- ── 패널 정보 ────────────────────────────────────────────── -->
               <div style="flex:1;min-width:0;">
                 <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
                   <span style="font-size:9px;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:3px;padding:0 4px;line-height:16px;">DispX03Panel</span>
@@ -1337,7 +1350,7 @@ window.DpDispUiSimul = {
                   <span style="font-size:10px;padding:1px 7px;border-radius:8px;" :style="p.status==='활성'?'background:#e8f5e9;color:#2e7d32;':'background:#f5f5f5;color:#999;'">{{ p.status }}</span>
                   <span style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 7px;">{{ p.condition || '항상 표시' }}</span>
                 </div>
-                <!-- 위젯 목록 -->
+                <!-- ── 위젯 목록 ──────────────────────────────────────────── -->
                 <div style="display:flex;flex-direction:column;gap:2px;padding-left:2px;">
                   <div v-for="(w, wi) in (p.rows || [])" :key="wi"
                     @click.stop="toggleWidgetCheck(p.dispId, wi, $event)"
@@ -1360,11 +1373,11 @@ window.DpDispUiSimul = {
         </div>
       </div>
 
-      <!-- 우: 위젯 컨텐츠 그리드 위젯미리보기 -->
+      <!-- ── 우: 위젯 컨텐츠 그리드 위젯미리보기 ─────────────────────────────────────── -->
       <div style="flex:6;min-width:0;display:flex;flex-direction:column;max-height:80vh;">
-        <!-- 캔버스 컨트롤 바 -->
+        <!-- ── 캔버스 컨트롤 바 ──────────────────────────────────────────────── -->
         <div style="display:flex;align-items:center;gap:6px;background:#f8f9fa;border:1px solid #e8e8e8;border-radius:8px 8px 0 0;flex-shrink:0;padding:6px 10px;flex-wrap:wrap;">
-          <!-- 표시방식 토글 -->
+          <!-- ── 표시방식 토글 ──────────────────────────────────────────────── -->
           <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
             <button @click="uiState.structLayoutType='grid'"
               style="font-size:11px;padding:3px 10px;border:none;cursor:pointer;transition:all .15s;"
@@ -1377,7 +1390,7 @@ window.DpDispUiSimul = {
               🧩 대시보드
             </button>
           </div>
-          <!-- 열수 (grid 전용) -->
+          <!-- ── 열수 (grid 전용) ─────────────────────────────────────────── -->
           <template v-if="uiState.structLayoutType==='grid'">
             <div style="width:1px;height:20px;background:#e5e7eb;"></div>
             <span style="font-size:11px;color:#6b7280;font-weight:600;">열수</span>
@@ -1392,28 +1405,28 @@ window.DpDispUiSimul = {
               @change="resetStructGrid()"
               style="width:52px;font-size:12px;padding:3px 6px;border:1px solid #d1d5db;border-radius:6px;text-align:center;" />
             <div style="width:1px;height:20px;background:#e5e7eb;"></div>
-            <!-- 실제컨텐츠 -->
+            <!-- ── 실제컨텐츠 ──────────────────────────────────────────────── -->
             <button @click="uiState.structShowReal=!uiState.structShowReal"
               style="font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
               :style="uiState.structShowReal ? 'background:#059669;color:#fff;border-color:#059669;' : 'background:#fff;color:#6b7280;'">
               {{ uiState.structShowReal ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
             </button>
             <div style="width:1px;height:20px;background:#e5e7eb;"></div>
-            <!-- 뷰포트 -->
+            <!-- ── 뷰포트 ────────────────────────────────────────────────── -->
             <button v-for="(vp, key) in STRUCT_VIEWPORT" :key="Math.random()" @click="uiState.structViewport=key"
               style="font-size:11px;padding:3px 7px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
               :style="uiState.structViewport===key ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#fff;color:#6b7280;'">
               {{ vp.label }}
             </button>
           </template>
-          <!-- 우측: 개수 + 초기화 -->
+          <!-- ── 우측: 개수 + 초기화 ─────────────────────────────────────────── -->
           <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
             <span style="font-size:12px;color:#555;font-weight:600;">{{ uiState.structLayoutType==='dashboard' ? structDashItems.length : cfStructPlacedCount }}개</span>
             <button @click="uiState.structLayoutType==='dashboard' ? structDashItems.splice(0) : resetStructGrid()"
               style="font-size:11px;padding:3px 8px;border:1px solid #d0d0d0;border-radius:5px;background:#fff;cursor:pointer;color:#666;">초기화</button>
           </div>
         </div>
-        <!-- 그리드 캔버스 -->
+        <!-- ── 그리드 캔버스 ────────────────────────────────────────────────── -->
         <div @click="closeStructSpanPopup" style="flex:1;overflow-y:auto;padding:12px;background:#f0f2f5;border:1px solid #e8e8e8;border-top:none;border-radius:0 0 8px 8px;">
 
           <!-- ── dashboard 캔버스 ── -->
@@ -1431,7 +1444,7 @@ window.DpDispUiSimul = {
               </div>
               <div v-if="structDashDragOver && !structDashItems.length"
                 style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:14px;font-weight:700;pointer-events:none;">▼ 여기에 배치</div>
-              <!-- 배치된 아이템 -->
+              <!-- ── 배치된 아이템 ──────────────────────────────────────────── -->
               <div v-for="item in structDashItems" :key="item?.id"
                 :style="{ position:'absolute', left:item.x+'px', top:item.y+'px', width:item.w+'px', minHeight:item.h+'px',
                   border:'1px solid #e5e7eb', borderRadius:'8px', background:'#fff',
@@ -1445,7 +1458,7 @@ window.DpDispUiSimul = {
                     style="flex-shrink:0;width:15px;height:15px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
                 </div>
                 <div style="padding:8px;font-size:11px;color:#888;">{{ item.slot._panelNm }}</div>
-                <!-- 리사이즈 핸들 -->
+                <!-- ── 리사이즈 핸들 ────────────────────────────────────────── -->
                 <div @mousedown="startStructDashResize($event, item)"
                   style="position:absolute;bottom:0;right:0;width:14px;height:14px;cursor:se-resize;background:linear-gradient(135deg,transparent 50%,#d1d5db 50%);border-radius:0 0 8px 0;"></div>
               </div>
@@ -1454,7 +1467,7 @@ window.DpDispUiSimul = {
 
           <!-- ── grid 캔버스 ── -->
           <template v-else>
-          <!-- 뷰포트 래퍼 -->
+          <!-- ── 뷰포트 래퍼 ───────────────────────────────────────────────── -->
           <div :style="{ width: STRUCT_VIEWPORT[structViewport].width || '100%', maxWidth: STRUCT_VIEWPORT[structViewport].width || '100%', margin:'0 auto', transition:'width .3s' }">
           <div v-if="STRUCT_VIEWPORT[structViewport].width"
             style="text-align:center;margin-bottom:6px;font-size:11px;color:#9ca3af;font-weight:600;">
@@ -1477,7 +1490,7 @@ window.DpDispUiSimul = {
                 slot && (slot.colSpan||1)>1 ? { gridColumn:'span '+slot.colSpan } : {},
                 slot && (slot.rowSpan||1)>1 ? { gridRow:'span '+slot.rowSpan } : {},
               ]">
-              <!-- 빈 슬롯 -->
+              <!-- ── 빈 슬롯 ─────────────────────────────────────────────── -->
               <div v-if="!slot && structDragOverIdx!==idx"
                 style="min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#d1d5db;padding:10px;">
                 <span style="font-size:18px;">+</span>
@@ -1485,19 +1498,19 @@ window.DpDispUiSimul = {
               </div>
               <div v-else-if="!slot && structDragOverIdx===idx"
                 style="min-height:60px;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:12px;font-weight:700;">▼ 여기에 추가</div>
-              <!-- 배치된 위젯 -->
+              <!-- ── 배치된 위젯 ───────────────────────────────────────────── -->
               <template v-else-if="slot">
-                <!-- 실제컨텐츠 ON: ×만 -->
+                <!-- ── 실제컨텐츠 ON: ×만 ───────────────────────────────────── -->
                 <div v-if="structShowReal" style="position:relative;">
                   <button @click="removeStructSlot(idx)"
                     style="position:absolute;top:4px;right:4px;z-index:5;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.3);color:#fff;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
                 </div>
-                <!-- 헤더 (실제컨텐츠 OFF) -->
+                <!-- ── 헤더 (실제컨텐츠 OFF) ─────────────────────────────────── -->
                 <div v-else style="display:flex;align-items:center;gap:4px;padding:5px 8px 4px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
                   <span style="font-size:11px;">{{ wIcon(slot.widgetType) }}</span>
                   <span style="font-size:10px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:0 4px;white-space:nowrap;">{{ wLabel(slot.widgetType) }}</span>
                   <span style="font-size:10px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ slot.widgetNm }}</span>
-                  <!-- ⚙ 설정 아이콘 -->
+                  <!-- ── ⚙ 설정 아이콘 ─────────────────────────────────────── -->
                   <button @click="toggleStructSpanPopup($event, idx)"
                     :title="'열 ' + (slot.colSpan||1) + ' × 행 ' + (slot.rowSpan||1)"
                     style="flex-shrink:0;width:20px;height:20px;border-radius:4px;border:1px solid #e5e7eb;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
@@ -1505,7 +1518,7 @@ window.DpDispUiSimul = {
                   <button @click="removeStructSlot(idx)"
                     style="flex-shrink:0;width:16px;height:16px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
                 </div>
-                <!-- span 팝업 -->
+                <!-- ── span 팝업 ────────────────────────────────────────── -->
                 <div v-if="!structShowReal && structSpanPopupIdx===idx" @click.stop
                   style="position:absolute;top:34px;right:6px;z-index:20;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);padding:12px 14px;min-width:170px;">
                   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -1535,7 +1548,7 @@ window.DpDispUiSimul = {
                     <span style="font-size:10px;color:#9ca3af;">/ 4</span>
                   </div>
                 </div>
-                <!-- 위젯미리보기 (기존 렌더링 재사용) -->
+                <!-- ── 위젯미리보기 (기존 렌더링 재사용) ────────────────────────────── -->
                 <div :style="uiState.structShowReal ? 'padding:0;' : 'padding:10px;'">
                   <div v-if="slot.widgetType==='image_banner'"
                     style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:8px;padding:20px;text-align:center;color:#fff;">
@@ -1597,15 +1610,15 @@ window.DpDispUiSimul = {
               </template>
             </div>
             </template>
-          </div><!-- /grid -->
+          </div><!-- ── /grid ──────────────────────────────────────────────────────────── -->
           <div v-if="window.safeArrayUtils.safeEvery(cfStructCurrentSlots, s=>!s)" style="text-align:center;padding:40px;color:#bbb;font-size:13px;">
             좌측 영역 또는 패널을 드래그하여 배치하세요
           </div>
-          </div><!-- /device frame -->
-          </div><!-- /viewport wrapper -->
-          </template><!-- /grid1~4 -->
+          </div><!-- ── /device frame ──────────────────────────────────────────────────── -->
+          </div><!-- ── /viewport wrapper ──────────────────────────────────────────────── -->
+          </template><!-- ── /grid1~4 ───────────────────────────────────────────────────────── -->
 
-        </div><!-- /캔버스 -->
+        </div><!-- ── /캔버스 ───────────────────────────────────────────────────────────── -->
       </div>
 
 
@@ -1618,7 +1631,7 @@ window.DpDispUiSimul = {
   <div v-else-if="uiState.mainTab==='source'" style="margin-top:4px;">
     <div class="card" style="padding:0;overflow:hidden;">
 
-      <!-- 소스 헤더 -->
+      <!-- ── 소스 헤더 ────────────────────────────────────────────────────── -->
       <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#1e1e2e;border-bottom:1px solid #3a3a5c;">
         <div style="display:flex;align-items:center;gap:10px;">
           <span style="font-size:13px;font-weight:700;color:#63b3ed;">&lt;/&gt; 소스 구조</span>
@@ -1631,7 +1644,7 @@ window.DpDispUiSimul = {
         </button>
       </div>
 
-      <!-- 소스 본문 -->
+      <!-- ── 소스 본문 ────────────────────────────────────────────────────── -->
       <div style="background:#1e1e2e;padding:16px 20px;overflow-x:auto;min-height:400px;max-height:70vh;overflow-y:auto;">
         <div v-if="sourceLines.length===0" style="color:#718096;font-size:13px;text-align:center;padding:40px;">영역 또는 패널 데이터가 없습니다.</div>
         <div v-else style="font-family:monospace;font-size:12px;line-height:1.9;">
@@ -1640,7 +1653,7 @@ window.DpDispUiSimul = {
               ? 'height:0.4em;'
               : 'white-space:nowrap;overflow-x:visible;padding-left:' + (line.level||0)*20 + 'px;'">
 
-            <!-- 소스 최상단 헤더 주석 -->
+            <!-- ── 소스 최상단 헤더 주석 ───────────────────────────────────────── -->
             <template v-if="line.type==='source-header'">
               <span style="color:#718096;font-style:italic;">
                 <span style="color:#4a7a5a;">&lt;!--</span>
@@ -1669,7 +1682,7 @@ window.DpDispUiSimul = {
               </span>
             </template>
 
-            <!-- DispArea 메타 주석 -->
+            <!-- ── DispArea 메타 주석 ─────────────────────────────────────── -->
             <template v-else-if="line.type==='area-meta'">
               <span style="color:#4a7a5a;font-style:italic;">&lt;!--</span>
               <span style="color:#4a7a5a;font-style:italic;">
@@ -1697,7 +1710,7 @@ window.DpDispUiSimul = {
               <span style="color:#63b3ed;font-weight:700;">&gt;</span>
             </template>
 
-            <!-- 패널 메타 주석 -->
+            <!-- ── 패널 메타 주석 ───────────────────────────────────────────── -->
             <template v-else-if="line.type==='panel-meta'">
               <span style="color:#5a9e6f;font-style:italic;">&lt;!--</span>
               <span style="color:#5a9e6f;font-style:italic;">
@@ -1738,14 +1751,14 @@ window.DpDispUiSimul = {
             <span v-else-if="line.type==='area-close'"
               style="color:#63b3ed;font-weight:700;">&lt;/DispX02Area&gt;</span>
 
-            <!-- 주석 -->
+            <!-- ── 주석 ─────────────────────────────────────────────────── -->
             <span v-else-if="line.type==='comment'" style="color:#6a737d;">{{ line.text }}</span>
 
           </div>
         </div>
       </div>
 
-      <!-- 소스 푸터: 범례 -->
+      <!-- ── 소스 푸터: 범례 ────────────────────────────────────────────────── -->
       <div style="background:#161622;padding:10px 20px;border-top:1px solid #3a3a5c;display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
         <span style="font-size:11px;color:#b794f4;">■ DispX01Ui</span>
         <span style="font-size:11px;color:#63b3ed;">■ DispX02Area</span>

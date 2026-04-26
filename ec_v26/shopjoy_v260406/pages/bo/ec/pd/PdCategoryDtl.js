@@ -23,6 +23,8 @@ window.PdCategoryDtl = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -68,6 +70,7 @@ window.PdCategoryDtl = {
       }
     };
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -113,6 +116,8 @@ window.PdCategoryDtl = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return { cfIsNew, form, errors, handleSave, cfParentOptions, onParentChange, codes };
   },

@@ -62,6 +62,9 @@ window.SyTemplateDtl = {
     };
 
     /* 타입 변경 시 에디터 전환 — post-flush: DOM 업데이트 후 실행 */
+
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(cfUseHtmlEditor, (isHtml) => {
       if (isHtml && !props.viewMode) initQuill();
       else destroyQuill();
@@ -74,6 +77,8 @@ window.SyTemplateDtl = {
       }
       if (cfUseHtmlEditor.value && !props.viewMode) { await nextTick(); initQuill(); }
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleInitForm();
@@ -143,6 +148,9 @@ window.SyTemplateDtl = {
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const quillEditorEl = Vue.toRef(uiState, 'quillEditorEl');
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { templates, loading, uiState, cfIsNew, form, errors, handleSave, TEMPLATE_TYPES, cfNeedSubject, cfIsLongContent,
              cfUseHtmlEditor, quillEditorEl, uiState, cfSiteNm };
   },
@@ -188,13 +196,13 @@ window.SyTemplateDtl = {
         <label class="form-label">내용 <span v-if="!viewMode" class="req">*</span>
           <span style="font-size:11px;color:#888;margin-left:6px;">사용 가능 변수: &#123;&#123;username&#125;&#125;, &#123;&#123;orderId&#125;&#125;, &#123;&#123;prodNm&#125;&#125;, &#123;&#123;trackingNo&#125;&#125; 등</span>
         </label>
-        <!-- HTML 에디터 (메일, 시스템알림) -->
+        <!-- ── HTML 에디터 (메일, 시스템알림) ───────────────────────────────────── -->
         <template v-if="cfUseHtmlEditor">
           <div v-if="viewMode" class="form-control" style="height:260px;line-height:1.6;overflow:auto;" v-html="form.content || '<span style=color:#bbb>-</span>'"></div>
           <div v-else ref="quillEditorEl"
             style="height:260px;background:#fff;border:1px solid #d9d9d9;border-radius:0 0 6px 6px;"></div>
         </template>
-        <!-- 텍스트 영역 -->
+        <!-- ── 텍스트 영역 ─────────────────────────────────────────────────── -->
         <textarea v-else class="form-control" v-model="form.content"
           :rows="cfIsLongContent ? 10 : 5"
           placeholder="템플릿 내용 입력"
@@ -237,12 +245,12 @@ window.SyTemplateDtl = {
     </div>
   </div>
 
-  <!-- 미리보기 모달 -->
+  <!-- ── 미리보기 모달 ──────────────────────────────────────────────────────── -->
   <template-preview-modal v-if="uiState.previewOpen"
     :tmpl="form" :sample-params="form.sampleParams"
     @close="uiState.previewOpen=false" />
 
-  <!-- 발송하기 모달 -->
+  <!-- ── 발송하기 모달 ──────────────────────────────────────────────────────── -->
   <template-send-modal v-if="uiState.sendOpen"
     :tmpl="form" :show-toast="showToast" :show-confirm="showConfirm"
     @close="uiState.sendOpen=false" />

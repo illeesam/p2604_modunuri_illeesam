@@ -22,11 +22,15 @@ window.StConfigMng = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
       }
     });
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
     });
@@ -100,6 +104,8 @@ window.StConfigMng = {
 
     const fnCycleBadge = s => ({ '월정산': 'badge-blue', '주정산': 'badge-green', '일정산': 'badge-orange' }[s] || 'badge-gray');
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { uiState, configs, form, errors, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge };
   },
   template: /* html */`
@@ -142,7 +148,7 @@ window.StConfigMng = {
     </table>
   </div>
 
-  <!-- 편집 폼 -->
+  <!-- ── 편집 폼 ─────────────────────────────────────────────────────────── -->
   <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
     <div class="card-title" style="font-weight:700;margin-bottom:16px">{{ uiState.isNew ? '정산기준 추가' : '정산기준 수정' }}</div>
     <div class="form-row">

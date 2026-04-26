@@ -26,6 +26,8 @@ window.PdDlivTmpltMng = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -57,6 +59,8 @@ window.PdDlivTmpltMng = {
       } catch (_) {
       console.error('[catch-info]', _);}
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
@@ -135,6 +139,8 @@ const applied      = reactive({ kw: '', method: '', use: '' });
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
     const fnMethodBadge = v => ({ COURIER:'badge-blue', DIRECT:'badge-orange', PICKUP:'badge-green' }[v] || 'badge-gray');
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return { uiState, searchParam, searchParamOrg,
              pager, cfPageNums, setPage, onSearch, onReset,
@@ -217,7 +223,7 @@ const applied      = reactive({ kw: '', method: '', use: '' });
          </div>
        </div>
     </div>
-    <!-- 상세 폼 -->
+    <!-- ── 상세 폼 ───────────────────────────────────────────────────────── -->
     <div class="card" v-if="uiState.selectedId">
       <div class="toolbar">
         <span class="list-title">{{ uiState.isNew ? '신규 등록' : '상세 / 수정' }}</span>

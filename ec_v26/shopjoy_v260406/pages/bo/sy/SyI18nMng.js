@@ -19,6 +19,8 @@ window.SyI18nMng = {
         i18nMsgs.splice(0, i18nMsgs.length, ...(resMsgs.data?.data?.list || []));
       } catch (_) {}
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
 
@@ -38,6 +40,8 @@ window.SyI18nMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
+
+    // ── watch ────────────────────────────────────────────────────────────────
 
     watch(isAppReady, (newVal) => {
       if (newVal) {
@@ -117,6 +121,8 @@ const searchParam = reactive({ kw: '', scope: '', use: '' });
     const onSizeChange = () => { pager.pageNo = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { uiState, codes, searchParam, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
              selectedId, cfSelectedKey, cfSelectedMsgs, msgForm, openDetail, saveMsgs, getLangMsg,
              SCOPES, LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, onSizeChange };
@@ -185,7 +191,7 @@ const searchParam = reactive({ kw: '', scope: '', use: '' });
          </div>
        </div>
     </div>
-    <!-- 번역 편집 패널 -->
+    <!-- ── 번역 편집 패널 ───────────────────────────────────────────────────── -->
     <div class="card" v-if="cfSelectedKey">
       <div class="toolbar">
         <span class="list-title">번역 편집 — <code style="font-size:13px;color:#7c3aed">{{ cfSelectedKey.i18nKey }}</code></span>

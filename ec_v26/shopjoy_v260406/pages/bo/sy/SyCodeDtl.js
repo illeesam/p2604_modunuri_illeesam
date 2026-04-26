@@ -38,6 +38,8 @@ window.SyCodeDtl = {
       handleSearchList();
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
@@ -53,6 +55,7 @@ window.SyCodeDtl = {
       codeValue: yup.string().required('코드값을 입력해주세요.'),
     });
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) {
@@ -91,6 +94,8 @@ window.SyCodeDtl = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return { codes, uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm };
   },

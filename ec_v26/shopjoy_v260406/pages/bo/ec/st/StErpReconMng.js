@@ -25,6 +25,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -65,6 +67,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
       } catch (_) { console.error('[catch-info]', _); }
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT'); Object.assign(searchParamOrg, searchParam); });
 
     const doFix = async (r) => {
@@ -90,6 +94,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, reconList, cfPageNums, cfSummary, doFix, fnDiffBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`

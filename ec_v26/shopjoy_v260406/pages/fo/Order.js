@@ -22,6 +22,8 @@ window.Order = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -142,6 +144,8 @@ window.Order = {
       const u = window.foAuth?.state?.user;
       if (u) { form.name = u.memberNm || ''; form.tel = u.phone || ''; form.email = u.email || ''; }
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     const errors   = reactive({});
@@ -190,6 +194,8 @@ window.Order = {
       } finally { uiState.submitting = false; }
     };
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return {
       cfOrderItems,
       form, errors, clearErr, handleSubmit, openKakaoAddr,
@@ -204,7 +210,7 @@ window.Order = {
   template: /* html */ `
 <div class="page-wrap">
 
-  <!-- ══ 주문 결과 화면 ══ -->
+  <!-- ── ══ 주문 결과 화면 ══ ───────────────────────────────────────────────── -->
   <template v-if="uiState.view==='result' && uiState.resultData">
     <div style="max-width:600px;margin:0 auto;padding:40px 20px;text-align:center;">
       <div style="font-size:4rem;margin-bottom:16px;">🎉</div>
@@ -274,9 +280,9 @@ window.Order = {
     </div>
   </template>
 
-  <!-- ══ 주문 입력 화면 ══ -->
+  <!-- ── ══ 주문 입력 화면 ══ ───────────────────────────────────────────────── -->
   <template v-else>
-    <!-- 페이지 타이틀 배너 -->
+    <!-- ── 페이지 타이틀 배너 ─────────────────────────────────────────────────── -->
     <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
       <img src="assets/cdn/prod/img/page-title/page-title-1.jpg" alt="주문결제"
         style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
@@ -306,7 +312,7 @@ window.Order = {
           <div v-for="(item, idx) in cfOrderItems" :key="idx"
             style="padding-bottom:14px;"
             :style="idx<cfOrderItems.length-1?'border-bottom:1px solid var(--border);':''">
-            <!-- 상품 행 -->
+            <!-- ── 상품 행 ───────────────────────────────────────────────── -->
             <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">
               <div style="width:52px;height:52px;border-radius:10px;flex-shrink:0;overflow:hidden;background:var(--bg-base);">
                 <img v-if="item.product.image" :src="item.product.image" :alt="item.product.prodNm" style="width:100%;height:100%;object-fit:cover;" />
@@ -324,7 +330,7 @@ window.Order = {
                 <div v-if="selectedCoupons[idx]" style="font-size:0.78rem;color:var(--blue);margin-top:2px;">-{{ fmt(calcCouponDiscount(selectedCoupons[idx],item)) }}</div>
               </div>
             </div>
-            <!-- 상품 쿠폰 (rate/amount 만) -->
+            <!-- ── 상품 쿠폰 (rate/amount 만) ──────────────────────────────── -->
             <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;background:var(--bg-base);">
               <span style="font-size:0.82rem;color:var(--text-muted);flex-shrink:0;">🎟️ 상품쿠폰</span>
               <template v-if="selectedCoupons[idx]">
@@ -407,7 +413,7 @@ window.Order = {
 
       <!-- ── 주문자 정보 + 결제 안내 ── -->
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(12px,2vw,20px);align-items:start;" class="order-grid">
-        <!-- 주문자 정보 -->
+        <!-- ── 주문자 정보 ─────────────────────────────────────────────────── -->
         <div class="card" style="padding:clamp(16px,3vw,28px);">
           <h2 style="font-size:1rem;font-weight:700;margin-bottom:18px;color:var(--text-primary);">👤 주문자 정보</h2>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:14px;">
@@ -428,7 +434,7 @@ window.Order = {
             <div v-if="errors.email" class="form-error">{{ errors.email }}</div>
           </div>
 
-          <!-- 배송 주소 (카카오 우편번호) -->
+          <!-- ── 배송 주소 (카카오 우편번호) ─────────────────────────────────────── -->
           <div style="margin-bottom:14px;">
             <label class="form-label">배송 주소<span class="form-required">*</span></label>
             <div style="display:flex;gap:8px;margin-bottom:8px;">
@@ -473,7 +479,7 @@ window.Order = {
           </button>
         </div>
 
-        <!-- 결제 안내 -->
+        <!-- ── 결제 안내 ──────────────────────────────────────────────────── -->
         <div class="card" style="padding:clamp(16px,3vw,28px);">
           <h2 style="font-size:1rem;font-weight:700;margin-bottom:18px;color:var(--text-primary);">💳 결제 안내 (계좌이체)</h2>
           <div style="display:flex;flex-direction:column;gap:4px;">
@@ -496,7 +502,7 @@ window.Order = {
               <div><div class="info-label">입금자명</div><div class="info-val" style="margin-top:4px;">주문자명과 동일하게 입력해주세요.</div></div>
             </div>
 
-            <!-- 배송비 + 배송비 쿠폰 선택 -->
+            <!-- ── 배송비 + 배송비 쿠폰 선택 ────────────────────────────────────── -->
             <div class="info-row" style="align-items:flex-start;">
               <span class="info-icon">🚚</span>
               <div style="flex:1;">
@@ -548,10 +554,10 @@ window.Order = {
     </template>
   </template>
 
-  <!-- ══ 상품 쿠폰 팝업 ══ -->
+  <!-- ── ══ 상품 쿠폰 팝업 ══ ───────────────────────────────────────────────── -->
   <div v-if="couponPopup.show" class="modal-overlay" @click.self="closeCouponPopup" style="z-index:200;">
     <div class="modal-box" style="max-width:480px;width:92%;padding:0;max-height:82vh;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;">
-      <!-- 헤더 -->
+      <!-- ── 헤더 ───────────────────────────────────────────────────────── -->
       <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
         <div>
           <div style="font-size:1.05rem;font-weight:800;display:flex;align-items:center;gap:8px;">🎟️ 상품 쿠폰 선택</div>
@@ -559,9 +565,9 @@ window.Order = {
         </div>
         <button @click="closeCouponPopup" style="background:rgba(255,255,255,0.2);border:none;cursor:pointer;font-size:1rem;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;">✕</button>
       </div>
-      <!-- 리스트 -->
+      <!-- ── 리스트 ──────────────────────────────────────────────────────── -->
       <div style="overflow-y:auto;flex:1;padding:16px;background:#fafbfc;display:flex;flex-direction:column;gap:8px;">
-        <!-- 쿠폰 없음 -->
+        <!-- ── 쿠폰 없음 ──────────────────────────────────────────────────── -->
         <div @click="applyCoupon(null)"
           style="padding:14px 16px;border-radius:10px;border:1.5px solid #e4e7ec;background:#fff;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s;"
           :style="!selectedCoupons[couponPopup.targetIdx]?'border-color:#9ca3af;background:#f3f4f6;':''"
@@ -580,7 +586,7 @@ window.Order = {
               background: selectedCoupons[couponPopup.targetIdx]?.couponId===c.couponId ? '#fff5f7' : '#fff',
               boxShadow: selectedCoupons[couponPopup.targetIdx]?.couponId===c.couponId ? '0 2px 8px rgba(232,88,122,0.15)' : 'none',
             }">
-            <!-- 쿠폰 티켓 스타일 아이콘 -->
+            <!-- ── 쿠폰 티켓 스타일 아이콘 ──────────────────────────────────────── -->
             <div style="position:relative;width:44px;height:44px;background:linear-gradient(135deg,#fce4ec,#f8bbd0);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">
               🎟️
             </div>
@@ -603,7 +609,7 @@ window.Order = {
     </div>
   </div>
 
-  <!-- ══ 배송비 쿠폰 팝업 ══ -->
+  <!-- ── ══ 배송비 쿠폰 팝업 ══ ──────────────────────────────────────────────── -->
   <div v-if="uiState.shipCouponPopup" class="modal-overlay" @click.self="uiState.shipCouponPopup=false" style="z-index:200;">
     <div class="modal-box" style="max-width:440px;width:92%;padding:0;max-height:72vh;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;">
       <div style="background:linear-gradient(135deg,#22c55e 0%,#0ea5e9 100%);color:#fff;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">

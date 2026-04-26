@@ -26,6 +26,9 @@ window.DpDispWidgetMng = {
     };
 
     // App 초기화 감시
+
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (ready) => {
       if (ready) {
         fnLoadCodes();
@@ -54,6 +57,7 @@ window.DpDispWidgetMng = {
     const searchParam = reactive({ kw: '', type: '', status: '' });
     const searchParamOrg = reactive({ kw: '', type: '', status: '' });
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
@@ -127,6 +131,9 @@ const applied = reactive({ kw: '', type: '', status: '' });
 
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { widgets, widgetLibs, uiState, pathLabel,
       codes, wTypeLabel, wIcon,
       searchParam, searchParamOrg, pager,
@@ -149,7 +156,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
     <span style="font-size:13px;font-weight:400;color:#888;display:block;margin-top:4px;">위젯 유형별 리소스 등록·재활용</span>
   </div>
 
-  <!-- 검색 필터 -->
+  <!-- ── 검색 필터 ────────────────────────────────────────────────────────── -->
   <div class="card" style="padding:14px 18px;margin-bottom:14px;">
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
       <div class="form-group" style="margin:0;min-width:180px;flex:1;">
@@ -177,16 +184,16 @@ const applied = reactive({ kw: '', type: '', status: '' });
     </div>
   </div>
 
-  <!-- 본문: 좌측 트리 + 우측 목록 -->
+  <!-- ── 본문: 좌측 트리 + 우측 목록 ────────────────────────────────────────────── -->
   <div style="display:flex;gap:12px;align-items:flex-start;">
 
-  <!-- 좌측 표시경로 -->
+  <!-- ── 좌측 표시경로 ──────────────────────────────────────────────────────── -->
   <div class="card" style="width:240px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid #f0f0f0;margin-bottom:8px;">
       <span style="font-size:12px;font-weight:700;color:#555;">표시경로</span>
       <span style="font-size:10px;color:#aaa;">{{ tree.length }}그룹</span>
     </div>
-    <!-- 전체펼치기 / 전체닫기 -->
+    <!-- ── 전체펼치기 / 전체닫기 ───────────────────────────────────────────────── -->
     <div style="display:flex;gap:4px;margin-bottom:8px;">
       <button @click="expandAll"
         style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">
@@ -197,7 +204,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
         ▶ 전체닫기
       </button>
     </div>
-    <!-- Root 노드 -->
+    <!-- ── Root 노드 ────────────────────────────────────────────────────── -->
     <div @click="toggleNode('__root__'); selectTree('')"
       :style="{
         display:'flex',alignItems:'center',justifyContent:'space-between',
@@ -210,7 +217,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
       <span>{{ isOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
       <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ cfTotalCount }}</span>
     </div>
-    <!-- 트리 노드 (root 하위로 들여쓰기) -->
+    <!-- ── 트리 노드 (root 하위로 들여쓰기) ──────────────────────────────────────── -->
     <div v-if="isOpen('__root__')" style="padding-left:12px;">
       <div v-for="node in cfTree" :key="node?.label">
         <div @click="toggleNode(node.label); selectTree(node.label)"
@@ -246,9 +253,9 @@ const applied = reactive({ kw: '', type: '', status: '' });
     <div v-if="!cfTree.length" style="padding:20px 8px;text-align:center;color:#ccc;font-size:11px;">위젯이 없습니다.</div>
   </div>
 
-  <!-- 우측 목록 -->
+  <!-- ── 우측 목록 ────────────────────────────────────────────────────────── -->
   <div style="flex:1;min-width:0;">
-  <!-- 목록 -->
+  <!-- ── 목록 ───────────────────────────────────────────────────────────── -->
   <div class="card" style="padding:0;">
     <div style="padding:12px 18px;border-bottom:1px solid #f0f0f0;">
       <span style="font-size:13px;color:#555;">총 <b>{{ cfTotalCount }}</b>건</span>
@@ -310,7 +317,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
       </tbody>
     </table>
 
-    <!-- 페이저 -->
+    <!-- ── 페이저 ────────────────────────────────────────────────────────── -->
     <div class="pagination">
          <div></div>
          <div class="pager">
@@ -328,10 +335,10 @@ const applied = reactive({ kw: '', type: '', status: '' });
        </div>
   </div>
 
-  </div><!-- /우측 목록 -->
-  </div><!-- /본문 flex -->
+  </div><!-- ── /우측 목록 ─────────────────────────────────────────────────────────── -->
+  </div><!-- ── /본문 flex ───────────────────────────────────────────────────────── -->
 
-  <!-- 인라인 상세 -->
+  <!-- ── 인라인 상세 ───────────────────────────────────────────────────────── -->
   <div v-if="selectedId !== null" style="margin-top:16px;">
     <dp-disp-widget-dtl
       :key="cfDetailKey"

@@ -23,6 +23,8 @@ window.XsLocalStorage = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -131,6 +133,7 @@ window.XsLocalStorage = {
       uiState.isResizing = false;
     };
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       window.addEventListener('mousemove', handleMouseMove);
@@ -144,6 +147,8 @@ window.XsLocalStorage = {
 
     loadStorageData();
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return {
       storageData, cfFilteredData, uiStateGlobal, uiState,
       loadStorageData, copyValue, startEdit, saveEdit, cancelEdit, handleDelete, clearAllStorage, parseValue, startResize, codes
@@ -156,7 +161,7 @@ window.XsLocalStorage = {
     <p style="margin: 0; font-size: 13px; color: #666;">브라우저 로컬 저장소 데이터 조회 및 편집</p>
   </div>
 
-  <!-- 검색 및 액션 바 -->
+  <!-- ── 검색 및 액션 바 ────────────────────────────────────────────────────── -->
   <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
     <div style="display: flex; gap: 16px; align-items: flex-end;">
       <div style="flex: 1;">
@@ -174,7 +179,7 @@ window.XsLocalStorage = {
     </div>
   </div>
 
-  <!-- 테이블 -->
+  <!-- ── 테이블 ──────────────────────────────────────────────────────────── -->
   <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
     <div style="overflow-x: auto; position: relative; user-select: none;" :style="{ cursor: uiState.isResizing ? 'col-resize' : 'auto' }">
       <table style="width: 100%; border-collapse: collapse;">
@@ -224,7 +229,7 @@ window.XsLocalStorage = {
       </table>
     </div>
 
-    <!-- 푸터: 항목 수 -->
+    <!-- ── 푸터: 항목 수 ───────────────────────────────────────────────────── -->
     <div style="padding: 12px 16px; border-top: 1px solid #e5e7eb; background: #fafafa; font-size: 12px; color: #666;">
       총 <strong>{{ cfFilteredData.length }}</strong>개 항목
     </div>

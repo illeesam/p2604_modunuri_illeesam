@@ -33,6 +33,9 @@ window.OdOrderHist = {
         uiState.loading = false;
       }
     };
+
+    // ── watch ────────────────────────────────────────────────────────────────
+
         watch(botTab, v => { window._ecOrderHistState.tab = v; });
 
     const isAppReady = computed(() => {
@@ -51,6 +54,8 @@ window.OdOrderHist = {
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.botTab === id;
 
     const orderItems = reactive([]);
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       const o = window.safeArrayUtils.safeFind(orders, x => x.orderId === props.orderId);
@@ -73,6 +78,9 @@ window.OdOrderHist = {
     });
 
     const botTab = Vue.toRef(uiState, 'botTab');
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { orders, uiState, orderItems, cfRelatedDliv, cfRelatedClaims, cfDlivHistory, showTab, claims, deliveries };
   },
   template: /* html */`
@@ -87,7 +95,7 @@ window.OdOrderHist = {
     </div>
   <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
-  <!-- 구성 상품 -->
+  <!-- ── 구성 상품 ────────────────────────────────────────────────────────── -->
   <div class="card" v-show="showTab('products')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📦 구성 상품 <span class="tab-count">{{ orderItems.length }}</span></div>
     <table class="bo-table" v-if="orderItems.length">
@@ -108,7 +116,7 @@ window.OdOrderHist = {
     <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">구성 상품 정보가 없습니다.</div>
   </div>
 
-  <!-- 배송 이력 -->
+  <!-- ── 배송 이력 ────────────────────────────────────────────────────────── -->
   <div class="card" v-show="showTab('dliv')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🚚 배송 이력 <span class="tab-count">{{ cfRelatedDliv ? 1 : 0 }}</span></div>
     <template v-if="cfRelatedDliv">
@@ -136,7 +144,7 @@ window.OdOrderHist = {
     <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">배송 정보가 없습니다.</div>
   </div>
 
-  <!-- 연관 클레임 -->
+  <!-- ── 연관 클레임 ───────────────────────────────────────────────────────── -->
   <div class="card" v-show="showTab('claims')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></div>
     <table class="bo-table" v-if="cfRelatedClaims.length">

@@ -28,6 +28,8 @@ window.OdDlivDtl = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -35,7 +37,9 @@ window.OdDlivDtl = {
     });
 
     const cfIsNew = computed(() => !props.editId);
+
         watch(() => uiState.tab, v => { window._odDlivDtlState.tab = v; });
+
         watch(() => uiState.viewMode2, v => { window._odDlivDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
@@ -141,12 +145,17 @@ window.OdDlivDtl = {
         const paid = Math.round(total * shares[i]);
         if (paid <= 0) return null;
         const sale = discRates[i] > 0 ? Math.round(paid / (1 - discRates[i])) : paid;
+
+    // ── return ───────────────────────────────────────────────────────────────
+
         return { ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
       }).filter(Boolean);
     };
     const initItems = async () => {
       dlivItems.splice(0, dlivItems.length, ...sampleDlivItems());
     };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
       await handleSearchDetail();
@@ -203,13 +212,16 @@ window.OdDlivDtl = {
     ]);
     const memoEl = Vue.ref(null);
     Vue.watch(memoEl, (el) => { if (uiState) uiState.memoEl = el; });
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { cfIsNew, tab, form, errors, handleSave, memoEl, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfFirstClaim, CLAIM_TYPE_COLOR, viewMode2, showTab, relatedClaims, codes };
   },
   template: /* html */`
 <div>
   <div class="page-title">{{ cfIsNew ? '배송 등록' : (viewMode ? '배송 상세' : '배송 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.dlivId }}</span></div>
 
-  <!-- 탭 -->
+  <!-- ── 탭 ────────────────────────────────────────────────────────────── -->
   <div v-if="!cfIsNew" style="display:flex;gap:8px;margin-bottom:14px;align-items:stretch;">
     <div style="flex:1;display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
       <button v-for="t in cfTabs" :key="t?.id"
@@ -253,7 +265,7 @@ window.OdDlivDtl = {
 
   <div v-if="cfIsNew || showTab('info')" class="card">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
-    <!-- 배송 진행 상태 흐름 -->
+    <!-- ── 배송 진행 상태 흐름 ────────────────────────────────────────────────── -->
     <div v-if="!cfIsNew" style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
         <span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:10px;color:#fff;background:#0ea5e9;">🚚 배송</span>
@@ -296,7 +308,7 @@ window.OdDlivDtl = {
       </div>
     </div>
 
-    <!-- 기본정보 -->
+    <!-- ── 기본정보 ───────────────────────────────────────────────────────── -->
     <div>
       <div class="form-row">
         <div class="form-group">
@@ -361,7 +373,7 @@ window.OdDlivDtl = {
 
   </div>
 
-  <!-- 배송항목목록 탭 -->
+  <!-- ── 배송항목목록 탭 ─────────────────────────────────────────────────────── -->
   <div v-if="!cfIsNew && showTab('items')" class="card" style="padding:20px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📦 배송항목 <span class="tab-count">{{ dlivItems.length }}</span></div>
     <div style="background:#f9fafb;padding:10px 14px;border-radius:8px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:14px;font-size:12px;">
@@ -435,7 +447,7 @@ window.OdDlivDtl = {
     <div v-else style="text-align:center;color:#bbb;padding:30px;">배송 항목 정보가 없습니다.</div>
   </div>
 
-  <!-- 결제정보 탭 -->
+  <!-- ── 결제정보 탭 ───────────────────────────────────────────────────────── -->
   <div v-if="!cfIsNew && showTab('payment')" class="card" style="padding:20px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ cfPaymentList.length }}</span></div>
     <table class="bo-table" v-if="cfPaymentList.length">
@@ -457,13 +469,13 @@ window.OdDlivDtl = {
     <div v-else style="text-align:center;color:#bbb;padding:30px;">결제정보가 없습니다.</div>
   </div>
 
-  <!-- 배송상태변경이력 탭 -->
+  <!-- ── 배송상태변경이력 탭 ───────────────────────────────────────────────────── -->
   <div v-if="!cfIsNew && showTab('hist')" class="card">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">🕒 상태변경이력 <span class="tab-count">{{ cfStatusHistList.length }}</span></div>
     <od-dliv-hist :order-id="form.orderId" :navigate="navigate" :show-ref-modal="showRefModal" />
   </div>
 
-  <!-- 정보수정이력 탭 -->
+  <!-- ── 정보수정이력 탭 ─────────────────────────────────────────────────────── -->
   <div v-if="!cfIsNew && showTab('editHist')" class="card" style="padding:20px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ cfEditHistList.length }}</span></div>
     <table class="bo-table" v-if="cfEditHistList.length">

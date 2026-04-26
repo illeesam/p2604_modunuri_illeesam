@@ -30,7 +30,11 @@ window.PmVoucherDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
+
+    // ── watch ────────────────────────────────────────────────────────────────
+
         watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
+
         watch(() => uiState.viewMode2, v => { window._pmVoucherDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
@@ -76,6 +80,7 @@ window.PmVoucherDtl = {
       issueQty: yup.number().min(1, '발행매수는 1개 이상이어야 합니다.').required('발행매수를 입력해주세요.'),
     });
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchDetail();
@@ -195,6 +200,9 @@ window.PmVoucherDtl = {
     const qrcodeContainer = Vue.toRef(uiState, 'qrcodeContainer');
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
     const snsMsg = Vue.toRef(uiState, 'snsMsg');
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { vouchers, uiState, codes, cfIsNew, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, viewMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, uiState, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
@@ -211,7 +219,7 @@ window.PmVoucherDtl = {
     </div>
   </div>
 
-  <!-- 탭 네비게이션 -->
+  <!-- ── 탭 네비게이션 ──────────────────────────────────────────────────────── -->
   <div class="tab-nav">
     <button v-for="t in ['info','detail','issueHist','useHist','preview']" :key="Math.random()"
       :class="['tab-btn', {active:tab===t}]"
@@ -220,7 +228,7 @@ window.PmVoucherDtl = {
     </button>
   </div>
 
-  <!-- 기본정보 탭 -->
+  <!-- ── 기본정보 탭 ───────────────────────────────────────────────────────── -->
   <div v-if="showTab('info')" :class="['card', 'dtl-tab-grid', {'cols-1':viewMode2==='1col','cols-2':viewMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">기본정보</div>
     <div class="form-row">
@@ -294,7 +302,7 @@ window.PmVoucherDtl = {
       </div>
     </div>
 
-    <!-- 판매업체 선택 모달 -->
+    <!-- ── 판매업체 선택 모달 ─────────────────────────────────────────────────── -->
     <div v-if="showVendorModal" class="modal-overlay" @click.self="showVendorModal=false">
       <div class="modal-box" style="width:400px;">
         <div class="modal-header">
@@ -324,13 +332,13 @@ window.PmVoucherDtl = {
     </div>
   </div>
 
-  <!-- 미리보기 탭 -->
+  <!-- ── 미리보기 탭 ───────────────────────────────────────────────────────── -->
   <div v-if="showTab('preview')" :class="['card', 'dtl-tab-grid', {'cols-1':viewMode2==='1col','cols-2':viewMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">미리보기</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px;">
-      <!-- 좌측 컬럼 -->
+      <!-- ── 좌측 컬럼 ────────────────────────────────────────────────────── -->
       <div style="display:flex;flex-direction:column;gap:16px;">
-        <!-- 바코드 -->
+        <!-- ── 바코드 ────────────────────────────────────────────────────── -->
         <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;background:linear-gradient(to right, #fff 0%, rgba(232,88,122,0.02) 100%);">
           <div style="position:absolute;top:-20px;right:-20px;font-size:60px;opacity:0.04;transform:rotate(-15deg);pointer-events:none;">💳</div>
           <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;position:relative;z-index:1;">📊 바코드</div>
@@ -345,7 +353,7 @@ window.PmVoucherDtl = {
             <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:45px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">ShopJoy</div>
           </div>
         </div>
-        <!-- SNS전송형태 -->
+        <!-- ── SNS전송형태 ────────────────────────────────────────────────── -->
         <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;overflow:hidden;">
           <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-25deg);font-size:70px;font-weight:900;color:#e8587a;opacity:0.08;pointer-events:none;white-space:nowrap;letter-spacing:6px;z-index:0;">ShopJoy</div>
           <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;position:relative;z-index:1;">💬 SNS전송형태 (카톡)</div>
@@ -359,7 +367,7 @@ window.PmVoucherDtl = {
             <div style="color:#999;font-size:9px;margin-top:6px;">ShopJoy에서 확인하기 &gt;</div>
           </div>
         </div>
-        <!-- 이메일 내용 -->
+        <!-- ── 이메일 내용 ─────────────────────────────────────────────────── -->
         <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;">
           <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;">📧 이메일 내용</div>
           <div style="background:linear-gradient(180deg, #f9f9f9 0%, #fafbfc 100%);padding:12px;border:1px solid #e8e8e8;border-radius:6px;text-align:left;font-size:9px;line-height:1.6;color:#333;width:100%;position:relative;overflow:hidden;">
@@ -386,9 +394,9 @@ window.PmVoucherDtl = {
           </div>
         </div>
       </div>
-      <!-- 우측 컬럼 -->
+      <!-- ── 우측 컬럼 ────────────────────────────────────────────────────── -->
       <div style="display:flex;flex-direction:column;gap:16px;">
-        <!-- QR코드 -->
+        <!-- ── QR코드 ───────────────────────────────────────────────────── -->
         <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;background:linear-gradient(135deg, #fff 0%, rgba(232,88,122,0.01) 100%);">
           <div style="position:absolute;bottom:-15px;left:-15px;font-size:50px;opacity:0.05;transform:rotate(-20deg);">📱</div>
           <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;position:relative;z-index:1;">📱 QR코드</div>
@@ -403,7 +411,7 @@ window.PmVoucherDtl = {
             <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">ShopJoy</div>
           </div>
         </div>
-        <!-- 종이형태 -->
+        <!-- ── 종이형태 ───────────────────────────────────────────────────── -->
         <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;">
           <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;">🎟 종이형태</div>
           <div style="width:100%;aspect-ratio:2/1.2;background:linear-gradient(135deg, #fff8f9 0%, #fff0f4 100%);border:2px solid #e8587a;border-radius:8px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 2px 8px rgba(232,88,122,0.1);position:relative;overflow:hidden;">
@@ -428,7 +436,7 @@ window.PmVoucherDtl = {
     </div>
   </div>
 
-  <!-- 발급내역 탭 -->
+  <!-- ── 발급내역 탭 ───────────────────────────────────────────────────────── -->
   <div v-if="showTab('issueHist')" :class="['card', 'dtl-tab-grid', {'cols-1':viewMode2==='1col','cols-2':viewMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">발급내역</div>
     <table class="bo-table" style="margin:0;">
@@ -447,7 +455,7 @@ window.PmVoucherDtl = {
     </table>
   </div>
 
-  <!-- 사용내역 탭 -->
+  <!-- ── 사용내역 탭 ───────────────────────────────────────────────────────── -->
   <div v-if="showTab('useHist')" :class="['card', 'dtl-tab-grid', {'cols-1':viewMode2==='1col','cols-2':viewMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">사용내역</div>
     <table class="bo-table" style="margin:0;">
@@ -466,7 +474,7 @@ window.PmVoucherDtl = {
     </table>
   </div>
 
-  <!-- 상세정보 탭 -->
+  <!-- ── 상세정보 탭 ───────────────────────────────────────────────────────── -->
   <div v-if="showTab('detail')" :class="['card', 'dtl-tab-grid', {'cols-1':viewMode2==='1col','cols-2':viewMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
     <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #e8e8e8;">
@@ -481,7 +489,7 @@ window.PmVoucherDtl = {
     </div>
   </div>
 
-  <!-- SNS 전송 모달 -->
+  <!-- ── SNS 전송 모달 ────────────────────────────────────────────────────── -->
   <div v-if="snsModal.show" class="modal-overlay" @click.self="snsModal.show=false">
     <div class="modal-box" style="max-width:500px;">
       <div class="modal-header">

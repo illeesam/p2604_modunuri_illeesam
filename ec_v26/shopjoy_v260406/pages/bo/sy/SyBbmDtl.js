@@ -39,6 +39,8 @@ window.SyBbmDtl = {
       handleSearchList();
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
@@ -63,6 +65,7 @@ window.SyBbmDtl = {
       bbmNm: yup.string().required('게시판명을 입력해주세요.'),
     });
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) {
@@ -101,6 +104,8 @@ window.SyBbmDtl = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return { bbms, uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
   },

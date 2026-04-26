@@ -38,7 +38,11 @@ window.PmPlanDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
+
+    // ── watch ────────────────────────────────────────────────────────────────
+
         watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
+
         watch(() => uiState.viewMode2, v => { window._ecPlanDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
@@ -154,6 +158,7 @@ window.PmPlanDtl = {
       }
     };
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchDetail();
@@ -230,6 +235,9 @@ window.PmPlanDtl = {
     const prodSearch = Vue.toRef(uiState, 'prodSearch');
     const showProdPopup = Vue.toRef(uiState, 'showProdPopup');
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
+
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { uiState, codes, cfIsNew, tab, onTabChange, form, errors, activeContentTab, prodSearch,
       cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, handleSave,
       CATEGORIES, STATUS_OPTIONS, VISIBILITY_OPTIONS, viewMode2, showTab, hasVisibility, toggleVisibility,
@@ -259,7 +267,7 @@ window.PmPlanDtl = {
     </div>
     <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
-    <!-- 배너이미지 -->
+    <!-- ── 배너이미지 ──────────────────────────────────────────────────────── -->
     <div class="card" v-show="showTab('banner')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🎨 배너이미지</div>
       <div style="margin-bottom:12px;">
@@ -272,7 +280,7 @@ window.PmPlanDtl = {
       </div>
     </div>
 
-    <!-- 기본정보 -->
+    <!-- ── 기본정보 ───────────────────────────────────────────────────────── -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <div class="form-group">
@@ -341,7 +349,7 @@ window.PmPlanDtl = {
         </div>
       </div>
 
-      <!-- 판매업체 선택 모달 -->
+      <!-- ── 판매업체 선택 모달 ───────────────────────────────────────────────── -->
       <div v-if="showVendorModal" class="modal-overlay" @click.self="showVendorModal=false">
         <div class="modal-box" style="width:400px;">
           <div class="modal-header">
@@ -372,7 +380,7 @@ window.PmPlanDtl = {
       </div>
     </div>
 
-    <!-- 내용입력 (HTML 에디터) -->
+    <!-- ── 내용입력 (HTML 에디터) ────────────────────────────────────────────── -->
     <div class="card" v-show="showTab('content')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 내용입력</div>
       <div style="margin-bottom:12px;">
@@ -401,7 +409,7 @@ window.PmPlanDtl = {
       </div>
     </div>
 
-    <!-- 대상상품 -->
+    <!-- ── 대상상품 ───────────────────────────────────────────────────────── -->
     <div class="card" v-show="showTab('products')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🛍 대상 상품</div>
       <div style="margin-bottom:16px;">
@@ -427,11 +435,11 @@ window.PmPlanDtl = {
       </div>
     </div>
 
-    <!-- 미리보기 -->
+    <!-- ── 미리보기 ───────────────────────────────────────────────────────── -->
     <div class="card" v-show="showTab('preview')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
       <div style="background:#f9f9f9;border-radius:6px;padding:20px;">
-        <!-- 배너 미리보기 -->
+        <!-- ── 배너 미리보기 ────────────────────────────────────────────────── -->
         <div v-if="form.bannerImage" style="margin-bottom:20px;padding:16px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;overflow:hidden;" v-html="form.bannerImage"></div>
 
         <div style="background:#fff;border-radius:6px;padding:20px;border:1px solid #e0e0e0;">
@@ -446,7 +454,7 @@ window.PmPlanDtl = {
             <div style="margin-top:4px;">{{ form.desc }}</div>
           </div>
 
-          <!-- 컨텐츠 미리보기 -->
+          <!-- ── 컨텐츠 미리보기 ─────────────────────────────────────────────── -->
           <template v-if="form.content1 || form.content2 || form.content3">
             <div style="border-top:1px solid #e0e0e0;padding-top:16px;margin-top:16px;">
               <div v-if="form.content1" style="margin-bottom:20px;">
@@ -464,7 +472,7 @@ window.PmPlanDtl = {
             </div>
           </template>
 
-          <!-- 대상상품 미리보기 -->
+          <!-- ── 대상상품 미리보기 ────────────────────────────────────────────── -->
           <div v-if="cfSelectedProducts.length > 0" style="border-top:1px solid #e0e0e0;padding-top:16px;margin-top:16px;">
             <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">🛍 대상상품 ({{ cfSelectedProducts.length }}개)</div>
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;">
@@ -487,7 +495,7 @@ window.PmPlanDtl = {
     </div>
 </div>
 
-<!-- 상품선택 모달 -->
+<!-- ── 상품선택 모달 ────────────────────────────────────────────────────────── -->
 <div v-if="showProdPopup" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1000;">
   <div style="background:#fff;border-radius:8px;width:90%;max-width:600px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;">
     <div style="padding:16px;border-bottom:1px solid #e0e0e0;display:flex;justify-content:space-between;align-items:center;">

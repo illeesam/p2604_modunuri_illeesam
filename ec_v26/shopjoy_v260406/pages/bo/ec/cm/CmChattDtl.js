@@ -25,6 +25,8 @@ window.CmChattDtl = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const handleSearchDetail = async () => {
@@ -45,7 +47,9 @@ window.CmChattDtl = {
     };
 
     const cfIsNew = computed(() => !props.editId);
+
     watch(() => uiState.tab, v => { window._cmChattDtlState.tab = v; });
+
     watch(() => uiState.viewMode2, v => { window._cmChattDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
@@ -77,6 +81,7 @@ window.CmChattDtl = {
       nextTick(() => { const el = msgBoxRef.value; if (el) el.scrollTop = el.scrollHeight; });
     };
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) {
@@ -153,6 +158,8 @@ window.CmChattDtl = {
     const searchUserId = Vue.toRef(uiState, 'searchUserId');
     const chat = Vue.toRef(uiState, 'chat');
 
+    // ── return ───────────────────────────────────────────────────────────────
+
     return { cfIsNew, tab, viewMode2, showTab, chat, replyText, sendReply, closeChat, msgBoxRef,
       hasRef, refLabel, openMsgRef, refModal, closeRefModal,
       form, errors, handleSave, onUserChange,
@@ -164,7 +171,7 @@ window.CmChattDtl = {
 <div>
   <div class="page-title">{{ cfIsNew ? '채팅 등록' : '채팅 상세' }}<span v-if="!cfIsNew && chat" style="font-size:12px;color:#999;margin-left:8px;">#{{ chat.chatId }}</span></div>
 
-  <!-- 채팅 상세 -->
+  <!-- ── 채팅 상세 ────────────────────────────────────────────────────────── -->
   <div v-if="!cfIsNew">
     <div class="tab-bar-row">
       <div class="tab-nav">
@@ -181,7 +188,7 @@ window.CmChattDtl = {
     </div>
     <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
-    <!-- 채팅 내용 탭 -->
+    <!-- ── 채팅 내용 탭 ────────────────────────────────────────────────────── -->
     <div class="card" v-show="showTab('chat')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💬 채팅 내용</div>
       <template v-if="chat">
@@ -197,7 +204,7 @@ window.CmChattDtl = {
           <button v-if="chat.status==='진행중'" class="btn btn-secondary btn-sm" @click="closeChat">채팅 종료</button>
         </div>
 
-        <!-- 메시지 목록 -->
+        <!-- ── 메시지 목록 ─────────────────────────────────────────────────── -->
         <div class="chat-messages" ref="msgBoxRef">
           <div v-for="(msg, idx) in (chat.messages||[])" :key="idx" class="chat-msg" :class="msg.from">
             <div class="chat-bubble">
@@ -209,7 +216,7 @@ window.CmChattDtl = {
           <div v-if="!(chat.messages||[]).length" style="text-align:center;color:#aaa;padding:20px;font-size:13px;">메시지가 없습니다.</div>
         </div>
 
-        <!-- 답변 입력 -->
+        <!-- ── 답변 입력 ──────────────────────────────────────────────────── -->
         <div v-if="chat.status==='진행중'" style="display:flex;gap:8px;margin-top:12px;">
           <textarea class="form-control" v-model="replyText" rows="2" placeholder="답변을 입력하고 Enter..." style="resize:none;"
             @keydown.enter.exact.prevent="() => sendReply?.()"></textarea>
@@ -224,7 +231,7 @@ window.CmChattDtl = {
       <div v-else style="text-align:center;color:#aaa;padding:40px;">채팅을 찾을 수 없습니다.</div>
     </div>
 
-    <!-- 회원 채팅 이력 탭 -->
+    <!-- ── 회원 채팅 이력 탭 ─────────────────────────────────────────────────── -->
     <div class="card" v-show="showTab('history')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 채팅 이력 <span class="tab-count">{{ cfMemberChats.length }}</span></div>
       <div v-if="chat" style="margin-bottom:14px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;align-items:center;gap:12px;">
@@ -249,7 +256,7 @@ window.CmChattDtl = {
     </div>
   </div>
 
-  <!-- 신규 채팅 등록 -->
+  <!-- ── 신규 채팅 등록 ─────────────────────────────────────────────────────── -->
   <template v-if="cfIsNew">
     <div class="card">
       <div class="tab-nav">
@@ -257,7 +264,7 @@ window.CmChattDtl = {
         <button class="tab-btn" :class="{active:tab==='search'}" @click="tab='search'">고객 채팅 조회</button>
       </div>
 
-      <!-- 신규 등록 탭 -->
+      <!-- ── 신규 등록 탭 ──────────────────────────────────────────────────── -->
       <div v-show="tab==='new'">
         <div class="form-row">
           <div class="form-group">
@@ -290,7 +297,7 @@ window.CmChattDtl = {
         </div>
       </div>
 
-      <!-- 고객 채팅 조회 탭 -->
+      <!-- ── 고객 채팅 조회 탭 ───────────────────────────────────────────────── -->
       <div v-show="tab==='search'">
         <div style="display:flex;gap:8px;margin-bottom:14px;">
           <input class="form-control" style="max-width:200px;" v-model="searchUserId" placeholder="회원 ID 입력" />
@@ -315,7 +322,7 @@ window.CmChattDtl = {
     </div>
   </template>
 
-  <!-- 메시지 내 참조 모달 (상품/주문/클레임) -->
+  <!-- ── 메시지 내 참조 모달 (상품/주문/클레임) ──────────────────────────────────────── -->
   <div v-if="refModal && refModal.show" class="modal-overlay" @click.self="closeRefModal">
     <div class="modal-box">
       <div class="modal-header">

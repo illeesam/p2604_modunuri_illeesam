@@ -23,6 +23,8 @@ window.PdTagMng = {
       }
     };
 
+    // ── watch ────────────────────────────────────────────────────────────────
+
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
@@ -61,6 +63,7 @@ window.PdTagMng = {
       use: ''
     });
 
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -132,6 +135,8 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
     const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return { tags, uiState, searchParam, searchParamOrg, pager, cfPageNums, setPage, onSearch, onReset,
              gridRows, addRow, onCellChange, deleteRow, saveAll, fnYnBadge  , onSizeChange };

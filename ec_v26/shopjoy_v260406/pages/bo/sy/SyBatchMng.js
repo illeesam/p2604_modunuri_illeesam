@@ -52,6 +52,8 @@ window.SyBatchMng = {
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -76,6 +78,8 @@ window.SyBatchMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
+
+    // ── watch ────────────────────────────────────────────────────────────────
 
     watch(isAppReady, (newVal) => {
       if (newVal) {
@@ -375,8 +379,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       '배치목록.csv'
     );
     /* 트리 path 변경 시 자동 fetch */
+
     watch(() => uiState.selectedPath, () => { handleSearchList(); });
 
+
+    // ── return ───────────────────────────────────────────────────────────────
 
     return { batches, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
@@ -392,7 +399,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   },
   template: /* html */`
 <div>
-  <div class="page-title">배치스케즐관리</div>  <!-- 검색 -->
+  <div class="page-title">배치스케즐관리</div>  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="배치명 / 배치코드 검색" />
@@ -422,7 +429,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
 
 
-  <!-- 좌 트리 + 우 영역 -->
+  <!-- ── 좌 트리 + 우 영역 ──────────────────────────────────────────────────── -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
@@ -435,7 +442,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       </div>
     </div>
     <div>
-<!-- CRUD 그리드 -->
+<!-- ── CRUD 그리드 ───────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>배치목록 <span class="list-count">{{ cfTotal }}건</span></span>
@@ -553,16 +560,16 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     @click.self="cronPicker.show=false">
     <div style="background:#fff;border-radius:16px;width:500px;max-width:95vw;box-shadow:0 24px 60px rgba(0,0,0,.28),0 2px 8px rgba(0,0,0,.08);overflow:hidden;border:1px solid rgba(255,255,255,.6);">
 
-      <!-- 헤더 -->
+      <!-- ── 헤더 ───────────────────────────────────────────────────────── -->
       <div style="padding:14px 20px;border-bottom:1px solid #ffc9d6;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#fff0f4 0%,#ffe4ec 60%,#ffd5e1 100%);">
         <div style="font-weight:800;font-size:15px;color:#9f2946;letter-spacing:-0.2px;"><span style="color:#e8587a;font-size:9px;margin-right:8px;vertical-align:middle;">●</span>🕐 Cron 표현식 설정</div>
         <button @click="cronPicker.show=false" style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.6);border:none;font-size:13px;line-height:1;cursor:pointer;color:#9f2946;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;" onmouseover="this.style.background='#e8587a';this.style.color='#fff';this.style.transform='rotate(90deg)';" onmouseout="this.style.background='rgba(255,255,255,0.6)';this.style.color='#9f2946';this.style.transform='';">✕</button>
       </div>
 
-      <!-- 본문 -->
+      <!-- ── 본문 ───────────────────────────────────────────────────────── -->
       <div style="padding:20px;">
 
-        <!-- 프리셋 7개 -->
+        <!-- ── 프리셋 7개 ─────────────────────────────────────────────────── -->
         <div style="margin-bottom:18px;">
           <div style="font-size:12px;font-weight:700;color:#444;margin-bottom:8px;">⚡ 프리셋</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px;">
@@ -579,7 +586,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           </div>
         </div>
 
-        <!-- 수동 설정 -->
+        <!-- ── 수동 설정 ──────────────────────────────────────────────────── -->
         <div style="margin-bottom:18px;">
           <div style="font-size:12px;font-weight:700;color:#444;margin-bottom:8px;">🔧 수동 설정</div>
           <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
@@ -594,7 +601,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           </div>
         </div>
 
-        <!-- 미리보기 -->
+        <!-- ── 미리보기 ───────────────────────────────────────────────────── -->
         <div style="background:#f0f8ff;border:1px solid #dbeafe;border-radius:6px;padding:10px 16px;display:flex;align-items:center;gap:12px;">
           <span style="font-size:11px;color:#888;flex-shrink:0;">결과</span>
           <code style="font-size:16px;color:#2563eb;font-weight:700;letter-spacing:2px;">{{ cronPicker.preview }}</code>
@@ -602,7 +609,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         </div>
       </div>
 
-      <!-- 푸터 -->
+      <!-- ── 푸터 ───────────────────────────────────────────────────────── -->
       <div style="padding:12px 20px;border-top:1px solid #f0f0f0;display:flex;justify-content:flex-end;gap:8px;background:#fafafa;">
         <button class="btn btn-secondary" @click="cronPicker.show=false">취소</button>
         <button class="btn btn-primary" @click="applyCron">적용</button>
