@@ -7,6 +7,8 @@ window.DpDispAreaDtl = {
     const codes = reactive({ disp_areas: [], layout_types: [] });
     const areas = reactive([]);
     const uiState = reactive({ loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, pickKw: '', activeTab: 'base', expanded: false, previewMode: 'default', previewPaneWidth: 520, htmlDescEl: null });
+    const activeTab = Vue.toRef(uiState, 'activeTab');
+    const previewMode = Vue.toRef(uiState, 'previewMode');
 
     // App 초기화 준비 상태
     const isAppReady = computed(() => {
@@ -366,7 +368,7 @@ window.DpDispAreaDtl = {
       quillDesc.root.innerHTML = form.htmlDesc || '';
       quillDesc.on('text-change', () => { form.htmlDesc = quillDesc.root.innerHTML; });
     };
-    watch(activeTab, async (t) => {
+    watch(() => uiState.activeTab, async (t) => {
       if (t === 'base') { await nextTick(); initQuillDesc(); }
     });
 

@@ -33,6 +33,7 @@ window.DpDispUiSimul = {
       viewMode: 'card',   // 'list' | 'card' | 'expand'
       showDesc: true,
       showAreaDrop: false, sourceCopied: false, structLayoutType: 'grid', structColCount: 1, structViewport: 'desktop', structShowReal: false, structDashDragOver: false, structSpanPopupIdx: -1, structDragOverIdx: -1, dispUiLayerOpen: true, dispUiModalOpen: false, dispUiAreaErr: false, dispUiSiteModalOpen: false, dispUiSiteSearch: '', dispUiMemberModalOpen: false, dispUiMemberSearch: '', dispUiAreaDrop: false, otherMenuOpen: false});
+    const tab = Vue.toRef(uiState, 'tab');
 
     /* ── 검색/필터 조건 ── */
     const searchParam = reactive({

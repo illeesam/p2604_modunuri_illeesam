@@ -3,7 +3,7 @@ window.CmNoticeDtl = {
   name: 'CmNoticeDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'editId', 'setApiRes', 'viewMode'],
   setup(props) {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const { ref, reactive, computed, onMounted, onBeforeUnmount, onUnmounted, watch } = Vue;
     const notices = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});

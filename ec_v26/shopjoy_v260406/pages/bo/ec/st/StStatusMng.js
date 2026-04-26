@@ -6,6 +6,7 @@ window.StStatusMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, activeTab: 'vendor', dateRange: '이번달', dateStart: '', dateEnd: '', vendorSearchKw: '', orderSearchKw: '', orderSearchStatus: '', claimSearchType: '', claimSearchStatus: '', promoSearchKw: '', promoSearchType: '', settleSearchMonth: ''});;
+    const activeTab = Vue.toRef(uiState, 'activeTab');
     const codes = reactive({});
 
     const isAppReady = computed(() => {

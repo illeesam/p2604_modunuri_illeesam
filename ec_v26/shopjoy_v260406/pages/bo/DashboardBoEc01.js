@@ -97,6 +97,8 @@
         activeTab: 'sales',
         viewMode: '4col' // tab | 1col | 2col | 3col | 4col
       });
+    const tab = Vue.toRef(uiState, 'tab');
+    const activeTab = Vue.toRef(uiState, 'activeTab');
       const TABS = [
         { key: 'sales',    label: '월별 매출',        icon: '💰' },
         { key: 'member',   label: '가입/탈퇴',        icon: '👥' },

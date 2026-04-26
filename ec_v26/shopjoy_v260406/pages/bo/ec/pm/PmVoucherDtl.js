@@ -8,6 +8,8 @@ window.PmVoucherDtl = {
     const vouchers = reactive([]);
     const voucherList = reactive([]);
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmVoucherDtlState.tab || 'info', viewMode2: window._pmVoucherDtlState.viewMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null, snsMsg: ''});
+    const tab = Vue.toRef(uiState, 'tab');
+    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -28,8 +30,8 @@ window.PmVoucherDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-        watch(tab, v => { window._pmVoucherDtlState.tab = v; });
-        watch(viewMode2, v => { window._pmVoucherDtlState.viewMode = v; });
+        watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
+        watch(() => uiState.viewMode2, v => { window._pmVoucherDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const isAppReady = computed(() => {

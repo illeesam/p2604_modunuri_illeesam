@@ -7,6 +7,8 @@ window.PmGiftDtl = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
         const gifts = reactive([]);
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, giftList: [], tab: window._pmGiftDtlState.tab || 'info', viewMode2: window._pmGiftDtlState.viewMode || 'tab'});
+    const tab = Vue.toRef(uiState, 'tab');
+    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -29,8 +31,8 @@ window.PmGiftDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-        watch(tab, v => { window._pmGiftDtlState.tab = v; });
-        watch(viewMode2, v => { window._pmGiftDtlState.viewMode = v; });
+        watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
+        watch(() => uiState.viewMode2, v => { window._pmGiftDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const isAppReady = computed(() => {

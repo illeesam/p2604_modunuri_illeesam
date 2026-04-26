@@ -7,6 +7,7 @@ window.ZdStore = {
   setup(props) {
     const { ref, computed, reactive, onMounted } = Vue;
     const uiState = reactive({ storeInfo: '', selectedStore: null, viewMode: 'col5' });
+    const tab = Vue.toRef(uiState, 'tab');
 
             const openStores = reactive([]);
         const editedStoreInfo = reactive({});

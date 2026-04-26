@@ -6,6 +6,8 @@ window.DpDispPanelDtl = {
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const panels = reactive([]);
     const uiState = reactive({ htmlSourceMode: false, libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false, isPageCodeLoad: false, error: null, tab: 'info', previewMode: 'default', previewPaneWidth: 520, libPickMode: 'copy', htmlDescEl: null, htmlContentEl: null });
+    const tab = Vue.toRef(uiState, 'tab');
+    const previewMode = Vue.toRef(uiState, 'previewMode');
     const codes = reactive({ layout_types: [], disp_widget_types: [] });
     const displays = reactive([]);
     const events = reactive([]);
@@ -475,7 +477,7 @@ window.DpDispPanelDtl = {
     });
 
     /* 탭 전환 시 Quill 초기화/싱크 */
-    watch(tab, async (newTab) => {
+    watch(() => uiState.tab, async (newTab) => {
       await nextTick();
       if (newTab === 'info') {
         initQuillDesc();

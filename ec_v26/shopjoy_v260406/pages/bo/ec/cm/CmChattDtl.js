@@ -4,9 +4,11 @@ window.CmChattDtl = {
   name: 'CmChattDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const chatts = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._cmChattDtlState.tab || 'chat', viewMode2: window._cmChattDtlState.viewMode || 'tab', replyText: '', searchUserId: ''});
+    const tab = Vue.toRef(uiState, 'tab');
+    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -47,8 +49,8 @@ window.CmChattDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-        watch(tab, v => { window._cmChattDtlState.tab = v; });
-        watch(viewMode2, v => { window._cmChattDtlState.viewMode = v; });
+        watch(() => uiState.tab, v => { window._cmChattDtlState.tab = v; });
+        watch(() => uiState.viewMode2, v => { window._cmChattDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
             const msgBoxRef = ref(null);

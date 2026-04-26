@@ -52,7 +52,7 @@ window.SySiteDtl = {
         const s = sites.find(x => x.siteId === props.editId);
         if (s) Object.assign(form, { ...s });
       } else {
-        const nextNum = nextId.value(sites, 'siteId');
+        const nextNum = ((sites.reduce((m, x) => Math.max(m, Number(x.siteId) || 0), 0) || 0) + 1);
         form.siteCode = 'ST' + String(nextNum).padStart(4, '0');
       }
     });
@@ -88,7 +88,7 @@ window.SySiteDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (cfIsNew.value) {
-        sites.push({ ...form, siteId: nextId.value(sites, 'siteId'), regDate: new Date().toISOString().slice(0, 10) });
+        sites.push({ ...form, siteId: ((sites.reduce((m, x) => Math.max(m, Number(x.siteId) || 0), 0) || 0) + 1), regDate: new Date().toISOString().slice(0, 10) });
       } else {
         const idx = sites.findIndex(x => x.siteId === props.editId);
         if (idx !== -1) Object.assign(sites[idx], { ...form });

@@ -3,7 +3,7 @@ window.MbMemberDtl = {
   name: 'MbMemberDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
     const members = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, memoEl: null});
     const codes = reactive({ member_grades: [], member_statuses: [] });

@@ -7,6 +7,7 @@ window.DpDispWidgetDtl = {
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const codes = reactive({ disp_widget_types: [] });
     const uiState = reactive({ isPageCodeLoad: false, error: null, previewMode: 'default', previewPaneWidth: 460, libPickMode: 'copy', htmlContentEl: null});
+    const previewMode = Vue.toRef(uiState, 'previewMode');
 
     // App 초기화 준비 상태
     const isAppReady = computed(() => {

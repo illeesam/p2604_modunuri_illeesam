@@ -7,6 +7,8 @@ window.OdOrderHist = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const orders = reactive([]);
     const uiState = reactive({ loading: false, botTab: window._ecOrderHistState.tab || 'products', viewMode2: 'tab'});
+    const tab = Vue.toRef(uiState, 'tab');
+    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const claims = reactive([]);
     const deliveries = reactive([]);
 

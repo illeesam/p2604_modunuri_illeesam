@@ -7,6 +7,8 @@ window.OdDlivDtl = {
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
     const deliveries = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._odDlivDtlState.tab || 'info', viewMode2: window._odDlivDtlState.viewMode || 'tab', memoEl: null});
+    const tab = Vue.toRef(uiState, 'tab');
+    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({ dliv_statuses: [] });
     const claims = reactive([]);
     const orders = reactive([]);
@@ -56,8 +58,8 @@ window.OdDlivDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-        watch(tab, v => { window._odDlivDtlState.tab = v; });
-        watch(viewMode2, v => { window._odDlivDtlState.viewMode = v; });
+        watch(() => uiState.tab, v => { window._odDlivDtlState.tab = v; });
+        watch(() => uiState.viewMode2, v => { window._odDlivDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const form = reactive({

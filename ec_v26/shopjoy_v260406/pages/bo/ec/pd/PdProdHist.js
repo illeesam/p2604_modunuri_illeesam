@@ -7,6 +7,8 @@ window.PdProdHist = {
     const { ref, computed, onMounted } = Vue;
     const products = reactive([]);
     const uiState = reactive({ loading: false, botTab: window._ecProdHistState.tab || 'orders', viewMode2: window._ecProdHistState.viewMode || 'tab'});
+    const tab = Vue.toRef(uiState, 'tab');
+    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -26,7 +28,7 @@ window.PdProdHist = {
       }
     };
         watch(botTab, v => { window._ecProdHistState.tab = v; });
-        watch(viewMode2, v => { window._ecProdHistState.viewMode = v; });
+        watch(() => uiState.viewMode2, v => { window._ecProdHistState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.botTab === id;
 
     const stockHistory  = reactive([]);

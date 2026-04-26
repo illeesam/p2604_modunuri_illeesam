@@ -8,6 +8,7 @@ const _WP_DispWidgetPreview = {
     const { ref, reactive, computed, watchEffect, watch, onMounted } = Vue;
     const codes = reactive({ disp_widget_types: [] });
     const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null});
+    const tab = Vue.toRef(uiState, 'tab');
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
 
     // App 초기화 준비 상태

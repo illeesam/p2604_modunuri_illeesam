@@ -6,6 +6,8 @@ window.SyMemberLoginHist = {
     const { ref, reactive, computed, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const uiState = reactive({ descOpen: false, activeTab: 'log', dateRange: '이번달', dateStart: '', dateEnd: '', searchKw: '', searchResult: '', searchIp: '', searchTokenAction: '' });
+    const tab = Vue.toRef(uiState, 'tab');
+    const activeTab = Vue.toRef(uiState, 'activeTab');
      // 'log' | 'hist' | 'token'
 
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;

@@ -4,12 +4,13 @@ window.PdProdDtl = {
   name: 'PdProdDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
     const products = reactive([]);
     const boUsers = reactive([]);
     const categories = reactive([]);
     const categoryProds = reactive([]);
     const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, isPageCodeLoad: false, topTab: window._pdProdDtlState.tab || 'info', viewMode2: window._pdProdDtlState.viewMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearch: '' });
+    const tab = Vue.toRef(uiState, 'tab');
     const codes = reactive([]);
 
     const isAppReady = computed(() => {

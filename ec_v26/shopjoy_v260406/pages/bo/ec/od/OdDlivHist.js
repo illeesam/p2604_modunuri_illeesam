@@ -7,6 +7,8 @@ window.OdDlivHist = {
     const { ref, computed } = Vue;
     const deliveries = reactive([]);
     const uiState = reactive({ loading: false, botTab: window._ecDlivHistState.tab || 'order', viewMode2: 'tab'});
+    const tab = Vue.toRef(uiState, 'tab');
+    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {

@@ -69,6 +69,7 @@
 
     const custInfos = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, customer: null, searchMode: 'member', searchInput: '' });
+    const tab = Vue.toRef(uiState, 'tab');
 
     /* adminData 참조 */
     const members    = (props.adminData?.members    || window.adminData?.members    || []);
@@ -148,7 +149,7 @@
       const histTab  = Vue.ref(window._mbCustInfoState.tab      || 'orders');
       const viewMode2 = Vue.ref(window._mbCustInfoState.viewMode || '3col');
       watch(histTab,   v => { window._mbCustInfoState.tab      = v; });
-      watch(viewMode2, v => { window._mbCustInfoState.viewMode = v; });
+      watch(() => uiState.viewMode2, v => { window._mbCustInfoState.viewMode = v; });
       const showTab = (id) => viewMode2.value !== 'tab' || histTab.value === id;
 
       /* ── 고객 초기화 ── */

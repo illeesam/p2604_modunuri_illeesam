@@ -8,6 +8,8 @@ window.PmSaveDtl = {
     const saves = reactive([]);
     const saveList = reactive([]);
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmSaveDtlState.tab || 'info', viewMode2: window._pmSaveDtlState.viewMode || 'tab'});
+    const tab = Vue.toRef(uiState, 'tab');
+    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -28,8 +30,8 @@ window.PmSaveDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-        watch(tab, v => { window._pmSaveDtlState.tab = v; });
-        watch(viewMode2, v => { window._pmSaveDtlState.viewMode = v; });
+        watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
+        watch(() => uiState.viewMode2, v => { window._pmSaveDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const isAppReady = computed(() => {

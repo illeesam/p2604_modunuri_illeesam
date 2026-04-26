@@ -310,6 +310,7 @@ window.DpDispWidgetLibPreview = {
 
     /* 실제컨텐츠 토글 */
     const uiState = reactive({ dashDragOver: false, showRealContent: false, selectedLibId: null, previewGrid: 'grid1', viewportMode: 'desktop', dragOverIdx: -1, spanPopupIdx: -1});
+    const tab = Vue.toRef(uiState, 'tab');
 
     /* auto-fill 반응형: 뷰포트 width 제약 + 브라우저 창 리사이즈 모두 반응 */
     const cfAutoGridCols = computed(() => {

@@ -7,6 +7,8 @@ window.MbMemberHist = {
     const { ref, computed } = Vue;
     const members = reactive([]);
     const uiState = reactive({ loading: false, tab: window._ecMemberHistState.tab || 'orders', viewMode2: window._ecMemberHistState.viewMode || 'tab'});
+    const tab = Vue.toRef(uiState, 'tab');
+    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -26,8 +28,8 @@ window.MbMemberHist = {
       }
     };
     onMounted(() => { handleFetchData(); });
-        watch(tab, v => { window._ecMemberHistState.tab = v; });
-        watch(viewMode2, v => { window._ecMemberHistState.viewMode = v; });
+        watch(() => uiState.tab, v => { window._ecMemberHistState.tab = v; });
+        watch(() => uiState.viewMode2, v => { window._ecMemberHistState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const cfMemberOrders = computed(() => window.safeArrayUtils.safeFilter(orders, o => o.userId === props.memberId));

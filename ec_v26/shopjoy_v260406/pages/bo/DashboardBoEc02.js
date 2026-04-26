@@ -93,6 +93,7 @@
 
       /* ── UI 상태 ── */
       const uiState = reactive({ filterExpand: false, activeTab: 'sales', viewMode: '4col'});;
+    const tab = Vue.toRef(uiState, 'tab');
       const activeTab    = ref('sales');
       const viewMode     = ref('4col'); // tab | 1col | 2col | 3col | 4col
       const TABS = [

@@ -8,6 +8,8 @@ window.SyContactDtl = {
 
     const contacts = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._syContactDtlState.tab || 'content', viewMode2: window._syContactDtlState.viewMode || 'tab', contentEl: null, answerEl: null });
+    const tab = Vue.toRef(uiState, 'tab');
+    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -29,8 +31,8 @@ window.SyContactDtl = {
     };
     const cfIsNew = computed(() => !props.editId);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-        watch(tab, v => { window._syContactDtlState.tab = v; });
-        watch(viewMode2, v => { window._syContactDtlState.viewMode = v; });
+        watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
+        watch(() => uiState.viewMode2, v => { window._syContactDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const isAppReady = computed(() => {

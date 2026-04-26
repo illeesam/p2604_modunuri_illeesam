@@ -8,6 +8,9 @@ window.OdClaimDtl = {
     const claims = reactive([]);
     const orders = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: window._odClaimDtlState.activeTab || 'info', viewMode2: window._odClaimDtlState.viewMode || 'tab'});
+    const tab = Vue.toRef(uiState, 'tab');
+    const activeTab = Vue.toRef(uiState, 'activeTab');
+    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({ claim_statuses: [] });
 
     // onMounted에서 API 로드
@@ -128,8 +131,8 @@ window.OdClaimDtl = {
       }
     };
 
-        watch(activeTab, v => { window._odClaimDtlState.activeTab = v; });
-        watch(viewMode2, v => { window._odClaimDtlState.viewMode = v; });
+        watch(() => uiState.activeTab, v => { window._odClaimDtlState.activeTab = v; });
+        watch(() => uiState.viewMode2, v => { window._odClaimDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.activeTab === id;
     const claimItems = reactive([]);
     const sampleClaimItems = () => {

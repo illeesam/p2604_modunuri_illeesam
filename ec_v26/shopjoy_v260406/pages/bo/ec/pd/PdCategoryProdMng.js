@@ -8,6 +8,7 @@ window.PdCategoryProdMng = {
     const products = reactive([]);
     const categoryProds = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, viewMode: window._ecCategoryProdState?.viewMode || 'tab', activeTypeCd: 'NORMAL'});
+    const tab = Vue.toRef(uiState, 'tab');
     const codes = reactive({
       product_statuses: [],
     });

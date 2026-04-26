@@ -4,9 +4,11 @@ window.PmCouponDtl = {
   name: 'PmCouponDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
     const coupons = reactive([]);
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCouponDtlState.tab || 'info', viewMode2: window._pmCouponDtlState.viewMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null, memoEl: null});
+    const tab = Vue.toRef(uiState, 'tab');
+    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -27,8 +29,8 @@ window.PmCouponDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-        watch(tab, v => { window._pmCouponDtlState.tab = v; });
-        watch(viewMode2, v => { window._pmCouponDtlState.viewMode = v; });
+        watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
+        watch(() => uiState.viewMode2, v => { window._pmCouponDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const isAppReady = computed(() => {

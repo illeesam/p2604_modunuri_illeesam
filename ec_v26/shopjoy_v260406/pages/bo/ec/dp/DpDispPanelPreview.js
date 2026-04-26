@@ -145,6 +145,7 @@ window.DpDispPanelPreview = {
     const widgetLibs = reactive([]);
     const displays = reactive([]);
     const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null});
+    const tab = Vue.toRef(uiState, 'tab');
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
     // App 초기화 준비 상태

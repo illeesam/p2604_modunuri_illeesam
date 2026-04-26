@@ -3,7 +3,7 @@ window.SyBbsDtl = {
   name: 'SyBbsDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
-    const { reactive, computed, onMounted, ref, onBeforeUnmount } = Vue;
+    const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
 
     const bbss = reactive([]);
     const uiState = reactive({ loading: false, showBbmDetail: false, error: null, isPageCodeLoad: false, selectedBbm: null, showBbmModal: false });
@@ -92,7 +92,7 @@ window.SyBbsDtl = {
     });
 
     /* cfContentType 변화 감지 → Quill 초기화 */
-    const { watch, nextTick } = Vue;
+    const { watch } = Vue;
     watch(cfContentType, (val) => {
       if (!props.viewMode && val === 'htmleditor') {
         nextTick(() => { initQuill(); });
@@ -123,7 +123,7 @@ window.SyBbsDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (cfIsNew.value) {
-        bbss.unshift({ ...form, bbmId: Number(form.bbmId), bbsId: nextId.value(bbss, 'bbsId'), viewCount: 0, commentCount: 0, regDate: new Date().toISOString().slice(0, 10) });
+        bbss.unshift({ ...form, bbmId: Number(form.bbmId), bbsId: ((bbss.reduce((m, x) => Math.max(m, Number(x.bbsId) || 0), 0) || 0) + 1), viewCount: 0, commentCount: 0, regDate: new Date().toISOString().slice(0, 10) });
       } else {
         const idx = bbss.findIndex(x => x.bbsId === props.editId);
         if (idx !== -1) Object.assign(bbss[idx], { ...form, bbmId: Number(form.bbmId) });
@@ -281,9 +281,4 @@ window.SyBbsDtl = {
       <div class="detail-row"><span class="detail-label">사용여부</span><span class="detail-value">{{ selectedBbm.useYn==='Y'?'사용':'미사용' }}</span></div>
       <div style="margin-top:16px;text-align:right;">
         <button class="btn btn-secondary" @click="showBbmDetail=false">닫기</button>
-      </div>
-    </div>
-  </div>
-</div>
-`
-};
+      

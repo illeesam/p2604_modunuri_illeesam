@@ -4,10 +4,12 @@ window.PmEventDtl = {
   name: 'PmEventDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const { ref, reactive, computed, onMounted, watch, onUnmounted  } = Vue;
     const products = reactive([]);
     const events = reactive([]);
     const uiState = reactive({ loading: false, showProdPopup: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._ecEventDtlState.tab || 'info', viewMode2: window._ecEventDtlState.viewMode || 'tab', activeContentTab: 1, prodSearch: ''});
+    const tab = Vue.toRef(uiState, 'tab');
+    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -30,8 +32,8 @@ window.PmEventDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-        watch(tab, v => { window._ecEventDtlState.tab = v; });
-        watch(viewMode2, v => { window._ecEventDtlState.viewMode = v; });
+        watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
+        watch(() => uiState.viewMode2, v => { window._ecEventDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const isAppReady = computed(() => {

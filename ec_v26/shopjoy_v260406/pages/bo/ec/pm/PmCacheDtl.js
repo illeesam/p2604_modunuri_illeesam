@@ -7,6 +7,8 @@ window.PmCacheDtl = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const caches = reactive([]);
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCacheDtlState.tab || 'info', viewMode2: window._pmCacheDtlState.viewMode || 'tab'});
+    const tab = Vue.toRef(uiState, 'tab');
+    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({});
 
     // onMounted에서 API 로드
@@ -27,8 +29,8 @@ window.PmCacheDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-        watch(tab, v => { window._pmCacheDtlState.tab = v; });
-        watch(viewMode2, v => { window._pmCacheDtlState.viewMode = v; });
+        watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
+        watch(() => uiState.viewMode2, v => { window._pmCacheDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const isAppReady = computed(() => {

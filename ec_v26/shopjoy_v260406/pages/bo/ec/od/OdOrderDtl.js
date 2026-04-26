@@ -4,12 +4,15 @@ window.OdOrderDtl = {
   name: 'OdOrderDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
     const orders = reactive([]);
     const vendors = reactive([]);
     const deliveries = reactive([]);
     const claims = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: window._odOrderDtlState?.activeTab || 'info', viewMode2: window._odOrderDtlState.viewMode || 'tab', memoEl: null});
+    const tab = Vue.toRef(uiState, 'tab');
+    const activeTab = Vue.toRef(uiState, 'activeTab');
+    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({ claim_statuses: [] });
 
     // onMounted에서 API 로드
@@ -151,7 +154,7 @@ window.OdOrderDtl = {
       }
     };
 
-        watch(activeTab, (newVal) => { window._odOrderDtlState.activeTab = newVal; });
+        watch(() => uiState.activeTab, (newVal) => { window._odOrderDtlState.activeTab = newVal; });
     /* 주문 항목 (샘플 데이터) */
     const orderItems = reactive([]);
     const sampleOrderItems = () => {
@@ -241,7 +244,7 @@ window.OdOrderDtl = {
       return rows;
     });
      // 'tab' | '2col' | '1col'
-    watch(viewMode2, v => { window._odOrderDtlState.viewMode = v; });
+    watch(() => uiState.viewMode2, v => { window._odOrderDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.activeTab === id;
     const expandedItems = reactive(new Set());
     const toggleExpand = (i) => { const s = new Set(expandedItems); if (s.has(i)) s.delete(i); else s.add(i); expandedItems = s; };

@@ -143,6 +143,7 @@ window.DpDispAreaPreview = {
     const codes = reactive({ disp_widget_types: [], disp_area: [] });
     const widgetLibs = reactive([]);
     const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null});
+    const tab = Vue.toRef(uiState, 'tab');
 
     // App 초기화 준비 상태
     const isAppReady = computed(() => {
