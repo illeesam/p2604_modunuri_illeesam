@@ -38,14 +38,13 @@ window.PdQnaMng = {
     const handleFetchData = async () => {
       uiState.loading = true;
       try {
-        const [qnasRes, prodsRes, membersRes] = await Promise.all([
-          window.boApi.get('/bo/ec/pd/qna/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } }),
-        ]);
-        qnas.splice(0, qnas.length, ...(qnasRes.data?.data?.list || []));
-        products.splice(0, products.length, ...(prodsRes.data?.data?.list || []));
-        members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
+        const res = await window.boApi.get('/bo/ec/pd/qna/page', {
+          params: { pageNo: pager.page, pageSize: pager.size, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }
+        });
+        const data = res.data?.data;
+        qnas.splice(0, qnas.length, ...(data?.list || []));
+        pager.total = data?.total || 0;
+        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -61,32 +60,21 @@ window.PdQnaMng = {
       if (isAppReady.value) fnLoadCodes(); handleFetchData();
     Object.assign(searchParamOrg, searchParam); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const pager      = reactive({ page: 1, size: 20 });
+    const pager      = reactive({ page: 1, size: 20, total: 0, totalPages: 1 });
 
-    const cfFiltered = computed(() => {
-      const kw = searchParam.kw.toLowerCase();
-      return (qnas || []).filter(q => {
-        if (kw && !(q.qnaTitle||'').toLowerCase().includes(kw)) return false;
-        if (searchParam.status && q.qnaStatusCd !== searchParam.status) return false;
-        return true;
-      });
-    });
-    const cfTotal      = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfPageNums   = computed(() => { const c=pager.page,l=pager.totalPages,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const onSearch = async () => { pager.page = 1; await handleFetchData(); };
-    const onReset  = () => { Object.assign(searchParam, searchParamOrg); pager.page = 1; };
-    const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+    const onReset  = async () => { Object.assign(searchParam, searchParamOrg); pager.page = 1; await handleFetchData(); };
+    const setPage  = async n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; await handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
     const getProdNm = id => { const p = (products||[]).find(p => p.prodId === id); return p ? p.prodNm : (id||''); };
     const getMemNm  = id => { const m = (members||[]).find(m => m.memberId === id); return m ? m.memberNm : (id||''); };
     const fnStatusBadge = s => ({ WAIT:'badge-orange', ANSWER:'badge-green', CLOSE:'badge-gray' }[s] || 'badge-gray');
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    return { qnas, products, members, uiState, codes, pager, PAGE_SIZES, searchParam,
-      cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums,
+    return { qnas, uiState, codes, pager, PAGE_SIZES, searchParam,
+      cfPageNums,
       onSearch, onReset, setPage, onSizeChange, getProdNm, getMemNm, fnStatusBadge, cfSiteNm };
   },
   template: /* html */`
@@ -109,7 +97,7 @@ window.PdQnaMng = {
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-count">총 {{ cfTotal }}건</span>
+      <span class="list-count">총 {{ pager.total }}건</span>
       <div style="display:flex;align-items:center;gap:6px;">
         <select class="form-control" v-model.number="pager.size" @change="onSizeChange" style="width:80px;">
           <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}건</option>
@@ -122,8 +110,8 @@ window.PdQnaMng = {
       </tr></thead>
       <tbody>
         <tr v-if="uiState.loading"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">로딩 중...</td></tr>
-        <tr v-else-if="!cfPageList.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">조회된 데이터가 없습니다.</td></tr>
-        <tr v-for="q in cfPageList" :key="q?.qnaId">
+        <tr v-else-if="!qnas.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">조회된 데이터가 없습니다.</td></tr>
+        <tr v-for="q in qnas" :key="q?.qnaId">
           <td>{{ q.qnaId }}</td>
           <td>{{ cfSiteNm }}</td>
           <td>{{ getProdNm(q.prodId) }}</td>
@@ -137,7 +125,7 @@ window.PdQnaMng = {
     <div class="pagination">
       <button class="pager" @click="setPage(pager.page-1)" :disabled="pager.page===1">◀</button>
       <button v-for="n in cfPageNums" :key="n" class="pager" :class="{active:n===pager.page}" @click="setPage(n)">{{ n }}</button>
-      <button class="pager" @click="setPage(pager.page+1)" :disabled="pager.page===cfTotalPages">▶</button>
+      <button class="pager" @click="setPage(pager.page+1)" :disabled="pager.page===pager.totalPages">▶</button>
     </div>
   </div>
 </div>`

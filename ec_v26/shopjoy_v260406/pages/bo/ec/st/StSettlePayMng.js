@@ -31,8 +31,26 @@ window.StSettlePayMng = {
         fnLoadCodes();
       }
     });
+    const handleFetchData = async () => {
+      try {
+        const res = await window.boApi.get('/bo/ec/st/pay/page', {
+          params: {
+            pageNo: pager.page, pageSize: pager.size,
+            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+          }
+        });
+        const data = res.data?.data;
+        payList.splice(0, payList.length, ...(data?.list || payList));
+        pager.total = data?.total || payList.length;
+        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
+      } catch (_) {
+        console.error('[catch-info]', _);
+      }
+    };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
     });
 
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
@@ -60,28 +78,13 @@ window.StSettlePayMng = {
     kw: '',
     status: ''
   });
-    const pager = reactive({ page: 1, size: 10 });
-    const selected = reactive(new Set());
-
-    const cfFiltered = computed(() => {
-      const kw = (searchParam.kw || '').trim().toLowerCase();
-      return window.safeArrayUtils.safeFilter(payList, r => {
-        if (uiState.dateStart && r.payDate < uiState.dateStart) return false;
-        if (uiState.dateEnd   && r.payDate > uiState.dateEnd)   return false;
-        if (searchParam.status && r.payStatus !== searchParam.status) return false;
-        if (kw && !r.payId.toLowerCase().includes(kw) && !r.vendorNm.toLowerCase().includes(kw)) return false;
-        return true;
-      });
-    });
-    const cfTotal    = computed(() => cfFiltered.value.length);
-    const cfTotPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    const cfPageNums = computed(() => { const c=pager.page,l=cfTotPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const pager = reactive({ page: 1, size: 10, total: 0, totalPages: 1 });
+    const cfPageNums = computed(() => { const c=pager.page,l=pager.totalPages,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const cfSummary = computed(() => ({
-      total:  cfFiltered.value.reduce((s, r) => s + r.settleAmt, 0),
-      paid:   window.safeArrayUtils.safeFilter(cfFiltered, r => r.payStatus === '지급완료').reduce((s, r) => s + r.payAmt, 0),
-      pending:window.safeArrayUtils.safeFilter(cfFiltered, r => r.payStatus === '지급대기').reduce((s, r) => s + r.settleAmt, 0),
+      total:   payList.reduce((s, r) => s + r.settleAmt, 0),
+      paid:    payList.filter(r => r.payStatus === '지급완료').reduce((s, r) => s + r.payAmt, 0),
+      pending: payList.filter(r => r.payStatus === '지급대기').reduce((s, r) => s + r.settleAmt, 0),
     }));
 
     const doPay = async (r) => {
@@ -102,27 +105,11 @@ window.StSettlePayMng = {
 
     const fnStatusBadge = s => ({ '지급완료':'badge-green', '지급대기':'badge-blue', '지급보류':'badge-orange', '지급오류':'badge-red' }[s] || 'badge-gray');
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
-    const onSearch = async () => {
-    try {
-      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await window.boApi.get('/bo/ec/resource/page', { params });
-      // TODO: Update items array based on response
-      pager.page = 1;
-    } catch (err) {
-      console.error('[catch-info]', err);
-      if (props.showToast) props.showToast('조회 실패', 'error');
-    }
-  };
-  
-    const onReset = () => {
-    Object.assign(searchParam, searchParamOrg);
-    onSearch();
-  };
-  
-
-    const setPage = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
-    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, cfSummary, doPay, fnStatusBadge, fmtW, onSearch, onReset, searchParam, PAGE_SIZES, setPage, onSizeChange };
+    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
+    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, payList, cfPageNums, cfSummary, doPay, fnStatusBadge, fmtW, onSearch, onReset, searchParam, PAGE_SIZES, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -167,11 +154,11 @@ window.StSettlePayMng = {
         <div style="font-size:18px;font-weight:700;color:#3498db">{{ fmtW(cfSummary.pending) }}</div>
       </div>
     </div>
-    <div class="toolbar"><span class="list-count">총 {{ cfTotal }}건</span></div>
+    <div class="toolbar"><span class="list-count">총 {{ pager.total }}건</span></div>
     <table class="bo-table">
       <thead><tr><th>지급ID</th><th>지급일</th><th>업체명</th><th>정산월</th><th>정산액</th><th>지급액</th><th>은행</th><th>계좌번호</th><th>예금주</th><th>상태</th><th>담당자</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="r in cfPageList" :key="r?.payId">
+        <tr v-for="r in payList" :key="r?.payId">
           <td>{{ r.payId }}</td>
           <td>{{ r.payDate }}</td>
           <td><strong>{{ r.vendorNm }}</strong></td>
@@ -187,7 +174,7 @@ window.StSettlePayMng = {
             <button v-if="r.payStatus==='지급대기'" class="btn btn-sm btn-green" @click="doPay(r)">지급처리</button>
           </td>
         </tr>
-        <tr v-if="!cfPageList.length"><td colspan="12" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!payList.length"><td colspan="12" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">
@@ -196,8 +183,8 @@ window.StSettlePayMng = {
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
            <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===cfTotPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===cfTotPages" @click="setPage(cfTotPages)">»</button>
+           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

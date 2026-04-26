@@ -7,22 +7,31 @@ window.PmEventDtl = {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, onUnmounted  } = Vue;
     const products = reactive([]);
-    const events = reactive([]);
     const uiState = reactive({ loading: false, showProdPopup: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._ecEventDtlState.tab || 'info', viewMode2: window._ecEventDtlState.viewMode || 'tab', activeContentTab: 1, prodSearch: ''});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({});
 
-    // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    // 단건 조회 + 상품목록 로드
+    const handleFetchDetail = async () => {
       uiState.loading = true;
       try {
-        const [eventsRes, prodsRes] = await Promise.all([
-          window.boApi.get('/bo/ec/pm/event/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 } }),
-        ]);
-        events.splice(0, events.length, ...(eventsRes.data?.data?.list || []));
-        products.splice(0, products.length, ...(prodsRes.data?.data?.list || []));
+        const calls = [window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 } })];
+        if (!cfIsNew.value) calls.unshift(window.boApi.get(`/bo/ec/pm/event/${props.editId}`));
+        const results = await Promise.all(calls);
+        if (!cfIsNew.value) {
+          const e = results[0].data?.data || results[0].data;
+          if (e) {
+            Object.assign(form, { ...e, targetProducts: [...(e.targetProducts || [])] });
+            if (!form.visibilityTargets) {
+              form.visibilityTargets = window.visibilityUtil.fromLegacy('항상 표시', e.authRequired, '');
+              if (!form.visibilityTargets) form.visibilityTargets = '^PUBLIC^';
+            }
+          }
+          products.splice(0, products.length, ...(results[1].data?.data?.list || []));
+        } else {
+          products.splice(0, products.length, ...(results[0].data?.data?.list || []));
+        }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -123,17 +132,7 @@ window.PmEventDtl = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
-      if (!cfIsNew.value) {
-        const e = events.find(x => x.eventId === props.editId);
-        if (e) {
-          Object.assign(form, { ...e, targetProducts: [...(e.targetProducts || [])] });
-          if (!form.visibilityTargets) {
-            form.visibilityTargets = window.visibilityUtil.fromLegacy('항상 표시', e.authRequired, '');
-            if (!form.visibilityTargets) form.visibilityTargets = '^PUBLIC^';
-          }
-        }
-      }
+      handleFetchDetail();
     });
 
     onUnmounted(() => { Object.keys(quillers).forEach(k => { delete quillers[k]; }); });
@@ -150,7 +149,7 @@ window.PmEventDtl = {
     };
     const isSelected = (pid) => form.targetProducts.includes(pid);
     const cfSelectedProducts = computed(() =>
-      form.targetProducts.map(pid => getProduct.value(pid)).filter(Boolean)
+      form.targetProducts.map(pid => products.find(p => p.productId === pid || p.prodId === pid)).filter(Boolean)
     );
     const removeProduct = (pid) => {
       const idx = form.targetProducts.indexOf(pid);
@@ -174,16 +173,6 @@ window.PmEventDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (cfIsNew.value) {
-        events.push({
-          ...form, eventId: nextId.value(events, 'eventId'),
-          targetProducts: [...form.targetProducts],
-          regDate: new Date().toISOString().slice(0, 10),
-        });
-      } else {
-        const idx = events.findIndex(x => x.eventId === props.editId);
-        if (idx !== -1) Object.assign(events[idx], { ...form, targetProducts: [...form.targetProducts] });
-      }
       try {
         const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/event`, { ...form }) : window.boApi.put(`/bo/ec/pm/event/${form.eventId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });

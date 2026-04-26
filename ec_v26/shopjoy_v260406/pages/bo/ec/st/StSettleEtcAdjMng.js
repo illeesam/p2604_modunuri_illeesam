@@ -44,14 +44,29 @@ window.StSettleEtcAdjMng = {
 
     const handleFetchData = async () => {
       try {
-        const res = await window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } });
-        vendorList.splice(0, vendorList.length, ...(res.data?.data?.list || []));
+        const [resV, resA] = await Promise.all([
+          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/st/etc-adj/page', {
+            params: {
+              pageNo: pager.page, pageSize: pager.size,
+              ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+            }
+          })
+        ]);
+        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
+        const data = resA.data?.data;
+        etcAdjList.splice(0, etcAdjList.length, ...(data?.list || etcAdjList));
+        pager.total = data?.total || etcAdjList.length;
+        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
       } catch (_) {
-      console.error('[catch-info]', _);}
+        console.error('[catch-info]', _);
+      }
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData();
-    Object.assign(searchParamOrg, searchParam); });
+      if (isAppReady.value) fnLoadCodes();
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
+    });
 
     const etcAdjList = reactive([
       { adjId: 'ETCADJ-001', adjDate: '2026-04-12', vendorId: 1, vendorNm: '패션스타일 주식회사', adjType: '위약금', adjAmt: -50000, reason: '납품 지연 위약금', aprvStatus: '승인', regUserNm: '이관리자' },
@@ -61,23 +76,8 @@ window.StSettleEtcAdjMng = {
       { adjId: 'ETCADJ-005', adjDate: '2026-03-20', vendorId: 1, vendorNm: '패션스타일 주식회사', adjType: '위약금', adjAmt: -30000, reason: '반품율 초과 페널티', aprvStatus: '반려', regUserNm: '이관리자' },
     ]);
 
-    const pager = reactive({ page: 1, size: 10 });
-
-    const cfFiltered = computed(() => {
-      const kw = (searchParam.kw || '').trim().toLowerCase();
-      return window.safeArrayUtils.safeFilter(etcAdjList, r => {
-        if (uiState.dateStart && r.adjDate < uiState.dateStart) return false;
-        if (uiState.dateEnd   && r.adjDate > uiState.dateEnd)   return false;
-        if (searchParam.type   && r.adjType    !== searchParam.type)   return false;
-        if (searchParam.status && r.aprvStatus !== searchParam.status) return false;
-        if (kw && !r.adjId.toLowerCase().includes(kw) && !r.vendorNm.toLowerCase().includes(kw) && !r.reason.toLowerCase().includes(kw)) return false;
-        return true;
-      });
-    });
-    const cfTotal    = computed(() => cfFiltered.value.length);
-    const cfTotPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    const cfPageNums = computed(() => { const c=pager.page,l=cfTotPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const pager = reactive({ page: 1, size: 10, total: 0, totalPages: 1 });
+    const cfPageNums = computed(() => { const c=pager.page,l=pager.totalPages,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
         const form = reactive({});
     const errors = reactive({});
@@ -144,28 +144,11 @@ window.StSettleEtcAdjMng = {
     const fnAprvBadge = s => ({ '승인':'badge-green', '대기':'badge-blue', '반려':'badge-red' }[s] || 'badge-gray');
     const fnTypeBadge = t => ({ '위약금':'badge-red', '인센티브':'badge-green', '세금조정':'badge-orange', '기타':'badge-gray' }[t] || 'badge-gray');
     const fmtW = n => (n >= 0 ? '' : '-') + Math.abs(Number(n)).toLocaleString() + '원';
-    const onSearch = async () => {
-    try {
-      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await window.boApi.get('/bo/ec/resource/page', { params });
-      // TODO: Update items array based on response
-      pager.page = 1;
-      await handleFetchData();
-    } catch (err) {
-      console.error('[catch-info]', err);
-      if (props.showToast) props.showToast('조회 실패', 'error');
-    }
-  };
-  
-    const onReset = () => {
-    Object.assign(searchParam, searchParamOrg);
-    onSearch();
-  };
-  
-
-    const setPage = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
-    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, PAGE_SIZES, setPage, onSizeChange };
+    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
+    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, etcAdjList, cfPageNums, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, PAGE_SIZES, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -200,13 +183,13 @@ window.StSettleEtcAdjMng = {
   </div>
   <div class="card" style="margin-top:12px">
     <div class="toolbar">
-      <span class="list-count">총 {{ cfTotal }}건</span>
+      <span class="list-count">총 {{ pager.total }}건</span>
       <div style="margin-left:auto"><button class="btn btn-primary" @click="openNew">+ 기타조정 추가</button></div>
     </div>
     <table class="bo-table">
       <thead><tr><th>조정ID</th><th>조정일자</th><th>업체명</th><th>유형</th><th>조정금액</th><th>사유</th><th>승인상태</th><th>등록자</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="r in cfPageList" :key="r?.adjId" :class="{selected: uiState.selectedId===r.adjId}">
+        <tr v-for="r in etcAdjList" :key="r?.adjId" :class="{selected: uiState.selectedId===r.adjId}">
           <td>{{ r.adjId }}</td><td>{{ r.adjDate }}</td><td>{{ r.vendorNm }}</td>
           <td><span class="badge" :class="fnTypeBadge(r.adjType)">{{ r.adjType }}</span></td>
           <td :style="r.adjAmt<0?'color:#e74c3c;font-weight:700':'color:#27ae60;font-weight:700'">{{ fmtW(r.adjAmt) }}</td>
@@ -218,7 +201,7 @@ window.StSettleEtcAdjMng = {
             <button class="btn btn-sm btn-danger"  @click="handleDelete(r)">삭제</button>
           </td>
         </tr>
-        <tr v-if="!cfPageList.length"><td colspan="9" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!etcAdjList.length"><td colspan="9" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">
@@ -227,8 +210,8 @@ window.StSettleEtcAdjMng = {
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
            <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===cfTotPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===cfTotPages" @click="setPage(cfTotPages)">»</button>
+           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

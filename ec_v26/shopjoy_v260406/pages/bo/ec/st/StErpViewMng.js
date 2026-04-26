@@ -31,9 +31,6 @@ window.StErpViewMng = {
         fnLoadCodes();
       }
     });
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-    });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
             const dateEnd   = ref('');
     const handleDateRangeChange = () => {
@@ -41,42 +38,27 @@ window.StErpViewMng = {
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
-    const slips = reactive([
-      { slipId: 'ERP-2026-0411-001', slipDate: '2026-04-11', slipType: '정산', debit: '미지급금',  credit: '현금',      debitAmt: 300000, creditAmt: 300000, description: '2026-03 패션스타일 정산지급',  sendStatus: '전송완료', erpRef: 'ERP-JE-20260411-001' },
-      { slipId: 'ERP-2026-0411-002', slipDate: '2026-04-11', slipType: '정산', debit: '미지급금',  credit: '현금',      debitAmt: 81000,  creditAmt: 81000,  description: '2026-03 트렌드웨어 정산지급', sendStatus: '전송완료', erpRef: 'ERP-JE-20260411-002' },
-      { slipId: 'ERP-2026-0411-003', slipDate: '2026-04-11', slipType: '정산', debit: '미지급금',  credit: '현금',      debitAmt: 54000,  creditAmt: 54000,  description: '2026-03 에코패션 정산지급',    sendStatus: '전송완료', erpRef: 'ERP-JE-20260411-003' },
-      { slipId: 'ERP-2026-0410-001', slipDate: '2026-04-10', slipType: '수수료', debit: '수수료수익', credit: '미수금',   debitAmt: 38260,  creditAmt: 38260,  description: '2026-03 수수료 수입 계상',    sendStatus: '전송완료', erpRef: 'ERP-JE-20260410-001' },
-      { slipId: 'ERP-2026-0310-001', slipDate: '2026-03-10', slipType: '정산', debit: '미지급금',  credit: '현금',      debitAmt: 280000, creditAmt: 280000, description: '2026-02 패션스타일 정산지급',  sendStatus: '전송완료', erpRef: 'ERP-JE-20260310-001' },
-      { slipId: 'ERP-2026-0310-002', slipDate: '2026-03-10', slipType: '정산', debit: '미지급금',  credit: '현금',      debitAmt: 73000,  creditAmt: 73000,  description: '2026-02 트렌드웨어 정산지급', sendStatus: '전송대기', erpRef: '' },
-      { slipId: 'ERP-2026-0310-003', slipDate: '2026-03-10', slipType: '반품조정', debit: '매출환불', credit: '미지급금', debitAmt: 22000,  creditAmt: 22000,  description: '반품 정산 재처리',            sendStatus: '오류',    erpRef: '' },
-    ]);
+    const slips = reactive([]);
+    const searchParam = reactive({ kw: '', type: '', status: '', dateEnd: '' });
+    const searchParamOrg = reactive({ kw: '', type: '', status: '' });
+    const pager = reactive({ page: 1, size: 10, total: 0, totalPages: 1 });
+    const cfPageNums = computed(() => { const c=pager.page,l=pager.totalPages,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-  const searchParam = reactive({
-    kw: '',
-    type: '',
-    status: '', dateEnd: ''});;
-  const searchParamOrg = reactive({
-    kw: '',
-    type: '',
-    status: ''
-  });
-    const pager = reactive({ page: 1, size: 10 });
-
-    const cfFiltered = computed(() => {
-      const kw = (searchParam.kw || '').trim().toLowerCase();
-      return window.safeArrayUtils.safeFilter(slips, r => {
-        if (uiState.dateStart && r.slipDate < uiState.dateStart) return false;
-        if (uiState.dateEnd   && r.slipDate > uiState.dateEnd)   return false;
-        if (searchParam.type   && r.slipType   !== searchParam.type)   return false;
-        if (searchParam.status && r.sendStatus !== searchParam.status) return false;
-        if (kw && !r.slipId.toLowerCase().includes(kw) && !r.description.toLowerCase().includes(kw)) return false;
-        return true;
-      });
-    });
-    const cfTotal  = computed(() => cfFiltered.value.length);
-    const cfTotPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    const cfPageNums = computed(() => { const c=pager.page,l=cfTotPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const handleFetchData = async () => {
+      try {
+        const res = await window.boApi.get('/bo/ec/st/erp/slip/page', {
+          params: {
+            pageNo: pager.page, pageSize: pager.size,
+            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+          }
+        });
+        const data = res.data?.data;
+        slips.splice(0, slips.length, ...(data?.list || slips));
+        pager.total = data?.total || slips.length;
+        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
+      } catch (_) { console.error('[catch-info]', _); }
+    };
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleFetchData(); Object.assign(searchParamOrg, searchParam); });
 
     const doResend = async (r) => {
       const ok = await props.showConfirm('재전송', '전표를 ERP로 재전송하시겠습니까?');
@@ -97,27 +79,11 @@ window.StErpViewMng = {
     const fnStatusBadge = s => ({ '전송완료':'badge-green', '전송대기':'badge-blue', '오류':'badge-red' }[s] || 'badge-gray');
     const fnTypeBadge   = t => ({ '정산':'badge-blue', '수수료':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
     const fmtW = n => Number(n||0).toLocaleString() + '원';
-    const onSearch = async () => {
-    try {
-      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await window.boApi.get('/bo/ec/resource/page', { params });
-      // TODO: Update items array based on response
-      pager.page = 1;
-    } catch (err) {
-      console.error('[catch-info]', err);
-      if (props.showToast) props.showToast('조회 실패', 'error');
-    }
-  };
-  
-    const onReset = () => {
-    Object.assign(searchParam, searchParamOrg);
-    onSearch();
-  };
-  
-
-    const setPage = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
-    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, doResend, fnStatusBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, PAGE_SIZES, setPage, onSizeChange };
+    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
+    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, slips, cfPageNums, doResend, fnStatusBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, PAGE_SIZES, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -151,11 +117,11 @@ window.StErpViewMng = {
     </div>
   </div>
   <div class="card" style="margin-top:12px">
-    <div class="toolbar"><span class="list-count">총 {{ cfTotal }}건</span></div>
+    <div class="toolbar"><span class="list-count">총 {{ pager.total }}건</span></div>
     <table class="bo-table">
       <thead><tr><th>전표ID</th><th>전표일자</th><th>유형</th><th>차변계정</th><th>대변계정</th><th>금액</th><th>적요</th><th>ERP전표번호</th><th>전송상태</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="r in cfPageList" :key="r?.slipId">
+        <tr v-for="r in slips" :key="r?.slipId">
           <td style="font-size:11px">{{ r.slipId }}</td>
           <td>{{ r.slipDate }}</td>
           <td><span class="badge" :class="fnTypeBadge(r.slipType)">{{ r.slipType }}</span></td>
@@ -169,7 +135,7 @@ window.StErpViewMng = {
             <button v-if="r.sendStatus!=='전송완료'" class="btn btn-sm btn-blue" @click="doResend(r)">재전송</button>
           </td>
         </tr>
-        <tr v-if="!cfPageList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!slips.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">
@@ -178,8 +144,8 @@ window.StErpViewMng = {
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
            <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===cfTotPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===cfTotPages" @click="setPage(cfTotPages)">»</button>
+           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

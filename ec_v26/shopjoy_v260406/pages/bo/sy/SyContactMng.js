@@ -13,9 +13,15 @@ window.SyContactMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/contact/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: {
+            pageNo: pager.page, pageSize: pager.size,
+            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+          }
         });
-        contacts = res.data?.data?.list || [];
+        const data = res.data?.data;
+        contacts.splice(0, contacts.length, ...(data?.list || []));
+        pager.total = data?.total || contacts.length;
+        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -26,7 +32,10 @@ window.SyContactMng = {
       }
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData(); });
+      if (isAppReady.value) fnLoadCodes();
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
+    });
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -62,8 +71,8 @@ window.SyContactMng = {
       pager.page = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const pager = reactive({ page: 1, size: 5, total: 0, totalPages: 1 });
 
     /* 하단 상세 */
     const detailModal = reactive({
@@ -85,36 +94,16 @@ window.SyContactMng = {
     const cfIsViewMode = computed(() => detailModal.viewMode === 'view' && detailModal.editId !== '__new__');
     const cfDetailKey = computed(() => `${detailModal.editId}_${detailModal.viewMode}`);
 
-    const cfFiltered = computed(() => contacts.filter(c => {
-      const kw = searchParam.kw.trim().toLowerCase();
-      if (kw && !c.title.toLowerCase().includes(kw) && !c.userNm.toLowerCase().includes(kw)) return false;
-      if (searchParam.category && c.categoryCd !== searchParam.category) return false;
-      if (searchParam.status && c.statusCd !== searchParam.status) return false;
-      const _d = String(c.date || '').slice(0, 10);
-      if (searchParam.dateStart && _d < searchParam.dateStart) return false;
-      if (searchParam.dateEnd && _d > searchParam.dateEnd) return false;
-      return true;
-    }));
-    const cfTotal = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const cfPageNums = computed(() => {
-      const cur = pager.page, last = cfTotalPages.value;
+      const cur = pager.page, last = pager.totalPages;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
     const fnStatusBadge = s => ({ '요청': 'badge-orange', '처리중': 'badge-blue', '답변완료': 'badge-green', '취소됨': 'badge-gray' }[s] || 'badge-gray');
-    const onSearch = async () => {
-      pager.page = 1;
-      await handleFetchData();
-    };
-    const onReset = async () => {
-      Object.assign(searchParam, searchParamOrg);
-      pager.page = 1;
-    await handleFetchData();
-    };
-    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
 
     const handleDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.title}]을 삭제하시겠습니까?`);
@@ -134,9 +123,9 @@ window.SyContactMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'inquiryId'},{label:'회원명',key:'userNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'title'},{label:'상태',key:'statusCd'},{label:'등록일',key:'date'}], '문의목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(contacts, [{label:'ID',key:'inquiryId'},{label:'회원명',key:'userNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'title'},{label:'상태',key:'statusCd'},{label:'등록일',key:'date'}], '문의목록.csv');
 
-    return { contacts, uiState, codes, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { contacts, uiState, codes, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -161,7 +150,7 @@ window.SyContactMng = {
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title">문의목록 <span class="list-count">{{ cfTotal }}건</span></span>
+      <span class="list-title">문의목록 <span class="list-count">{{ pager.total }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -172,8 +161,8 @@ window.SyContactMng = {
         <th>ID</th><th>회원</th><th>카테고리</th><th>제목</th><th>상태</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="cfPageList.length===0"><td colspan="7" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="c in cfPageList" :key="c.inquiryId" :style="detailModal.editId===c.inquiryId?'background:#fff8f9;':''">
+        <tr v-if="contacts.length===0"><td colspan="7" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="c in contacts" :key="c.inquiryId" :style="detailModal.editId===c.inquiryId?'background:#fff8f9;':''">
           <td>{{ c.inquiryId }}</td>
           <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
           <td><span class="tag">{{ c.categoryCd }}</span></td>
@@ -194,8 +183,8 @@ window.SyContactMng = {
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
         <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

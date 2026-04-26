@@ -66,183 +66,50 @@ window.StRawMng = {
     moreOpen: ''
   });
 
-    const pager    = reactive({ page: 1, size: 10 });
+    const pager    = reactive({ page: 1, size: 10, total: 0, totalPages: 1 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
-    const orderList = reactive([]);
-    const claimList = reactive([]);
-    const vendorList = reactive([]);
-    const cfOrders  = computed(() => orderList);
-    const cfClaims  = computed(() => claimList);
-    const cfVendors = computed(() => vendorList);
+    const rawList = reactive([]);
 
     const handleFetchData = async () => {
       try {
-        const [resO, resC, resV] = await Promise.all([
-          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } }),
-        ]);
-        orderList.splice(0, orderList.length, ...(resO.data?.data?.list || []));
-        claimList.splice(0, claimList.length, ...(resC.data?.data?.list || []));
-        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
+        const res = await window.boApi.get('/bo/ec/st/raw/page', {
+          params: {
+            pageNo: pager.page, pageSize: pager.size,
+            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+          }
+        });
+        const data = res.data?.data;
+        rawList.splice(0, rawList.length, ...(data?.list || rawList));
+        pager.total = data?.total || rawList.length;
+        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
       } catch (_) {
-      console.error('[catch-info]', _);}
+        console.error('[catch-info]', _);
+      }
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData();
-    Object.assign(searchParamOrg, searchParam); });
-
-    const PAY_METHODS = ['무통장입금','가상계좌','토스페이','카카오페이','네이버페이','핸드폰결제'];
-    const PROD_NMS    = ['스탠다드 코튼 티셔츠','슬림 데님 팬츠','캐주얼 후드집업','오버핏 맨투맨','베이직 니트','린넨 셔츠','데일리 스니커즈','크로스백 미니','울 코트','레더 벨트'];
-    const BRAND_NMS   = ['어반클래식','트렌드메이커','에코웨어','럭셔리룩','심플웍스'];
-    const ORDER_STATUSES = { '배송중':'SHIPPING', '배송완료':'DELIVERED', '구매확정':'CONFIRMED', '취소됨':'CANCELLED', '결제완료':'PAID', '준비중':'PREPARING' };
-
-    const cfRawList = computed(() => {
-      const rows = [];
-      window.safeArrayUtils.safeForEach(cfOrders, (o, idx) => {
-        const v = cfVendors.value.find(x => x.vendorId === o.vendorId);
-        const isCancelled = o.status === '취소됨';
-        const qty         = (idx % 3) + 1;
-        const unitPrice   = Math.round((o.totalPrice || 50000) / qty);
-        const discntAmt   = Math.round(unitPrice * qty * 0.05);
-        const couponDiscnt = (idx % 4 === 0) ? Math.round(unitPrice * 0.1) : 0;
-        const cacheUseAmt = (idx % 5 === 0) ? 5000 : 0;
-        const saveSchd    = Math.round(unitPrice * qty * 0.01);
-        const settleTarget = isCancelled ? 0 : Math.max(0, unitPrice * qty - discntAmt - couponDiscnt - cacheUseAmt);
-        const feeRate     = 10;
-        const feeAmt      = Math.round(settleTarget * feeRate / 100);
-        const txDate      = o.orderDate ? o.orderDate.slice(0, 10) : '';
-        const period      = txDate.slice(0, 7);
-        rows.push({
-          rawId: 'RAW-O-' + o.orderId.replace('ORD-', ''),
-          sourceType: '주문', sourceId: o.orderId,
-          txDate, vendorNm: v ? v.vendorNm : '-', vendorId: o.vendorId,
-          vendorTypeCd: 'SALE',
-          amount: isCancelled ? 0 : o.totalPrice,
-          status: isCancelled ? '취소' : '정산대상',
-          rawStatusCd: isCancelled ? 'EXCLUDED' : 'COLLECTED',
-          collectYn: isCancelled ? 'N' : 'Y',
-          remark: isCancelled ? '주문취소' : '',
-          prodNm: PROD_NMS[idx % PROD_NMS.length],
-          brandNm: BRAND_NMS[idx % BRAND_NMS.length],
-          skuId: 'SKU-' + o.orderId.slice(-4) + '-01',
-          normalPrice: unitPrice + Math.round(unitPrice * 0.2),
-          unitPrice, qty,
-          itemPrice: unitPrice * qty,
-          discntAmt, couponDiscntAmt: couponDiscnt, promoDiscntAmt: 0,
-          settleTargetAmt: settleTarget,
-          settleFeeRate: feeRate, settleFeeAmt: feeAmt,
-          settleAmt: settleTarget - feeAmt,
-          settlePeriod: period,
-          payMethodCd: PAY_METHODS[idx % PAY_METHODS.length],
-          buyConfirmYn: ['배송완료','구매확정'].includes(o.status) ? 'Y' : 'N',
-          buyConfirmDate: o.status === '구매확정' ? txDate : '',
-          orderItemStatusCd: ORDER_STATUSES[o.status] || 'PAID',
-          closeYn: txDate < '2026-04-01' ? 'Y' : 'N',
-          closeDate: txDate < '2026-04-01' ? period + '-10' : '',
-          erpSendYn: txDate < '2026-03-01' ? 'Y' : 'N',
-          cacheUseAmt, mileageUseAmt: 0, voucherUseAmt: 0,
-          saveSchdAmt: saveSchd, giftAmt: 0,
-        });
-      });
-      window.safeArrayUtils.safeFilter(claims, c => ['환불완료','취소완료'].includes(c.status)).forEach((c, idx) => {
-        const o = orders.value.find(x => x.orderId === c.orderId);
-        const v = o ? vendors.value.find(x => x.vendorId === o.vendorId) : null;
-        const refund = -(c.refundAmount || 0);
-        const feeAmt = Math.round(Math.abs(refund) * 0.1);
-        const txDate = c.requestDate ? c.requestDate.slice(0, 10) : '';
-        rows.push({
-          rawId: 'RAW-C-' + c.claimId.replace('CLM-', ''),
-          sourceType: '클레임', sourceId: c.claimId,
-          txDate, vendorNm: v ? v.vendorNm : '-', vendorId: o ? o.vendorId : '',
-          vendorTypeCd: 'SALE',
-          amount: refund,
-          status: '차감',
-          rawStatusCd: 'COLLECTED',
-          collectYn: 'Y',
-          remark: c.type + '/' + c.status,
-          prodNm: PROD_NMS[(idx + 3) % PROD_NMS.length],
-          brandNm: BRAND_NMS[(idx + 1) % BRAND_NMS.length],
-          skuId: o ? 'SKU-' + o.orderId.slice(-4) + '-01' : '',
-          normalPrice: 0, unitPrice: 0, qty: 1,
-          itemPrice: refund,
-          discntAmt: 0, couponDiscntAmt: 0, promoDiscntAmt: 0,
-          settleTargetAmt: refund,
-          settleFeeRate: 10, settleFeeAmt: -feeAmt,
-          settleAmt: refund + feeAmt,
-          settlePeriod: txDate.slice(0, 7),
-          payMethodCd: o ? PAY_METHODS[(idx) % PAY_METHODS.length] : '-',
-          buyConfirmYn: 'N', buyConfirmDate: '',
-          orderItemStatusCd: 'CANCELLED',
-          closeYn: txDate < '2026-04-01' ? 'Y' : 'N',
-          closeDate: txDate < '2026-04-01' ? txDate.slice(0, 7) + '-10' : '',
-          erpSendYn: txDate < '2026-03-01' ? 'Y' : 'N',
-          cacheUseAmt: 0, mileageUseAmt: 0, voucherUseAmt: 0, saveSchdAmt: 0, giftAmt: 0,
-        });
-      });
-      return rows.sort((a, b) => b.txDate.localeCompare(a.txDate));
+      if (isAppReady.value) fnLoadCodes();
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
     });
 
-    const cfFiltered = computed(() => {
-      const kw = (searchParam.kw || '').trim().toLowerCase();
-      const amtFrom = searchParam.amtFrom !== '' ? Number(searchParam.amtFrom) : null;
-      const amtTo   = searchParam.amtTo   !== '' ? Number(searchParam.amtTo)   : null;
-      return window.safeArrayUtils.safeFilter(cfRawList, r => {
-        if (uiState.dateStart          && r.txDate < uiState.dateStart)                     return false;
-        if (uiState.dateEnd            && r.txDate > uiState.dateEnd)                       return false;
-        if (searchParam.type         && r.sourceType !== searchParam.type)             return false;
-        if (searchParam.status       && r.rawStatusCd !== searchParam.status)          return false;
-        if (searchParam.vendorType   && r.vendorTypeCd !== searchParam.vendorType)     return false;
-        if (searchParam.payMethod    && r.payMethodCd !== searchParam.payMethod)       return false;
-        if (searchParam.buyConfirm   && r.buyConfirmYn !== searchParam.buyConfirm)     return false;
-        if (searchParam.closeYn      && r.closeYn !== searchParam.closeYn)             return false;
-        if (searchParam.erpSend      && r.erpSendYn !== searchParam.erpSend)           return false;
-        if (searchParam.period       && r.settlePeriod !== searchParam.period)         return false;
-        if (searchParam.orderStatus  && r.orderItemStatusCd !== searchParam.orderStatus) return false;
-        if (amtFrom !== null && r.amount < amtFrom)  return false;
-        if (amtTo   !== null && r.amount > amtTo)    return false;
-        if (kw && !r.rawId.toLowerCase().includes(kw) && !r.sourceId.toLowerCase().includes(kw)
-               && !r.vendorNm.toLowerCase().includes(kw) && !r.prodNm.toLowerCase().includes(kw)
-               && !r.brandNm.toLowerCase().includes(kw)) return false;
-        return true;
-      });
-    });
 
-    const cfTotal    = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const cfPageNums   = computed(() => { const c = pager.page, l = cfTotalPages.value, s = Math.max(1, c-2), e = Math.min(l, s+4); return Array.from({length: e-s+1}, (_, i) => s+i); });
+    const cfPageNums = computed(() => { const c = pager.page, l = pager.totalPages, s = Math.max(1, c-2), e = Math.min(l, s+4); return Array.from({length: e-s+1}, (_, i) => s+i); });
 
     const cfSummary = computed(() => ({
-      totalAmt:       cfFiltered.value.reduce((s, r) => s + r.amount, 0),
-      collectCnt:     window.safeArrayUtils.safeFilter(cfFiltered, r => r.collectYn === 'Y').length,
-      settleAmt:      cfFiltered.value.reduce((s, r) => s + r.settleAmt, 0),
-      feeAmt:         cfFiltered.value.reduce((s, r) => s + r.settleFeeAmt, 0),
-      closeCnt:       window.safeArrayUtils.safeFilter(cfFiltered, r => r.closeYn === 'Y').length,
-      erpCnt:         window.safeArrayUtils.safeFilter(cfFiltered, r => r.erpSendYn === 'Y').length,
-      confirmCnt:     window.safeArrayUtils.safeFilter(cfFiltered, r => r.buyConfirmYn === 'Y').length,
+      totalAmt:   rawList.reduce((s, r) => s + (r.amount || 0), 0),
+      collectCnt: rawList.filter(r => r.collectYn === 'Y').length,
+      settleAmt:  rawList.reduce((s, r) => s + (r.settleAmt || 0), 0),
+      feeAmt:     rawList.reduce((s, r) => s + (r.settleFeeAmt || 0), 0),
+      closeCnt:   rawList.filter(r => r.closeYn === 'Y').length,
+      erpCnt:     rawList.filter(r => r.erpSendYn === 'Y').length,
+      confirmCnt: rawList.filter(r => r.buyConfirmYn === 'Y').length,
     }));
 
-    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
-    const onSearch = async () => {
-    try {
-      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await window.boApi.get('/bo/ec/resource/page', { params });
-      // TODO: Update items array based on response
-      pager.page = 1;
-      await handleFetchData();
-    } catch (err) {
-      console.error('[catch-info]', err);
-      if (props.showToast) props.showToast('조회 실패', 'error');
-    }
-  };
-  
-    const onReset = () => {
-    Object.assign(searchParam, searchParamOrg);
-    onSearch();
-  };
+    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
+    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
 
     const expandedRows = reactive(new Set());
     const toggleRow = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
@@ -271,7 +138,7 @@ window.StRawMng = {
   return {
       uiState, handleDateRangeChange,
       DATE_RANGE_OPTIONS, searchParam,
-      pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfSummary,
+      pager, PAGE_SIZES, rawList, cfPageNums, cfSummary,
       setPage, onSizeChange, onSearch, onReset,
       expandedRows, toggleRow, isExpanded,
       fnStatusBadge, rawStatusLabel, fnRawStatusBadge, vendorTypeLabel, orderStatusLabel,
@@ -377,7 +244,7 @@ window.StRawMng = {
   <div style="display:grid;grid-template-columns:repeat(4,1fr) repeat(3,1fr);gap:8px;margin-bottom:12px">
     <div class="card" style="text-align:center;padding:10px;background:#f0f4ff;margin-bottom:0">
       <div style="font-size:11px;color:#888">수집건수</div>
-      <div style="font-size:18px;font-weight:700;color:#3498db">{{ cfTotal.toLocaleString() }}건</div>
+      <div style="font-size:18px;font-weight:700;color:#3498db">{{ pager.total.toLocaleString() }}건</div>
     </div>
     <div class="card" style="text-align:center;padding:10px;background:#f0fff4;margin-bottom:0">
       <div style="font-size:11px;color:#888">정산대상</div>
@@ -408,10 +275,10 @@ window.StRawMng = {
   <!-- ── 목록 카드 ── -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-count">총 {{ cfTotal.toLocaleString() }}건</span>
+      <span class="list-count">총 {{ pager.total.toLocaleString() }}건</span>
       <div style="margin-left:auto;display:flex;gap:6px">
-        <button class="btn btn-secondary btn-sm" @click="() => { window.safeArrayUtils.safeForEach(cfPageList, r => { if(!isExpanded(r.rawId)) toggleRow(r.rawId); }) }">▼ 전체펼치기</button>
-        <button class="btn btn-secondary btn-sm" @click="() => { window.safeArrayUtils.safeForEach(cfPageList, r => { if(isExpanded(r.rawId)) toggleRow(r.rawId); }) }">▲ 전체접기</button>
+        <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(!isExpanded(r.rawId)) toggleRow(r.rawId); }) }">▼ 전체펼치기</button>
+        <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(isExpanded(r.rawId)) toggleRow(r.rawId); }) }">▲ 전체접기</button>
         <button class="btn btn-blue btn-sm" @click="doCollect">🔄 재수집</button>
       </div>
     </div>
@@ -435,7 +302,7 @@ window.StRawMng = {
         </tr>
       </thead>
       <tbody>
-        <template v-for="r in cfPageList" :key="r?.rawId">
+        <template v-for="r in rawList" :key="r?.rawId">
           <!-- 기본 행 -->
           <tr :style="isExpanded(r.rawId) ? 'background:#fafbff' : ''" style="cursor:pointer" @click="toggleRow(r.rawId)">
             <td style="text-align:center;color:#aaa;font-size:11px;user-select:none">
@@ -532,7 +399,7 @@ window.StRawMng = {
             </td>
           </tr>
         </template>
-        <tr v-if="!cfPageList.length"><td colspan="14" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!rawList.length"><td colspan="14" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">
@@ -541,8 +408,8 @@ window.StRawMng = {
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
         <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

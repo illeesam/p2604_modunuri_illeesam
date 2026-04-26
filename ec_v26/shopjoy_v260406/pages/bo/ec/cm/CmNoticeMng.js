@@ -8,28 +8,6 @@ window.CmNoticeMng = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ noticeTypes: [], noticeStatuses: [] });
 
-    // onMounted에서 API 로드
-    const handleFetchData = async () => {
-      uiState.loading = true;
-      try {
-        const res = await window.boApi.get('/bo/ec/cm/notice/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        notices.splice(0, notices.length, ...(res.data?.data?.list || []));
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-        if (props.showToast) props.showToast('CmNotice 로드 실패', 'error');
-      } finally {
-        uiState.loading = false;
-      }
-    };
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
-      Object.assign(searchParamOrg, searchParam);
-    });
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
@@ -61,31 +39,58 @@ window.CmNoticeMng = {
       }
     });
 
-    const pager = reactive({ page: 1, size: 10 });
+    const pager = reactive({ page: 1, size: 10, total: 0, totalPages: 1 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
-  const searchParam = reactive({
-    kw: '',
-    type: '',
-    status: '',
-    dateStart: '',
-    dateEnd: '',
-    dateRange: ''
-  });
-  const searchParamOrg = reactive({
-    kw: '',
-    type: '',
-    status: '',
-    dateStart: '',
-    dateEnd: '',
-    dateRange: ''
-  }); // 'view' | 'edit'
+    const searchParam = reactive({
+      kw: '',
+      type: '',
+      status: '',
+      dateStart: '',
+      dateEnd: '',
+      dateRange: ''
+    });
+    const searchParamOrg = reactive({
+      kw: '',
+      type: '',
+      status: '',
+      dateStart: '',
+      dateEnd: '',
+      dateRange: ''
+    }); // 'view' | 'edit'
+
+    // onMounted에서 API 로드
+    const handleFetchData = async () => {
+      uiState.loading = true;
+      try {
+        const res = await window.boApi.get('/bo/ec/cm/notice/page', {
+          params: { pageNo: pager.page, pageSize: pager.size, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) }
+        });
+        notices.splice(0, notices.length, ...(res.data?.data?.list || []));
+        pager.total = res.data?.data?.total || 0;
+        pager.totalPages = res.data?.data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+        if (props.showToast) props.showToast('CmNotice 로드 실패', 'error');
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
+    });
+
     const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
     const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
     const closeDetail = () => { uiStateDetail.selectedId = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'cmNoticeMng') { uiStateDetail.selectedId = null; return; }
+      if (pg === 'cmNoticeMng') { uiStateDetail.selectedId = null; handleFetchData(); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
@@ -93,46 +98,27 @@ window.CmNoticeMng = {
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
-    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(notices, n => {
-      const kw = searchParam.kw.trim().toLowerCase();
-      if (kw && !n.title.toLowerCase().includes(kw)) return false;
-      if (searchParam.type && n.noticeType !== searchParam.type) return false;
-      if (searchParam.status && n.statusCd !== searchParam.status) return false;
-      const d = String(n.regDate || '').slice(0, 10);
-      if (searchParam.dateStart && d < searchParam.dateStart) return false;
-      if (searchParam.dateEnd && d > searchParam.dateEnd) return false;
-      return true;
-    }));
-    const cfTotal = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const cfPageNums = computed(() => {
-      const cur = pager.page, last = cfTotalPages.value;
+      const cur = pager.page, last = pager.totalPages;
       const s = Math.max(1, cur - 2), e = Math.min(last, s + 4);
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
     const fnStatusBadge = s => ({ '게시': 'badge-green', '예약': 'badge-blue', '종료': 'badge-gray', '임시': 'badge-orange' }[s] || 'badge-gray');
     const fnTypeBadge = t => ({ '일반': 'badge-gray', '긴급': 'badge-red', '이벤트': 'badge-blue', '시스템': 'badge-orange' }[t] || 'badge-gray');
+
     const onSearch = async () => {
-    try {
-      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await window.boApi.get('/bo/ec/resource/page', { params });
-      // TODO: Update items array based on response
       pager.page = 1;
       await handleFetchData();
-    } catch (err) {
-      console.error('[catch-info]', err);
-      if (props.showToast) props.showToast('조회 실패', 'error');
-    }
-  };
-  
+    };
+
     const onReset = () => {
-    Object.assign(searchParam, searchParamOrg);
-    onSearch();
-  };
-  
-    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+      Object.assign(searchParam, searchParamOrg);
+      onSearch();
+    };
+
+    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
+
     const handleDelete = async (n) => {
       const ok = await props.showConfirm('삭제', `[${n.title}]을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -143,6 +129,7 @@ window.CmNoticeMng = {
         const res = await window.boApi.delete(`/bo/ec/cm/notice/${n.noticeId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+        await handleFetchData();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -150,9 +137,10 @@ window.CmNoticeMng = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
-    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'noticeId'},{label:'제목',key:'title'},{label:'유형',key:'noticeType'},{label:'상태',key:'statusCd'},{label:'조회수',key:'viewCount'},{label:'등록일',key:'regDate'}], '공지목록.csv');
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), notices, uiState, codes, cfSiteNm, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, onDateRangeChange: handleDateRangeChange, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    const exportExcel = () => window.boCmUtil.exportCsv(notices, [{label:'ID',key:'noticeId'},{label:'제목',key:'title'},{label:'유형',key:'noticeType'},{label:'상태',key:'statusCd'},{label:'조회수',key:'viewCount'},{label:'등록일',key:'regDate'}], '공지목록.csv');
+
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), notices, uiState, codes, cfSiteNm, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, onDateRangeChange: handleDateRangeChange, pager, PAGE_SIZES, cfPageNums, fnStatusBadge, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -179,7 +167,7 @@ window.CmNoticeMng = {
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>공지사항목록 <span class="list-count">{{ cfTotal }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>공지사항목록 <span class="list-count">{{ pager.total }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -188,8 +176,8 @@ window.CmNoticeMng = {
     <table class="bo-table">
       <thead><tr><th>ID</th><th>유형</th><th>제목</th><th>고정</th><th>시작일</th><th>종료일</th><th>상태</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
-        <tr v-if="cfPageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="n in cfPageList" :key="n?.noticeId" :style="selectedId===n.noticeId?'background:#fff8f9;':''">
+        <tr v-if="notices.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="n in notices" :key="n?.noticeId" :style="selectedId===n.noticeId?'background:#fff8f9;':''">
           <td>{{ n.noticeId }}</td>
           <td><span class="badge" :class="fnTypeBadge(n.noticeType)">{{ n.noticeType }}</span></td>
           <td><span class="title-link" @click="handleLoadDetail(n.noticeId)" :style="selectedId===n.noticeId?'color:#e8587a;font-weight:700;':''">{{ n.title }}<span v-if="n.isFixed" style="margin-left:4px;font-size:10px;color:#e8587a;">📌</span><span v-if="selectedId===n.noticeId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
@@ -212,8 +200,8 @@ window.CmNoticeMng = {
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
         <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

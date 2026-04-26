@@ -6,22 +6,28 @@ window.PmPlanDtl = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, onUnmounted  } = Vue;
     const products = reactive([]);
-    const plans = reactive([]);
     const uiState = reactive({ loading: false, showProdPopup: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._ecPlanDtlState.tab || 'info', viewMode2: window._ecPlanDtlState.viewMode || 'tab', activeContentTab: 1, prodSearch: ''});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({});
 
-    // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    // 단건 조회 + 상품목록 로드
+    const handleFetchDetail = async () => {
       uiState.loading = true;
       try {
-        const [plansRes, prodsRes] = await Promise.all([
-          window.boApi.get('/bo/ec/pm/plan/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 } }),
-        ]);
-        plans.splice(0, plans.length, ...(plansRes.data?.data?.list || []));
-        products.splice(0, products.length, ...(prodsRes.data?.data?.list || []));
+        const calls = [window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 } })];
+        if (!cfIsNew.value) calls.unshift(window.boApi.get(`/bo/ec/pm/plan/${props.editId}`));
+        const results = await Promise.all(calls);
+        if (!cfIsNew.value) {
+          const p = results[0].data?.data || results[0].data;
+          if (p) {
+            Object.assign(form, { ...p, productIds: [...(p.productIds || [])] });
+            if (!form.visibilityTargets) form.visibilityTargets = '^PUBLIC^';
+          }
+          products.splice(0, products.length, ...(results[1].data?.data?.list || []));
+        } else {
+          products.splice(0, products.length, ...(results[0].data?.data?.list || []));
+        }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -150,14 +156,7 @@ window.PmPlanDtl = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
-      if (!cfIsNew.value) {
-        const p = (plans).find(x => x.planId === props.editId);
-        if (p) {
-          Object.assign(form, { ...p, productIds: [...(p.productIds || [])] });
-          if (!form.visibilityTargets) form.visibilityTargets = '^PUBLIC^';
-        }
-      }
+      handleFetchDetail();
     });
 
     onUnmounted(() => { Object.keys(quillers).forEach(k => { delete quillers[k]; }); });
@@ -214,18 +213,6 @@ window.PmPlanDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (cfIsNew.value) {
-        const newId = Math.max(...(plans).map(p => p.planId), 0) + 1;
-        plans.push({
-          ...form, planId: newId,
-          productIds: [...form.productIds],
-          regDate: new Date().toISOString().slice(0, 10),
-          viewCount: 0, thumbUrl: '🎯',
-        });
-      } else {
-        const idx = plans.findIndex(x => x.planId === props.editId);
-        if (idx !== -1) Object.assign(plans[idx], { ...form, productIds: [...form.productIds] });
-      }
       try {
         const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/plan`, form) : window.boApi.put(`/bo/ec/pm/plan/${props.editId}`, form));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -243,10 +230,10 @@ window.PmPlanDtl = {
     const prodSearch = Vue.toRef(uiState, 'prodSearch');
     const showProdPopup = Vue.toRef(uiState, 'showProdPopup');
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
-    return { plans, uiState, codes, cfIsNew, tab, onTabChange, form, errors, activeContentTab, prodSearch,
+    return { uiState, codes, cfIsNew, tab, onTabChange, form, errors, activeContentTab, prodSearch,
       cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, handleSave,
       CATEGORIES, STATUS_OPTIONS, VISIBILITY_OPTIONS, viewMode2, showTab, hasVisibility, toggleVisibility,
-      cfSelectedVendorNm, selectVendor,
+      cfSelectedVendorNm, selectVendor, showProdPopup, showVendorModal,
     };
   },
   template: /* html */`

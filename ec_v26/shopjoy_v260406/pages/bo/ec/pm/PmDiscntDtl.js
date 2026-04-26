@@ -5,22 +5,19 @@ window.PmDiscntDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-        const discounts = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, discntList: [], tab: window._pmDiscntDtlState.tab || 'info', viewMode2: window._pmDiscntDtlState.viewMode || 'tab'});
+    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmDiscntDtlState.tab || 'info', viewMode2: window._pmDiscntDtlState.viewMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({});
 
-    // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    // 단건 조회
+    const handleFetchDetail = async () => {
+      if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pm/discnt/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        const list = res.data?.data?.list || [];
-        discounts.splice(0, discounts.length, ...list);
-        uiState.discntList = list;
+        const res = await window.boApi.get(`/bo/ec/pm/discnt/${props.editId}`);
+        const d = res.data?.data || res.data;
+        if (d) Object.assign(form, d);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -78,11 +75,7 @@ window.PmDiscntDtl = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
-      if (!cfIsNew.value) {
-        const d = (discntList).find(x => x.discntId === props.editId);
-        if (d) Object.assign(form, d);
-      }
+      handleFetchDetail();
     });
 
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
@@ -106,17 +99,6 @@ window.PmDiscntDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (!uiState.discntList) uiState.discntList = [];
-      if (cfIsNew.value) {
-        discntList.value.push({
-          ...form,
-          discntId: Date.now(),
-          regDate: new Date().toISOString().slice(0, 10),
-        });
-      } else {
-        const idx = discntList.value.findIndex(x => x.discntId === props.editId);
-        if (idx !== -1) Object.assign(uiState.discntList[idx], { ...form });
-      }
       try {
         const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }) : window.boApi.put(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });

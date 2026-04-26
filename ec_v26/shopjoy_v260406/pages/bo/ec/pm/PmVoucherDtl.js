@@ -5,21 +5,21 @@ window.PmVoucherDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const vouchers = reactive([]);
-    const voucherList = reactive([]);
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmVoucherDtlState.tab || 'info', viewMode2: window._pmVoucherDtlState.viewMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null, snsMsg: ''});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({});
 
-    // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    // 단건 조회
+    const handleFetchDetail = async () => {
+      if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pm/voucher/page', { params: { pageNo: 1, pageSize: 10000 } });
-        const list = res.data?.data?.list || [];
-        vouchers.splice(0, vouchers.length, ...list);
-        voucherList.splice(0, voucherList.length, ...list);
+        const res = await window.boApi.get(`/bo/ec/pm/voucher/${props.editId}`);
+        const v = res.data?.data || res.data;
+        if (v) Object.assign(form, { ...v });
+        if (!form.startDate) form.startDate = DEFAULT_START;
+        if (!form.endDate) form.endDate = DEFAULT_END;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -78,28 +78,18 @@ window.PmVoucherDtl = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
-      if (!cfIsNew.value) {
-        const v = (voucherList || []).find(x => x.voucherId === props.editId);
-        if (v) Object.assign(form, { ...v });
+      handleFetchDetail();
+      if (cfIsNew.value) {
+        if (!form.startDate) form.startDate = DEFAULT_START;
+        if (!form.endDate) form.endDate = DEFAULT_END;
       }
-      if (!form.startDate) form.startDate = DEFAULT_START;
-      if (!form.endDate) form.endDate = DEFAULT_END;
     });
 
     /* 발급내역 */
-    const cfIssuedList = computed(() => {
-      if (!voucherList) return [];
-      const v = voucherList.find(x => x.voucherId === props.editId);
-      return v ? (v.cfIssuedList || []) : [];
-    });
+    const cfIssuedList = computed(() => form.cfIssuedList || []);
 
     /* 사용내역 */
-    const cfUsedList = computed(() => {
-      if (!voucherList) return [];
-      const v = voucherList.find(x => x.voucherId === props.editId);
-      return v ? (v.cfUsedList || []) : [];
-    });
+    const cfUsedList = computed(() => form.cfUsedList || []);
 
     /* 미리보기 형태 */
                 const renderBarcode = () => {
@@ -187,18 +177,6 @@ window.PmVoucherDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (!voucherList) voucherList = [];
-      if (cfIsNew.value) {
-        voucherList.push({
-          ...form,
-          voucherId: Date.now(),
-          cfIssuedList: [],
-          cfUsedList: [],
-        });
-      } else {
-        const idx = voucherList.findIndex(x => x.voucherId === props.editId);
-        if (idx !== -1) Object.assign(voucherList[idx], { ...form });
-      }
       try {
         const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/voucher`, { ...form }) : window.boApi.put(`/bo/ec/pm/voucher/${form.voucherId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });

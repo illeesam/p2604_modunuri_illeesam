@@ -13,12 +13,15 @@ window.OdOrderMng = {
     const handleFetchData = async () => {
       uiState.loading = true;
       try {
+        const params = { pageNo: pager.page, pageSize: pager.size, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         const [ordersRes, membersRes] = await Promise.all([
-          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/od/order/page', { params }),
           window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } })
         ]);
-        orders = ordersRes.data?.data?.list || [];
-        members = membersRes.data?.data?.list || [];
+        orders.splice(0, orders.length, ...(ordersRes.data?.data?.list || []));
+        members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
+        pager.total = ordersRes.data?.data?.total || 0;
+        pager.totalPages = ordersRes.data?.data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -61,7 +64,7 @@ window.OdOrderMng = {
       pager.page = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const pager = reactive({ page: 1, size: 5 });
+    const pager = reactive({ page: 1, size: 5, total: 0, totalPages: 1 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     const isAppReady = computed(() => {
@@ -104,20 +107,8 @@ window.OdOrderMng = {
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
-    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(orders, o => {
-      const kw = searchParam.kw.trim().toLowerCase();
-      if (kw && !o.orderId.toLowerCase().includes(kw) && !o.userNm.toLowerCase().includes(kw) && !o.prodNm.toLowerCase().includes(kw)) return false;
-      if (searchParam.status && o.status !== searchParam.status) return false;
-      const _d = String(o.orderDate || '').slice(0, 10);
-      if (searchParam.dateStart && _d < searchParam.dateStart) return false;
-      if (searchParam.dateEnd && _d > searchParam.dateEnd) return false;
-      return true;
-    }));
-    const cfTotal = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const cfPageNums = computed(() => {
-      const cur = pager.page, last = cfTotalPages.value;
+      const cur = pager.page, last = pager.totalPages;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
@@ -141,8 +132,8 @@ window.OdOrderMng = {
       await handleFetchData();
     };
   
-    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
 
     const handleDelete = async (o) => {
       const ok = await props.showConfirm('삭제', `[${o.orderId}]를 삭제하시겠습니까?`);
@@ -163,7 +154,7 @@ window.OdOrderMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userNm'},{label:'상태',key:'statusCd'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethodCd'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(orders, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userNm'},{label:'상태',key:'statusCd'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethodCd'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
 
     /* 클레임 조회 */
     const claimByOrder = (orderId) =>
@@ -182,11 +173,11 @@ window.OdOrderMng = {
       checked = s;
     };
     const isChecked = (id) => checked.has(id);
-    const cfAllChecked = computed(() => cfPageList.value.length > 0 && window.safeArrayUtils.safeEvery(cfPageList, o => checked.has(o.orderId)));
+    const cfAllChecked = computed(() => orders.length > 0 && orders.every(o => checked.has(o.orderId)));
     const toggleCheckAll = () => {
       const s = new Set(checked);
-      if (cfAllChecked.value) window.safeArrayUtils.safeForEach(cfPageList, o => s.delete(o.orderId));
-      else window.safeArrayUtils.safeForEach(cfPageList, o => s.add(o.orderId));
+      if (cfAllChecked.value) orders.forEach(o => s.delete(o.orderId));
+      else orders.forEach(o => s.add(o.orderId));
       checked = s;
     };
     const ORDER_STATUS_OPTIONS = ['입금대기','결제완료','상품준비중','배송중','배송완료','구매확정','취소','자동취소'];
@@ -289,7 +280,7 @@ window.OdOrderMng = {
     };
 
     const bulkOpen = Vue.toRef(uiState, 'bulkOpen');
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), orders, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, APPROVAL_ACTIONS, REQ_TARGETS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), orders, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfPageNums, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, APPROVAL_ACTIONS, REQ_TARGETS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>
@@ -311,7 +302,7 @@ window.OdOrderMng = {
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>주문목록 <span class="list-count">{{ cfTotal }}건</span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>주문목록 <span class="list-count">{{ pager.total }}건</span>
         <span v-if="checked.size" style="margin-left:10px;font-size:12px;color:#1565c0;font-weight:700;">선택 {{ checked.size }}건</span>
       </span>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -326,8 +317,8 @@ window.OdOrderMng = {
         <th>주문ID</th><th>회원</th><th>주문일시</th><th>상품</th><th>결제금액</th><th>결제수단</th><th>결제상태</th><th>주문상태</th><th>클레임상태</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="cfPageList.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="o in cfPageList" :key="o?.orderId"
+        <tr v-if="orders.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="o in orders" :key="o?.orderId"
           :style="(selectedId===o.orderId?'background:#fff8f9;':'') + (isChecked(o.orderId)?'background:#eef6fd;':'')">
           <td style="text-align:center;"><input type="checkbox" :checked="isChecked(o.orderId)" @change="toggleCheck(o.orderId)" /></td>
           <td><span class="title-link" @click="handleLoadDetail(o.orderId)" :style="selectedId===o.orderId?'color:#e8587a;font-weight:700;':''">{{ o.orderId }}<span v-if="selectedId===o.orderId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
@@ -377,8 +368,8 @@ window.OdOrderMng = {
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
         <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

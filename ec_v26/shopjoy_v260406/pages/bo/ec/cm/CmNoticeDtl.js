@@ -3,9 +3,7 @@ window.CmNoticeDtl = {
   name: 'CmNoticeDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'editId', 'setApiRes', 'viewMode'],
   setup(props) {
-    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
-    const { ref, reactive, computed, onMounted, onBeforeUnmount, onUnmounted, watch } = Vue;
-    const notices = reactive([]);
+    const { ref, reactive, computed, onMounted, onBeforeUnmount, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ noticeTypes: [], noticeStatuses: [] });
 
@@ -33,23 +31,6 @@ window.CmNoticeDtl = {
       }
     });
 
-    // onMounted에서 API 로드
-    const handleFetchData = async () => {
-      uiState.loading = true;
-      try {
-        const res = await window.boApi.get('/bo/ec/cm/notice/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        notices.splice(0, notices.length, ...(res.data?.data?.list || []));
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-        if (props.showToast) props.showToast('CmNotice 로드 실패', 'error');
-      } finally {
-        uiState.loading = false;
-      }
-    };
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
       noticeId: null, title: '', noticeType: '', isFixed: false,
@@ -63,13 +44,19 @@ window.CmNoticeDtl = {
     });
     let quill = null;
 
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
-      if (!cfIsNew.value) {
-        const n = window.safeArrayUtils.safeFind(notices, x => x.noticeId === props.editId);
-        if (n) Object.assign(form, { ...n });
+    const handleFetchDetail = async () => {
+      if (cfIsNew.value) return;
+      try {
+        const res = await window.boApi.get(`/bo/ec/cm/notice/${props.editId}`);
+        Object.assign(form, res.data?.data || {});
+      } catch (err) {
+        console.error('[handleFetchDetail]', err);
       }
+    };
+
+    onMounted(async () => {
+      if (isAppReady.value) fnLoadCodes();
+      await handleFetchDetail();
       if (typeof Quill !== 'undefined' && !props.viewMode && document.getElementById('notice-editor')) {
         try {
           quill = new Quill('#notice-editor', { theme: 'snow', placeholder: '공지 내용을 입력하세요.' });
@@ -93,18 +80,10 @@ window.CmNoticeDtl = {
       const isNewNotice = cfIsNew.value;
       const ok = await props.showConfirm(isNewNotice ? '등록' : '저장', isNewNotice ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (isNewNotice) {
-        notices.unshift({
-          ...form,
-          noticeId: nextId.value(notices, 'noticeId'),
-          regDate: new Date().toISOString().slice(0, 10),
-        });
-      } else {
-        const idx = notices.findIndex(x => x.noticeId === props.editId);
-        if (idx !== -1) Object.assign(notices[idx], form);
-      }
       try {
-        const res = await (isNewNotice ? window.boApi.post(`/bo/ec/cm/notice/${form.noticeId}`, { ...form }) : window.boApi.put(`/bo/ec/cm/notice/${form.noticeId}`, { ...form }));
+        const res = await (isNewNotice
+          ? window.boApi.post('/bo/ec/cm/notice', { ...form })
+          : window.boApi.put(`/bo/ec/cm/notice/${props.editId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewNotice ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('cmNoticeMng');

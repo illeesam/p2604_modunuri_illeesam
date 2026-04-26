@@ -14,10 +14,18 @@ window.SyUserMng = {
       uiState.loading = true;
       try {
         const [resUsers, resDepts] = await Promise.all([
-          window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/sy/user/page', {
+            params: {
+              pageNo: pager.page, pageSize: pager.size,
+              ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+            }
+          }),
           window.boApi.get('/bo/sy/dept/page', { params: { pageNo: 1, pageSize: 10000 } }),
         ]);
-        uiState.boUsers = resUsers.data?.data?.list || [];
+        const data = resUsers.data?.data;
+        users.splice(0, users.length, ...(data?.list || []));
+        pager.total = data?.total || users.length;
+        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
         depts.splice(0, depts.length, ...(resDepts.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
@@ -90,8 +98,8 @@ window.SyUserMng = {
       pager.page = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const pager = reactive({ page: 1, size: 10, total: 0, totalPages: 1 });
 
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
     const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
@@ -107,46 +115,25 @@ window.SyUserMng = {
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
-    const cfFiltered = computed(() => uiState.boUsers.filter(u => {
-      if (cfAllowedDeptNms.value && !cfAllowedDeptNms.value.has(u.dept)) return false;
-      const kw = searchParam.kw.trim().toLowerCase();
-      if (kw && !u.name.toLowerCase().includes(kw) && !u.loginId.toLowerCase().includes(kw) && !u.email.toLowerCase().includes(kw)) return false;
-      if (searchParam.role && u.role !== searchParam.role) return false;
-      if (searchParam.status && u.statusCd !== searchParam.status) return false;
-      const _d = String(u.regDate || '').slice(0, 10);
-      if (searchParam.dateStart && _d < searchParam.dateStart) return false;
-      if (searchParam.dateEnd && _d > searchParam.dateEnd) return false;
-      return true;
-    }));
-    const cfTotal = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const cfPageNums = computed(() => {
-      const cur = pager.page, last = cfTotalPages.value;
+      const cur = pager.page, last = pager.totalPages;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
 
     const fnRoleBadge = r => ({ '슈퍼관리자': 'badge-red', '관리자': 'badge-purple', '운영자': 'badge-blue' }[r] || 'badge-gray');
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
-    const onSearch = async () => {
-      pager.page = 1;
-      await handleFetchData();
-    };
-    const onReset = async () => {
-      Object.assign(searchParam, searchParamOrg);
-      pager.page = 1;
-    await handleFetchData();
-    };
-    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
 
     const handleDelete = async (u) => {
       if (u.role === '슈퍼관리자') { props.showToast('슈퍼관리자는 삭제할 수 없습니다.', 'error'); return; }
       const ok = await props.showConfirm('삭제', `[${u.name}] 사용자를 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = uiState.boUsers.findIndex(x => x.boUserId === u.boUserId);
-      if (idx !== -1) uiState.boUsers.splice(idx, 1);
+      const idx = users.findIndex(x => x.boUserId === u.boUserId);
+      if (idx !== -1) users.splice(idx, 1);
       if (uiStateDetail.selectedId === u.boUserId) uiStateDetail.selectedId = null;
       try {
         const res = await window.boApi.delete(`/bo/sy/user/${u.boUserId}`);
@@ -160,9 +147,9 @@ window.SyUserMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'boUserId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'권한',key:'role'},{label:'부서',key:'dept'},{label:'상태',key:'statusCd'},{label:'최종로그인',key:'lastLogin'}], '사용자목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(users, [{label:'ID',key:'boUserId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'권한',key:'role'},{label:'부서',key:'dept'},{label:'상태',key:'statusCd'},{label:'최종로그인',key:'lastLogin'}], '사용자목록.csv');
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), users, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), users, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -199,7 +186,7 @@ window.SyUserMng = {
     <div>
 <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사용자목록 <span class="list-count">{{ cfTotal }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사용자목록 <span class="list-count">{{ pager.total }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -210,8 +197,8 @@ window.SyUserMng = {
         <th>ID</th><th>로그인ID</th><th>이름</th><th>이메일</th><th>연락처</th><th>권한</th><th>부서</th><th>상태</th><th>최근로그인</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="cfPageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="u in cfPageList" :key="u.boUserId" :style="uiStateDetail.selectedId===u.boUserId?'background:#fff8f9;':''">
+        <tr v-if="users.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="u in users" :key="u.boUserId" :style="uiStateDetail.selectedId===u.boUserId?'background:#fff8f9;':''">
           <td>{{ u.boUserId }}</td>
           <td><code style="font-size:12px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ u.loginId }}</code></td>
           <td><span class="title-link" @click="handleLoadDetail(u.boUserId)" :style="uiStateDetail.selectedId===u.boUserId?'color:#e8587a;font-weight:700;':''">{{ u.name }}<span v-if="uiStateDetail.selectedId===u.boUserId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
@@ -235,8 +222,8 @@ window.SyUserMng = {
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
         <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

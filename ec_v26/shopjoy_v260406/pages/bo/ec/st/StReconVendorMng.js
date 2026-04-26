@@ -38,78 +38,46 @@ window.StReconVendorMng = {
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
-    const orderList = reactive([]);
-    const vendorList = reactive([]);
-    const cfOrders  = computed(() => orderList);
-    const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
+    const rows = reactive([]);
+    const searchParam = reactive({ diff: '', dateEnd: '' });
+    const searchParamOrg = reactive({ diff: '' });
+    const pager = reactive({ page: 1, size: 10, total: 0, totalPages: 1 });
+    const cfPageNums = computed(() => { const c=pager.page,l=pager.totalPages,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfSummary = computed(() => ({
+      match: rows.filter(r=>r.diffStatus==='일치').length,
+      over:  rows.filter(r=>r.diffStatus==='시스템과다').length,
+      under: rows.filter(r=>r.diffStatus==='업체과다').length,
+    }));
 
     const handleFetchData = async () => {
       try {
-        const [resO, resV] = await Promise.all([
-          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } }),
-        ]);
-        orderList.splice(0, orderList.length, ...(resO.data?.data?.list || []));
-        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
+        const res = await window.boApi.get('/bo/ec/st/recon/vendor/page', {
+          params: {
+            pageNo: pager.page, pageSize: pager.size,
+            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+          }
+        });
+        const data = res.data?.data;
+        rows.splice(0, rows.length, ...(data?.list || rows));
+        pager.total = data?.total || rows.length;
+        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
       } catch (_) {
-      console.error('[catch-info]', _);}
+        console.error('[catch-info]', _);
+      }
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData();
-    Object.assign(searchParamOrg, searchParam); });
-
-  const searchParam = reactive({
-    diff: '', dateEnd: ''});;
-  const searchParamOrg = reactive({
-    diff: ''
-  });
-    const pager = reactive({ page: 1, size: 10 });
-
-    const cfRows = computed(() => {
-      return cfVendors.value.map(v => {
-        const vOrders   = window.safeArrayUtils.safeFilter(cfOrders, o => o.vendorId === v.vendorId && o.status !== '취소됨' && (!uiState.dateStart || o.orderDate.slice(0,10) >= uiState.dateStart) && (!uiState.dateEnd || o.orderDate.slice(0,10) <= uiState.dateEnd));
-        const sysAmt    = vOrders.reduce((s, o) => s + Math.round(o.totalPrice * 0.9), 0);
-        const vendorAmt = sysAmt + (Math.random() > 0.8 ? (Math.random() > 0.5 ? 1000 : -1000) : 0);
-        const diff      = sysAmt - Math.round(vendorAmt);
-        const diffStatus = Math.abs(diff) < 1 ? '일치' : (diff > 0 ? '시스템과다' : '업체과다');
-        return { vendorId: v.vendorId, vendorNm: v.vendorNm, orderCnt: vOrders.length, sysAmt, vendorAmt: Math.round(vendorAmt), diff: Math.round(diff), diffStatus };
-      }).filter(r => !searchDiff.value || r.diffStatus === searchDiff.value);
+      if (isAppReady.value) fnLoadCodes();
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
     });
-
-    const cfTotal  = computed(() => cfRows.value.length);
-    const cfTotPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfRows.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    const cfPageNums = computed(() => { const c=pager.page,l=cfTotPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
-    const cfSummary = computed(() => ({
-      match: window.safeArrayUtils.safeFilter(cfRows, r=>r.diffStatus==='일치').length,
-      over:  window.safeArrayUtils.safeFilter(cfRows, r=>r.diffStatus==='시스템과다').length,
-      under: window.safeArrayUtils.safeFilter(cfRows, r=>r.diffStatus==='업체과다').length,
-    }));
 
     const fnDiffBadge = s => ({ '일치':'badge-green','시스템과다':'badge-red','업체과다':'badge-orange' }[s] || 'badge-gray');
     const fmtW = n => Number(n||0).toLocaleString() + '원';
-    const onSearch = async () => {
-    try {
-      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await window.boApi.get('/bo/ec/resource/page', { params });
-      // TODO: Update items array based on response
-      pager.page = 1;
-      await handleFetchData();
-    } catch (err) {
-      console.error('[catch-info]', err);
-      if (props.showToast) props.showToast('조회 실패', 'error');
-    }
-  };
-  
-    const onReset = () => {
-    Object.assign(searchParam, searchParamOrg);
-    onSearch();
-  };
-  
-
-    const setPage = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
-    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, cfRows, cfTotal, cfTotPages, cfPageList, cfPageNums, cfSummary, fnDiffBadge, fmtW, onSearch, onReset, searchParam, PAGE_SIZES, setPage, onSizeChange };
+    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
+    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, rows, cfPageNums, cfSummary, fnDiffBadge, fmtW, onSearch, onReset, searchParam, PAGE_SIZES, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -143,11 +111,11 @@ window.StReconVendorMng = {
       <div class="card" style="text-align:center;padding:10px;background:#fff8f8"><div style="font-size:11px;color:#888">시스템과다</div><div style="font-size:20px;font-weight:700;color:#e74c3c">{{ cfSummary.over }}건</div></div>
       <div class="card" style="text-align:center;padding:10px;background:#fffbf0"><div style="font-size:11px;color:#888">업체과다</div><div style="font-size:20px;font-weight:700;color:#e67e22">{{ cfSummary.under }}건</div></div>
     </div>
-    <div class="toolbar"><span class="list-count">총 {{ cfTotal }}개 업체</span></div>
+    <div class="toolbar"><span class="list-count">총 {{ pager.total }}개 업체</span></div>
     <table class="bo-table">
       <thead><tr><th>업체명</th><th>주문건수</th><th>시스템 정산액</th><th>업체 청구액</th><th>차이금액</th><th>대사결과</th></tr></thead>
       <tbody>
-        <tr v-for="r in cfPageList" :key="r?.vendorId">
+        <tr v-for="r in rows" :key="r?.vendorId">
           <td><strong>{{ r.vendorNm }}</strong></td>
           <td>{{ r.orderCnt }}건</td>
           <td>{{ fmtW(r.sysAmt) }}</td>
@@ -155,7 +123,7 @@ window.StReconVendorMng = {
           <td :style="Math.abs(r.diff)>0?'color:#e74c3c;font-weight:700':''">{{ r.diff !== 0 ? (r.diff > 0 ? '+' : '') + Number(r.diff).toLocaleString() + '원' : '-' }}</td>
           <td><span class="badge" :class="fnDiffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td>
         </tr>
-        <tr v-if="!cfPageList.length"><td colspan="6" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!rows.length"><td colspan="6" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">
@@ -164,8 +132,8 @@ window.StReconVendorMng = {
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
            <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===cfTotPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===cfTotPages" @click="setPage(cfTotPages)">»</button>
+           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

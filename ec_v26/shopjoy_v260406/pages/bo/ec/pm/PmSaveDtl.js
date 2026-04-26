@@ -5,21 +5,19 @@ window.PmSaveDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const saves = reactive([]);
-    const saveList = reactive([]);
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmSaveDtlState.tab || 'info', viewMode2: window._pmSaveDtlState.viewMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({});
 
-    // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    // 단건 조회
+    const handleFetchDetail = async () => {
+      if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pm/save/page', { params: { pageNo: 1, pageSize: 10000 } });
-        const list = res.data?.data?.list || [];
-        saves.splice(0, saves.length, ...list);
-        saveList.splice(0, saveList.length, ...list);
+        const res = await window.boApi.get(`/bo/ec/pm/save/${props.editId}`);
+        const s = res.data?.data || res.data;
+        if (s) Object.assign(form, s);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -77,11 +75,7 @@ window.PmSaveDtl = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
-      if (!cfIsNew.value) {
-        const s = (saveList || []).find(x => x.saveId === props.editId);
-        if (s) Object.assign(form, s);
-      }
+      handleFetchDetail();
     });
 
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
@@ -115,17 +109,6 @@ window.PmSaveDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (!saveList) saveList = [];
-      if (cfIsNew.value) {
-        saveList.push({
-          ...form,
-          saveId: Date.now(),
-          regDate: new Date().toISOString().slice(0, 10),
-        });
-      } else {
-        const idx = saveList.findIndex(x => x.saveId === props.editId);
-        if (idx !== -1) Object.assign(saveList[idx], { ...form });
-      }
       try {
         const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/save`, { ...form }) : window.boApi.put(`/bo/ec/pm/save/${form.saveId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });

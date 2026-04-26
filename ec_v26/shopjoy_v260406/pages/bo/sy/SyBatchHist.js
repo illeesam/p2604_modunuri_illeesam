@@ -42,7 +42,8 @@ window.SyBatchHist = {
 
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    const pager = reactive({ page: 1, size: 10, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] });
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const pager = reactive({ page: 1, size: 10 });
 
     const cfBatchOptions = computed(() =>
       batches.map(b => ({ batchId: b.batchId, label: b.batchNm }))
@@ -85,7 +86,7 @@ window.SyBatchHist = {
 
     const expandedId = Vue.toRef(uiState, 'expandedId');
     return { batches, uiState, cfBatchOptions,
-      cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, pager,
+      cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, pager, PAGE_SIZES,
       setPage, onSizeChange, onFilter,
       toggleExpand,
       fnRunBadge, fnFmtDuration,
@@ -213,7 +214,7 @@ window.SyBatchHist = {
     </div>
     <div class="pager-right">
       <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-        <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
+        <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
       </select>
     </div>
   </div>

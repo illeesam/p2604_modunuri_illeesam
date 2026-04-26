@@ -5,33 +5,11 @@ window.OdClaimDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const claims = reactive([]);
-    const orders = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: window._odClaimDtlState.activeTab || 'info', viewMode2: window._odClaimDtlState.viewMode || 'tab'});
-    const tab = Vue.toRef(uiState, 'tab');
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({ claim_statuses: [] });
 
-    // onMounted에서 API 로드
-    const handleLoadData = async () => {
-      uiState.loading = true;
-      try {
-        const [claimsRes, ordersRes] = await Promise.all([
-          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } })
-        ]);
-        claims = claimsRes.data?.data?.list || [];
-        orders = ordersRes.data?.data?.list || [];
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-        if (props.showToast) props.showToast('OdClaim 로드 실패', 'error');
-      } finally {
-        uiState.loading = false;
-      }
-    };
     const cfIsNew = computed(() => !props.editId);
 
     const isAppReady = computed(() => {
@@ -56,9 +34,6 @@ window.OdClaimDtl = {
         fnLoadCodes();
       }
     });
-
-    // 주문 조회 헬퍼 함수
-    const getOrder = (orderId) => orders?.find(o => o.orderId === orderId);
 
     const form = reactive({
       claimId: '', userId: '', userNm: '', orderId: '', prodNm: '',
@@ -87,17 +62,29 @@ window.OdClaimDtl = {
     const cfCurrentStepIdx = computed(() => cfClaimSteps.value.indexOf(form.statusCd));
     const cfStatusOptions   = computed(() => cfClaimSteps.value);
 
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      handleLoadData();
-      if (!cfIsNew.value) {
-        const c = getClaim.value(props.editId);
-        if (c) {
-          Object.assign(form, { ...c });
-          if (!form.claimId) form.claimId = props.editId;
-        }
+    // 단건 GET
+    const handleFetchDetail = async () => {
+      if (cfIsNew.value) return;
+      uiState.loading = true;
+      try {
+        const res = await window.boApi.get(`/bo/ec/od/claim/${props.editId}`);
+        const c = res.data?.data || res.data || {};
+        Object.assign(form, { ...c });
+        if (!form.claimId) form.claimId = props.editId;
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+        if (props.showToast) props.showToast('클레임 상세 로드 실패', 'error');
+      } finally {
+        uiState.loading = false;
       }
-      handleInitForm();
+    };
+
+    onMounted(async () => {
+      if (isAppReady.value) fnLoadCodes();
+      await handleFetchDetail();
+      claimItems.splice(0, claimItems.length, ...sampleClaimItems());
     });
 
     const handleSave = async () => {
@@ -113,14 +100,10 @@ window.OdClaimDtl = {
       const isNewClaim = cfIsNew.value;
       const ok = await props.showConfirm(isNewClaim ? '등록' : '저장', isNewClaim ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (isNewClaim) {
-        claims.push({ ...form, refundAmount: Number(form.refundAmount) });
-      } else {
-        const idx = claims.findIndex(x => x.claimId === props.editId);
-        if (idx !== -1) Object.assign(claims[idx], { ...form, refundAmount: Number(form.refundAmount) });
-      }
       try {
-        const res = await (isNewClaim ? window.boApi.post(`/bo/ec/od/claim/${form.claimId}`, { ...form }) : window.boApi.put(`/bo/ec/od/claim/${form.claimId}`, { ...form }));
+        const res = await (isNewClaim
+          ? window.boApi.post('/bo/ec/od/claim', { ...form, refundAmount: Number(form.refundAmount) })
+          : window.boApi.put(`/bo/ec/od/claim/${form.claimId}`, { ...form, refundAmount: Number(form.refundAmount) }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewClaim ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('odClaimMng');
@@ -151,9 +134,6 @@ window.OdClaimDtl = {
         const sale = Math.round(paid / (1 - discRates[i]));
         return { ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
       });
-    };
-    const handleInitForm = async () => {
-      claimItems.splice(0, claimItems.length, ...sampleClaimItems());
     };
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
@@ -219,7 +199,7 @@ window.OdClaimDtl = {
       { id:'hist',     label:'상태변경이력',  icon:'🕒', count: cfStatusHistList.value.length },
       { id:'editHist', label:'정보수정이력',  icon:'📝', count: cfEditHistList.value.length },
     ]);
-    return { cfIsNew, form, errors, cfStatusOptions, cfClaimSteps, cfCurrentStepIdx, handleSave, activeTab, claimItems, fmt, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, viewMode2, showTab, orders, getOrder, codes };
+    return { cfIsNew, form, errors, cfStatusOptions, cfClaimSteps, cfCurrentStepIdx, handleSave, activeTab, claimItems, fmt, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, viewMode2, showTab, codes };
   },
   template: /* html */`
 <div>
@@ -431,8 +411,8 @@ window.OdClaimDtl = {
           <td style="text-align:right;color:#d84315;font-weight:600;">{{ it.discAmount ? '-'+fmt(it.discAmount) : '-' }}</td>
           <td style="text-align:right;font-weight:700;color:#1a1a1a;">{{ fmt(it.price || 0) }}</td>
           <td style="text-align:center;">
-            <span v-if="getOrder(form.orderId)" style="font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;">
-              {{ getOrder(form.orderId).status }}
+            <span v-if="form.orderStatusCd" style="font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;">
+              {{ form.orderStatusCd }}
             </span>
             <span v-else style="color:#ccc;">-</span>
           </td>

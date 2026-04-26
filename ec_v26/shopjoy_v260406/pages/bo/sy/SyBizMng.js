@@ -13,9 +13,15 @@ window.SyBizMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/biz/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: {
+            pageNo: pager.page, pageSize: pager.size,
+            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+          }
         });
-        bizs.splice(0, bizs.length, ...(res.data?.data?.list || []));
+        const data = res.data?.data;
+        bizs.splice(0, bizs.length, ...(data?.list || []));
+        pager.total = data?.total || bizs.length;
+        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -68,36 +74,21 @@ window.SyBizMng = {
     const STATUS = [['ACTIVE','운영중'],['SUSPENDED','중지'],['TERMINATED','종료']];
     const BIZ_CLASS = ['법인','개인','면세','간이','공공'];
 
-    const cfFiltered = computed(() => {
-      const items = bizs || [];
-      if (!Array.isArray(items)) return [];
-      return items.filter(b => {
-        const k = searchParam.kw.trim().toLowerCase();
-        if (k && !(b.bizNo||'').includes(k) && !(b.bizNm||'').toLowerCase().includes(k) && !(b.ceoNm||'').toLowerCase().includes(k)) return false;
-        if (searchParam.statusFlt && b.statusCd !== searchParam.statusFlt) return false;
-        if (searchParam.vendorTypeFlt && b.vendorTypeCd !== searchParam.vendorTypeFlt) return false;
-        if (cfAllowedPathIds.value && !cfAllowedPathIds.value.has(b.pathId)) return false;
-        return true;
-      });
-    });
-
     /* 페이징 */
-    const pager = reactive({ page: 1, size: 10, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] });
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfFiltered.value.length / pager.size)));
-    const cfPageNums = computed(() => { const c=pager.page,l=cfTotalPages.value; const s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
-    const setPage = n => { if(n>=1 && n<=cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
-    const cfPagedRows = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    watch(() => uiState.selectedPath, () => pager.page = 1);
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const pager = reactive({ page: 1, size: 10, total: 0, totalPages: 1 });
+    const cfPageNums = computed(() => { const c=pager.page,l=pager.totalPages; const s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const setPage = n => { if(n>=1 && n<=pager.totalPages) { pager.page = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
+    watch(() => uiState.selectedPath, () => { pager.page = 1; handleFetchData(); });
 
-    const onSearch = async () => { pager.page = 1; await handleFetchData(); };
-    const onReset = async () => {
+    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const onReset = () => {
       searchParam.kw = '';
       searchParam.statusFlt = '';
       searchParam.vendorTypeFlt = '';
       uiState.selectedPath = null;
-      pager.page = 1;
-    await handleFetchData();
+      onSearch();
     };
 
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : '#'+id);
@@ -148,7 +139,7 @@ window.SyBizMng = {
 
     return { bizs, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, STATUS, BIZ_CLASS, VENDOR_TYPES,
-      cfFiltered, cfPagedRows, pager, cfTotalPages, cfPageNums, setPage, onSizeChange,
+      pager, PAGE_SIZES, cfPageNums, setPage, onSizeChange,
       pathLabel, fnVendorTypeLabel, fnVendorTypeBadge, fnRoleCatLabel, fnRoleCatColor, fnStatusBadge, fnStatusLabel,
       onSearch, onReset,
       formData, openNew, openEdit, closeForm, handleSaveForm,
@@ -192,7 +183,7 @@ window.SyBizMng = {
     <div>
       <div class="card">
         <div class="toolbar">
-          <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>업체목록 <span class="list-count">{{ Array.isArray(cfFiltered) ? cfFiltered.length : 0 }}건</span></span>
+          <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>업체목록 <span class="list-count">{{ pager.total }}건</span></span>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-blue btn-sm" @click="openNew">+ 신규</button>
           </div>
@@ -203,8 +194,8 @@ window.SyBizMng = {
             <th>업체유형</th><th>역할구분</th><th>사업자번호</th><th>상호</th><th>대표자</th><th>구분</th><th>업태/종목</th><th>전화</th><th>상태</th><th>등록일</th><th style="text-align:right;">관리</th>
           </tr></thead>
           <tbody>
-            <tr v-if="!Array.isArray(cfPagedRows) || cfPagedRows.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-            <tr v-for="b in cfPagedRows" :key="b.bizId">
+            <tr v-if="bizs.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+            <tr v-for="b in bizs" :key="b.bizId">
               <td><span style="font-family:monospace;font-size:11.5px;color:#374151;">{{ pathLabel(b.pathId) || '-' }}</span></td>
               <td><span class="badge" :class="fnVendorTypeBadge(b.vendorTypeCd)" style="font-size:10px;">{{ fnVendorTypeLabel(b.vendorTypeCd) }}</span></td>
               <td><span :style="{background:fnRoleCatColor(b.vendorTypeCd),color:'#fff',fontSize:'10px',fontWeight:700,padding:'2px 7px',borderRadius:'9px'}">{{ fnRoleCatLabel(b.vendorTypeCd) }}</span></td>
@@ -226,12 +217,12 @@ window.SyBizMng = {
             <button :disabled="pager.page===1" @click="setPage(1)">«</button>
             <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
             <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-            <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-            <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+            <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+            <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
           </div>
           <div class="pager-right">
             <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-              <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
+              <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
             </select>
           </div>
         </div>

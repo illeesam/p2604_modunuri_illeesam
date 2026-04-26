@@ -5,22 +5,19 @@ window.PmGiftDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-        const gifts = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, giftList: [], tab: window._pmGiftDtlState.tab || 'info', viewMode2: window._pmGiftDtlState.viewMode || 'tab'});
+    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmGiftDtlState.tab || 'info', viewMode2: window._pmGiftDtlState.viewMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({});
 
-    // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    // 단건 조회
+    const handleFetchDetail = async () => {
+      if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pm/gift/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        const list = res.data?.data?.list || [];
-        gifts.splice(0, gifts.length, ...list);
-        uiState.giftList = list;
+        const res = await window.boApi.get(`/bo/ec/pm/gift/${props.editId}`);
+        const g = res.data?.data || res.data;
+        if (g) Object.assign(form, g);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -78,11 +75,7 @@ window.PmGiftDtl = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
-      if (!cfIsNew.value) {
-        const g = (giftList).find(x => x.giftId === props.editId);
-        if (g) Object.assign(form, g);
-      }
+      handleFetchDetail();
     });
 
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
@@ -123,17 +116,6 @@ window.PmGiftDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (!uiState.giftList) uiState.giftList = [];
-      if (cfIsNew.value) {
-        giftList.value.push({
-          ...form,
-          giftId: Date.now(),
-          regDate: new Date().toISOString().slice(0, 10),
-        });
-      } else {
-        const idx = giftList.value.findIndex(x => x.giftId === props.editId);
-        if (idx !== -1) Object.assign(uiState.giftList[idx], { ...form });
-      }
       try {
         const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/gift`, { ...form }) : window.boApi.put(`/bo/ec/pm/gift/${form.giftId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });

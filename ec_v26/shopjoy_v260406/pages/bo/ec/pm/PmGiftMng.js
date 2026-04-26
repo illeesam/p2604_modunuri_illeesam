@@ -37,11 +37,12 @@ window.PmGiftMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/gift/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: { pageNo: pager.page, pageSize: pager.size, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }
         });
         const list = res.data?.data?.list || [];
         gifts.splice(0, gifts.length, ...list);
-        uiState.giftList = list;
+        pager.total = res.data?.data?.total || 0;
+        pager.totalPages = res.data?.data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -61,7 +62,7 @@ window.PmGiftMng = {
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
      // 'list' | 'card'
-    const pager = reactive({ page: 1, size: 5 });
+    const pager = reactive({ page: 1, size: 5, total: 0, totalPages: 1 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
@@ -94,24 +95,8 @@ window.PmGiftMng = {
     const cfIsViewMode   = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey    = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
-    const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
-
-    const cfList = computed(() => giftList);
-    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(cfList, g => {
-      const kw = applied.kw.trim().toLowerCase();
-      if (kw && !String(g.giftNm || '').toLowerCase().includes(kw) && !String(g.giftId || '').includes(kw)) return false;
-      if (applied.type   && g.giftType   !== applied.type)   return false;
-      if (applied.status && g.giftStatus !== applied.status) return false;
-      const _d = String(g.startDate || '').slice(0, 10);
-      if (applied.dateStart && _d < applied.dateStart) return false;
-      if (applied.dateEnd   && _d > applied.dateEnd)   return false;
-      return true;
-    }));
-    const cfTotal      = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const cfPageNums   = computed(() => {
-      const cur = pager.page, last = cfTotalPages.value;
+    const cfPageNums = computed(() => {
+      const cur = pager.page, last = pager.totalPages;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
@@ -120,25 +105,17 @@ window.PmGiftMng = {
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray', '종료': 'badge-red', '품절': 'badge-orange' }[s] || 'badge-gray');
 
     const onSearch = async () => {
-    try {
-      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await window.boApi.get('/bo/ec/resource/page', { params });
-      // TODO: Update items array based on response
       pager.page = 1;
       await handleFetchData();
-    } catch (err) {
-      console.error('[catch-info]', err);
-      if (props.showToast) props.showToast('조회 실패', 'error');
-    }
-  };
-  
+    };
+
     const onReset = () => {
-    Object.assign(searchParam, searchParamOrg);
-    onSearch();
-  };
-  
-    const setPage      = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+      Object.assign(searchParam, searchParamOrg);
+      onSearch();
+    };
+
+    const setPage = async n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; await handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
 
     const handleDelete = async (g) => {
       const ok = await props.showConfirm('삭제', `[${g.giftNm}] 사은품을 삭제하시겠습니까?`);
@@ -158,12 +135,12 @@ window.PmGiftMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value,
+    const exportExcel = () => window.boCmUtil.exportCsv(gifts,
       [{label:'ID',key:'giftId'},{label:'사은품명',key:'giftNm'},{label:'유형',key:'giftType'},{label:'조건값',key:'condVal'},{label:'재고',key:'stock'},{label:'상태',key:'giftStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '사은품목록.csv');
 
     const viewMode = Vue.toRef(uiState, 'viewMode');
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), gifts, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), gifts, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -182,7 +159,7 @@ window.PmGiftMng = {
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사은품목록 <span class="list-count">{{ cfTotal }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사은품목록 <span class="list-count">{{ pager.total }}건</span></span>
       <div style="display:flex;gap:6px;align-items:center;">
         <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
           <button @click="viewMode='list'" style="font-size:11px;padding:4px 10px;border:none;cursor:pointer;transition:all .15s;"
@@ -197,8 +174,8 @@ window.PmGiftMng = {
     <table class="bo-table" v-if="viewMode==='list'">
       <thead><tr><th>ID</th><th>사은품명</th><th>조건유형</th><th>조건값</th><th>재고</th><th>시작일</th><th>종료일</th><th>상태</th><th>사이트</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
-        <tr v-if="cfPageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="g in cfPageList" :key="g?.giftId" :style="selectedId===g.giftId?'background:#fff8f9;':''">
+        <tr v-if="gifts.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="g in gifts" :key="g?.giftId" :style="selectedId===g.giftId?'background:#fff8f9;':''">
           <td>{{ g.giftId }}</td>
           <td><span class="title-link" @click="handleLoadDetail(g.giftId)" :style="selectedId===g.giftId?'color:#e8587a;font-weight:700;':''">{{ g.giftNm }}<span v-if="selectedId===g.giftId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><span class="badge" :class="fnTypeBadge(g.giftType)">{{ g.giftType }}</span></td>
@@ -218,8 +195,8 @@ window.PmGiftMng = {
 
     <!-- 카드 뷰 -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
-      <div v-if="cfPageList.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
-      <div v-for="g in cfPageList" :key="g?.giftId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
+      <div v-if="gifts.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
+      <div v-for="g in gifts" :key="g?.giftId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="selectedId===g.giftId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleLoadDetail(g.giftId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
@@ -249,8 +226,8 @@ window.PmGiftMng = {
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
         <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

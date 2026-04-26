@@ -13,16 +13,20 @@ window.SyBbsMng = {
     const handleFetchData = async () => {
       uiState.loading = true;
       try {
-        const resBbs = await window.boApi.get('/bo/sy/bbs/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        bbss.splice(0, bbss.length, ...(resBbs.data?.data?.list || []));
-
-        const resBbm = await window.boApi.get('/bo/sy/bbm/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
+        const [resBbs, resBbm] = await Promise.all([
+          window.boApi.get('/bo/sy/bbs/page', {
+            params: {
+              pageNo: pager.page, pageSize: pager.size,
+              ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+            }
+          }),
+          window.boApi.get('/bo/sy/bbm/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        ]);
+        const data = resBbs.data?.data;
+        bbss.splice(0, bbss.length, ...(data?.list || []));
+        pager.total = data?.total || bbss.length;
+        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
         bbms.splice(0, bbms.length, ...(resBbm.data?.data?.list || []));
-
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -97,7 +101,8 @@ window.SyBbsMng = {
       if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.page = 1;
     };
-    const pager = reactive({ page: 1, size: 10, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] });
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const pager = reactive({ page: 1, size: 10, total: 0, totalPages: 1 });
 
     const detailModal = reactive({
       show: false,
@@ -120,30 +125,16 @@ window.SyBbsMng = {
 
     const cfBbmOptions = computed(() => bbms.map(b => ({ value: b.bbmId, label: b.bbmNm })));
     const bbmNm = (bbmId) => { const b = bbms.find(x => x.bbmId === bbmId); return b ? b.bbmNm : bbmId; };
-
-    const cfFiltered = computed(() => bbss.filter(b => {
-      const kw = searchParam.kw.trim().toLowerCase();
-      if (kw && !b.title.toLowerCase().includes(kw) && !String(b.authorNm || '').toLowerCase().includes(kw)) return false;
-      if (searchParam.bbmId && b.bbmId !== Number(searchParam.bbmId)) return false;
-      if (searchParam.status && b.statusCd !== searchParam.status) return false;
-      const d = String(b.regDate || '').slice(0, 10);
-      if (searchParam.dateStart && d < searchParam.dateStart) return false;
-      if (searchParam.dateEnd && d > searchParam.dateEnd) return false;
-      return true;
-    }));
-    const cfTotal = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const cfPageNums = computed(() => {
-      const cur = pager.page, last = cfTotalPages.value;
+      const cur = pager.page, last = pager.totalPages;
       const s = Math.max(1, cur - 2), e = Math.min(last, s + 4);
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
     const fnStatusBadge = s => ({ '게시': 'badge-green', '임시': 'badge-gray', '삭제': 'badge-red', '비공개': 'badge-orange' }[s] || 'badge-gray');
-    const onSearch = async () => { pager.page = 1; await handleFetchData(); };
-    const onReset = async () => { Object.assign(searchParam, searchParamOrg); pager.page = 1; await handleFetchData(); };
-    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
     const handleDelete = async (b) => {
       const ok = await props.showConfirm('삭제', `[${b.title}]을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -161,13 +152,13 @@ window.SyBbsMng = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
-    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'bbsId'},{label:'제목',key:'title'},{label:'작성자',key:'authorNm'},{label:'조회수',key:'viewCount'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '게시글목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(bbss, [{label:'ID',key:'bbsId'},{label:'제목',key:'title'},{label:'작성자',key:'authorNm'},{label:'조회수',key:'viewCount'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '게시글목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
     watch(() => uiState.selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
     return { bbss, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, pager, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, cfBbmOptions, bbmNm, exportExcel };
+      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, pager, PAGE_SIZES, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, cfBbmOptions, bbmNm, exportExcel };
   },
   template: /* html */`
 <div>
@@ -194,7 +185,7 @@ window.SyBbsMng = {
 
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>게시글목록 <span class="list-count">{{ cfTotal }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>게시글목록 <span class="list-count">{{ pager.total }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -204,8 +195,8 @@ window.SyBbsMng = {
       <thead><tr>
           <th>ID</th><th>게시판</th><th>제목</th><th>작성자</th><th>조회수</th><th>댓글</th><th>첨부그룹</th><th>상태</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
-        <tr v-if="cfPageList.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="b in cfPageList" :key="b.bbsId" :style="detailModal.editId===b.bbsId?'background:#fff8f9;':''">
+        <tr v-if="bbss.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="b in bbss" :key="b.bbsId" :style="detailModal.editId===b.bbsId?'background:#fff8f9;':''">
           <td>{{ b.bbsId }}</td>
           <td><span class="badge badge-gray">{{ bbmNm(b.bbmId) }}</span></td>
           <td><span class="title-link" @click="handleLoadDetail(b.bbsId)" :style="detailModal.editId===b.bbsId?'color:#e8587a;font-weight:700;':''">{{ b.title }}<span v-if="detailModal.editId===b.bbsId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
@@ -229,12 +220,12 @@ window.SyBbsMng = {
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
         <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
+          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>

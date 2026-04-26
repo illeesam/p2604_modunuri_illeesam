@@ -75,7 +75,8 @@ window.SyBrandMng = {
     let   _tempId    = -1;
     
     /* ── 페이징 ── */
-    const pager      = reactive({ page: 1, size: 20, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] });
+    const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const pager      = reactive({ page: 1, size: 20 });
     const getRealIdx = (localIdx) => (pager.page - 1) * pager.size + localIdx;
 
     const EDIT_FIELDS = ['brandCode', 'brandNm', 'brandEnNm', 'dispPath', 'logoUrl', 'sortOrd', 'useYn', 'remark'];
@@ -292,7 +293,7 @@ window.SyBrandMng = {
 
     return { brands, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange,
-      gridRows, cfPagedRows, cfTotal, pager, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       setFocused, onSearch, onReset, onCellChange, cfIsLocalMode,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       onDragStart, onDragOver, onDragEnd,
@@ -469,7 +470,7 @@ window.SyBrandMng = {
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
-          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
+          <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>

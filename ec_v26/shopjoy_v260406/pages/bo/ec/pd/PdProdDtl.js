@@ -38,18 +38,22 @@ window.PdProdDtl = {
       }
     });
 
-    // onMounted에서 API 로드
+    // 보조 데이터(사용자/카테고리) + 단건 조회
     const handleLoadData = async () => {
       uiState.loading = true;
       try {
-        const [prodsRes, usersRes, catsRes] = await Promise.all([
-          window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        const calls = [
           window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 } }),
           window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 1000 } }),
-        ]);
-        products.splice(0, products.length, ...(prodsRes.data?.data?.list || []));
-        boUsers.splice(0, boUsers.length, ...(usersRes.data?.data?.list || []));
-        categories.splice(0, categories.length, ...(catsRes.data?.data?.list || []));
+        ];
+        if (!cfIsNew.value) calls.push(window.boApi.get(`/bo/ec/pd/prod/${props.editId}`));
+        const results = await Promise.all(calls);
+        boUsers.splice(0, boUsers.length, ...(results[0].data?.data?.list || []));
+        categories.splice(0, categories.length, ...(results[1].data?.data?.list || []));
+        if (!cfIsNew.value && results[2]) {
+          const p = results[2].data?.data || results[2].data;
+          if (p) products.splice(0, products.length, p);
+        }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -392,7 +396,7 @@ window.PdProdDtl = {
         form.mdUserId = cfMdUserList.value[0]?.boUserId || '';
       }
       if (!cfIsNew.value) {
-        const p = getProduct.value(props.editId);
+        const p = products[0] || null;
         if (p) {
           form.prodId         = p.productId || p.prodId;
           form.prodNm         = p.prodNm || '';
@@ -484,8 +488,11 @@ window.PdProdDtl = {
       document.addEventListener('mousemove', _divMoveH);
       document.addEventListener('mouseup', _divUpH);
     };
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleLoadData(); handleInitForm(); });
+    onMounted(async () => {
+      if (isAppReady.value) fnLoadCodes();
+      await handleLoadData();
+      handleInitForm();
+    });
     onBeforeUnmount(() => {
       if (_divMoveH) document.removeEventListener('mousemove', _divMoveH);
       if (_divUpH)   document.removeEventListener('mouseup',  _divUpH);
@@ -500,21 +507,6 @@ window.PdProdDtl = {
       const mainImg = window.safeArrayUtils.safeFind(images, img => img.isMain);
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      let savedProdId;
-      if (cfIsNew.value) {
-        savedProdId = nextId.value(products, 'productId');
-        products.push({ ...form, productId: savedProdId, price: form.listPrice, stock: uiState.useOpt ? cfTotalStock.value : form.prodStock, regDate: new Date().toISOString().slice(0, 10), images: imgData, mainImage: mainImg?.previewUrl || '' });
-      } else {
-        savedProdId = props.editId;
-        const idx = products.findIndex(x => x.productId == props.editId);
-        if (idx !== -1) Object.assign(products[idx], { ...form, price: form.listPrice, stock: uiState.useOpt ? cfTotalStock.value : form.prodStock, images: imgData, mainImage: mainImg?.previewUrl || '' });
-      }
-      // categoryProds 동기화
-      const filtered = window.safeArrayUtils.safeFilter(categoryProds, cp => String(cp.prodId) !== String(savedProdId));
-      categoryProds.splice(0, categoryProds.length, ...filtered);
-      window.safeArrayUtils.safeForEach(prodCategories, (cat, i) => {
-        categoryProds.push({ categoryProdId: 'CP_'+savedProdId+'_'+i, siteId: '1', categoryId: cat.categoryId, prodId: savedProdId, sortOrd: i + 1 });
-      });
       try {
         const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }) : window.boApi.put(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });

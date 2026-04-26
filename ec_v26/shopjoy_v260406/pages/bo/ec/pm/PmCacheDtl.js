@@ -6,20 +6,19 @@ window.PmCacheDtl = {
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const caches = reactive([]);
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCacheDtlState.tab || 'info', viewMode2: window._pmCacheDtlState.viewMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({});
 
-    // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    // 단건 조회
+    const handleFetchDetail = async () => {
+      if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pm/cache/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        caches.splice(0, caches.length, ...(res.data?.data?.list || []));
+        const res = await window.boApi.get(`/bo/ec/pm/cache/${props.editId}`);
+        const c = res.data?.data || res.data;
+        if (c) Object.assign(form, { ...c });
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -69,24 +68,13 @@ window.PmCacheDtl = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
-      if (!cfIsNew.value) {
-        const c = cacheList.value.find(x => x.cacheId === props.editId);
-        if (c) Object.assign(form, { ...c });
-      }
+      handleFetchDetail();
     });
 
     /* 같은 회원의 캐쉬 내역 */
-    const cfMemberCacheHistory = computed(() =>
-      window.safeArrayUtils.safeFilter(cacheList, c => String(c.userId) === String(form.userId) && c.cacheId !== props.editId)
-        .slice(0, 20)
-    );
+    const cfMemberCacheHistory = computed(() => form.memberCacheHistory || []);
 
-    const cfTotalBalance = computed(() => {
-      const list = window.safeArrayUtils.safeFilter(cacheList, c => String(c.userId) === String(form.userId));
-      if (!list.length) return 0;
-      return list.sort((a, b) => b.date.localeCompare(a.date))[0]?.balance || 0;
-    });
+    const cfTotalBalance = computed(() => form.balance || 0);
 
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
@@ -100,18 +88,6 @@ window.PmCacheDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (cfIsNew.value) {
-        cacheList.value.unshift({
-          ...form,
-          cacheId: nextId.value(cacheList.value, 'cacheId'),
-          amount: Number(form.amount), balance: Number(form.balance),
-          userId: Number(form.userId),
-          date: form.date || new Date().toISOString().slice(0, 16).replace('T', ' '),
-        });
-      } else {
-        const idx = cacheList.value.findIndex(x => x.cacheId === props.editId);
-        if (idx !== -1) Object.assign(cacheList.value[idx], { ...form, amount: Number(form.amount), balance: Number(form.balance) });
-      }
       try {
         const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/cache/${form.cacheId}`, { ...form }) : window.boApi.put(`/bo/ec/pm/cache/${form.cacheId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -142,9 +118,8 @@ window.PmCacheDtl = {
 
     const fnTypeBadge = t => ({ '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' }[t] || 'badge-gray');
 
-    const cacheList = caches;
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
-    return { caches, cacheList, uiState, codes, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, viewMode2, showTab, cfSelectedVendorNm, selectVendor };
+    return { uiState, codes, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, viewMode2, showTab, cfSelectedVendorNm, selectVendor, showVendorModal };
   },
   template: /* html */`
 <div>

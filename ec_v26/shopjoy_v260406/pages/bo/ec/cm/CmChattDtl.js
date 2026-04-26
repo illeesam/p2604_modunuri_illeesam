@@ -6,8 +6,7 @@ window.CmChattDtl = {
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
-    const chatts = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._cmChattDtlState.tab || 'chat', viewMode2: window._cmChattDtlState.viewMode || 'tab', replyText: '', searchUserId: ''});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._cmChattDtlState.tab || 'chat', viewMode2: window._cmChattDtlState.viewMode || 'tab', replyText: '', searchUserId: '', chat: null });
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({});
@@ -26,49 +25,42 @@ window.CmChattDtl = {
       }
     };
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
-    // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleFetchDetail = async () => {
+      if (!props.editId) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/cm/chatt/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        chatts.splice(0, chatts.length, ...(res.data?.data?.list || []));
-        uiState.error = null;
+        const res = await window.boApi.get(`/bo/ec/cm/chatt/${props.editId}`);
+        uiState.chat = res.data?.data || null;
+        if (uiState.chat) uiState.chat.unread = 0;
+        scrollToBottom();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
-        if (props.showToast) props.showToast('CmChatt 로드 실패', 'error');
+        if (props.showToast) props.showToast('채팅 상세 로드 실패', 'error');
       } finally {
         uiState.loading = false;
       }
     };
+
     const cfIsNew = computed(() => !props.editId);
-        watch(() => uiState.tab, v => { window._cmChattDtlState.tab = v; });
-        watch(() => uiState.viewMode2, v => { window._cmChattDtlState.viewMode = v; });
+    watch(() => uiState.tab, v => { window._cmChattDtlState.tab = v; });
+    watch(() => uiState.viewMode2, v => { window._cmChattDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
-            const msgBoxRef = ref(null);
+    const msgBoxRef = ref(null);
 
     /* 채팅 내 참조 모달 (상품/주문/클레임) */
     const refModal = reactive({ show: false, type: '', id: null, data: null });
 
     const openMsgRef = (msg) => {
       if (msg.productId) {
-        refModal.type = 'product'; refModal.id = msg.productId;
-        refModal.data = getProduct.value(msg.productId); refModal.show = true;
+        refModal.type = 'product'; refModal.id = msg.productId; refModal.show = true;
       } else if (msg.orderId) {
-        refModal.type = 'order'; refModal.id = msg.orderId;
-        refModal.data = getOrder.value(msg.orderId); refModal.show = true;
+        refModal.type = 'order'; refModal.id = msg.orderId; refModal.show = true;
       } else if (msg.claimId) {
-        refModal.type = 'claim'; refModal.id = msg.claimId;
-        refModal.data = getClaim.value(msg.claimId); refModal.show = true;
+        refModal.type = 'claim'; refModal.id = msg.claimId; refModal.show = true;
       }
     };
     const closeRefModal = () => { refModal.show = false; };
@@ -87,11 +79,9 @@ window.CmChattDtl = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
       if (!cfIsNew.value) {
-        uiState.chat = window.safeArrayUtils.safeFind(chatts, c => c.chatId === props.editId) || null;
-        if (uiState.chat) chat.value.unread = 0;
-        scrollToBottom();
+        handleFetchDetail();
+        uiState.tab = 'chat';
       } else {
         uiState.tab = 'new';
       }
@@ -100,7 +90,7 @@ window.CmChattDtl = {
     /* 회원의 다른 채팅 이력 */
     const cfMemberChats = computed(() => {
       if (!uiState.chat) return [];
-      return window.safeArrayUtils.safeFilter(chats, c => c.userId === chat.value.userId && c.chatId !== chat.value.chatId);
+      return [];
     });
 
     /* 신규 채팅 form */
@@ -113,10 +103,11 @@ window.CmChattDtl = {
     });
 
     const sendReply = () => {
-      if (!replyText.value.trim()) return;
+      if (!uiState.replyText.trim()) return;
       if (!uiState.chat) return;
-      chat.value.messages.push({ from: 'cs', text: replyText.value.trim(), time: new Date().toTimeString().slice(0, 5) });
-      chat.value.lastMsg = replyText.value.trim();
+      if (!uiState.chat.messages) uiState.chat.messages = [];
+      uiState.chat.messages.push({ from: 'cs', text: uiState.replyText.trim(), time: new Date().toTimeString().slice(0, 5) });
+      uiState.chat.lastMsg = uiState.replyText.trim();
       uiState.replyText = '';
       scrollToBottom();
       props.showToast('답변을 전송했습니다.');
@@ -124,7 +115,7 @@ window.CmChattDtl = {
 
     const closeChat = () => {
       if (!uiState.chat) return;
-      chat.value.status = '종료';
+      uiState.chat.status = '종료';
       props.showToast('채팅이 종료되었습니다.');
     };
 
@@ -140,15 +131,8 @@ window.CmChattDtl = {
       }
       const ok = await props.showConfirm('등록', '등록하시겠습니까?');
       if (!ok) return;
-      const m = getMember.value(Number(form.userId));
-      chats.value.push({
-        chatId: nextId.value(chats.value, 'chatId'),
-        userId: Number(form.userId), userNm: m ? m.memberNm : form.userNm,
-        date: new Date().toISOString().slice(0, 16).replace('T', ' '),
-        subject: form.subject, lastMsg: '', status: form.status, unread: 0, messages: [],
-      });
       try {
-        const res = await window.boApi.post(`/bo/ec/cm/chatt/${form.chatId}`, { ...form });
+        const res = await window.boApi.post(`/bo/ec/cm/chatt`, { ...form });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('등록되었습니다.', 'success');
         if (props.navigate) props.navigate('cmChattMng');
@@ -160,21 +144,15 @@ window.CmChattDtl = {
       }
     };
 
-    const onUserChange = () => {
-      const m = getMember.value(Number(form.userId));
-      if (m) form.userNm = m.memberNm;
-    };
+    const onUserChange = () => {};
 
-    /* 회원 채팅 목록 조회 (신규 탭) */
-        const cfUserChats = computed(() => {
-      if (!uiState.searchUserId) return [];
-      return window.safeArrayUtils.safeFilter(chats, c => String(c.userId) === String(uiState.searchUserId));
-    });
-    const cfSearchUser = computed(() => getMember.value(Number(uiState.searchUserId)));
+    const cfUserChats = computed(() => []);
+    const cfSearchUser = computed(() => null);
 
     const replyText = Vue.toRef(uiState, 'replyText');
     const searchUserId = Vue.toRef(uiState, 'searchUserId');
     const chat = Vue.toRef(uiState, 'chat');
+
     return { cfIsNew, tab, viewMode2, showTab, chat, replyText, sendReply, closeChat, msgBoxRef,
       hasRef, refLabel, openMsgRef, refModal, closeRefModal,
       form, errors, handleSave, onUserChange,
@@ -184,7 +162,7 @@ window.CmChattDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ cfIsNew ? '채팅 등록' : (viewMode ? '채팅 상세' : '채팅 수정') }}<span v-if="!cfIsNew && chat" style="font-size:12px;color:#999;margin-left:8px;">#{{ chat.chatId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '채팅 등록' : '채팅 상세' }}<span v-if="!cfIsNew && chat" style="font-size:12px;color:#999;margin-left:8px;">#{{ chat.chatId }}</span></div>
 
   <!-- 채팅 상세 -->
   <div v-if="!cfIsNew">
@@ -221,14 +199,14 @@ window.CmChattDtl = {
 
         <!-- 메시지 목록 -->
         <div class="chat-messages" ref="msgBoxRef">
-          <div v-for="(msg, idx) in chat.messages" :key="idx" class="chat-msg" :class="msg.from">
+          <div v-for="(msg, idx) in (chat.messages||[])" :key="idx" class="chat-msg" :class="msg.from">
             <div class="chat-bubble">
               {{ msg.text }}
               <span v-if="hasRef(msg)" class="ref-link" style="display:block;margin-top:4px;" @click="openMsgRef(msg)">{{ refLabel(msg) }}</span>
             </div>
             <div class="chat-time">{{ msg.from==='user' ? '고객' : 'CS' }} · {{ msg.time }}</div>
           </div>
-          <div v-if="chat.messages.length===0" style="text-align:center;color:#aaa;padding:20px;font-size:13px;">메시지가 없습니다.</div>
+          <div v-if="!(chat.messages||[]).length" style="text-align:center;color:#aaa;padding:20px;font-size:13px;">메시지가 없습니다.</div>
         </div>
 
         <!-- 답변 입력 -->
@@ -283,9 +261,9 @@ window.CmChattDtl = {
       <div v-show="tab==='new'">
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">회원ID <span v-if="!viewMode" class="req">*</span></label>
+            <label class="form-label">회원ID <span class="req">*</span></label>
             <div style="display:flex;gap:8px;align-items:center;">
-              <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserChange" :readonly="viewMode" :class="errors.userId ? 'is-invalid' : ''" />
+              <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserChange" :class="errors.userId ? 'is-invalid' : ''" />
               <span v-if="form.userId" class="ref-link" @click="showRefModal('member', Number(form.userId))">보기</span>
             </div>
             <span v-if="errors.userId" class="field-error">{{ errors.userId }}</span>
@@ -296,25 +274,19 @@ window.CmChattDtl = {
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">제목 <span v-if="!viewMode" class="req">*</span></label>
-          <input class="form-control" v-model="form.subject" placeholder="채팅 제목" :readonly="viewMode" :class="errors.subject ? 'is-invalid' : ''" />
+          <label class="form-label">제목 <span class="req">*</span></label>
+          <input class="form-control" v-model="form.subject" placeholder="채팅 제목" :class="errors.subject ? 'is-invalid' : ''" />
           <span v-if="errors.subject" class="field-error">{{ errors.subject }}</span>
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" style="max-width:200px;" v-model="form.status" :disabled="viewMode">
+          <select class="form-control" style="max-width:200px;" v-model="form.status">
             <option>진행중</option><option>종료</option>
           </select>
         </div>
         <div class="form-actions">
-          <template v-if="viewMode">
-            <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
-            <button class="btn btn-secondary" @click="navigate('cmChattMng')">닫기</button>
-          </template>
-          <template v-else>
-            <button class="btn btn-primary" @click="handleSave">등록</button>
-            <button class="btn btn-secondary" @click="navigate('cmChattMng')">취소</button>
-          </template>
+          <button class="btn btn-primary" @click="handleSave">등록</button>
+          <button class="btn btn-secondary" @click="navigate('cmChattMng')">취소</button>
         </div>
       </div>
 
@@ -322,13 +294,9 @@ window.CmChattDtl = {
       <div v-show="tab==='search'">
         <div style="display:flex;gap:8px;margin-bottom:14px;">
           <input class="form-control" style="max-width:200px;" v-model="searchUserId" placeholder="회원 ID 입력" />
-          <span v-if="cfSearchUser" class="ref-link" style="display:flex;align-items:center;" @click="showRefModal('member', Number(searchUserId))">보기</span>
         </div>
-        <template v-if="cfSearchUser">
-          <div style="margin-bottom:10px;padding:10px 14px;background:#f9f9f9;border-radius:8px;font-size:13px;">
-            <b>{{ cfSearchUser.name }}</b> ({{ cfSearchUser.email }}) · {{ cfSearchUser.grade }} · {{ cfSearchUser.status }}
-          </div>
-          <table class="bo-table" v-if="cfUserChats.length">
+        <div v-if="cfUserChats.length">
+          <table class="bo-table">
             <thead><tr><th>제목</th><th>상태</th><th>최근 메시지</th><th>일시</th><th>보기</th></tr></thead>
             <tbody>
               <tr v-for="c in cfUserChats" :key="c?.chatId">
@@ -340,8 +308,7 @@ window.CmChattDtl = {
               </tr>
             </tbody>
           </table>
-          <div v-else style="text-align:center;color:#aaa;padding:20px;font-size:13px;">채팅 내역이 없습니다.</div>
-        </template>
+        </div>
         <div v-else-if="searchUserId" style="color:#aaa;font-size:13px;padding:20px;text-align:center;">해당 회원을 찾을 수 없습니다.</div>
         <div v-else style="color:#aaa;font-size:13px;padding:20px;text-align:center;">회원 ID를 입력하세요.</div>
       </div>
@@ -357,33 +324,7 @@ window.CmChattDtl = {
         </span>
         <span class="modal-close" @click="closeRefModal">×</span>
       </div>
-      <template v-if="refModal.data">
-        <template v-if="refModal.type==='product'">
-          <div class="detail-row"><span class="detail-label">상품ID</span><span class="detail-value">{{ refModal.data.productId }}</span></div>
-          <div class="detail-row"><span class="detail-label">상품명</span><span class="detail-value">{{ refModal.data.prodNm }}</span></div>
-          <div class="detail-row"><span class="detail-label">카테고리</span><span class="detail-value">{{ refModal.data.category }}</span></div>
-          <div class="detail-row"><span class="detail-label">가격</span><span class="detail-value">{{ refModal.data.price.toLocaleString() }}원</span></div>
-          <div class="detail-row"><span class="detail-label">재고</span><span class="detail-value">{{ refModal.data.stock }}개</span></div>
-          <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value">{{ refModal.data.status }}</span></div>
-        </template>
-        <template v-else-if="refModal.type==='order'">
-          <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ refModal.data.orderId }}</span></div>
-          <div class="detail-row"><span class="detail-label">회원</span><span class="detail-value">{{ refModal.data.userNm }}</span></div>
-          <div class="detail-row"><span class="detail-label">주문일시</span><span class="detail-value">{{ refModal.data.orderDate }}</span></div>
-          <div class="detail-row"><span class="detail-label">상품</span><span class="detail-value">{{ refModal.data.prodNm }}</span></div>
-          <div class="detail-row"><span class="detail-label">금액</span><span class="detail-value">{{ refModal.data.totalPrice.toLocaleString() }}원</span></div>
-          <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value">{{ refModal.data.status }}</span></div>
-        </template>
-        <template v-else-if="refModal.type==='claim'">
-          <div class="detail-row"><span class="detail-label">클레임ID</span><span class="detail-value">{{ refModal.data.claimId }}</span></div>
-          <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ refModal.data.orderId }}</span></div>
-          <div class="detail-row"><span class="detail-label">유형</span><span class="detail-value">{{ refModal.data.type }}</span></div>
-          <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value">{{ refModal.data.status }}</span></div>
-          <div class="detail-row"><span class="detail-label">사유</span><span class="detail-value">{{ refModal.data.reason }}</span></div>
-          <div class="detail-row"><span class="detail-label">신청일</span><span class="detail-value">{{ refModal.data.requestDate }}</span></div>
-        </template>
-      </template>
-      <div v-else style="text-align:center;color:#aaa;padding:20px;">정보를 찾을 수 없습니다.</div>
+      <div style="text-align:center;color:#aaa;padding:20px;">정보를 찾을 수 없습니다.</div>
       <div style="margin-top:16px;text-align:right;">
         <button class="btn btn-secondary" @click="closeRefModal">닫기</button>
       </div>

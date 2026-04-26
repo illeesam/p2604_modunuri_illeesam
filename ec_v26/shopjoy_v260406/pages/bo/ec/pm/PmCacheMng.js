@@ -34,7 +34,7 @@ window.PmCacheMng = {
 
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const pager = reactive({ page: 1, size: 5 });
+    const pager = reactive({ page: 1, size: 5, total: 0, totalPages: 1 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     /* 하단 상세 */
@@ -64,9 +64,12 @@ window.PmCacheMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/cache/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: { pageNo: pager.page, pageSize: pager.size, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }
         });
-        caches.splice(0, caches.length, ...(res.data?.data?.list || []));
+        const data = res.data?.data;
+        caches.splice(0, caches.length, ...(data?.list || []));
+        pager.total = data?.total || 0;
+        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -91,45 +94,26 @@ window.PmCacheMng = {
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
-    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter((caches || []), c => {
-      const kw = searchParam.kw.trim().toLowerCase();
-      if (kw && !c.userNm.toLowerCase().includes(kw) && !c.desc.toLowerCase().includes(kw) && !String(c.userId).includes(kw)) return false;
-      if (searchParam.type && c.type !== searchParam.type) return false;
-      const _d = String(c.date || '').slice(0, 10);
-      if (searchParam.dateStart && _d < searchParam.dateStart) return false;
-      if (searchParam.dateEnd && _d > searchParam.dateEnd) return false;
-      return true;
-    }));
-    const cfTotal = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const cfPageNums = computed(() => {
-      const cur = pager.page, last = cfTotalPages.value;
+      const cur = pager.page, last = pager.totalPages;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
 
     const fnTypeBadge = t => ({ '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' }[t] || 'badge-gray');
     const onSearch = async () => {
-    try {
-      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await window.boApi.get('/bo/ec/resource/page', { params });
-      // TODO: Update items array based on response
       pager.page = 1;
       await handleFetchData();
-    } catch (err) {
-      console.error('[catch-info]', err);
-      if (props.showToast) props.showToast('조회 실패', 'error');
-    }
-  };
-  
-    const onReset = () => {
-    Object.assign(searchParam, searchParamOrg);
-    onSearch();
-  };
-  
-    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+    };
+
+    const onReset = async () => {
+      Object.assign(searchParam, searchParamOrg);
+      pager.page = 1;
+      await handleFetchData();
+    };
+
+    const setPage = async n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; await handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
 
     const handleDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.desc}] 내역을 삭제하시겠습니까?`);
@@ -149,10 +133,10 @@ window.PmCacheMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'cacheId'},{label:'회원명',key:'userNm'},{label:'유형',key:'cacheType'},{label:'금액',key:'amount'},{label:'설명',key:'description'},{label:'등록일',key:'regDate'}], '캐시목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(caches, [{label:'ID',key:'cacheId'},{label:'회원명',key:'userNm'},{label:'유형',key:'cacheType'},{label:'금액',key:'amount'},{label:'설명',key:'description'},{label:'등록일',key:'regDate'}], '캐시목록.csv');
 
     const viewMode = Vue.toRef(uiState, 'viewMode');
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), caches, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), caches, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfPageNums, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
       get viewMode() { return uiState.viewMode; }, set viewMode(v) { uiState.viewMode = v; },
       get selectedId() { return uiStateDetail.selectedId; } };
   },
@@ -172,7 +156,7 @@ window.PmCacheMng = {
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>캐시목록 <span class="list-count">{{ cfTotal }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>캐시목록 <span class="list-count">{{ pager.total }}건</span></span>
       <div style="display:flex;gap:6px;align-items:center;">
         <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
           <button @click="viewMode='list'" style="font-size:11px;padding:4px 10px;border:none;cursor:pointer;transition:all .15s;"
@@ -187,8 +171,8 @@ window.PmCacheMng = {
     <table class="bo-table" v-if="viewMode==='list'">
       <thead><tr><th>ID</th><th>회원</th><th>일시</th><th>유형</th><th>금액</th><th>잔액</th><th>내용</th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
-        <tr v-if="cfPageList.length===0"><td colspan="8" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="c in cfPageList" :key="c?.cacheId" :style="selectedId===c.cacheId?'background:#fff8f9;':''">
+        <tr v-if="caches.length===0"><td colspan="8" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="c in caches" :key="c?.cacheId" :style="selectedId===c.cacheId?'background:#fff8f9;':''">
           <td>{{ c.cacheId }}</td>
           <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
           <td>{{ c.date }}</td>
@@ -207,8 +191,8 @@ window.PmCacheMng = {
 
     <!-- 카드 뷰 -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
-      <div v-if="cfPageList.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
-      <div v-for="c in cfPageList" :key="c?.cacheId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
+      <div v-if="caches.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
+      <div v-for="c in caches" :key="c?.cacheId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="selectedId===c.cacheId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleLoadDetail(c.cacheId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
@@ -237,8 +221,8 @@ window.PmCacheMng = {
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
         <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

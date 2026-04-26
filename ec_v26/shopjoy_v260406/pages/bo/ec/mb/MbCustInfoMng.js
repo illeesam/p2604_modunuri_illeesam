@@ -238,14 +238,7 @@
 
       /* ── 검색 실행 ── */
       const onSearch = async () => {
-        try {
-          const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-          await window.boApi.get('/bo/ec/resource/page', { params });
-          await handleFetchData();
-        } catch (err) {
-          console.error('[catch-info]', err);
-          if (props.showToast) props.showToast('조회 실패', 'error');
-        }
+        await handleFetchData();
       };
   return { custInfos, uiState, SEARCH_MODES, memberModal,
         searchParam, searchParamOrg, PERIOD_OPTS, cfDateFrom, cfDateTo,

@@ -45,8 +45,13 @@ window.PdDlivTmpltMng = {
 
     const handleFetchData = async () => {
       try {
-        const res = await window.boApi.get('/bo/ec/pd/dliv-tmplt/page', { params: { pageNo: 1, pageSize: 10000 } });
-        dlivTmplts.splice(0, dlivTmplts.length, ...(res.data?.data?.list || []));
+        const res = await window.boApi.get('/bo/ec/pd/dliv-tmplt/page', {
+          params: { pageNo: pager.page, pageSize: pager.size, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }
+        });
+        const data = res.data?.data;
+        dlivTmplts.splice(0, dlivTmplts.length, ...(data?.list || []));
+        pager.total = data?.total || 0;
+        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
       } catch (_) {
       console.error('[catch-info]', _);}
     };
@@ -55,7 +60,7 @@ window.PdDlivTmpltMng = {
     Object.assign(searchParamOrg, searchParam); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const applied      = reactive({ kw: '', method: '', use: '' });
-    const pager        = reactive({ page: 1, size: 20 });
+    const pager        = reactive({ page: 1, size: 20, total: 0, totalPages: 1 });
     const selectedId   = ref(null);
 
     const DLIV_METHODS   = ['COURIER','DIRECT','PICKUP'];
@@ -64,21 +69,9 @@ window.PdDlivTmpltMng = {
     const METHOD_LABELS  = { COURIER:'택배', DIRECT:'직접배송', PICKUP:'방문수령' };
     const PAY_LABELS     = { PREPAY:'선결제', COD:'착불' };
 
-    const cfFiltered = computed(() => {
-      const kw = applied.kw.toLowerCase();
-      return (dlivTmplts || []).filter(t => {
-        if (kw && !t.dlivTmpltNm.toLowerCase().includes(kw)) return false;
-        if (applied.method && t.dlivMethodCd !== applied.method) return false;
-        if (applied.use && t.useYn !== applied.use) return false;
-        return true;
-      });
-    });
-    const cfTotal      = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfPageNums   = computed(() => { const c=pager.page,l=pager.totalPages,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const cfSelectedRow = computed(() => (dlivTmplts||[]).find(t => t.dlivTmpltId === uiState.selectedId) || null);
+    const cfSelectedRow = computed(() => dlivTmplts.find(t => t.dlivTmpltId === uiState.selectedId) || null);
     const form = reactive({});
 
     const openDetail = (row) => {
@@ -127,32 +120,25 @@ window.PdDlivTmpltMng = {
       }
     };
     const onSearch = async () => {
-    try {
-      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await window.boApi.get('/bo/ec/resource/page', { params });
-      // TODO: Update items array based on response
       pager.page = 1;
       await handleFetchData();
-    } catch (err) {
-      console.error('[catch-info]', err);
-      if (props.showToast) props.showToast('조회 실패', 'error');
-    }
-  };
-  
-    const onReset = () => {
-    Object.assign(searchParam, searchParamOrg);
-    onSearch();
-  };
-  
-    const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+    };
+
+    const onReset = async () => {
+      Object.assign(searchParam, searchParamOrg);
+      pager.page = 1;
+      await handleFetchData();
+    };
+
+    const setPage  = async n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; await handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
     const fnMethodBadge = v => ({ COURIER:'badge-blue', DIRECT:'badge-orange', PICKUP:'badge-green' }[v] || 'badge-gray');
 
     return { uiState, searchParam, searchParamOrg,
-             pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
+             pager, cfPageNums, setPage, onSearch, onReset,
              form, openDetail, openNew, closeDetail, handleSave, handleDelete,
-             fnYnBadge, fnMethodBadge, DLIV_METHODS, DLIV_PAY_TYPES, COURIERS, METHOD_LABELS, PAY_LABELS , PAGE_SIZES , onSizeChange };
+             fnYnBadge, fnMethodBadge, DLIV_METHODS, DLIV_PAY_TYPES, COURIERS, METHOD_LABELS, PAY_LABELS , PAGE_SIZES , onSizeChange, dlivTmplts };
   },
   template: `
 <div>
@@ -186,7 +172,7 @@ window.PdDlivTmpltMng = {
     <div class="card">
       <div class="toolbar">
         <span class="list-title">배송템플릿 목록</span>
-        <span class="list-count">총 {{ cfTotal }}건</span>
+        <span class="list-count">총 {{ pager.total }}건</span>
         <button class="btn btn-primary btn-sm" style="margin-left:auto" @click="openNew">+ 신규</button>
       </div>
       <table class="bo-table">
@@ -201,7 +187,7 @@ window.PdDlivTmpltMng = {
           <th style="width:60px;text-align:center">사용</th>
         </tr></thead>
         <tbody>
-          <tr v-for="row in cfPageList" :key="row?.dlivTmpltId" :class="{active:uiState.selectedId===row.dlivTmpltId}" @click="openDetail(row)" style="cursor:pointer">
+          <tr v-for="row in dlivTmplts" :key="row?.dlivTmpltId" :class="{active:uiState.selectedId===row.dlivTmpltId}" @click="openDetail(row)" style="cursor:pointer">
             <td><span class="title-link">{{ row.dlivTmpltNm }}</span></td>
             <td><span :class="['badge',fnMethodBadge(row.dlivMethodCd)]">{{ row.dlivMethodCd }}</span></td>
             <td><span class="badge badge-gray">{{ row.dlivPayTypeCd }}</span></td>
@@ -211,7 +197,7 @@ window.PdDlivTmpltMng = {
             <td style="text-align:center"><span :class="['badge',row.baseDlivYn==='Y'?'badge-orange':'badge-gray']">{{ row.baseDlivYn }}</span></td>
             <td style="text-align:center"><span :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span></td>
           </tr>
-          <tr v-if="!cfPageList.length"><td colspan="8" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
+          <tr v-if="!dlivTmplts.length"><td colspan="8" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
       <div class="pagination">
@@ -220,8 +206,8 @@ window.PdDlivTmpltMng = {
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
            <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

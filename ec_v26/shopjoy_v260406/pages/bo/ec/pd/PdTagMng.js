@@ -34,9 +34,12 @@ window.PdTagMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pd/tag/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: { pageNo: pager.page, pageSize: pager.size, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }
         });
-        tags.splice(0, tags.length, ...(res.data?.data?.list || []));
+        const data = res.data?.data;
+        tags.splice(0, tags.length, ...(data?.list || []));
+        pager.total = data?.total || 0;
+        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -63,25 +66,14 @@ window.PdTagMng = {
     });
 
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const pager     = reactive({ page: 1, size: 20 });
+    const pager     = reactive({ page: 1, size: 20, total: 0, totalPages: 1 });
 
-    const cfFiltered = computed(() => {
-      const kw = searchParam.kw.toLowerCase();
-      return (tags || []).filter(t => {
-        if (kw && !t.tagNm.toLowerCase().includes(kw)) return false;
-        if (searchParam.use && t.useYn !== searchParam.use) return false;
-        return true;
-      });
-    });
-    const cfTotal      = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfPageNums   = computed(() => { const c=pager.page,l=pager.totalPages,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const gridRows   = reactive([]);
     let   _tempId    = -1;
 
-    watch(cfPageList, (list) => { gridRows.splice(0, gridRows.length, ...list.map(t => ({ ...t, _row_status: null }))); }, { immediate: true });
+    watch(tags, (list) => { gridRows.splice(0, gridRows.length, ...list.map(t => ({ ...t, _row_status: null }))); }, { immediate: true });
 
     const addRow       = () => { gridRows.unshift({ tagId: 'T' + (_tempId--), siteId: 1, tagNm: '', tagDesc: '', useCount: 0, sortOrd: 0, useYn: 'Y', _row_status: 'N' }); };
     const onCellChange = (idx) => { if (gridRows[idx]._row_status !== 'N') gridRows[idx]._row_status = 'U'; };
@@ -133,14 +125,14 @@ window.PdTagMng = {
     const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
       pager.page = 1;
-    await handleFetchData();
+      await handleFetchData();
     };
-  
-    const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+
+    const setPage  = async n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; await handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { tags, uiState, uiState, searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, onSearch, onReset,
+    return { tags, uiState, searchParam, searchParamOrg, pager, cfPageNums, setPage, onSearch, onReset,
              gridRows, addRow, onCellChange, deleteRow, saveAll, fnYnBadge , PAGE_SIZES , onSizeChange };
   },
   template: `
@@ -161,7 +153,7 @@ window.PdTagMng = {
     <div class="card">
       <div class="toolbar">
         <span class="list-title">태그 목록</span>
-        <span class="list-count">총 {{ cfTotal }}건</span>
+        <span class="list-count">총 {{ pager.total }}건</span>
         <div style="margin-left:auto;display:flex;gap:6px;">
           <button class="btn btn-primary btn-sm" @click="addRow">+ 행추가</button>
           <button class="btn btn-blue btn-sm" @click="saveAll">저장</button>
@@ -196,8 +188,8 @@ window.PdTagMng = {
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
            <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

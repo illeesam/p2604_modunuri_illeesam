@@ -13,12 +13,15 @@ window.OdDlivMng = {
     const handleFetchData = async () => {
       uiState.loading = true;
       try {
+        const params = { pageNo: pager.page, pageSize: pager.size, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         const [delivRes, membersRes] = await Promise.all([
-          window.boApi.get('/bo/ec/od/dliv/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/od/dliv/page', { params }),
           window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } })
         ]);
-        deliveries = delivRes.data?.data?.list || [];
-        members = membersRes.data?.data?.list || [];
+        deliveries.splice(0, deliveries.length, ...(delivRes.data?.data?.list || []));
+        members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
+        pager.total = delivRes.data?.data?.total || 0;
+        pager.totalPages = delivRes.data?.data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -61,7 +64,7 @@ window.OdDlivMng = {
       pager.page = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const pager = reactive({ page: 1, size: 5 });
+    const pager = reactive({ page: 1, size: 5, total: 0, totalPages: 1 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     const isAppReady = computed(() => {
@@ -109,21 +112,8 @@ window.OdDlivMng = {
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
     /* 목록 */
-    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(deliveries, d => {
-      const kw = searchParam.kw.trim().toLowerCase();
-      if (kw && !d.dlivId.toLowerCase().includes(kw) && !d.orderId.toLowerCase().includes(kw)
-            && !d.userNm.toLowerCase().includes(kw) && !d.receiver.toLowerCase().includes(kw)) return false;
-      if (searchParam.status && d.status !== searchParam.status) return false;
-      const _d = String(d.regDate || '').slice(0, 10);
-      if (searchParam.dateStart && _d < searchParam.dateStart) return false;
-      if (searchParam.dateEnd && _d > searchParam.dateEnd) return false;
-      return true;
-    }));
-    const cfTotal = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const cfPageNums = computed(() => {
-      const cur = pager.page, last = cfTotalPages.value;
+      const cur = pager.page, last = pager.totalPages;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
@@ -143,8 +133,8 @@ window.OdDlivMng = {
       await handleFetchData();
     };
 
-    const setPage  = n  => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+    const setPage  = n  => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
 
     const handleDelete = async (d) => {
       const ok = await props.showConfirm('삭제', `[${d.dlivId}]를 삭제하시겠습니까?`);
@@ -165,17 +155,17 @@ window.OdDlivMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'배송ID',key:'deliveryId'},{label:'주문ID',key:'orderId'},{label:'수령인',key:'receiverName'},{label:'연락처',key:'receiverPhone'},{label:'주소',key:'address'},{label:'택배사',key:'courierCd'},{label:'운송장',key:'trackingNo'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '배송목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(deliveries, [{label:'배송ID',key:'deliveryId'},{label:'주문ID',key:'orderId'},{label:'수령인',key:'receiverName'},{label:'연락처',key:'receiverPhone'},{label:'주소',key:'address'},{label:'택배사',key:'courierCd'},{label:'운송장',key:'trackingNo'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '배송목록.csv');
 
     /* 일괄선택 */
     const checked = reactive(new Set());
     const toggleCheck = (id) => { const s = new Set(checked); if (s.has(id)) s.delete(id); else s.add(id); checked = s; };
     const isChecked = (id) => checked.has(id);
-    const cfAllChecked = computed(() => cfPageList.value.length > 0 && window.safeArrayUtils.safeEvery(cfPageList, d => checked.has(d.dlivId)));
+    const cfAllChecked = computed(() => deliveries.length > 0 && deliveries.every(d => checked.has(d.dlivId)));
     const toggleCheckAll = () => {
       const s = new Set(checked);
-      if (cfAllChecked.value) window.safeArrayUtils.safeForEach(cfPageList, d => s.delete(d.dlivId));
-      else window.safeArrayUtils.safeForEach(cfPageList, d => s.add(d.dlivId));
+      if (cfAllChecked.value) deliveries.forEach(d => s.delete(d.dlivId));
+      else deliveries.forEach(d => s.add(d.dlivId));
       checked = s;
     };
     const DLIV_STATUS_OPTIONS = ['준비중','출고완료','배송중','배송완료','배송실패'];
@@ -326,7 +316,7 @@ window.OdDlivMng = {
     };
 
     const bulkOpen = Vue.toRef(uiState, 'bulkOpen');
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), deliveries, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), deliveries, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>
@@ -346,7 +336,7 @@ window.OdDlivMng = {
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>배송목록 <span class="list-count">{{ cfTotal }}건</span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>배송목록 <span class="list-count">{{ pager.total }}건</span>
         <span v-if="checked.size" style="margin-left:10px;font-size:12px;color:#1565c0;font-weight:700;">선택 {{ checked.size }}건</span>
       </span>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -361,8 +351,8 @@ window.OdDlivMng = {
         <th>배송ID</th><th>주문ID</th><th>회원</th><th>수령인</th><th>택배사</th><th>운송장번호</th><th>배송지</th><th>상태</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="cfPageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="d in cfPageList" :key="d?.dlivId"
+        <tr v-if="deliveries.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="d in deliveries" :key="d?.dlivId"
           :style="(selectedId===d.dlivId?'background:#fff8f9;':'') + (isChecked(d.dlivId)?'background:#eef6fd;':'')">
           <td style="text-align:center;"><input type="checkbox" :checked="isChecked(d.dlivId)" @change="toggleCheck(d.dlivId)" /></td>
           <td>
@@ -391,8 +381,8 @@ window.OdDlivMng = {
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
         <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

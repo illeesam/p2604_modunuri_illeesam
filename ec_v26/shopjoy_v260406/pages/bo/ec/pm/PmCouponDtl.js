@@ -5,20 +5,21 @@ window.PmCouponDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
-    const coupons = reactive([]);
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCouponDtlState.tab || 'info', viewMode2: window._pmCouponDtlState.viewMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null, memoEl: null});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({});
 
-    // onMounted에서 API 로드
-    const handleLoadData = async () => {
+    // 단건 조회
+    const handleFetchDetail = async () => {
+      if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pm/coupon/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        coupons.splice(0, coupons.length, ...(res.data?.data?.list || []));
+        const res = await window.boApi.get(`/bo/ec/pm/coupon/${props.editId}`);
+        const c = res.data?.data || res.data;
+        if (c) Object.assign(form, { ...c });
+        if (!form.startDate) form.startDate = DEFAULT_START;
+        if (!form.endDate) form.endDate = DEFAULT_END;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -86,12 +87,10 @@ window.PmCouponDtl = {
     });
 
     const handleInitForm = async () => {
-      if (!cfIsNew.value) {
-        const c = getCoupon.value(props.editId);
-        if (c) Object.assign(form, { ...c });
+      if (cfIsNew.value) {
+        if (!form.startDate) form.startDate = DEFAULT_START;
+        if (!form.endDate) form.endDate = DEFAULT_END;
       }
-      if (!form.startDate) form.startDate = DEFAULT_START;
-      if (!form.endDate) form.endDate = DEFAULT_END;
       await nextTick();
       if (uiState.memoEl && typeof Quill !== 'undefined') {
         _qMemo = new Quill(uiState.memoEl, {
@@ -103,8 +102,11 @@ window.PmCouponDtl = {
         _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
       }
     };
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleLoadData(); handleInitForm(); });
+    onMounted(async () => {
+      if (isAppReady.value) fnLoadCodes();
+      await handleFetchDetail();
+      handleInitForm();
+    });
 
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
@@ -119,18 +121,10 @@ window.PmCouponDtl = {
     };
 
     /* 발급목록 */
-    const cfIssuedList = computed(() => {
-      if (!coupons) return [];
-      const c = coupons.find(x => x.couponId === props.editId);
-      return c ? (c.issuedList || []) : [];
-    });
+    const cfIssuedList = computed(() => form.issuedList || []);
 
     /* 사용목록 */
-    const cfUsedList = computed(() => {
-      if (!coupons) return [];
-      const c = coupons.find(x => x.couponId === props.editId);
-      return c ? (c.usedList || []) : [];
-    });
+    const cfUsedList = computed(() => form.usedList || []);
 
     /* 미리보기 형태 */
                 const onPreviewTabChange = (pt) => {
@@ -211,19 +205,6 @@ window.PmCouponDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (!coupons) coupons = [];
-      if (cfIsNew.value) {
-        coupons.push({
-          ...form,
-          couponId: Date.now(),
-          regDate: new Date().toISOString().slice(0, 10),
-          issuedList: [],
-          usedList: [],
-        });
-      } else {
-        const idx = coupons.findIndex(x => x.couponId === props.editId);
-        if (idx !== -1) Object.assign(coupons[idx], { ...form });
-      }
       try {
         const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/coupon/${form.couponId}`, { ...form }) : window.boApi.put(`/bo/ec/pm/coupon/${form.couponId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -243,7 +224,7 @@ window.PmCouponDtl = {
     const previewTab = Vue.toRef(uiState, 'previewTab');
     const qrcodeContainer = Vue.toRef(uiState, 'qrcodeContainer');
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
-    return { coupons, uiState, codes, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, memoEl, onTabChange,
+    return { uiState, codes, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, memoEl, onTabChange,
       COUPON_TYPES, ISSUE_TARGETS, DISCOUNT_TYPES,
       cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer,
       cfSelectedVendorNm, selectVendor,

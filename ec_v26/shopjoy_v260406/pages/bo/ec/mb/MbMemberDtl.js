@@ -3,9 +3,7 @@ window.MbMemberDtl = {
   name: 'MbMemberDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
-    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
-    const members = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, memoEl: null});
     const codes = reactive({ member_grades: [], member_statuses: [] });
 
@@ -33,24 +31,25 @@ window.MbMemberDtl = {
       }
     });
 
-    // onMounted에서 API 로드
-    const handleLoadData = async () => {
+    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
+
+    // 단건 GET
+    const handleFetchDetail = async () => {
+      if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/mb/member/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        members.splice(0, members.length, ...(res.data?.data?.list || []));
+        const res = await window.boApi.get(`/bo/ec/mb/member/${props.editId}`);
+        const m = res.data?.data || res.data || {};
+        Object.assign(form, { ...m });
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
-        if (props.showToast) props.showToast('MbMember 로드 실패', 'error');
+        if (props.showToast) props.showToast('회원 상세 로드 실패', 'error');
       } finally {
         uiState.loading = false;
       }
     };
-    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
       userId: null,
       email: '', memberNm: '', phone: '', gradeCd: '일반', statusCd: '활성',
@@ -65,11 +64,7 @@ window.MbMemberDtl = {
       memberNm:  yup.string().required('이름을 입력해주세요.'),
     });
 
-    const handleInitForm = async () => {
-      if (!cfIsNew.value) {
-        const m = getMember.value(props.editId);
-        if (m) Object.assign(form, { ...m });
-      }
+    const handleInitQuill = async () => {
       await nextTick();
       if (uiState.memoEl) {
         _qMemo = new Quill(uiState.memoEl, {
@@ -81,8 +76,11 @@ window.MbMemberDtl = {
         _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
       }
     };
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleLoadData(); handleInitForm(); });
+    onMounted(async () => {
+      if (isAppReady.value) fnLoadCodes();
+      await handleFetchDetail();
+      handleInitQuill();
+    });
 
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
@@ -99,17 +97,8 @@ window.MbMemberDtl = {
       const isNewMember = cfIsNew.value;
       const ok = await props.showConfirm(isNewMember ? '등록' : '저장', isNewMember ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (isNewMember) {
-        members.push({
-          ...form, userId: nextId.value(members, 'userId'),
-          joinDate: form.joinDate || new Date().toISOString().slice(0, 10), orderCount: 0, totalPurchase: 0,
-        });
-      } else {
-        const idx = members.findIndex(x => x.userId === props.editId);
-        if (idx !== -1) Object.assign(members[idx], { ...form });
-      }
       try {
-        const res = await (isNewMember ? window.boApi.post(`/bo/ec/mb/member/${form.userId}`, { ...form }) : window.boApi.put(`/bo/ec/mb/member/${form.userId}`, { ...form }));
+        const res = await (isNewMember ? window.boApi.post(`/bo/ec/mb/member`, { ...form }) : window.boApi.put(`/bo/ec/mb/member/${form.userId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewMember ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('mbMemberMng');
@@ -123,7 +112,7 @@ window.MbMemberDtl = {
 
     const memoEl = ref(null);
     watch(memoEl, (el) => { uiState.memoEl = el; });
-    return { cfIsNew, form, errors, handleSave, memoEl, codes };
+    return { cfIsNew, form, errors, handleSave, memoEl, codes, uiState };
   },
   template: /* html */`
 <div>

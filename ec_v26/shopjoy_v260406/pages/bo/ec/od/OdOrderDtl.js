@@ -5,7 +5,6 @@ window.OdOrderDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
-    const orders = reactive([]);
     const vendors = reactive([]);
     const deliveries = reactive([]);
     const claims = reactive([]);
@@ -15,17 +14,31 @@ window.OdOrderDtl = {
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({ claim_statuses: [] });
 
-    // onMounted에서 API 로드
-    const handleLoadData = async () => {
+    const cfIsNew = computed(() => !props.editId);
+
+    // 단건 GET
+    const handleFetchDetail = async () => {
+      if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const [ordersRes, vendorsRes, deliveriesRes, claimsRes] = await Promise.all([
-          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
+        const [orderRes, vendorsRes, deliveriesRes, claimsRes] = await Promise.all([
+          window.boApi.get(`/bo/ec/od/order/${props.editId}`),
           window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } }),
           window.boApi.get('/bo/ec/od/dliv/page', { params: { pageNo: 1, pageSize: 10000 } }),
           window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
         ]);
-        orders.splice(0, orders.length, ...(ordersRes.data?.data?.list || []));
+        const o = orderRes.data?.data || orderRes.data || {};
+        Object.assign(form, { ...o });
+        if (!form.orderId) form.orderId = props.editId;
+        if (o.status) form.statusCd = o.status;
+        if (o.payMethod) form.payMethodCd = o.payMethod;
+        if (o.payStatus) form.payStatusCd = o.payStatus;
+        else if (['취소','자동취소'].includes(o.status)) form.payStatusCd = '환불완료';
+        else if (['입금대기'].includes(o.status)) form.payStatusCd = '미결제';
+        else form.payStatusCd = '결제완료';
+        if (!form.payDate) form.payDate = o.orderDate || '';
+        if (!form.apprNo)   form.apprNo  = 'APR-' + String(o.orderId||'').slice(-6) + '01';
+        if (!form.payIssuer) form.payIssuer = ({'토스페이먼츠':'토스','카카오페이':'카카오','네이버페이':'네이버','무통장입금':'은행','가상계좌':'은행'}[form.payMethodCd] || '-');
         vendors.splice(0, vendors.length, ...(vendorsRes.data?.data?.list || []));
         deliveries.splice(0, deliveries.length, ...(deliveriesRes.data?.data?.list || []));
         claims.splice(0, claims.length, ...(claimsRes.data?.data?.list || []));
@@ -33,12 +46,11 @@ window.OdOrderDtl = {
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
-        if (props.showToast) props.showToast('OdOrder 로드 실패', 'error');
+        if (props.showToast) props.showToast('주문 상세 로드 실패', 'error');
       } finally {
         uiState.loading = false;
       }
     };
-    const cfIsNew = computed(() => !props.editId);
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -85,23 +97,7 @@ window.OdOrderDtl = {
       userId: yup.string().required('회원ID를 입력해주세요.'),
     });
 
-    const handleInitForm = async () => {
-      if (!cfIsNew.value) {
-        const o = getOrder.value(props.editId);
-        if (o) {
-          Object.assign(form, { ...o });
-          if (!form.orderId) form.orderId = props.editId;
-          if (o.status) form.statusCd = o.status;
-          if (o.payMethod) form.payMethodCd = o.payMethod;
-          if (o.payStatus) form.payStatusCd = o.payStatus;
-          else if (['취소','자동취소'].includes(o.status)) form.payStatusCd = '환불완료';
-          else if (['입금대기'].includes(o.status)) form.payStatusCd = '미결제';
-          else form.payStatusCd = '결제완료';
-          if (!form.payDate) form.payDate = o.orderDate || '';
-          if (!form.apprNo)   form.apprNo  = 'APR-' + String(o.orderId||'').slice(-6) + '01';
-          if (!form.payIssuer) form.payIssuer = ({'토스페이먼츠':'토스','카카오페이':'카카오','네이버페이':'네이버','무통장입금':'은행','가상계좌':'은행'}[form.payMethodCd] || '-');
-        }
-      }
+    const handleInitQuill = async () => {
       await nextTick();
       if (uiState.memoEl) {
         _qMemo = new Quill(uiState.memoEl, {
@@ -135,14 +131,10 @@ window.OdOrderDtl = {
       const isNewOrder = cfIsNew.value;
       const ok = await props.showConfirm(isNewOrder ? '등록' : '저장', isNewOrder ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (isNewOrder) {
-        orders.push({ ...form, totalPrice: Number(form.totalPrice), userId: Number(form.userId) });
-      } else {
-        const idx = orders.findIndex(x => x.orderId === props.editId);
-        if (idx !== -1) Object.assign(orders[idx], { ...form, totalPrice: Number(form.totalPrice) });
-      }
       try {
-        const res = await (isNewOrder ? window.boApi.post(`/bo/ec/od/order/${form.orderId}`, { ...form }) : window.boApi.put(`/bo/ec/od/order/${form.orderId}`, { ...form }));
+        const res = await (isNewOrder
+          ? window.boApi.post('/bo/ec/od/order', { ...form, totalPrice: Number(form.totalPrice) })
+          : window.boApi.put(`/bo/ec/od/order/${form.orderId}`, { ...form, totalPrice: Number(form.totalPrice) }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewOrder ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('odOrderMng');
@@ -179,15 +171,18 @@ window.OdOrderDtl = {
     const initItems = async () => {
       orderItems.splice(0, orderItems.length, ...sampleOrderItems());
     };
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleLoadData(); handleInitForm(); initItems(); });
+    onMounted(async () => {
+      if (isAppReady.value) fnLoadCodes();
+      await handleFetchDetail();
+      await handleInitQuill();
+      await initItems();
+    });
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
     /* 판매업체 */
     const cfRelatedVendor = computed(() => {
-      const o = (orders).find(x => x.orderId === props.editId);
-      if (!o || !o.vendorId) return null;
-      return (vendors).find(v => v.vendorId === o.vendorId) || null;
+      if (!form.vendorId) return null;
+      return vendors.find(v => v.vendorId === form.vendorId) || null;
     });
 
     /* 배송 정보 (이 주문의 택배사 등) */

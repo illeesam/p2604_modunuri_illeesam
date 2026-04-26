@@ -31,9 +31,6 @@ window.StErpReconMng = {
         fnLoadCodes();
       }
     });
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-    });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
             const dateEnd   = ref('');
     const handleDateRangeChange = () => {
@@ -41,44 +38,33 @@ window.StErpReconMng = {
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
-    const reconList = reactive([
-      { reconId: 'ERECON-001', reconDate: '2026-04-12', slipId: 'ERP-2026-0411-001', slipType: '정산',    sysAmt: 300000, erpAmt: 300000, diff: 0,     diffStatus: '일치',  remark: '' },
-      { reconId: 'ERECON-002', reconDate: '2026-04-12', slipId: 'ERP-2026-0411-002', slipType: '정산',    sysAmt: 81000,  erpAmt: 81000,  diff: 0,     diffStatus: '일치',  remark: '' },
-      { reconId: 'ERECON-003', reconDate: '2026-04-12', slipId: 'ERP-2026-0411-003', slipType: '정산',    sysAmt: 54000,  erpAmt: 54000,  diff: 0,     diffStatus: '일치',  remark: '' },
-      { reconId: 'ERECON-004', reconDate: '2026-04-12', slipId: 'ERP-2026-0410-001', slipType: '수수료',  sysAmt: 38260,  erpAmt: 38260,  diff: 0,     diffStatus: '일치',  remark: '' },
-      { reconId: 'ERECON-005', reconDate: '2026-03-11', slipId: 'ERP-2026-0310-001', slipType: '정산',    sysAmt: 280000, erpAmt: 280000, diff: 0,     diffStatus: '일치',  remark: '' },
-      { reconId: 'ERECON-006', reconDate: '2026-03-11', slipId: 'ERP-2026-0310-002', slipType: '정산',    sysAmt: 73000,  erpAmt: 72500,  diff: 500,   diffStatus: '차이',  remark: 'ERP 입력 오류 확인 필요' },
-      { reconId: 'ERECON-007', reconDate: '2026-03-11', slipId: 'ERP-2026-0310-003', slipType: '반품조정', sysAmt: 22000, erpAmt: 0,      diff: 22000, diffStatus: '미반영', remark: 'ERP 전송 오류로 미반영' },
-    ]);
-
-  const searchParam = reactive({
-    diff: '',
-    type: '', dateEnd: ''});;
-  const searchParamOrg = reactive({
-    diff: '',
-    type: ''
-  });
-    const pager = reactive({ page: 1, size: 10 });
-
-    const cfFiltered = computed(() => {
-      return window.safeArrayUtils.safeFilter(reconList, r => {
-        if (uiState.dateStart && r.reconDate < uiState.dateStart) return false;
-        if (uiState.dateEnd   && r.reconDate > uiState.dateEnd)   return false;
-        if (searchParam.diff && r.diffStatus !== searchParam.diff) return false;
-        if (searchParam.type && r.slipType   !== searchParam.type) return false;
-        return true;
-      });
-    });
-    const cfTotal  = computed(() => cfFiltered.value.length);
-    const cfTotPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    const cfPageNums = computed(() => { const c=pager.page,l=cfTotPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const reconList = reactive([]);
+    const searchParam = reactive({ diff: '', type: '', dateEnd: '' });
+    const searchParamOrg = reactive({ diff: '', type: '' });
+    const pager = reactive({ page: 1, size: 10, total: 0, totalPages: 1 });
+    const cfPageNums = computed(() => { const c=pager.page,l=pager.totalPages,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const cfSummary = computed(() => ({
-      match:    window.safeArrayUtils.safeFilter(cfFiltered, r=>r.diffStatus==='일치').length,
-      diff:     window.safeArrayUtils.safeFilter(cfFiltered, r=>r.diffStatus==='차이').length,
-      noReflect:window.safeArrayUtils.safeFilter(cfFiltered, r=>r.diffStatus==='미반영').length,
-      diffAmt:  cfFiltered.value.reduce((s,r)=>s+Math.abs(r.diff),0),
+      match:     reconList.filter(r=>r.diffStatus==='일치').length,
+      diff:      reconList.filter(r=>r.diffStatus==='차이').length,
+      noReflect: reconList.filter(r=>r.diffStatus==='미반영').length,
+      diffAmt:   reconList.reduce((s,r)=>s+Math.abs(r.diff||0),0),
     }));
+
+    const handleFetchData = async () => {
+      try {
+        const res = await window.boApi.get('/bo/ec/st/erp/recon/page', {
+          params: {
+            pageNo: pager.page, pageSize: pager.size,
+            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+          }
+        });
+        const data = res.data?.data;
+        reconList.splice(0, reconList.length, ...(data?.list || reconList));
+        pager.total = data?.total || reconList.length;
+        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
+      } catch (_) { console.error('[catch-info]', _); }
+    };
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleFetchData(); Object.assign(searchParamOrg, searchParam); });
 
     const doFix = async (r) => {
       const ok = await props.showConfirm('조정처리', '해당 전표 대사 차이를 조정처리 하시겠습니까?');
@@ -99,27 +85,11 @@ window.StErpReconMng = {
     const fnDiffBadge = s => ({ '일치':'badge-green', '차이':'badge-orange', '미반영':'badge-red' }[s] || 'badge-gray');
     const fnTypeBadge = t => ({ '정산':'badge-blue', '수수료':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
     const fmtW = n => Number(n||0).toLocaleString() + '원';
-    const onSearch = async () => {
-    try {
-      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await window.boApi.get('/bo/ec/resource/page', { params });
-      // TODO: Update items array based on response
-      pager.page = 1;
-    } catch (err) {
-      console.error('[catch-info]', err);
-      if (props.showToast) props.showToast('조회 실패', 'error');
-    }
-  };
-  
-    const onReset = () => {
-    Object.assign(searchParam, searchParamOrg);
-    onSearch();
-  };
-  
-
-    const setPage = n => { if (n >= 1 && n <= cfTotPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
-    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, cfSummary, doFix, fnDiffBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, PAGE_SIZES, setPage, onSizeChange };
+    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
+    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, reconList, cfPageNums, cfSummary, doFix, fnDiffBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, PAGE_SIZES, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -158,11 +128,11 @@ window.StErpReconMng = {
       <div class="card" style="text-align:center;padding:10px;background:#fff8f8"><div style="font-size:11px;color:#888">미반영</div><div style="font-size:20px;font-weight:700;color:#e74c3c">{{ cfSummary.noReflect }}건</div></div>
       <div class="card" style="text-align:center;padding:10px;background:#f8f9fa"><div style="font-size:11px;color:#888">차이금액 합계</div><div style="font-size:20px;font-weight:700;color:#333">{{ fmtW(cfSummary.diffAmt) }}</div></div>
     </div>
-    <div class="toolbar"><span class="list-count">총 {{ cfTotal }}건</span></div>
+    <div class="toolbar"><span class="list-count">총 {{ pager.total }}건</span></div>
     <table class="bo-table">
       <thead><tr><th>대사ID</th><th>대사일자</th><th>전표ID</th><th>유형</th><th>시스템금액</th><th>ERP금액</th><th>차이금액</th><th>대사결과</th><th>비고</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="r in cfPageList" :key="r?.reconId">
+        <tr v-for="r in reconList" :key="r?.reconId">
           <td>{{ r.reconId }}</td>
           <td>{{ r.reconDate }}</td>
           <td style="font-size:11px">{{ r.slipId }}</td>
@@ -176,7 +146,7 @@ window.StErpReconMng = {
             <button v-if="r.diffStatus!=='일치'" class="btn btn-sm btn-primary" @click="doFix(r)">조정</button>
           </td>
         </tr>
-        <tr v-if="!cfPageList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!reconList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">
@@ -185,8 +155,8 @@ window.StErpReconMng = {
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
            <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===cfTotPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===cfTotPages" @click="setPage(cfTotPages)">»</button>
+           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

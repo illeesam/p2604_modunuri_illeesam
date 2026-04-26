@@ -13,9 +13,15 @@ window.SyTemplateMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/template/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: {
+            pageNo: pager.page, pageSize: pager.size,
+            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+          }
         });
-        templates = res.data?.data?.list || [];
+        const data = res.data?.data;
+        templates.splice(0, templates.length, ...(data?.list || []));
+        pager.total = data?.total || templates.length;
+        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -101,8 +107,8 @@ window.SyTemplateMng = {
       pager.page = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const pager = reactive({ page: 1, size: 10, total: 0, totalPages: 1 });
 
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
     const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
@@ -130,23 +136,8 @@ window.SyTemplateMng = {
 
     const TEMPLATE_TYPES = ['메일템플릿', '문자템플릿', 'MMS템플릿', 'kakao톡템플릿', 'kakao알림톡템플릿', '시스템알림', '회원알림'];
 
-    const applied = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateEnd: '' });
-
-    const cfFiltered = computed(() => templates.filter(t => {
-      const kw = applied.kw.trim().toLowerCase();
-      if (kw && !t.templateNm.toLowerCase().includes(kw) && !t.subject.toLowerCase().includes(kw)) return false;
-      if (applied.type && t.templateTypeCd !== applied.type) return false;
-      if (applied.useYn && t.useYn !== applied.useYn) return false;
-      const _d = String(t.regDate || '').slice(0, 10);
-      if (applied.dateStart && _d < applied.dateStart) return false;
-      if (applied.dateEnd && _d > applied.dateEnd) return false;
-      return true;
-    }));
-    const cfTotal = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const cfPageNums = computed(() => {
-      const cur = pager.page, last = cfTotalPages.value;
+      const cur = pager.page, last = pager.totalPages;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
@@ -158,24 +149,10 @@ window.SyTemplateMng = {
     }[t] || 'badge-gray');
     const fnUseYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    const onSearch = async () => {
-      Object.assign(applied, {
-        kw: searchParam.kw,
-        type: searchParam.type,
-        useYn: searchParam.useYn,
-        dateStart: searchParam.dateStart,
-        dateEnd: searchParam.dateEnd,
-      });
-      pager.page = 1;
-      await handleFetchData();
-    };
-    const onReset = () => {
-      Object.assign(searchParam, { kw: '', type: '', useYn: '', dateRange: '', dateStart: '', dateEnd: '' });
-      Object.assign(applied, { kw: '', type: '', useYn: '', dateStart: '', dateEnd: '' });
-      pager.page = 1;
-    };
-    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
 
     const handleDelete = async (t) => {
       const ok = await props.showConfirm('삭제', `[${t.templateNm}] 템플릿을 삭제하시겠습니까?`);
@@ -195,13 +172,12 @@ window.SyTemplateMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'templateId'},{label:'템플릿명',key:'templateNm'},{label:'유형',key:'templateTypeCd'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '템플릿목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(templates, [{label:'ID',key:'templateId'},{label:'템플릿명',key:'templateNm'},{label:'유형',key:'templateTypeCd'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '템플릿목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
     watch(() => uiState.selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
-
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), templates, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, TEMPLATE_TYPES, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnUseYnBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewModal, showPreview, closePreview, sendModal, openSend, closeSend, exportExcel };
+      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, TEMPLATE_TYPES, pager, PAGE_SIZES, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnUseYnBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewModal, showPreview, closePreview, sendModal, openSend, closeSend, exportExcel };
   },
   template: /* html */`
 <div>
@@ -241,7 +217,7 @@ window.SyTemplateMng = {
     <div>
 <div class="card">
     <div class="toolbar">
-      <span class="list-title">템플릿목록 <span class="list-count">{{ cfTotal }}건</span></span>
+      <span class="list-title">템플릿목록 <span class="list-count">{{ pager.total }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -253,8 +229,8 @@ window.SyTemplateMng = {
         <th>ID</th><th>템플릿유형</th><th>템플릿코드</th><th>템플릿명</th><th>제목(Subject)</th><th>사용여부</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="cfPageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="t in cfPageList" :key="t.templateId" :style="selectedId===t.templateId?'background:#fff8f9;':''">
+        <tr v-if="templates.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="t in templates" :key="t.templateId" :style="selectedId===t.templateId?'background:#fff8f9;':''">
           <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:t.pathId!=null?'#374151':'#9ca3af',fontWeight:t.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(t.pathId) || '경로 선택...' }}</span><button type="button" @click="openPathPick(t)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
           <td>{{ t.templateId }}</td>
           <td><span class="badge" :class="fnTypeBadge(t.templateTypeCd)">{{ t.templateTypeCd }}</span></td>
@@ -279,8 +255,8 @@ window.SyTemplateMng = {
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
         <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

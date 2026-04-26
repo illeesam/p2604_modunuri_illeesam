@@ -13,10 +13,15 @@ window.SySiteMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/site/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: {
+            pageNo: pager.page, pageSize: pager.size,
+            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+          }
         });
-        const list = res.data?.data?.list || [];
-        sites.splice(0, sites.length, ...list);
+        const data = res.data?.data;
+        sites.splice(0, sites.length, ...(data?.list || []));
+        pager.total = data?.total || sites.length;
+        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -97,7 +102,7 @@ window.SySiteMng = {
       if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.page = 1;
     };
-    const pager = reactive({ page: 1, size: 10 });
+    const pager = reactive({ page: 1, size: 10, total: 0, totalPages: 1 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     const detailModal = reactive({
@@ -120,24 +125,8 @@ window.SySiteMng = {
     const cfDetailKey = computed(() => `${detailModal.editId}_${detailModal.viewMode}`);
 
     const cfTypeOptions = computed(() => [...new Set(sites.map(s => s.siteType))].sort());
-
-    const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
-
-    const cfFiltered = computed(() => sites.filter(s => {
-      const kw = applied.kw.trim().toLowerCase();
-      if (kw && !s.siteNm.toLowerCase().includes(kw) && !s.domain.toLowerCase().includes(kw) && !s.siteCode.toLowerCase().includes(kw)) return false;
-      if (applied.type   && s.siteType  !== applied.type)   return false;
-      if (applied.status && s.statusCd    !== applied.status)  return false;
-      const _d = String(s.regDate || '').slice(0, 10);
-      if (applied.dateStart && _d < applied.dateStart) return false;
-      if (applied.dateEnd && _d > applied.dateEnd) return false;
-      return true;
-    }));
-    const cfTotal      = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const cfPageNums   = computed(() => {
-      const cur = pager.page, last = cfTotalPages.value;
+    const cfPageNums = computed(() => {
+      const cur = pager.page, last = pager.totalPages;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
@@ -150,24 +139,10 @@ window.SySiteMng = {
       '가격비교': 'badge-blue', '시각화': 'badge-purple', '홈페이지': 'badge-gray',
     }[t] || 'badge-gray');
 
-    const onSearch = async () => {
-      Object.assign(applied, {
-        kw: searchParam.kw,
-        type: searchParam.type,
-        status: searchParam.status,
-        dateStart: searchParam.dateStart,
-        dateEnd: searchParam.dateEnd,
-      });
-      pager.page = 1;
-      await handleFetchData();
-    };
-    const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
-      Object.assign(applied, { kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
-      pager.page = 1;
-    };
-    const setPage     = n  => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
 
     const handleDelete = async (s) => {
       const ok = await props.showConfirm('삭제', `[${s.siteCode}] ${s.siteNm} 사이트를 삭제하시겠습니까?`);
@@ -187,7 +162,7 @@ window.SySiteMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'siteId'},{label:'사이트코드',key:'siteCode'},{label:'사이트명',key:'siteNm'},{label:'도메인',key:'domain'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '사이트목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(sites, [{label:'ID',key:'siteId'},{label:'사이트코드',key:'siteCode'},{label:'사이트명',key:'siteNm'},{label:'도메인',key:'domain'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '사이트목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
     watch(() => uiState.selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
@@ -196,7 +171,7 @@ window.SySiteMng = {
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, DATE_RANGE_OPTIONS, onDateRangeChange,
       cfTypeOptions,
-      pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums,
+      pager, PAGE_SIZES, cfPageNums,
       onSearch, onReset, setPage, onSizeChange,
       fnStatusBadge, fnTypeBadge, handleDelete,
       cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey,
@@ -241,7 +216,7 @@ window.SySiteMng = {
     <div>
 <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사이트목록 <span class="list-count">{{ cfTotal }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사이트목록 <span class="list-count">{{ pager.total }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -253,8 +228,8 @@ window.SySiteMng = {
         <th>사이트코드</th><th>유형</th><th>사이트명</th><th>도메인</th><th>대표이메일</th><th>대표전화</th><th>대표자</th><th>등록일</th><th>상태</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="cfPageList.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="s in cfPageList" :key="s.siteId" :style="detailModal.editId===s.siteId?'background:#fff8f9;':''">
+        <tr v-if="sites.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="s in sites" :key="s.siteId" :style="detailModal.editId===s.siteId?'background:#fff8f9;':''">
           <td style="font-size:12px;"><div style="display:flex;align-items:center;gap:6px;"><span style="flex:1;padding:4px 6px;background:#f3f4f6;border-radius:4px;color:#666;font-weight:500;">{{ pathLabel(s.pathId) || '미설정' }}</span><button type="button" @click="openPathPick(s)" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;hover:background:#eef2ff;">🔍</button></div></td>
           <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;">{{ s.siteCode }}</code></td>
           <td><span class="badge" :class="fnTypeBadge(s.siteType)" style="font-size:10px;">{{ s.siteType }}</span></td>
@@ -283,8 +258,8 @@ window.SySiteMng = {
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
         <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

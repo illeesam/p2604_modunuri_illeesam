@@ -13,12 +13,15 @@ window.OdClaimMng = {
     const handleFetchData = async () => {
       uiState.loading = true;
       try {
+        const params = { pageNo: pager.page, pageSize: pager.size, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         const [claimsRes, membersRes] = await Promise.all([
-          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
+          window.boApi.get('/bo/ec/od/claim/page', { params }),
           window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 } })
         ]);
-        claims = claimsRes.data?.data?.list || [];
-        members = membersRes.data?.data?.list || [];
+        claims.splice(0, claims.length, ...(claimsRes.data?.data?.list || []));
+        members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
+        pager.total = claimsRes.data?.data?.total || 0;
+        pager.totalPages = claimsRes.data?.data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -63,7 +66,7 @@ window.OdClaimMng = {
       pager.page = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const pager = reactive({ page: 1, size: 5 });
+    const pager = reactive({ page: 1, size: 5, total: 0, totalPages: 1 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
 
     const isAppReady = computed(() => {
@@ -108,21 +111,8 @@ window.OdClaimMng = {
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
-    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(claims, c => {
-      const kw = searchParam.kw.trim().toLowerCase();
-      if (kw && !c.claimId.toLowerCase().includes(kw) && !c.userNm.toLowerCase().includes(kw) && !c.prodNm.toLowerCase().includes(kw)) return false;
-      if (searchParam.type && c.type !== searchParam.type) return false;
-      if (searchParam.status && c.status !== searchParam.status) return false;
-      const _d = String(c.requestDate || '').slice(0, 10);
-      if (searchParam.dateStart && _d < searchParam.dateStart) return false;
-      if (searchParam.dateEnd && _d > searchParam.dateEnd) return false;
-      return true;
-    }));
-    const cfTotal = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const cfPageNums = computed(() => {
-      const cur = pager.page, last = cfTotalPages.value;
+      const cur = pager.page, last = pager.totalPages;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
@@ -143,8 +133,8 @@ window.OdClaimMng = {
       await handleFetchData();
     };
 
-    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
 
     const handleDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.claimId}]를 삭제하시겠습니까?`);
@@ -165,17 +155,17 @@ window.OdClaimMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'클레임ID',key:'claimId'},{label:'회원명',key:'userNm'},{label:'주문ID',key:'orderId'},{label:'유형',key:'type'},{label:'상태',key:'statusCd'},{label:'상품명',key:'prodNm'},{label:'사유',key:'reasonCd'},{label:'요청일',key:'requestDate'}], '클레임목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(claims, [{label:'클레임ID',key:'claimId'},{label:'회원명',key:'userNm'},{label:'주문ID',key:'orderId'},{label:'유형',key:'type'},{label:'상태',key:'statusCd'},{label:'상품명',key:'prodNm'},{label:'사유',key:'reasonCd'},{label:'요청일',key:'requestDate'}], '클레임목록.csv');
 
     /* 일괄선택 */
     const checked = reactive(new Set());
     const toggleCheck = (id) => { const s = new Set(checked); if (s.has(id)) s.delete(id); else s.add(id); checked = s; };
     const isChecked = (id) => checked.has(id);
-    const cfAllChecked = computed(() => cfPageList.value.length > 0 && window.safeArrayUtils.safeEvery(cfPageList, c => checked.has(c.claimId)));
+    const cfAllChecked = computed(() => claims.length > 0 && claims.every(c => checked.has(c.claimId)));
     const toggleCheckAll = () => {
       const s = new Set(checked);
-      if (cfAllChecked.value) window.safeArrayUtils.safeForEach(cfPageList, c => s.delete(c.claimId));
-      else window.safeArrayUtils.safeForEach(cfPageList, c => s.add(c.claimId));
+      if (cfAllChecked.value) claims.forEach(c => s.delete(c.claimId));
+      else claims.forEach(c => s.add(c.claimId));
       checked = s;
     };
     const claimStatusCodes = (codes.claim_statuses || [])
@@ -341,7 +331,7 @@ window.OdClaimMng = {
     };
 
     const bulkOpen = Vue.toRef(uiState, 'bulkOpen');
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), claims, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), claims, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>
@@ -364,7 +354,7 @@ window.OdClaimMng = {
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>클레임목록 <span class="list-count">{{ cfTotal }}건</span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>클레임목록 <span class="list-count">{{ pager.total }}건</span>
         <span v-if="checked.size" style="margin-left:10px;font-size:12px;color:#1565c0;font-weight:700;">선택 {{ checked.size }}건</span>
       </span>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -379,8 +369,8 @@ window.OdClaimMng = {
         <th>클레임ID</th><th>회원</th><th>주문ID</th><th>상품</th><th>사유</th><th>클레임상태</th><th>신청일</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="cfPageList.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="c in cfPageList" :key="c?.claimId"
+        <tr v-if="claims.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="c in claims" :key="c?.claimId"
           :style="(selectedId===c.claimId?'background:#fff8f9;':'') + (isChecked(c.claimId)?'background:#eef6fd;':'')">
           <td style="text-align:center;"><input type="checkbox" :checked="isChecked(c.claimId)" @change="toggleCheck(c.claimId)" /></td>
           <td><span class="title-link" @click="handleLoadDetail(c.claimId)" :style="selectedId===c.claimId?'color:#e8587a;font-weight:700;':''">{{ c.claimId }}<span v-if="selectedId===c.claimId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
@@ -412,8 +402,8 @@ window.OdClaimMng = {
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
         <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">

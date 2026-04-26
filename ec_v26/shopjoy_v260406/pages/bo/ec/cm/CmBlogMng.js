@@ -8,27 +8,12 @@ window.CmBlogMng = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null});
     const codes = reactive({ blog_display_statuses: [] });
 
-    // onMounted에서 API 로드
-    const handleFetchData = async () => {
-      uiState.loading = true;
-      try {
-        const res = await window.boApi.get('/bo/ec/cm/blog/page', {
-          params: { pageNo: 1, pageSize: 10000 }
-        });
-        blogs.splice(0, blogs.length, ...(res.data?.data?.list || []));
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-        if (props.showToast) props.showToast('CmBlog 로드 실패', 'error');
-      } finally {
-        uiState.loading = false;
-      }
-    };
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData();
-    Object.assign(searchParamOrg, searchParam); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const pager = reactive({ page: 1, size: 20, total: 0, totalPages: 1 });
+    const selectedId = ref(null);
+
+    const searchParam = reactive({ kw: '', use: '', notice: '' });
+    const searchParamOrg = reactive({ kw: '', use: '', notice: '' });
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -47,52 +32,45 @@ window.CmBlogMng = {
       }
     };
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
+    const handleFetchData = async () => {
+      uiState.loading = true;
+      try {
+        const res = await window.boApi.get('/bo/ec/cm/blog/page', {
+          params: {
+            pageNo: pager.page, pageSize: pager.size,
+            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+          }
+        });
+        const data = res.data?.data;
+        blogs.splice(0, blogs.length, ...(data?.list || []));
+        pager.total = data?.total || 0;
+        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+        if (props.showToast) props.showToast('CmBlog 로드 실패', 'error');
+      } finally {
+        uiState.loading = false;
       }
+    };
+
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
     });
 
-    const pager        = reactive({ page: 1, size: 20 });
-    const selectedId   = ref(null);
-
-    const cfFiltered = computed(() => {
-      const kw = searchParam.kw.toLowerCase();
-      if (!Array.isArray(blogs)) return [];
-      return blogs.filter(p => {
-        if (kw && !p.blogTitle.toLowerCase().includes(kw) && !(p.blogAuthor||'').toLowerCase().includes(kw)) return false;
-        if (searchParam.use && p.useYn !== searchParam.use) return false;
-        if (searchParam.notice && p.isNotice !== searchParam.notice) return false;
-        return true;
-      }).sort((a, b) => b.regDate > a.regDate ? 1 : -1);
+    const cfPageNums = computed(() => {
+      const c = pager.page, l = pager.totalPages, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
-    const cfTotal      = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList   = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
-    const cfPageNums   = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-  const searchParam = reactive({
-    kw: '',
-    use: '',
-    notice: ''
-  });
-  const searchParamOrg = reactive({
-    kw: '',
-    use: '',
-    notice: ''
-  });
+    const detailModal = reactive({ show: false, isNew: false, editId: null, form: {} });
 
-  const detailModal = reactive({
-    show: false,
-    isNew: false,
-    editId: null,
-    form: {}
-  });
-
-    const cfSelectedRow = computed(() => {
-      if (!Array.isArray(blogs)) return null;
-      return blogs.find(p => p.blogId === detailModal.editId) || null;
-    });
+    const cfSelectedRow = computed(() => blogs.find(p => p.blogId === detailModal.editId) || null);
 
     const openDetail = (row) => {
       if (detailModal.editId === row.blogId) { detailModal.show = false; detailModal.editId = null; return; }
@@ -104,16 +82,25 @@ window.CmBlogMng = {
       detailModal.editId = '__new__'; detailModal.isNew = true; detailModal.show = true;
     };
     const closeDetail = () => { detailModal.show = false; detailModal.editId = null; };
+
     const handleSave = async () => {
       if (!detailModal.form.blogTitle) { props.showToast('제목은 필수입니다.', 'error'); return; }
       const isNewPost = detailModal.isNew;
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
-      const src = blogs;
-      if (isNewPost) { detailModal.form.blogId = 'BL' + String(Date.now()).slice(-6); detailModal.form.regDate = new Date().toLocaleString('sv').replace('T',' '); src.unshift({ ...detailModal.form }); detailModal.editId = detailModal.form.blogId; detailModal.isNew = false; }
-      else { const si = src.findIndex(p => p.blogId === detailModal.form.blogId); if (si !== -1) Object.assign(src[si], detailModal.form); }
+      if (isNewPost) {
+        detailModal.form.blogId = 'BL' + String(Date.now()).slice(-6);
+        detailModal.form.regDate = new Date().toLocaleString('sv').replace('T', ' ');
+        blogs.unshift({ ...detailModal.form });
+        detailModal.editId = detailModal.form.blogId; detailModal.isNew = false;
+      } else {
+        const si = blogs.findIndex(p => p.blogId === detailModal.form.blogId);
+        if (si !== -1) Object.assign(blogs[si], detailModal.form);
+      }
       try {
-        const res = await (isNewPost ? window.boApi.post(`/bo/ec/cm/blog/${detailModal.form.blogId}`, { ...detailModal.form }) : window.boApi.put(`/bo/ec/cm/blog/${detailModal.form.blogId}`, { ...detailModal.form }));
+        const res = await (isNewPost
+          ? window.boApi.post(`/bo/ec/cm/blog/${detailModal.form.blogId}`, { ...detailModal.form })
+          : window.boApi.put(`/bo/ec/cm/blog/${detailModal.form.blogId}`, { ...detailModal.form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {
@@ -123,12 +110,13 @@ window.CmBlogMng = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
+
     const handleDelete = async () => {
       if (!cfSelectedRow.value) return;
       const ok = await props.showConfirm('삭제', `[${cfSelectedRow.value.blogTitle}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const si = bltnPosts.value.findIndex(p => p.blogId === cfSelectedRow.value.blogId);
-      if (si !== -1) bltnPosts.value.splice(si, 1);
+      const si = blogs.findIndex(p => p.blogId === cfSelectedRow.value.blogId);
+      if (si !== -1) blogs.splice(si, 1);
       closeDetail();
       try {
         const res = await window.boApi.delete(`/bo/ec/cm/blog/${cfSelectedRow.value.blogId}`);
@@ -141,9 +129,10 @@ window.CmBlogMng = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
+
     const toggleUse = async (row) => {
       const newYn = row.useYn === 'Y' ? 'N' : 'Y';
-      const ok = await props.showConfirm('공개설정', `[${row.blogTitle}]을 ${newYn==='Y'?'공개':'비공개'} 처리하시겠습니까?`);
+      const ok = await props.showConfirm('공개설정', `[${row.blogTitle}]을 ${newYn === 'Y' ? '공개' : '비공개'} 처리하시겠습니까?`);
       if (!ok) return;
       row.useYn = newYn;
       if (detailModal.form.blogId === row.blogId) detailModal.form.useYn = newYn;
@@ -158,30 +147,19 @@ window.CmBlogMng = {
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
-    const onSearch = async () => {
-    try {
-      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await window.boApi.get('/bo/ec/resource/page', { params });
-      // TODO: Update items array based on response
-      pager.page = 1;
-      await handleFetchData();
-    } catch (err) {
-      console.error('[catch-info]', err);
-      if (props.showToast) props.showToast('조회 실패', 'error');
-    }
-  };
-  
-    const onReset = () => {
-    Object.assign(searchParam, searchParamOrg);
-    onSearch();
-  };
-  
-    const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
-    const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), blogs, uiState, codes, searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
-              cfSelectedRow, detailModal, openDetail, openNew, closeDetail, handleSave, handleDelete, toggleUse, fnYnBadge, PAGE_SIZES, onSizeChange };
+    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
+    const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
+
+    return {
+      selectedId: computed(() => detailModal.editId), blogs, uiState, codes,
+      searchParam, searchParamOrg, pager, cfPageNums, setPage,
+      onSearch, onReset, cfSelectedRow, detailModal, openDetail, openNew, closeDetail,
+      handleSave, handleDelete, toggleUse, fnYnBadge, PAGE_SIZES, onSizeChange
+    };
   },
   template: `
 <div>
@@ -203,7 +181,7 @@ window.CmBlogMng = {
     <div class="card">
       <div class="toolbar">
         <span class="list-title">게시글 목록</span>
-        <span class="list-count">총 {{ cfTotal }}건</span>
+        <span class="list-count">총 {{ pager.total }}건</span>
         <button class="btn btn-primary btn-sm" style="margin-left:auto" @click="openNew">+ 신규</button>
       </div>
       <table class="bo-table">
@@ -216,7 +194,7 @@ window.CmBlogMng = {
           <th style="width:80px;text-align:center">공개전환</th>
         </tr></thead>
         <tbody>
-          <tr v-for="row in cfPageList" :key="row?.blogId" :class="{active:selectedId===row.blogId}" @click="openDetail(row)" style="cursor:pointer">
+          <tr v-for="row in blogs" :key="row?.blogId" :class="{active:selectedId===row.blogId}" @click="openDetail(row)" style="cursor:pointer">
             <td>
               <span v-if="row.isNotice==='Y'" class="badge badge-orange" style="margin-right:4px;font-size:10px">공지</span>
               <span class="title-link">{{ row.blogTitle }}</span>
@@ -231,7 +209,7 @@ window.CmBlogMng = {
               <button :class="['btn','btn-xs',row.useYn==='Y'?'btn-secondary':'btn-green']" @click="toggleUse(row)">{{ row.useYn==='Y'?'비공개':'공개' }}</button>
             </td>
           </tr>
-          <tr v-if="!cfPageList.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
+          <tr v-if="!blogs.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
       <div class="pagination">
@@ -240,8 +218,8 @@ window.CmBlogMng = {
            <button :disabled="pager.page===1" @click="setPage(1)">«</button>
            <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
            <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-           <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+           <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
@@ -250,26 +228,26 @@ window.CmBlogMng = {
          </div>
        </div>
     </div>
-    <div class="card" v-if="selectedId">
+    <div class="card" v-if="detailModal.show">
       <div class="toolbar">
-        <span class="list-title">{{ isNew ? '신규 등록' : '상세 / 수정' }}</span>
+        <span class="list-title">{{ detailModal.isNew ? '신규 등록' : '상세 / 수정' }}</span>
         <div style="margin-left:auto;display:flex;gap:6px;">
           <button class="btn btn-blue btn-sm" @click="handleSave">저장</button>
-          <button v-if="!isNew" class="btn btn-danger btn-sm" @click="handleDelete">삭제</button>
+          <button v-if="!detailModal.isNew" class="btn btn-danger btn-sm" @click="handleDelete">삭제</button>
           <button class="btn btn-secondary btn-sm" @click="closeDetail">닫기</button>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px">
-        <div class="form-group" style="grid-column:1/-1"><label class="form-label">제목 <span style="color:red">*</span></label><input class="form-control" v-model="form.blogTitle"></div>
-        <div class="form-group"><label class="form-label">작성자</label><input class="form-control" v-model="form.blogAuthor"></div>
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">제목 <span style="color:red">*</span></label><input class="form-control" v-model="detailModal.form.blogTitle"></div>
+        <div class="form-group"><label class="form-label">작성자</label><input class="form-control" v-model="detailModal.form.blogAuthor"></div>
         <div class="form-group"><label class="form-label">공지여부</label>
-          <select class="form-control" v-model="form.isNotice"><option value="Y">Y (공지)</option><option value="N">N (일반)</option></select>
+          <select class="form-control" v-model="detailModal.form.isNotice"><option value="Y">Y (공지)</option><option value="N">N (일반)</option></select>
         </div>
         <div class="form-group"><label class="form-label">공개여부</label>
-          <select class="form-control" v-model="form.useYn"><option value="Y">Y (공개)</option><option value="N">N (비공개)</option></select>
+          <select class="form-control" v-model="detailModal.form.useYn"><option value="Y">Y (공개)</option><option value="N">N (비공개)</option></select>
         </div>
-        <div class="form-group" style="grid-column:1/-1"><label class="form-label">요약</label><input class="form-control" v-model="form.blogSummary" placeholder="목록에 표시될 요약 내용"></div>
-        <div class="form-group" style="grid-column:1/-1"><label class="form-label">본문</label><textarea class="form-control" rows="8" v-model="form.blogContent"></textarea></div>
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">요약</label><input class="form-control" v-model="detailModal.form.blogSummary" placeholder="목록에 표시될 요약 내용"></div>
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">본문</label><textarea class="form-control" rows="8" v-model="detailModal.form.blogContent"></textarea></div>
       </div>
     </div>
 </div>`

@@ -181,3 +181,8 @@ const cfPageNums = computed(() => {
 | 폼 내 소계/합계 `computed` | 서버 재조회 없이 계산 가능한 파생값 |
 | `cfPageNums` computed | 페이지 번호 배열은 계산값 |
 | `cfIsNew`, `cfDetailKey` 등 단순 UI 상태 computed | 서버 데이터 비의존 |
+| **[FO] 상품목록 카테고리·필터 클라이언트 computed** | Prod*List.js — 무한스크롤/더보기 UX 패턴, 전체 로드 후 즉각 반응이 UX 요건 |
+| **[FO] Blog/Event 카테고리 탭 필터 computed** | 탭 클릭 시 API 재조회 시 깜빡임 발생, UX상 클라이언트 필터 허용 |
+| **[FO] Pinia store `storeToRefs` computed** | My페이지(MyClaim 등) — 스토어 레이어에서 관리, 컴포넌트 내 재정의 불필요 |
+| **[BO] 이력(Hist) 페이지 클라이언트 필터** | 로그 뷰어 패턴, 대량 이력은 탭/날짜 클라이언트 필터 허용 |
+| **[BO] CRUD 그리드 전체 로드** | SyCodeMng, SyAttachMng 등 — 항목 수 소량이고 인라인 편집이 필요한 경우 |

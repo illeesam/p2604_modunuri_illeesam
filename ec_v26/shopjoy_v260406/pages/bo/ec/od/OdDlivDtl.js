@@ -5,13 +5,11 @@ window.OdDlivDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
-    const deliveries = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._odDlivDtlState.tab || 'info', viewMode2: window._odDlivDtlState.viewMode || 'tab', memoEl: null});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({ dliv_statuses: [] });
-    const claims = reactive([]);
-    const orders = reactive([]);
+    const relatedClaims = reactive([]);
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -36,27 +34,6 @@ window.OdDlivDtl = {
       }
     });
 
-    // onMounted에서 API 로드
-    const handleLoadData = async () => {
-      uiState.loading = true;
-      try {
-        const [resD, resC, resO] = await Promise.all([
-          window.boApi.get('/bo/ec/od/dliv/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 } }),
-          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
-        ]);
-        deliveries.splice(0, deliveries.length, ...(resD.data?.data?.list || []));
-        claims.splice(0, claims.length, ...(resC.data?.data?.list || []));
-        orders.splice(0, orders.length, ...(resO.data?.data?.list || []));
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-        if (props.showToast) props.showToast('OdDliv 로드 실패', 'error');
-      } finally {
-        uiState.loading = false;
-      }
-    };
     const cfIsNew = computed(() => !props.editId);
         watch(() => uiState.tab, v => { window._odDlivDtlState.tab = v; });
         watch(() => uiState.viewMode2, v => { window._odDlivDtlState.viewMode = v; });
@@ -75,16 +52,35 @@ window.OdDlivDtl = {
       orderId: yup.string().required('주문ID를 입력해주세요.'),
     });
 
-    const handleInitForm = async () => {
-      if (!cfIsNew.value) {
-        const d = window.safeArrayUtils.safeFind(deliveries, x => x.dlivId === props.editId);
-        if (d) {
-          Object.assign(form, { ...d });
-          if (!form.dlivId) form.dlivId = props.editId;
-          if (d.status) form.statusCd = d.status;
-          if (d.courier) form.courierCd = d.courier;
+    // 단건 GET
+    const handleFetchDetail = async () => {
+      if (cfIsNew.value) return;
+      uiState.loading = true;
+      try {
+        const res = await window.boApi.get(`/bo/ec/od/dliv/${props.editId}`);
+        const d = res.data?.data || res.data || {};
+        Object.assign(form, { ...d });
+        if (!form.dlivId) form.dlivId = props.editId;
+        if (d.status) form.statusCd = d.status;
+        if (d.courier) form.courierCd = d.courier;
+        // 연관 클레임 로드 (주문ID 기준)
+        if (form.orderId) {
+          try {
+            const claimRes = await window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 100, orderId: form.orderId } });
+            relatedClaims.splice(0, relatedClaims.length, ...(claimRes.data?.data?.list || []));
+          } catch (_) { /* ignore */ }
         }
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+        if (props.showToast) props.showToast('배송 상세 로드 실패', 'error');
+      } finally {
+        uiState.loading = false;
       }
+    };
+
+    const handleInitQuill = async () => {
       await nextTick();
       if (uiState.memoEl) {
         _qMemo = new Quill(uiState.memoEl, {
@@ -98,16 +94,8 @@ window.OdDlivDtl = {
     };
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 
-    const cfRelatedOrder  = computed(() => window.safeArrayUtils.safeFind(orders, o => o.orderId === form.orderId) || null);
-    const relatedClaims = reactive([]);
-    const updateRelatedClaims = () => {
-      const filtered = window.safeArrayUtils.safeFilter(claims || [], c => c.orderId === form.orderId);
-      relatedClaims.splice(0, relatedClaims.length, ...filtered);
-    };
     const CLAIM_TYPE_COLOR = { '취소':'#ef4444','반품':'#FFBB00','교환':'#3b82f6' };
-    const cfFirstClaim = computed(() => window.safeArrayUtils.safeGet(relatedClaims || [], 0) || null);
-    watch(() => form.orderId, updateRelatedClaims);
-    watch(claims, updateRelatedClaims);
+    const cfFirstClaim = computed(() => relatedClaims[0] || null);
 
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
@@ -122,14 +110,10 @@ window.OdDlivDtl = {
       const isNewDliv = cfIsNew.value;
       const ok = await props.showConfirm(isNewDliv ? '등록' : '저장', isNewDliv ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (isNewDliv) {
-        deliveries.push({ ...form });
-      } else {
-        const idx = deliveries.findIndex(x => x.dlivId === props.editId);
-        if (idx !== -1) Object.assign(deliveries[idx], { ...form });
-      }
       try {
-        const res = await (isNewDliv ? window.boApi.post(`/bo/ec/od/dliv/${form.dlivId}`, { ...form }) : window.boApi.put(`/bo/ec/od/dliv/${form.dlivId}`, { ...form }));
+        const res = await (isNewDliv
+          ? window.boApi.post('/bo/ec/od/dliv', { ...form })
+          : window.boApi.put(`/bo/ec/od/dliv/${form.dlivId}`, { ...form }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewDliv ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('odDlivMng');
@@ -143,9 +127,8 @@ window.OdDlivDtl = {
 
     const dlivItems = reactive([]);
     const sampleDlivItems = () => {
-      const rel = window.safeArrayUtils.safeFind(orders, x => x.orderId === form.orderId);
-      const base = rel ? rel.prodNm : (form.receiver || '배송상품');
-      const total = rel ? Number(rel.totalPrice || 0) : 30000;
+      const base = form.prodNm || form.receiver || '배송상품';
+      const total = 30000;
       const shares = [0.50, 0.30, 0.20];
       const discRates = [0.10, 0.08, 0.00];
       const discLabels = ['신규10%','멤버8%','사은품'];
@@ -164,8 +147,12 @@ window.OdDlivDtl = {
     const initItems = async () => {
       dlivItems.splice(0, dlivItems.length, ...sampleDlivItems());
     };
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleLoadData(); handleInitForm(); initItems(); });
+    onMounted(async () => {
+      if (isAppReady.value) fnLoadCodes();
+      await handleFetchDetail();
+      await handleInitQuill();
+      await initItems();
+    });
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
     const trackingUrl = (courier, no) => {
@@ -216,7 +203,7 @@ window.OdDlivDtl = {
     ]);
     const memoEl = Vue.ref(null);
     Vue.watch(memoEl, (el) => { if (uiState) uiState.memoEl = el; });
-    return { cfIsNew, tab, form, errors, handleSave, memoEl, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfRelatedOrder, cfFirstClaim, CLAIM_TYPE_COLOR, viewMode2, showTab, claims, relatedClaims, codes };
+    return { cfIsNew, tab, form, errors, handleSave, memoEl, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfFirstClaim, CLAIM_TYPE_COLOR, viewMode2, showTab, relatedClaims, codes };
   },
   template: /* html */`
 <div>
@@ -411,7 +398,7 @@ window.OdDlivDtl = {
           <td style="text-align:right;color:#d84315;font-weight:600;">{{ it.discAmount ? '-'+fmt(it.discAmount) : '-' }}</td>
           <td style="text-align:right;font-weight:700;color:#1a1a1a;">{{ fmt(it.price) }}</td>
           <td style="text-align:center;">
-            <span v-if="cfRelatedOrder" style="font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;">{{ cfRelatedOrder.status }}</span>
+            <span v-if="form.orderStatusCd" style="font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;">{{ form.orderStatusCd }}</span>
             <span v-else style="color:#ccc;">-</span>
           </td>
           <td style="text-align:center;">

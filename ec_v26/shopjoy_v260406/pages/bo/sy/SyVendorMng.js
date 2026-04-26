@@ -13,9 +13,15 @@ window.SyVendorMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/vendor/page', {
-          params: { pageNo: 1, pageSize: 10000 }
+          params: {
+            pageNo: pager.page, pageSize: pager.size,
+            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+          }
         });
-        vendors = res.data?.data?.list || [];
+        const data = res.data?.data;
+        vendors.splice(0, vendors.length, ...(data?.list || []));
+        pager.total = data?.total || vendors.length;
+        pager.totalPages = data?.totalPages || Math.ceil(pager.total / pager.size) || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -101,8 +107,8 @@ window.SyVendorMng = {
       pager.page = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const pager = reactive({ page: 1, size: 10 });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
+    const pager = reactive({ page: 1, size: 10, total: 0, totalPages: 1 });
 
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
     const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
@@ -118,50 +124,18 @@ window.SyVendorMng = {
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
-    const applied = reactive({ kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
-
-    const cfFiltered = computed(() => vendors.filter(v => {
-      const kw = applied.kw.trim().toLowerCase();
-      if (kw && !v.vendorNm.toLowerCase().includes(kw) && !v.bizNo.includes(kw)) return false;
-      if (applied.type && v.vendorType !== applied.type) return false;
-      if (applied.status && v.statusCd !== applied.status) return false;
-      const _d = String(v.contractDate || '').slice(0, 10);
-      if (applied.dateStart && _d < applied.dateStart) return false;
-      if (applied.dateEnd && _d > applied.dateEnd) return false;
-      return true;
-    }));
-    const cfTotal = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
     const cfPageNums = computed(() => {
-      const cur = pager.page, last = cfTotalPages.value;
+      const cur = pager.page, last = pager.totalPages;
       const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
 
     const fnTypeBadge = t => ({ '판매업체': 'badge-blue', '배송업체': 'badge-orange' }[t] || 'badge-gray');
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
-    const onSearch = async () => {
-      Object.assign(applied, {
-        kw: searchKw.value,
-        type: searchType.value,
-        status: searchStatus.value,
-        dateStart: searchDateStart.value,
-        dateEnd: searchDateEnd.value,
-      });
-      pager.page = 1;
-      await handleFetchData();
-    };
-    const onReset = () => {
-      searchKw.value = '';
-      searchType.value = '';
-      searchStatus.value = '';
-      searchDateStart.value = ''; searchDateEnd.value = ''; searchDateRange.value = '';
-      Object.assign(applied, { kw: '', type: '', status: '', dateStart: '', dateEnd: '' });
-      pager.page = 1;
-    };
-    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
-    const onSizeChange = () => { pager.page = 1; };
+    const onSearch = () => { pager.page = 1; handleFetchData(); };
+    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const setPage = n => { if (n >= 1 && n <= pager.totalPages) { pager.page = n; handleFetchData(); } };
+    const onSizeChange = () => { pager.page = 1; handleFetchData(); };
 
     const handleDelete = async (v) => {
       const ok = await props.showConfirm('삭제', `[${v.vendorNm}] 업체를 삭제하시겠습니까?`);
@@ -181,27 +155,25 @@ window.SyVendorMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorType'},{label:'업체명',key:'vendorNm'},{label:'대표자',key:'ceo'},{label:'사업자번호',key:'bizNo'},{label:'전화',key:'phone'},{label:'상태',key:'statusCd'},{label:'계약일',key:'contractDate'}], '업체목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(vendors, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorType'},{label:'업체명',key:'vendorNm'},{label:'대표자',key:'ceo'},{label:'사업자번호',key:'bizNo'},{label:'전화',key:'phone'},{label:'상태',key:'statusCd'},{label:'계약일',key:'contractDate'}], '업체목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
-    watch(selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
+    watch(() => uiState.selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
-
-    const selectedPath = Vue.toRef(uiState, 'selectedPath');
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), vendors, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectedPath, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, searchKw, searchType, searchStatus, pager, PAGE_SIZES, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, pager, PAGE_SIZES, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
   <div class="page-title">업체정보</div>  <div class="card">
     <div class="search-bar">
-      <input v-model="searchKw" placeholder="업체명 / 사업자번호 검색" />
-      <select v-model="searchType">
+      <input v-model="searchParam.kw" placeholder="업체명 / 사업자번호 검색" />
+      <select v-model="searchParam.type">
         <option value="">유형 전체</option><option>판매업체</option><option>배송업체</option>
       </select>
-      <select v-model="searchStatus">
+      <select v-model="searchParam.status">
         <option value="">상태 전체</option><option>활성</option><option>비활성</option>
       </select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchDateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchDateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -227,7 +199,7 @@ window.SyVendorMng = {
     <div>
 <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>거래처목록 <span class="list-count">{{ cfTotal }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>거래처목록 <span class="list-count">{{ pager.total }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -239,8 +211,8 @@ window.SyVendorMng = {
         <th>ID</th><th>업체유형</th><th>업체명</th><th>대표자</th><th>사업자번호</th><th>전화번호</th><th>이메일</th><th>계약일</th><th>상태</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="cfPageList.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="v in cfPageList" :key="v.vendorId" :style="selectedId===v.vendorId?'background:#fff8f9;':''">
+        <tr v-if="vendors.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="v in vendors" :key="v.vendorId" :style="selectedId===v.vendorId?'background:#fff8f9;':''">
           <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:v.pathId!=null?'#374151':'#9ca3af',fontWeight:v.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(v.pathId) || '경로 선택...' }}</span><button type="button" @click="openPathPick(v)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
           <td>{{ v.vendorId }}</td>
           <td><span class="badge" :class="fnTypeBadge(v.vendorType)">{{ v.vendorType }}</span></td>
@@ -265,8 +237,8 @@ window.SyVendorMng = {
         <button :disabled="pager.page===1" @click="setPage(1)">«</button>
         <button :disabled="pager.page===1" @click="setPage(pager.page-1)">‹</button>
         <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(pager.page+1)">›</button>
-        <button :disabled="pager.page===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.page+1)">›</button>
+        <button :disabled="pager.page===pager.totalPages" @click="setPage(pager.totalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.size" @change="onSizeChange">
