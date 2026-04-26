@@ -10,8 +10,9 @@ window.Cart = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
@@ -28,6 +29,7 @@ window.Cart = {
       }
     });
 
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     /* ── 체크박스 ── */
     const isChecked = (idx) => uiState.checkedIdxs.has(idx);
 

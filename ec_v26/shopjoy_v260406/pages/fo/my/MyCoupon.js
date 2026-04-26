@@ -9,13 +9,15 @@ window.MyCoupon = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
       try {
         uiState.isPageCodeLoad = true;
+        handleFetchData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -72,7 +74,7 @@ window.MyCoupon = {
       if (dateParams) onDateSearch(dateParams);
       await handleFetchData();
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     return {
       myStore, coupons, couponCode, couponPager, paginate,

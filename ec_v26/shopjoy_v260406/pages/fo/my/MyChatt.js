@@ -9,13 +9,17 @@ window.MyChatt = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
+
+    const myStore = window.useFoMyStore();
 
     const fnLoadCodes = async () => {
       try {
         uiState.isPageCodeLoad = true;
+        myStore.loadChats();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -26,7 +30,6 @@ window.MyChatt = {
         fnLoadCodes();
       }
     });
-    const myStore = window.useFoMyStore();
     const { chats, expandedChat } = Pinia.storeToRefs(myStore);
 
     const chatPager = reactive({ page: 1, size: 50 });
@@ -39,7 +42,7 @@ window.MyChatt = {
       if (dateParams) onDateSearch(dateParams);
       await myStore.loadChats();
     };
-    onMounted(() => myStore.loadChats());
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     return { myStore, chats, expandedChat, chatPager, paginate, cfDateFilteredChats, onDateSearch, onSearch, uiState, codes };
   },

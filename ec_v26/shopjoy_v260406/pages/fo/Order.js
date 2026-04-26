@@ -8,13 +8,15 @@ window.Order = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
       try {
         uiState.isPageCodeLoad = true;
+        handleFetchData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -140,7 +142,7 @@ window.Order = {
       const u = window.foAuth?.state?.user;
       if (u) { form.name = u.memberNm || ''; form.tel = u.phone || ''; form.email = u.email || ''; }
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     const errors   = reactive({});
     const clearErr = k => { delete errors[k]; };

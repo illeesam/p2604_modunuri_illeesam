@@ -8,8 +8,9 @@ window.XsSample04 = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
@@ -111,7 +112,7 @@ window.XsSample04 = {
       error:   { icon: '❌', label: '오류',  bg: '#ef4444', bar: '#ef4444' },
     }[v] || { icon: 'ℹ️', label: '안내', bg: '#3b82f6', bar: '#3b82f6' });
 
-    onMounted(() => { /* 샘플 데이터: 빈 상태로 시작 */ });
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     /* ── boCmUtil mock (index.html 미포함 → 가드) ── */
     if (!window.boCmUtil) {

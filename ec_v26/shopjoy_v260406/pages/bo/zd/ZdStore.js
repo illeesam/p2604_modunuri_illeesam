@@ -5,8 +5,8 @@ window.ZdStore = {
   name: 'ZdStore',
   props: ['navigate', 'adminData', 'showToast'],
   setup(props) {
-    const { ref, computed, reactive, onMounted } = Vue;
-    const uiState = reactive({ storeInfo: '', selectedStore: null, viewMode: 'col5' });
+    const { ref, computed, reactive, watch, onMounted } = Vue;
+    const uiState = reactive({ storeInfo: '', isPageCodeLoad: false, selectedStore: null, viewMode: 'col5' });
     const tab = Vue.toRef(uiState, 'tab');
 
             const openStores = reactive([]);
@@ -155,8 +155,21 @@ window.ZdStore = {
       }
     };
 
-    onMounted(() => {
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      uiState.isPageCodeLoad = true;
       loadAllStoreData();
+    };
+
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       if (storeList.length > 0 && !uiState.selectedStore) {
         selectStore(storeList[0].name);
       }

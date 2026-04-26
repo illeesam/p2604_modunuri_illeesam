@@ -9,8 +9,9 @@ window.BlogView = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
@@ -110,6 +111,7 @@ window.BlogView = {
     };
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       Object.assign(searchParamOrg, searchParam);
     });
 

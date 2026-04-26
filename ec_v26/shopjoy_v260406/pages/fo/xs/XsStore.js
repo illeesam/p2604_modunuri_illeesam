@@ -10,13 +10,15 @@ window.XsStore = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
       try {
         uiState.isPageCodeLoad = true;
+        loadAllStoreData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -157,7 +159,7 @@ window.XsStore = {
     };
 
     onMounted(() => {
-      loadAllStoreData();
+      if (isAppReady.value) fnLoadCodes();
       if (cfStoreList.value.length > 0 && !uiState.selectedStore) {
         selectStore(cfStoreList.value[0].name);
       }

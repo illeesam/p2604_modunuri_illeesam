@@ -10,8 +10,9 @@ window.XsLocalStorage = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiStateGlobal.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiStateGlobal.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
@@ -131,6 +132,7 @@ window.XsLocalStorage = {
     };
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', stopResize);
     });

@@ -9,8 +9,9 @@ window.Like = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
@@ -27,6 +28,7 @@ window.Like = {
       }
     });
 
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     const cfLikedProducts = computed(() => {
       const likeSet = props.likes || new Set();
       return (props.products || []).filter(p => likeSet.has(p.productId));

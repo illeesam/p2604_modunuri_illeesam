@@ -123,8 +123,9 @@ window.About = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
@@ -140,6 +141,7 @@ window.About = {
         fnLoadCodes();
       }
     });
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     const values = [
       { icon:'😊', bg:'#dbeafe', title:'고객 중심', desc:'모든 의사결정의 기준은 고객 만족입니다.' },

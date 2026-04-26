@@ -8,8 +8,9 @@ window.XsSample14 = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
@@ -25,6 +26,7 @@ window.XsSample14 = {
         fnLoadCodes();
       }
     });
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     const today = new Date().toISOString().slice(0, 10);
     const selectedAreas = reactive(new Set());
     const expandedAreas = reactive(new Set());

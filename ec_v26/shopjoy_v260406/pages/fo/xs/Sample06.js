@@ -12,13 +12,15 @@ window.XsSample06 = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
       try {
         uiState.isPageCodeLoad = true;
+        handleFetchData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -68,7 +70,7 @@ window.XsSample06 = {
       }).forEach(d => gridRows.push(makeRow(d)));
     };
     onMounted(() => {
-      handleFetchData();
+      if (isAppReady.value) fnLoadCodes();
       Object.assign(searchParamOrg, searchParam);
     });
     const onSearch = async () => { pager.page = 1; await handleFetchData(); };

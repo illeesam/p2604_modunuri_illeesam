@@ -95,8 +95,9 @@ window.Contact = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
@@ -113,6 +114,7 @@ window.Contact = {
       }
     });
 
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     const cfInquiryCodes = computed(() =>
       window.foCmUtil.codesByGroup(props.config || {}, 'shopjoy_contact_inquiry')
     );

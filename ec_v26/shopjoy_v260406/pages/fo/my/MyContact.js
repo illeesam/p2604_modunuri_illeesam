@@ -9,13 +9,17 @@ window.MyContact = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
+
+    const myStore = window.useFoMyStore();
 
     const fnLoadCodes = async () => {
       try {
         uiState.isPageCodeLoad = true;
+        myStore.loadInquiries();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -26,7 +30,6 @@ window.MyContact = {
         fnLoadCodes();
       }
     });
-    const myStore = window.useFoMyStore();
     const { inquiries, expandedInquiry } = Pinia.storeToRefs(myStore);
 
     const inquiryPager = reactive({ page: 1, size: 50 });
@@ -47,7 +50,7 @@ window.MyContact = {
       if (dateParams) onDateSearch(dateParams);
       await myStore.loadInquiries();
     };
-    onMounted(() => myStore.loadInquiries());
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     return {
       myStore, inquiries, expandedInquiry,

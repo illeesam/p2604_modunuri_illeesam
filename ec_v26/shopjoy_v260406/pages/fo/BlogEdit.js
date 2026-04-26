@@ -9,8 +9,9 @@ window.BlogEdit = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
@@ -45,6 +46,7 @@ window.BlogEdit = {
 
     /* 수정 모드: 기존 데이터 로드 */
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       if (cfIsEdit.value) {
         // 목업: editId에 따른 데이터 로드
         Object.assign(form, {

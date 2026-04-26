@@ -8,8 +8,9 @@ window.Location = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
@@ -57,6 +58,7 @@ window.Location = {
     };
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       /* 카카오 MAP SDK 동적 로드 시도 — appkey 없으면 Google로 fallback */
       const appKey = (window.SITE_CONFIG && window.SITE_CONFIG.kakaoMapKey) || '';
       if (appKey) {

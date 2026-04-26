@@ -10,8 +10,9 @@ window.Prod01View = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
@@ -279,6 +280,7 @@ window.Prod01View = {
     });
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       const main = getScrollEl();
       main.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('keydown', onKeydown);

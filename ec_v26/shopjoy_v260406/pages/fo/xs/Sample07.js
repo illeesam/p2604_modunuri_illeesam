@@ -8,8 +8,9 @@ window.XsSample07 = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
@@ -535,6 +536,7 @@ window.XsSample07 = {
 
     /* ===== Mount ===== */
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       loadSettings(); refreshLs();
       /* 샘플 데이터: 빈 상태로 시작 */
       uiState.treeLoaded = true;

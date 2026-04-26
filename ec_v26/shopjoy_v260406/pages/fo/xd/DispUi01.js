@@ -10,8 +10,9 @@ window.DispUi01 = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
@@ -27,6 +28,7 @@ window.DispUi01 = {
         fnLoadCodes();
       }
     });
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     const dispDataset = window.dispDataset || { displays: [], codes: [] };
     const qs = new URLSearchParams(location.search);
     const params = {

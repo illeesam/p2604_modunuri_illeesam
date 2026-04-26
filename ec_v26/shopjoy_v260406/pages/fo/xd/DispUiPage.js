@@ -10,8 +10,9 @@ window.DispUiPage = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
@@ -27,6 +28,7 @@ window.DispUiPage = {
         fnLoadCodes();
       }
     });
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     /* ── URL 파라미터 파싱 ── */
     const qs = new URLSearchParams(location.search);

@@ -7,8 +7,9 @@ window.XsSample03 = {
     const codes = reactive({});
 
     const isAppReady = computed(() => {
+      const initStore = window.useFoAppInitStore?.();
       const codeStore = window.useFoCodeStore?.();
-      return codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
@@ -25,6 +26,7 @@ window.XsSample03 = {
       }
     });
 
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     return { uiState, codes };
   },
   template: `<div style="padding:40px;">pages/fo/xs/Sample03.js</div>`,
