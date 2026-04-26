@@ -202,6 +202,8 @@ window.CmNoticeMng = {
   template: /* html */`
 <div>
   <div class="page-title">공지사항관리</div>
+
+  <!-- ── 검색 영역 ─────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="제목 검색" />
@@ -227,7 +229,11 @@ window.CmNoticeMng = {
       </div>
     </div>
   </div>
+
+  <!-- ── 목록 영역 ─────────────────────────────────────────────────────── -->
   <div class="card">
+
+    <!-- ── 툴바 ─────────────────────────────────────────────────────────── -->
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>공지사항목록 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
       <div style="display:flex;gap:6px;">
@@ -235,6 +241,8 @@ window.CmNoticeMng = {
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
+
+    <!-- ── 테이블 ────────────────────────────────────────────────────────── -->
     <table class="bo-table">
       <thead>
         <tr>
@@ -272,6 +280,8 @@ window.CmNoticeMng = {
         </tr>
       </tbody>
     </table>
+
+    <!-- ── 페이징 ────────────────────────────────────────────────────────── -->
     <div class="pagination">
       <div></div>
       <div class="pager">
@@ -287,7 +297,10 @@ window.CmNoticeMng = {
         </select>
       </div>
     </div>
+
   </div>
+
+  <!-- ── 상세 패널 (인라인 임베드) ─────────────────────────────────────── -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
@@ -302,6 +315,7 @@ window.CmNoticeMng = {
       :view-mode="cfIsViewMode"
     />
   </div>
+
 </div>
 `
 };
