@@ -3,6 +3,7 @@ window.SyDeptMng = {
   name: 'SyDeptMng',
   props: ['navigate', 'showToast', 'showConfirm'],
   setup(props) {
+    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const depts = reactive([]);
     const uiState = reactive({ checkAll: false, loading: false, error: null, isPageCodeLoad: false, selectedTreeId: null, focusedIdx: null});

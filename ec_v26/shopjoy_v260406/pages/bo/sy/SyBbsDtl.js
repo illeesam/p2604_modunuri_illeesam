@@ -281,4 +281,9 @@ window.SyBbsDtl = {
       <div class="detail-row"><span class="detail-label">사용여부</span><span class="detail-value">{{ selectedBbm.useYn==='Y'?'사용':'미사용' }}</span></div>
       <div style="margin-top:16px;text-align:right;">
         <button class="btn btn-secondary" @click="showBbmDetail=false">닫기</button>
-      
+      </div>
+    </div>
+  </div>
+</div>
+`
+};

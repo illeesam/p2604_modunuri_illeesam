@@ -3,6 +3,7 @@ window.SyCodeMng = {
   name: 'SyCodeMng',
   props: ['navigate', 'showToast', 'showConfirm'],
   setup(props) {
+    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const codes = reactive([]);
     const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false, selectedGrp: '', grpSelectedPath: '', focusedIdx: null, selectedCodeId: null, dragSrc: null, activeCodeTab: '일반'});

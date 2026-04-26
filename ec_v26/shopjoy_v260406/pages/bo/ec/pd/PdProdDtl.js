@@ -4,6 +4,7 @@ window.PdProdDtl = {
   name: 'PdProdDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
+    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
     const products = reactive([]);
     const boUsers = reactive([]);

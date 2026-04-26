@@ -3,6 +3,7 @@ window.DpDispUiDtl = {
   name: 'DpDispUiDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
+    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const codes = reactive({ disp_ui_types: [] });
     const displays = reactive([]);

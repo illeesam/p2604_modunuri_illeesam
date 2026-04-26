@@ -3,6 +3,7 @@ window.PdCategoryDtl = {
   name: 'PdCategoryDtl',
   props: ['navigate', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
   setup(props) {
+    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const categories = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });

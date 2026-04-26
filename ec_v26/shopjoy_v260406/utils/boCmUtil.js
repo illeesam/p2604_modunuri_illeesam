@@ -68,6 +68,14 @@
 
   window.boCmUtil = { DATE_RANGE_OPTIONS, getDateRange, isInRange };
 
+  /* nextId(arr, key): 배열에서 key 컬럼의 최대 숫자 +1 반환 (신규 ID 채번용 임시 헬퍼) */
+  function nextIdFn(arr, key) {
+    const list = Array.isArray(arr) ? arr : ((arr && arr.value) || []);
+    const max = list.reduce((m, x) => Math.max(m, Number(x?.[key]) || 0), 0);
+    return max + 1;
+  }
+  window.nextId = { value: nextIdFn };
+
   /* ── 공개 대상(Visibility) 유틸 ──
    * 저장 포맷: '^MEMBER^VIP^' (양끝 ^ 래핑). 공개 안 함=''.
    */

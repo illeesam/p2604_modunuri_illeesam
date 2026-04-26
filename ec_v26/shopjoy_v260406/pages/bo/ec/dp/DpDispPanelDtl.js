@@ -3,6 +3,7 @@ window.DpDispPanelDtl = {
   name: 'DpDispPanelDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
   setup(props) {
+    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const panels = reactive([]);
     const uiState = reactive({ htmlSourceMode: false, libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false, isPageCodeLoad: false, error: null, tab: 'info', previewMode: 'default', previewPaneWidth: 520, libPickMode: 'copy', htmlDescEl: null, htmlContentEl: null });

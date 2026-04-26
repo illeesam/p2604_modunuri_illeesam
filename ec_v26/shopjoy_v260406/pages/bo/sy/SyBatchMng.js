@@ -3,6 +3,7 @@ window.SyBatchMng = {
   name: 'SyBatchMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const batches = reactive([]);
     const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false, selectedPath: null, focusedIdx: null});

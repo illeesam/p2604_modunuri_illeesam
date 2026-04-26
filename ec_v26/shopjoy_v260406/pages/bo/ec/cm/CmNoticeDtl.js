@@ -3,6 +3,7 @@ window.CmNoticeDtl = {
   name: 'CmNoticeDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'editId', 'setApiRes', 'viewMode'],
   setup(props) {
+    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, onBeforeUnmount, onUnmounted, watch } = Vue;
     const notices = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
@@ -64,10 +65,12 @@ window.CmNoticeDtl = {
         const n = window.safeArrayUtils.safeFind(notices, x => x.noticeId === props.editId);
         if (n) Object.assign(form, { ...n });
       }
-      if (typeof Quill !== 'undefined') {
-        quill = new Quill('#notice-editor', { theme: 'snow', placeholder: '공지 내용을 입력하세요.' });
-        if (form.contentHtml) quill.root.innerHTML = form.contentHtml;
-        quill.on('text-change', () => { form.contentHtml = quill.root.innerHTML; });
+      if (typeof Quill !== 'undefined' && !props.viewMode && document.getElementById('notice-editor')) {
+        try {
+          quill = new Quill('#notice-editor', { theme: 'snow', placeholder: '공지 내용을 입력하세요.' });
+          if (form.contentHtml) quill.root.innerHTML = form.contentHtml;
+          quill.on('text-change', () => { form.contentHtml = quill.root.innerHTML; });
+        } catch (e) { console.warn('[Quill init]', e); }
       }
     });
     onBeforeUnmount(() => { quill = null; });
