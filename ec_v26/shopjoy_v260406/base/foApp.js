@@ -240,8 +240,11 @@
       }
       return p;
     };
-    const products = reactive([]);
-    const selectedProduct = ref(null);
+    /* SITE_CONFIG로 초기값 동기 세팅 → foApi 로드 성공 시 덮어씀 */
+    const _initFallback = window.SITE_CONFIG?.products || [];
+    _initFallback.forEach(_assignImg);
+    const products = reactive([..._initFallback]);
+    const selectedProduct = ref(_initFallback.length > 0 ? _initFallback[0] : null);
     const selectProduct = p => {
       selectedProduct.value = p;
       navigate('prodView');
@@ -313,9 +316,7 @@
         list.forEach(_assignImg);
         products.splice(0, products.length, ...list);
       } catch (e) {
-        const fallback = window.SITE_CONFIG?.products || [];
-        fallback.forEach(_assignImg);
-        products.splice(0, products.length, ...fallback);
+        /* 초기값이 이미 SITE_CONFIG fallback이므로 API 실패 시 추가 처리 불필요 */
       }
       _restoreAfterProducts();
     };

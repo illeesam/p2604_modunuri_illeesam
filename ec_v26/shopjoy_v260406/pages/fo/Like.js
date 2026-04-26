@@ -3,7 +3,7 @@ window.Like = {
   name: 'Like',
   props: ['navigate', 'config', 'products', 'likes', 'toggleLike', 'selectProduct'],
   setup(props) {
-    const { reactive, computed, watch } = Vue;
+    const { reactive, computed, watch, onMounted } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});

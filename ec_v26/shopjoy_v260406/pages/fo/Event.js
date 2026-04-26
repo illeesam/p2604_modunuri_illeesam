@@ -3,7 +3,7 @@ window.EventPage = {
   name: 'EventPage',
   props: ['navigate', 'config'],
   setup(props) {
-    const { ref, reactive, computed, watch } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'ongoing', sortBy: 'latest'});;
     const codes = reactive({});

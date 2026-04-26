@@ -4,7 +4,7 @@ window.Cart = {
   props: ['navigate', 'config', 'cart', 'cartCount', 'removeFromCart', 'updateCartQty', 'showConfirm', 'clearCart'],
   emits: [],
   setup(props) {
-    const { computed, ref, reactive, watch } = Vue;
+    const { computed, ref, reactive, watch, onMounted } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, checkedIdxs: new Set() });
     const codes = reactive({});

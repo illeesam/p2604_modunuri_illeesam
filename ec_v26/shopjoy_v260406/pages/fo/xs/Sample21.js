@@ -2,7 +2,7 @@
 window.XsSample21 = {
   name: 'XsSample21',
   setup(props) {
-    const { ref, reactive, computed, watch } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 

@@ -3,7 +3,7 @@ window.EventView = {
   name: 'EventView',
   props: ['navigate', 'config', 'editId'],
   setup(props) {
-    const { ref, reactive, computed, watch } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 0});
     const codes = reactive({});

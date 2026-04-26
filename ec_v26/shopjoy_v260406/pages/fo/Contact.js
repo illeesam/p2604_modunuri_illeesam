@@ -90,7 +90,7 @@ window.Contact = {
 </div>
   `,
   setup(props) {
-    const { reactive, ref, computed, watch } = Vue;
+    const { reactive, ref, computed, watch, onMounted } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, openFaq: null});
     const codes = reactive({});
 

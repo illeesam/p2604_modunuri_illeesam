@@ -22,9 +22,9 @@ window.BlogView = {
         posts.splice(0, posts.length, ...res.data);
       } catch (e) {
         posts.splice(0, posts.length, ...[
-          { id: 1, title: 'Anteposuerit litterarum formas.', category: 'Fashion', author: '김민지', date: '2026.04.10', readTime: '5분', tags: ['패션', '신상품', '코튼100%'], viewCount: 1240, img: 'assets/cdn/prod/img/blog/blog-big.jpg', imgSm: 'assets/cdn/prod/img/blog/blog-sm-1.jpg', imgMid: 'assets/cdn/prod/img/blog/blog-big-2.jpg', body: `Elga Ksenia shall Tirza use these kitchen utensils designed for <strong>Élinka</strong>, a new design—oriented brand for consumers introduced at the Ambiente show in February 2016. Lightweight anodized aluminum, bright colors, stainless steel and matte plastic shapes.\n\nAnd round tips on the cutting feature of these products designed for the kitchen. Functional materials are used everyday: chopping boards, utensils and colanders.\n\n<strong>Elga</strong> is a two-color melamine salad bowl where vegetables can be washed, drained and served. The disk at the bottom of the bowl can be turned counterclockwise to drain water when washing vegetables and it can be turned clockwise to lock the drain and hold condiments in the bowl when serving.`, comments: [{ id: 1, author: '이수진', date: '2026.04.11', text: '정말 유용한 정보네요! 다음 시즌 스타일링에 참고하겠습니다.' },{ id: 2, author: '박지현', date: '2026.04.11', text: '사진도 예쁘고 설명도 자세해서 좋아요.' },{ id: 3, author: '정다운', date: '2026.04.12', text: '이런 글 더 많이 올려주세요!' }] },
-          { id: 2, title: '2026 봄 트렌드 컬러 가이드', category: 'Trend', author: '이수진', date: '2026.04.08', readTime: '7분', tags: ['트렌드', '컬러', '2026SS'], viewCount: 890, img: 'assets/cdn/prod/img/blog/blog-big-3.jpg', imgSm: 'assets/cdn/prod/img/blog/blog-sm-2.jpg', imgMid: 'assets/cdn/prod/img/blog/blog-big-4.jpg', body: `올 봄 주목해야 할 트렌드 컬러는 <strong>파스텔 라벤더</strong>, <strong>소프트 민트</strong>, <strong>코랄 핑크</strong>입니다.\n\n파스텔 컬러는 부드러운 분위기를 연출하면서도 세련된 느낌을 줍니다. 특히 라벤더 컬러는 올해의 트렌드 컬러로 선정되어 많은 브랜드에서 활용하고 있습니다.\n\n코디 시 파스텔 톤은 화이트나 베이지와 매칭하면 깔끔하고, 블랙이나 네이비와 매칭하면 모던한 느낌을 줄 수 있습니다.`, comments: [{ id: 1, author: '강하늘', date: '2026.04.09', text: '라벤더 컬러 너무 예뻐요!' }] },
-          { id: 3, title: '미니멀 옷장 정리법', category: 'Lifestyle', author: '박지현', date: '2026.04.05', readTime: '4분', tags: ['라이프스타일', '정리', '미니멀'], viewCount: 650, img: 'assets/cdn/prod/img/blog/blog-big-5.jpg', imgSm: 'assets/cdn/prod/img/blog/blog-sm-3.jpg', imgMid: 'assets/cdn/prod/img/blog/blog-big-6.jpg', body: `효율적인 옷장 정리를 위한 <strong>캡슐 워드로브</strong> 구성 팁을 소개합니다.\n\n우선, 자신의 스타일에 맞는 기본 컬러 팔레트를 정합니다. 뉴트럴 톤(화이트, 베이지, 그레이, 블랙)을 기반으로 하나의 포인트 컬러를 추가합니다.\n\n계절이 바뀔 때마다 입지 않는 옷을 정리하고, 새로운 아이템은 필요성을 충분히 고민한 후 구매하는 것이 중요합니다.`, comments: [] },
+          { id: 1, title: 'Anteposuerit litterarum formas.', category: 'Fashion', author: '김민지', date: '2026.04.10', readTime: '5분', tags: ['패션', '신상품', '코튼100%'], viewCount: 1240, img: 'assets/cdn/prod/img/blog/blog-big.jpg', imgSm: 'assets/cdn/prod/img/blog/sm/blog-sm-1.jpg', imgMid: 'assets/cdn/prod/img/blog/blog-big-2.jpg', body: `Elga Ksenia shall Tirza use these kitchen utensils designed for <strong>Élinka</strong>, a new design—oriented brand for consumers introduced at the Ambiente show in February 2016. Lightweight anodized aluminum, bright colors, stainless steel and matte plastic shapes.\n\nAnd round tips on the cutting feature of these products designed for the kitchen. Functional materials are used everyday: chopping boards, utensils and colanders.\n\n<strong>Elga</strong> is a two-color melamine salad bowl where vegetables can be washed, drained and served. The disk at the bottom of the bowl can be turned counterclockwise to drain water when washing vegetables and it can be turned clockwise to lock the drain and hold condiments in the bowl when serving.`, comments: [{ id: 1, author: '이수진', date: '2026.04.11', text: '정말 유용한 정보네요! 다음 시즌 스타일링에 참고하겠습니다.' },{ id: 2, author: '박지현', date: '2026.04.11', text: '사진도 예쁘고 설명도 자세해서 좋아요.' },{ id: 3, author: '정다운', date: '2026.04.12', text: '이런 글 더 많이 올려주세요!' }] },
+          { id: 2, title: '2026 봄 트렌드 컬러 가이드', category: 'Trend', author: '이수진', date: '2026.04.08', readTime: '7분', tags: ['트렌드', '컬러', '2026SS'], viewCount: 890, img: 'assets/cdn/prod/img/blog/blog-big-3.jpg', imgSm: 'assets/cdn/prod/img/blog/sm/blog-sm-2.jpg', imgMid: 'assets/cdn/prod/img/blog/blog-big-4.jpg', body: `올 봄 주목해야 할 트렌드 컬러는 <strong>파스텔 라벤더</strong>, <strong>소프트 민트</strong>, <strong>코랄 핑크</strong>입니다.\n\n파스텔 컬러는 부드러운 분위기를 연출하면서도 세련된 느낌을 줍니다. 특히 라벤더 컬러는 올해의 트렌드 컬러로 선정되어 많은 브랜드에서 활용하고 있습니다.\n\n코디 시 파스텔 톤은 화이트나 베이지와 매칭하면 깔끔하고, 블랙이나 네이비와 매칭하면 모던한 느낌을 줄 수 있습니다.`, comments: [{ id: 1, author: '강하늘', date: '2026.04.09', text: '라벤더 컬러 너무 예뻐요!' }] },
+          { id: 3, title: '미니멀 옷장 정리법', category: 'Lifestyle', author: '박지현', date: '2026.04.05', readTime: '4분', tags: ['라이프스타일', '정리', '미니멀'], viewCount: 650, img: 'assets/cdn/prod/img/blog/blog-big-5.jpg', imgSm: 'assets/cdn/prod/img/blog/sm/blog-sm-3.jpg', imgMid: 'assets/cdn/prod/img/blog/blog-big-6.jpg', body: `효율적인 옷장 정리를 위한 <strong>캡슐 워드로브</strong> 구성 팁을 소개합니다.\n\n우선, 자신의 스타일에 맞는 기본 컬러 팔레트를 정합니다. 뉴트럴 톤(화이트, 베이지, 그레이, 블랙)을 기반으로 하나의 포인트 컬러를 추가합니다.\n\n계절이 바뀔 때마다 입지 않는 옷을 정리하고, 새로운 아이템은 필요성을 충분히 고민한 후 구매하는 것이 중요합니다.`, comments: [] },
         ]);
       }
     };
@@ -129,9 +129,8 @@ window.BlogView = {
       <h1 style="font-size:1.8rem;font-weight:900;color:var(--text-primary);line-height:1.35;margin-bottom:24px;">{{ cfPost.title }}</h1>
 
       <!-- 히어로 이미지 -->
-      <div style="width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:4px;margin-bottom:28px;background:var(--bg-base);">
-        <img :src="cfPost.img" :alt="cfPost.title" style="width:100%;height:100%;object-fit:cover;"
-          @error="$event.target.style.display='none'" />
+      <div v-if="cfPost.img" style="width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:4px;margin-bottom:28px;background:var(--bg-base);">
+        <img :src="cfPost.img" :alt="cfPost.title" style="width:100%;height:100%;object-fit:cover;" />
       </div>
 
       <!-- 본문 첫 단락 -->
@@ -140,9 +139,8 @@ window.BlogView = {
         v-html="cfBodyParagraphs[0]"></div>
 
       <!-- 중간 이미지 -->
-      <div style="width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:4px;margin-bottom:24px;background:var(--bg-base);">
-        <img :src="cfPost.imgMid" :alt="cfPost.title" style="width:100%;height:100%;object-fit:cover;"
-          @error="$event.target.style.display='none'" />
+      <div v-if="cfPost.imgMid" style="width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:4px;margin-bottom:24px;background:var(--bg-base);">
+        <img :src="cfPost.imgMid" :alt="cfPost.title" style="width:100%;height:100%;object-fit:cover;" />
       </div>
 
       <!-- 나머지 본문 단락 -->
@@ -238,8 +236,7 @@ window.BlogView = {
             style="display:flex;gap:12px;cursor:pointer;"
             @click="navigate('blogView', { editId: lp.id })">
             <div style="width:64px;height:64px;border-radius:4px;overflow:hidden;flex-shrink:0;background:var(--bg-base);">
-              <img :src="lp.imgSm" :alt="lp.title" style="width:100%;height:100%;object-fit:cover;"
-                @error="$event.target.style.display='none'" />
+              <img v-if="lp.imgSm" :src="lp.imgSm" :alt="lp.title" style="width:100%;height:100%;object-fit:cover;" />
             </div>
             <div style="flex:1;min-width:0;">
               <div style="font-size:0.82rem;font-weight:600;color:var(--text-primary);line-height:1.4;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ lp.title }}</div>
@@ -287,11 +284,10 @@ window.BlogView = {
         @mouseleave="$event.currentTarget.style.transform=''"
         @click="navigate('blogView', { editId: rp.id })">
         <div style="aspect-ratio:4/3;overflow:hidden;border-radius:4px;margin-bottom:14px;background:var(--bg-base);">
-          <img :src="rp.img" :alt="rp.title"
+          <img v-if="rp.img" :src="rp.img" :alt="rp.title"
             style="width:100%;height:100%;object-fit:cover;transition:transform .35s;"
             @mouseenter="$event.target.style.transform='scale(1.04)'"
-            @mouseleave="$event.target.style.transform=''"
-            @error="$event.target.style.display='none'" />
+            @mouseleave="$event.target.style.transform=''" />
         </div>
         <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:6px;">{{ rp.date }}</div>
         <h3 style="font-size:0.95rem;font-weight:700;color:var(--text-primary);line-height:1.4;margin-bottom:6px;">{{ rp.title }}</h3>

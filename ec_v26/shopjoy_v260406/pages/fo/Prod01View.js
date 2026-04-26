@@ -15,9 +15,23 @@ window.Prod01View = {
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
+    const svProduct = ref(props.product || null);
+
+    const handleFetchData = async () => {
+      const productId = svProduct.value?.productId;
+      if (!productId) return;
+      try {
+        const res = await window.foApi.get('/fo/product/view', { params: { productId } });
+        svProduct.value = res.data;
+      } catch (e) {
+        svProduct.value = props.product;
+      }
+    };
+
     const fnLoadCodes = async () => {
       try {
         uiState.isPageCodeLoad = true;
+        handleFetchData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -88,7 +102,7 @@ window.Prod01View = {
     };
 
     const cfMockImages = computed(() => {
-      const p = props.product;
+      const p = svProduct.value;
       if (!p) return [];
       const opt1s = p.opt1s || [];
       const colorIdx = opt1s.findIndex(c => c.name === uiState.selectedColor?.name);
@@ -111,7 +125,7 @@ window.Prod01View = {
     ];
 
     const cfMockReviews = computed(() => {
-      const p = props.product;
+      const p = svProduct.value;
       if (!p) return [];
       const pid    = p.productId || 1;
       const colors = p.opt1s || [];
@@ -286,7 +300,7 @@ window.Prod01View = {
       window.addEventListener('keydown', onKeydown);
       window.addEventListener('popstate', onPopState);
       /* 품절/중지 아닌 첫 색상 자동 선택 */
-      const firstAvail = (props.product?.opt1s || []).find(c => colorStatus(c) === 'ok');
+      const firstAvail = (svProduct.value?.opt1s || []).find(c => colorStatus(c) === 'ok');
       if (firstAvail) uiState.selectedColor = firstAvail;
     });
     onBeforeUnmount(() => {
@@ -297,6 +311,7 @@ window.Prod01View = {
     });
 
     watch(() => props.product, (p) => {
+      svProduct.value = p;
       uiState.selectedColor = (p?.opt1s || []).find(c => colorStatus(c) === 'ok') || null;
       uiState.selectedSize  = null;
       uiState.qty           = 1;
@@ -315,7 +330,7 @@ window.Prod01View = {
 
     /* ── 옵션 재고 상태 (목업: 색상 + 사이즈) ── */
     const cfColorStockMap = computed(() => {
-      const p = props.product;
+      const p = svProduct.value;
       if (!p) return {};
       const opt1s = p.opt1s || [];
       const pid = p.productId || 1;
@@ -331,7 +346,7 @@ window.Prod01View = {
     const colorStatus = (c) => cfColorStockMap.value[c?.name] || 'ok';
 
     const cfSizeStockMap = computed(() => {
-      const p = props.product;
+      const p = svProduct.value;
       if (!p) return {};
       const sizes = p.opt2s || [];
       const pid = p.productId || 1;
@@ -348,12 +363,12 @@ window.Prod01View = {
 
     /* ── 옵션별 가격 ── */
     const cfBasePrice = computed(() => {
-      const numStr = String(props.product?.price || '').replace(/[^0-9]/g, '');
+      const numStr = String(svProduct.value?.price || '').replace(/[^0-9]/g, '');
       return Number(numStr) || 0;
     });
 
     /* opt2Prices에서 사이즈 delta 조회 */
-    const getSizeDelta = (sizeName) => (props.product?.opt2Prices || {})[sizeName] || 0;
+    const getSizeDelta = (sizeName) => (svProduct.value?.opt2Prices || {})[sizeName] || 0;
 
     /* 선택된 색상+사이즈의 최종 단가 */
     const cfSelectedUnitPrice = computed(() => {
@@ -364,7 +379,7 @@ window.Prod01View = {
 
     /* 모든 옵션 조합의 최소~최대 가격 범위 */
     const cfPriceRange = computed(() => {
-      const p = props.product;
+      const p = svProduct.value;
       if (!p || !cfBasePrice.value) return null;
       const colorDeltas = (p.opt1s || []).map(c => c.priceDelta || 0);
       const sizeDeltas  = Object.values(p.opt2Prices || {}).concat([0]);
@@ -380,7 +395,7 @@ window.Prod01View = {
        - 색상만 선택          → 색상가격 (사이즈 delta 존재 시 범위)
        - 미선택               → 전체 범위 또는 기본가 */
     const cfDisplayPrice = computed(() => {
-      const p = props.product;
+      const p = svProduct.value;
       if (!p || !cfBasePrice.value) return p?.price || '';
 
       const colorDelta = uiState.selectedColor?.priceDelta || 0;
@@ -411,8 +426,8 @@ window.Prod01View = {
 
     /* 바로구매 총 금액 */
     const cfQuickBuyTotal = computed(() => {
-      if (!props.product) return '';
-      if (!cfSelectedUnitPrice.value) return props.product.price;
+      if (!svProduct.value) return '';
+      if (!cfSelectedUnitPrice.value) return svProduct.value.price;
       const total = cfSelectedUnitPrice.value * uiState.qty;
       return total.toLocaleString('ko-KR') + '원';
     });
@@ -433,7 +448,7 @@ window.Prod01View = {
       let ok = true;
       if (!uiState.selectedColor) { uiState.colorError = '색상을 선택해주세요.'; ok = false; }
       /* 사이즈 FREE 또는 미설정이면 자동 선택 */
-      const sizes = props.product?.opt2s || [];
+      const sizes = svProduct.value?.opt2s || [];
       if (!uiState.selectedSize) {
         if (sizes.length === 1 && sizes[0] === 'FREE') { uiState.selectedSize = 'FREE'; }
         else if (sizes.length === 0) { uiState.selectedSize = 'FREE'; }
@@ -444,8 +459,8 @@ window.Prod01View = {
 
     const handleAddToCart = () => {
       if (!validate()) return;
-      props.addToCart(props.product, uiState.selectedColor, uiState.selectedSize, uiState.qty);
-      uiState.selectedColor = props.product?.opt1s?.[0] || null;
+      props.addToCart(svProduct.value, uiState.selectedColor, uiState.selectedSize, uiState.qty);
+      uiState.selectedColor = svProduct.value?.opt1s?.[0] || null;
       uiState.selectedSize  = null;
       uiState.qty = 1;
     };
@@ -456,7 +471,7 @@ window.Prod01View = {
       uiState.quickBuyOpen = false;
       props.navigate('order', {
         instantOrder: {
-          product: props.product,
+          product: svProduct.value,
           color: uiState.selectedColor,
           size: uiState.selectedSize,
           qty: uiState.qty,
@@ -467,9 +482,9 @@ window.Prod01View = {
     /* 드로어 장바구니 담기 */
     const execCartFromDrawer = () => {
       if (!validate()) return;
-      props.addToCart(props.product, uiState.selectedColor, uiState.selectedSize, uiState.qty);
+      props.addToCart(svProduct.value, uiState.selectedColor, uiState.selectedSize, uiState.qty);
       uiState.quickBuyOpen = false;
-      uiState.selectedColor = props.product?.opt1s?.[0] || null;
+      uiState.selectedColor = svProduct.value?.opt1s?.[0] || null;
       uiState.selectedSize  = null;
       uiState.qty = 1;
     };
