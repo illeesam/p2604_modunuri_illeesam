@@ -6,6 +6,7 @@ window.OdOrderMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const orders = reactive([]);
     const members = reactive([]);
+    const claims = reactive([]);
     const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status'});
     const codes = reactive({ order_statuses: [], payment_methods: [], dliv_statuses: [] });
 
@@ -14,12 +15,14 @@ window.OdOrderMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
-        const [ordersRes, membersRes] = await Promise.all([
+        const [ordersRes, membersRes, claimsRes] = await Promise.all([
           window.boApi.get('/bo/ec/od/order/page', { params, headers: { 'X-UI-Nm': '주문관리', 'X-Cmd-Nm': '조회' } }),
-          window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '주문관리', 'X-Cmd-Nm': '조회' } })
+          window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '주문관리', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/ec/od/claim/page',  { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '주문관리', 'X-Cmd-Nm': '클레임조회' } }),
         ]);
         orders.splice(0, orders.length, ...(ordersRes.data?.data?.pageList || ordersRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
+        claims.splice(0, claims.length, ...(claimsRes.data?.data?.pageList || claimsRes.data?.data?.list || []));
         pager.pageTotalCount = ordersRes.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = ordersRes.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, ordersRes.data?.data?.pageCond || pager.pageCond);
@@ -285,7 +288,7 @@ const isAppReady = computed(() => {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), orders, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, APPROVAL_ACTIONS, REQ_TARGETS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), orders, members, claims, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, APPROVAL_ACTIONS, REQ_TARGETS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>

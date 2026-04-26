@@ -168,6 +168,20 @@ GET /api/fo/pd/prod/{prodId}
 
 ## 5. 프론트 로딩 표준
 
+### boApi URL 작성 규칙
+
+`window.boApi` (axios 래퍼)는 내부적으로 `/api` prefix를 **자동으로 추가**한다.
+
+| 구분 | 형태 | 실제 요청 URL |
+|---|---|---|
+| ✅ 올바른 코드 | `boApi.get('/bo/ec/pd/prod/...')` | `GET /api/bo/ec/pd/prod/...` |
+| ❌ 잘못된 코드 | `boApi.get('/api/bo/ec/pd/prod/...')` | `GET /api/api/bo/ec/pd/prod/...` (중복) |
+
+- 코드에서는 항상 `/bo/...` 또는 `/fo/...` 로 시작
+- 전체 검색 시: `boApi.get('/bo/ec/pd/prod/` 패턴으로 검색
+
+---
+
 ### BO 상품수정 오픈 시 (`Promise.all` 병렬)
 
 ```js

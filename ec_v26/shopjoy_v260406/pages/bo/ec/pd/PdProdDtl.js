@@ -42,6 +42,13 @@ window.PdProdDtl = {
       }
     });
 
+    // 상품설명 탭 전환 시 Quill 마운트 + 내용 재주입
+    watch(() => uiState.topTab, async (tab) => {
+      if (tab !== 'content') return;
+      await nextTick();
+      fnMountQuills();
+    });
+
     // ── 탭별 페이징 상태
     const tabPage = reactive({
       images:  { pageNo: 1, pageSize: 10, totalCount: 0 },
@@ -83,12 +90,12 @@ window.PdProdDtl = {
           window.boApi.get('/bo/ec/pd/category/page',   { params: { pageNo: 1, pageSize: 1000 }, headers: { 'X-UI-Nm': '상품상세', 'X-Cmd-Nm': '조회' } }),
         ];
         if (!isNew) baseCalls.push(
-          window.boApi.get(`/api/bo/ec/pd/prod/${props.editId}`,          HDR('기본정보조회')),
-          window.boApi.get(`/api/bo/ec/pd/prod/${props.editId}/images`,   HDR('이미지조회')),
-          window.boApi.get(`/api/bo/ec/pd/prod/${props.editId}/opts`,     HDR('옵션조회')),
-          window.boApi.get(`/api/bo/ec/pd/prod/${props.editId}/skus`,     HDR('SKU조회')),
-          window.boApi.get(`/api/bo/ec/pd/prod/${props.editId}/contents`, HDR('상품설명조회')),
-          window.boApi.get(`/api/bo/ec/pd/prod/${props.editId}/rels`,     HDR('연관상품조회')),
+          window.boApi.get(`/bo/ec/pd/prod/${props.editId}`,          HDR('기본정보조회')),
+          window.boApi.get(`/bo/ec/pd/prod/${props.editId}/images`,   HDR('이미지조회')),
+          window.boApi.get(`/bo/ec/pd/prod/${props.editId}/opts`,     HDR('옵션조회')),
+          window.boApi.get(`/bo/ec/pd/prod/${props.editId}/skus`,     HDR('SKU조회')),
+          window.boApi.get(`/bo/ec/pd/prod/${props.editId}/contents`, HDR('상품설명조회')),
+          window.boApi.get(`/bo/ec/pd/prod/${props.editId}/rels`,     HDR('연관상품조회')),
         );
         const r = await Promise.all(baseCalls);
 
@@ -116,7 +123,6 @@ window.PdProdDtl = {
               items: optItems_.filter(i => i.optId === g.optId).map(i => ({ ...i, _id: _itemSeq++, nm: i.optNm, val: i.optVal || '' }))
             }));
             optGroups.splice(0, optGroups.length, ...built);
-            uiState.useOpt = true;
           }
 
           // SKU [5]
@@ -332,6 +338,24 @@ window.PdProdDtl = {
         });
       }
     };
+    const QUILL_TOOLBAR = [[{ header: [1,2,3,false] }], ['bold','italic','underline'],[{color:[]},{background:[]}],[{list:'ordered'},{list:'bullet'}],['link','image','clean']];
+    const fnMountQuills = () => {
+      safeFilter(contentBlocks, b => b.type === 'html').forEach(block => {
+        const el = document.getElementById('quill-block-' + block._id);
+        if (!el) return;
+        if (!_blockQuills[block._id]) {
+          const q = new Quill(el, { theme: 'snow', placeholder: '내용을 입력해주세요.', modules: { toolbar: QUILL_TOOLBAR } });
+          _blockQuills[block._id] = q;
+          q.on('text-change', () => { block.content = q.root.innerHTML; });
+        }
+        // content가 있으면 항상 주입 (dangerouslyPasteHTML로 delta 동기화)
+        const q = _blockQuills[block._id];
+        if (block.content && q.root.innerHTML.replace(/<p><br><\/p>/g,'') === '') {
+          q.clipboard.dangerouslyPasteHTML(block.content);
+        }
+      });
+    };
+
     const removeContentBlock = (idx) => {
       const block = contentBlocks[idx];
       delete _blockQuills[block._id];
@@ -536,6 +560,10 @@ window.PdProdDtl = {
           // SKU — tabData.skus에서 채움
           if (tabData.skus.length) skus.splice(0, skus.length, ...tabData.skus);
 
+          // 옵션 사용 여부 — DB 값 우선 반영 (없으면 true 기본)
+          if (p.useOptYn !== undefined) uiState.useOpt = p.useOptYn === 'Y';
+          else uiState.useOpt = true;
+
           if (p.salePlans?.length) salePlans.splice(0, salePlans.length, ...p.salePlans.map(r => ({ ...r, _id: planIdSeq++, _checked: false })));
           // 카테고리 N개 로드 (pd_category_prod)
           const pid = String(p.prodId);
@@ -550,17 +578,7 @@ window.PdProdDtl = {
         }
       }
       await nextTick();
-      // HTML 블록 Quill 마운트
-      safeFilter(contentBlocks, b => b.type === 'html').forEach(block => {
-        const el = document.getElementById('quill-block-' + block._id);
-        if (el && !_blockQuills[block._id]) {
-          const q = new Quill(el, { theme: 'snow', placeholder: '내용을 입력해주세요.',
-            modules: { toolbar: [[{ header: [1,2,3,false] }], ['bold','italic','underline'],[{color:[]},{background:[]}],[{list:'ordered'},{list:'bullet'}],['link','image','clean']] } });
-          if (block.content) q.root.innerHTML = block.content;
-          _blockQuills[block._id] = q;
-          q.on('text-change', () => { block.content = q.root.innerHTML; });
-        }
-      });
+      fnMountQuills();
       // 스플릿 패널 divider 마우스 리스너
       _divMoveH = (e) => {
         if (!uiState.isDraggingDivider || !contentSplitRef.value) return;
@@ -654,7 +672,7 @@ window.PdProdDtl = {
       onCodeDragStart, onCodeDragOver, onCodeDrop,
       salePlans, cfPlanVisible, cfPlanAllChecked, addPlanRow, onPlanChange, deletePlanChecked, planRowStyle,
       cfMarginRateCalc, cfDiscountRate,
-      contentBlocks, addContentBlock, removeContentBlock, onBlockFileChange,
+      contentBlocks, addContentBlock, removeContentBlock, onBlockFileChange, fnMountQuills,
       onBlockDragStart, onBlockDragOver, onBlockDrop,
       contentSplitRef, onDividerMousedown,
       safeFirst, safeGet, safeFind, safeFilter,
@@ -1045,7 +1063,7 @@ window.PdProdDtl = {
                 <select v-model="item.parentOptItemId"
                   style="width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:24px;">
                   <option value="">전체 공통</option>
-                  <option v-for="p1 in (safeGet(optGroups, 0)?.items||[])" :key="p1?._id" :value="String(p1._id)">{{ p1.nm||'(미입력)' }}</option>
+                  <option v-for="p1 in (optGroups[0]?.items||[])" :key="p1?._id" :value="String(p1._id)">{{ p1.nm||'(미입력)' }}</option>
                 </select>
               </td>
 
@@ -1334,10 +1352,11 @@ window.PdProdDtl = {
 
       <!-- ── 입력 영역 ────────────────────────────────────────────────────── -->
       <div style="flex:1;min-width:0;">
-        <div v-if="!img.previewUrl||img.previewUrl.startsWith('http')" class="form-group" style="margin-bottom:8px;">
+        <div v-if="!img.previewUrl||img.previewUrl.startsWith('http')" class="form-group" style="margin-bottom:4px;">
           <label class="form-label" style="font-size:11px;">이미지 URL</label>
           <input class="form-control" v-model="img.previewUrl" placeholder="https://..." style="font-size:12px;" />
         </div>
+        <div v-if="img.previewUrl" style="font-size:9px;color:#bbb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px;" :title="img.previewUrl">{{ img.previewUrl }}</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <!-- ── opt_item_id_1: 옵션 1단 select ──────────────────────────── -->
           <div class="form-group" style="flex:1;min-width:140px;margin-bottom:4px;">
@@ -1345,7 +1364,7 @@ window.PdProdDtl = {
             <select class="form-control" v-model="img.optItemId1" style="font-size:12px;" @change="img.optItemId2=''">
               <option value="">-- 공통 (NULL) --</option>
               <option v-if="!safeFirst(optGroups)||safeFirst(optGroups).items.length===0" disabled value="">옵션설정 탭에서 1단 옵션을 먼저 추가하세요</option>
-              <option v-for="item in (safeGet(optGroups, 0)?.items||[])" :key="item?._id" :value="item.val||String(item._id)">{{ item.nm + (item.val ? ' (' + item.val + ')' : '') }}</option>
+              <option v-for="item in (optGroups[0]?.items||[])" :key="item?._id" :value="item.val||String(item._id)">{{ item.nm + (item.val ? ' (' + item.val + ')' : '') }}</option>
             </select>
           </div>
           <!-- ── opt_item_id_2: 옵션 2단 select (1단 선택 후 연동) ─────────────── -->
@@ -1566,7 +1585,7 @@ window.PdProdDtl = {
         <div style="display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end;flex-wrap:wrap;">
           <!-- ── 1단 필터 ────────────────────────────────────────────────── -->
           <div style="display:flex;align-items:center;gap:4px;">
-            <span class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ safeGet(optGroups, 0)?.grpNm||'1단' }}</span>
+            <span class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ optGroups[0]?.grpNm||'1단' }}</span>
             <select v-model="skuFilter1" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;"
               @change="skuFilter2=''">
               <option value="">전체</option>
@@ -1688,6 +1707,50 @@ window.PdProdDtl = {
         </div>
         <div class="form-group"></div>
       </div>
+      <!-- 옵션 미사용이지만 기존 SKU 데이터가 남아있는 경우 읽기 전용 목록 표시 -->
+      <template v-if="tabData.skus.length">
+        <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px;">
+          잔존 SKU 데이터 <span class="badge badge-orange" style="margin-left:4px;">{{ tabData.skus.length }}건</span>
+          <span style="font-weight:400;font-size:11px;margin-left:6px;">옵션 미사용 전환 후 남아있는 SKU 이력 (읽기 전용)</span>
+        </div>
+        <div style="overflow-x:auto;margin-bottom:16px;">
+          <table class="bo-table" style="font-size:12px;">
+            <thead>
+              <tr>
+                <th>1단 옵션</th>
+                <th>2단 옵션</th>
+                <th>SKU코드</th>
+                <th style="width:100px;">추가금액</th>
+                <th style="width:80px;">재고</th>
+                <th style="width:110px;">판매상태</th>
+                <th style="width:68px;">판매수량</th>
+                <th style="width:42px;">사용</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="sku in tabData.skus.slice((tabPage.skus.pageNo-1)*tabPage.skus.pageSize, tabPage.skus.pageNo*tabPage.skus.pageSize)" :key="sku.skuId"
+                style="opacity:0.6;background:#f9f9f9;">
+                <td><span class="badge badge-gray" style="font-size:11px;">{{ sku._nm1 || '-' }}</span></td>
+                <td><span class="badge badge-blue" style="font-size:11px;">{{ sku._nm2 || '-' }}</span></td>
+                <td style="color:#888;">{{ sku.skuCode }}</td>
+                <td style="text-align:right;color:#888;">{{ (sku.addPrice||0).toLocaleString() }}원</td>
+                <td style="text-align:right;" :style="(sku.stock||0)===0?'color:#f5222d;font-weight:700;':''">{{ sku.stock||0 }}</td>
+                <td><span class="badge badge-gray" style="font-size:11px;">{{ sku.statusCd }}</span></td>
+                <td style="text-align:right;color:#888;">{{ (sku.saleCnt||0).toLocaleString() }}</td>
+                <td style="text-align:center;"><span :class="sku.useYn==='Y'?'badge badge-green':'badge badge-gray'" style="font-size:10px;">{{ sku.useYn }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-if="tabData.skus.length > tabPage.skus.pageSize" class="pagination" style="margin:8px 0 16px;">
+          <button class="pager" @click="onTabPageChange('skus',1)" :disabled="tabPage.skus.pageNo===1">«</button>
+          <button class="pager" @click="onTabPageChange('skus',tabPage.skus.pageNo-1)" :disabled="tabPage.skus.pageNo===1">‹</button>
+          <button v-for="n in fnTabPageNos('skus')" :key="n" class="pager" :class="{active:tabPage.skus.pageNo===n}" @click="onTabPageChange('skus',n)">{{ n }}</button>
+          <button class="pager" @click="onTabPageChange('skus',tabPage.skus.pageNo+1)" :disabled="tabPage.skus.pageNo===cfTabTotalPages('skus')">›</button>
+          <button class="pager" @click="onTabPageChange('skus',cfTabTotalPages('skus'))" :disabled="tabPage.skus.pageNo===cfTabTotalPages('skus')">»</button>
+          <span class="pager-right">{{ tabData.skus.length }}건 / {{ tabPage.skus.pageSize }}개씩</span>
+        </div>
+      </template>
       <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;" />
     </template>
 

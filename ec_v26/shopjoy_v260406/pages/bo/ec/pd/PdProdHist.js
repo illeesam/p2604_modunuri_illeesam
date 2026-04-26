@@ -39,7 +39,7 @@ window.PdProdHist = {
     const statusHistory = reactive([]);
     const changeHistory = reactive([]);
 
-    const BASE = (tab) => `/api/bo/ec/pd/prod/${props.prodId}/hist/${tab}`;
+    const BASE = (tab) => `/bo/ec/pd/prod/${props.prodId}/hist/${tab}`;
     const HDR  = (cmd) => ({ headers: { 'X-UI-Nm': '상품이력', 'X-Cmd-Nm': cmd } });
 
     const handleLoadTab = async (tab) => {
