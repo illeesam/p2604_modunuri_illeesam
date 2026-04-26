@@ -23,5 +23,8 @@ public class SyUserRoleDto {
     private String updBy;
     private LocalDateTime updDate;
 
-    // ── JOIN: 필요 시 추가 ────────────────────────────────────────
+    // ── JOIN ──────────────────────────────────────────────────────
+    private String roleNm;
+    private String roleCode;
+    private String grantUserNm;
 }

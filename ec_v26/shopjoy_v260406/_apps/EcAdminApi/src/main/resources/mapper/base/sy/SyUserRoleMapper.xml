@@ -24,6 +24,19 @@
         WHERE r.user_role_id = #{id}
     </select>
 
+    <select id="selectByUserId" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto">
+        SELECT  /* base.sy :: SyUserRole :: selectByUserId */
+              r.*
+            , rol.role_nm  AS role_nm
+            , rol.role_code AS role_code
+            , usr2.user_nm AS grant_user_nm
+        FROM sy_user_role r
+            LEFT JOIN sy_role rol  ON rol.role_id  = r.role_id
+            LEFT JOIN sy_user usr2 ON usr2.user_id = r.grant_user_id
+        WHERE r.user_id = #{userId}
+        ORDER BY r.grant_date DESC
+    </select>
+
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto">
         SELECT  /* base.sy :: SyUserRole :: selectList */
               r.*

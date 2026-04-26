@@ -13,6 +13,8 @@ public interface SyUserRoleMapper {
 
     SyUserRoleDto selectById(@Param("id") String id);
 
+    List<SyUserRoleDto> selectByUserId(@Param("userId") String userId);
+
     List<SyUserRoleDto> selectList(@Param("p") Map<String, Object> p);
 
     List<SyUserRoleDto> selectPageList(@Param("p") Map<String, Object> p);

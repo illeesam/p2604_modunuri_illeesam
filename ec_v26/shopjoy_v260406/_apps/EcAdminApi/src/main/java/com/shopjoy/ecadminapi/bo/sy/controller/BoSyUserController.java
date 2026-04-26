@@ -2,7 +2,9 @@ package com.shopjoy.ecadminapi.bo.sy.controller;
 
 import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
+import com.shopjoy.ecadminapi.bo.sy.service.BoSyUserRoleService;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyUserService;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -24,6 +26,7 @@ import java.util.Map;
 @BoOnly
 public class BoSyUserController {
     private final BoSyUserService service;
+    private final BoSyUserRoleService userRoleService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyUserDto>>> list(
@@ -68,5 +71,10 @@ public class BoSyUserController {
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
+    }
+
+    @GetMapping("/{userId}/roles")
+    public ResponseEntity<ApiResponse<List<SyUserRoleDto>>> getRoles(@PathVariable String userId) {
+        return ResponseEntity.ok(ApiResponse.ok(userRoleService.getRolesByUserId(userId)));
     }
 }
