@@ -74,7 +74,7 @@ window.SyTemplateDtl = {
       if (cfUseHtmlEditor.value && !props.viewMode) { await nextTick(); initQuill(); }
     };
     onMounted(() => {
-      handleLoadData();
+      if (isAppReady.value) fnLoadCodes();
       handleInitForm();
     });
 
@@ -127,6 +127,19 @@ window.SyTemplateDtl = {
     /* 미리보기 / 발송 모달 */
     const uiState = reactive({ previewOpen: false, sendOpen: false, error: null, isPageCodeLoad: false, loading: false, quillEditorEl: null});
     const codes = reactive({});
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      uiState.isPageCodeLoad = true;
+      handleLoadData();
+    };
+
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const quillEditorEl = Vue.toRef(uiState, 'quillEditorEl');
     return { templates, loading, uiState, cfIsNew, form, errors, handleSave, TEMPLATE_TYPES, cfNeedSubject, cfIsLongContent,

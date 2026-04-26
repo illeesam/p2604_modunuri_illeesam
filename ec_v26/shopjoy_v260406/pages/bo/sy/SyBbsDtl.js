@@ -26,6 +26,19 @@ window.SyBbsDtl = {
         uiState.loading = false;
       }
     };
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      uiState.isPageCodeLoad = true;
+      handleFetchData();
+    };
+
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
@@ -77,7 +90,7 @@ window.SyBbsDtl = {
 
     /* ── 초기화 ── */
     onMounted(() => {
-      handleFetchData();
+      if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) {
         const b = bbss.find(x => x.bbsId === props.editId);
         if (b) {

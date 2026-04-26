@@ -3,9 +3,9 @@ window.SyMemberLoginHist = {
   name: 'SyMemberLoginHist',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
-    const uiState = reactive({ descOpen: false, activeTab: 'log', dateRange: '이번달', dateStart: '', dateEnd: '', searchKw: '', searchResult: '', searchIp: '', searchTokenAction: '' });
+    const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'log', dateRange: '이번달', dateStart: '', dateEnd: '', searchKw: '', searchResult: '', searchIp: '', searchTokenAction: '' });
     const tab = Vue.toRef(uiState, 'tab');
     const activeTab = Vue.toRef(uiState, 'activeTab');
      // 'log' | 'hist' | 'token'
@@ -27,7 +27,21 @@ window.SyMemberLoginHist = {
         memberList.splice(0, memberList.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { handleFetchData(); });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      uiState.isPageCodeLoad = true;
+      handleFetchData();
+    };
+
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     const OS_LIST      = ['Windows 11','Windows 10','macOS 14','macOS 13','iOS 17','Android 14'];
     const BROWSER_LIST = ['Chrome 123','Safari 17','Edge 122','Firefox 124','Samsung Browser 24'];

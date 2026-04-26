@@ -4,7 +4,7 @@ window.SyBatchDtl = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
-    const { reactive, computed, onMounted, ref } = Vue;
+    const { reactive, computed, watch, onMounted, ref } = Vue;
 
     const batches = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
@@ -27,6 +27,19 @@ window.SyBatchDtl = {
         uiState.loading = false;
       }
     };
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      uiState.isPageCodeLoad = true;
+      handleFetchData();
+    };
+
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({
@@ -41,7 +54,7 @@ window.SyBatchDtl = {
     });
 
     onMounted(() => {
-      handleFetchData();
+      if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) {
         const b = batches.find(x => x.batchId === props.editId);
         if (b) Object.assign(form, { batchNm: b.batchNm, batchCode: b.batchCode, description: b.description, cron: b.cron, statusCd: b.statusCd });

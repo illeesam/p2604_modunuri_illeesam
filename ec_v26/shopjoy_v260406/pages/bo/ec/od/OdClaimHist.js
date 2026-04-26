@@ -8,8 +8,21 @@ window.OdClaimHist = {
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const { ref, reactive, computed, watch, onMounted } = Vue;
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      uiState.isPageCodeLoad = true;
+    };
+
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
         watch(botTab, v => { window._odClaimHistState.tab = v; });
-        const cfCodes = Vue.computed(() => window.getBoCodeStore().svCodes);
+        const cfCodes = Vue.computed(() => window.getBoCodeStore?.()?.svCodes || []);
 
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.botTab === id;
 
@@ -33,6 +46,7 @@ window.OdClaimHist = {
         const relatedDliv  = ref(null);
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       const c = getClaim.value(props.claimId);
       if (c) {
         uiState.claimType  = c.type || '취소';

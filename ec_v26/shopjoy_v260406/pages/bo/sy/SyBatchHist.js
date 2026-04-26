@@ -3,10 +3,10 @@ window.SyBatchHist = {
   name: 'SyBatchHist',
   props: ['navigate', 'boData', 'showRefModal', 'showToast', 'batchCode'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const batches = reactive([]);
     const batchLogs = reactive([]);
-    const uiState = reactive({ loading: false, error: null, searchBatchId: '', searchStatus: '', expandedId: null });
+    const uiState = reactive({ loading: false, isPageCodeLoad: false, error: null, searchBatchId: '', searchStatus: '', expandedId: null });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -27,7 +27,20 @@ window.SyBatchHist = {
         uiState.loading = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      uiState.isPageCodeLoad = true;
+      handleFetchData();
+    };
+
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     const pager = reactive({ page: 1, size: 10, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] });
 

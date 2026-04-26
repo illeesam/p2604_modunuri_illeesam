@@ -6,7 +6,7 @@ window.MbMemberHist = {
   setup(props) {
     const { ref, computed, reactive, watch, onMounted } = Vue;
     const members = reactive([]);
-    const uiState = reactive({ loading: false, tab: window._ecMemberHistState.tab || 'orders', viewMode2: window._ecMemberHistState.viewMode || 'tab'});
+    const uiState = reactive({ loading: false, isPageCodeLoad: false, tab: window._ecMemberHistState.tab || 'orders', viewMode2: window._ecMemberHistState.viewMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
 
@@ -27,9 +27,23 @@ window.MbMemberHist = {
         uiState.loading = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
         watch(() => uiState.tab, v => { window._ecMemberHistState.tab = v; });
         watch(() => uiState.viewMode2, v => { window._ecMemberHistState.viewMode = v; });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      uiState.isPageCodeLoad = true;
+      handleFetchData();
+    };
+
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const cfMemberOrders = computed(() => window.safeArrayUtils.safeFilter(orders, o => o.userId === props.memberId));

@@ -4,7 +4,7 @@ window.SyCodeDtl = {
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
-    const { reactive, computed, onMounted, ref } = Vue;
+    const { reactive, computed, watch, onMounted, ref } = Vue;
 
     const codes = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
@@ -26,6 +26,19 @@ window.SyCodeDtl = {
         uiState.loading = false;
       }
     };
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      uiState.isPageCodeLoad = true;
+      handleFetchData();
+    };
+
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const form = reactive({
@@ -40,7 +53,7 @@ window.SyCodeDtl = {
     });
 
     onMounted(() => {
-      handleFetchData();
+      if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) {
         const c = codes.find(x => x.codeId === props.editId);
         if (c) Object.assign(form, { ...c });

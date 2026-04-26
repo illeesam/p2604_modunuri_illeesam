@@ -3,7 +3,7 @@ window.SySiteDtl = {
   name: 'SySiteDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
-    const { reactive, computed, onMounted, ref } = Vue;
+    const { reactive, computed, watch, onMounted, ref } = Vue;
 
     const sites = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
@@ -26,6 +26,19 @@ window.SySiteDtl = {
         uiState.loading = false;
       }
     };
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      uiState.isPageCodeLoad = true;
+      handleFetchData();
+    };
+
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
 
     const SITE_TYPES = ['이커머스', '숙박공유', '전문가연결', 'IT매칭', '부동산', '교육', '중고거래', '영화예매', '음식배달', '가격비교', '시각화', '홈페이지', '기타'];
@@ -47,7 +60,7 @@ window.SySiteDtl = {
     });
 
     onMounted(() => {
-      handleFetchData();
+      if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) {
         const s = sites.find(x => x.siteId === props.editId);
         if (s) Object.assign(form, { ...s });

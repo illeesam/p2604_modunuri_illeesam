@@ -4,7 +4,7 @@ window.DpDispUiSimul = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
+    const codes = Vue.computed(() => window.getBoCodeStore?.()?.svCodes || []);
     const displays = reactive([]);
     const sites = reactive([]);
     const members = reactive([]);
@@ -22,7 +22,7 @@ window.DpDispUiSimul = {
         members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     /* ── 오늘 날짜 ── */
     const today = new Date().toISOString().slice(0, 10);
@@ -31,9 +31,22 @@ window.DpDispUiSimul = {
     const uiState = reactive({
       mainTab: 'preview', // 'preview' | 'struct' | 'source'
       viewMode: 'card',   // 'list' | 'card' | 'expand'
-      showDesc: true,
+      showDesc: true, isPageCodeLoad: false,
       showAreaDrop: false, sourceCopied: false, structLayoutType: 'grid', structColCount: 1, structViewport: 'desktop', structShowReal: false, structDashDragOver: false, structSpanPopupIdx: -1, structDragOverIdx: -1, dispUiLayerOpen: true, dispUiModalOpen: false, dispUiAreaErr: false, dispUiSiteModalOpen: false, dispUiSiteSearch: '', dispUiMemberModalOpen: false, dispUiMemberSearch: '', dispUiAreaDrop: false, otherMenuOpen: false});
     const tab = Vue.toRef(uiState, 'tab');
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      uiState.isPageCodeLoad = true;
+      handleFetchData();
+    };
+
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     /* ── 검색/필터 조건 ── */
     const searchParam = reactive({

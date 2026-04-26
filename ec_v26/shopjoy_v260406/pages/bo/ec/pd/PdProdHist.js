@@ -6,7 +6,7 @@ window.PdProdHist = {
   setup(props) {
     const { ref, computed, onMounted, reactive, watch } = Vue;
     const products = reactive([]);
-    const uiState = reactive({ loading: false, botTab: window._ecProdHistState.tab || 'orders', viewMode2: window._ecProdHistState.viewMode || 'tab'});
+    const uiState = reactive({ loading: false, isPageCodeLoad: false, botTab: window._ecProdHistState.tab || 'orders', viewMode2: window._ecProdHistState.viewMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
 
@@ -29,6 +29,20 @@ window.PdProdHist = {
     };
         watch(botTab, v => { window._ecProdHistState.tab = v; });
         watch(() => uiState.viewMode2, v => { window._ecProdHistState.viewMode = v; });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      uiState.isPageCodeLoad = true;
+      handleFetchData();
+    };
+
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.botTab === id;
 
     const stockHistory  = reactive([]);
@@ -37,7 +51,7 @@ window.PdProdHist = {
     const priceHistory  = reactive([]);
 
     onMounted(() => {
-      handleFetchData();
+      if (isAppReady.value) fnLoadCodes();
       const p = getProduct.value(props.prodId);
       if (p) {
         stockHistory.splice(0, stockHistory.length,
