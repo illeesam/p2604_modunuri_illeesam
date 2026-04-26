@@ -502,18 +502,18 @@ window.PdProdDtl = {
       if (!ok) return;
       let savedProdId;
       if (cfIsNew.value) {
-        savedProdId = nextId.value(products.value, 'productId');
-        products.value.push({ ...form, productId: savedProdId, price: form.listPrice, stock: uiState.useOpt ? cfTotalStock.value : form.prodStock, regDate: new Date().toISOString().slice(0, 10), images: imgData, mainImage: mainImg?.previewUrl || '' });
+        savedProdId = nextId.value(products, 'productId');
+        products.push({ ...form, productId: savedProdId, price: form.listPrice, stock: uiState.useOpt ? cfTotalStock.value : form.prodStock, regDate: new Date().toISOString().slice(0, 10), images: imgData, mainImage: mainImg?.previewUrl || '' });
       } else {
         savedProdId = props.editId;
-        const idx = products.value.findIndex(x => x.productId == props.editId);
-        if (idx !== -1) Object.assign(products.value[idx], { ...form, price: form.listPrice, stock: uiState.useOpt ? cfTotalStock.value : form.prodStock, images: imgData, mainImage: mainImg?.previewUrl || '' });
+        const idx = products.findIndex(x => x.productId == props.editId);
+        if (idx !== -1) Object.assign(products[idx], { ...form, price: form.listPrice, stock: uiState.useOpt ? cfTotalStock.value : form.prodStock, images: imgData, mainImage: mainImg?.previewUrl || '' });
       }
       // categoryProds 동기화
-      if (!categoryProds.value) categoryProds.value = [];
-      categoryProds.value = window.safeArrayUtils.safeFilter(categoryProds, cp => String(cp.prodId) !== String(savedProdId));
+      const filtered = window.safeArrayUtils.safeFilter(categoryProds, cp => String(cp.prodId) !== String(savedProdId));
+      categoryProds.splice(0, categoryProds.length, ...filtered);
       window.safeArrayUtils.safeForEach(prodCategories, (cat, i) => {
-        categoryProds.value.push({ categoryProdId: 'CP_'+savedProdId+'_'+i, siteId: '1', categoryId: cat.categoryId, prodId: savedProdId, sortOrd: i + 1 });
+        categoryProds.push({ categoryProdId: 'CP_'+savedProdId+'_'+i, siteId: '1', categoryId: cat.categoryId, prodId: savedProdId, sortOrd: i + 1 });
       });
       try {
         const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }) : window.boApi.put(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }));

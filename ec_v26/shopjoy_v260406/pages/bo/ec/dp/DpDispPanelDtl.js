@@ -509,12 +509,12 @@ window.DpDispPanelDtl = {
       if (!ok) return;
       const payload = { ...form, rows: rows.map(r => ({ ...r })), sortOrder: Number(window.safeArrayUtils.safeGet(rows, 0).sortOrder) };
       if (isNewPanel) {
-        payload.dispId  = nextId.value(displays.value, 'dispId');
+        payload.dispId  = nextId.value(displays, 'dispId');
         payload.regDate = new Date().toISOString().slice(0, 10);
-        displays.value.push(payload);
+        displays.push(payload);
       } else {
-        const idx = displays.value.findIndex(x => x.dispId === props.editId);
-        if (idx !== -1) Object.assign(displays.value[idx], payload);
+        const idx = displays.findIndex(x => x.dispId === props.editId);
+        if (idx !== -1) Object.assign(displays[idx], payload);
       }
       try {
         const res = await (isNewPanel ? window.boApi.post(`/bo/ec/dp/panel`, { ...form, rows: rows.map(r => ({ ...r })) }) : window.boApi.put(`/bo/ec/dp/panel/${form.dispId}`, { ...form, rows: rows.map(r => ({ ...r })) }));

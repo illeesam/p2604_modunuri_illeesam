@@ -149,8 +149,8 @@ window.PmPlanMng = {
     const handleDelete = async (p) => {
       const ok = await props.showConfirm('삭제', `[${p.planNm}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = plans.value.findIndex(x => x.planId === p.planId);
-      if (idx !== -1) plans.value.splice(idx, 1);
+      const idx = plans.findIndex(x => x.planId === p.planId);
+      if (idx !== -1) plans.splice(idx, 1);
       if (uiStateDetail.selectedId === p.planId) uiStateDetail.selectedId = null;
       try {
         const res = await window.boApi.delete(`/bo/ec/pm/plan/${p.planId}`);

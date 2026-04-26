@@ -90,7 +90,7 @@ window.PdTagMng = {
       if (row._row_status === 'N') { gridRows.splice(idx, 1); return; }
       const ok = await props.showConfirm('삭제', `[${row.tagNm}] 태그를 삭제하시겠습니까?`);
       if (!ok) return;
-      const si = tags.value.findIndex(t => t.tagId === row.tagId); if (si !== -1) tags.value.splice(si, 1); gridRows.splice(idx, 1);
+      const si = tags.findIndex(t => t.tagId === row.tagId); if (si !== -1) tags.splice(si, 1); gridRows.splice(idx, 1);
       try {
         const res = await window.boApi.delete(`/bo/ec/pd/tag/${row.tagId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -109,7 +109,7 @@ window.PdTagMng = {
         const ok = await props.showConfirm('저장', '저장하시겠습니까?');
         if (!ok) return;
         const isNewRow = row._row_status === 'N';
-        const src = tags.value;
+        const src = tags;
         if (isNewRow) src.push({ ...row });
         else { const si = src.findIndex(t => t.tagId === row.tagId); if (si !== -1) Object.assign(src[si], row); }
         row._row_status = null;

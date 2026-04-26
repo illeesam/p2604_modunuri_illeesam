@@ -150,8 +150,8 @@ window.PdProdMng = {
     const handleDelete = async (p) => {
       const ok = await props.showConfirm('삭제', `[${p.prodNm}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = products.value.findIndex(x => x.productId === p.productId);
-      if (idx !== -1) products.value.splice(idx, 1);
+      const idx = products.findIndex(x => x.productId === p.productId);
+      if (idx !== -1) products.splice(idx, 1);
       if (uiStateDetail.selectedId === p.productId) uiStateDetail.selectedId = null;
       try {
         const res = await window.boApi.delete(`/bo/ec/pd/prod/${p.productId}`);

@@ -405,7 +405,7 @@ window.DpDispWidgetLibDtl = {
       const isNewLib = cfIsNew.value;
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
-      const list = widgetLibs.value || (widgetLibs.value = []);
+      const list = widgetLibs;
       if (isNewLib) {
         const newId = Math.max(0, ...list.map(d => d.libId)) + 1;
         form.libId = newId;

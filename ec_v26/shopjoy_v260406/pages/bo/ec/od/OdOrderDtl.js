@@ -136,10 +136,10 @@ window.OdOrderDtl = {
       const ok = await props.showConfirm(isNewOrder ? '등록' : '저장', isNewOrder ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNewOrder) {
-        orders.value.push({ ...form, totalPrice: Number(form.totalPrice), userId: Number(form.userId) });
+        orders.push({ ...form, totalPrice: Number(form.totalPrice), userId: Number(form.userId) });
       } else {
-        const idx = orders.value.findIndex(x => x.orderId === props.editId);
-        if (idx !== -1) Object.assign(orders.value[idx], { ...form, totalPrice: Number(form.totalPrice) });
+        const idx = orders.findIndex(x => x.orderId === props.editId);
+        if (idx !== -1) Object.assign(orders[idx], { ...form, totalPrice: Number(form.totalPrice) });
       }
       try {
         const res = await (isNewOrder ? window.boApi.post(`/bo/ec/od/order/${form.orderId}`, { ...form }) : window.boApi.put(`/bo/ec/od/order/${form.orderId}`, { ...form }));

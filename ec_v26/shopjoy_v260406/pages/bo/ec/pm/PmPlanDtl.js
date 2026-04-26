@@ -216,15 +216,15 @@ window.PmPlanDtl = {
       if (!ok) return;
       if (cfIsNew.value) {
         const newId = Math.max(...(plans).map(p => p.planId), 0) + 1;
-        plans.value.push({
+        plans.push({
           ...form, planId: newId,
           productIds: [...form.productIds],
           regDate: new Date().toISOString().slice(0, 10),
           viewCount: 0, thumbUrl: '🎯',
         });
       } else {
-        const idx = plans.value.findIndex(x => x.planId === props.editId);
-        if (idx !== -1) Object.assign(plans.value[idx], { ...form, productIds: [...form.productIds] });
+        const idx = plans.findIndex(x => x.planId === props.editId);
+        if (idx !== -1) Object.assign(plans[idx], { ...form, productIds: [...form.productIds] });
       }
       try {
         const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/plan`, form) : window.boApi.put(`/bo/ec/pm/plan/${props.editId}`, form));

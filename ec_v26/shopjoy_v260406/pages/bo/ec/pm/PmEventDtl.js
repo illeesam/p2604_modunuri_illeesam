@@ -175,14 +175,14 @@ window.PmEventDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (cfIsNew.value) {
-        events.value.push({
-          ...form, eventId: nextId.value(events.value, 'eventId'),
+        events.push({
+          ...form, eventId: nextId.value(events, 'eventId'),
           targetProducts: [...form.targetProducts],
           regDate: new Date().toISOString().slice(0, 10),
         });
       } else {
-        const idx = events.value.findIndex(x => x.eventId === props.editId);
-        if (idx !== -1) Object.assign(events.value[idx], { ...form, targetProducts: [...form.targetProducts] });
+        const idx = events.findIndex(x => x.eventId === props.editId);
+        if (idx !== -1) Object.assign(events[idx], { ...form, targetProducts: [...form.targetProducts] });
       }
       try {
         const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/event`, { ...form }) : window.boApi.put(`/bo/ec/pm/event/${form.eventId}`, { ...form }));

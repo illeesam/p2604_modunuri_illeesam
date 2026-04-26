@@ -105,8 +105,8 @@ window.MbMemberMng = {
       if (!ok) return;
       try {
         const res = await window.boApi.delete(`/bo/ec/mb/member/${m.userId}`);
-        const idx = members.value.findIndex(x => x.userId === m.userId);
-        if (idx !== -1) members.value.splice(idx, 1);
+        const idx = members.findIndex(x => x.userId === m.userId);
+        if (idx !== -1) members.splice(idx, 1);
         if (uiStateDetail.selectedId === m.userId) uiStateDetail.selectedId = null;
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');

@@ -100,13 +100,13 @@ window.MbMemberDtl = {
       const ok = await props.showConfirm(isNewMember ? '등록' : '저장', isNewMember ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNewMember) {
-        members.value.push({
-          ...form, userId: nextId.value(members.value, 'userId'),
+        members.push({
+          ...form, userId: nextId.value(members, 'userId'),
           joinDate: form.joinDate || new Date().toISOString().slice(0, 10), orderCount: 0, totalPurchase: 0,
         });
       } else {
-        const idx = members.value.findIndex(x => x.userId === props.editId);
-        if (idx !== -1) Object.assign(members.value[idx], { ...form });
+        const idx = members.findIndex(x => x.userId === props.editId);
+        if (idx !== -1) Object.assign(members[idx], { ...form });
       }
       try {
         const res = await (isNewMember ? window.boApi.post(`/bo/ec/mb/member/${form.userId}`, { ...form }) : window.boApi.put(`/bo/ec/mb/member/${form.userId}`, { ...form }));

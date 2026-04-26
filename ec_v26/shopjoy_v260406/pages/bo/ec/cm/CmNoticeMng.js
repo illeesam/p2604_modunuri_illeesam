@@ -136,8 +136,8 @@ window.CmNoticeMng = {
     const handleDelete = async (n) => {
       const ok = await props.showConfirm('삭제', `[${n.title}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = notices.value.findIndex(x => x.noticeId === n.noticeId);
-      if (idx !== -1) notices.value.splice(idx, 1);
+      const idx = notices.findIndex(x => x.noticeId === n.noticeId);
+      if (idx !== -1) notices.splice(idx, 1);
       if (uiStateDetail.selectedId === n.noticeId) uiStateDetail.selectedId = null;
       try {
         const res = await window.boApi.delete(`/bo/ec/cm/notice/${n.noticeId}`);

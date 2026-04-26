@@ -120,14 +120,14 @@ window.PmCouponDtl = {
 
     /* 발급목록 */
     const cfIssuedList = computed(() => {
-      if (!coupons.value) return [];
+      if (!coupons) return [];
       const c = coupons.find(x => x.couponId === props.editId);
       return c ? (c.issuedList || []) : [];
     });
 
     /* 사용목록 */
     const cfUsedList = computed(() => {
-      if (!coupons.value) return [];
+      if (!coupons) return [];
       const c = coupons.find(x => x.couponId === props.editId);
       return c ? (c.usedList || []) : [];
     });
@@ -211,9 +211,9 @@ window.PmCouponDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (!coupons.value) coupons = [];
+      if (!coupons) coupons = [];
       if (cfIsNew.value) {
-        coupons.value.push({
+        coupons.push({
           ...form,
           couponId: Date.now(),
           regDate: new Date().toISOString().slice(0, 10),
@@ -221,8 +221,8 @@ window.PmCouponDtl = {
           usedList: [],
         });
       } else {
-        const idx = coupons.value.findIndex(x => x.couponId === props.editId);
-        if (idx !== -1) Object.assign(coupons.value[idx], { ...form });
+        const idx = coupons.findIndex(x => x.couponId === props.editId);
+        if (idx !== -1) Object.assign(coupons[idx], { ...form });
       }
       try {
         const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/coupon/${form.couponId}`, { ...form }) : window.boApi.put(`/bo/ec/pm/coupon/${form.couponId}`, { ...form }));

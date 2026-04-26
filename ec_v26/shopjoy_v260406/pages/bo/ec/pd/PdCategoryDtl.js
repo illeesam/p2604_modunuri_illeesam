@@ -93,13 +93,13 @@ window.PdCategoryDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (cfIsNew.value) {
-        categories.value.push({
-          ...form, parentId, categoryId: nextId.value(categories.value, 'categoryId'),
+        categories.push({
+          ...form, parentId, categoryId: nextId.value(categories, 'categoryId'),
           sortOrd: Number(form.sortOrd) || 1, depth: Number(form.depth) || 1,
         });
       } else {
-        const idx = categories.value.findIndex(x => x.categoryId === props.editId);
-        if (idx !== -1) Object.assign(categories.value[idx], { ...form, parentId, sortOrd: Number(form.sortOrd) || 1 });
+        const idx = categories.findIndex(x => x.categoryId === props.editId);
+        if (idx !== -1) Object.assign(categories[idx], { ...form, parentId, sortOrd: Number(form.sortOrd) || 1 });
       }
       try {
         const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pd/category/${form.categoryId}`, { ...form }) : window.boApi.put(`/bo/ec/pd/category/${form.categoryId}`, { ...form }));

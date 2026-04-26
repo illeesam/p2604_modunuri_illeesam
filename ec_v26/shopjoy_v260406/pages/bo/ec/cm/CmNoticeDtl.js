@@ -94,14 +94,14 @@ window.CmNoticeDtl = {
       const ok = await props.showConfirm(isNewNotice ? '등록' : '저장', isNewNotice ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNewNotice) {
-        notices.value.unshift({
+        notices.unshift({
           ...form,
-          noticeId: nextId.value(notices.value, 'noticeId'),
+          noticeId: nextId.value(notices, 'noticeId'),
           regDate: new Date().toISOString().slice(0, 10),
         });
       } else {
-        const idx = notices.value.findIndex(x => x.noticeId === props.editId);
-        if (idx !== -1) Object.assign(notices.value[idx], form);
+        const idx = notices.findIndex(x => x.noticeId === props.editId);
+        if (idx !== -1) Object.assign(notices[idx], form);
       }
       try {
         const res = await (isNewNotice ? window.boApi.post(`/bo/ec/cm/notice/${form.noticeId}`, { ...form }) : window.boApi.put(`/bo/ec/cm/notice/${form.noticeId}`, { ...form }));

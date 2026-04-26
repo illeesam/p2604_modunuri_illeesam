@@ -58,7 +58,7 @@ window.OdClaimDtl = {
     });
 
     // 주문 조회 헬퍼 함수
-    const getOrder = (orderId) => orders.value?.find(o => o.orderId === orderId);
+    const getOrder = (orderId) => orders?.find(o => o.orderId === orderId);
 
     const form = reactive({
       claimId: '', userId: '', userNm: '', orderId: '', prodNm: '',
@@ -114,10 +114,10 @@ window.OdClaimDtl = {
       const ok = await props.showConfirm(isNewClaim ? '등록' : '저장', isNewClaim ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       if (isNewClaim) {
-        claims.value.push({ ...form, refundAmount: Number(form.refundAmount) });
+        claims.push({ ...form, refundAmount: Number(form.refundAmount) });
       } else {
-        const idx = claims.value.findIndex(x => x.claimId === props.editId);
-        if (idx !== -1) Object.assign(claims.value[idx], { ...form, refundAmount: Number(form.refundAmount) });
+        const idx = claims.findIndex(x => x.claimId === props.editId);
+        if (idx !== -1) Object.assign(claims[idx], { ...form, refundAmount: Number(form.refundAmount) });
       }
       try {
         const res = await (isNewClaim ? window.boApi.post(`/bo/ec/od/claim/${form.claimId}`, { ...form }) : window.boApi.put(`/bo/ec/od/claim/${form.claimId}`, { ...form }));
