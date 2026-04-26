@@ -77,6 +77,7 @@ window.PmGiftDtl = {
     });
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleFetchData();
       if (!cfIsNew.value) {
         const g = (giftList).find(x => x.giftId === props.editId);

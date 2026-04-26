@@ -164,7 +164,8 @@ window.OdDlivDtl = {
     const initItems = async () => {
       dlivItems.splice(0, dlivItems.length, ...sampleDlivItems());
     };
-    onMounted(() => { handleLoadData(); handleInitForm(); initItems(); });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes(); handleLoadData(); handleInitForm(); initItems(); });
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
     const trackingUrl = (courier, no) => {

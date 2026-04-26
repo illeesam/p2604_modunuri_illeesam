@@ -62,7 +62,8 @@ window.PdCategoryMng = {
       expandedSet.clear();
       categories.filter(c => c.depth === 1).forEach(c => expandedSet.add(c.categoryId));
     };
-    onMounted(() => { handleFetchData();
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes(); handleFetchData();
     Object.assign(searchParamOrg, searchParam); });
     const isExpanded  = id => expandedSet.has(id);
     const toggleNode  = id => {

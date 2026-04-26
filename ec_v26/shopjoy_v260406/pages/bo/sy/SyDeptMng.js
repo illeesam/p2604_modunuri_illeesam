@@ -45,6 +45,7 @@ window.SyDeptMng = {
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleFetchData();
       Object.assign(searchParamOrg, searchParam);
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);

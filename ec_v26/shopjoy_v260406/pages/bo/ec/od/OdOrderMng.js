@@ -46,6 +46,7 @@ window.OdOrderMng = {
     });
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleFetchData();
       Object.assign(searchParamOrg, searchParam);
     });

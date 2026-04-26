@@ -25,7 +25,8 @@ window.CmChattMng = {
         uiState.loading = false;
       }
     };
-    onMounted(() => { handleFetchData();
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes(); handleFetchData();
     Object.assign(searchParamOrg, searchParam); });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {

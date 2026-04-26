@@ -40,7 +40,8 @@ window.DpDispRelationMng = {
       } catch (_) {
       console.error('[catch-info]', _);}
     };
-    onMounted(() => { handleFetchData();
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes(); handleFetchData();
     Object.assign(searchParamOrg, searchParam); });
 
     /* 검색 */

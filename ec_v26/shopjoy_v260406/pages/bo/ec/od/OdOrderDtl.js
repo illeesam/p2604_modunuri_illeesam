@@ -179,7 +179,8 @@ window.OdOrderDtl = {
     const initItems = async () => {
       orderItems.splice(0, orderItems.length, ...sampleOrderItems());
     };
-    onMounted(() => { handleLoadData(); handleInitForm(); initItems(); });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes(); handleLoadData(); handleInitForm(); initItems(); });
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
     /* 판매업체 */

@@ -122,6 +122,7 @@ window.PmEventDtl = {
     };
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleFetchData();
       if (!cfIsNew.value) {
         const e = events.find(x => x.eventId === props.editId);

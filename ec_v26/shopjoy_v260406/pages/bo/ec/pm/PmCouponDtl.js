@@ -103,7 +103,8 @@ window.PmCouponDtl = {
         _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
       }
     };
-    onMounted(() => { handleLoadData(); handleInitForm(); });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes(); handleLoadData(); handleInitForm(); });
 
     onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
 

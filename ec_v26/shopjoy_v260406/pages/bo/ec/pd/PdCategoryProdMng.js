@@ -34,6 +34,9 @@ window.PdCategoryProdMng = {
         fnLoadCodes();
       }
     });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+    });
 
     /* ── 뷰모드 영속화 ── */
     if (!window._ecCategoryProdState) window._ecCategoryProdState = { viewMode: 'tab' };

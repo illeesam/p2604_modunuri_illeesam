@@ -149,6 +149,7 @@ window.PmPlanDtl = {
     };
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleFetchData();
       if (!cfIsNew.value) {
         const p = (plans).find(x => x.planId === props.editId);

@@ -484,7 +484,8 @@ window.PdProdDtl = {
       document.addEventListener('mousemove', _divMoveH);
       document.addEventListener('mouseup', _divUpH);
     };
-    onMounted(() => { handleLoadData(); handleInitForm(); });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes(); handleLoadData(); handleInitForm(); });
     onBeforeUnmount(() => {
       if (_divMoveH) document.removeEventListener('mousemove', _divMoveH);
       if (_divUpH)   document.removeEventListener('mouseup',  _divUpH);

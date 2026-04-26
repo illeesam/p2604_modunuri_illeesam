@@ -101,6 +101,7 @@ window.SyContactDtl = {
       }
     };
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleLoadData();
       handleInitForm();
     });

@@ -50,7 +50,8 @@ window.PdDlivTmpltMng = {
       } catch (_) {
       console.error('[catch-info]', _);}
     };
-    onMounted(() => { handleFetchData();
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes(); handleFetchData();
     Object.assign(searchParamOrg, searchParam); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const applied      = reactive({ kw: '', method: '', use: '' });

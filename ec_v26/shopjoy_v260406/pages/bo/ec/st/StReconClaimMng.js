@@ -47,7 +47,8 @@ window.StReconClaimMng = {
       } catch (_) {
       console.error('[catch-info]', _);}
     };
-    onMounted(() => { handleFetchData();
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes(); handleFetchData();
     Object.assign(searchParamOrg, searchParam); });
 
   const searchParam = reactive({

@@ -75,7 +75,8 @@ window.StStatusMng = {
         cacheDataList.splice(0, cacheDataList.length, ...(resCa.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes(); handleFetchData(); });
     const cfOrders   = computed(() => orderList);
     const cfClaims   = computed(() => claimList);
     const cfVendors  = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));

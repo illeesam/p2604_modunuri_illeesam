@@ -88,6 +88,7 @@ window.OdClaimDtl = {
     const cfStatusOptions   = computed(() => cfClaimSteps.value);
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleLoadData();
       if (!cfIsNew.value) {
         const c = getClaim.value(props.editId);

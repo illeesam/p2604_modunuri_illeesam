@@ -68,6 +68,7 @@ window.PmCacheDtl = {
     });
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleFetchData();
       if (!cfIsNew.value) {
         const c = cacheList.value.find(x => x.cacheId === props.editId);

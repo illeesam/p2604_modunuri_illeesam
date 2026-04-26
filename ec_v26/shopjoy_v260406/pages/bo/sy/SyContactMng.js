@@ -25,7 +25,8 @@ window.SyContactMng = {
         uiState.loading = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes(); handleFetchData(); });
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();

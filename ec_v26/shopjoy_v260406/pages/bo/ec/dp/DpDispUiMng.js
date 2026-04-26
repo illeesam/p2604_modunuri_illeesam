@@ -53,6 +53,7 @@ window.DpDispUiMng = {
     };
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       if (isAppReady.value) {
         fnLoadCodes();
       }

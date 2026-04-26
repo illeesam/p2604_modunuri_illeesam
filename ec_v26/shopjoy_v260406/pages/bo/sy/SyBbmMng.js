@@ -34,6 +34,7 @@ window.SyBbmMng = {
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleFetchData();
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));

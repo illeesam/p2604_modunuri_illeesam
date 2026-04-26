@@ -54,7 +54,8 @@ window.DpDispWidgetMng = {
     const searchParam = reactive({ kw: '', type: '', status: '' });
     const searchParamOrg = reactive({ kw: '', type: '', status: '' });
 
-    onMounted(() => { handleFetchData();
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes(); handleFetchData();
     Object.assign(searchParamOrg, searchParam); });
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 

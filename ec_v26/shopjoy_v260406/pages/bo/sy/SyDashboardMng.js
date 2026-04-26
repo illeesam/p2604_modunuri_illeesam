@@ -26,6 +26,9 @@ window.SyDashboardMng = {
         fnLoadCodes();
       }
     });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+    });
 
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 

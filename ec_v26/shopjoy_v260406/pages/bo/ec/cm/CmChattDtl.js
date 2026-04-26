@@ -86,6 +86,7 @@ window.CmChattDtl = {
     };
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleFetchData();
       if (!cfIsNew.value) {
         uiState.chat = window.safeArrayUtils.safeFind(chatts, c => c.chatId === props.editId) || null;

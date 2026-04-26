@@ -56,6 +56,7 @@ window.DpDispPanelMng = {
     };
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       if (isAppReady.value) {
         fnLoadCodes();
       }

@@ -76,6 +76,7 @@ window.PmSaveDtl = {
     });
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleFetchData();
       if (!cfIsNew.value) {
         const s = (saveList || []).find(x => x.saveId === props.editId);

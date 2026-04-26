@@ -77,6 +77,7 @@ window.PmVoucherDtl = {
     });
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleFetchData();
       if (!cfIsNew.value) {
         const v = (voucherList || []).find(x => x.voucherId === props.editId);

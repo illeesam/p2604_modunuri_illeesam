@@ -49,7 +49,8 @@ window.StErpGenMng = {
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes(); handleFetchData(); });
 
     const cfPreviewRows = computed(() => {
       return cfVendors.value.map(v => {

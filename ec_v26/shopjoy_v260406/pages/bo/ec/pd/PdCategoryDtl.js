@@ -57,6 +57,7 @@ window.PdCategoryDtl = {
     });
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleFetchData();
       if (!cfIsNew.value) {
         const c = window.safeArrayUtils.safeFind(categories, x => x.categoryId === props.editId);

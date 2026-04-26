@@ -74,6 +74,7 @@ window.SyBizUserMng = {
       } catch(e) { console.warn('[SyBizUserMng] vendor load failed', e); }
     };
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleLoadData();
       expandAll();
       handleLoadDetail();

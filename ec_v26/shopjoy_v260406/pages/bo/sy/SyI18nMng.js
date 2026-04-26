@@ -19,7 +19,8 @@ window.SyI18nMng = {
         i18nMsgs.splice(0, i18nMsgs.length, ...(resMsgs.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes(); handleFetchData(); });
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();

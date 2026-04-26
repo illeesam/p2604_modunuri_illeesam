@@ -64,7 +64,8 @@ window.SyPathMng = {
         if (props.showToast) props.showToast('표시경로 데이터 로드 실패', 'error');
       }
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes(); handleFetchData(); });
 
     /* ── 트리 (선택된 biz_cd로 빌드) ── */
         

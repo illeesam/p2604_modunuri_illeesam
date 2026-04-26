@@ -3,7 +3,7 @@ window.StErpReconMng = {
   name: 'StErpReconMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, watch } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({
@@ -30,6 +30,9 @@ window.StErpReconMng = {
       if (newVal) {
         fnLoadCodes();
       }
+    });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
     });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
             const dateEnd   = ref('');

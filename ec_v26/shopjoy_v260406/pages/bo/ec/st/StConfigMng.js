@@ -3,7 +3,7 @@ window.StConfigMng = {
   name: 'StConfigMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, watch } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const uiState = reactive({ descOpen: false, isNew: false, error: null, isPageCodeLoad: false, selectedId: null});
     const codes = reactive({});
 
@@ -26,6 +26,9 @@ window.StConfigMng = {
       if (newVal) {
         fnLoadCodes();
       }
+    });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
     });
 
     const configs = reactive([

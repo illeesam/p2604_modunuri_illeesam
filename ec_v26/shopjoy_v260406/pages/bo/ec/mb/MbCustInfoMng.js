@@ -133,7 +133,8 @@
         uiState.loading = false;
       }
     };
-    onMounted(() => { handleFetchData();
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes(); handleFetchData();
     Object.assign(searchParamOrg, searchParam); });
       /* ── 검색 상태 ── */
       const memberModal  = reactive({ show: false, keyword: '', list: [] });

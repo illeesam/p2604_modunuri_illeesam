@@ -77,6 +77,7 @@ window.PmDiscntDtl = {
     });
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleFetchData();
       if (!cfIsNew.value) {
         const d = (discntList).find(x => x.discntId === props.editId);

@@ -160,6 +160,7 @@ window.SyCodeMng = {
       grpExpanded.clear(); initSet.forEach(v => grpExpanded.add(v));
     };
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleFetchData();
       Object.assign(searchParamOrg, searchParam);
     });

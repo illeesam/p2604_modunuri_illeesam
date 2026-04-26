@@ -57,7 +57,8 @@ window.PdQnaMng = {
     };
     const searchParam = reactive({ kw: '', status: '', prod: '' });
     const searchParamOrg = reactive({ kw: '', status: '', prod: '' });
-    onMounted(() => { handleFetchData();
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes(); handleFetchData();
     Object.assign(searchParamOrg, searchParam); });
     const PAGE_SIZES = [5, 10, 20, 30, 50, 100, 200, 500];
     const pager      = reactive({ page: 1, size: 20 });

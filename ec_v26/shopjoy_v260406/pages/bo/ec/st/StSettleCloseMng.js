@@ -47,7 +47,8 @@ window.StSettleCloseMng = {
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes(); handleFetchData(); });
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
     const searchKw = ref('');
