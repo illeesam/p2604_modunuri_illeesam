@@ -11,7 +11,7 @@ window.PmVoucherDtl = {
     const codes = reactive({});
 
     // 단건 조회
-    const handleFetchDetail = async () => {
+    const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
@@ -78,7 +78,7 @@ window.PmVoucherDtl = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchDetail();
+      handleSearchDetail();
       if (cfIsNew.value) {
         if (!form.startDate) form.startDate = DEFAULT_START;
         if (!form.endDate) form.endDate = DEFAULT_END;

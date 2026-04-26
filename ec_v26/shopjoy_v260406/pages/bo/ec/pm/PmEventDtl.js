@@ -13,7 +13,7 @@ window.PmEventDtl = {
     const codes = reactive({});
 
     // 단건 조회 + 상품목록 로드
-    const handleFetchDetail = async () => {
+    const handleSearchDetail = async () => {
       uiState.loading = true;
       try {
         const calls = [window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 } })];
@@ -132,7 +132,7 @@ window.PmEventDtl = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchDetail();
+      handleSearchDetail();
     });
 
     onUnmounted(() => { Object.keys(quillers).forEach(k => { delete quillers[k]; }); });

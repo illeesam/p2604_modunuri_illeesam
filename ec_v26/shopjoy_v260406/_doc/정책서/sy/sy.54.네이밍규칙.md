@@ -216,7 +216,10 @@ getters: {
 ## 예외 사항
 
 - **`onMounted`, `onUnmounted`** 등 Vue 라이프사이클 훅은 변경하지 않는다.
-- **`fetchData`, `loadData`, `loadDetail`** 등 onMounted에서 호출되는 데이터 로드 함수는 **`handle*`** 접두어를 사용한다. (`handleFetchData`, `handleLoadData`, `handleLoadDetail`)
+- **데이터 로드 함수**는 목적에 따라 구분한다.
+  - 목록 단일 API 조회: `handleSearchList`
+  - 복수 API 동시 조회 (`Promise.all` 등): `handleSearchData`
+  - 단건 상세 조회 (Dtl/editId): `handleSearchDetail`
 - **상수** (`PAGE_SIZES`, `DATE_RANGE_OPTIONS` 등) 는 ALL_CAPS 유지.
 - **로컬 루프 변수** (`o`, `m`, `i` 등) 는 짧은 이름 유지.
 - **이미 `on*` 로 명명된 함수** (`onSearch`, `onReset` 등) 는 변경 불필요.
@@ -250,7 +253,7 @@ const searchParamOrg = reactive({
 });
 
 onMounted(() => {
-  handleFetchData();
+  handleSearchList();
   Object.assign(searchParamOrg, searchParam);
 });
 ```
@@ -478,7 +481,7 @@ const searchParam = reactive({ kw: '', type: '', useYn: '' });
 const searchParamOrg = reactive({ kw: '', type: '', useYn: '' });
 
 onMounted(() => {
-  handleFetchData();
+  handleSearchList();
   Object.assign(searchParamOrg, searchParam);  // 초기값 저장
 });
 

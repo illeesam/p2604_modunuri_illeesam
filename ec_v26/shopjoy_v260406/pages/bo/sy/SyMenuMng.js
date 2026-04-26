@@ -10,7 +10,7 @@ window.SyMenuMng = {
     const codes = reactive({ menu_type: [], menu_status: [] });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/menu/page', {
@@ -50,7 +50,7 @@ window.SyMenuMng = {
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleSearchList('DEFAULT');
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
@@ -84,7 +84,7 @@ window.SyMenuMng = {
       if (uiState.selectedTreeId == null) return null;
       return window.boCmUtil.collectDescendantIds(menus, 'menuId', 'parentId', uiState.selectedTreeId);
     });
-    watch(() => uiState.selectedTreeId, () => { handleFetchData(); });
+    watch(() => uiState.selectedTreeId, () => { handleSearchList(); });
 
 
     const MENU_TYPES   = ['페이지', '폴더', '외부링크', '구분선'];
@@ -94,7 +94,7 @@ window.SyMenuMng = {
     let   _tempId    = -1;
     
     /* ── 페이징 ── */
-    const pager      = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
 
     const EDIT_FIELDS = ['menuCode', 'menuNm', 'parentId', 'menuUrl', 'menuType', 'sortOrd', 'useYn', 'remark'];
@@ -134,11 +134,11 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
 
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchList('DEFAULT');
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);
-      handleFetchData();
+      handleSearchList();
     };
 
     const setFocused = (realIdx) => { uiState.focusedIdx = realIdx; };
@@ -228,7 +228,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
       if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
       if (dRows.length) toastParts.push(`삭제 ${dRows.length}건`);
       props.showToast(`${toastParts.join(', ')} 저장되었습니다.`);
-      handleFetchData();
+      handleSearchList();
     };
 
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };

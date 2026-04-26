@@ -63,7 +63,7 @@ window.OdClaimDtl = {
     const cfStatusOptions   = computed(() => cfClaimSteps.value);
 
     // 단건 GET
-    const handleFetchDetail = async () => {
+    const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
@@ -83,7 +83,7 @@ window.OdClaimDtl = {
 
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
-      await handleFetchDetail();
+      await handleSearchDetail();
       claimItems.splice(0, claimItems.length, ...sampleClaimItems());
     });
 

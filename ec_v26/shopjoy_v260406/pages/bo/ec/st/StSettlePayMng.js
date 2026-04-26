@@ -30,7 +30,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         fnLoadCodes();
       }
     });
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/st/pay/page', {
           params: {
@@ -49,7 +49,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData('DEFAULT');
+      handleSearchList('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
 
@@ -78,7 +78,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     kw: '',
     status: ''
   });
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const cfSummary = computed(() => ({
@@ -105,11 +105,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const fnStatusBadge = s => ({ '지급완료':'badge-green', '지급대기':'badge-blue', '지급보류':'badge-orange', '지급오류':'badge-red' }[s] || 'badge-gray');
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
-    const onSearch = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
-    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, payList, cfPageNums, cfSummary, doPay, fnStatusBadge, fmtW, onSearch, onReset, searchParam, pager.pageSizes, setPage, onSizeChange };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, payList, cfPageNums, cfSummary, doPay, fnStatusBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>

@@ -31,7 +31,7 @@ window.SyCodeMng = {
     let   _tempId    = -1;
     
     /* ── 페이징 ── */
-    const pager      = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
 
     const EDIT_FIELDS = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'remark', 'parentCodeValue'];
@@ -144,7 +144,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
     const grpExpandAll = () => { const walk = (n) => { grpExpanded.add(n.path); n.children.forEach(walk); }; walk(cfGrpTree.value); };
     const grpCollapseAll = () => { grpExpanded.clear(); grpExpanded.add(''); };
     /* _expand3_grp: 그룹 트리 3레벨 펼침 */
-    const handleFetchData = async () => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         uiState.loading = true;
         const res = await window.boApi.get('/bo/sy/code/page', { params: { pageNo: 1, pageSize: 100000 } });
@@ -160,7 +160,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
     };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleSearchList('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
     const cfGrpTree = computed(() => window.boCmUtil.buildPathTree('sy_code_grp'));
@@ -171,7 +171,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
     });
 
     /* 공통코드그룹 페이징 (default 5건) */
-    const grpPager = reactive({ pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const grpPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const GRP_PAGE_SIZES = [5, 10, 20, 50, 100];
     const cfGrpTotalPages = computed(() => Math.max(1, Math.ceil(cfFilteredGrpRows.value.length / grpPager.size)));
     const cfGrpPageNums = computed(() => { const c = grpPager.page, l = cfGrpTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
@@ -180,9 +180,9 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
     const cfGrpPagedRows = computed(() => { const s = (grpPager.page - 1) * grpPager.size; return cfFilteredGrpRows.value.slice(s, s + grpPager.size); });
     watch(() => cfFilteredGrpRows.value.length, () => { if (grpPager.page > cfGrpTotalPages.value) grpPager.page = Math.max(1, cfGrpTotalPages.value); });
     /* 트리 path 변경 시: 그룹 페이지 리셋 + selectedGrp 해제 + 코드목록 재조회 */
-    watch(() => uiState.grpSelectedPath, () => { grpPager.page = 1; uiState.selectedGrp = ''; handleFetchData(); });
+    watch(() => uiState.grpSelectedPath, () => { grpPager.page = 1; uiState.selectedGrp = ''; handleSearchList(); });
     /* selectedGrp 변경 시 코드목록 재조회 */
-    watch(() => uiState.selectedGrp, () => handleFetchData());
+    watch(() => uiState.selectedGrp, () => handleSearchList());
 
     /* 그룹 행 클릭 → 코드목록 필터 (토글) */
     const onGrpRowClick = (g) => {
@@ -205,7 +205,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
     const closeDetail = () => { uiState.selectedCodeId = null; };
 
     /* 트리 탭 페이징 */
-    const treePager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const treePager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const TREE_PAGE_SIZES = [5, 10, 20, 50, 100];
     const cfTreeTotalPages = computed(() => Math.max(1, Math.ceil(cfFlatTreeRows.value.length / treePager.size)));
     const cfTreePageNums = computed(() => { const c = treePager.page, l = cfTreeTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
@@ -259,7 +259,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
 
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchList('DEFAULT');
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);
@@ -392,7 +392,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
       if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
       if (dRows.length) toastParts.push(`삭제 ${dRows.length}건`);
       props.showToast(`${toastParts.join(', ')} 저장되었습니다.`);
-      await handleFetchData();
+      await handleSearchList();
     };
 
     /* ── 드래그 이동 ── */

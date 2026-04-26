@@ -10,7 +10,7 @@ window.SyBbsDtl = {
     const codes = reactive({});
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/bbs/page', {
@@ -34,7 +34,7 @@ window.SyBbsDtl = {
 
     const fnLoadCodes = async () => {
       uiState.isPageCodeLoad = true;
-      handleFetchData();
+      handleSearchList();
     };
 
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });

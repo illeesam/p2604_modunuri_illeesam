@@ -11,7 +11,7 @@ window.PmCouponDtl = {
     const codes = reactive({});
 
     // 단건 조회
-    const handleFetchDetail = async () => {
+    const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
@@ -104,7 +104,7 @@ window.PmCouponDtl = {
     };
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
-      await handleFetchDetail();
+      await handleSearchDetail();
       handleInitForm();
     });
 

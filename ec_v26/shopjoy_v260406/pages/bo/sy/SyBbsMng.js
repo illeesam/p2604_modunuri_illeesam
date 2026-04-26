@@ -10,7 +10,7 @@ window.SyBbsMng = {
     const codes = reactive({ bbs_status: [] });
 
     // onMounted에서 API 로드
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const [resBbs, resBbm] = await Promise.all([
@@ -61,7 +61,7 @@ window.SyBbsMng = {
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData('DEFAULT');
+      handleSearchData('DEFAULT');
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
@@ -102,7 +102,7 @@ window.SyBbsMng = {
       if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
     };
-const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const detailModal = reactive({
       show: false,
@@ -131,10 +131,10 @@ const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPa
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
     const fnStatusBadge = s => ({ '게시': 'badge-green', '임시': 'badge-gray', '삭제': 'badge-red', '비공개': 'badge-orange' }[s] || 'badge-gray');
-    const onSearch = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const onSearch = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
     const handleDelete = async (b) => {
       const ok = await props.showConfirm('삭제', `[${b.title}]을 삭제하시겠습니까?`);
       if (!ok) return;

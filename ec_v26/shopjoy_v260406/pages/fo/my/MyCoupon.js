@@ -17,7 +17,7 @@ window.MyCoupon = {
     const fnLoadCodes = async () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleFetchData();
+        handleSearchData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -66,13 +66,13 @@ window.MyCoupon = {
 
     const onTabChange = tab => { uiState.activeTab = tab; pager.page = 1; };
 
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       await myStore.handleLoadCoupons();
       myStore.handleLoadOrders();
     };
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
-      await handleFetchData('DEFAULT');
+      await handleSearchData('DEFAULT');
     };
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 

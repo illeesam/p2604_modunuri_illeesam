@@ -39,7 +39,7 @@ window.PdBundleMng = {
     });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const [bundlesRes, prodsRes, catsRes] = await Promise.all([
@@ -69,11 +69,11 @@ window.PdBundleMng = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleSearchData('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
 
-const pager    = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     // 'edit' 시 bundleId는 uiState.editBundleId 사용
 
@@ -210,17 +210,17 @@ const pager    = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTota
 
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchData('DEFAULT');
     };
 
     const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchData();
     };
 
-    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
     /* ── 신규등록 열기 ── */
     const openNew = () => {
@@ -411,8 +411,7 @@ const pager    = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTota
       openNew, openDtl, closeDtl, handleSave, handleDelete,
       addItem, removeItem,
       cfPickerList,
-      onDragStart, onDragOver, onDrop,
-      pager.pageSizes, onSizeChange };
+      onDragStart, onDragOver, onDrop, onSizeChange };
   },
 
   template: `

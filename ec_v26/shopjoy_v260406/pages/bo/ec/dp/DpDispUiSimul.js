@@ -10,7 +10,7 @@ window.DpDispUiSimul = {
     const members = reactive([]);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [dpRes, sitesRes, membersRes] = await Promise.all([
           window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -43,7 +43,7 @@ window.DpDispUiSimul = {
 
     const fnLoadCodes = async () => {
       uiState.isPageCodeLoad = true;
-      handleFetchData();
+      handleSearchData();
     };
 
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });

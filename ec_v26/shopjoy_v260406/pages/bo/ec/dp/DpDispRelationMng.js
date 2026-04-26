@@ -33,7 +33,7 @@ window.DpDispRelationMng = {
 
     const displays = reactive([]);
 
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 } });
         displays.splice(0, displays.length, ...(res.data?.data?.list || []));
@@ -41,7 +41,7 @@ window.DpDispRelationMng = {
       console.error('[catch-info]', _);}
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData();
+      if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
 
     /* 검색 */
@@ -60,7 +60,7 @@ window.DpDispRelationMng = {
       const res = await window.boApi.get('/bo/ec/resource/page', { params });
       // TODO: Update items array based on response
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchData();
     } catch (err) {
       console.error('[catch-info]', err);
       if (props.showToast) props.showToast('조회 실패', 'error');

@@ -33,7 +33,7 @@ window.DpDispWidgetMng = {
     });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const [res, resLibs] = await Promise.all([
@@ -55,7 +55,7 @@ window.DpDispWidgetMng = {
     const searchParamOrg = reactive({ kw: '', type: '', status: '' });
 
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData();
+      if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
@@ -76,7 +76,7 @@ window.DpDispWidgetMng = {
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
 
     /* ── 검색 ── */
-    const pager = reactive({ pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const applied = reactive({ kw: '', type: '', status: '' });
     const onSearch = async () => {
     try {
@@ -84,7 +84,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
       const res = await window.boApi.get('/bo/ec/resource/page', { params });
       // TODO: Update items array based on response
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchData();
     } catch (err) {
       console.error('[catch-info]', err);
       if (props.showToast) props.showToast('조회 실패', 'error');

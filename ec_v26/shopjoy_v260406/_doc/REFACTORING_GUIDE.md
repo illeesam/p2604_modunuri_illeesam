@@ -69,7 +69,7 @@ const searchParamOrg = reactive({
 });
 
 onMounted(() => {
-  handleFetchData();
+  handleSearchList();
   Object.assign(searchParamOrg, searchParam);
 });
 
@@ -387,7 +387,7 @@ setup(props) {
   });
   
   onMounted(() => {
-    handleFetchData();
+    handleSearchList();
     Object.assign(searchParamOrg, searchParam);
   });
   

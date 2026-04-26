@@ -11,7 +11,7 @@ window.MbMemberHist = {
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/mb/member/page', {
@@ -38,7 +38,7 @@ window.MbMemberHist = {
 
     const fnLoadCodes = async () => {
       uiState.isPageCodeLoad = true;
-      handleFetchData();
+      handleSearchList();
     };
 
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });

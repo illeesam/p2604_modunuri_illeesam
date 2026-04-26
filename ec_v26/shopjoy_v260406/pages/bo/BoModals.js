@@ -7,7 +7,7 @@
      - 모달이 마운트된 상태에서 부모가 "다시 조회" 신호를 보낼 때 사용
      - 부모: const modal = reactive({ show:false, reloadTrigger:0 });
              refresh() { modal.reloadTrigger++; }
-     - 모달 내부: watch(() => props.reloadTrigger, () => handleFetchData());
+     - 모달 내부: watch(() => props.reloadTrigger, () => handleSearchData());
    ───────────────────────────────────────────────────────────────────────
 */
 window.BoRefModal = {

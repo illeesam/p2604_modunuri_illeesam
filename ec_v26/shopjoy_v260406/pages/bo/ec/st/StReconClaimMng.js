@@ -40,7 +40,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const rows = reactive([]);
     const searchParam = reactive({ diff: '', dateEnd: '' });
     const searchParamOrg = reactive({ diff: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const cfSummary = computed(() => ({
       match: rows.filter(r=>r.diffStatus==='일치').length,
@@ -48,7 +48,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       under: rows.filter(r=>r.diffStatus==='조정부족').length,
     }));
 
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/st/recon/claim/page', {
           params: {
@@ -67,7 +67,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData('DEFAULT');
+      handleSearchList('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
 
@@ -75,11 +75,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const fnTypeBadge = t => ({ '취소':'badge-red','반품':'badge-orange','교환':'badge-purple' }[t] || 'badge-gray');
     const fnStatusBadge = s => ['환불완료','취소완료','교환완료'].includes(s) ? 'badge-green' : 'badge-blue';
     const fmtW = n => Number(n||0).toLocaleString() + '원';
-    const onSearch = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
-    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, rows, cfPageNums, cfSummary, fnDiffBadge, fnTypeBadge, fnStatusBadge, fmtW, onSearch, onReset, searchParam, pager.pageSizes, setPage, onSizeChange };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, rows, cfPageNums, cfSummary, fnDiffBadge, fnTypeBadge, fnStatusBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>

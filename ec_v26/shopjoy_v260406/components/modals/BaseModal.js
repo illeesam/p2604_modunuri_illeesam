@@ -11,7 +11,7 @@
           onMounted 가 다시 호출되지 않으므로 별도 트리거가 필요)
 
    동작: 모달 내부에서 watch(() => props.reloadTrigger, ...) 로 변화를
-         감지해 fetch 함수(handleFetchData 등)를 자동 호출한다.
+         감지해 fetch 함수(handleSearchList 등)를 자동 호출한다.
 
    사용법 (부모):
      const modal = reactive({ show: false, kind: '', reloadTrigger: 0 });
@@ -584,15 +584,15 @@ window.SiteSelectModal = {
       list: [],
       loading: false
     });
-    const handleFetchData = async () => {
+    const handleSearchList = async () => {
       modalState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/site', { params: { pageSize: 10000 } });
         modalState.list = res.data?.data || [];
       } catch (e) { modalState.list = []; } finally { modalState.loading = false; }
     };
-    onMounted(() => { handleFetchData(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
+    onMounted(() => { handleSearchList(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
     const cfFiltered = computed(() => modalState.list.filter(s => {
       if (!modalState.kw) return true;
       const k = modalState.kw.toLowerCase();
@@ -636,15 +636,15 @@ window.VendorSelectModal = {
       list: [],
       loading: false
     });
-    const handleFetchData = async () => {
+    const handleSearchList = async () => {
       modalState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/vendor', { params: { pageSize: 10000 } });
         modalState.list = res.data?.data || [];
       } catch (e) { modalState.list = []; } finally { modalState.loading = false; }
     };
-    onMounted(() => { handleFetchData(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
+    onMounted(() => { handleSearchList(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
     const cfFiltered = computed(() => modalState.list.filter(v => {
       if (!modalState.kw) return true;
       const k = modalState.kw.toLowerCase();
@@ -688,7 +688,7 @@ window.BoUserSelectModal = {
       userKw: '',
       selectedIds: new Set()
     });
-    const handleFetchData = async () => {
+    const handleSearchList = async () => {
       modalState.loading = true;
       try {
         const [deptRes, userRes] = await Promise.all([
@@ -699,8 +699,8 @@ window.BoUserSelectModal = {
         modalState.users = userRes.data?.data || [];
       } catch (e) { modalState.depts = []; modalState.users = []; } finally { modalState.loading = false; }
     };
-    onMounted(() => { handleFetchData(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
+    onMounted(() => { handleSearchList(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
     const fnBuildDeptTree = (items, parentId, depth) =>
       items.filter(d => (d.parentId || null) === (parentId || null) && d.useYn === 'Y')
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
@@ -916,15 +916,15 @@ window.MemberSelectModal = {
       list: [],
       loading: false
     });
-    const handleFetchData = async () => {
+    const handleSearchList = async () => {
       modalState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/mb/member', { params: { pageSize: 10000 } });
         modalState.list = res.data?.data || [];
       } catch (e) { modalState.list = []; } finally { modalState.loading = false; }
     };
-    onMounted(() => { handleFetchData(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
+    onMounted(() => { handleSearchList(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
     const cfFiltered = computed(() => modalState.list.filter(m => {
       if (!modalState.kw) return true;
       const k = modalState.kw.toLowerCase();
@@ -963,15 +963,15 @@ window.OrderSelectModal = {
     const searchParam = reactive({ kw: '' });
     const list = ref([]);
     const loading = ref(false);
-    const handleFetchData = async () => {
+    const handleSearchList = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/ec/ord/order', { params: { pageSize: 10000 } });
         list.value = res.data?.data || [];
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
-    onMounted(() => { handleFetchData(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
+    onMounted(() => { handleSearchList(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
     const cfFiltered = computed(() => list.value.filter(o => {
       if (!searchParam.kw) return true;
       const k = searchParam.kw.toLowerCase();
@@ -1010,15 +1010,15 @@ window.BbmSelectModal = {
     const pageSize = 6;
     const list = ref([]);
     const loading = ref(false);
-    const handleFetchData = async () => {
+    const handleSearchList = async () => {
       loading.value = true;
       try {
         const res = await window.boApi.get('/bo/sy/bbm', { params: { pageSize: 10000 } });
         list.value = res.data?.data || [];
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
-    onMounted(() => { handleFetchData(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
+    onMounted(() => { handleSearchList(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
 
     const cfFiltered = computed(() => list.value.filter(b => {
       if (b.useYn === 'N') return false;
@@ -1197,7 +1197,7 @@ window.TemplateSendModal = {
     const allDepts = ref([]);
     const allMembers = ref([]);
     const allBoUsers = ref([]);
-    const handleFetchData = async () => {
+    const handleSearchList = async () => {
       try {
         const [deptRes, memberRes, userRes] = await Promise.all([
           window.boApi.get('/bo/sy/dept', { params: { pageSize: 10000 } }),
@@ -1209,8 +1209,8 @@ window.TemplateSendModal = {
         allBoUsers.value = userRes.data?.data || [];
       } catch (e) {}
     };
-    onMounted(() => { handleFetchData(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
+    onMounted(() => { handleSearchList(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
 
     /* ── 부서 트리 (관리자 탭) ── */
     const uiState = reactive({ selectedDeptId: null, selectedGrade: null, deptKw: '' });
@@ -1490,14 +1490,14 @@ window.RoleTreeModal = {
     const { ref, reactive, computed, onMounted } = Vue;
     const uiState = reactive({ kw: '', hoverId: null });
     const allRoles = ref([]);
-    const handleFetchData = async () => {
+    const handleSearchList = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/role', { params: { pageSize: 10000 } });
         allRoles.value = res.data?.data || [];
       } catch (e) { allRoles.value = []; }
     };
-    onMounted(() => { handleFetchData(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
+    onMounted(() => { handleSearchList(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
 
     const fnBuildTree = (items, parentId, depth) => {
       return items
@@ -1584,14 +1584,14 @@ window.MenuTreeModal = {
     const { ref, reactive, computed, onMounted } = Vue;
     const uiState = reactive({ kw: '', hoverId: null });
     const allMenus = ref([]);
-    const handleFetchData = async () => {
+    const handleSearchList = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/menu', { params: { pageSize: 10000 } });
         allMenus.value = res.data?.data || [];
       } catch (e) { allMenus.value = []; }
     };
-    onMounted(() => { handleFetchData(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
+    onMounted(() => { handleSearchList(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
 
     const fnBuildTree = (items, parentId, depth) => {
       return items
@@ -1718,14 +1718,14 @@ window.DeptTreeModal = {
     const { ref, reactive, computed, onMounted } = Vue;
     const uiState = reactive({ kw: '', hoverId: null });
     const allDepts = ref([]);
-    const handleFetchData = async () => {
+    const handleSearchList = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/dept', { params: { pageSize: 10000 } });
         allDepts.value = res.data?.data || [];
       } catch (e) { allDepts.value = []; }
     };
-    onMounted(() => { handleFetchData(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
+    onMounted(() => { handleSearchList(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
 
     /* ── 트리 구성 ── */
     const buildTree = (items, parentId, depth) => {
@@ -1862,14 +1862,14 @@ window.CategoryTreeModal = {
     const { ref, reactive, computed, onMounted } = Vue;
     const uiState = reactive({ kw: '', hoverId: null });
     const allCategories = ref([]);
-    const handleFetchData = async () => {
+    const handleSearchList = async () => {
       try {
         const res = await window.boApi.get('/bo/ec/pd/category', { params: { pageSize: 10000 } });
         allCategories.value = res.data?.data || [];
       } catch (e) { allCategories.value = []; }
     };
-    onMounted(() => { handleFetchData(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
+    onMounted(() => { handleSearchList(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
 
     const buildTree = (items, parentId, depth) => {
       return items
@@ -3378,16 +3378,16 @@ window.BizPickModal = {
     const searchParam = reactive({ kw: '', type: '' });
     const searchParamOrg = reactive({ kw: '', type: '' });
     const bizs = reactive([]);
-    const handleFetchData = async () => {
+    const handleSearchList = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } });
         bizs.splice(0, bizs.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
-    const onSearch = () => { handleFetchData(); };
-    const onReset = () => { Object.assign(searchParam, searchParamOrg); handleFetchData(); };
-    Vue.onMounted(() => { handleFetchData(); });
-    Vue.watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
+    const onSearch = () => { handleSearchList(); };
+    const onReset = () => { Object.assign(searchParam, searchParamOrg); handleSearchList(); };
+    Vue.onMounted(() => { handleSearchList(); });
+    Vue.watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
     const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
     const vtLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
     const vtBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
@@ -3481,16 +3481,16 @@ window.SimpleUserPickModal = {
     const { ref, reactive, computed } = Vue;
     const searchParam = reactive({ kw: '' });
     const boUsers = reactive([]);
-    const handleFetchData = async () => {
+    const handleSearchList = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 } });
         boUsers.splice(0, boUsers.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
-    const onSearch = () => { handleFetchData(); };
-    const onReset = () => { searchParam.kw = ''; handleFetchData(); };
-    Vue.onMounted(() => { handleFetchData(); });
-    Vue.watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
+    const onSearch = () => { handleSearchList(); };
+    const onReset = () => { searchParam.kw = ''; handleSearchList(); };
+    Vue.onMounted(() => { handleSearchList(); });
+    Vue.watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
     const cfExcl = computed(() => new Set(props.excludeIds || []));
     const cfFiltered = computed(() => boUsers.filter(u => {
       if (cfExcl.value.has(u.boUserId)) return false;

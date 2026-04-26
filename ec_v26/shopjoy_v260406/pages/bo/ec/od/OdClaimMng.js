@@ -10,7 +10,7 @@ window.OdClaimMng = {
     const codes = reactive({ order_statuses: [], claim_types: [], claim_statuses: [], dliv_statuses: [], payment_methods: [] });
 
     // onMounted에서 API 로드
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
@@ -53,7 +53,7 @@ window.OdClaimMng = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData('DEFAULT');
+      handleSearchData('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
 
@@ -67,7 +67,7 @@ window.OdClaimMng = {
       pager.pageNo = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const pager = reactive({ pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
       const codeStore = window.getBoCodeStore?.();
@@ -124,16 +124,16 @@ const isAppReady = computed(() => {
     }[s] || 'badge-gray');
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData('DEFAULT');
+      await handleSearchData('DEFAULT');
     };
     const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchData();
     };
 
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
 
     const handleDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.claimId}]를 삭제하시겠습니까?`);

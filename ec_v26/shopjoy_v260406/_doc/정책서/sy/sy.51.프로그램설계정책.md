@@ -573,17 +573,17 @@ window.SomeModal = {
     const { reactive, onMounted, watch } = Vue;
     const list = reactive([]);
 
-    const handleFetchData = async () => {
+    const handleSearchList = async () => {
       const res = await window.boApi.get(`/bo/.../${props.kind}/page`);
       list.splice(0, list.length, ...(res.data?.data?.list || []));
     };
 
     // 1. 최초 마운트 시 조회
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleSearchList(); });
 
     // 2. reloadTrigger 변화 시 재조회 (필수)
     watch(() => props.reloadTrigger, () => {
-      if (props.reloadTrigger) handleFetchData();
+      if (props.reloadTrigger) handleSearchList();
     });
   },
 };

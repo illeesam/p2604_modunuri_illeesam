@@ -39,7 +39,7 @@ window.CmNoticeMng = {
       }
     });
 
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
     const searchParam = reactive({
       kw: '',
@@ -59,7 +59,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
     }); // 'view' | 'edit'
 
     // onMounted에서 API 로드
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/cm/notice/page', {
@@ -81,7 +81,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData('DEFAULT');
+      handleSearchList('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
 
@@ -90,7 +90,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
     const closeDetail = () => { uiStateDetail.selectedId = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'cmNoticeMng') { uiStateDetail.selectedId = null; handleFetchData(); return; }
+      if (pg === 'cmNoticeMng') { uiStateDetail.selectedId = null; handleSearchList(); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
@@ -108,7 +108,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
 
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData('DEFAULT');
+      await handleSearchList('DEFAULT');
     };
 
     const onReset = () => {
@@ -116,8 +116,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
       onSearch();
     };
 
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     const handleDelete = async (n) => {
       const ok = await props.showConfirm('삭제', `[${n.title}]을 삭제하시겠습니까?`);
@@ -129,7 +129,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
         const res = await window.boApi.delete(`/bo/ec/cm/notice/${n.noticeId}`);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
-        await handleFetchData();
+        await handleSearchList();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

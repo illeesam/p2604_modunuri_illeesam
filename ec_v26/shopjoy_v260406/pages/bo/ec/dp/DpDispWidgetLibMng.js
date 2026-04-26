@@ -32,7 +32,7 @@ window.DpDispWidgetLibMng = {
     });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', {
@@ -50,7 +50,7 @@ window.DpDispWidgetLibMng = {
     };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleSearchList('DEFAULT');
     });
     const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
@@ -72,14 +72,14 @@ window.DpDispWidgetLibMng = {
     /* ── 검색 ── */
     const searchParam = reactive({ kw: '', type: '', status: '' });
     const searchParamOrg = reactive({ kw: '', type: '', status: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const applied = reactive({ kw: '', type: '', status: '' });
     const onSearch = async () => {
       applied.kw     = searchParam.kw.trim().toLowerCase();
       applied.type   = searchParam.type;
       applied.status = searchParam.status;
       pager.pageNo = 1;
-      await handleFetchData();
+      await Object.assign(pager.pageCond, searchParam); handleSearchList('DEFAULT');
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);

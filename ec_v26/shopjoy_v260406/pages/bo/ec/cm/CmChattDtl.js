@@ -27,7 +27,7 @@ window.CmChattDtl = {
 
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
-    const handleFetchDetail = async () => {
+    const handleSearchDetail = async () => {
       if (!props.editId) return;
       uiState.loading = true;
       try {
@@ -80,7 +80,7 @@ window.CmChattDtl = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) {
-        handleFetchDetail();
+        handleSearchDetail();
         uiState.tab = 'chat';
       } else {
         uiState.tab = 'new';

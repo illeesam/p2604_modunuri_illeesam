@@ -16,7 +16,7 @@ window.Order = {
     const fnLoadCodes = async () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleFetchData();
+        handleSearchData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -137,7 +137,7 @@ window.Order = {
       }).open();
     };
 
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       await Promise.all([handleLoadCoupons(), handleLoadCash()]);
       const u = window.foAuth?.state?.user;
       if (u) { form.name = u.memberNm || ''; form.tel = u.phone || ''; form.email = u.email || ''; }

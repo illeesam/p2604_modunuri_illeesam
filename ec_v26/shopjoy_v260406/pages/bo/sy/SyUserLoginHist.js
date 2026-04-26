@@ -15,12 +15,12 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
     };
     (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
-    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const boUserList = reactive([]);
     const cfBoUsers = computed(() => boUserList);
 
-    const handleFetchData = async () => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 10000 } });
         boUserList.splice(0, boUserList.length, ...(res.data?.data?.list || []));
@@ -35,7 +35,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
 
     const fnLoadCodes = async () => {
       uiState.isPageCodeLoad = true;
-      handleFetchData();
+      handleSearchList();
     };
 
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
@@ -185,8 +185,8 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
     const fnActionLabel = cd => ({ 'ISSUE':'발급','REFRESH':'갱신','REVOKE':'폐기','EXPIRE':'만료' }[cd] || cd);
     const fnTypeBadge   = cd => ({ 'ACCESS':'badge-purple','REFRESH':'badge-blue' }[cd] || 'badge-gray');
 
-    const onSearch     = async () => { pager.pageNo = 1; await handleFetchData(); };
-    const onReset      = async () => { uiState.searchKw=''; uiState.searchResult=''; uiState.searchIp=''; uiState.searchTokenAction=''; uiState.dateRange='이번달'; onDateRangeChange(); pager.pageNo=1; await handleFetchData(); };
+    const onSearch     = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
+    const onReset      = async () => { uiState.searchKw=''; uiState.searchResult=''; uiState.searchIp=''; uiState.searchTokenAction=''; uiState.dateRange='이번달'; onDateRangeChange(); pager.pageNo=1; await handleSearchList(); };
     const setPage      = n => { if (n >= 1 && n <= cfTotPages.value) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
     const onTabChange  = tab => { uiState.activeTab = tab; pager.pageNo = 1; };

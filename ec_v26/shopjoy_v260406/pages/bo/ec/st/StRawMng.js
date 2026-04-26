@@ -66,10 +66,10 @@ window.StRawMng = {
     moreOpen: ''
   });
 
-    const pager    = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const rawList = reactive([]);
 
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/st/raw/page', {
           params: {
@@ -88,7 +88,7 @@ const rawList = reactive([]);
     };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData('DEFAULT');
+      handleSearchList('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
 
@@ -105,9 +105,9 @@ const rawList = reactive([]);
       confirmCnt: rawList.filter(r => r.buyConfirmYn === 'Y').length,
     }));
 
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
-    const onSearch = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
 
     const expandedRows = reactive(new Set());

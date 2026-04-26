@@ -58,10 +58,10 @@ const searchParam = reactive({ kw: '', status: '', dateStart: '', dateEnd: '' })
 
 const onSearch = async () => {
   pager.page = 1;
-  await handleFetchData();   // searchParam을 API params로 전달
+  await handleSearchList();   // searchParam을 API params로 전달
 };
 
-const handleFetchData = async () => {
+const handleSearchList = async () => {
   uiState.loading = true;
   try {
     const res = await window.boApi.get('/bo/.../page', {
@@ -84,7 +84,7 @@ const selectedId = reactive({ value: null });
 
 const onSelectNode = async (id) => {
   selectedId.value = id;
-  await handleFetchData();   // selectedId를 API params로 전달하여 재조회
+  await handleSearchList();   // selectedId를 API params로 전달하여 재조회
 };
 ```
 
@@ -99,10 +99,10 @@ const childItems  = reactive([]);   // 독립 선언
 
 const onSelectRow = async (parentId) => {
   uiStateDetail.selectedId = parentId;
-  await handleFetchChildData(parentId);  // 자식 독립 API 조회
+  await handleSearchData(parentId);  // 자식 독립 API 조회
 };
 
-const handleFetchChildData = async (parentId) => {
+const handleSearchData = async (parentId) => {
   const res = await window.boApi.get(`/bo/.../child`, { params: { parentId } });
   childItems.splice(0, childItems.length, ...(res.data?.data?.list || []));
 };
@@ -116,11 +116,11 @@ const form = reactive({ id: null, title: '', ... });
 
 onMounted(async () => {
   if (!cfIsNew.value) {
-    await handleFetchDetail();   // editId로 단건 API 조회
+    await handleSearchDetail();   // editId로 단건 API 조회
   }
 });
 
-const handleFetchDetail = async () => {
+const handleSearchDetail = async () => {
   const res = await window.boApi.get(`/bo/.../${props.editId}`);
   Object.assign(form, res.data?.data || {});
 };
@@ -137,7 +137,7 @@ const handleFetchDetail = async () => {
 ```js
 const pager = reactive({ page: 1, size: 10, total: 0, totalPages: 0 });
 
-const handleFetchData = async () => {
+const handleSearchList = async () => {
   const res = await window.boApi.get('/bo/.../page', {
     params: { pageNo: pager.page, pageSize: pager.size, ...searchParam }
   });

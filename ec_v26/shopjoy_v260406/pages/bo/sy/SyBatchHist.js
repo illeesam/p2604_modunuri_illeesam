@@ -9,7 +9,7 @@ window.SyBatchHist = {
     const uiState = reactive({ loading: false, isPageCodeLoad: false, error: null, searchBatchId: '', searchStatus: '', expandedId: null });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const [resBatch, resLogs] = await Promise.all([
@@ -35,14 +35,14 @@ window.SyBatchHist = {
 
     const fnLoadCodes = async () => {
       uiState.isPageCodeLoad = true;
-      handleFetchData();
+      handleSearchData();
     };
 
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfBatchOptions = computed(() =>
       batches.map(b => ({ batchId: b.batchId, label: b.batchNm }))

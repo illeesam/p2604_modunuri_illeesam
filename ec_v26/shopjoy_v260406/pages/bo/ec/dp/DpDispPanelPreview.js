@@ -172,7 +172,7 @@ window.DpDispPanelPreview = {
       }
     });
 
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [wlRes, dpRes] = await Promise.all([
           window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -184,7 +184,7 @@ window.DpDispPanelPreview = {
     };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleSearchData('DEFAULT');
     });
 
     const today   = new Date().toISOString().slice(0, 10);

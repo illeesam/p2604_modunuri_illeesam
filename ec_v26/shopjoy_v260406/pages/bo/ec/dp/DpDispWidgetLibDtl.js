@@ -102,7 +102,7 @@ window.DpDispWidgetLibDtl = {
     const errors = reactive({});
 
     /* ── 기존 데이터 로드 ── */
-    const handleFetchData = async () => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 } });
         widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.list || []));
@@ -123,7 +123,7 @@ window.DpDispWidgetLibDtl = {
     };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleSearchList('DEFAULT');
     });
 
     /* ── 위젯 유형별 표시 여부 ── */

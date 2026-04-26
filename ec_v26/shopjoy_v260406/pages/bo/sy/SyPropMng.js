@@ -53,7 +53,7 @@ window.SyPropMng = {
     };
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/sy/prop/page', {
           params: { pageNo: 1, pageSize: 10000 }
@@ -90,7 +90,7 @@ window.SyPropMng = {
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleSearchList('DEFAULT');
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
@@ -116,7 +116,7 @@ window.SyPropMng = {
     });
 
     /* ── 페이징 ── */
-    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.length / pager.pageSize)));
     const cfPageNums   = computed(() => { const c = pager.pageNo, l = pager.pageTotalPage; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
     const setPage    = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };

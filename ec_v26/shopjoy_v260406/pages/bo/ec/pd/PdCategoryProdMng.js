@@ -72,11 +72,11 @@ window.PdCategoryProdMng = {
     const defaultDispStartDate = () => new Date().toISOString().slice(0, 10);
 
     /* ── 검색 ── */
-    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const searchParam = reactive({ prodNm: '' });
     const searchParamOrg = reactive({ prodNm: '' });
 
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/pd/category-prod/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...(searchType === 'PAGE_CLICK' ? pager.pageCond : searchParam) }
@@ -94,7 +94,7 @@ window.PdCategoryProdMng = {
     const onSearch = () => {
       pager.pageNo = 1;
       Object.assign(pager.pageCond, searchParam);
-      handleFetchData('DEFAULT');
+      handleSearchList('DEFAULT');
     };
   
     const onReset = () => {

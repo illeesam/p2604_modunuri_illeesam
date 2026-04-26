@@ -20,7 +20,7 @@ window.SyBrandMng = {
     });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/brand/page', {
@@ -75,7 +75,7 @@ window.SyBrandMng = {
     let   _tempId    = -1;
     
     /* ── 페이징 ── */
-const pager      = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
 
     const EDIT_FIELDS = ['brandCode', 'brandNm', 'brandEnNm', 'dispPath', 'logoUrl', 'sortOrd', 'useYn', 'remark'];
@@ -115,11 +115,11 @@ const pager      = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTo
 
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchList('DEFAULT');
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);
-      handleFetchData();
+      handleSearchList();
     };
 
     const setFocused = (idx) => { uiState.focusedIdx = idx; };
@@ -228,7 +228,7 @@ const pager      = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTo
       if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
       if (dRows.length) toastParts.push(`삭제 ${dRows.length}건`);
       props.showToast(`${toastParts.join(', ')} 저장되었습니다.`);
-      handleFetchData();
+      handleSearchList();
     };
 
     /* ── 드래그 ── */
@@ -283,12 +283,12 @@ const pager      = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTo
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleSearchList('DEFAULT');
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
     });
-    watch(() => uiState.selectedPath, () => handleFetchData());
+    watch(() => uiState.selectedPath, () => handleSearchList());
 
     return { brands, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange,

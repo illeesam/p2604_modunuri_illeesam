@@ -50,7 +50,7 @@ window.PdCategoryMng = {
     const expandedSet = reactive(new Set());
 
     /* depth 1 노드 기본 펼침 (2레벨 노출) */
-    const handleFetchData = async () => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 } });
         const list = res.data?.data?.list || [];
@@ -63,7 +63,7 @@ window.PdCategoryMng = {
       categories.filter(c => c.depth === 1).forEach(c => expandedSet.add(c.categoryId));
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData();
+      if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
     const isExpanded  = id => expandedSet.has(id);
     const toggleNode  = id => {
@@ -76,7 +76,7 @@ window.PdCategoryMng = {
         const selectNode = id => {
       uiState.selectedCatId = (uiState.selectedCatId === id) ? null : id;
     };
-    watch(() => uiState.selectedCatId, () => handleFetchData());
+    watch(() => uiState.selectedCatId, () => handleSearchList());
 
     /* ── 좌측 트리 빌드 (expanded 반영) ── */
     const cfCatTreeFlat = computed(() => {
@@ -100,7 +100,7 @@ window.PdCategoryMng = {
     /* ── 그리드 ── */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
-        const pager      = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+        const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status'];
 
     /* 그리드 트리 평탄화 */
@@ -140,12 +140,12 @@ const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status
 
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchList('DEFAULT');
     };
   
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);
-      handleFetchData();
+      handleSearchList();
     };
     const catPickerModal = reactive({ show: false, search: '', forCategoryId: null, forRowIdx: null });
     const cfCatPickerList = computed(() => {
@@ -283,7 +283,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status
         }
       }
       props.showToast?.('저장되었습니다.', 'success');
-      await handleFetchData();
+      await handleSearchList();
     };
 
     return {

@@ -9,7 +9,7 @@ window.SyBizMng = {
     const codes = reactive({ vendor_status: [] });
 
     // onMounted에서 API 로드
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/biz/page', {
@@ -40,7 +40,7 @@ window.SyBizMng = {
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData('DEFAULT');
+      handleSearchList('DEFAULT');
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
@@ -76,13 +76,13 @@ window.SyBizMng = {
     const BIZ_CLASS = ['법인','개인','면세','간이','공공'];
 
     /* 페이징 */
-const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage; const s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
-    const setPage = n => { if(n>=1 && n<=pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
-    watch(() => uiState.selectedPath, () => { pager.pageNo = 1; handleFetchData('DEFAULT'); });
+    const setPage = n => { if(n>=1 && n<=pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    watch(() => uiState.selectedPath, () => { pager.pageNo = 1; handleSearchList('DEFAULT'); });
 
-    const onSearch = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const onReset = () => {
       searchParam.kw = '';
       searchParam.statusFlt = '';

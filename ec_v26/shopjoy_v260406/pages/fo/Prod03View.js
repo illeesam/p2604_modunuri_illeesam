@@ -17,7 +17,7 @@ window.Prod03View = {
 
     const svProduct = ref(props.product || null);
 
-    const handleFetchData = async () => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       const productId = svProduct.value?.productId;
       if (!productId) return;
       try {
@@ -31,7 +31,7 @@ window.Prod03View = {
     const fnLoadCodes = async () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleFetchData();
+        handleSearchList();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }

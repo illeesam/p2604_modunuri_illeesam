@@ -16,7 +16,7 @@ window.BlogView = {
 
     const posts = reactive([]);
 
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.foApi.get('/fo/blog/view', { params: { blogId: props.editId } });
         posts.splice(0, posts.length, ...res.data);
@@ -32,7 +32,7 @@ window.BlogView = {
     const fnLoadCodes = async () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleFetchData();
+        handleSearchData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }

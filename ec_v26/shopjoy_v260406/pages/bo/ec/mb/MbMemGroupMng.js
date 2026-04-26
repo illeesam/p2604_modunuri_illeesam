@@ -9,7 +9,7 @@ window.MbMemGroupMng = {
     const codes = reactive({ member_group_types: [] });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
@@ -31,7 +31,7 @@ window.MbMemGroupMng = {
       }
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData();
+      if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
 const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -64,7 +64,7 @@ const isAppReady = computed(() => {
     kw: '',
     use: ''
   });
-    const pager     = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfPageNums   = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
@@ -120,7 +120,7 @@ const isAppReady = computed(() => {
     };
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchList('DEFAULT');
     };
 
     const onReset = () => {
@@ -128,12 +128,12 @@ const isAppReady = computed(() => {
       onSearch();
     };
 
-    const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     return { groups, uiState, codes, searchParam, searchParamOrg, pager, cfPageNums, setPage, onSearch, onReset,
-             gridRows, addRow, onCellChange, handleDeleteRow, handleSaveAll, fnYnBadge, pager.pageSizes, onSizeChange };
+             gridRows, addRow, onCellChange, handleDeleteRow, handleSaveAll, fnYnBadge, onSizeChange };
   },
   template: `
 <div>

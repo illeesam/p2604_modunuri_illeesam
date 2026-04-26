@@ -12,7 +12,7 @@ window.PmCacheDtl = {
     const codes = reactive({});
 
     // 단건 조회
-    const handleFetchDetail = async () => {
+    const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
@@ -68,7 +68,7 @@ window.PmCacheDtl = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchDetail();
+      handleSearchDetail();
     });
 
     /* 같은 회원의 캐쉬 내역 */

@@ -20,7 +20,7 @@ window.XsSample01 = {
     const fnLoadCodes = async () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleFetchData();
+        handleSearchList();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -89,7 +89,7 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
     const setPage    = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
     const getRealIdx = i => (pager.pageNo - 1) * pager.pageSize + i;
 
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await api.get(API, { cdGrp: CD_GRP });
         const list = res?.data?.data ?? res?.data ?? [];
@@ -109,8 +109,8 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
       Object.assign(searchParamOrg, searchParam);
     });
 
-    const onSearch = async () => { pager.pageNo = 1; await handleFetchData('DEFAULT'); };
-    const onReset  = async () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; await handleFetchData('DEFAULT'); };
+    const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
+    const onReset  = async () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; await handleSearchList('DEFAULT'); };
 
     const setFocused = idx => { uiState.focusedIdx = idx; };
     const onCellChange = row => {

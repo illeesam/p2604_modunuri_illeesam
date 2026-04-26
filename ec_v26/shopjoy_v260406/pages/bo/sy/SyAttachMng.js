@@ -10,7 +10,7 @@ window.SyAttachMng = {
     const codes = reactive({ attach_type: [] });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const [attachRes, grpRes] = await Promise.all([
@@ -29,7 +29,7 @@ window.SyAttachMng = {
       }
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData(); });
+      if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -130,7 +130,7 @@ window.SyAttachMng = {
         dateStart: searchParam.dateStart,
         dateEnd: searchParam.dateEnd,
       });
-      await handleFetchData();
+      await handleSearchData('DEFAULT');
     };
     const onReset = () => {
       searchParam.kw = '';

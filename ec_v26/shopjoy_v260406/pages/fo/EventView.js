@@ -17,7 +17,7 @@ window.EventView = {
     /* ── 이벤트 데이터 ── */
     const events = reactive([]);
 
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.foApi.get('/fo/event/view', { params: { eventId: props.editId } });
         events.splice(0, events.length, ...res.data);
@@ -36,7 +36,7 @@ window.EventView = {
     const fnLoadCodes = async () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleFetchData();
+        handleSearchData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }

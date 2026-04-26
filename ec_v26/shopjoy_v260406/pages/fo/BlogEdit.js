@@ -31,7 +31,7 @@ window.BlogEdit = {
     ];
 
     /* 수정 모드: 기존 데이터 로드 */
-    const handleFetchData = async () => {
+    const handleSearchDetail = async (searchType = 'DEFAULT') => {
       if (!cfIsEdit.value) return;
       try {
         const res = await window.foApi.get('/fo/blog/view', { params: { blogId: props.editId } });
@@ -50,7 +50,7 @@ window.BlogEdit = {
     const fnLoadCodes = async () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleFetchData();
+        handleSearchDetail();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }

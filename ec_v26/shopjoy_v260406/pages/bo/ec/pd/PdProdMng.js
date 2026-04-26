@@ -9,7 +9,7 @@ window.PdProdMng = {
     const codes = reactive({ product_statuses: [], option_types: [], category_depths: [] });
 
     // onMounted에서 API 로드
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pd/prod/page', {
@@ -32,7 +32,7 @@ window.PdProdMng = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData('DEFAULT');
+      handleSearchList('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
 
@@ -64,7 +64,7 @@ window.PdProdMng = {
       pager.pageNo = 1;
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
-    const pager = reactive({ pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
       const codeStore = window.getBoCodeStore?.();
@@ -125,16 +125,16 @@ const isAppReady = computed(() => {
     const fnStatusBadge = s => ({ '판매중': 'badge-green', '품절': 'badge-red', '판매중지': 'badge-gray' }[s] || 'badge-gray');
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData('DEFAULT');
+      await handleSearchList('DEFAULT');
     };
     const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchList();
     };
 
-    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData('PAGE_CLICK'); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     const handleDelete = async (p) => {
       const ok = await props.showConfirm('삭제', `[${p.prodNm}]을 삭제하시겠습니까?`);

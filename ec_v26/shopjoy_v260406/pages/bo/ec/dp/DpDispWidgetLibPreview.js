@@ -155,13 +155,13 @@ window.DpDispWidgetLibPreview = {
     const widgetLibs = reactive([]);
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    const handleFetchData = async () => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 } });
         widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleSearchList('DEFAULT'); });
 
     const today   = new Date().toISOString().slice(0, 10);
     const nowTime = new Date().toTimeString().slice(0, 5);

@@ -13,7 +13,7 @@ window.OdOrderHist = {
     const deliveries = reactive([]);
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const [resO, resC, resD] = await Promise.all([
@@ -43,7 +43,7 @@ window.OdOrderHist = {
 
     const fnLoadCodes = async () => {
       uiState.isPageCodeLoad = true;
-      handleFetchData();
+      handleSearchData();
     };
 
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });

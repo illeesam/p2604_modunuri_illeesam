@@ -35,7 +35,7 @@ window.PmPlanMng = {
     });
 
     // onMounted에서 API 로드
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/plan/page', {
@@ -56,7 +56,7 @@ window.PmPlanMng = {
       }
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData('DEFAULT');
+      if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
@@ -65,7 +65,7 @@ window.PmPlanMng = {
     };
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
      // 'list' | 'card'
-    const pager = reactive({ pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const CATEGORIES = [
       { value: '', label: '전체' },
       { value: '패션', label: '패션' },
@@ -115,7 +115,7 @@ const CATEGORIES = [
     const onSearch = async () => {
       pager.pageNo = 1;
       Object.assign(pager.pageCond, searchParam);
-      await handleFetchData('DEFAULT');
+      await handleSearchList('DEFAULT');
     };
 
     const onReset = () => {
@@ -123,8 +123,8 @@ const CATEGORIES = [
       onSearch();
     };
 
-    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData('PAGE_CLICK'); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     const handleDelete = async (p) => {
       const ok = await props.showConfirm('삭제', `[${p.planNm}]을 삭제하시겠습니까?`);

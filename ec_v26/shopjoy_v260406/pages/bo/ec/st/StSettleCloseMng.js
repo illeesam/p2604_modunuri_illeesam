@@ -35,7 +35,7 @@ window.StSettleCloseMng = {
     const claims  = reactive([]);
     const vendorList = reactive([]);
 
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resO, resC, resV] = await Promise.all([
           window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -48,14 +48,14 @@ window.StSettleCloseMng = {
       } catch (_) {}
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData(); });
+      if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
     const searchKw = ref('');
     const searchStatus = ref('');
 
     const onSearch = async () => {
-      await handleFetchData();
+      await handleSearchData('DEFAULT');
     };
     const onReset = () => {
       searchKw.value = '';

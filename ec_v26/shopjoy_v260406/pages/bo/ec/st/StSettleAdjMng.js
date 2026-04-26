@@ -41,7 +41,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const vendorList = reactive([]);
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resV, resA] = await Promise.all([
           window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -64,7 +64,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData('DEFAULT');
+      handleSearchData('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
 
@@ -76,7 +76,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { adjId: 'ADJ-2026-005', adjDate: '2026-03-15', vendorId: 1, vendorNm: '패션스타일 주식회사', adjType: '매출조정', adjAmt: 30000, reason: '오주문 처리 수기 조정', aprvStatus: '승인', regUserNm: '김담당자' },
     ]);
 
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
@@ -168,11 +168,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const fnTypeBadge = t => ({ '매출조정':'badge-blue', '수수료조정':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
     const fmtW = n => (n >= 0 ? '' : '-') + Math.abs(Number(n)).toLocaleString() + '원';
 
-    const onSearch = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const onSearch = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
-    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, adjList, cfPageNums, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, doApprove, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, pager.pageSizes, setPage, onSizeChange };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
+    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, adjList, cfPageNums, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, doApprove, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>

@@ -9,7 +9,7 @@ window.SyI18nMng = {
     const uiState = reactive({ isPageCodeLoad: false, selectedId: null});
     const codes = reactive({ lang_code: [] });
 
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resKeys, resMsgs] = await Promise.all([
           window.boApi.get('/bo/sy/i18n-key/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -20,7 +20,7 @@ window.SyI18nMng = {
       } catch (_) {}
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData(); });
+      if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -46,7 +46,7 @@ window.SyI18nMng = {
     });
 const searchParam = reactive({ kw: '', scope: '', use: '' });
     const applied     = reactive({ kw: '', scope: '', use: '' });
-    const pager       = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager       = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId  = ref(null);
 
     const SCOPES      = ['COMMON','FO','BO'];
@@ -111,7 +111,7 @@ const searchParam = reactive({ kw: '', scope: '', use: '' });
       const m = (i18nMsgs||[]).find(m => m.i18nId === i18nId && m.langCd === lang);
       return m ? m.i18nMsg : '';
     };
-    const onSearch = async () => { Object.assign(applied, { kw: searchParam.kw, scope: searchParam.scope, use: searchParam.use }); pager.pageNo = 1; await handleFetchData(); };
+    const onSearch = async () => { Object.assign(applied, { kw: searchParam.kw, scope: searchParam.scope, use: searchParam.use }); pager.pageNo = 1; await Object.assign(pager.pageCond, searchParam); handleSearchData('DEFAULT'); };
     const onReset  = () => { searchParam.kw = ''; searchParam.scope = ''; searchParam.use = ''; Object.assign(applied, { kw: '', scope: '', use: '' }); pager.pageNo = 1; };
     const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
@@ -119,7 +119,7 @@ const searchParam = reactive({ kw: '', scope: '', use: '' });
 
     return { uiState, codes, searchParam, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
              selectedId, cfSelectedKey, cfSelectedMsgs, msgForm, openDetail, saveMsgs, getLangMsg,
-             SCOPES, LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, pager.pageSizes, onSizeChange };
+             SCOPES, LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, onSizeChange };
   },
   template: `
 <div>

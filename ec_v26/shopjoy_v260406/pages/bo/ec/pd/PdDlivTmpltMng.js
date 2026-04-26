@@ -43,7 +43,7 @@ window.PdDlivTmpltMng = {
       use: ''
     });
 
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/pd/dliv-tmplt/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }
@@ -57,10 +57,10 @@ window.PdDlivTmpltMng = {
       console.error('[catch-info]', _);}
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData('DEFAULT');
+      if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
 const applied      = reactive({ kw: '', method: '', use: '' });
-    const pager        = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId   = ref(null);
 
     const DLIV_METHODS   = ['COURIER','DIRECT','PICKUP'];
@@ -121,24 +121,24 @@ const applied      = reactive({ kw: '', method: '', use: '' });
     };
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData('DEFAULT');
+      await handleSearchList('DEFAULT');
     };
 
     const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchList();
     };
 
-    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData('PAGE_CLICK'); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
     const fnMethodBadge = v => ({ COURIER:'badge-blue', DIRECT:'badge-orange', PICKUP:'badge-green' }[v] || 'badge-gray');
 
     return { uiState, searchParam, searchParamOrg,
              pager, cfPageNums, setPage, onSearch, onReset,
              form, openDetail, openNew, closeDetail, handleSave, handleDelete,
-             fnYnBadge, fnMethodBadge, DLIV_METHODS, DLIV_PAY_TYPES, COURIERS, METHOD_LABELS, PAY_LABELS , pager.pageSizes , onSizeChange, dlivTmplts };
+             fnYnBadge, fnMethodBadge, DLIV_METHODS, DLIV_PAY_TYPES, COURIERS, METHOD_LABELS, PAY_LABELS  , onSizeChange, dlivTmplts };
   },
   template: `
 <div>

@@ -34,7 +34,7 @@ window.MbMemberDtl = {
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
 
     // 단건 GET
-    const handleFetchDetail = async () => {
+    const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
@@ -78,7 +78,7 @@ window.MbMemberDtl = {
     };
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
-      await handleFetchDetail();
+      await handleSearchDetail();
       handleInitQuill();
     });
 

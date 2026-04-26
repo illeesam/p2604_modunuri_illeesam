@@ -58,7 +58,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const couponList = reactive([]);
     const cacheDataList = reactive([]);
 
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resO, resC, resV, resCp, resCa] = await Promise.all([
           window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -75,7 +75,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       } catch (_) {}
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData(); });
+      if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
     const cfOrders   = computed(() => orderList);
     const cfClaims   = computed(() => claimList);
     const cfVendors  = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
@@ -95,7 +95,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
      * 1. 업체별현황
      * ════════════════════════════════════════════════ */
     const vendorSearchKw  = ref('');
-    const vendorPager     = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const vendorPager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfVendorRows = computed(() => {
       const filteredOrders = window.safeArrayUtils.safeFilter(cfOrders.value, o => inRange(o.orderDate) && o.status !== '취소됨');
@@ -120,7 +120,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
      * 2. 주문별현황
      * ════════════════════════════════════════════════ */
     const orderSearchKw  = ref('');
-        const orderPager     = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+        const orderPager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfOrderRows = computed(() => {
       const kw = uiState.orderSearchKw.trim().toLowerCase();
@@ -149,7 +149,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
      * 3. 클레임별현황
      * ════════════════════════════════════════════════ */
     const claimSearchType   = ref('');
-        const claimPager        = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+        const claimPager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfClaimRows = computed(() => {
       return window.safeArrayUtils.safeFilter(cfClaims.value, c => {
@@ -179,7 +179,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
      * 4. 프로모션별현황
      * ════════════════════════════════════════════════ */
     const promoSearchKw   = ref('');
-        const promoPager      = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+        const promoPager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfPromoRows = computed(() => {
       const kw = uiState.promoSearchKw.trim().toLowerCase();
@@ -216,7 +216,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* ════════════════════════════════════════════════
      * 5. 정산별현황 (월별 요약)
      * ════════════════════════════════════════════════ */
-        const settlePager       = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+        const settlePager       = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfSettleRows = computed(() => {
       const monthMap = {};
@@ -255,7 +255,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const onSearch = async () => {
       vendorPager.page = 1; orderPager.page = 1; claimPager.page = 1; promoPager.page = 1; settlePager.page = 1;
-      await handleFetchData();
+      await handleSearchData('DEFAULT');
     };
     const onReset  = () => {
       uiState.vendorSearchKw = ''; uiState.orderSearchKw = ''; uiState.orderSearchStatus = '';
@@ -290,7 +290,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       /* promo  */ promoPager, cfPromoRows, cfPromoTotal, cfPromoPages, cfPromoPageList, cfPromoSummary,
       /* settle */ settlePager, cfSettleRows, cfSettleTotal, cfSettlePages, cfSettlePageList, cfSettleSummary,
       fmt, fmtW, fnStatusBadge, fnTypeBadge, onSearch, onReset, pageNums, exportTab, COMM_RATE,
-      pager.pageSizes,
       setVendorPage, onVendorSizeChange,
       setOrderPage, onOrderSizeChange,
       setClaimPage, onClaimSizeChange,

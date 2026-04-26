@@ -20,7 +20,7 @@ window.SyRoleMng = {
     const codes = reactive({ role_status: [] });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/role/page', {
@@ -90,7 +90,7 @@ window.SyRoleMng = {
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleSearchList('DEFAULT');
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
@@ -180,7 +180,7 @@ window.SyRoleMng = {
     let   _tempId    = -1;
         
     /* ── 페이징 ── */
-    const pager      = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
 
     const EDIT_FIELDS = ['roleCode', 'roleNm', 'parentId', 'roleType', 'sortOrd', 'useYn', 'restrictPerm', 'roleCat', 'remark'];
@@ -225,11 +225,11 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
 
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchList('DEFAULT');
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);
-      handleFetchData();
+      handleSearchList();
     };
 
     const setFocused = (realIdx) => {
@@ -332,7 +332,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
       if (uRows.length) parts.push(`수정 ${uRows.length}건`);
       if (dRows.length) parts.push(`삭제 ${dRows.length}건`);
       props.showToast(`${parts.join(', ')} 저장되었습니다.`);
-      handleFetchData();
+      handleSearchList();
     };
 
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
@@ -444,8 +444,8 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
       '역할목록.csv'
     );
     /* 트리 path 변경 시 자동 fetch */
-    watch(() => uiState.selectedPath, () => { handleFetchData(); });
-    watch(() => searchParam.treeCatFilter, () => { handleFetchData(); });
+    watch(() => uiState.selectedPath, () => { handleSearchList(); });
+    watch(() => searchParam.treeCatFilter, () => { handleSearchList(); });
 
 
     return {

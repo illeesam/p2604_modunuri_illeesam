@@ -16,7 +16,7 @@ window.MyOrder = {
     const fnLoadCodes = async () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleFetchData();
+        handleSearchData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -184,14 +184,14 @@ window.MyOrder = {
       .filter(o => !flowStatusFilter.length || flowStatusFilter.includes(o.status))
     );
 
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       await myStore.handleLoadOrders();
       myStore.handleLoadClaims();
       myStore.handleLoadCoupons();
     };
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
-      await handleFetchData('DEFAULT');
+      await handleSearchData('DEFAULT');
     };
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 

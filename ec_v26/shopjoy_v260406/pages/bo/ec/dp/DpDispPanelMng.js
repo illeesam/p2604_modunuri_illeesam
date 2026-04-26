@@ -36,7 +36,7 @@ window.DpDispPanelMng = {
       }
     });
 
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const [panelsRes, displaysRes] = await Promise.all([
@@ -60,7 +60,7 @@ window.DpDispPanelMng = {
       if (isAppReady.value) {
         fnLoadCodes();
       }
-      handleFetchData();
+      handleSearchData('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
     const fnPathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
@@ -83,7 +83,7 @@ window.DpDispPanelMng = {
       { value: 'STAFF',     label: '직원' },
       { value: 'EXECUTIVE', label: '임직원' },
     ];
-    const pager = reactive({ pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 /* 하단 상세 */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
     const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
@@ -239,7 +239,7 @@ window.DpDispPanelMng = {
       const res = await window.boApi.get('/bo/ec/resource/page', { params });
       // TODO: Update items array based on response
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchData();
     } catch (err) {
       console.error('[catch-info]', err);
       if (props.showToast) props.showToast('조회 실패', 'error');

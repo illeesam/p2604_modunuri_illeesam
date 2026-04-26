@@ -44,19 +44,19 @@ window.CmNoticeDtl = {
     });
     let quill = null;
 
-    const handleFetchDetail = async () => {
+    const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       try {
         const res = await window.boApi.get(`/bo/ec/cm/notice/${props.editId}`);
         Object.assign(form, res.data?.data || {});
       } catch (err) {
-        console.error('[handleFetchDetail]', err);
+        console.error('[handleSearchDetail]', err);
       }
     };
 
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
-      await handleFetchDetail();
+      await handleSearchDetail();
       if (typeof Quill !== 'undefined' && !props.viewMode && document.getElementById('notice-editor')) {
         try {
           quill = new Quill('#notice-editor', { theme: 'snow', placeholder: '공지 내용을 입력하세요.' });

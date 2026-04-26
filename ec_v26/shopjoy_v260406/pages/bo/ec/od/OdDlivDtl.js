@@ -53,7 +53,7 @@ window.OdDlivDtl = {
     });
 
     // 단건 GET
-    const handleFetchDetail = async () => {
+    const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
@@ -149,7 +149,7 @@ window.OdDlivDtl = {
     };
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
-      await handleFetchDetail();
+      await handleSearchDetail();
       await handleInitQuill();
       await initItems();
     });

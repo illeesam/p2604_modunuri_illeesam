@@ -40,7 +40,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const reconList = reactive([]);
     const searchParam = reactive({ diff: '', type: '', dateEnd: '' });
     const searchParamOrg = reactive({ diff: '', type: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const cfSummary = computed(() => ({
       match:     reconList.filter(r=>r.diffStatus==='일치').length,
@@ -49,7 +49,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       diffAmt:   reconList.reduce((s,r)=>s+Math.abs(r.diff||0),0),
     }));
 
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/st/erp/recon/page', {
           params: {
@@ -64,7 +64,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
       } catch (_) { console.error('[catch-info]', _); }
     };
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleFetchData('DEFAULT'); Object.assign(searchParamOrg, searchParam); });
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT'); Object.assign(searchParamOrg, searchParam); });
 
     const doFix = async (r) => {
       const ok = await props.showConfirm('조정처리', '해당 전표 대사 차이를 조정처리 하시겠습니까?');
@@ -85,11 +85,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const fnDiffBadge = s => ({ '일치':'badge-green', '차이':'badge-orange', '미반영':'badge-red' }[s] || 'badge-gray');
     const fnTypeBadge = t => ({ '정산':'badge-blue', '수수료':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
     const fmtW = n => Number(n||0).toLocaleString() + '원';
-    const onSearch = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
-    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, reconList, cfPageNums, cfSummary, doFix, fnDiffBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, pager.pageSizes, setPage, onSizeChange };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, reconList, cfPageNums, cfSummary, doFix, fnDiffBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>

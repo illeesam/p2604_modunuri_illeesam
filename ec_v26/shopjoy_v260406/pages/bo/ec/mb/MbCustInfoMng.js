@@ -111,7 +111,7 @@
     });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const [resCust, resLogin, resCoupon, resSend] = await Promise.all([
@@ -134,7 +134,7 @@
       }
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData();
+      if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
       /* ── 검색 상태 ── */
       const memberModal  = reactive({ show: false, keyword: '', list: [] });
@@ -238,7 +238,7 @@
 
       /* ── 검색 실행 ── */
       const onSearch = async () => {
-        await handleFetchData();
+        await handleSearchData('DEFAULT');
       };
   return { custInfos, uiState, SEARCH_MODES, memberModal,
         searchParam, searchParamOrg, PERIOD_OPTS, cfDateFrom, cfDateTo,

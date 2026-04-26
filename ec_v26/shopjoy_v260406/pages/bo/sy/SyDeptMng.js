@@ -10,7 +10,7 @@ window.SyDeptMng = {
     const codes = reactive({ dept_status: [] });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/dept/page', {
@@ -46,7 +46,7 @@ window.SyDeptMng = {
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleSearchList('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
@@ -79,7 +79,7 @@ window.SyDeptMng = {
       if (uiState.selectedTreeId == null) return null;
       return window.boCmUtil.collectDescendantIds(depts, 'deptId', 'parentId', uiState.selectedTreeId);
     });
-    watch(() => uiState.selectedTreeId, () => { handleFetchData(); });
+    watch(() => uiState.selectedTreeId, () => { handleSearchList(); });
 
 
     const cfTypeOptions = computed(() => [...new Set(depts.map(d => d.deptTypeCd))].sort());
@@ -92,7 +92,7 @@ window.SyDeptMng = {
     const DEPT_TYPES  = ['경영', '운영', '기술', '마케팅', 'CS', '물류', '재무', '인사', '법무', '기타'];
 
     /* ── 페이징 ── */
-    const pager      = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageSize; return gridRows.slice(s, s + pager.pageSize); });
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.pageSize)));
     const cfPageNums   = computed(() => { const c = pager.pageNo, l = pager.pageTotalPage; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
@@ -129,11 +129,11 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
 
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchList('DEFAULT');
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);
-      handleFetchData();
+      handleSearchList();
     };
 
     const setFocused = (realIdx) => { uiState.focusedIdx = realIdx; };
@@ -223,7 +223,7 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
       if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
       if (dRows.length) toastParts.push(`삭제 ${dRows.length}건`);
       props.showToast(`${toastParts.join(', ')} 저장되었습니다.`);
-      handleFetchData();
+      handleSearchList();
     };
 
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };

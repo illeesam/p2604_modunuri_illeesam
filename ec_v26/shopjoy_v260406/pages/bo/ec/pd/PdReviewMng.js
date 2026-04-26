@@ -35,7 +35,7 @@ window.PdReviewMng = {
     });
 
     // onMounted에서 API 로드
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pd/review/page', {
@@ -56,9 +56,9 @@ window.PdReviewMng = {
       }
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData('DEFAULT');
+      if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
-const pager        = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId   = ref(null);
   const searchParam = reactive({
     kw: '',
@@ -99,21 +99,21 @@ const pager        = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, page
     };
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData('DEFAULT');
+      await handleSearchList('DEFAULT');
     };
 
     const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchList();
     };
 
-    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData('PAGE_CLICK'); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const starStr  = r => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r));
 
     return { reviews, uiState, searchParam, searchParamOrg, pager, cfPageNums, setPage, onSearch, onReset,
-              selectedId, cfSelectedRow, openDetail, changeStatus, fnStatusBadge, STATUS_LIST, STATUS_LABEL, getProdNm, getMemNm, starStr , pager.pageSizes , onSizeChange };
+              selectedId, cfSelectedRow, openDetail, changeStatus, fnStatusBadge, STATUS_LIST, STATUS_LABEL, getProdNm, getMemNm, starStr  , onSizeChange };
   },
   template: `
 <div>

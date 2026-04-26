@@ -331,14 +331,14 @@ const isAppReady = computed(() => {
 const fnLoadCodes = async () => {
   try {
     uiState.isPageCodeLoad = true;   // 재진입 방지 → isAppReady false 처리
-    handleFetchData();               // 실제 데이터 조회 호출
+    handleSearchList();               // 실제 데이터 조회 호출
   } catch (err) {
     console.error('[fnLoadCodes]', err);
   }
 };
 
-// ③ handleFetchData: foApi 호출 → 실패 시 목업 fallback
-const handleFetchData = async () => {
+// ③ handleSearchList: foApi 호출 → 실패 시 목업 fallback
+const handleSearchList = async () => {
   try {
     const res = await window.foApi.get('/fo/xxx/list', { params: { ... } });
     items.splice(0, items.length, ...res.data);
@@ -367,17 +367,17 @@ onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 ### 15.3 금지 패턴
 
 ```js
-// ❌ fnLoadCodes에서 handleFetchData 미호출
+// ❌ fnLoadCodes에서 handleSearchList 미호출
 const fnLoadCodes = async () => {
   uiState.isPageCodeLoad = true;
-  // handleFetchData 호출 없음 → 데이터 로딩 안 됨
+  // handleSearchList 호출 없음 → 데이터 로딩 안 됨
 };
 
-// ❌ onMounted에서 handleFetchData 직접 호출 (isAppReady 무시)
-onMounted(() => { handleFetchData(); });
+// ❌ onMounted에서 handleSearchList 직접 호출 (isAppReady 무시)
+onMounted(() => { handleSearchList(); });
 
 // ❌ 목업 데이터를 reactive 배열 초기값으로 직접 주입
-const items = reactive([ ...8개 하드코딩 목업... ]); // handleFetchData를 통해야 함
+const items = reactive([ ...8개 하드코딩 목업... ]); // handleSearchList를 통해야 함
 ```
 
 ### 15.4 foApi 엔드포인트 연결 현황

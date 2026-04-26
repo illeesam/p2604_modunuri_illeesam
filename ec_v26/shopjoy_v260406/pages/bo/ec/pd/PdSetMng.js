@@ -37,7 +37,7 @@ window.PdSetMng = {
     });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const [setsRes, prodsRes, catsRes] = await Promise.all([
@@ -67,11 +67,11 @@ window.PdSetMng = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleSearchData('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
 
-const pager    = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
 
     /* ── 신규등록 폼 ── */
@@ -174,13 +174,13 @@ const pager    = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTota
 
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchData('DEFAULT');
     };
 
     const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchData();
     };
 
     const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
@@ -357,8 +357,7 @@ const pager    = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTota
       dtlItems, openNew, openDtl, closeDtl, handleSave, handleDelete,
       addItemFromProd, addItemBlank, removeItem,
       cfPickerList,
-      onDragStart, onDragOver, onDrop,
-      pager.pageSizes, onSizeChange };
+      onDragStart, onDragOver, onDrop, onSizeChange };
   },
 
   template: `

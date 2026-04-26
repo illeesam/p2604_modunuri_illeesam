@@ -142,7 +142,7 @@ window.DpDispUiMng = {
     });
 
     // API 데이터 로드
-    const handleFetchData = async () => {
+    const handleSearchList = async () => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/dp/ui/page', {
@@ -169,7 +169,7 @@ window.DpDispUiMng = {
       }
       // false면 watch에서 처리됨
       
-      handleFetchData();
+      handleSearchList();
       Object.assign(searchParamOrg, searchParam);
     });
 
@@ -180,7 +180,7 @@ window.DpDispUiMng = {
       searchParam,
       searchParamOrg,
       fnUiTypeLabel,
-      handleFetchData,
+      handleSearchList,
       // ... 다른 반환값
     };
   },
@@ -252,7 +252,7 @@ window.DpDispPanelMng = {
     });
 
     // API 데이터 로드
-    const handleFetchData = async () => {
+    const handleSearchList = async () => {
       uiState.loading = true;
       try {
         const [panelsRes, displaysRes] = await Promise.all([
@@ -278,7 +278,7 @@ window.DpDispPanelMng = {
       }
       // false면 watch에서 처리됨
       
-      handleFetchData();
+      handleSearchList();
     });
 
     return {

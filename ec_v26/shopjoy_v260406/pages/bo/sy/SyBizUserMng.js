@@ -121,7 +121,7 @@ window.SyBizUserMng = {
       if (uiState.bizVendorFlt && v.vendorTypeCd !== uiState.bizVendorFlt) return false;
       return true;
     }));
-    const bizPager = reactive({ pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const bizPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const cfBizTotalPages = computed(() => Math.max(1, Math.ceil(cfVendorList.value.length / bizPager.size)));
     const cfBizPageNums   = computed(() => { const c=bizPager.page,l=cfBizTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const cfBizPagedRows  = computed(() => cfVendorList.value.slice((bizPager.page-1)*bizPager.size, bizPager.page*bizPager.size));
@@ -183,7 +183,7 @@ window.SyBizUserMng = {
       return true;
     }));
 
-const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfFiltered.value.length / pager.pageSize)));
     const cfPageNums   = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const setPage    = n => { if(n>=1&&n<=pager.pageTotalPage) pager.pageNo=n; };

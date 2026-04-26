@@ -17,7 +17,7 @@ window.MyCache = {
     const fnLoadCodes = async () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleFetchData();
+        handleSearchData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -54,13 +54,13 @@ window.MyCache = {
       if (!ok) props.showToast('주문 정보를 찾을 수 없습니다.', 'error');
     };
 
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       await myStore.handleLoadCash();
       myStore.handleLoadOrders();
     };
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
-      await handleFetchData('DEFAULT');
+      await handleSearchData('DEFAULT');
     };
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 

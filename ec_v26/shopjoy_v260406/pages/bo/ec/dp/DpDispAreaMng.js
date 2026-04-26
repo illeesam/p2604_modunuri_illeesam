@@ -32,7 +32,7 @@ window.DpDispAreaMng = {
     });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/dp/area/page', {
@@ -50,13 +50,13 @@ window.DpDispAreaMng = {
     };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleSearchData('DEFAULT');
     });
     const fnPathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* ── 검색 ── */
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const pager = reactive({ pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const searchParam = reactive({
     kw: '',
     areaType: '',
@@ -88,7 +88,7 @@ const searchParam = reactive({
       const res = await window.boApi.get('/bo/ec/resource/page', { params });
       // TODO: Update items array based on response
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleSearchData();
     } catch (err) {
       console.error('[catch-info]', err);
       if (props.showToast) props.showToast('조회 실패', 'error');

@@ -8,7 +8,7 @@ window.CmBlogMng = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null});
     const codes = reactive({ blog_display_statuses: [] });
 
-const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId = ref(null);
 
     const searchParam = reactive({ kw: '', use: '', notice: '' });
@@ -33,7 +33,7 @@ const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPa
 
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/cm/blog/page', {
@@ -59,7 +59,7 @@ const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPa
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData('DEFAULT');
+      handleSearchList('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
 
@@ -148,17 +148,17 @@ const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPa
       }
     };
 
-    const onSearch = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     return {
       selectedId: computed(() => detailModal.editId), blogs, uiState, codes,
       searchParam, searchParamOrg, pager, cfPageNums, setPage,
       onSearch, onReset, cfSelectedRow, detailModal, openDetail, openNew, closeDetail,
-      handleSave, handleDelete, toggleUse, fnYnBadge, pager.pageSizes, onSizeChange
+      handleSave, handleDelete, toggleUse, fnYnBadge, onSizeChange
     };
   },
   template: `

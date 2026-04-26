@@ -194,7 +194,7 @@ window.DpDispWidgetPreview = {
       }
     });
 
-    const handleFetchData = async () => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 } });
         widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.list || []));
@@ -202,7 +202,7 @@ window.DpDispWidgetPreview = {
     };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleSearchList('DEFAULT');
     });
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 

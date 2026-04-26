@@ -30,7 +30,7 @@ window.PdCategoryDtl = {
     });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pd/category/page', {
@@ -56,7 +56,7 @@ window.PdCategoryDtl = {
       categoryNm: yup.string().required('카테고리명을 입력해주세요.'),
     });
 
-    const handleFetchDetail = async () => {
+    const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       try {
         const res = await window.boApi.get(`/bo/ec/pd/category/${props.editId}`);
@@ -69,8 +69,8 @@ window.PdCategoryDtl = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
-      handleFetchDetail();
+      handleSearchList('DEFAULT');
+      handleSearchDetail();
     });
 
     const cfParentOptions = computed(() => window.safeArrayUtils.safeFilter(categories, c => {

@@ -506,14 +506,14 @@ window.SyPostman = {
     const methodDot = m => ({ GET:'#166534', POST:'#1e40af', PUT:'#92400e', PATCH:'#6b21a8', DELETE:'#991b1b' }[m] || '#888');
 
     /* ===== Mount ===== */
-    const handleFetchData = async () => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       loadSettings(); refreshLs();
       /* 샘플 데이터: 빈 상태로 시작 */
       uiState.treeLoaded = true;
       treeRoot.push(buildAutoCrudNodes());
       treeRoot.push(buildAutoCrudRestNodes());
     };
-    onMounted(() => { handleFetchData(); });
+    onMounted(() => { handleSearchList('DEFAULT'); });
 
     const autoPopupTabId = Vue.toRef(uiState, 'autoPopupTabId');
     return {

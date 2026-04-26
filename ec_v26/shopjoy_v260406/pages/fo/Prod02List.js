@@ -21,7 +21,7 @@ window.Prod02List = {
     const fnLoadCodes = async () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleFetchData();
+        handleSearchList();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -208,7 +208,7 @@ window.Prod02List = {
       setupObserver();
     };
 
-    const handleFetchData = async (searchType = 'DEFAULT') => {
+    const handleSearchList = async (searchType = 'DEFAULT') => {
       await handleLoadProducts();
       setupObserver();
     };

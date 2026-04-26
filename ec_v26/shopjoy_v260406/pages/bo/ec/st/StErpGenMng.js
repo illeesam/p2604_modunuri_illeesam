@@ -39,7 +39,7 @@ window.StErpGenMng = {
     const cfOrders  = computed(() => orderList);
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
-    const handleFetchData = async () => {
+    const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resO, resV] = await Promise.all([
           window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -50,7 +50,7 @@ window.StErpGenMng = {
       } catch (_) {}
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData(); });
+      if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
 
     const cfPreviewRows = computed(() => {
       return cfVendors.value.map(v => {
@@ -92,7 +92,7 @@ window.StErpGenMng = {
     const fnStatusBadge = s => ({ '전송완료':'badge-green', '생성완료':'badge-blue', '오류':'badge-red' }[s] || 'badge-gray');
     const fmtW = n => Number(n||0).toLocaleString() + '원';
 
-    const onSearch = async () => { await handleFetchData(); };
+    const onSearch = async () => { await handleSearchData('DEFAULT'); };
 
     return { uiState, targetMon, slipType, cfPreviewRows, genHistory, doGenerate, fnStatusBadge, fmtW, onSearch };
   },
