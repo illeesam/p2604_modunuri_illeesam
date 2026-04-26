@@ -1,6 +1,35 @@
 /* ShopJoy – components/modals/BaseModal.js
    여러 팝업 컴포넌트를 한 곳에 모아둡니다.
    My.js 의 components 블록에 등록하여 사용합니다.
+
+   ───────────────────────────────────────────────────────────────────────
+   [공통 props: reloadTrigger]
+   ───────────────────────────────────────────────────────────────────────
+   목적: 모달이 열려있는 상태에서 부모가 외부 변화에 따라
+         "지금 다시 조회하라"는 신호를 보내고 싶을 때 사용한다.
+         (모달이 keep-alive 되거나, 재마운트 없이 prop만 바뀔 때
+          onMounted 가 다시 호출되지 않으므로 별도 트리거가 필요)
+
+   동작: 모달 내부에서 watch(() => props.reloadTrigger, ...) 로 변화를
+         감지해 fetch 함수(handleFetchData 등)를 자동 호출한다.
+
+   사용법 (부모):
+     const modal = reactive({ show: false, kind: '', reloadTrigger: 0 });
+     const openA = () => { modal.kind = 'a'; modal.reloadTrigger++; modal.show = true; };
+     const openB = () => { modal.kind = 'b'; modal.reloadTrigger++; modal.show = true; };
+     const refresh = () => { modal.reloadTrigger++; };
+
+   템플릿:
+     <some-modal v-if="modal.show"
+                 :kind="modal.kind"
+                 :reload-trigger="modal.reloadTrigger"
+                 @select="..." @close="modal.show=false" />
+
+   주의:
+     - 0 → 1 같이 값이 바뀌어야 watch 가 발동한다. ++ 사용 권장.
+     - 처음 마운트(onMounted)에서도 fetch 가 한 번 실행되므로,
+       reloadTrigger 는 부모가 "다시" 조회시키고 싶을 때만 증가시킨다.
+   ───────────────────────────────────────────────────────────────────────
 */
 
 /* ── 공통 모달 디자인 스타일 주입 ────────────────────────────── */
@@ -75,7 +104,7 @@
    ─────────────────────────────────────────────────── */
 window.OrderDetailModal = {
   name: 'OrderDetailModal',
-  props: ['show', 'order'],
+  props: ['show', 'order', 'reloadTrigger'],
   emits: ['close'],
   setup() {
     const { reactive } = Vue;
@@ -191,7 +220,7 @@ window.OrderDetailModal = {
    ─────────────────────────────────────────────────── */
 window.ProductModal = {
   name: 'ProductModal',
-  props: ['show', 'product', 'navigate', 'toggleLike', 'isLiked', 'addToCart', 'cartMode'],
+  props: ['show', 'product', 'navigate', 'toggleLike', 'isLiked', 'addToCart', 'cartMode', 'reloadTrigger'],
   emits: ['close'],
   setup(props) {
     const { ref, watch, computed, reactive } = Vue;
@@ -482,7 +511,7 @@ window.ProductModal = {
    ─────────────────────────────────────────────────── */
 window.CustomerModal = {
   name: 'CustomerModal',
-  props: ['show', 'user', 'order'],
+  props: ['show', 'user', 'order', 'reloadTrigger'],
   emits: ['close'],
   template: /* html */ `
 <div v-if="show"
@@ -545,7 +574,7 @@ window.CustomerModal = {
 /* ── 사이트 선택 모달 ── */
 window.SiteSelectModal = {
   name: 'SiteSelectModal',
-  props: ['dispDataset'],
+  props: ['dispDataset', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
@@ -563,6 +592,7 @@ window.SiteSelectModal = {
       } catch (e) { modalState.list = []; } finally { modalState.loading = false; }
     };
     onMounted(() => { handleFetchData(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
     const cfFiltered = computed(() => modalState.list.filter(s => {
       if (!modalState.kw) return true;
       const k = modalState.kw.toLowerCase();
@@ -596,7 +626,7 @@ window.SiteSelectModal = {
 /* ── 판매업체 선택 모달 ── */
 window.VendorSelectModal = {
   name: 'VendorSelectModal',
-  props: ['dispDataset'],
+  props: ['dispDataset', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
@@ -614,6 +644,7 @@ window.VendorSelectModal = {
       } catch (e) { modalState.list = []; } finally { modalState.loading = false; }
     };
     onMounted(() => { handleFetchData(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
     const cfFiltered = computed(() => modalState.list.filter(v => {
       if (!modalState.kw) return true;
       const k = modalState.kw.toLowerCase();
@@ -642,7 +673,7 @@ window.VendorSelectModal = {
 /* ── 사용자 선택 모달 (부서트리 + 멀티) ── */
 window.BoUserSelectModal = {
   name: 'BoUserSelectModal',
-  props: ['dispDataset'],
+  props: ['dispDataset', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { computed, reactive, onMounted } = Vue;
@@ -669,6 +700,7 @@ window.BoUserSelectModal = {
       } catch (e) { modalState.depts = []; modalState.users = []; } finally { modalState.loading = false; }
     };
     onMounted(() => { handleFetchData(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
     const fnBuildDeptTree = (items, parentId, depth) =>
       items.filter(d => (d.parentId || null) === (parentId || null) && d.useYn === 'Y')
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
@@ -874,7 +906,7 @@ window.BoUserSelectModal = {
 /* ── 회원 선택 모달 ── */
 window.MemberSelectModal = {
   name: 'MemberSelectModal',
-  props: ['dispDataset'],
+  props: ['dispDataset', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props) {
     const { reactive, computed, onMounted } = Vue;
@@ -892,6 +924,7 @@ window.MemberSelectModal = {
       } catch (e) { modalState.list = []; } finally { modalState.loading = false; }
     };
     onMounted(() => { handleFetchData(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
     const cfFiltered = computed(() => modalState.list.filter(m => {
       if (!modalState.kw) return true;
       const k = modalState.kw.toLowerCase();
@@ -922,7 +955,7 @@ window.MemberSelectModal = {
 /* ── 주문 선택 모달 ── */
 window.OrderSelectModal = {
   name: 'OrderSelectModal',
-  props: ['dispDataset'],
+  props: ['dispDataset', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props) {
     const { ref, reactive, computed, onMounted } = Vue;
@@ -938,6 +971,7 @@ window.OrderSelectModal = {
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
     onMounted(() => { handleFetchData(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
     const cfFiltered = computed(() => list.value.filter(o => {
       if (!searchParam.kw) return true;
       const k = searchParam.kw.toLowerCase();
@@ -968,7 +1002,7 @@ window.OrderSelectModal = {
 /* ── 게시판 선택 모달 ── */
 window.BbmSelectModal = {
   name: 'BbmSelectModal',
-  props: ['dispDataset'],
+  props: ['dispDataset', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
@@ -984,6 +1018,7 @@ window.BbmSelectModal = {
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
     onMounted(() => { handleFetchData(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
 
     const cfFiltered = computed(() => list.value.filter(b => {
       if (b.useYn === 'N') return false;
@@ -1045,7 +1080,7 @@ window.BbmSelectModal = {
 /* ── 템플릿 미리보기 모달 ── */
 window.TemplatePreviewModal = {
   name: 'TemplatePreviewModal',
-  props: ['tmpl', 'sampleParams'],
+  props: ['tmpl', 'sampleParams', 'reloadTrigger'],
   emits: ['close'],
   setup(props) {
     const { computed } = Vue;
@@ -1148,7 +1183,7 @@ window.TemplatePreviewModal = {
 /* ── 템플릿 발송하기 모달 ── */
 window.TemplateSendModal = {
   name: 'TemplateSendModal',
-  props: ['tmpl', 'dispDataset', 'showToast', 'showConfirm'],
+  props: ['tmpl', 'dispDataset', 'showToast', 'showConfirm', 'reloadTrigger'],
   emits: ['close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
@@ -1175,6 +1210,7 @@ window.TemplateSendModal = {
       } catch (e) {}
     };
     onMounted(() => { handleFetchData(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
 
     /* ── 부서 트리 (관리자 탭) ── */
     const uiState = reactive({ selectedDeptId: null, selectedGrade: null, deptKw: '' });
@@ -1448,7 +1484,7 @@ window.TemplateSendModal = {
    ─────────────────────────────────────────────────── */
 window.RoleTreeModal = {
   name: 'RoleTreeModal',
-  props: ['dispDataset', 'excludeId'],
+  props: ['dispDataset', 'excludeId', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, onMounted } = Vue;
@@ -1461,6 +1497,7 @@ window.RoleTreeModal = {
       } catch (e) { allRoles.value = []; }
     };
     onMounted(() => { handleFetchData(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
 
     const fnBuildTree = (items, parentId, depth) => {
       return items
@@ -1541,7 +1578,7 @@ window.RoleTreeModal = {
 
 window.MenuTreeModal = {
   name: 'MenuTreeModal',
-  props: ['dispDataset', 'excludeId'],
+  props: ['dispDataset', 'excludeId', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, onMounted } = Vue;
@@ -1554,6 +1591,7 @@ window.MenuTreeModal = {
       } catch (e) { allMenus.value = []; }
     };
     onMounted(() => { handleFetchData(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
 
     const fnBuildTree = (items, parentId, depth) => {
       return items
@@ -1674,7 +1712,7 @@ window.MenuTreeModal = {
 
 window.DeptTreeModal = {
   name: 'DeptTreeModal',
-  props: ['dispDataset', 'excludeId'],
+  props: ['dispDataset', 'excludeId', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, onMounted } = Vue;
@@ -1687,6 +1725,7 @@ window.DeptTreeModal = {
       } catch (e) { allDepts.value = []; }
     };
     onMounted(() => { handleFetchData(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
 
     /* ── 트리 구성 ── */
     const buildTree = (items, parentId, depth) => {
@@ -1817,7 +1856,7 @@ window.DeptTreeModal = {
 ───────────────────────────────────────────── */
 window.CategoryTreeModal = {
   name: 'CategoryTreeModal',
-  props: ['dispDataset', 'excludeId'],
+  props: ['dispDataset', 'excludeId', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, onMounted } = Vue;
@@ -1830,6 +1869,7 @@ window.CategoryTreeModal = {
       } catch (e) { allCategories.value = []; }
     };
     onMounted(() => { handleFetchData(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
 
     const buildTree = (items, parentId, depth) => {
       return items
@@ -1929,7 +1969,7 @@ window.CategoryTreeModal = {
 window.DispPreviewModal = {
   name: 'DispPreviewModal',
   props: {
-    show:     { type: Boolean, default: false },
+    show:     { type: Boolean, default: false, reloadTrigger: { type: Number, default: 0 } },
     mode:     { type: String,  default: 'single' },   /* 'all' | 'single' */
     tabLabel: { type: String,  default: '위젯미리보기' },
     area:     { type: String,  default: '' },
@@ -2050,7 +2090,7 @@ window.DispPreviewModal = {
 window.DispUiModal = {
   name: 'DispUiModal',
   props: {
-    show:      { type: Boolean, default: false },
+    show:      { type: Boolean, default: false, reloadTrigger: { type: Number, default: 0 } },
     params:    { type: Object,  default: () => ({
       areas: [], date: '', time: '', status: '', condition: '',
       authRequired: '', authGrade: '', siteId: '', memberId: '', viewOpts: '',
@@ -2112,7 +2152,7 @@ window.DispUiModal = {
 window.CategorySelectModal = {
   name: 'CategorySelectModal',
   props: {
-    show:        { type: Boolean, default: false },
+    show:        { type: Boolean, default: false, reloadTrigger: { type: Number, default: 0 } },
     selectedIds: { type: Array,   default: () => [] },
   },
   emits: ['close', 'apply'],
@@ -2287,7 +2327,7 @@ window.CategorySelectModal = {
 window.RowPickModal = {
   name: 'RowPickModal',
   props: {
-    title: { type: String, default: '전시항목 복사' },
+    title: { type: String, default: '전시항목 복사', reloadTrigger: { type: Number, default: 0 } },
     displays: { type: Array, default: () => [] },   /* 전체 패널(dispDataset.displays) */
     areas:    { type: Array, default: () => [] },   /* DISP_AREA codes */
     excludePanelId: { type: Number, default: null },/* 현재 패널 제외 */
@@ -2506,7 +2546,7 @@ window.RowPickModal = {
 window.AreaPickModal = {
   name: 'AreaPickModal',
   props: {
-    title: { type: String, default: '전시영역 추가' },
+    title: { type: String, default: '전시영역 추가', reloadTrigger: { type: Number, default: 0 } },
     areas:    { type: Array, default: () => [] },   /* DISP_AREA codes */
     excludeUi: { type: String, default: '' },        /* 제외할 UI 코드 (이미 포함된 영역 제외) */
   },
@@ -2695,7 +2735,7 @@ window.AreaPickModal = {
 window.PanelPickModal = {
   name: 'PanelPickModal',
   props: {
-    title: { type: String, default: '전시패널 추가' },
+    title: { type: String, default: '전시패널 추가', reloadTrigger: { type: Number, default: 0 } },
     displays: { type: Array, default: () => [] },
     areas:    { type: Array, default: () => [] },   /* DISP_AREA codes */
     excludeArea: { type: String, default: '' },     /* 제외할 영역코드 (이미 포함) */
@@ -2893,7 +2933,7 @@ window.PanelPickModal = {
 window.WidgetLibPickModal = {
   name: 'WidgetLibPickModal',
   props: {
-    mode: { type: String, default: 'copy' },     /* 'copy' | 'ref' */
+    mode: { type: String, default: 'copy', reloadTrigger: { type: Number, default: 0 } },     /* 'copy' | 'ref' */
     widgetLibs: { type: Array, default: () => [] },
   },
   emits: ['close', 'pick'],
@@ -3082,7 +3122,7 @@ window.WidgetLibPickModal = {
 ───────────────────────────────────────────────────────────── */
 window.PathPickModal = {
   name: 'PathPickModal',
-  props: ['bizCd', 'value', 'title'],
+  props: ['bizCd', 'value', 'title', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
@@ -3262,7 +3302,7 @@ window.PathPickTreeNode = {
   name: 'PathPickTreeNode',
   props: ['node', 'expanded', 'selected', 'addParent', 'editingId', 'editLabel',
           'onToggle', 'onSelect', 'onSetParent', 'onConfirm',
-          'onStartEdit', 'onSaveEdit', 'onCancelEdit', 'onUpdateLabel', 'onDelete', 'depth'],
+          'onStartEdit', 'onSaveEdit', 'onCancelEdit', 'onUpdateLabel', 'onDelete', 'depth', 'reloadTrigger'],
   template: /* html */`
 <div v-if="(node.children||[]).length > 0" style="position:relative;">
   <div v-for="(ch, ci) in node.children" :key="ch.pathId" style="position:relative;">
@@ -3331,7 +3371,7 @@ window.PathPickTreeNode = {
 ───────────────────────────────────────────────────────────── */
 window.BizPickModal = {
   name: 'BizPickModal',
-  props: ['value', 'title'],
+  props: ['value', 'title', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
@@ -3347,6 +3387,7 @@ window.BizPickModal = {
     const onSearch = () => { handleFetchData(); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); handleFetchData(); };
     Vue.onMounted(() => { handleFetchData(); });
+    Vue.watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
     const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
     const vtLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
     const vtBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
@@ -3434,7 +3475,7 @@ window.BizPickModal = {
 ───────────────────────────────────────────────────────────── */
 window.SimpleUserPickModal = {
   name: 'SimpleUserPickModal',
-  props: ['title', 'excludeIds'],
+  props: ['title', 'excludeIds', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
@@ -3449,6 +3490,7 @@ window.SimpleUserPickModal = {
     const onSearch = () => { handleFetchData(); };
     const onReset = () => { searchParam.kw = ''; handleFetchData(); };
     Vue.onMounted(() => { handleFetchData(); });
+    Vue.watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleFetchData(); });
     const cfExcl = computed(() => new Set(props.excludeIds || []));
     const cfFiltered = computed(() => boUsers.filter(u => {
       if (cfExcl.value.has(u.boUserId)) return false;

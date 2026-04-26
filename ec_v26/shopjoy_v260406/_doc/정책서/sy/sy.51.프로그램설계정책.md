@@ -546,6 +546,101 @@ return { isNew, form, ... };
 
 **CSS 클래스 미사용**: 인라인 style 사용으로 일관성 유지
 
+## 6. 모달 컴포넌트 reloadTrigger 표준
+
+### 6.1 목적
+
+모달 컴포넌트가 마운트된 상태에서 부모가 외부 변화 또는 사용자 액션에 따라
+"지금 다시 조회하라"는 신호를 보낼 수 있도록 한다.
+
+Vue 의 `onMounted` 는 컴포넌트가 처음 DOM에 마운트될 때 단 한 번만 호출되므로,
+모달이 keep-alive 상태이거나 prop만 바뀌고 재마운트되지 않는 경우 자동 재조회가 안 된다.
+이를 해결하기 위해 **모든 모달 컴포넌트는 `reloadTrigger` 라는 공통 props 를 받아서
+값이 변할 때마다 자동으로 fetch 함수를 호출한다.**
+
+### 6.2 적용 대상
+
+- `components/modals/BaseModal.js` 의 모든 모달 컴포넌트
+- `pages/bo/BoModals.js` 의 모든 모달 컴포넌트
+- 새로 추가되는 모달 컴포넌트는 **반드시** 이 규약을 따른다
+
+### 6.3 모달 측 구현 (자식)
+
+```js
+window.SomeModal = {
+  props: ['kind', 'reloadTrigger'],   // 또는 객체형 props 의 키로 추가
+  setup(props) {
+    const { reactive, onMounted, watch } = Vue;
+    const list = reactive([]);
+
+    const handleFetchData = async () => {
+      const res = await window.boApi.get(`/bo/.../${props.kind}/page`);
+      list.splice(0, list.length, ...(res.data?.data?.list || []));
+    };
+
+    // 1. 최초 마운트 시 조회
+    onMounted(() => { handleFetchData(); });
+
+    // 2. reloadTrigger 변화 시 재조회 (필수)
+    watch(() => props.reloadTrigger, () => {
+      if (props.reloadTrigger) handleFetchData();
+    });
+  },
+};
+```
+
+### 6.4 부모 측 사용법
+
+```js
+// 부모 setup
+const modal = reactive({
+  show: false,
+  kind: '',
+  reloadTrigger: 0,
+});
+
+const openA = () => {
+  modal.kind = 'a';
+  modal.reloadTrigger++;  // ← 다시 조회 신호
+  modal.show = true;
+};
+
+const openB = () => {
+  modal.kind = 'b';
+  modal.reloadTrigger++;
+  modal.show = true;
+};
+
+const refreshList = () => {
+  modal.reloadTrigger++;  // 외부 액션 후 모달 목록만 갱신
+};
+```
+
+```html
+<some-modal v-if="modal.show"
+            :kind="modal.kind"
+            :reload-trigger="modal.reloadTrigger"
+            @select="onSelect"
+            @close="modal.show = false" />
+```
+
+### 6.5 동작 규칙
+
+| 항목 | 규칙 |
+|---|---|
+| 최초 마운트 | `onMounted` 에서 한 번 fetch |
+| `reloadTrigger` 변화 시 | `watch` 가 발동하여 다시 fetch |
+| 초기값 | `0` (숫자), 부모는 매번 `++` 로 증가시킨다 |
+| 동일 값 재할당 | watch 미발동 → 반드시 다른 값(`++`)으로 변경 |
+| props 위치 | 배열형이면 마지막에 추가, 객체형이면 `reloadTrigger: { type: Number, default: 0 }` |
+
+### 6.6 사용 시 주의사항
+
+- 부모는 `reloadTrigger` 를 **숫자로 시작(0)** 하고, 갱신할 때마다 `++` 한다.
+- 같은 값으로 재할당하면 watch 가 발동하지 않으므로 반드시 값이 바뀌어야 한다.
+- 모달 내부 `watch` 는 `if (props.reloadTrigger)` 가드로 0 일 때 호출 방지 (옵션).
+- 자식 컴포넌트는 `reloadTrigger` 자체를 emit/수정해서는 안 된다 — 부모만 증가시킨다.
+
 ## 관련 정책
 - 611. 전시관리 정책
 - 911. 시스템공통 정책

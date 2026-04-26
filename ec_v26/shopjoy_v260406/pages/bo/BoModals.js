@@ -1,7 +1,18 @@
-/* ShopJoy Admin - 공통 참조 모달 (회원/상품/주문/클레임/쿠폰) */
+/* ShopJoy Admin - 공통 참조 모달 (회원/상품/주문/클레임/쿠폰)
+   ───────────────────────────────────────────────────────────────────────
+   [공통 props: reloadTrigger]
+   상세 사용법은 components/modals/BaseModal.js 상단 주석 참조.
+
+   요약:
+     - 모달이 마운트된 상태에서 부모가 "다시 조회" 신호를 보낼 때 사용
+     - 부모: const modal = reactive({ show:false, reloadTrigger:0 });
+             refresh() { modal.reloadTrigger++; }
+     - 모달 내부: watch(() => props.reloadTrigger, () => handleFetchData());
+   ───────────────────────────────────────────────────────────────────────
+*/
 window.BoRefModal = {
   name: 'BoRefModal',
-  props: ['state'],
+  props: ['state', 'reloadTrigger'],
   emits: ['close'],
   setup(props, { emit }) {
     const { reactive, watch } = Vue;

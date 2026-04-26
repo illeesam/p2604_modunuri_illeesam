@@ -6,7 +6,7 @@ window.OdDlivHist = {
   setup(props) {
     const { ref, computed, reactive, watch, onMounted } = Vue;
     const deliveries = reactive([]);
-    const uiState = reactive({ loading: false, botTab: window._ecDlivHistState.tab || 'order', viewMode2: 'tab'});
+    const uiState = reactive({ loading: false, isPageCodeLoad: false, botTab: window._ecDlivHistState.tab || 'order', viewMode2: 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
 
@@ -27,9 +27,23 @@ window.OdDlivHist = {
         uiState.loading = false;
       }
     };
-    onMounted(() => { handleFetchData(); });
         watch(botTab, v => { window._ecDlivHistState.tab = v; });
-        
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      uiState.isPageCodeLoad = true;
+      handleFetchData();
+    };
+
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.botTab === id;
     const cfRelatedOrder  = computed(() => getOrder.value(props.orderId));
     const cfRelatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.orderId === props.orderId));

@@ -147,11 +147,145 @@ window.PdCategoryMng = {
       Object.assign(searchParam, searchParamOrg);
       handleFetchData();
     };
-    const catPickerModal = reactive({ show: false, search: '', forCategoryId: null });
-    const cfCatPickerList = computed(() => []);
-    const onParentSelect = (c) => { catPickerModal.show = false; };
+    const catPickerModal = reactive({ show: false, search: '', forCategoryId: null, forRowIdx: null });
+    const cfCatPickerList = computed(() => {
+      const kw = (catPickerModal.search || '').toLowerCase();
+      return (categories || []).filter(c => !kw || (c.categoryNm || '').toLowerCase().includes(kw));
+    });
+    const onParentSelect = (c) => {
+      const idx = catPickerModal.forRowIdx;
+      if (idx != null && gridRows[idx]) {
+        gridRows[idx].parentId = c ? c.categoryId : null;
+        if (gridRows[idx]._row_status !== 'N') gridRows[idx]._row_status = 'U';
+      }
+      catPickerModal.show = false;
+    };
+    const openParentModal = (row) => {
+      catPickerModal.forRowIdx = gridRows.indexOf(row);
+      catPickerModal.search = '';
+      catPickerModal.show = true;
+    };
     const fnDepthColor = (d) => ({0:'#e8587a',1:'#1677ff',2:'#3ba87a'}[d] || '#999');
     const fnDepthBullet = (d) => ['●','○','▪'][d] || '·';
+
+    /* ── 행 편집 ── */
+    const focusedIdx = ref(-1);
+    const setFocused = (idx) => { focusedIdx.value = idx; };
+    const addRow = () => {
+      const parentId = uiState.selectedCatId || null;
+      const parent = parentId ? (categories || []).find(c => c.categoryId === parentId) : null;
+      const depth = parent ? ((parent.depth || 0) + 1) : 0;
+      gridRows.unshift({
+        categoryId: _tempId--,
+        categoryNm: '',
+        parentId,
+        sortOrd: 0,
+        description: '',
+        status: '활성',
+        depth,
+        _depth: depth,
+        _row_status: 'N',
+        _row_check: false,
+      });
+      pager.page = 1;
+    };
+    const addChildRow = (row, idx) => {
+      const depth = (row.depth || row._depth || 0) + 1;
+      gridRows.splice(idx + 1, 0, {
+        categoryId: _tempId--,
+        categoryNm: '',
+        parentId: row.categoryId,
+        sortOrd: 0,
+        description: '',
+        status: '활성',
+        depth,
+        _depth: depth,
+        _row_status: 'N',
+        _row_check: false,
+      });
+    };
+    const cancelRow = (idx) => {
+      const row = gridRows[idx];
+      if (!row) return;
+      if (row._row_status === 'N') {
+        gridRows.splice(idx, 1);
+      } else if (row._orig) {
+        Object.assign(row, row._orig);
+        row._row_status = null;
+      }
+    };
+    const cancelChecked = () => {
+      for (let i = gridRows.length - 1; i >= 0; i--) {
+        if (gridRows[i]._row_check) cancelRow(i);
+      }
+    };
+    const deleteRow = async (idx) => {
+      const row = gridRows[idx];
+      if (!row) return;
+      if (row._row_status === 'N') { gridRows.splice(idx, 1); return; }
+      const ok = await props.showConfirm?.('삭제', `[${row.categoryNm}] 카테고리를 삭제하시겠습니까?`);
+      if (!ok) return;
+      row._row_status = 'D';
+      try {
+        const res = await window.boApi.delete(`/bo/ec/pd/category/${row.categoryId}`);
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+        gridRows.splice(idx, 1);
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
+    };
+    const deleteRows = async () => {
+      const idxs = [];
+      gridRows.forEach((r, i) => { if (r._row_check) idxs.push(i); });
+      if (!idxs.length) { props.showToast?.('삭제할 행을 선택하세요.', 'info'); return; }
+      const ok = await props.showConfirm?.('삭제', `선택한 ${idxs.length}건을 삭제하시겠습니까?`);
+      if (!ok) return;
+      for (let i = idxs.length - 1; i >= 0; i--) {
+        const idx = idxs[i];
+        const row = gridRows[idx];
+        if (row._row_status === 'N') { gridRows.splice(idx, 1); continue; }
+        try {
+          await window.boApi.delete(`/bo/ec/pd/category/${row.categoryId}`);
+          gridRows.splice(idx, 1);
+        } catch (err) { console.error('[deleteRows]', err); }
+      }
+      props.showToast?.('삭제되었습니다.', 'success');
+    };
+    const handleSave = async () => {
+      const changed = gridRows.filter(r => r._row_status === 'N' || r._row_status === 'U');
+      if (!changed.length) { props.showToast?.('변경된 내용이 없습니다.', 'info'); return; }
+      for (const row of changed) {
+        if (!row.categoryNm) { props.showToast?.('카테고리명은 필수입니다.', 'error'); return; }
+      }
+      const ok = await props.showConfirm?.('저장', `${changed.length}건을 저장하시겠습니까?`);
+      if (!ok) return;
+      for (const row of changed) {
+        const isNew = row._row_status === 'N';
+        const payload = { ...row };
+        delete payload._depth; delete payload._row_status; delete payload._row_check; delete payload._orig; delete payload._children;
+        if (isNew) delete payload.categoryId;
+        try {
+          const res = isNew
+            ? await window.boApi.post('/bo/ec/pd/category', payload)
+            : await window.boApi.put(`/bo/ec/pd/category/${row.categoryId}`, payload);
+          if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+          row._row_status = null;
+        } catch (err) {
+          console.error('[handleSave]', err);
+          const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
+          if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+          if (props.showToast) props.showToast(errMsg, 'error', 0);
+          return;
+        }
+      }
+      props.showToast?.('저장되었습니다.', 'success');
+      await handleFetchData();
+    };
+
     return {
       codes, uiState,
       expandedSet, isExpanded, toggleNode, expandAll, collapseAll, cfCatTreeFlat,
@@ -159,7 +293,8 @@ window.PdCategoryMng = {
       searchParam, searchParamOrg,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       onSearch, onReset,
-      catPickerModal, cfCatPickerList, onParentSelect, fnDepthColor, fnDepthBullet,
+      catPickerModal, cfCatPickerList, onParentSelect, openParentModal, fnDepthColor, fnDepthBullet,
+      focusedIdx, setFocused, addRow, addChildRow, cancelRow, cancelChecked, deleteRow, deleteRows, handleSave,
     };
   },
 

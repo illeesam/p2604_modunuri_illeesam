@@ -30,20 +30,30 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
     },
     // 코드 그룹을 { codeValue, codeLabel } 형식으로 변환
     snGetGrpCodes: (s) => (grpVal) => {
-      if (!Array.isArray(s.svCodes)) return [];
-      return s.svCodes
-        .filter(c => c.codeGrp === grpVal && c.use_yn === 'Y')
-        .sort((a, b) => (a.sort_ord || 0) - (b.sort_ord || 0))
-        .map(c => ({ codeValue: c.code_value, codeLabel: c.code_label }));
+      try {
+        if (!Array.isArray(s.svCodes)) return [];
+        return s.svCodes
+          .filter(c => c.codeGrp === grpVal && c.use_yn === 'Y')
+          .sort((a, b) => (a.sort_ord || 0) - (b.sort_ord || 0))
+          .map(c => ({ codeValue: c.code_value, codeLabel: c.code_label })) || [];
+      } catch (err) {
+        console.error('[snGetGrpCodes]', err);
+        return [];
+      }
     },
     // 코드 그룹을 { codeValue, codeLabel } 형식으로 + 초기 항목 추가
     snGetGrpCodesFirstOpt: (s) => (grpVal, initVal, initLabel) => {
-      if (!Array.isArray(s.svCodes)) return initVal && initLabel ? [{ codeValue: initVal, codeLabel: initLabel }] : [];
-      const codes = s.svCodes
-        .filter(c => c.codeGrp === grpVal && c.use_yn === 'Y')
-        .sort((a, b) => (a.sort_ord || 0) - (b.sort_ord || 0))
-        .map(c => ({ codeValue: c.code_value, codeLabel: c.code_label }));
-      return initVal && initLabel ? [{ codeValue: initVal, codeLabel: initLabel }, ...codes] : codes;
+      try {
+        if (!Array.isArray(s.svCodes)) return initVal && initLabel ? [{ codeValue: initVal, codeLabel: initLabel }] : [];
+        const codes = s.svCodes
+          .filter(c => c.codeGrp === grpVal && c.use_yn === 'Y')
+          .sort((a, b) => (a.sort_ord || 0) - (b.sort_ord || 0))
+          .map(c => ({ codeValue: c.code_value, codeLabel: c.code_label }));
+        return (initVal && initLabel ? [{ codeValue: initVal, codeLabel: initLabel }, ...codes] : codes) || [];
+      } catch (err) {
+        console.error('[snGetGrpCodesFirstOpt]', err);
+        return [];
+      }
     },
   },
 

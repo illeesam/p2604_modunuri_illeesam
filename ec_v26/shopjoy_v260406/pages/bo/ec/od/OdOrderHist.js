@@ -6,7 +6,7 @@ window.OdOrderHist = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const orders = reactive([]);
-    const uiState = reactive({ loading: false, botTab: window._ecOrderHistState.tab || 'products', viewMode2: 'tab'});
+    const uiState = reactive({ loading: false, isPageCodeLoad: false, botTab: window._ecOrderHistState.tab || 'products', viewMode2: 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const claims = reactive([]);
@@ -34,12 +34,25 @@ window.OdOrderHist = {
       }
     };
         watch(botTab, v => { window._ecOrderHistState.tab = v; });
-        
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      uiState.isPageCodeLoad = true;
+      handleFetchData();
+    };
+
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.botTab === id;
 
     const orderItems = reactive([]);
     onMounted(() => {
-      handleFetchData();
+      if (isAppReady.value) fnLoadCodes();
       const o = window.safeArrayUtils.safeFind(orders, x => x.orderId === props.orderId);
       if (o) {
         orderItems.splice(0, orderItems.length,
