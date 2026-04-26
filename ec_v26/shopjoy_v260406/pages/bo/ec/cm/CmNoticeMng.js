@@ -6,7 +6,7 @@ window.CmNoticeMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const notices = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({ notice_display_statuses: [] });
+    const codes = reactive({ noticeTypes: [], noticeStatuses: [] });
 
     // onMounted에서 API 로드
     const handleFetchData = async () => {
@@ -44,7 +44,8 @@ window.CmNoticeMng = {
       try {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
-        codes.notice_display_statuses = await codeStore.snGetGrpCodes('NOTICE_DISPLAY_STATUS') || [];
+        codes.noticeTypes    = await codeStore.snGetGrpCodes('NOTICE_TYPE')   || [];
+        codes.noticeStatuses = await codeStore.snGetGrpCodes('NOTICE_STATUS') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -156,8 +157,14 @@ window.CmNoticeMng = {
   <div class="card">
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="제목 검색" />
-      <select v-model="searchParam.type"><option value="">유형 전체</option><option>일반</option><option>긴급</option><option>이벤트</option><option>시스템</option></select>
-      <select v-model="searchParam.status"><option value="">상태 전체</option><option>게시</option><option>예약</option><option>종료</option><option>임시</option></select>
+      <select v-model="searchParam.type">
+        <option value="">유형 전체</option>
+        <option v-for="c in codes.noticeTypes" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+      </select>
+      <select v-model="searchParam.status">
+        <option value="">상태 전체</option>
+        <option v-for="c in codes.noticeStatuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+      </select>
       <span class="search-label">등록일</span>
       <input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
       <select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>

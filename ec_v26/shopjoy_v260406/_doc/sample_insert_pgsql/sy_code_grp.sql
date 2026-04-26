@@ -1,23 +1,178 @@
--- sy_code_grp 샘플 INSERT 데이터
--- 코드 그룹 마스터
-
--- 기존 코드 그룹들
-INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id, site_id, code_grp, grp_nm, disp_path, code_grp_desc, use_yn, reg_by, reg_date)
-VALUES
-('202604260001', NULL, 'ORDER_STATUS', '주문상태', 'order.status', '주문 상태 코드', 'Y', 'admin', CURRENT_TIMESTAMP),
-('202604260002', NULL, 'PAYMENT_METHOD', '결제수단', 'payment.method', '결제 수단 코드', 'Y', 'admin', CURRENT_TIMESTAMP),
-('202604260003', NULL, 'DELIVERY_STATUS', '배송상태', 'delivery.status', '배송 상태 코드', 'Y', 'admin', CURRENT_TIMESTAMP),
-('202604260004', NULL, 'CLAIM_STATUS', '클레임상태', 'claim.status', '클레임 상태 코드', 'Y', 'admin', CURRENT_TIMESTAMP),
-('202604260005', NULL, 'MEMBER_STATUS', '회원상태', 'member.status', '회원 상태 코드', 'Y', 'admin', CURRENT_TIMESTAMP),
-('202604260006', NULL, 'MEMBER_GRADE', '회원등급', 'member.grade', '회원 등급 코드', 'Y', 'admin', CURRENT_TIMESTAMP),
-('202604260007', NULL, 'COUPON_STATUS', '쿠폰상태', 'coupon.status', '쿠폰 상태 코드', 'Y', 'admin', CURRENT_TIMESTAMP),
-('202604260008', NULL, 'ERP_VOUCHER_TYPE', 'ERP바우처타입', 'erp.voucher.type', 'ERP 바우처 타입 코드', 'Y', 'admin', CURRENT_TIMESTAMP),
-('202604260009', NULL, 'USER_STATUS', '사용자상태', 'user.status', '사용자 상태 코드', 'Y', 'admin', CURRENT_TIMESTAMP);
-
--- 신규 전시 관련 코드 그룹
-INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id, site_id, code_grp, grp_nm, disp_path, code_grp_desc, use_yn, reg_by, reg_date)
-VALUES
-('202604260010', NULL, 'DISP_UI_TYPE', '전시UI타입', 'display.ui.type', '전시 UI 타입 코드', 'Y', 'admin', CURRENT_TIMESTAMP),
-('202604260011', NULL, 'DISP_WIDGET_TYPE', '전시위젯타입', 'display.widget.type', '전시 위젯 타입 코드', 'Y', 'admin', CURRENT_TIMESTAMP),
-('202604260012', NULL, 'LAYOUT_TYPE', '레이아웃타입', 'display.layout.type', '레이아웃 타입 코드', 'Y', 'admin', CURRENT_TIMESTAMP),
-('202604260013', NULL, 'DISCOUNT_TYPE', '할인타입', 'promotion.discount.type', '할인 타입 코드', 'Y', 'admin', CURRENT_TIMESTAMP);
+INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id,site_id,code_grp,grp_nm,disp_path,code_grp_desc,use_yn,reg_by,reg_date,upd_by,upd_date) VALUES
+	 ('CG000001','SITE000001','MEMBER_GRADE','회원등급','member.grade','회원 등급 (BASIC/SILVER/GOLD/VIP)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000002','SITE000001','MEMBER_STATUS','회원상태','member.status','회원 상태 (ACTIVE/INACTIVE/SUSPENDED/WITHDRAWN)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000003','SITE000001','GENDER','성별','member.gender','성별 (M/F)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000004','SITE000001','USER_STATUS','사용자상태','user.status','관리자 사용자 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000005','SITE000001','USER_ROLE','사용자권한','user.role','관리자 권한 (계층형)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000006','SITE000001','DEPT_TYPE','부서유형','user.dept','부서 유형 (계층형)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000007','SITE000001','ORDER_STATUS','주문상태','order.status','주문 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000008','SITE000001','ORDER_ITEM_STATUS','주문항목상태','order.item.status','주문 항목 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000009','SITE000001','PAY_METHOD','결제수단','order.payment','결제 수단','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000010','SITE000001','REFUND_METHOD','환불수단','order.refund','환불 수단','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL);
+INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id,site_id,code_grp,grp_nm,disp_path,code_grp_desc,use_yn,reg_by,reg_date,upd_by,upd_date) VALUES
+	 ('CG000011','SITE000001','CLAIM_TYPE','클레임유형','claim.type','취소/반품/교환','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000012','SITE000001','CLAIM_STATUS','클레임상태','claim.status','클레임 처리 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000013','SITE000001','CLAIM_ITEM_STATUS','클레임항목상태','claim.item.status','클레임 항목 처리 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000014','SITE000001','CLAIM_REASON','클레임사유','claim.reason','클레임 사유','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000015','SITE000001','COURIER','택배사','dliv.courier','택배사 코드','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG0000000000001',NULL,'MEMBER_STATUS','회원상태',NULL,NULL,'Y','SYSTEM','2026-04-19 21:00:26.671',NULL,NULL),
+	 ('CG0000000000002',NULL,'MEMBER_GRADE','회원등급',NULL,NULL,'Y','SYSTEM','2026-04-19 21:00:26.671',NULL,NULL),
+	 ('CG0000000000003',NULL,'ORDER_STATUS','주문상태',NULL,NULL,'Y','SYSTEM','2026-04-19 21:00:26.671',NULL,NULL),
+	 ('CG0000000000004',NULL,'CLAIM_TYPE','클레임유형',NULL,NULL,'Y','SYSTEM','2026-04-19 21:00:26.671',NULL,NULL),
+	 ('CG0000000000005',NULL,'CLAIM_STATUS','클레임상태',NULL,NULL,'Y','SYSTEM','2026-04-19 21:00:26.671',NULL,NULL);
+INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id,site_id,code_grp,grp_nm,disp_path,code_grp_desc,use_yn,reg_by,reg_date,upd_by,upd_date) VALUES
+	 ('CG0000000000006',NULL,'DLIV_STATUS','배송상태',NULL,NULL,'Y','SYSTEM','2026-04-19 21:00:26.671',NULL,NULL),
+	 ('CG0000000000007',NULL,'PROD_STATUS','상품상태',NULL,NULL,'Y','SYSTEM','2026-04-19 21:00:26.671',NULL,NULL),
+	 ('CG0000000000008',NULL,'COUPON_STATUS','쿠폰상태',NULL,NULL,'Y','SYSTEM','2026-04-19 21:00:26.671',NULL,NULL),
+	 ('CG0000000000009',NULL,'SETTLE_STATUS','정산상태',NULL,NULL,'Y','SYSTEM','2026-04-19 21:00:26.671',NULL,NULL),
+	 ('CG0000000000010',NULL,'SITE_STATUS','사이트상태',NULL,NULL,'Y','SYSTEM','2026-04-19 21:00:26.671',NULL,NULL),
+	 ('CG0000000000011',NULL,'USER_STATUS','관리자상태',NULL,NULL,'Y','SYSTEM','2026-04-19 21:00:26.671',NULL,NULL),
+	 ('CG0000000000012',NULL,'PAY_METHOD','결제수단',NULL,NULL,'Y','SYSTEM','2026-04-19 21:00:26.671',NULL,NULL),
+	 ('CG0000000000013',NULL,'DLIV_TYPE','배송유형',NULL,NULL,'Y','SYSTEM','2026-04-19 21:00:26.671',NULL,NULL),
+	 ('CG0000000000014',NULL,'WIDGET_TYPE','위젯유형',NULL,NULL,'Y','SYSTEM','2026-04-19 21:00:26.671',NULL,NULL),
+	 ('CG0000000000015',NULL,'DISP_STATUS','전시상태',NULL,NULL,'Y','SYSTEM','2026-04-19 21:00:26.671',NULL,NULL);
+INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id,site_id,code_grp,grp_nm,disp_path,code_grp_desc,use_yn,reg_by,reg_date,upd_by,upd_date) VALUES
+	 ('CG000016','SITE000001','DLIV_STATUS','배송상태','dliv.status','배송 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000017','SITE000001','PRODUCT_STATUS','상품상태','product.status','상품 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000018','SITE000001','PRODUCT_SIZE','상품사이즈','product.size','상품 사이즈','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000019','SITE000001','PRODUCT_CATEGORY','상품카테고리','product.category','상품 카테고리 (계층형)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000020','SITE000001','COUPON_TYPE','쿠폰유형','promotion.coupon.type','쿠폰 유형 (RATE/FIXED)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000021','SITE000001','COUPON_STATUS','쿠폰상태','promotion.coupon.status','쿠폰 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000022','SITE000001','EVENT_TYPE','이벤트유형','promotion.event.type','이벤트 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000023','SITE000001','EVENT_STATUS','이벤트상태','promotion.event.status','이벤트 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000024','SITE000001','CACHE_TYPE','적립금유형','promotion.cache.type','적립금 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000025','SITE000001','DISP_AREA','전시영역','disp.area','전시 영역 코드','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL);
+INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id,site_id,code_grp,grp_nm,disp_path,code_grp_desc,use_yn,reg_by,reg_date,upd_by,upd_date) VALUES
+	 ('CG000026','SITE000001','DISP_TYPE','전시유형','disp.type','전시 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000027','SITE000001','DISP_STATUS','전시상태','disp.status','전시 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000028','SITE000001','DISP_UI','전시 UI','disp.ui','전시 UI 타입','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000029','SITE000001','VISIBILITY_TARGET','공개대상','disp.visibility','공개 대상','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000030','SITE000001','NOTICE_TYPE','공지유형','cs.notice','공지 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000031','SITE000001','CONTACT_STATUS','문의상태','cs.contact','문의 처리 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000032','SITE000001','CHATT_STATUS','채팅상태','cs.chatt','채팅 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000033','SITE000001','ALARM_TYPE','알림유형','system.alarm.type','알림 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000034','SITE000001','ALARM_CHANNEL','알림채널','system.alarm.channel','알림 채널','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000035','SITE000001','TEMPLATE_TYPE','템플릿유형','system.template','템플릿 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL);
+INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id,site_id,code_grp,grp_nm,disp_path,code_grp_desc,use_yn,reg_by,reg_date,upd_by,upd_date) VALUES
+	 ('CG000036','SITE000001','BATCH_CYCLE','배치주기','system.batch.cycle','배치 실행 주기','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000037','SITE000001','BATCH_STATUS','배치상태','system.batch.status','배치 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000038','SITE000001','VENDOR_STATUS','업체상태','vendor.status','업체 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000039','SITE000001','SITE_STATUS','사이트상태','site.status','사이트 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000040','SITE000001','USE_YN','사용여부','common.use_yn','Y/N','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000041','SITE000001','PAY_STATUS','결제상태','order.pay.status','결제 처리 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000042','SITE000001','PAY_DIR','결제방향','order.pay.dir','결제 방향 (입금/환불)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000043','SITE000001','PAY_DIV','결제구분','order.pay.div','결제 구분 (주문/클레임)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000044','SITE000001','PAY_CHANNEL','결제채널','order.pay.channel','PG사·결제 채널','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000045','SITE000001','REFUND_STATUS','환불상태','order.refund.status','환불 처리 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL);
+INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id,site_id,code_grp,grp_nm,disp_path,code_grp_desc,use_yn,reg_by,reg_date,upd_by,upd_date) VALUES
+	 ('CG000046','SITE000001','REFUND_TYPE','환불유형','order.refund.type','환불 유형 (취소/반품 등)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000047','SITE000001','FAULT_TYPE','귀책사유','order.fault','귀책 구분 (고객/판매자/플랫폼)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000048','SITE000001','APPR_STATUS','결재상태','order.appr.status','결재 처리 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000049','SITE000001','APPR_TARGET','결재대상','order.appr.target','결재 대상 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000050','SITE000001','ACCESS_CHANNEL','접근채널','order.channel','주문 접근 채널 (PC/모바일/앱)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000051','SITE000001','DLIV_DIV','입출고구분','dliv.div','배송 입출고 방향 (출고/입고)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000052','SITE000001','DLIV_TYPE','배송유형','dliv.type','배송 목적·성격 (정상/반품/교환)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000053','SITE000001','DLIV_PAY_TYPE','배송비결제유형','dliv.pay_type','배송비 선불/착불','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000054','SITE000001','DLIV_METHOD','배송방법','dliv.method','배송 방법 (택배/직배/수령)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000055','SITE000001','PROD_TYPE','상품유형','product.type','상품 유형 (단품/묶음/세트)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL);
+INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id,site_id,code_grp,grp_nm,disp_path,code_grp_desc,use_yn,reg_by,reg_date,upd_by,upd_date) VALUES
+	 ('CG000056','SITE000001','CATEGORY_STATUS','카테고리상태','product.category.status','카테고리 활성 여부','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000057','SITE000001','REVIEW_STATUS','리뷰상태','product.review.status','리뷰 노출 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000058','SITE000001','QNA_TYPE','QNA유형','product.qna.type','상품 QNA 문의 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000059','SITE000001','DISCNT_TYPE','할인유형','promotion.discnt.type','할인 유형 (정률/정액/무료배송)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000060','SITE000001','DISCNT_STATUS','할인상태','promotion.discnt.status','할인 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000061','SITE000001','DISCNT_TARGET','할인대상','promotion.discnt.target','할인 적용 대상','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000062','SITE000001','TARGET_TYPE','프로모션대상','promotion.target','쿠폰·이벤트 적용 대상','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000063','SITE000001','DEVICE_TYPE','디바이스유형','disp.device','전시 대상 디바이스','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000064','SITE000001','PANEL_TYPE','패널유형','disp.panel.type','전시 패널 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000065','SITE000001','WIDGET_TYPE','위젯유형','disp.widget.type','전시 위젯 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL);
+INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id,site_id,code_grp,grp_nm,disp_path,code_grp_desc,use_yn,reg_by,reg_date,upd_by,upd_date) VALUES
+	 ('CG000066','SITE000001','CONTENT_TYPE','콘텐츠유형','disp.content.type','팝업·BBM 콘텐츠 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000067','SITE000001','NOTICE_STATUS','공지상태','cs.notice.status','공지사항 노출 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000068','SITE000001','CONTACT_CATEGORY','문의카테고리','cs.contact.category','고객 문의 카테고리','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000069','SITE000001','COMMENT_STATUS','댓글상태','cs.comment.status','게시판 댓글 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000070','SITE000001','WRITER_TYPE','작성자유형','cs.writer.type','게시물 작성자 구분','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000071','SITE000001','BBS_STATUS','게시판상태','system.bbs.status','게시글 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000072','SITE000001','BBM_TYPE','팝업유형','system.bbm.type','사이트 팝업·공지 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000073','SITE000001','SCOPE_TYPE','노출범위','system.scope','팝업·공지 노출 범위','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000074','SITE000001','ALARM_STATUS','알림발송상태','system.alarm.send_status','알림 발송 처리 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000075','SITE000001','VENDOR_CLASS','업체구분','vendor.class','업체 사업자 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL);
+INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id,site_id,code_grp,grp_nm,disp_path,code_grp_desc,use_yn,reg_by,reg_date,upd_by,upd_date) VALUES
+	 ('CG000076','SITE000001','VENDOR_USER_STATUS','업체직원상태','vendor.user.status','업체 직원 재직 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000077','SITE000001','POSITION','직위','vendor.user.position','업체 직원 직위','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000078','SITE000001','SITE_TYPE','사이트유형','site.type','사이트 용도 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000079','SITE000001','ROLE_TYPE','권한유형','system.role.type','역할 유형 (시스템/커스텀)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000080','SITE000001','MENU_TYPE','메뉴유형','system.menu.type','메뉴 항목 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000081','SITE000001','AUTH_METHOD','인증방법','member.auth.method','회원 인증·로그인 방법','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000082','SITE000001','SNS_CHANNEL','SNS채널','member.sns.channel','SNS 소셜 연동 채널','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000083','SITE000001','MEMBER_WITHDRAW_REASON','탈퇴사유','member.withdraw.reason','회원 탈퇴 사유','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000084','SITE000001','LOGIN_RESULT','로그인결과','member.login.result','로그인 처리 결과','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000085','SITE000001','TOKEN_ACTION','토큰액션','member.token.action','토큰 발급·갱신·만료·폐기','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL);
+INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id,site_id,code_grp,grp_nm,disp_path,code_grp_desc,use_yn,reg_by,reg_date,upd_by,upd_date) VALUES
+	 ('CG000086','SITE000001','TOKEN_TYPE','토큰유형','member.token.type','토큰 유형 (ACCESS/REFRESH/TEMP)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000087','SITE000001','ORDER_DISCNT_TYPE','주문할인유형','order.discnt.type','주문 할인 유형 (쿠폰/배송비 등)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000088','SITE000001','CANCEL_REASON','취소사유','order.cancel.reason','주문 취소 사유','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000089','SITE000001','RETURN_REASON','반품사유','order.return.reason','반품 사유','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000090','SITE000001','EXCHANGE_REASON','교환사유','order.exchange.reason','교환 사유','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000091','SITE000001','PAY_OCCUR_TYPE','결제발생유형','order.pay.occur','결제 발생 유형 (주문/클레임/교환차액)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000092','SITE000001','CARD_TYPE','카드유형','order.pay.card','카드 유형 (신용/체크/직불)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000093','SITE000001','BANK_CODE','은행코드','order.bank','은행 코드 목록','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000094','SITE000001','SHIPPING_FEE_TYPE','배송비구분','dliv.ship.fee','배송비 구분 (출고/반품/교환 등)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000095','SITE000001','DLIV_COST_TYPE','배송비유형','dliv.cost.type','배송비 유형 (무료/고정/조건부)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL);
+INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id,site_id,code_grp,grp_nm,disp_path,code_grp_desc,use_yn,reg_by,reg_date,upd_by,upd_date) VALUES
+	 ('CG000096','SITE000001','PAY_CHG_TYPE','결제변경유형','order.pay.chg','결제 변경 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000097','SITE000001','OPT_TYPE','옵션카테고리','product.opt.type','옵션 의미 카테고리 (COLOR/SIZE 등)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000098','SITE000001','OPT_VAL','옵션프리셋값','product.opt.val','OPT_TYPE 하위 사전정의 옵션값','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000099','SITE000001','OPT_INPUT_TYPE','옵션입력방식','product.opt.inputType','옵션 UI 입력 위젯 타입','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000100','SITE000001','PROD_CONTENT_TYPE','상품콘텐츠유형','product.content.type','상품 콘텐츠 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000101','SITE000001','VAT_TYPE','부가세유형','product.vat','부가세 유형 (과세/면세)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000102','SITE000001','LIKE_TARGET_TYPE','찜대상유형','product.like.target','찜 대상 유형 (상품/브랜드)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000103','SITE000001','MEDIA_TYPE','미디어유형','product.media','첨부 미디어 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000104','SITE000001','MIME_TYPE','MIME유형','system.mime','MIME 카테고리','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000105','SITE000001','COUPON_ISSUE_TYPE','쿠폰발급유형','promo.coupon.issue','쿠폰 발급 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL);
+INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id,site_id,code_grp,grp_nm,disp_path,code_grp_desc,use_yn,reg_by,reg_date,upd_by,upd_date) VALUES
+	 ('CG000106','SITE000001','GIFT_TYPE','사은품유형','promo.gift.type','사은품 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000107','SITE000001','GIFT_STATUS','사은품상태','promo.gift.status','사은품 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000108','SITE000001','GIFT_COND_TYPE','사은품조건유형','promo.gift.cond','사은품 지급 조건 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000109','SITE000001','GIFT_ISSUE_STATUS','사은품발급상태','promo.gift.issue.status','사은품 발급 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000110','SITE000001','SAVE_TYPE','적립금유형','promo.save.type','적립금 거래 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000111','SITE000001','SAVE_ISSUE_TYPE','적립금발생사유','promo.save.issue.type','적립금 발생 사유','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000112','SITE000001','SAVE_ISSUE_STATUS','적립금발급상태','promo.save.issue.status','적립금 발급 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000113','SITE000001','VOUCHER_TYPE','상품권유형','promo.voucher.type','상품권 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000114','SITE000001','VOUCHER_STATUS','상품권상태','promo.voucher.status','상품권 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000115','SITE000001','VOUCHER_ISSUE_STATUS','상품권발급상태','promo.voucher.issue','상품권 발급 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL);
+INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id,site_id,code_grp,grp_nm,disp_path,code_grp_desc,use_yn,reg_by,reg_date,upd_by,upd_date) VALUES
+	 ('CG000116','SITE000001','PLAN_STATUS','기획전상태','promo.plan.status','기획전 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000117','SITE000001','PLAN_TYPE','기획전유형','promo.plan.type','기획전 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000118','SITE000001','BENEFIT_TYPE','혜택유형','promo.benefit','이벤트 혜택 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000119','SITE000001','PROMO_TARGET_TYPE','프로모션대상유형','promo.target','프로모션 적용 대상 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000120','SITE000001','DISP_AREA_TYPE','전시영역유형','disp.area.type','전시 영역 유형 (FULL/SIDEBAR 등)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000121','SITE000001','SETTLE_STATUS','정산상태','settle.status','정산 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000122','SITE000001','SETTLE_CLOSE_STATUS','정산마감상태','settle.close.status','정산 마감 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000123','SITE000001','SETTLE_PAY_STATUS','정산지급상태','settle.pay.status','정산 지급 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000124','SITE000001','SETTLE_CYCLE','정산주기','settle.cycle','정산 주기','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000125','SITE000001','SETTLE_ITEM_TYPE','정산항목유형','settle.item.type','정산 항목 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL);
+INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id,site_id,code_grp,grp_nm,disp_path,code_grp_desc,use_yn,reg_by,reg_date,upd_by,upd_date) VALUES
+	 ('CG000126','SITE000001','SETTLE_ADJ_TYPE','정산조정유형','settle.adj.type','정산 조정 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000127','SITE000001','ADJ_DIR','조정방향','settle.adj.dir','정산 조정 방향 (가산/차감)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000128','SITE000001','RAW_STATUS','수집원장상태','settle.raw.status','수집 원장 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000129','SITE000001','RAW_TYPE','수집원장유형','settle.raw.type','수집 원장 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000130','SITE000001','RECON_STATUS','대사상태','settle.recon.status','정산 대사 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000131','SITE000001','RECON_TYPE','대사유형','settle.recon.type','정산 대사 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000132','SITE000001','ERP_VOUCHER_TYPE','ERP전표유형','settle.erp.type','ERP 전표 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000133','SITE000001','ERP_VOUCHER_STATUS','ERP전표상태','settle.erp.status','ERP 전표 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000134','SITE000001','VENDOR_TYPE','업체유형','system.vendor.type','업체 유형 (브랜드/에이전트 등)','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000135','SITE000001','VENDOR_CONTENT_TYPE','업체콘텐츠유형','system.vendor.content.type','업체 콘텐츠 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL);
+INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id,site_id,code_grp,grp_nm,disp_path,code_grp_desc,use_yn,reg_by,reg_date,upd_by,upd_date) VALUES
+	 ('CG000136','SITE000001','VENDOR_CONTENT_STATUS','업체콘텐츠상태','system.vendor.content.status','업체 콘텐츠 상태','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000137','SITE000001','BRAND_CONTRACT','브랜드계약유형','system.brand.contract','브랜드 계약 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000138','SITE000001','ALARM_TARGET_TYPE','알림대상유형','system.alarm.target','알림 대상 유형','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000139','SITE000001','SEND_RESULT','발송결과','system.send.result','메시지·이메일 발송 결과','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000140','SITE000001','PROP_TYPE','속성유형','system.prop.type','속성값 타입','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000141','SITE000001','VOC_MASTER','VOC마스터분류','system.voc.master','VOC 마스터 분류','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000142','SITE000001','VOC_DETAIL','VOC세부분류','system.voc.detail','VOC 세부 분류','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000143','SITE000001','I18N_SCOPE','다국어범위','system.i18n.scope','다국어 적용 범위','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('CG000144','SITE000001','LANG_CODE','언어코드','system.lang','지원 언어 코드','Y','SYSTEM','2026-04-20 00:00:00.000',NULL,NULL),
+	 ('202604260014',NULL,'NOTICE_TYPE','공지유형','notice.type','공지사항 유형 코드','Y','admin','2026-04-26 16:06:48.633',NULL,NULL);
+INSERT INTO shopjoy_2604.sy_code_grp (code_grp_id,site_id,code_grp,grp_nm,disp_path,code_grp_desc,use_yn,reg_by,reg_date,upd_by,upd_date) VALUES
+	 ('202604260015',NULL,'NOTICE_STATUS','공지상태','notice.status','공지사항 게시 상태 코드','Y','admin','2026-04-26 16:06:48.633',NULL,NULL);
