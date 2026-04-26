@@ -6,6 +6,8 @@ window.PdProdDtl = {
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
+    // window 접근 불가한 템플릿용 + setup 내부 공용 헬퍼
+    const { safeFirst, safeGet, safeFind, safeFilter } = window.safeArrayUtils;
     const products = reactive([]);
     const boUsers = reactive([]);
     const categories = reactive([]);
@@ -50,8 +52,8 @@ window.PdProdDtl = {
         ];
         if (!cfIsNew.value) calls.push(window.boApi.get(`/bo/ec/pd/prod/${props.editId}`, { headers: { 'X-UI-Nm': '상품상세', 'X-Cmd-Nm': '상세조회' } }));
         const results = await Promise.all(calls);
-        boUsers.splice(0, boUsers.length, ...(results[0].data?.data?.list || []));
-        categories.splice(0, categories.length, ...(results[1].data?.data?.list || []));
+        boUsers.splice(0, boUsers.length, ...(results[0].data?.data?.pageList || results[0].data?.data?.list || []));
+        categories.splice(0, categories.length, ...(results[1].data?.data?.pageList || results[1].data?.data?.list || []));
         if (!cfIsNew.value && results[2]) {
           const p = results[2].data?.data || results[2].data;
           if (p) products.splice(0, products.length, p);
@@ -159,7 +161,7 @@ window.PdProdDtl = {
 
     const generateSkus = () => {
       if (optGroups.length === 0) { skus.length = 0; return; }
-      const g1 = window.safeArrayUtils.safeFirst(optGroups)?.items.filter(i => i.useYn === 'Y' && i.nm.trim()) || [];
+      const g1 = safeFirst(optGroups)?.items.filter(i => i.useYn === 'Y' && i.nm.trim()) || [];
       const g2 = optGroups[1]?.items.filter(i => i.useYn === 'Y' && i.nm.trim()) || [];
       const existMap = {};
       window.safeArrayUtils.safeForEach(skus, s => { existMap[s._optKey] = s; });
@@ -181,7 +183,7 @@ window.PdProdDtl = {
       }
       skus.splice(0, skus.length, ...newSkus);
     };
-    const cfTotalStock = computed(() => window.safeArrayUtils.safeFilter(skus, s => s.useYn === 'Y').reduce((a, s) => a + (Number(s.stock) || 0), 0));
+    const cfTotalStock = computed(() => safeFilter(skus, s => s.useYn === 'Y').reduce((a, s) => a + (Number(s.stock) || 0), 0));
 
     // ── SKU 필터 (1단/2단/재고) - uiState 참조
     const cfSkuFilter1Options = computed(() => [...new Set(skus.map(s => s._nm1).filter(Boolean))]);
@@ -189,7 +191,7 @@ window.PdProdDtl = {
       const base = uiState.skuFilter1 ? skus.filter(s => s._nm1 === uiState.skuFilter1) : skus;
       return [...new Set(base.map(s => s._nm2).filter(Boolean))];
     });
-    const cfSkusFiltered = computed(() => window.safeArrayUtils.safeFilter(skus, s => {
+    const cfSkusFiltered = computed(() => safeFilter(skus, s => {
       if (uiState.skuFilter1     && s._nm1 !== uiState.skuFilter1) return false;
       if (uiState.skuFilter2     && s._nm2 !== uiState.skuFilter2) return false;
       if (uiState.skuFilterStock === 'in'  && (s.stock || 0) <= 0) return false;
@@ -214,7 +216,7 @@ window.PdProdDtl = {
     const setMain = (id) => window.safeArrayUtils.safeForEach(images, img => { img.isMain = img.id === id; });
     const removeImage = (id) => {
       const idx = images.findIndex(img => img.id === id);
-      if (idx !== -1) { const wasMain = images[idx].isMain; images.splice(idx, 1); if (wasMain && images.length) window.safeArrayUtils.safeFirst(images).isMain = true; }
+      if (idx !== -1) { const wasMain = images[idx].isMain; images.splice(idx, 1); if (wasMain && images.length) safeFirst(images).isMain = true; }
     };
 
     // ── 이미지 드래그 정렬
@@ -295,16 +297,16 @@ window.PdProdDtl = {
         const cfProdPickerList   = computed(() => {
       const q    = prodPickerSearch.value.trim().toLowerCase();
       const all  = products;
-      const used = (uiState.prodPickerOpen === 'rel' ? relProds : codeProds).map(r => r.productId);
-      return window.safeArrayUtils.safeFilter(all, p => {
-        if (used.includes(p.productId)) return false;
+      const used = (uiState.prodPickerOpen === 'rel' ? relProds : codeProds).map(r => r.prodId);
+      return safeFilter(all, p => {
+        if (used.includes(p.prodId)) return false;
         if (!q) return true;
-        return String(p.productId).includes(q) || (p.prodNm||'').toLowerCase().includes(q) || (p.category||'').toLowerCase().includes(q);
+        return String(p.prodId).includes(q) || (p.prodNm||'').toLowerCase().includes(q) || (p.cateNm||'').toLowerCase().includes(q);
       });
     });
     const openProdPicker = (type) => { uiState.prodPickerSearch = ''; uiState.prodPickerOpen = type; };
     const selectProdItem = (p) => {
-      const row = { _id: _relSeq++, productId: p.productId, prodNm: p.prodNm, category: p.category||'', price: p.price||0, stock: p.stock||0, status: p.status||'' };
+      const row = { _id: _relSeq++, prodId: p.prodId, prodNm: p.prodNm, cateNm: p.cateNm||'', listPrice: p.listPrice||0, prodStock: p.prodStock||0, prodStatusCd: p.prodStatusCd||'' };
       if (uiState.prodPickerOpen === 'rel') relProds.push(row);
       else                                codeProds.push(row);
       uiState.prodPickerOpen = '';
@@ -368,10 +370,10 @@ window.PdProdDtl = {
     // ── 판매계획
     const salePlans = reactive([]);
     let planIdSeq = 1;
-    const cfPlanVisible = computed(() => window.safeArrayUtils.safeFilter(salePlans, r => r._row_status !== 'D'));
+    const cfPlanVisible = computed(() => safeFilter(salePlans, r => r._row_status !== 'D'));
     const cfPlanAllChecked = computed({
-      get: () => cfPlanVisible.value.length > 0 && window.safeArrayUtils.safeEvery(cfPlanVisible, r => r._checked),
-      set: v => window.safeArrayUtils.safeForEach(cfPlanVisible, r => { r._checked = v; }),
+      get: () => cfPlanVisible.value.length > 0 && window.safeArrayUtils.safeEvery(cfPlanVisible.value, r => r._checked),
+      set: v => window.safeArrayUtils.safeForEach(cfPlanVisible.value, r => { r._checked = v; }),
     });
     const addPlanRow = () => salePlans.unshift({ _id: planIdSeq++, _row_status: 'I', _checked: false, startDate: '', startTime: '00:00', endDate: '', endTime: '23:59', planStatus: '준비중', listPrice: form.listPrice || 0, salePrice: form.salePrice || 0, purchasePrice: form.purchasePrice || 0 });
     const onPlanChange = row => { if (row._row_status === 'N') row._row_status = 'U'; };
@@ -381,42 +383,41 @@ window.PdProdDtl = {
     // ── mounted
     // ── 담당MD 모달
     const mdSearch    = ref('');
-    const cfMdUserList  = computed(() => (boUsers||[]).filter(u => u.status==='활성'));
+    const cfMdUserList  = computed(() => (boUsers||[]).filter(u => u.userStatusCd !== 'SUSPENDED' && u.userStatusCd !== 'DELETED'));
     const cfMdUserListFiltered = computed(() => {
       const q = uiState.mdSearch.trim().toLowerCase();
       if (!q) return cfMdUserList.value;
-      return window.safeArrayUtils.safeFilter(cfMdUserList, u => u.name.toLowerCase().includes(q) || (u.dept||'').toLowerCase().includes(q) || (u.role||'').toLowerCase().includes(q));
+      return cfMdUserList.value.filter(u => (u.userNm||'').toLowerCase().includes(q) || (u.deptId||'').toLowerCase().includes(q) || (u.roleId||'').toLowerCase().includes(q));
     });
     const cfMdSelectedNm = computed(() => {
-      const u = cfMdUserList.value.find(u => u.boUserId === form.mdUserId);
-      return u ? `${u.name} (${u.dept||''})` : '';
+      const u = cfMdUserList.value.find(u => u.userId === form.mdUserId);
+      return u ? `${u.userNm} (${u.deptId||''})` : '';
     });
     const openMdModal  = () => { uiState.mdSearch = ''; uiState.mdModalOpen = true; };
-    const selectMdUser = (u) => { form.mdUserId = u.boUserId; uiState.mdModalOpen = false; };
+    const selectMdUser = (u) => { form.mdUserId = u.userId; uiState.mdModalOpen = false; };
 
     const handleInitForm = async () => {
       if (cfIsNew.value) {
-        // 신규 등록: 기본값 본인 (목업에서는 첫 번째 활성 사용자)
-        form.mdUserId = cfMdUserList.value[0]?.boUserId || '';
+        form.mdUserId = cfMdUserList.value[0]?.userId || '';
       }
       if (!cfIsNew.value) {
         const p = products[0] || null;
         if (p) {
-          form.prodId         = p.productId || p.prodId;
+          form.prodId         = p.prodId;
           form.prodNm         = p.prodNm || '';
           form.prodCode       = p.prodCode || '';
-          form.categoryId     = p.categoryId || p.category || '';
-          form.brandId        = p.brandId || p.brand || '';
+          form.categoryId     = p.categoryId || '';
+          form.brandId        = p.brandId || '';
           form.vendorId       = p.vendorId || '';
           form.mdUserId       = p.mdUserId || '';
           form.prodTypeCd     = p.prodTypeCd || 'SINGLE';
-          form.prodStatusCd   = p.prodStatusCd || p.status || 'ACTIVE';
+          form.prodStatusCd   = p.prodStatusCd || 'DRAFT';
           form.unsaleMsg      = p.unsaleMsg || '';
-          form.dlvTmpltId     = p.dlvTmpltId || '';
-          form.listPrice      = p.listPrice || p.price || 0;
+          form.dlvTmpltId     = p.dlivTmpltId || p.dlvTmpltId || '';
+          form.listPrice      = p.listPrice || 0;
           form.salePrice      = p.salePrice || 0;
-          form.purchasePrice  = p.purchasePrice || p.costPrice || null;
-          form.prodStock      = p.prodStock || p.stock || 0;
+          form.purchasePrice  = p.purchasePrice || null;
+          form.prodStock      = p.prodStock || 0;
           form.saleStartDate  = p.saleStartDate || '';
           form.saleEndDate    = p.saleEndDate || '';
           form.minBuyQty      = p.minBuyQty || 1;
@@ -449,16 +450,10 @@ window.PdProdDtl = {
           if (p.salePlans?.length) salePlans.splice(0, salePlans.length, ...p.salePlans.map(r => ({ ...r, _id: planIdSeq++, _checked: false })));
           if (p.relProds?.length) {
             relProds.splice(0, relProds.length, ...p.relProds.map(r => ({ ...r, _id: _relSeq++ })));
-          } else if (p.relatedProductIds) {
-            relProds.splice(0, relProds.length, ...p.relatedProductIds.split(',').map(s => s.trim()).filter(Boolean).map(id => {
-              const found = (products||[]).find(x => String(x.productId) === String(id));
-              return found ? { _id: _relSeq++, productId: found.productId, prodNm: found.prodNm, category: found.category||'', price: found.price||0, stock: found.stock||0, status: found.status||'' }
-                           : { _id: _relSeq++, productId: Number(id), prodNm: '(ID:'+id+')', category: '', price: 0, stock: 0, status: '' };
-            }));
           }
           if (p.codeProds?.length) codeProds.splice(0, codeProds.length, ...p.codeProds.map(r => ({ ...r, _id: _relSeq++ })));
           // 카테고리 N개 로드 (pd_category_prod)
-          const pid = String(p.productId || p.prodId);
+          const pid = String(p.prodId);
           const linked = (categoryProds||[])
             .filter(cp => String(cp.prodId) === pid)
             .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
@@ -471,7 +466,7 @@ window.PdProdDtl = {
       }
       await nextTick();
       // HTML 블록 Quill 마운트
-      window.safeArrayUtils.safeFilter(contentBlocks, b => b.type === 'html').forEach(block => {
+      safeFilter(contentBlocks, b => b.type === 'html').forEach(block => {
         const el = document.getElementById('quill-block-' + block._id);
         if (el && !_blockQuills[block._id]) {
           const q = new Quill(el, { theme: 'snow', placeholder: '내용을 입력해주세요.',
@@ -497,7 +492,7 @@ window.PdProdDtl = {
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
       await handleLoadData();
-      handleInitForm();
+      await handleInitForm();
     });
     onBeforeUnmount(() => {
       if (_divMoveH) document.removeEventListener('mousemove', _divMoveH);
@@ -510,11 +505,14 @@ window.PdProdDtl = {
       try { await schema.validate(form, { abortEarly: false }); }
       catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const imgData = images.map(({ id, ...rest }) => rest);
-      const mainImg = window.safeArrayUtils.safeFind(images, img => img.isMain);
+      const mainImg = safeFind(images, img => img.isMain);
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }, { headers: { 'X-UI-Nm': '상품관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/ec/pd/prod/${form.prodId}`, { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans }, { headers: { 'X-UI-Nm': '상품관리', 'X-Cmd-Nm': '저장' } }));
+        const payload = { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans };
+        const res = await (cfIsNew.value
+          ? window.boApi.post(`/bo/ec/pd/prod`, payload, { headers: { 'X-UI-Nm': '상품관리', 'X-Cmd-Nm': '등록' } })
+          : window.boApi.put(`/bo/ec/pd/prod/${form.prodId}`, payload, { headers: { 'X-UI-Nm': '상품관리', 'X-Cmd-Nm': '저장' } }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pdProdMng');
@@ -573,6 +571,7 @@ window.PdProdDtl = {
       contentBlocks, addContentBlock, removeContentBlock, onBlockFileChange,
       onBlockDragStart, onBlockDragOver, onBlockDrop,
       contentSplitRef, onDividerMousedown,
+      safeFirst, safeGet, safeFind, safeFilter,
     };
   },
   template: /* html */`
@@ -736,18 +735,18 @@ window.PdProdDtl = {
                 <tr><th>이름</th><th>부서</th><th>역할</th></tr>
               </thead>
               <tbody>
-                <tr v-for="u in cfMdUserListFiltered" :key="u?.boUserId"
+                <tr v-for="u in cfMdUserListFiltered" :key="u?.userId"
                   style="cursor:pointer;"
-                  :style="form.mdUserId===u.boUserId ? 'background:#fff0f4;font-weight:700;' : ''"
+                  :style="form.mdUserId===u.userId ? 'background:#fff0f4;font-weight:700;' : ''"
                   @click="selectMdUser(u)">
                   <td>
                     <span style="display:flex;align-items:center;gap:6px;">
-                      <span v-if="form.mdUserId===u.boUserId" style="color:#e8587a;font-size:12px;">✔</span>
-                      {{ u.name }}
+                      <span v-if="form.mdUserId===u.userId" style="color:#e8587a;font-size:12px;">✔</span>
+                      {{ u.userNm }}
                     </span>
                   </td>
-                  <td>{{ u.dept }}</td>
-                  <td><span class="badge badge-gray" style="font-size:11px;">{{ u.role }}</span></td>
+                  <td>{{ u.deptId }}</td>
+                  <td><span class="badge badge-gray" style="font-size:11px;">{{ u.roleId }}</span></td>
                 </tr>
                 <tr v-if="cfMdUserListFiltered.length===0">
                   <td colspan="3" style="text-align:center;color:#bbb;padding:20px;">검색 결과가 없습니다.</td>
@@ -909,7 +908,7 @@ window.PdProdDtl = {
         <!-- ── 차원 설정 행 (typeCd는 위 "옵션사용" 행에서 관리) ──────────────────────── -->
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
           <span class="badge badge-blue" style="flex-shrink:0;font-size:12px;">{{ grp.level }}단</span>
-          <span v-if="grp.typeCd" class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ window.safeArrayUtils.safeFind(cfOptTypeCodes, c=>c.codeValue===grp.typeCd)?.codeLabel||grp.typeCd }}</span>
+          <span v-if="grp.typeCd" class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ safeFind(cfOptTypeCodes, c=>c.codeValue===grp.typeCd)?.codeLabel||grp.typeCd }}</span>
           <input class="form-control" v-model="grp.grpNm" placeholder="옵션명 (예: 색상)"
             style="flex:1;min-width:100px;font-size:13px;" />
           <select class="form-control" v-model="grp.inputTypeCd" style="width:160px;font-size:12px;">
@@ -931,7 +930,7 @@ window.PdProdDtl = {
             <tr style="background:#f5f5f5;border-bottom:1px solid #e0e0e0;">
               <th style="width:18px;padding:4px 2px;"></th>
               <th style="width:24px;padding:4px 4px;text-align:center;font-weight:600;color:#888;font-size:11px;">#</th>
-              <th v-if="grp.level===2 && window.safeArrayUtils.safeFirst(optGroups)?.items.length>0" style="width:110px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">상위옵션값</th>
+              <th v-if="grp.level===2 && safeFirst(optGroups)?.items.length>0" style="width:110px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">상위옵션값</th>
               <th style="padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">표시명 (opt_nm)</th>
               <th style="width:170px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">공통코드ID (opt_val_code_id)</th>
               <th style="width:120px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">저장값 (opt_val)</th>
@@ -956,11 +955,11 @@ window.PdProdDtl = {
               <td style="padding:2px 4px;text-align:center;color:#bbb;font-size:11px;">{{ ii+1 }}</td>
 
               <!-- ── 2단: 상위 옵션값 ───────────────────────────────────────── -->
-              <td v-if="grp.level===2 && window.safeArrayUtils.safeFirst(optGroups)?.items.length>0" style="padding:2px 4px;">
+              <td v-if="grp.level===2 && safeFirst(optGroups)?.items.length>0" style="padding:2px 4px;">
                 <select v-model="item.parentOptItemId"
                   style="width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:24px;">
                   <option value="">전체 공통</option>
-                  <option v-for="p1 in (window.safeArrayUtils.safeGet(optGroups, 0)?.items||[])" :key="p1?._id" :value="String(p1._id)">{{ p1.nm||'(미입력)' }}</option>
+                  <option v-for="p1 in (safeGet(optGroups, 0)?.items||[])" :key="p1?._id" :value="String(p1._id)">{{ p1.nm||'(미입력)' }}</option>
                 </select>
               </td>
 
@@ -1000,7 +999,7 @@ window.PdProdDtl = {
               </td>
             </tr>
             <tr v-if="grp.items.length===0">
-              <td :colspan="grp.level===2&&window.safeArrayUtils.safeFirst(optGroups)?.items.length>0?8:7"
+              <td :colspan="grp.level===2&&safeFirst(optGroups)?.items.length>0?8:7"
                 style="text-align:center;color:#bbb;padding:10px;font-size:12px;border-bottom:1px solid #f0f0f0;">값을 추가해주세요.</td>
             </tr>
           </tbody>
@@ -1259,8 +1258,8 @@ window.PdProdDtl = {
             <label class="form-label" style="font-size:11px;">opt_item_id_1 <span style="color:#aaa;">(NULL=공통)</span></label>
             <select class="form-control" v-model="img.optItemId1" style="font-size:12px;" @change="img.optItemId2=''">
               <option value="">-- 공통 (NULL) --</option>
-              <option v-if="!window.safeArrayUtils.safeFirst(optGroups)||window.safeArrayUtils.safeFirst(optGroups).items.length===0" disabled value="">옵션설정 탭에서 1단 옵션을 먼저 추가하세요</option>
-              <option v-for="item in (window.safeArrayUtils.safeGet(optGroups, 0)?.items||[])" :key="item?._id" :value="item.val||String(item._id)">{{ item.nm + (item.val ? ' (' + item.val + ')' : '') }}</option>
+              <option v-if="!safeFirst(optGroups)||safeFirst(optGroups).items.length===0" disabled value="">옵션설정 탭에서 1단 옵션을 먼저 추가하세요</option>
+              <option v-for="item in (safeGet(optGroups, 0)?.items||[])" :key="item?._id" :value="item.val||String(item._id)">{{ item.nm + (item.val ? ' (' + item.val + ')' : '') }}</option>
             </select>
           </div>
           <!-- ── opt_item_id_2: 옵션 2단 select (1단 선택 후 연동) ─────────────── -->
@@ -1459,14 +1458,14 @@ window.PdProdDtl = {
       <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;flex-shrink:0;">
           SKU별 가격·재고 <span style="color:#888;font-weight:400;font-size:11px;">(pd_prod_sku)</span>
-          <span class="badge badge-blue" style="margin-left:6px;">{{ window.safeArrayUtils.safeFilter(cfSkusFiltered, s=>s.useYn==='Y').length }}개 활성</span>
+          <span class="badge badge-blue" style="margin-left:6px;">{{ safeFilter(cfSkusFiltered, s=>s.useYn==='Y').length }}개 활성</span>
           <span v-if="cfSkusFiltered.length < skus.length" class="badge badge-orange" style="margin-left:4px;font-size:10px;">필터 {{ cfSkusFiltered.length }}/{{ skus.length }}</span>
         </div>
         <!-- ── 필터 영역 ──────────────────────────────────────────────────── -->
         <div style="display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end;flex-wrap:wrap;">
           <!-- ── 1단 필터 ────────────────────────────────────────────────── -->
           <div style="display:flex;align-items:center;gap:4px;">
-            <span class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ window.safeArrayUtils.safeGet(optGroups, 0)?.grpNm||'1단' }}</span>
+            <span class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ safeGet(optGroups, 0)?.grpNm||'1단' }}</span>
             <select v-model="skuFilter1" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;"
               @change="skuFilter2=''">
               <option value="">전체</option>
@@ -1501,7 +1500,7 @@ window.PdProdDtl = {
         <table class="bo-table" style="font-size:12px;">
           <thead>
             <tr>
-              <th>1단<span v-if="window.safeArrayUtils.safeFirst(optGroups)?.grpNm" style="color:#aaa;font-weight:400;">({{ window.safeArrayUtils.safeFirst(optGroups).grpNm }})</span></th>
+              <th>1단<span v-if="safeFirst(optGroups)?.grpNm" style="color:#aaa;font-weight:400;">({{ safeFirst(optGroups).grpNm }})</span></th>
               <th v-if="optGroups.length>1">2단<span v-if="optGroups[1]?.grpNm" style="color:#aaa;font-weight:400;">({{ optGroups[1].grpNm }})</span></th>
               <th style="width:130px;">SKU코드</th>
               <th style="width:100px;">기본가</th>

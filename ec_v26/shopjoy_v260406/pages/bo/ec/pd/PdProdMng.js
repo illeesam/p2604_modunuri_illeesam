@@ -115,7 +115,7 @@ const isAppReady = computed(() => {
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     });
 
-    const cfCategories = computed(() => window.safeArrayUtils.safeFilter(cfCategories, c => c.status === '활성').map(c => c.categoryNm));
+    const cfCategories = computed(() => []);
 
     /* ── 카테고리 선택 모달 ── */
     const catModal = reactive({ show: false });
@@ -126,7 +126,7 @@ const isAppReady = computed(() => {
     };
     const clearCate = () => { searchParam.cate = ''; };
 
-    const fnStatusBadge = s => ({ '판매중': 'badge-green', '품절': 'badge-red', '판매중지': 'badge-gray' }[s] || 'badge-gray');
+    const fnStatusBadge = s => ({ 'ON_SALE': 'badge-green', 'SOLD_OUT': 'badge-red', 'SUSPENDED': 'badge-gray', 'DRAFT': 'badge-blue', 'REVIEW': 'badge-orange', '판매중': 'badge-green', '품절': 'badge-red', '판매중지': 'badge-gray' }[s] || 'badge-gray');
     const onSearch = async () => {
       pager.pageNo = 1;
       await handleSearchList('DEFAULT');
@@ -143,11 +143,11 @@ const isAppReady = computed(() => {
     const handleDelete = async (p) => {
       const ok = await props.showConfirm('삭제', `[${p.prodNm}]을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = products.findIndex(x => x.productId === p.productId);
+      const idx = products.findIndex(x => x.prodId === p.prodId);
       if (idx !== -1) products.splice(idx, 1);
-      if (uiStateDetail.selectedId === p.productId) uiStateDetail.selectedId = null;
+      if (uiStateDetail.selectedId === p.prodId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/ec/pd/prod/${p.productId}`, { headers: { 'X-UI-Nm': '상품관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await window.boApi.delete(`/bo/ec/pd/prod/${p.prodId}`, { headers: { 'X-UI-Nm': '상품관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -159,10 +159,10 @@ const isAppReady = computed(() => {
     };
 
     const previewProduct = (pid) => {
-      window.open(`${window.pageUrl('index.html')}#page=prod01view&pid=${pid}`, '_blank', 'width=1200,height=800,scrollbars=yes');
+      window.open(`${window.pageUrl('index.html')}#page=prodView&pid=${pid}`, '_blank', 'width=1200,height=800,scrollbars=yes');
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(products, [{label:'ID',key:'productId'},{label:'상품명',key:'prodNm'},{label:'카테고리',key:'category'},{label:'가격',key:'price'},{label:'재고',key:'stock'},{label:'브랜드',key:'brand'},{label:'상태',key:'status'},{label:'등록일',key:'regDate'}], '상품목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(products, [{label:'ID',key:'prodId'},{label:'상품명',key:'prodNm'},{label:'카테고리',key:'cateNm'},{label:'가격',key:'listPrice'},{label:'재고',key:'prodStock'},{label:'브랜드',key:'brandNm'},{label:'상태',key:'prodStatusCdNm'},{label:'등록일',key:'regDate'}], '상품목록.csv');
 
 
     const selectedId = computed(() => uiStateDetail.selectedId);
@@ -215,19 +215,19 @@ const isAppReady = computed(() => {
       </tr></thead>
       <tbody>
         <tr v-if="products.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="p in products" :key="p?.productId" :style="selectedId===p.productId?'background:#fff8f9;':''">
-          <td>{{ p.productId }}</td>
-          <td><span class="title-link" @click="handleLoadDetail(p.productId)" :style="selectedId===p.productId?'color:#e8587a;font-weight:700;':''">{{ p.prodNm }}<span v-if="selectedId===p.productId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td>{{ p.category }}</td>
-          <td>{{ (p.price||0).toLocaleString() }}원</td>
-          <td>{{ p.stock }}개</td>
-          <td>{{ p.brand }}</td>
-          <td><span class="badge" :class="fnStatusBadge(p.status)">{{ p.status }}</span></td>
+        <tr v-for="p in products" :key="p?.prodId" :style="selectedId===p.prodId?'background:#fff8f9;':''">
+          <td>{{ p.prodId }}</td>
+          <td><span class="title-link" @click="handleLoadDetail(p.prodId)" :style="selectedId===p.prodId?'color:#e8587a;font-weight:700;':''">{{ p.prodNm }}<span v-if="selectedId===p.prodId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td>{{ p.cateNm }}</td>
+          <td>{{ (p.listPrice||0).toLocaleString() }}원</td>
+          <td>{{ p.prodStock }}개</td>
+          <td>{{ p.brandNm }}</td>
+          <td><span class="badge" :class="fnStatusBadge(p.prodStatusCd)">{{ p.prodStatusCdNm || p.prodStatusCd }}</span></td>
           <td>{{ p.regDate }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
-            <button class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="미리보기" @click="previewProduct(p.productId)">👁</button>
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(p.productId)">수정</button>
+            <button class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="미리보기" @click="previewProduct(p.prodId)">👁</button>
+            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(p.prodId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="handleDelete(p)">삭제</button>
           </div></td>
         </tr>
