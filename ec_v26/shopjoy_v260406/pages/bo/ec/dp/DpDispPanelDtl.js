@@ -701,6 +701,14 @@ window.DpDispPanelDtl = {
       }
     };
 
+    const htmlContentEl = Vue.toRef(uiState, 'htmlContentEl');
+    const htmlSourceMode = Vue.toRef(uiState, 'htmlSourceMode');
+    const libPickMode = Vue.toRef(uiState, 'libPickMode');
+    const libPickOpen = Vue.toRef(uiState, 'libPickOpen');
+    const previewPaneWidth = Vue.toRef(uiState, 'previewPaneWidth');
+    const rowCopyOpen = Vue.toRef(uiState, 'rowCopyOpen');
+    const showComponentTooltip = Vue.toRef(uiState, 'showComponentTooltip');
+    const viewAll = Vue.toRef(uiState, 'viewAll');
     return { panels, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
       libPickMode, openLibPick, onLibPicked,
       onRowCopy,

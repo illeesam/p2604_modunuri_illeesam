@@ -16,6 +16,7 @@ const _WP_DispPanelPreview = {
       const max = Math.max(...values, 1);
       return values.map((v,i) => ({ v, label:labels[i]||'', pct:Math.round((v/max)*100), color:chartColors[i%chartColors.length] }));
     });
+    const selectedLibId = Vue.toRef(uiState, 'selectedLibId');
     return { codes, cfChartBars };
   },
   template: /* html */`

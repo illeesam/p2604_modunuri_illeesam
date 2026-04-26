@@ -159,14 +159,14 @@ window.OdClaimDtl = {
     const CLAIM_TYPE_COLOR = { '취소':'#ef4444', '반품':'#FFBB00', '교환':'#3b82f6' };
 
     const expandedItems = reactive(new Set());
-    const toggleExpand = (i) => { const s = new Set(expandedItems); if (s.has(i)) s.delete(i); else s.add(i); expandedItems = s; };
+    const toggleExpand = (i) => { if (expandedItems.has(i)) expandedItems.delete(i); else expandedItems.add(i); };
     const isExpanded = (i) => expandedItems.has(i);
     const cfAllExpanded = computed(() => claimItems.length > 0 && window.safeArrayUtils.safeEvery(claimItems, (_,i) => expandedItems.has(i)));
     const toggleExpandAll = () => {
-      if (cfAllExpanded.value) expandedItems = new Set();
-      else expandedItems = new Set(claimItems.map((_,i) => i));
+      if (cfAllExpanded.value) expandedItems.clear();
+      else { expandedItems.clear(); claimItems.forEach((_,i) => expandedItems.add(i)); }
     };
-    watch(claimItems, (list) => { expandedItems = new Set(list.map((_,i) => i)); });
+    watch(claimItems, (list) => { expandedItems.clear(); list.forEach((_,i) => expandedItems.add(i)); });
     const getExchangedItem = (it) => {
       if (form.type !== '교환') return null;
       const swapColor = { '블랙':'네이비','네이비':'차콜','화이트':'아이보리','차콜':'블랙' };

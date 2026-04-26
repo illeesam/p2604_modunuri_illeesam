@@ -117,6 +117,8 @@ window.SyVendorDtl = {
       }
     };
 
+    const memoEl = Vue.ref(null);
+    Vue.watch(memoEl, (el) => { if (uiState) uiState.memoEl = el; });
     return { vendors, uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, addrDetailRef, openKakaoPostcode, memoEl };
   },
   template: /* html */`

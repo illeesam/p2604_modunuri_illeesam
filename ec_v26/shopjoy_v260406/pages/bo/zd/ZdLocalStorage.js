@@ -119,6 +119,7 @@ window.ZdLocalStorage = {
 
     loadStorageData();
 
+    const isResizing = Vue.toRef(uiState, 'isResizing');
     return {
       storageData, uiState, filteredData,
       loadStorageData, copyValue, startEdit, saveEdit, cancelEdit, deleteItem, clearAllStorage, parseValue, startResize

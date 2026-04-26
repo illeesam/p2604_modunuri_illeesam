@@ -95,12 +95,16 @@ window.PdCategoryProdMng = {
     Object.assign(searchParam, searchParamOrg);
     onSearch();
   };
+    const cfCatTreeFlat = computed(() => []);
+    const cfFilteredRows = computed(() => []);
+    const cfPickerList = computed(() => []);
   return {
       codes, uiState,
       TYPE_TABS, EMPHASIS_OPTS, parseEmphasis, hasEmphasis, toggleEmphasis,
       defaultDispStartDate, defaultDispEndDate,
       searchParam, searchParamOrg, onSearch, onReset,
       PAGE_SIZES, pager,
+      cfCatTreeFlat, cfFilteredRows, cfPickerList,
     };
   },
 

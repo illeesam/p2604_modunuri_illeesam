@@ -141,7 +141,9 @@ window.PmCacheDtl = {
 
     const fnTypeBadge = t => ({ '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' }[t] || 'badge-gray');
 
-    return { caches, uiState, codes, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, viewMode2, showTab, cfSelectedVendorNm, selectVendor };
+    const cacheList = caches;
+    const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
+    return { caches, cacheList, uiState, codes, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, viewMode2, showTab, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>

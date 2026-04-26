@@ -142,6 +142,7 @@ window.SyBbsDtl = {
     };
 
     const selectedBbm = computed(() => uiState.selectedBbm);
+    const showBbmDetail = Vue.toRef(uiState, 'showBbmDetail');
     return { bbss, uiState, codes, cfIsNew, form, errors, selectedBbm, cfContentType, cfAllowAttach, cfAttachMaxCount,
       showBbmModal, onBbmSelect, handleSave, cfSiteNm,
     };

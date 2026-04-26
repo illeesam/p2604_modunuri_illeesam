@@ -211,6 +211,11 @@ window.PmVoucherDtl = {
       }
     };
 
+    const barcodeContainer = Vue.toRef(uiState, 'barcodeContainer');
+    const previewTab = Vue.toRef(uiState, 'previewTab');
+    const qrcodeContainer = Vue.toRef(uiState, 'qrcodeContainer');
+    const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
+    const snsMsg = Vue.toRef(uiState, 'snsMsg');
     return { vouchers, uiState, codes, cfIsNew, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, viewMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, uiState, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`

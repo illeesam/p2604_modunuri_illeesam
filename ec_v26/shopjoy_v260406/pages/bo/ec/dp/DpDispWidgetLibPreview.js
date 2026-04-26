@@ -15,6 +15,13 @@ const _WidgetPreview = {
       const max = Math.max(...values, 1);
       return values.map((v,i) => ({ v, label:labels[i]||'', pct:Math.round((v/max)*100), color:chartColors[i%chartColors.length] }));
     });
+    const dashDragOver = Vue.toRef(uiState, 'dashDragOver');
+    const dragOverIdx = Vue.toRef(uiState, 'dragOverIdx');
+    const previewGrid = Vue.toRef(uiState, 'previewGrid');
+    const selectedLibId = Vue.toRef(uiState, 'selectedLibId');
+    const showRealContent = Vue.toRef(uiState, 'showRealContent');
+    const spanPopupIdx = Vue.toRef(uiState, 'spanPopupIdx');
+    const viewportMode = Vue.toRef(uiState, 'viewportMode');
     return { cfChartBars };
   },
   template: /* html */`

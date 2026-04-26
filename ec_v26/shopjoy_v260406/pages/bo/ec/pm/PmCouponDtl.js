@@ -236,6 +236,12 @@ window.PmCouponDtl = {
       }
     };
 
+    const memoEl = Vue.ref(null);
+    Vue.watch(memoEl, (el) => { if (uiState) uiState.memoEl = el; });
+    const barcodeContainer = Vue.toRef(uiState, 'barcodeContainer');
+    const previewTab = Vue.toRef(uiState, 'previewTab');
+    const qrcodeContainer = Vue.toRef(uiState, 'qrcodeContainer');
+    const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
     return { coupons, uiState, codes, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, memoEl, onTabChange,
       COUPON_TYPES, ISSUE_TARGETS, DISCOUNT_TYPES,
       cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer,

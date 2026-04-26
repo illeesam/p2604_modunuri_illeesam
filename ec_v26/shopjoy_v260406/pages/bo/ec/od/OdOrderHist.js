@@ -59,6 +59,7 @@ window.OdOrderHist = {
       ].filter(h => h.date !== '-');
     });
 
+    const botTab = Vue.toRef(uiState, 'botTab');
     return { orders, uiState, orderItems, cfRelatedDliv, cfRelatedClaims, cfDlivHistory, showTab, claims, deliveries };
   },
   template: /* html */`

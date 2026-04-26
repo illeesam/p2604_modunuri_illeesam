@@ -334,6 +334,11 @@ window.DpDispUiDtl = {
       if (t === 'base') { await nextTick(); initQuillDesc(); }
     });
 
+    const expanded = Vue.toRef(uiState, 'expanded');
+    const htmlDescEl = Vue.toRef(uiState, 'htmlDescEl');
+    const pickOpen = Vue.toRef(uiState, 'pickOpen');
+    const previewPaneWidth = Vue.toRef(uiState, 'previewPaneWidth');
+    const showComponentTooltip = Vue.toRef(uiState, 'showComponentTooltip');
     return { codes, displays, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       form, errors, cfIsNew, UI_TYPE_OPTS,
       handleSave, doCancel, cfRelatedAreas, panelsOfArea,

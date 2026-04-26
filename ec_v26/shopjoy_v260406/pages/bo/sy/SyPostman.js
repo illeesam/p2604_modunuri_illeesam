@@ -515,6 +515,7 @@ window.SyPostman = {
     };
     onMounted(() => { handleFetchData(); });
 
+    const autoPopupTabId = Vue.toRef(uiState, 'autoPopupTabId');
     return {
       uiState,
       cfFlatTree, toggleNode, selectApiNode, appFilter, APP_META,

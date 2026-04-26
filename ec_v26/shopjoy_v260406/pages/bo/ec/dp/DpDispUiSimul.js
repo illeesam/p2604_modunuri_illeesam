@@ -770,6 +770,17 @@ window.DpDispUiSimul = {
       /* 레이어 닫지 않음 */
     };
 
+    const dispUiAreaDrop = Vue.toRef(uiState, 'dispUiAreaDrop');
+    const dispUiMemberModalOpen = Vue.toRef(uiState, 'dispUiMemberModalOpen');
+    const dispUiSiteModalOpen = Vue.toRef(uiState, 'dispUiSiteModalOpen');
+    const showAreaDrop = Vue.toRef(uiState, 'showAreaDrop');
+    const showDesc = Vue.toRef(uiState, 'showDesc');
+    const structDashDragOver = Vue.toRef(uiState, 'structDashDragOver');
+    const structDragOverIdx = Vue.toRef(uiState, 'structDragOverIdx');
+    const structShowReal = Vue.toRef(uiState, 'structShowReal');
+    const structSpanPopupIdx = Vue.toRef(uiState, 'structSpanPopupIdx');
+    const structViewport = Vue.toRef(uiState, 'structViewport');
+    const viewMode = Vue.toRef(uiState, 'viewMode');
     return {
       today, cfSiteNm,
       uiState, switchTab,

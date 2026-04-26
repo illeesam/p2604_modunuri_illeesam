@@ -176,6 +176,8 @@ window.SyAttachMng = {
 
     const cfTotal = computed(() => cfFilteredFiles.value.length);
 
+    const fileEditMode = Vue.toRef(uiState, 'fileEditMode');
+    const grpEditMode = Vue.toRef(uiState, 'grpEditMode');
     return { attaches, uiState, codes, searchParam, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm,
       attachGrps, grpForm, cfTotal,
       selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,

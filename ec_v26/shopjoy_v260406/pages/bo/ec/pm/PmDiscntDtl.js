@@ -139,6 +139,7 @@ window.PmDiscntDtl = {
       uiState.showVendorModal = false;
     };
 
+    const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
     return { discounts, uiState, codes, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`

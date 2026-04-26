@@ -213,6 +213,8 @@ window.OdDlivDtl = {
       { id:'hist',     label:'상태변경이력',  icon:'🕒', count: cfStatusHistList.value.length },
       { id:'editHist', label:'정보수정이력',  icon:'📝', count: cfEditHistList.value.length },
     ]);
+    const memoEl = Vue.ref(null);
+    Vue.watch(memoEl, (el) => { if (uiState) uiState.memoEl = el; });
     return { cfIsNew, tab, form, errors, handleSave, memoEl, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfRelatedOrder, cfFirstClaim, CLAIM_TYPE_COLOR, viewMode2, showTab, claims, relatedClaims, codes };
   },
   template: /* html */`

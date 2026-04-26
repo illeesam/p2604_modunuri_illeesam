@@ -457,6 +457,7 @@ window.DpDispWidgetLibDtl = {
       props.showToast && props.showToast(`[${lib.name}] 내용을 복사했습니다.`, 'info');
     };
 
+    const previewPaneWidth = Vue.toRef(uiState, 'previewPaneWidth');
     return {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       uiState, openLibPick, onLibPicked,

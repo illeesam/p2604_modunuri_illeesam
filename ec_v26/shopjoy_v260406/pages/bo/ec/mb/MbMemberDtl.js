@@ -120,6 +120,8 @@ window.MbMemberDtl = {
       }
     };
 
+    const memoEl = ref(null);
+    watch(memoEl, (el) => { uiState.memoEl = el; });
     return { cfIsNew, form, errors, handleSave, memoEl, codes };
   },
   template: /* html */`

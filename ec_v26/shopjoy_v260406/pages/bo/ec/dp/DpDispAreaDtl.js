@@ -111,7 +111,7 @@ window.DpDispAreaDtl = {
           });
         }
       } else {
-        const areas = (codes || []).filter(c => c.codeGrp === 'DISP_AREA');
+        const areas = (Array.isArray(codes) ? codes : (codes?.disp_areas || [])).filter(c => c.codeGrp === 'DISP_AREA');
         form.sortOrd = areas.length ? Math.max(...areas.map(c => c.sortOrd || 0)) + 1 : 1;
         const t = new Date();
         const p = n => String(n).padStart(2, '0');
@@ -397,6 +397,10 @@ window.DpDispAreaDtl = {
       form.areaBaseVisibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
+    const htmlDescEl = Vue.toRef(uiState, 'htmlDescEl');
+    const pickOpen = Vue.toRef(uiState, 'pickOpen');
+    const previewPaneWidth = Vue.toRef(uiState, 'previewPaneWidth');
+    const showComponentTooltip = Vue.toRef(uiState, 'showComponentTooltip');
     return { codes, areas, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
       form, errors, cfIsNew, codes, uiState, fnAreaTypeLabel,
       handleSave, onCancel, cfRelatedPanels,

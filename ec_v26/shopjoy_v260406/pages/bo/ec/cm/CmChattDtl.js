@@ -171,6 +171,8 @@ window.CmChattDtl = {
     });
     const cfSearchUser = computed(() => getMember.value(Number(uiState.searchUserId)));
 
+    const replyText = Vue.toRef(uiState, 'replyText');
+    const searchUserId = Vue.toRef(uiState, 'searchUserId');
     return { cfIsNew, tab, viewMode2, showTab, chat, replyText, sendReply, closeChat, msgBoxRef,
       hasRef, refLabel, openMsgRef, refModal, closeRefModal,
       form, errors, handleSave, onUserChange,

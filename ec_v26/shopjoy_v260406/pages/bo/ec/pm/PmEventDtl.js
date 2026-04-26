@@ -215,6 +215,10 @@ window.PmEventDtl = {
       uiState.showVendorModal = false;
     };
 
+    const activeContentTab = Vue.toRef(uiState, 'activeContentTab');
+    const prodSearch = Vue.toRef(uiState, 'prodSearch');
+    const showProdPopup = Vue.toRef(uiState, 'showProdPopup');
+    const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
     return { events, uiState, codes, cfIsNew, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, viewMode2, showTab, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`

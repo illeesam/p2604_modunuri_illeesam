@@ -238,6 +238,10 @@ window.PmPlanDtl = {
       }
     };
 
+    const activeContentTab = Vue.toRef(uiState, 'activeContentTab');
+    const prodSearch = Vue.toRef(uiState, 'prodSearch');
+    const showProdPopup = Vue.toRef(uiState, 'showProdPopup');
+    const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
     return { plans, uiState, codes, cfIsNew, tab, onTabChange, form, errors, activeContentTab, prodSearch,
       cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, handleSave,
       CATEGORIES, STATUS_OPTIONS, VISIBILITY_OPTIONS, viewMode2, showTab, hasVisibility, toggleVisibility,

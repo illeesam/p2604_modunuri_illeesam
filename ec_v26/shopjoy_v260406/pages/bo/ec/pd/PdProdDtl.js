@@ -527,6 +527,30 @@ window.PdProdDtl = {
       }
     };
 
+    const catDragoverIdx = Vue.toRef(uiState, 'catDragoverIdx');
+    const catPickerOpen = Vue.toRef(uiState, 'catPickerOpen');
+    const catPickerSearch = Vue.toRef(uiState, 'catPickerSearch');
+    const dragBlockIdx = Vue.toRef(uiState, 'dragBlockIdx');
+    const dragCodeIdx = Vue.toRef(uiState, 'dragCodeIdx');
+    const dragImgIdx = Vue.toRef(uiState, 'dragImgIdx');
+    const dragOptGrpId = Vue.toRef(uiState, 'dragOptGrpId');
+    const dragOptItemIdx = Vue.toRef(uiState, 'dragOptItemIdx');
+    const dragRelIdx = Vue.toRef(uiState, 'dragRelIdx');
+    const dragoverBlockIdx = Vue.toRef(uiState, 'dragoverBlockIdx');
+    const dragoverCodeIdx = Vue.toRef(uiState, 'dragoverCodeIdx');
+    const dragoverImgIdx = Vue.toRef(uiState, 'dragoverImgIdx');
+    const dragoverOptItemIdx = Vue.toRef(uiState, 'dragoverOptItemIdx');
+    const dragoverRelIdx = Vue.toRef(uiState, 'dragoverRelIdx');
+    const isDraggingDivider = Vue.toRef(uiState, 'isDraggingDivider');
+    const mdModalOpen = Vue.toRef(uiState, 'mdModalOpen');
+    const previewDevice = Vue.toRef(uiState, 'previewDevice');
+    const prodOptCategoryTypeCd = Vue.toRef(uiState, 'prodOptCategoryTypeCd');
+    const prodPickerSearch = Vue.toRef(uiState, 'prodPickerSearch');
+    const skuFilter1 = Vue.toRef(uiState, 'skuFilter1');
+    const skuFilter2 = Vue.toRef(uiState, 'skuFilter2');
+    const skuFilterStock = Vue.toRef(uiState, 'skuFilterStock');
+    const splitPct = Vue.toRef(uiState, 'splitPct');
+    const useOpt = Vue.toRef(uiState, 'useOpt');
     return { cfIsNew, showTab, topTab, viewMode2, form, errors, handleSave,
       uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
       clearOpt, optGroups, skus, cfTotalStock, generateSkus,

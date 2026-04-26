@@ -128,6 +128,7 @@ window.SyTemplateDtl = {
     const uiState = reactive({ previewOpen: false, sendOpen: false, error: null, isPageCodeLoad: false, loading: false, quillEditorEl: null});
     const codes = reactive({});
 
+    const quillEditorEl = Vue.toRef(uiState, 'quillEditorEl');
     return { templates, loading, uiState, cfIsNew, form, errors, handleSave, TEMPLATE_TYPES, cfNeedSubject, cfIsLongContent,
              cfUseHtmlEditor, quillEditorEl, uiState, cfSiteNm };
   },

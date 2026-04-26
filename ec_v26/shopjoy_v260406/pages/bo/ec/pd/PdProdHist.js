@@ -61,6 +61,7 @@ window.PdProdHist = {
       return window.safeArrayUtils.safeFilter(orders, o => o.prodNm && p.prodNm && o.prodNm.includes(p.prodNm.slice(0, 8)));
     });
 
+    const botTab = Vue.toRef(uiState, 'botTab');
     return { products, uiState, stockHistory, statusHistory, changeHistory, priceHistory, cfRelatedOrders, showTab };
   },
   template: /* html */`

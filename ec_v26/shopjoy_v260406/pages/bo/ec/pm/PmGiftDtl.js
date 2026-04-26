@@ -146,6 +146,7 @@ window.PmGiftDtl = {
       }
     };
 
+    const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
     return { gifts, uiState, codes, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfCondValLabel, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`

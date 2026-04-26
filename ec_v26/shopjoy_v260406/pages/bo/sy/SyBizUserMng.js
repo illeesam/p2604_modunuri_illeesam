@@ -371,6 +371,7 @@ window.SyBizUserMng = {
     });
     const fnPermBadgeColor = (p) => ({관리:'#f59e0b',쓰기:'#16a34a',읽기:'#2563eb',차단:'#e8587a'}[p]||'#9ca3af');
 
+    const searchVendorId = Vue.toRef(uiState, 'searchVendorId');
     return {
       uiState, codes,
       vendorUsers, cfVendorMap, fnVendorNm, fnVendorTypeCd, fnVendorSummary,

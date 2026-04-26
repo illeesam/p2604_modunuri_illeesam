@@ -483,6 +483,8 @@ window.DpDispWidgetDtl = {
       form.dispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
     };
 
+    const libPickMode = Vue.toRef(uiState, 'libPickMode');
+    const previewPaneWidth = Vue.toRef(uiState, 'previewPaneWidth');
     return {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       uiState, libPickMode, openLibPick, onLibPicked,

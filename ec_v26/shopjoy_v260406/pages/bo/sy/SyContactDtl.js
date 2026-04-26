@@ -166,6 +166,8 @@ window.SyContactDtl = {
       props.showToast('답변이 저장되었습니다.');
     };
 
+    const answerEl = Vue.toRef(uiState, 'answerEl');
+    const contentEl = Vue.toRef(uiState, 'contentEl');
     return { contacts, uiState, codes, cfIsNew, tab, viewMode2, showTab, form, errors, cfMemberContacts, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm, contentEl, answerEl };
   },
   template: /* html */`

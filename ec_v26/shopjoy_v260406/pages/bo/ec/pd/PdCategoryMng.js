@@ -147,6 +147,11 @@ window.PdCategoryMng = {
       Object.assign(searchParam, searchParamOrg);
       handleFetchData();
     };
+    const catPickerModal = reactive({ show: false, search: '', forCategoryId: null });
+    const cfCatPickerList = computed(() => []);
+    const onParentSelect = (c) => { catPickerModal.show = false; };
+    const fnDepthColor = (d) => ({0:'#e8587a',1:'#1677ff',2:'#3ba87a'}[d] || '#999');
+    const fnDepthBullet = (d) => ['●','○','▪'][d] || '·';
     return {
       codes, uiState,
       expandedSet, isExpanded, toggleNode, expandAll, collapseAll, cfCatTreeFlat,
@@ -154,6 +159,7 @@ window.PdCategoryMng = {
       searchParam, searchParamOrg,
       gridRows, cfPagedRows, cfTotal, pager, PAGE_SIZES, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       onSearch, onReset,
+      catPickerModal, cfCatPickerList, onParentSelect, fnDepthColor, fnDepthBullet,
     };
   },
 

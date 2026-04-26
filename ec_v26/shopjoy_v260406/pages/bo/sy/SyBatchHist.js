@@ -70,6 +70,7 @@ window.SyBatchHist = {
       return `${Math.floor(sec / 60)}분 ${sec % 60}초`;
     };
 
+    const expandedId = Vue.toRef(uiState, 'expandedId');
     return { batches, uiState, cfBatchOptions,
       cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, pager,
       setPage, onSizeChange, onFilter,

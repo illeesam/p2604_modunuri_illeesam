@@ -77,6 +77,8 @@ window.OdClaimHist = {
       props.showToast('저장되었습니다.');
     };
 
+    const botTab = Vue.toRef(uiState, 'botTab');
+    const relatedOrder = Vue.toRef(uiState, 'relatedOrder');
     return { botTab, claimItems, addClaimItem, removeClaimItem, processForm, handleSaveProcess, cfStatusOptions, relatedOrder, relatedDliv, viewMode2, showTab };
   },
   template: /* html */`

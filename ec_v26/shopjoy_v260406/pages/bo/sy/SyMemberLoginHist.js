@@ -172,6 +172,7 @@ window.SyMemberLoginHist = {
     const onSizeChange = () => { pager.page = 1; };
     const onTabChange  = tab => { uiState.activeTab = tab; pager.page = 1; };
 
+    const searchTokenAction = Vue.toRef(uiState, 'searchTokenAction');
     return {
       uiState, onTabChange,
       DATE_RANGE_OPTIONS, onDateRangeChange,
