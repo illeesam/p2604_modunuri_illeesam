@@ -454,7 +454,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       cfSiteNm, ROLE_TYPES, PERM_LEVELS, ROLE_CATS, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, fnPermColor, depthBullet, depthColor, fnStatusClass,
       searchParam, searchParamOrg, onSearch, onReset,
-      gridRows, cfPagedRows, cfTotal, pager, pager.pageSizes, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       setFocused, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       toggleCheckAll, parentNm,

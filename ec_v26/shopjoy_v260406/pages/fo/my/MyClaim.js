@@ -32,7 +32,7 @@ window.MyClaim = {
     const { claims, claimFilter, cfFilteredClaims, orders } = Pinia.storeToRefs(myStore);
     const filteredClaims = cfFilteredClaims;
 
-    const claimPager = reactive({ pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const paginate = myStore.paginate;
 
     const { inRange, onDateSearch } = window.myDateFilterHelper();
@@ -86,19 +86,19 @@ window.MyClaim = {
       props.showToast('신청이 취소되었습니다.', 'info');
     };
 
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       await myStore.handleLoadClaims();
       myStore.handleLoadOrders();
     };
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
-      await handleFetchData();
+      await handleFetchData('DEFAULT');
     };
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     return {
       myStore, claims, claimFilter, filteredClaims, orders,
-      claimPager, paginate, cfDateFilteredClaims, onDateSearch, onSearch,
+      pager, paginate, cfDateFilteredClaims, onDateSearch, onSearch,
       claimStatusFilter, toggleClaimStatus,
       cfAuthUser, findProduct, openProductModal, openCustomerModal, openOrderModal,
       openTracking2, cancelClaim,
@@ -112,7 +112,7 @@ window.MyClaim = {
   <!-- 유형 필터 -->
   <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
     <button v-for="f in ['전체','취소','반품','교환']" :key="f"
-      @click="claimFilter=f;claimStatusFilter.splice(0);claimPager.page=1"
+      @click="claimFilter=f;claimStatusFilter.splice(0);pager.page=1"
       style="padding:6px 16px;border-radius:20px;cursor:pointer;font-size:0.82rem;font-weight:700;transition:all 0.15s;"
       :style="claimFilter===f
         ? 'background:var(--blue);color:#fff;border:2px solid var(--blue);'
@@ -134,7 +134,7 @@ window.MyClaim = {
         <span style="font-size:0.75rem;color:var(--border);flex-shrink:0;">›</span>
         <!-- 흐름 단계 -->
         <template v-for="(step, si) in myStore.CLAIM_FLOWS[claimType]" :key="step">
-          <button @click="claims.filter(c=>c.type===claimType&&c.status===step).length>0 && (toggleClaimStatus(step), claimPager.page=1)"
+          <button @click="claims.filter(c=>c.type===claimType&&c.status===step).length>0 && (toggleClaimStatus(step), pager.page=1)"
             style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:1.5px solid transparent;white-space:nowrap;flex-shrink:0;transition:all 0.15s;"
             :style="claimStatusFilter.includes(step)
               ? 'background:var(--blue);border-color:var(--blue);cursor:pointer;'
@@ -165,10 +165,10 @@ window.MyClaim = {
     </div>
   </template>
 
-  <PagerHeader :total="cfDateFilteredClaims.length" :pager="claimPager" />
+  <PagerHeader :total="cfDateFilteredClaims.length" :pager="pager" />
   <div v-if="!cfDateFilteredClaims.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">해당 내역이 없습니다.</div>
 
-  <div v-for="c in paginate(cfDateFilteredClaims, claimPager)" :key="c.claimId"
+  <div v-for="c in paginate(cfDateFilteredClaims, pager)" :key="c.claimId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;">
 
     <!-- 카드 헤더 -->
@@ -302,7 +302,7 @@ window.MyClaim = {
       </div>
     </div>
   </div>
-  <Pagination :total="filteredClaims.length" :pager="claimPager" />
+  <Pagination :total="filteredClaims.length" :pager="pager" />
 
   <Teleport to="body">
     <OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" @close="myStore.orderDetailModal.show=false" />

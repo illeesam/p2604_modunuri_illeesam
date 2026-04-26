@@ -35,7 +35,7 @@ window.PdReviewMng = {
     });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pd/review/page', {
@@ -43,8 +43,9 @@ window.PdReviewMng = {
         });
         const data = res.data?.data;
         reviews.splice(0, reviews.length, ...(data?.list || []));
-        pager.pageTotalCount = data?.total || 0;
-        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -55,7 +56,7 @@ window.PdReviewMng = {
       }
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData();
+      if (isAppReady.value) fnLoadCodes(); handleFetchData('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
 const pager        = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId   = ref(null);
@@ -98,7 +99,7 @@ const pager        = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, page
     };
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleFetchData('DEFAULT');
     };
 
     const onReset = async () => {
@@ -107,8 +108,8 @@ const pager        = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, page
       await handleFetchData();
     };
 
-    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     const starStr  = r => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r));
 
     return { reviews, uiState, searchParam, searchParamOrg, pager, cfPageNums, setPage, onSearch, onReset,

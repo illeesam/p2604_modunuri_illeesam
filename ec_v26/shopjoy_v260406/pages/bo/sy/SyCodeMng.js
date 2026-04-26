@@ -482,7 +482,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
       uiState, pageCodeGroups,
       cfSiteNm,
       searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfGrpOptions,
-      gridRows, cfPagedRows, cfTotal, pager, pager.pageSizes, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       dragSrc, onDragStart, onDragOver, onDragEnd,

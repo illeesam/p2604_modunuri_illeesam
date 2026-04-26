@@ -69,7 +69,7 @@ window.StRawMng = {
     const pager    = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const rawList = reactive([]);
 
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/st/raw/page', {
           params: {
@@ -79,15 +79,16 @@ const rawList = reactive([]);
         });
         const data = res.data?.data;
         rawList.splice(0, rawList.length, ...(data?.list || rawList));
-        pager.pageTotalCount = data?.total || rawList.length;
-        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = data?.pageTotalCount || rawList.length;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
       } catch (_) {
         console.error('[catch-info]', _);
       }
     };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleFetchData('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
 
@@ -104,9 +105,9 @@ const rawList = reactive([]);
       confirmCnt: rawList.filter(r => r.buyConfirmYn === 'Y').length,
     }));
 
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
-    const onSearch = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const onSearch = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
 
     const expandedRows = reactive(new Set());
@@ -136,7 +137,7 @@ const rawList = reactive([]);
   return {
       uiState, handleDateRangeChange,
       DATE_RANGE_OPTIONS, searchParam,
-      pager, pager.pageSizes, rawList, cfPageNums, cfSummary,
+      pager, rawList, cfPageNums, cfSummary,
       setPage, onSizeChange, onSearch, onReset,
       expandedRows, toggleRow, isExpanded,
       fnStatusBadge, rawStatusLabel, fnRawStatusBadge, vendorTypeLabel, orderStatusLabel,

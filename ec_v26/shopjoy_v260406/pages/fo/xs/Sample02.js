@@ -48,6 +48,8 @@ window.XsSample02 = {
     const searchParamOrg = reactive({ kw: '', category: '', status: '' });
 
     /* ── CRUD Grid ── */
+    
+    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageType: 'INFINITE_SCROLL', pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const allData    = reactive([]);
     const gridRows   = reactive([]);
     let   _tempId    = -1;
@@ -86,7 +88,7 @@ window.XsSample02 = {
       if (sentinelEl.value) _observer.observe(sentinelEl.value);
     };
 
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await api.get(API, { cdGrp: CD_GRP });
         const list = res?.data?.data ?? res?.data ?? [];
@@ -111,8 +113,8 @@ window.XsSample02 = {
       if (_observer) _observer.disconnect();
     });
 
-    const onSearch = async () => { pager.pageNo = 1; await handleFetchData(); };
-    const onReset  = async () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; await handleFetchData(); };
+    const onSearch = async () => { pager.pageNo = 1; await handleFetchData('DEFAULT'); };
+    const onReset  = async () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; await handleFetchData('DEFAULT'); };
 
     const setFocused   = idx => { uiState.focusedIdx = idx; };
     const onCellChange = row => {

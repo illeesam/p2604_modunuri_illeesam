@@ -59,15 +59,16 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
     }); // 'view' | 'edit'
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/cm/notice/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) }
         });
         notices.splice(0, notices.length, ...(res.data?.data?.list || []));
-        pager.pageTotalCount = res.data?.data?.total || 0;
-        pager.pageTotalPage = res.data?.data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
+        pager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -80,7 +81,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleFetchData('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
 
@@ -107,7 +108,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
 
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleFetchData('DEFAULT');
     };
 
     const onReset = () => {
@@ -115,8 +116,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
       onSearch();
     };
 
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
 
     const handleDelete = async (n) => {
       const ok = await props.showConfirm('삭제', `[${n.title}]을 삭제하시겠습니까?`);
@@ -139,7 +140,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
 
     const exportExcel = () => window.boCmUtil.exportCsv(notices, [{label:'ID',key:'noticeId'},{label:'제목',key:'title'},{label:'유형',key:'noticeType'},{label:'상태',key:'statusCd'},{label:'조회수',key:'viewCount'},{label:'등록일',key:'regDate'}], '공지목록.csv');
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), notices, uiState, codes, cfSiteNm, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, onDateRangeChange: handleDateRangeChange, pager, pager.pageSizes, cfPageNums, fnStatusBadge, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), notices, uiState, codes, cfSiteNm, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, onDateRangeChange: handleDateRangeChange, pager, cfPageNums, fnStatusBadge, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>

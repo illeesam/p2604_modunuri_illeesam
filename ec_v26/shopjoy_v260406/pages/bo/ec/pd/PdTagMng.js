@@ -30,7 +30,7 @@ window.PdTagMng = {
     });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pd/tag/page', {
@@ -38,8 +38,9 @@ window.PdTagMng = {
         });
         const data = res.data?.data;
         tags.splice(0, tags.length, ...(data?.list || []));
-        pager.pageTotalCount = data?.total || 0;
-        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -61,7 +62,7 @@ window.PdTagMng = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleFetchData('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
 
@@ -119,7 +120,7 @@ const pager     = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTot
     };
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleFetchData('DEFAULT');
     };
     const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
@@ -127,8 +128,8 @@ const pager     = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTot
       await handleFetchData();
     };
 
-    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     return { tags, uiState, searchParam, searchParamOrg, pager, cfPageNums, setPage, onSearch, onReset,

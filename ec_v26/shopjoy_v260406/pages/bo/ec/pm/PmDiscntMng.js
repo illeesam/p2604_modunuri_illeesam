@@ -35,7 +35,7 @@ window.PmDiscntMng = {
     });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/discnt/page', {
@@ -43,8 +43,9 @@ window.PmDiscntMng = {
         });
         const data = res.data?.data;
         discounts.splice(0, discounts.length, ...(data?.list || []));
-        pager.pageTotalCount = data?.total || 0;
-        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -55,7 +56,7 @@ window.PmDiscntMng = {
       }
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData();
+      if (isAppReady.value) fnLoadCodes(); handleFetchData('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
@@ -106,7 +107,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
 
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleFetchData('DEFAULT');
     };
 
     const onReset = async () => {
@@ -115,8 +116,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
       await handleFetchData();
     };
 
-    const setPage      = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage      = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
 
     const handleDelete = async (d) => {
       const ok = await props.showConfirm('삭제', `[${d.discntNm}] 할인을 삭제하시겠습니까?`);
@@ -141,7 +142,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
       '할인목록.csv');
 
     const viewMode = Vue.toRef(uiState, 'viewMode');
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), discounts, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, pager.pageSizes, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), discounts, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>

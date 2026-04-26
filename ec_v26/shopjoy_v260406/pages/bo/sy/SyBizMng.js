@@ -9,7 +9,7 @@ window.SyBizMng = {
     const codes = reactive({ vendor_status: [] });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/biz/page', {
@@ -20,8 +20,9 @@ window.SyBizMng = {
         });
         const data = res.data?.data;
         bizs.splice(0, bizs.length, ...(data?.list || []));
-        pager.pageTotalCount = data?.total || bizs.length;
-        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = data?.pageTotalCount || bizs.length;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -39,7 +40,7 @@ window.SyBizMng = {
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleFetchData('DEFAULT');
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
@@ -77,11 +78,11 @@ window.SyBizMng = {
     /* 페이징 */
 const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage; const s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
-    const setPage = n => { if(n>=1 && n<=pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
-    watch(() => uiState.selectedPath, () => { pager.pageNo = 1; handleFetchData(); });
+    const setPage = n => { if(n>=1 && n<=pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    watch(() => uiState.selectedPath, () => { pager.pageNo = 1; handleFetchData('DEFAULT'); });
 
-    const onSearch = () => { pager.pageNo = 1; handleFetchData(); };
+    const onSearch = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     const onReset = () => {
       searchParam.kw = '';
       searchParam.statusFlt = '';
@@ -138,7 +139,7 @@ const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPa
 
     return { bizs, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, STATUS, BIZ_CLASS, VENDOR_TYPES,
-      pager, pager.pageSizes, cfPageNums, setPage, onSizeChange,
+      pager, cfPageNums, setPage, onSizeChange,
       pathLabel, fnVendorTypeLabel, fnVendorTypeBadge, fnRoleCatLabel, fnRoleCatColor, fnStatusBadge, fnStatusLabel,
       onSearch, onReset,
       formData, openNew, openEdit, closeForm, handleSaveForm,

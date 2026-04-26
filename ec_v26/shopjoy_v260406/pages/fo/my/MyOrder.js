@@ -32,7 +32,7 @@ window.MyOrder = {
     const claimsByOrderId = cfClaimsByOrderId;
 
     /* ── 로컬 페이저 ── */
-    const orderPager = reactive({ pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const paginate = myStore.paginate;
 
     /* ── 배송조회 ── */
@@ -184,20 +184,20 @@ window.MyOrder = {
       .filter(o => !flowStatusFilter.length || flowStatusFilter.includes(o.status))
     );
 
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       await myStore.handleLoadOrders();
       myStore.handleLoadClaims();
       myStore.handleLoadCoupons();
     };
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
-      await handleFetchData();
+      await handleFetchData('DEFAULT');
     };
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     return {
       myStore, orders, claimsByOrderId, cfDateFilteredOrders, onDateSearch, onSearch,
-      orderPager, paginate,
+      pager, paginate,
       flowStatusFilter, toggleFlowStatus,
       openTracking, openTracking2, showOrderPayBreakdown,
       cancelOrder, confirmPurchase,
@@ -219,7 +219,7 @@ window.MyOrder = {
       <span style="font-size:0.72rem;font-weight:800;padding:3px 10px;border-radius:10px;color:#fff;background:#16a34a;flex-shrink:0;">주문</span>
       <span style="font-size:0.75rem;color:var(--border);flex-shrink:0;">›</span>
       <template v-for="(step, si) in myStore.ORDER_FLOW" :key="step.status">
-        <button @click="orders.filter(o=>o.status===step.status).length>0 && (toggleFlowStatus(step.status), orderPager.page=1)"
+        <button @click="orders.filter(o=>o.status===step.status).length>0 && (toggleFlowStatus(step.status), pager.page=1)"
           style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:1.5px solid transparent;white-space:nowrap;flex-shrink:0;transition:all 0.15s;"
           :style="flowStatusFilter.includes(step.status)
             ? 'background:var(--blue);border-color:var(--blue);cursor:pointer;'
@@ -247,10 +247,10 @@ window.MyOrder = {
     </div>
   </div>
 
-  <PagerHeader :total="cfDateFilteredOrders.length" :pager="orderPager" />
+  <PagerHeader :total="cfDateFilteredOrders.length" :pager="pager" />
   <div v-if="!cfDateFilteredOrders.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">주문 내역이 없습니다.</div>
 
-  <div v-for="o in paginate(cfDateFilteredOrders, orderPager)" :key="o.orderId"
+  <div v-for="o in paginate(cfDateFilteredOrders, pager)" :key="o.orderId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;">
 
     <!-- 주문 헤더 -->
@@ -498,7 +498,7 @@ window.MyOrder = {
       </div>
     </div>
   </div>
-  <Pagination :total="orders.length" :pager="orderPager" />
+  <Pagination :total="orders.length" :pager="pager" />
 
   <!-- ── Teleport 모달들 ── -->
   <Teleport to="body">

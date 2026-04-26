@@ -76,15 +76,16 @@ window.PdCategoryProdMng = {
     const searchParam = reactive({ prodNm: '' });
     const searchParamOrg = reactive({ prodNm: '' });
 
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/pd/category-prod/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...pager.pageCond }
+          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...(searchType === 'PAGE_CLICK' ? pager.pageCond : searchParam) }
         });
         const data = res.data?.data;
         categoryProds.splice(0, categoryProds.length, ...(data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
       } catch (err) {
         console.error('[catch-info]', err);
       }
@@ -93,7 +94,7 @@ window.PdCategoryProdMng = {
     const onSearch = () => {
       pager.pageNo = 1;
       Object.assign(pager.pageCond, searchParam);
-      handleFetchData();
+      handleFetchData('DEFAULT');
     };
   
     const onReset = () => {

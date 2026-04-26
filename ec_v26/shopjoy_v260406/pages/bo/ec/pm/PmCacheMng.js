@@ -58,7 +58,7 @@ window.PmCacheMng = {
     };
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/cache/page', {
@@ -66,8 +66,9 @@ window.PmCacheMng = {
         });
         const data = res.data?.data;
         caches.splice(0, caches.length, ...(data?.list || []));
-        pager.pageTotalCount = data?.total || 0;
-        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -78,7 +79,7 @@ window.PmCacheMng = {
       }
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData(); Object.assign(searchParamOrg, searchParam); });
+      if (isAppReady.value) fnLoadCodes(); handleFetchData('DEFAULT'); Object.assign(searchParamOrg, searchParam); });
     const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
     const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
@@ -101,7 +102,7 @@ window.PmCacheMng = {
     const fnTypeBadge = t => ({ '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' }[t] || 'badge-gray');
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleFetchData('DEFAULT');
     };
 
     const onReset = async () => {
@@ -110,8 +111,8 @@ window.PmCacheMng = {
       await handleFetchData();
     };
 
-    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
 
     const handleDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.desc}] 내역을 삭제하시겠습니까?`);
@@ -134,7 +135,7 @@ window.PmCacheMng = {
     const exportExcel = () => window.boCmUtil.exportCsv(caches, [{label:'ID',key:'cacheId'},{label:'회원명',key:'userNm'},{label:'유형',key:'cacheType'},{label:'금액',key:'amount'},{label:'설명',key:'description'},{label:'등록일',key:'regDate'}], '캐시목록.csv');
 
     const viewMode = Vue.toRef(uiState, 'viewMode');
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), caches, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, pager.pageSizes, cfPageNums, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), caches, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
       get viewMode() { return uiState.viewMode; }, set viewMode(v) { uiState.viewMode = v; },
       get selectedId() { return uiStateDetail.selectedId; } };
   },

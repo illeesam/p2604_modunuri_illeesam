@@ -15,8 +15,9 @@ window.MbMemberMng = {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         const res = await window.boApi.get('/bo/ec/mb/member/page', { params });
         members.splice(0, members.length, ...(res.data?.data?.list || []));
-        pager.pageTotalCount = res.data?.data?.total || 0;
-        pager.pageTotalPage = res.data?.data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
+        pager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -132,7 +133,7 @@ window.MbMemberMng = {
       }
     });
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, pager.pageSizes, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnGradeBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnGradeBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>

@@ -31,7 +31,7 @@ window.MyCoupon = {
     const myStore = window.useFoMyStore();
     const { coupons, couponCode } = Pinia.storeToRefs(myStore);
 
-    const couponPager = reactive({ pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const paginate = myStore.paginate;
 
     /* ── 탭: 미사용 | 사용 ── */
@@ -60,24 +60,24 @@ window.MyCoupon = {
         expiry: '2026-12-31', used: false,
         regDate: new Date().toISOString().slice(0,10), regSource: '쿠폰 코드 입력', regMethod: '수동',
       });
-      couponCode.value = ''; couponPager.page = 1;
+      couponCode.value = ''; pager.page = 1;
       props.showToast('쿠폰이 등록되었습니다!', 'success');
     };
 
-    const onTabChange = tab => { uiState.activeTab = tab; couponPager.page = 1; };
+    const onTabChange = tab => { uiState.activeTab = tab; pager.page = 1; };
 
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       await myStore.handleLoadCoupons();
       myStore.handleLoadOrders();
     };
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
-      await handleFetchData();
+      await handleFetchData('DEFAULT');
     };
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     return {
-      myStore, coupons, couponCode, couponPager, paginate,
+      myStore, coupons, couponCode, pager, paginate,
       addCoupon, cfDateFilteredCoupons, onDateSearch, onSearch,
       cfUnusedCount, cfUsedCount, onTabChange,
       uiState, codes };
@@ -114,12 +114,12 @@ window.MyCoupon = {
       }">사용 <span style="font-size:0.8rem;margin-left:2px;">({{ cfUsedCount }})</span></button>
   </div>
 
-  <PagerHeader :total="cfDateFilteredCoupons.length" :pager="couponPager" />
+  <PagerHeader :total="cfDateFilteredCoupons.length" :pager="pager" />
   <div v-if="!cfDateFilteredCoupons.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
     {{ uiState.activeTab==='unused' ? '사용 가능한 쿠폰이 없습니다.' : '사용된 쿠폰이 없습니다.' }}
   </div>
 
-  <div v-for="c in paginate(cfDateFilteredCoupons, couponPager)" :key="c.couponId"
+  <div v-for="c in paginate(cfDateFilteredCoupons, pager)" :key="c.couponId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:14px;">
 
     <!-- 쿠폰 아이콘 -->
@@ -200,7 +200,7 @@ window.MyCoupon = {
     </div>
   </div>
 
-  <Pagination :total="cfDateFilteredCoupons.length" :pager="couponPager" />
+  <Pagination :total="cfDateFilteredCoupons.length" :pager="pager" />
 
 </fo-my-layout>
   `,

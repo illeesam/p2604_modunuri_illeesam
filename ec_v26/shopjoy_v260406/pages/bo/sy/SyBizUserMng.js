@@ -383,7 +383,7 @@ const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPa
       onVendorPicked, VENDOR_TYPES,
       cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
       STATUS, fnStatusBadge, fnStatusLabel,
-      cfFiltered, cfPagedRows, pager, pager.pageSizes, cfTotalPages, cfPageNums, setPage, onSizeChange,
+      cfFiltered, cfPagedRows, pager, cfTotalPages, cfPageNums, setPage, onSizeChange,
       formData, openNew, openEdit, closeForm, handleSaveForm, handleDeleteRow,
       userRoles, roleTreeExpanded,
       openRoleModal, closeRoleModal, confirmRoleModal, handleDeleteRole,

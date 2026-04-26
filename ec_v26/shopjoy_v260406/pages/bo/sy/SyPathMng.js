@@ -250,7 +250,7 @@ const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.lengt
       searchParam, BIZ_OPTIONS, bizLabel,
       cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
       cfGridRows, cfPagedRows, cfDirtyRows,
-      pager, pager.pageSizes, cfTotalPages, cfPageNums, setPage, onSizeChange,
+      pager, cfTotalPages, cfPageNums, setPage, onSizeChange,
       onChange, addRow, delRow, cancelRow, handleSave, onReset, parentOptions,
       parentModalState, openParentModal, closeParentModal, selectParent, cfParentTree, toggleParentNode, getParentLabel,
     };

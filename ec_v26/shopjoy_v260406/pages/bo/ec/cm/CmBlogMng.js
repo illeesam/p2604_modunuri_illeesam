@@ -33,7 +33,7 @@ const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPa
 
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/cm/blog/page', {
@@ -44,8 +44,9 @@ const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPa
         });
         const data = res.data?.data;
         blogs.splice(0, blogs.length, ...(data?.list || []));
-        pager.pageTotalCount = data?.total || 0;
-        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -58,7 +59,7 @@ const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPa
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleFetchData('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
 
@@ -147,10 +148,10 @@ const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPa
       }
     };
 
-    const onSearch = () => { pager.pageNo = 1; handleFetchData(); };
+    const onSearch = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     return {

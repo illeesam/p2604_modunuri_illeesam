@@ -199,7 +199,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
       }
     };
 
-    return { widgetLibs, uiState, codes, searchParam, pager, pager.pageSizes,
+    return { widgetLibs, uiState, codes, searchParam, pager,
       applied, onSearch, onReset, setPage, onSizeChange,
       cfTree, openNodes, toggleNode, isOpen, selectTree, expandAll, collapseAll,
       cfFiltered, cfTotalCount, cfPageList, cfTotalPages, cfPageNumbers,

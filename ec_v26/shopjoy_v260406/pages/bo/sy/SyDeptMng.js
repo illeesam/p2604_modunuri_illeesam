@@ -257,7 +257,7 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
     return { depts, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, searchParamOrg, cfTypeOptions, DEPT_TYPES,
       cfSiteNm,
-      gridRows, cfPagedRows, cfTotal, pager, pager.pageSizes, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       toggleCheckAll, parentNm,

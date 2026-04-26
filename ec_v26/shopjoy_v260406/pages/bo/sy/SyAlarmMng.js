@@ -9,7 +9,7 @@ window.SyAlarmMng = {
     const codes = reactive({ alarm_type: [], alarm_status: [] });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/alarm/page', {
@@ -20,8 +20,9 @@ window.SyAlarmMng = {
         });
         const data = res.data?.data;
         alarms.splice(0, alarms.length, ...(data?.list || []));
-        pager.pageTotalCount = data?.total || alarms.length;
-        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = data?.pageTotalCount || alarms.length;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -55,7 +56,7 @@ window.SyAlarmMng = {
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleFetchData('DEFAULT');
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
@@ -130,10 +131,10 @@ const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPa
     const fnStatusBadge = s => ({ '발송완료': 'badge-green', '예약': 'badge-blue', '실패': 'badge-red', '임시': 'badge-gray' }[s] || 'badge-gray');
     const fnTypeBadge = t => ({ '푸시': 'badge-blue', '이메일': 'badge-orange', 'SMS': 'badge-green', '인앱': 'badge-gray' }[t] || 'badge-gray');
     const fnTargetBadge = t => ({ '전체': 'badge-red', 'VIP': 'badge-orange', '우수': 'badge-blue', '일반': 'badge-gray' }[t] || 'badge-gray');
-    const onSearch = () => { pager.pageNo = 1; handleFetchData(); };
+    const onSearch = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     const handleDelete = async (a) => {
       const ok = await props.showConfirm('삭제', `[${a.title}]을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -157,7 +158,7 @@ const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPa
 
 
     return { alarms, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, pager, pager.pageSizes, cfPageNums, fnStatusBadge, fnTypeBadge, fnTargetBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange, pager, cfPageNums, fnStatusBadge, fnTypeBadge, fnTargetBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>

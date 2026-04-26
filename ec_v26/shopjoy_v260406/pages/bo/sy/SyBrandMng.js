@@ -292,7 +292,7 @@ const pager      = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTo
 
     return { brands, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange,
-      gridRows, cfPagedRows, cfTotal, pager, pager.pageSizes, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       setFocused, onSearch, onReset, onCellChange, cfIsLocalMode,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       onDragStart, onDragOver, onDragEnd,

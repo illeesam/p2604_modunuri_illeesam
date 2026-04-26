@@ -35,11 +35,11 @@ window.PmPlanMng = {
     });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/plan/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...pager.pageCond }
+          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...(searchType === 'PAGE_CLICK' ? pager.pageCond : searchParam) }
         });
         const data = res.data?.data;
         plans.splice(0, plans.length, ...(data?.list || []));
@@ -56,7 +56,7 @@ window.PmPlanMng = {
       }
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData();
+      if (isAppReady.value) fnLoadCodes(); handleFetchData('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
@@ -115,7 +115,7 @@ const CATEGORIES = [
     const onSearch = async () => {
       pager.pageNo = 1;
       Object.assign(pager.pageCond, searchParam);
-      await handleFetchData();
+      await handleFetchData('DEFAULT');
     };
 
     const onReset = () => {
@@ -123,8 +123,8 @@ const CATEGORIES = [
       onSearch();
     };
 
-    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
 
     const handleDelete = async (p) => {
       const ok = await props.showConfirm('삭제', `[${p.planNm}]을 삭제하시겠습니까?`);
@@ -147,7 +147,7 @@ const CATEGORIES = [
     const exportExcel = () => window.boCmUtil.exportCsv(plans, [{label:'ID',key:'planId'},{label:'기획전명',key:'planNm'},{label:'카테고리',key:'category'},{label:'테마',key:'theme'},{label:'상품수',key:'productCount'},{label:'상태',key:'status'},{label:'조회수',key:'viewCount'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '기획전목록.csv');
 
     const viewMode = Vue.toRef(uiState, 'viewMode');
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), plans, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, pager.pageSizes, CATEGORIES, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), plans, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, CATEGORIES, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>

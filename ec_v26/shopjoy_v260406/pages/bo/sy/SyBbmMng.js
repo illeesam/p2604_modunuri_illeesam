@@ -9,7 +9,7 @@ window.SyBbmMng = {
     const codes = reactive({ bbm_type: [], bbm_status: [] });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/bbm/page', {
@@ -20,8 +20,9 @@ window.SyBbmMng = {
         });
         const data = res.data?.data;
         bbms.splice(0, bbms.length, ...(data?.list || []));
-        pager.pageTotalCount = data?.total || bbms.length;
-        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = data?.pageTotalCount || bbms.length;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -41,7 +42,7 @@ window.SyBbmMng = {
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleFetchData('DEFAULT');
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
@@ -114,10 +115,10 @@ const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPa
     const fnAttachBadge  = v => ({ '불가': 'badge-gray', '1개': 'badge-orange', '2개': 'badge-orange', '3개': 'badge-orange', '목록': 'badge-blue' }[v] || 'badge-gray');
     const fnContentBadge = v => ({ '불가': 'badge-gray', 'textarea': 'badge-blue', 'htmleditor': 'badge-green' }[v] || 'badge-gray');
     const fnScopeBadge   = v => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[v] || 'badge-gray');
-    const onSearch = () => { pager.pageNo = 1; handleFetchData(); };
+    const onSearch = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     const handleDelete = async (b) => {
       const ok = await props.showConfirm('삭제', `[${b.bbmNm}]을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -137,7 +138,7 @@ const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPa
     };
     const exportExcel = () => window.boCmUtil.exportCsv(bbms, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
-    return { bbms, uiState, codes, cfSiteNm, searchParam, pager, pager.pageSizes, cfPageNums, fnTypeBadge, fnYnBadge, fnCommentBadge, fnAttachBadge, fnContentBadge, fnScopeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
+    return { bbms, uiState, codes, cfSiteNm, searchParam, pager, cfPageNums, fnTypeBadge, fnYnBadge, fnCommentBadge, fnAttachBadge, fnContentBadge, fnScopeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
   },

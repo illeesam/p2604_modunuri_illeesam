@@ -7,6 +7,8 @@ window.Prod03List = {
     const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
 
     const PAGE_SIZE   = 12;
+    const pager = reactive({ pageNo: 1, pageSize: 12, pageTotalCount: 0, pageTotalPage: 1, pageType: 'INFINITE_SCROLL', pageSizes: [12, 24, 48], pageCond: {} });
+
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, searchText: '', priceMin: '', priceMax: '', currentPage: 1, mobileCount: PAGE_SIZE, isMobile: window.innerWidth < 768 });
     const codes = reactive({});
 
@@ -151,7 +153,7 @@ window.Prod03List = {
       return cfFilteredProducts.value.slice(s, s + PAGE_SIZE);
     });
     const cfPageNums = computed(() => {
-      const t = pager.pageTotalPage;
+      const t = cfTotalPages.value;
       const c = uiState.currentPage;
       if (t <= 7) return Array.from({ length: t }, (_, i) => i + 1);
       const set = new Set([1, t, c-2, c-1, c, c+1, c+2].filter(n => n >= 1 && n <= t));
@@ -206,7 +208,7 @@ window.Prod03List = {
       setupObserver();
     };
 
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       await handleLoadProducts();
       setupObserver();
     };
@@ -216,7 +218,7 @@ window.Prod03List = {
       window.removeEventListener('resize', onResize);
     });
 
-    return {
+    return { pager,
       uiState,
       allProducts, cfFilteredProducts,
       selColors, selSizes, selCats,

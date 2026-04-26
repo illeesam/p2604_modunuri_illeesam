@@ -10,7 +10,7 @@ window.OdDlivMng = {
     const codes = reactive({ order_statuses: [], dliv_statuses: [], dliv_types: [], payment_methods: [] });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
@@ -20,8 +20,9 @@ window.OdDlivMng = {
         ]);
         deliveries.splice(0, deliveries.length, ...(delivRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
-        pager.pageTotalCount = delivRes.data?.data?.total || 0;
-        pager.pageTotalPage = delivRes.data?.data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = delivRes.data?.data?.pageTotalCount || 0;
+        pager.pageTotalPage = delivRes.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -50,7 +51,7 @@ window.OdDlivMng = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleFetchData('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
 
@@ -123,7 +124,7 @@ const isAppReady = computed(() => {
 
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleFetchData('DEFAULT');
     };
     const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
@@ -131,8 +132,8 @@ const isAppReady = computed(() => {
       await handleFetchData();
     };
 
-    const setPage  = n  => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage  = n  => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
 
     const handleDelete = async (d) => {
       const ok = await props.showConfirm('삭제', `[${d.dlivId}]를 삭제하시겠습니까?`);
@@ -314,7 +315,7 @@ const isAppReady = computed(() => {
     };
 
     const bulkOpen = Vue.toRef(uiState, 'bulkOpen');
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), deliveries, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, pager.pageSizes, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), deliveries, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>

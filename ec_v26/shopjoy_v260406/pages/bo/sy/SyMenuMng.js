@@ -263,7 +263,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
     return { menus, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, searchParamOrg, MENU_TYPES,
       cfSiteNm,
-      gridRows, cfPagedRows, cfTotal, pager, pager.pageSizes, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       toggleCheckAll, parentNm,

@@ -43,7 +43,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/st/erp/slip/page', {
           params: {
@@ -53,11 +53,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         });
         const data = res.data?.data;
         slips.splice(0, slips.length, ...(data?.list || slips));
-        pager.pageTotalCount = data?.total || slips.length;
-        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = data?.pageTotalCount || slips.length;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
       } catch (_) { console.error('[catch-info]', _); }
     };
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleFetchData(); Object.assign(searchParamOrg, searchParam); });
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleFetchData('DEFAULT'); Object.assign(searchParamOrg, searchParam); });
 
     const doResend = async (r) => {
       const ok = await props.showConfirm('재전송', '전표를 ERP로 재전송하시겠습니까?');
@@ -78,10 +79,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const fnStatusBadge = s => ({ '전송완료':'badge-green', '전송대기':'badge-blue', '오류':'badge-red' }[s] || 'badge-gray');
     const fnTypeBadge   = t => ({ '정산':'badge-blue', '수수료':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
     const fmtW = n => Number(n||0).toLocaleString() + '원';
-    const onSearch = () => { pager.pageNo = 1; handleFetchData(); };
+    const onSearch = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, slips, cfPageNums, doResend, fnStatusBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, pager.pageSizes, setPage, onSizeChange };
   },
   template: /* html */`

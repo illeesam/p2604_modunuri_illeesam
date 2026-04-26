@@ -10,7 +10,7 @@ window.OdClaimMng = {
     const codes = reactive({ order_statuses: [], claim_types: [], claim_statuses: [], dliv_statuses: [], payment_methods: [] });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
@@ -20,8 +20,9 @@ window.OdClaimMng = {
         ]);
         claims.splice(0, claims.length, ...(claimsRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
-        pager.pageTotalCount = claimsRes.data?.data?.total || 0;
-        pager.pageTotalPage = claimsRes.data?.data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = claimsRes.data?.data?.pageTotalCount || 0;
+        pager.pageTotalPage = claimsRes.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -52,7 +53,7 @@ window.OdClaimMng = {
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleFetchData('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
 
@@ -123,7 +124,7 @@ const isAppReady = computed(() => {
     }[s] || 'badge-gray');
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleFetchData('DEFAULT');
     };
     const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
@@ -131,8 +132,8 @@ const isAppReady = computed(() => {
       await handleFetchData();
     };
 
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
 
     const handleDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.claimId}]를 삭제하시겠습니까?`);
@@ -329,7 +330,7 @@ const isAppReady = computed(() => {
     };
 
     const bulkOpen = Vue.toRef(uiState, 'bulkOpen');
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), claims, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, pager.pageSizes, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), claims, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>

@@ -43,20 +43,21 @@ window.PdDlivTmpltMng = {
       use: ''
     });
 
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/pd/dliv-tmplt/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }
         });
         const data = res.data?.data;
         dlivTmplts.splice(0, dlivTmplts.length, ...(data?.list || []));
-        pager.pageTotalCount = data?.total || 0;
-        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
       } catch (_) {
       console.error('[catch-info]', _);}
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData();
+      if (isAppReady.value) fnLoadCodes(); handleFetchData('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
 const applied      = reactive({ kw: '', method: '', use: '' });
     const pager        = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -120,7 +121,7 @@ const applied      = reactive({ kw: '', method: '', use: '' });
     };
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleFetchData('DEFAULT');
     };
 
     const onReset = async () => {
@@ -129,8 +130,8 @@ const applied      = reactive({ kw: '', method: '', use: '' });
       await handleFetchData();
     };
 
-    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
     const fnMethodBadge = v => ({ COURIER:'badge-blue', DIRECT:'badge-orange', PICKUP:'badge-green' }[v] || 'badge-gray');
 

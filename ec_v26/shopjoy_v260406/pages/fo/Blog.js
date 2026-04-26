@@ -26,7 +26,12 @@ window.Blog = {
 
     const posts = reactive([]);
 
-    const handleFetchData = async () => {
+    
+    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageType: 'PAGE', pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const setPage = n => { if (n>=1 && n<=pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       try {
         const params = { ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
         const res = await window.foApi.get('/fo/blog/list', { params });
@@ -58,7 +63,7 @@ window.Blog = {
       }
     });
 
-    const onSearch = async () => { await handleFetchData(); };
+    const onSearch = async () => { await Object.assign(pager.pageCond, searchParam); handleFetchData('DEFAULT'); };
 
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);
@@ -90,7 +95,7 @@ window.Blog = {
       Object.assign(searchParamOrg, searchParam);
     });
 
-    return { searchParam, categories, cfFilteredPosts, cfLatestPosts, postBg, onSearch, onReset, uiState, codes };
+    return { pager, cfPageNums, setPage, onSizeChange, searchParam, categories, cfFilteredPosts, cfLatestPosts, postBg, onSearch, onReset, uiState, codes };
   },
   template: /* html */ `
 <div class="page-wrap">

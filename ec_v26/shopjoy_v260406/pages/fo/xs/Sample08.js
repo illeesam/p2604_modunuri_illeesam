@@ -46,14 +46,14 @@ window.XsSample08 = {
     const toRow = d => ({ categoryId: d.sample1Id, categoryNm: d.cdNm || '', parentNm: d.col01 || '-', depth: Number(d.col02) || 1, sortOrd: Number(d.srtordVl) || 1, useYn: d.useYn || 'Y', regDate: d.regDt || '' });
     const toPayload = r => ({ cdGrp: CD_GRP, cdNm: r.categoryNm, col01: r.parentNm, col02: String(r.depth), srtordVl: r.sortOrd, useYn: r.useYn });
     const makeRow = d => ({ ...d, _row_status: 'N', _row_check: false, _orig: { categoryNm: d.categoryNm, parentNm: d.parentNm, depth: d.depth, sortOrd: d.sortOrd, useYn: d.useYn } });
-    const pager      = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
     const cfPagedRows  = computed(() => gridRows.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.pageSize)));
     const cfPageNums   = computed(() => { const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
     const setPage    = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
     const getRealIdx = i => (pager.pageNo - 1) * pager.pageSize + i;
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await api.get(API, { cdGrp: CD_GRP });
         const list = res?.data?.data ?? res?.data ?? [];
@@ -71,8 +71,8 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
       if (isAppReady.value) fnLoadCodes();
       Object.assign(searchParamOrg, searchParam);
     });
-    const onSearch = async () => { pager.pageNo = 1; await handleFetchData(); };
-    const onReset  = async () => { Object.assign(searchParam, { kw: '', useYn: '' }); pager.pageNo = 1; await handleFetchData(); };
+    const onSearch = async () => { pager.pageNo = 1; await handleFetchData('DEFAULT'); };
+    const onReset  = async () => { Object.assign(searchParam, { kw: '', useYn: '' }); pager.pageNo = 1; await handleFetchData('DEFAULT'); };
     const setFocused   = idx => { uiState.focusedIdx = idx; };
     const onCellChange = row => { if (row._row_status === 'I' || row._row_status === 'D') return; row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._orig[f])) ? 'U' : 'N'; };
     const addRow = () => {

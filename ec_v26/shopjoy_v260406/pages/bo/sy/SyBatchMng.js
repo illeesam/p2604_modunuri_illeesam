@@ -380,7 +380,7 @@ const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPa
     return { batches, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange,
-      gridRows, cfPagedRows, cfTotal, pager, pager.pageSizes, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave, runNow,
       CRON_PRESETS, CRON_FIELDS, cronPicker, openCronPicker, applyCronPreset, applyCron, updateCronPreview, cfCronPresetLabel, cfCronDesc,

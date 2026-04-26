@@ -31,7 +31,7 @@ window.MyCache = {
     const myStore = window.useFoMyStore();
     const { cashBalance, cashHistory, chargeAmount } = Pinia.storeToRefs(myStore);
 
-    const cashPager = reactive({ pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const paginate = myStore.paginate;
 
     const { inRange, onDateSearch } = window.myDateFilterHelper();
@@ -45,7 +45,7 @@ window.MyCache = {
         cashId: Date.now(), date: new Date().toISOString().slice(0, 10),
         type: '충전', amount, desc: '직접 충전', balance: cashBalance.value
       });
-      chargeAmount.value = ''; cashPager.page = 1;
+      chargeAmount.value = ''; pager.page = 1;
       props.showToast(amount.toLocaleString() + '원이 충전되었습니다!', 'success');
     };
 
@@ -54,19 +54,19 @@ window.MyCache = {
       if (!ok) props.showToast('주문 정보를 찾을 수 없습니다.', 'error');
     };
 
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       await myStore.handleLoadCash();
       myStore.handleLoadOrders();
     };
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
-      await handleFetchData();
+      await handleFetchData('DEFAULT');
     };
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     return {
       myStore, cashBalance, cashHistory, chargeAmount,
-      cashPager, paginate, addCash, openOrderModal, cfDateFilteredHistory, onDateSearch, onSearch,
+      pager, paginate, addCash, openOrderModal, cfDateFilteredHistory, onDateSearch, onSearch,
       uiState, codes };
   },
   template: /* html */ `
@@ -95,10 +95,10 @@ window.MyCache = {
     </button>
   </div>
 
-  <PagerHeader :total="cfDateFilteredHistory.length" :pager="cashPager" />
+  <PagerHeader :total="cfDateFilteredHistory.length" :pager="pager" />
   <div v-if="!cfDateFilteredHistory.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">캐쉬 내역이 없습니다.</div>
 
-  <div v-for="h in paginate(cfDateFilteredHistory, cashPager)" :key="h.cashId"
+  <div v-for="h in paginate(cfDateFilteredHistory, pager)" :key="h.cashId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;">
     <div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;"
       :style="h.type==='환불'?'background:#ffedd5;':h.type==='충전'?'background:#dcfce7;':'background:#fee2e2;'">
@@ -171,7 +171,7 @@ window.MyCache = {
     </div>
   </div>
 
-  <Pagination :total="cashHistory.length" :pager="cashPager" />
+  <Pagination :total="cashHistory.length" :pager="pager" />
 
   <Teleport to="body">
     <OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" @close="myStore.orderDetailModal.show=false" />

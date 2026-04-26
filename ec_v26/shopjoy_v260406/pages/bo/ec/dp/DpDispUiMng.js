@@ -108,7 +108,7 @@ const searchParam = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateE
     const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
 
-    return { displays, uiState, codes, pager, pager.pageSizes, searchParam, DATE_RANGE_OPTIONS,
+    return { displays, uiState, codes, pager, searchParam, DATE_RANGE_OPTIONS,
       cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums,
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange, cfSiteNm,
       uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId };

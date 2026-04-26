@@ -220,7 +220,7 @@ const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.lengt
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchParam, TYPES, cfTree, expanded, toggleNode, expandAll, collapseAll,
       selectNode, cfGridRows, cfPagedRows, cfDirtyRows,
-      pager, pager.pageSizes, cfTotalPages, cfPageNums, setPage, onSizeChange,
+      pager, cfTotalPages, cfPageNums, setPage, onSizeChange,
       onChange, addRow, delRow, cancelRow, handleSave, onReset, exportCsv,
     };
   },

@@ -60,7 +60,7 @@ window.PmCouponMng = {
     };
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/coupon/page', {
@@ -68,8 +68,9 @@ window.PmCouponMng = {
         });
         const data = res.data?.data;
         coupons.splice(0, coupons.length, ...(data?.list || []));
-        pager.pageTotalCount = data?.total || 0;
-        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -80,7 +81,7 @@ window.PmCouponMng = {
       }
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData(); Object.assign(searchParamOrg, searchParam); });
+      if (isAppReady.value) fnLoadCodes(); handleFetchData('DEFAULT'); Object.assign(searchParamOrg, searchParam); });
     const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
     const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
@@ -104,7 +105,7 @@ window.PmCouponMng = {
     const fnStatusBadge = s => ({ '활성': 'badge-green', '만료': 'badge-red', '비활성': 'badge-gray' }[s] || 'badge-gray');
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleFetchData();
+      await handleFetchData('DEFAULT');
     };
 
     const onReset = async () => {
@@ -113,8 +114,8 @@ window.PmCouponMng = {
       await handleFetchData();
     };
 
-    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
 
     const handleDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.name}]을 삭제하시겠습니까?`);
@@ -138,7 +139,7 @@ window.PmCouponMng = {
     const exportExcel = () => window.boCmUtil.exportCsv(coupons, [{label:'ID',key:'couponId'},{label:'쿠폰명',key:'couponNm'},{label:'유형',key:'discountTypeCd'},{label:'할인값',key:'discountValue'},{label:'최소금액',key:'minOrderAmount'},{label:'상태',key:'statusCd'},{label:'유효기간(시작)',key:'validFrom'},{label:'유효기간(종료)',key:'validTo'}], '쿠폰목록.csv');
 
     const viewMode = Vue.toRef(uiState, 'viewMode');
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), coupons, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, pager.pageSizes, cfPageNums, discountLabel, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), coupons, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, cfPageNums, discountLabel, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
       get viewMode() { return uiState.viewMode; }, set viewMode(v) { uiState.viewMode = v; },
       get selectedId() { return uiStateDetail.selectedId; } };
   },

@@ -35,7 +35,7 @@ window.PdQnaMng = {
     });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pd/qna/page', {
@@ -43,8 +43,9 @@ window.PdQnaMng = {
         });
         const data = res.data?.data;
         qnas.splice(0, qnas.length, ...(data?.list || []));
-        pager.pageTotalCount = data?.total || 0;
-        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -57,22 +58,22 @@ window.PdQnaMng = {
     const searchParam = reactive({ kw: '', status: '', prod: '' });
     const searchParamOrg = reactive({ kw: '', status: '', prod: '' });
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleFetchData();
+      if (isAppReady.value) fnLoadCodes(); handleFetchData('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
 const pager      = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfPageNums   = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const onSearch = async () => { pager.pageNo = 1; await handleFetchData(); };
+    const onSearch = async () => { pager.pageNo = 1; await handleFetchData('DEFAULT'); };
     const onReset  = async () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; await handleFetchData(); };
-    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     const getProdNm = id => { const p = (products||[]).find(p => p.prodId === id); return p ? p.prodNm : (id||''); };
     const getMemNm  = id => { const m = (members||[]).find(m => m.memberId === id); return m ? m.memberNm : (id||''); };
     const fnStatusBadge = s => ({ WAIT:'badge-orange', ANSWER:'badge-green', CLOSE:'badge-gray' }[s] || 'badge-gray');
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
 
-    return { qnas, uiState, codes, pager, pager.pageSizes, searchParam,
+    return { qnas, uiState, codes, pager, searchParam,
       cfPageNums,
       onSearch, onReset, setPage, onSizeChange, getProdNm, getMemNm, fnStatusBadge, cfSiteNm };
   },

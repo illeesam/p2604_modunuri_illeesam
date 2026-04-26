@@ -291,7 +291,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status
       expandedSet, isExpanded, toggleNode, expandAll, collapseAll, cfCatTreeFlat,
       selectNode,
       searchParam, searchParamOrg,
-      gridRows, cfPagedRows, cfTotal, pager, pager.pageSizes, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       onSearch, onReset,
       catPickerModal, cfCatPickerList, onParentSelect, openParentModal, fnDepthColor, fnDepthBullet,
       focusedIdx, setFocused, addRow, addChildRow, cancelRow, cancelChecked, deleteRow, deleteRows, handleSave,

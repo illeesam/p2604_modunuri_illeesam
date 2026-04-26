@@ -194,7 +194,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
     return {
       uiState, onTabChange,
       DATE_RANGE_OPTIONS, onDateRangeChange,
-      pager, pager.pageSizes, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, cfSummary,
+      pager, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, cfSummary,
       expandedRows, toggleRow, isExpanded,
       fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge,
       onSearch, onReset, setPage, onSizeChange,

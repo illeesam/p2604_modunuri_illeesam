@@ -16,7 +16,12 @@ window.EventPage = {
 
     const events = reactive([]);
 
-    const handleFetchData = async () => {
+    
+    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageType: 'PAGE', pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const setPage = n => { if (n>=1 && n<=pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.foApi.get('/fo/event/list');
         events.splice(0, events.length, ...res.data);
@@ -64,7 +69,7 @@ window.EventPage = {
     const cfOngoingCount = computed(() => events.filter(e => e.status === 'ongoing').length);
     const cfEndedCount   = computed(() => events.filter(e => e.status === 'ended').length);
 
-    return { cfFilteredEvents, cfOngoingCount, cfEndedCount, uiState, codes };
+    return { pager, cfPageNums, setPage, onSizeChange, cfFilteredEvents, cfOngoingCount, cfEndedCount, uiState, codes };
   },
   template: /* html */ `
 <div class="page-wrap">

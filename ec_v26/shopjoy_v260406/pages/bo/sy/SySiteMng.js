@@ -9,7 +9,7 @@ window.SySiteMng = {
     const codes = reactive({});
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/site/page', {
@@ -20,8 +20,9 @@ window.SySiteMng = {
         });
         const data = res.data?.data;
         sites.splice(0, sites.length, ...(data?.list || []));
-        pager.pageTotalCount = data?.total || sites.length;
-        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = data?.pageTotalCount || sites.length;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -55,7 +56,7 @@ window.SySiteMng = {
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleFetchData('DEFAULT');
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
@@ -137,10 +138,10 @@ const detailModal = reactive({
       '가격비교': 'badge-blue', '시각화': 'badge-purple', '홈페이지': 'badge-gray',
     }[t] || 'badge-gray');
 
-    const onSearch = () => { pager.pageNo = 1; handleFetchData(); };
+    const onSearch = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
 
     const handleDelete = async (s) => {
       const ok = await props.showConfirm('삭제', `[${s.siteCode}] ${s.siteNm} 사이트를 삭제하시겠습니까?`);
@@ -169,7 +170,7 @@ const detailModal = reactive({
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, DATE_RANGE_OPTIONS, onDateRangeChange,
       cfTypeOptions,
-      pager, pager.pageSizes, cfPageNums,
+      pager, cfPageNums,
       onSearch, onReset, setPage, onSizeChange,
       fnStatusBadge, fnTypeBadge, handleDelete,
       cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey,

@@ -49,7 +49,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       diffAmt:   reconList.reduce((s,r)=>s+Math.abs(r.diff||0),0),
     }));
 
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/st/erp/recon/page', {
           params: {
@@ -59,11 +59,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         });
         const data = res.data?.data;
         reconList.splice(0, reconList.length, ...(data?.list || reconList));
-        pager.pageTotalCount = data?.total || reconList.length;
-        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = data?.pageTotalCount || reconList.length;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
       } catch (_) { console.error('[catch-info]', _); }
     };
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleFetchData(); Object.assign(searchParamOrg, searchParam); });
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleFetchData('DEFAULT'); Object.assign(searchParamOrg, searchParam); });
 
     const doFix = async (r) => {
       const ok = await props.showConfirm('조정처리', '해당 전표 대사 차이를 조정처리 하시겠습니까?');
@@ -84,10 +85,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const fnDiffBadge = s => ({ '일치':'badge-green', '차이':'badge-orange', '미반영':'badge-red' }[s] || 'badge-gray');
     const fnTypeBadge = t => ({ '정산':'badge-blue', '수수료':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
     const fmtW = n => Number(n||0).toLocaleString() + '원';
-    const onSearch = () => { pager.pageNo = 1; handleFetchData(); };
+    const onSearch = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, reconList, cfPageNums, cfSummary, doFix, fnDiffBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, pager.pageSizes, setPage, onSizeChange };
   },
   template: /* html */`

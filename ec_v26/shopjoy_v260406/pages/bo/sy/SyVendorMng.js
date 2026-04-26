@@ -9,7 +9,7 @@ window.SyVendorMng = {
     const codes = reactive({ vendor_status: [] });
 
     // onMounted에서 API 로드
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/sy/vendor/page', {
@@ -20,8 +20,9 @@ window.SyVendorMng = {
         });
         const data = res.data?.data;
         vendors.splice(0, vendors.length, ...(data?.list || []));
-        pager.pageTotalCount = data?.total || vendors.length;
-        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = data?.pageTotalCount || vendors.length;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -55,7 +56,7 @@ window.SyVendorMng = {
     /* _expand3: 기본 3레벨 펼침 */
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleFetchData('DEFAULT');
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
@@ -131,10 +132,10 @@ const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPa
 
     const fnTypeBadge = t => ({ '판매업체': 'badge-blue', '배송업체': 'badge-orange' }[t] || 'badge-gray');
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
-    const onSearch = () => { pager.pageNo = 1; handleFetchData(); };
+    const onSearch = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
 
     const handleDelete = async (v) => {
       const ok = await props.showConfirm('삭제', `[${v.vendorNm}] 업체를 삭제하시겠습니까?`);
@@ -159,7 +160,7 @@ const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPa
     watch(() => uiState.selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), vendors, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, pager, pager.pageSizes, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm, pager, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>

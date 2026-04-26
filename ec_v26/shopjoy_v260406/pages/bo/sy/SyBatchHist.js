@@ -85,7 +85,7 @@ const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPa
 
     const expandedId = Vue.toRef(uiState, 'expandedId');
     return { batches, uiState, cfBatchOptions,
-      cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, pager, pager.pageSizes,
+      cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, pager,
       setPage, onSizeChange, onFilter,
       toggleExpand,
       fnRunBadge, fnFmtDuration,

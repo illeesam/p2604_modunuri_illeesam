@@ -129,7 +129,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
     const onSizeChange = () => { pager.pageNo = 1; };
     return { widgets, widgetLibs, uiState, pathLabel,
       codes, wTypeLabel, wIcon,
-      searchParam, searchParamOrg, pager, pager.pageSizes,
+      searchParam, searchParamOrg, pager,
       applied, onSearch, onReset,
       cfSiteNm,
       setPage, onSizeChange,

@@ -41,7 +41,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const vendorList = reactive([]);
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
-    const handleFetchData = async () => {
+    const handleFetchData = async (searchType = 'DEFAULT') => {
       try {
         const [resV, resA] = await Promise.all([
           window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 } }),
@@ -55,15 +55,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
         const data = resA.data?.data;
         adjList.splice(0, adjList.length, ...(data?.list || adjList));
-        pager.pageTotalCount = data?.total || adjList.length;
-        pager.pageTotalPage = data?.totalPages || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalCount = data?.pageTotalCount || adjList.length;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
       } catch (_) {
         console.error('[catch-info]', _);
       }
     };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleFetchData();
+      handleFetchData('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
 
@@ -167,10 +168,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const fnTypeBadge = t => ({ '매출조정':'badge-blue', '수수료조정':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
     const fmtW = n => (n >= 0 ? '' : '-') + Math.abs(Number(n)).toLocaleString() + '원';
 
-    const onSearch = () => { pager.pageNo = 1; handleFetchData(); };
+    const onSearch = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleFetchData(); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleFetchData('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleFetchData('DEFAULT'); };
     return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, adjList, cfPageNums, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, doApprove, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, pager.pageSizes, setPage, onSizeChange };
   },
   template: /* html */`
