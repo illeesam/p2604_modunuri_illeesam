@@ -49,9 +49,9 @@ window.DpDispPanelDtl = {
           window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '전시패널상세', 'X-Cmd-Nm': '조회' } }),
           window.boApi.get('/bo/ec/pm/event/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '전시패널상세', 'X-Cmd-Nm': '조회' } }),
         ]);
-        panels.splice(0, panels.length, ...(panelsRes.data?.data?.list || []));
-        displays.splice(0, displays.length, ...(displaysRes.data?.data?.list || []));
-        events.splice(0, events.length, ...(eventsRes.data?.data?.list || []));
+        panels.splice(0, panels.length, ...(panelsRes.data?.data?.pageList || panelsRes.data?.data?.list || []));
+        displays.splice(0, displays.length, ...(displaysRes.data?.data?.pageList || displaysRes.data?.data?.list || []));
+        events.splice(0, events.length, ...(eventsRes.data?.data?.pageList || eventsRes.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);

@@ -1,7 +1,10 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
+import com.shopjoy.ecadminapi.base.ec.cm.mapper.CmBlogMapper;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,14 @@ public class FoCmContactService {
     private static final String CONTACT_CATE = "CONTACT";
 
     private final CmBlogRepository repository;
+    private final CmBlogMapper mapper;
+
+    @Transactional(readOnly = true)
+    public CmBlogDto getById(String id) {
+        CmBlogDto dto = mapper.selectById(id);
+        if (dto == null) throw new CmBizException("존재하지 않는 문의입니다: " + id);
+        return dto;
+    }
 
     @Transactional
     public CmBlog submit(Map<String, Object> body) {

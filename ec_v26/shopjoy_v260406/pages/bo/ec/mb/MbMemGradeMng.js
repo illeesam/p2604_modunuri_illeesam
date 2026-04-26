@@ -14,7 +14,7 @@ window.MbMemGradeMng = {
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         const res = await window.boApi.get('/bo/ec/mb/member-grade/page', { params, headers: { 'X-UI-Nm': '회원등급관리', 'X-Cmd-Nm': '조회' } });
-        const list = res.data?.data?.list || [];
+        const list = res.data?.data?.pageList || res.data?.data?.list || [];
         grades.splice(0, grades.length, ...list);
         gridRows.splice(0);
         list.forEach(g => gridRows.push({ ...g, _row_status: null }));

@@ -20,7 +20,7 @@ window.SyBbmMng = {
           headers: { 'X-UI-Nm': 'BBM관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
-        bbms.splice(0, bbms.length, ...(data?.list || []));
+        bbms.splice(0, bbms.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || bbms.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

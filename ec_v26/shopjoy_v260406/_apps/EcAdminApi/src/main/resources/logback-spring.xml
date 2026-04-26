@@ -49,6 +49,15 @@
             </encoder>
         </appender>
 
+        <!-- ─── MVC_LOG: AOP 메서드 추적 전용 (메시지만 출력) ──────────── -->
+        <appender name="MVC_LOG_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+                <layout class="ch.qos.logback.classic.PatternLayout">
+                    <pattern>%msg%n</pattern>
+                </layout>
+            </encoder>
+        </appender>
+
         <!-- ─── FILE: 롤링 ──────────────────────────────────────────── -->
         <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <file>${APP_LOG}</file>
@@ -99,6 +108,11 @@
         </appender>
 
         <!-- ─── 로거 레벨 ─────────────────────────────────────────────── -->
+        <!-- MVC_LOG: AOP 추적 전용 — root 전파 차단으로 이중 출력 방지 -->
+        <logger name="MVC_LOG" level="INFO" additivity="false">
+            <appender-ref ref="MVC_LOG_CONSOLE"/>
+        </logger>
+
         <logger name="com.shopjoy.ecadminapi"                                level="DEBUG"/>
         <logger name="com.shopjoy.ecadminapi.config.MyBatisQueryInterceptor" level="DEBUG"/>
         <logger name="p6spy"                  level="INFO"/>

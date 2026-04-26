@@ -49,6 +49,12 @@ public class BoMbMemberController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<MbMemberDto>> getById(@PathVariable String id) {
+        MbMemberDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<MbMember>> create(@RequestBody MbMember body) {
         MbMember result = service.create(body);

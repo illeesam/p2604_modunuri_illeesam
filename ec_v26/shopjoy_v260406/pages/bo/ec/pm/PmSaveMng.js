@@ -39,7 +39,7 @@ window.PmSaveMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/pm/save/page', { params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, headers: { 'X-UI-Nm': '적립금관리', 'X-Cmd-Nm': '조회' } });
-        const list = res.data?.data?.list || [];
+        const list = res.data?.data?.pageList || res.data?.data?.list || [];
         saves.splice(0, saves.length, ...list);
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;

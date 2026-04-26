@@ -43,7 +43,7 @@ window.DpDispWidgetMng = {
           window.boApi.get('/bo/ec/dp/widget/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '전시위젯관리', 'X-Cmd-Nm': '조회' } }),
           window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '전시위젯관리', 'X-Cmd-Nm': '조회' } }),
         ]);
-        widgets.splice(0, widgets.length, ...(res.data?.data?.list || []));
+        widgets.splice(0, widgets.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         widgetLibs.splice(0, widgetLibs.length, ...(resLibs.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {

@@ -41,6 +41,12 @@ public class BoPmCouponController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<PmCouponDto>> getById(@PathVariable String id) {
+        PmCouponDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<PmCoupon>> create(@RequestBody PmCoupon body) {
         PmCoupon result = service.create(body);

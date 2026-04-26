@@ -49,6 +49,12 @@ public class BoStSettleController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<StSettleDto>> getById(@PathVariable String id) {
+        StSettleDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<StSettle>> create(@RequestBody StSettle body) {
         StSettle result = service.create(body);

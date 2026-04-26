@@ -48,6 +48,12 @@ public class BoPdCategoryController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<PdCategoryDto>> getById(@PathVariable String id) {
+        PdCategoryDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<PdCategory>> create(@RequestBody PdCategory body) {
         PdCategory result = service.create(body);

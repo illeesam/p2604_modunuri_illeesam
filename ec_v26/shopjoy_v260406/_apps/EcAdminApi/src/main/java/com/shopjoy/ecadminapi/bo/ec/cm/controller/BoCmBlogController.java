@@ -48,6 +48,12 @@ public class BoCmBlogController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<CmBlogDto>> getById(@PathVariable String id) {
+        CmBlogDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<CmBlog>> create(@RequestBody CmBlog body) {
         CmBlog result = service.create(body);

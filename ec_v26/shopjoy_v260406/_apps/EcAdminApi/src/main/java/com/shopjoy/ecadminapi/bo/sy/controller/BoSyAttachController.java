@@ -41,6 +41,12 @@ public class BoSyAttachController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<SyAttachDto>> getById(@PathVariable String id) {
+        SyAttachDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SyAttach>> create(@RequestBody SyAttach body) {
         SyAttach result = service.create(body);

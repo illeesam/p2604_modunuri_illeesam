@@ -33,9 +33,11 @@ window.Blog = {
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const params = { ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-        const res = await window.foApi.get('/fo/blog/list', { params, headers: { 'X-UI-Nm': '블로그', 'X-Cmd-Nm': '조회' } });
-        posts.splice(0, posts.length, ...res.data);
+        const params = { ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)), pageNo: pager.pageNo, pageSize: pager.pageSize };
+        const res = await window.foApi.get('/fo/ec/cm/bltn/page', { params, headers: { 'X-UI-Nm': '블로그', 'X-Cmd-Nm': '조회' } });
+        pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
+        pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;
+        posts.splice(0, posts.length, ...(res.data?.data?.pageList || []));
       } catch (e) {
         posts.splice(0, posts.length, ...[
           { id: 1, title: 'Anteposuerit litterarum formas.', category: 'fashion', author: '김민지', date: '2026.04.10', readTime: '5분', excerpt: '고급 코튼 소재로 제작된 프리미엄 티셔츠. 통기성이 우수하고 세탁 후에도 형태가 유지됩니다. 올봄 스타일링의 핵심 아이템을 만나보세요.', thumb: 'assets/cdn/prod/img/blog/blog-1.jpg', tags: ['패션', '신상품', '코튼100%'], viewCount: 1240, commentCount: 8 },

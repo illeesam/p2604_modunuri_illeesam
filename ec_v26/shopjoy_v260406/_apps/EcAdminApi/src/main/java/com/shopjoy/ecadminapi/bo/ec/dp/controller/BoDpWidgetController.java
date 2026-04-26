@@ -48,6 +48,12 @@ public class BoDpWidgetController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<DpWidgetDto>> getById(@PathVariable String id) {
+        DpWidgetDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<DpWidget>> create(@RequestBody DpWidget body) {
         DpWidget result = service.create(body);

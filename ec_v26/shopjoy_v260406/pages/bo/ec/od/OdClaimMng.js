@@ -18,8 +18,8 @@ window.OdClaimMng = {
           window.boApi.get('/bo/ec/od/claim/page', { params, headers: { 'X-UI-Nm': '클레임관리', 'X-Cmd-Nm': '조회' } }),
           window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '클레임관리', 'X-Cmd-Nm': '조회' } })
         ]);
-        claims.splice(0, claims.length, ...(claimsRes.data?.data?.list || []));
-        members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
+        claims.splice(0, claims.length, ...(claimsRes.data?.data?.pageList || claimsRes.data?.data?.list || []));
+        members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
         pager.pageTotalCount = claimsRes.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = claimsRes.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

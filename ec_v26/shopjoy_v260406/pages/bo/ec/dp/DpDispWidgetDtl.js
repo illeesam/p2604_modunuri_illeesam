@@ -109,7 +109,7 @@ window.DpDispWidgetDtl = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '전시위젯상세', 'X-Cmd-Nm': '조회' } });
-        widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.list || []));
+        widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
       } catch (_) {}
       if (!cfIsNew.value) {
         const src = (Array.isArray(widgetLibs) ? widgetLibs : []).find(d => d.libId == props.editId);

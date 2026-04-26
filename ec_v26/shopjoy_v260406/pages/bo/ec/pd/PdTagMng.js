@@ -40,7 +40,7 @@ window.PdTagMng = {
           headers: { 'X-UI-Nm': '태그관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
-        tags.splice(0, tags.length, ...(data?.list || []));
+        tags.splice(0, tags.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

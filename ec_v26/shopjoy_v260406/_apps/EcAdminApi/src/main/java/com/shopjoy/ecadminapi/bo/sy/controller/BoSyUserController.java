@@ -41,6 +41,12 @@ public class BoSyUserController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<SyUserDto>> getById(@PathVariable String id) {
+        SyUserDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SyUser>> create(@RequestBody SyUser body) {
         SyUser result = service.create(body);

@@ -33,6 +33,12 @@ public class BoPdTagController {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<PdTagDto>> getById(@PathVariable String id) {
+        PdTagDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<PdTag>> create(@RequestBody PdTag body) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));

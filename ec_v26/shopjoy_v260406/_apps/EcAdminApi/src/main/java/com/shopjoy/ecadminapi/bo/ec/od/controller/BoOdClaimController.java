@@ -49,6 +49,12 @@ public class BoOdClaimController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<OdClaimDto>> getById(@PathVariable String id) {
+        OdClaimDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<OdClaim>> create(@RequestBody OdClaim body) {
         OdClaim result = service.create(body);

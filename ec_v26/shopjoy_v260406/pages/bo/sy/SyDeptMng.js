@@ -17,7 +17,7 @@ window.SyDeptMng = {
           params: { pageNo: 1, pageSize: 10000 },
           headers: { 'X-UI-Nm': '부서관리', 'X-Cmd-Nm': '조회' }
         });
-        const list = res.data?.data?.list || [];
+        const list = res.data?.data?.pageList || res.data?.data?.list || [];
         depts.splice(0, depts.length, ...list);
         gridRows.splice(0);
         buildTreeRows(list).forEach(d => gridRows.push(makeRow(d)));

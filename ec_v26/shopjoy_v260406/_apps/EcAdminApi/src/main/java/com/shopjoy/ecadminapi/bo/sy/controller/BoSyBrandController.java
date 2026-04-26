@@ -41,6 +41,12 @@ public class BoSyBrandController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<SyBrandDto>> getById(@PathVariable String id) {
+        SyBrandDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SyBrand>> create(@RequestBody SyBrand body) {
         SyBrand result = service.create(body);

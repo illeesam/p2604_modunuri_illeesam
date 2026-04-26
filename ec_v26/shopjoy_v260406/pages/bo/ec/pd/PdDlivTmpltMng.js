@@ -52,7 +52,7 @@ window.PdDlivTmpltMng = {
           headers: { 'X-UI-Nm': '배송템플릿관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
-        dlivTmplts.splice(0, dlivTmplts.length, ...(data?.list || []));
+        dlivTmplts.splice(0, dlivTmplts.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

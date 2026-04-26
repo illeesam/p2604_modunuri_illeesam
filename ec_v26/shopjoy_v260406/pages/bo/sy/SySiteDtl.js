@@ -17,7 +17,7 @@ window.SySiteDtl = {
           params: { pageNo: 1, pageSize: 10000 },
           headers: { 'X-UI-Nm': '사이트상세', 'X-Cmd-Nm': '조회' }
         });
-        sites = res.data?.data?.list || [];
+        sites = res.data?.data?.pageList || res.data?.data?.list || [];
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);

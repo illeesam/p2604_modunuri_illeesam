@@ -112,7 +112,7 @@ window.CmNoticeMng = {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) },
           headers: { 'X-UI-Nm': '공지사항관리', 'X-Cmd-Nm': '조회' }
         });
-        notices.splice(0, notices.length, ...(res.data?.data?.list || []));
+        notices.splice(0, notices.length, ...(res.data?.data?.pageList || []));
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage  = res.data?.data?.pageTotalPage  || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, res.data?.data?.pageCond || pager.pageCond);

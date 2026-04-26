@@ -41,6 +41,12 @@ public class BoPmCacheController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<PmCacheDto>> getById(@PathVariable String id) {
+        PmCacheDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<PmCache>> create(@RequestBody PmCache body) {
         PmCache result = service.create(body);

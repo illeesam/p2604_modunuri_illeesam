@@ -41,6 +41,12 @@ public class BoPmDiscntController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<PmDiscntDto>> getById(@PathVariable String id) {
+        PmDiscntDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<PmDiscnt>> create(@RequestBody PmDiscnt body) {
         PmDiscnt result = service.create(body);

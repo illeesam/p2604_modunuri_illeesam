@@ -14,7 +14,7 @@ window.MbMemberMng = {
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         const res = await window.boApi.get('/bo/ec/mb/member/page', { params, headers: { 'X-UI-Nm': '회원관리', 'X-Cmd-Nm': '조회' } });
-        members.splice(0, members.length, ...(res.data?.data?.list || []));
+        members.splice(0, members.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

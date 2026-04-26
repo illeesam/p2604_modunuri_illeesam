@@ -18,8 +18,8 @@ window.BlogView = {
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
-        const res = await window.foApi.get('/fo/blog/view', { params: { blogId: props.editId }, headers: { 'X-UI-Nm': '블로그상세', 'X-Cmd-Nm': '상세조회' } });
-        posts.splice(0, posts.length, ...res.data);
+        const res = await window.foApi.get(`/fo/ec/cm/bltn/${props.editId}`, { headers: { 'X-UI-Nm': '블로그상세', 'X-Cmd-Nm': '상세조회' } });
+        posts.splice(0, posts.length, ...(res.data?.data ? [res.data.data] : []));
       } catch (e) {
         posts.splice(0, posts.length, ...[
           { id: 1, title: 'Anteposuerit litterarum formas.', category: 'Fashion', author: '김민지', date: '2026.04.10', readTime: '5분', tags: ['패션', '신상품', '코튼100%'], viewCount: 1240, img: 'assets/cdn/prod/img/blog/blog-big.jpg', imgSm: 'assets/cdn/prod/img/blog/sm/blog-sm-1.jpg', imgMid: 'assets/cdn/prod/img/blog/blog-big-2.jpg', body: `Elga Ksenia shall Tirza use these kitchen utensils designed for <strong>Élinka</strong>, a new design—oriented brand for consumers introduced at the Ambiente show in February 2016. Lightweight anodized aluminum, bright colors, stainless steel and matte plastic shapes.\n\nAnd round tips on the cutting feature of these products designed for the kitchen. Functional materials are used everyday: chopping boards, utensils and colanders.\n\n<strong>Elga</strong> is a two-color melamine salad bowl where vegetables can be washed, drained and served. The disk at the bottom of the bowl can be turned counterclockwise to drain water when washing vegetables and it can be turned clockwise to lock the drain and hold condiments in the bowl when serving.`, comments: [{ id: 1, author: '이수진', date: '2026.04.11', text: '정말 유용한 정보네요! 다음 시즌 스타일링에 참고하겠습니다.' },{ id: 2, author: '박지현', date: '2026.04.11', text: '사진도 예쁘고 설명도 자세해서 좋아요.' },{ id: 3, author: '정다운', date: '2026.04.12', text: '이런 글 더 많이 올려주세요!' }] },

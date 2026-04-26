@@ -41,6 +41,12 @@ public class BoSyTemplateController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<SyTemplateDto>> getById(@PathVariable String id) {
+        SyTemplateDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SyTemplate>> create(@RequestBody SyTemplate body) {
         SyTemplate result = service.create(body);

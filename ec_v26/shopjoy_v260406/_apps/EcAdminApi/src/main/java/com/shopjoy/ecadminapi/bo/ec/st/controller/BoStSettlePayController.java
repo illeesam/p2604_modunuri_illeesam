@@ -33,6 +33,12 @@ public class BoStSettlePayController {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<StSettlePayDto>> getById(@PathVariable String id) {
+        StSettlePayDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<StSettlePay>> create(@RequestBody StSettlePay body) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));

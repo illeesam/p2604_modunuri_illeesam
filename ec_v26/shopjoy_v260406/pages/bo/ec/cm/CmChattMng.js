@@ -50,7 +50,7 @@ const isAppReady = computed(() => {
           headers: { 'X-UI-Nm': '채팅관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
-        chatts.splice(0, chatts.length, ...(data?.list || []));
+        chatts.splice(0, chatts.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

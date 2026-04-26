@@ -18,8 +18,8 @@ window.OdOrderMng = {
           window.boApi.get('/bo/ec/od/order/page', { params, headers: { 'X-UI-Nm': '주문관리', 'X-Cmd-Nm': '조회' } }),
           window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '주문관리', 'X-Cmd-Nm': '조회' } })
         ]);
-        orders.splice(0, orders.length, ...(ordersRes.data?.data?.list || []));
-        members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
+        orders.splice(0, orders.length, ...(ordersRes.data?.data?.pageList || ordersRes.data?.data?.list || []));
+        members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
         pager.pageTotalCount = ordersRes.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = ordersRes.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

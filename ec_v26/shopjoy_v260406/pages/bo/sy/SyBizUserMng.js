@@ -23,9 +23,9 @@ window.SyBizUserMng = {
           window.boApi.get('/bo/sy/menu/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '사업자사용자관리', 'X-Cmd-Nm': '조회' } }),
           window.boApi.get('/bo/sy/role-menu/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '사업자사용자관리', 'X-Cmd-Nm': '조회' } }),
         ]);
-        roles.splice(0, roles.length, ...(roleRes.data?.data?.list || []));
-        menus.splice(0, menus.length, ...(menuRes.data?.data?.list || []));
-        roleMenus.splice(0, roleMenus.length, ...(roleMenuRes.data?.data?.list || []));
+        roles.splice(0, roles.length, ...(roleRes.data?.data?.pageList || roleRes.data?.data?.list || []));
+        menus.splice(0, menus.length, ...(menuRes.data?.data?.pageList || menuRes.data?.data?.list || []));
+        roleMenus.splice(0, roleMenus.length, ...(roleMenuRes.data?.data?.pageList || roleMenuRes.data?.data?.list || []));
       } catch (err) {
         console.error('[catch-info]', err);
         console.warn('[SyBizUserMng] role/menu load failed', err);
@@ -72,7 +72,7 @@ window.SyBizUserMng = {
     const handleLoadDetail = async () => {
       try {
         const res = await window.boApi.get('/bo/sy/vendor/page', { params: { pageNo:1, pageSize:10000 }, headers: { 'X-UI-Nm': '사업자사용자관리', 'X-Cmd-Nm': '조회' } });
-        const list = res.data?.data?.list || [];
+        const list = res.data?.data?.pageList || res.data?.data?.list || [];
         vendors.splice(0, vendors.length, ...list);
       } catch(e) { console.warn('[SyBizUserMng] vendor load failed', e); }
     };

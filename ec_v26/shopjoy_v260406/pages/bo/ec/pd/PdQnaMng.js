@@ -45,7 +45,7 @@ window.PdQnaMng = {
           headers: { 'X-UI-Nm': '상품문의관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
-        qnas.splice(0, qnas.length, ...(data?.list || []));
+        qnas.splice(0, qnas.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

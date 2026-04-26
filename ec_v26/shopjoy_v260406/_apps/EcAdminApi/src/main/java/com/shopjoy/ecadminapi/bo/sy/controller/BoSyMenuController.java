@@ -41,6 +41,12 @@ public class BoSyMenuController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<SyMenuDto>> getById(@PathVariable String id) {
+        SyMenuDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SyMenu>> create(@RequestBody SyMenu body) {
         SyMenu result = service.create(body);

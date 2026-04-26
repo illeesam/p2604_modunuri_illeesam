@@ -41,6 +41,12 @@ public class BoPmEventController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<PmEventDto>> getById(@PathVariable String id) {
+        PmEventDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<PmEvent>> create(@RequestBody PmEvent body) {
         PmEvent result = service.create(body);

@@ -33,6 +33,12 @@ public class BoPdDlivTmpltController {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<PdDlivTmpltDto>> getById(@PathVariable String id) {
+        PdDlivTmpltDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<PdDlivTmplt>> create(@RequestBody PdDlivTmplt body) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));

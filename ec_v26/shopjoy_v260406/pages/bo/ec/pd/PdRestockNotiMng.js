@@ -45,7 +45,7 @@ window.PdRestockNotiMng = {
           headers: { 'X-UI-Nm': '재입고알림관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
-        restockNotis.splice(0, restockNotis.length, ...(data?.list || []));
+        restockNotis.splice(0, restockNotis.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

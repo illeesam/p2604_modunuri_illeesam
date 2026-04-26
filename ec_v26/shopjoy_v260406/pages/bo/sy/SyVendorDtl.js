@@ -18,7 +18,7 @@ window.SyVendorDtl = {
           params: { pageNo: 1, pageSize: 10000 },
           headers: { 'X-UI-Nm': '업체상세', 'X-Cmd-Nm': '조회' }
         });
-        vendors = res.data?.data?.list || [];
+        vendors = res.data?.data?.pageList || res.data?.data?.list || [];
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);

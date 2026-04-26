@@ -23,8 +23,11 @@ window.EventPage = {
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await window.foApi.get('/fo/event/list', { headers: { 'X-UI-Nm': '이벤트', 'X-Cmd-Nm': '조회' } });
-        events.splice(0, events.length, ...res.data);
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize };
+        const res = await window.foApi.get('/fo/ec/pm/event/page', { params, headers: { 'X-UI-Nm': '이벤트', 'X-Cmd-Nm': '조회' } });
+        pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
+        pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;
+        events.splice(0, events.length, ...(res.data?.data?.pageList || []));
       } catch (e) {
         events.splice(0, events.length, ...[
           { id: 1, title: '봄 베스트 상품 달력이벤트 70% 혜택', status: 'ongoing', startDate: '2026.04.01', endDate: '2026.04.30', tag: '할인', tagColor: '#e8587a', bannerBg: '#111', bannerText: '#fff', bannerLine1: '26° Spring', bannerLine2: 'SALE', bannerStyle: 'sale' },

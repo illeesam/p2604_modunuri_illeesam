@@ -48,6 +48,12 @@ public class BoDpWidgetLibController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<DpWidgetLibDto>> getById(@PathVariable String id) {
+        DpWidgetLibDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<DpWidgetLib>> create(@RequestBody DpWidgetLib body) {
         DpWidgetLib result = service.create(body);

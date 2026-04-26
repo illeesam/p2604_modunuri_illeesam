@@ -20,7 +20,7 @@ window.SyVendorMng = {
           headers: { 'X-UI-Nm': '업체관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
-        vendors.splice(0, vendors.length, ...(data?.list || []));
+        vendors.splice(0, vendors.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || vendors.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

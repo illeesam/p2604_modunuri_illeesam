@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.controller;
 
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
 import com.shopjoy.ecadminapi.fo.ec.service.FoCmContactService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -22,6 +23,11 @@ import java.util.Map;
 public class FoCmContactController {
 
     private final FoCmContactService service;
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<CmBlogDto>> getById(@PathVariable String id) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
+    }
 
     @PostMapping
     public ResponseEntity<ApiResponse<CmBlog>> submit(@RequestBody Map<String, Object> body) {

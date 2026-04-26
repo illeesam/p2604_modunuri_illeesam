@@ -41,6 +41,12 @@ public class BoSyRoleController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<SyRoleDto>> getById(@PathVariable String id) {
+        SyRoleDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SyRole>> create(@RequestBody SyRole body) {
         SyRole result = service.create(body);

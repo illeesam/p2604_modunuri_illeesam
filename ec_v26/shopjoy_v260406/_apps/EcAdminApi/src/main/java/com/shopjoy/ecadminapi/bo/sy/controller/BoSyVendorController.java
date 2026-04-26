@@ -41,6 +41,12 @@ public class BoSyVendorController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<SyVendorDto>> getById(@PathVariable String id) {
+        SyVendorDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SyVendor>> create(@RequestBody SyVendor body) {
         SyVendor result = service.create(body);

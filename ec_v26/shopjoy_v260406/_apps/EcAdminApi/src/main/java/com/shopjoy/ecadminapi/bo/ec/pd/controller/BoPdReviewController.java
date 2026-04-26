@@ -48,6 +48,12 @@ public class BoPdReviewController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<PdReviewDto>> getById(@PathVariable String id) {
+        PdReviewDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<PdReview>> create(@RequestBody PdReview body) {
         PdReview result = service.create(body);

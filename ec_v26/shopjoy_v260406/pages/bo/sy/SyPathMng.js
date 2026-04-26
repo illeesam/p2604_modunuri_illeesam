@@ -55,8 +55,8 @@ window.SyPathMng = {
           window.boApi.get('/bo/sy/path/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '경로관리', 'X-Cmd-Nm': '조회' } }),
           window.boApi.get('/bo/sy/code/page', { params: { pageNo: 1, pageSize: 10000, codeGrp: 'BIZ_CD' }, headers: { 'X-UI-Nm': '경로관리', 'X-Cmd-Nm': '조회' } }),
         ]);
-        const pathList = pathRes.data?.data?.list || [];
-        const codeList = codeRes.data?.data?.list || [];
+        const pathList = pathRes.data?.data?.pageList || pathRes.data?.data?.list || [];
+        const codeList = codeRes.data?.data?.pageList || codeRes.data?.data?.list || [];
         _rawPaths.splice(0, _rawPaths.length, ...pathList);
         BIZ_OPTIONS.splice(0, BIZ_OPTIONS.length, ...codeList);
         reload();

@@ -20,7 +20,7 @@ window.SyAlarmMng = {
           headers: { 'X-UI-Nm': '알람관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
-        alarms.splice(0, alarms.length, ...(data?.list || []));
+        alarms.splice(0, alarms.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || alarms.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

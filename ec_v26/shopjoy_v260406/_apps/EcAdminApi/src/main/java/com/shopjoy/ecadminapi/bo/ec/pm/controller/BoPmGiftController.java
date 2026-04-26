@@ -41,6 +41,12 @@ public class BoPmGiftController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<PmGiftDto>> getById(@PathVariable String id) {
+        PmGiftDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<PmGift>> create(@RequestBody PmGift body) {
         PmGift result = service.create(body);

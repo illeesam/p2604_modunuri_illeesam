@@ -88,7 +88,7 @@ window.PdCategoryProdMng = {
           headers: { 'X-UI-Nm': '카테고리상품관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
-        categoryProds.splice(0, categoryProds.length, ...(data?.list || []));
+        categoryProds.splice(0, categoryProds.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

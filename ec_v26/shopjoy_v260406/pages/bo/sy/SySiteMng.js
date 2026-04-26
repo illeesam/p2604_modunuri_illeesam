@@ -20,7 +20,7 @@ window.SySiteMng = {
           headers: { 'X-UI-Nm': '사이트관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
-        sites.splice(0, sites.length, ...(data?.list || []));
+        sites.splice(0, sites.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || sites.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

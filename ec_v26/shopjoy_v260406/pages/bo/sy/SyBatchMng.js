@@ -17,7 +17,7 @@ window.SyBatchMng = {
           params: { pageNo: 1, pageSize: 10000 },
           headers: { 'X-UI-Nm': '배치관리', 'X-Cmd-Nm': '조회' }
         });
-        const list = res.data?.data?.list || [];
+        const list = res.data?.data?.pageList || res.data?.data?.list || [];
         batches.splice(0, batches.length, ...list);
         gridRows.splice(0);
         list.forEach(b => gridRows.push(makeRow(b)));

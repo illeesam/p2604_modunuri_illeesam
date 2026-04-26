@@ -41,6 +41,12 @@ public class BoPmSaveController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<PmSaveDto>> getById(@PathVariable String id) {
+        PmSaveDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<PmSave>> create(@RequestBody PmSave body) {
         PmSave result = service.create(body);

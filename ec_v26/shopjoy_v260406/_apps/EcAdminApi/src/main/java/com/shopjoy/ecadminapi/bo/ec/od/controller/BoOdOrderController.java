@@ -49,6 +49,12 @@ public class BoOdOrderController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<OdOrderDto>> getById(@PathVariable String id) {
+        OdOrderDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<OdOrder>> create(@RequestBody OdOrder body) {
         OdOrder result = service.create(body);

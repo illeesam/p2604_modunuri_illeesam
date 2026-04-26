@@ -21,7 +21,7 @@ window.SyContactDtl = {
           params: { pageNo: 1, pageSize: 10000 },
           headers: { 'X-UI-Nm': '고객문의상세', 'X-Cmd-Nm': '조회' }
         });
-        contacts = res.data?.data?.list || [];
+        contacts = res.data?.data?.pageList || res.data?.data?.list || [];
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);

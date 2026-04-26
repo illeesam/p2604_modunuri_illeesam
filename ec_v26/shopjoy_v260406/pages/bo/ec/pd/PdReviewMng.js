@@ -45,7 +45,7 @@ window.PdReviewMng = {
           headers: { 'X-UI-Nm': '리뷰관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
-        reviews.splice(0, reviews.length, ...(data?.list || []));
+        reviews.splice(0, reviews.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

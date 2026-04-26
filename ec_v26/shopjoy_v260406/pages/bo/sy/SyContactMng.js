@@ -20,7 +20,7 @@ window.SyContactMng = {
           headers: { 'X-UI-Nm': '고객문의관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
-        contacts.splice(0, contacts.length, ...(data?.list || []));
+        contacts.splice(0, contacts.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || contacts.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

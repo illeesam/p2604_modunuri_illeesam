@@ -21,8 +21,8 @@ window.Prod02View = {
       const productId = svProduct.value?.productId;
       if (!productId) return;
       try {
-        const res = await window.foApi.get('/fo/product/view', { params: { productId }, headers: { 'X-UI-Nm': '상품상세', 'X-Cmd-Nm': '상세조회' } });
-        svProduct.value = res.data;
+        const res = await window.foApi.get(`/fo/ec/pd/prod/${productId}`, { headers: { 'X-UI-Nm': '상품상세', 'X-Cmd-Nm': '상세조회' } });
+        svProduct.value = res.data?.data || res.data;
       } catch (e) {
         svProduct.value = props.product;
       }

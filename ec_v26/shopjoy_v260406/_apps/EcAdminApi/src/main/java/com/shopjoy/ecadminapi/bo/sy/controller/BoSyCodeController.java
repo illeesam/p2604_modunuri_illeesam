@@ -41,6 +41,12 @@ public class BoSyCodeController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<SyCodeDto>> getById(@PathVariable String id) {
+        SyCodeDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SyCode>> create(@RequestBody SyCode body) {
         SyCode result = service.create(body);

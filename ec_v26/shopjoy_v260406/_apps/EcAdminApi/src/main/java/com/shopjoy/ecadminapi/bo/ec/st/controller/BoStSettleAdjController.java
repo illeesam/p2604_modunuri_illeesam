@@ -33,6 +33,12 @@ public class BoStSettleAdjController {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<StSettleAdjDto>> getById(@PathVariable String id) {
+        StSettleAdjDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<StSettleAdj>> create(@RequestBody StSettleAdj body) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));

@@ -48,6 +48,12 @@ public class BoMbMemGradeController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<MbMemberGradeDto>> getById(@PathVariable String id) {
+        MbMemberGradeDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<MbMemberGrade>> create(@RequestBody MbMemberGrade body) {
         MbMemberGrade result = service.create(body);

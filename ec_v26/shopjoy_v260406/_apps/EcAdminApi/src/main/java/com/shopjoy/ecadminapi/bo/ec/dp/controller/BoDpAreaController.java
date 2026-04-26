@@ -48,6 +48,12 @@ public class BoDpAreaController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<DpAreaDto>> getById(@PathVariable String id) {
+        DpAreaDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<DpArea>> create(@RequestBody DpArea body) {
         DpArea result = service.create(body);

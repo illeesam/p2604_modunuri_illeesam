@@ -8,14 +8,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Aspect
 @Component
 public class MvcLogAspect {
-    private static final Logger logger = LoggerFactory.getLogger(MvcLogAspect.class);
+    private static final Logger logger = LoggerFactory.getLogger("MVC_LOG");
     private static final int OUTPUT_MAX_LEN = 300;
     private static final int OUTPUT_TRUNCATE_THRESHOLD = 400;
 
@@ -159,40 +159,39 @@ public class MvcLogAspect {
     }
 
     private String extractRequestInfo(ProceedingJoinPoint pjp) {
-        Object[] args = pjp.getArgs();
-        if (args == null) return "";
-
-        for (Object obj : args) {
-            if (obj instanceof HttpServletRequest || obj instanceof MultipartHttpServletRequest) {
-                HttpServletRequest request = (HttpServletRequest) obj;
-                StringBuilder sb = new StringBuilder();
-                sb.append(request.getMethod()).append(" ")
-                  .append(request.getRequestURL());
-
-                String qs = request.getQueryString();
-                if (qs != null) {
-                    sb.append("?").append(qs);
-                }
-
-                String uiNm  = request.getHeader("X-UI-Nm");
-                String cmdNm = request.getHeader("X-Cmd-Nm");
-                if (uiNm != null || cmdNm != null) {
-                    sb.append(" :: ");
-                    if (uiNm  != null) sb.append(uiNm);
-                    if (uiNm  != null && cmdNm != null) sb.append(" > ");
-                    if (cmdNm != null) sb.append(cmdNm);
-                }
-
-                String token = request.getHeader("Authorization");
-                if (token != null) {
-                    sb.append(" [").append(token).append("]");
-                }
-
-                return sb.toString();
-            }
+        // args 중 HttpServletRequest 우선, 없으면 RequestContextHolder에서 조회
+        HttpServletRequest req = null;
+        for (Object obj : pjp.getArgs()) {
+            if (obj instanceof HttpServletRequest) { req = (HttpServletRequest) obj; break; }
         }
+        if (req == null) {
+            ServletRequestAttributes attrs =
+                (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attrs != null) req = attrs.getRequest();
+        }
+        if (req == null) return "";
 
-        return "";
+        String uiNm  = decode(nvl(req.getHeader("X-UI-Nm")));
+        String cmdNm = decode(nvl(req.getHeader("X-Cmd-Nm")));
+        String qs    = req.getQueryString();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(req.getMethod()).append(" ").append(req.getRequestURI());
+        if (qs != null && !qs.isEmpty()) sb.append("?").append(qs);
+        if (!uiNm.isEmpty() || !cmdNm.isEmpty()) {
+            sb.append("  [").append(uiNm);
+            if (!uiNm.isEmpty() && !cmdNm.isEmpty()) sb.append(" > ");
+            sb.append(cmdNm).append("]");
+        }
+        return sb.toString();
+    }
+
+    private static String nvl(String s) { return s != null ? s : ""; }
+
+    private static String decode(String s) {
+        if (s == null || s.isEmpty()) return s;
+        try { return java.net.URLDecoder.decode(s, "UTF-8"); }
+        catch (Exception e) { return s; }
     }
 
     private void logMethodIn(ComponentType type, String className, String methodName,

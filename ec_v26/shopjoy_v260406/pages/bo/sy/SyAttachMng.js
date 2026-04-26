@@ -17,8 +17,8 @@ window.SyAttachMng = {
           window.boApi.get('/bo/sy/attach/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '첨부파일관리', 'X-Cmd-Nm': '조회' } }),
           window.boApi.get('/bo/sy/attach-grp/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '첨부파일관리', 'X-Cmd-Nm': '조회' } }),
         ]);
-        attaches.splice(0, attaches.length, ...(attachRes.data?.data?.list || []));
-        attachGrps.splice(0, attachGrps.length, ...(grpRes.data?.data?.list || []));
+        attaches.splice(0, attaches.length, ...(attachRes.data?.data?.pageList || attachRes.data?.data?.list || []));
+        attachGrps.splice(0, attachGrps.length, ...(grpRes.data?.data?.pageList || grpRes.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);

@@ -17,7 +17,7 @@ window.PdProdMng = {
           headers: { 'X-UI-Nm': '상품관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
-        products.splice(0, products.length, ...(data?.list || []));
+        products.splice(0, products.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

@@ -17,9 +17,9 @@ window.DpDispUiSimul = {
           window.boApi.get('/bo/sy/site/page', { params: { pageNo: 1, pageSize: 1000 }, headers: { 'X-UI-Nm': '전시UI관리', 'X-Cmd-Nm': '조회' } }),
           window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '전시UI관리', 'X-Cmd-Nm': '조회' } }),
         ]);
-        displays.splice(0, displays.length, ...(dpRes.data?.data?.list || []));
-        sites.splice(0, sites.length, ...(sitesRes.data?.data?.list || []));
-        members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
+        displays.splice(0, displays.length, ...(dpRes.data?.data?.pageList || dpRes.data?.data?.list || []));
+        sites.splice(0, sites.length, ...(sitesRes.data?.data?.pageList || sitesRes.data?.data?.list || []));
+        members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
       } catch (_) {}
     };
 

@@ -20,7 +20,7 @@ window.SyTemplateMng = {
           headers: { 'X-UI-Nm': '템플릿관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
-        templates.splice(0, templates.length, ...(data?.list || []));
+        templates.splice(0, templates.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || templates.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

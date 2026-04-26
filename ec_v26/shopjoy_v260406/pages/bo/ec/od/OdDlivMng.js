@@ -18,8 +18,8 @@ window.OdDlivMng = {
           window.boApi.get('/bo/ec/od/dliv/page', { params, headers: { 'X-UI-Nm': '배송관리', 'X-Cmd-Nm': '조회' } }),
           window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '배송관리', 'X-Cmd-Nm': '조회' } })
         ]);
-        deliveries.splice(0, deliveries.length, ...(delivRes.data?.data?.list || []));
-        members.splice(0, members.length, ...(membersRes.data?.data?.list || []));
+        deliveries.splice(0, deliveries.length, ...(delivRes.data?.data?.pageList || delivRes.data?.data?.list || []));
+        members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
         pager.pageTotalCount = delivRes.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = delivRes.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

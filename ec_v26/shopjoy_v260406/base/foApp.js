@@ -319,8 +319,8 @@
     /* ── 상품 데이터 로드 ── */
     const handleFetchProducts = async () => {
       try {
-        const res = await window.foApi.get('/fo/product/list');
-        const list = Array.isArray(res.data) ? res.data : (res.data?.list || res.data?.products || []);
+        const res = await window.foApi.get('/fo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 200 } });
+        const list = res.data?.data?.pageList || [];
         list.forEach(_assignImg);
         products.splice(0, products.length, ...list);
       } catch (e) {

@@ -19,8 +19,8 @@ window.EventView = {
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
-        const res = await window.foApi.get('/fo/event/view', { params: { eventId: props.editId }, headers: { 'X-UI-Nm': '이벤트상세', 'X-Cmd-Nm': '상세조회' } });
-        events.splice(0, events.length, ...res.data);
+        const res = await window.foApi.get(`/fo/ec/pm/event/${props.editId}`, { headers: { 'X-UI-Nm': '이벤트상세', 'X-Cmd-Nm': '상세조회' } });
+        events.splice(0, events.length, ...(res.data?.data ? [res.data.data] : []));
       } catch (e) {
         events.splice(0, events.length, ...[
           { id: 1, title: '봄 베스트 상품 달력이벤트 70% 혜택', tag: '할인', tagColor: '#e8587a', status: 'ongoing', startDate: '2026.04.01', endDate: '2026.04.30', heroBg: 'linear-gradient(135deg,#c9d6ff,#e2e2e2)', heroTextColor: '#1e293b', heroEyebrow: 'ONLY FOR THE PLUS+', heroSub: '봄 시즌 베스트 상품을 최대 70% 할인된 가격으로 만나보세요.', tabs: ['봄 베스트', '신상품', '특가 세일'], productSets: [[1,2,3,4,5,6,7,8],[9,10,11,12,1,2,3,4],[5,6,7,8,9,10,11,12]], benefits: [{ label: '4월 1일부터 | 30만원 이상', value: '15,000원 쿠폰', btn: '다운받기' },{ label: '4월 1일부터 | 50만원 이상', value: '30,000원 쿠폰', btn: '다운받기' },{ label: '4월 15일부터 | 신규가입', value: '5,000원 쿠폰', btn: '다운받기' }], notice: ['본 이벤트는 ShopJoy 온라인 한정 이벤트입니다.','쿠폰은 기간 내 1회 다운로드 가능하며, 사용 기한은 다운로드 후 7일입니다.','일부 브랜드 및 상품은 할인 적용이 제외될 수 있습니다.','본 이벤트는 사전 공지 없이 조기 종료될 수 있습니다.','쿠폰 다운로드 후 취소 및 환불은 불가합니다.'] },

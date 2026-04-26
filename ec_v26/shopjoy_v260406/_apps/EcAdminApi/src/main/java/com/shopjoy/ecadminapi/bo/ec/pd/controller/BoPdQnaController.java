@@ -48,6 +48,12 @@ public class BoPdQnaController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<PdProdQnaDto>> getById(@PathVariable String id) {
+        PdProdQnaDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<PdProdQna>> create(@RequestBody PdProdQna body) {
         PdProdQna result = service.create(body);

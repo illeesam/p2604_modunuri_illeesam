@@ -41,6 +41,12 @@ public class BoSyBbmController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<SyBbmDto>> getById(@PathVariable String id) {
+        SyBbmDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SyBbm>> create(@RequestBody SyBbm body) {
         SyBbm result = service.create(body);

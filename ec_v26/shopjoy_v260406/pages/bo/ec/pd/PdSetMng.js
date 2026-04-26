@@ -47,9 +47,9 @@ window.PdSetMng = {
           window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '세트상품관리', 'X-Cmd-Nm': '조회' } }),
           window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '세트상품관리', 'X-Cmd-Nm': '조회' } }),
         ]);
-        sets.splice(0, sets.length, ...(setsRes.data?.data?.list || []));
-        products.splice(0, products.length, ...(prodsRes.data?.data?.list || []));
-        categories.splice(0, categories.length, ...(catsRes.data?.data?.list || []));
+        sets.splice(0, sets.length, ...(setsRes.data?.data?.pageList || setsRes.data?.data?.list || []));
+        products.splice(0, products.length, ...(prodsRes.data?.data?.pageList || prodsRes.data?.data?.list || []));
+        categories.splice(0, categories.length, ...(catsRes.data?.data?.pageList || catsRes.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);

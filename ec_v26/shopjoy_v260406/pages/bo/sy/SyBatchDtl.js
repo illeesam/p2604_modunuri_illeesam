@@ -18,7 +18,7 @@ window.SyBatchDtl = {
           params: { pageNo: 1, pageSize: 10000 },
           headers: { 'X-UI-Nm': '배치상세', 'X-Cmd-Nm': '조회' }
         });
-        batches = res.data?.data?.list || [];
+        batches = res.data?.data?.pageList || res.data?.data?.list || [];
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);

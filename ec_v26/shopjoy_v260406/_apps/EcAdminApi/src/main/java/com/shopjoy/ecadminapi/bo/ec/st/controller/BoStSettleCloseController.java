@@ -33,6 +33,12 @@ public class BoStSettleCloseController {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<StSettleCloseDto>> getById(@PathVariable String id) {
+        StSettleCloseDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<StSettleClose>> create(@RequestBody StSettleClose body) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));

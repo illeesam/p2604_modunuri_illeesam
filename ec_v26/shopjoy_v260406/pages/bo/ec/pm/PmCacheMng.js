@@ -68,7 +68,7 @@ window.PmCacheMng = {
           headers: { 'X-UI-Nm': '캐시관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
-        caches.splice(0, caches.length, ...(data?.list || []));
+        caches.splice(0, caches.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);

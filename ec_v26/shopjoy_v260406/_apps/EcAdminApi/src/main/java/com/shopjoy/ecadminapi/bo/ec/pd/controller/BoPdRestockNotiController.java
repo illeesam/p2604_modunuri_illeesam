@@ -33,6 +33,12 @@ public class BoPdRestockNotiController {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<PdRestockNotiDto>> getById(@PathVariable String id) {
+        PdRestockNotiDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<PdRestockNoti>> create(@RequestBody PdRestockNoti body) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(body)));

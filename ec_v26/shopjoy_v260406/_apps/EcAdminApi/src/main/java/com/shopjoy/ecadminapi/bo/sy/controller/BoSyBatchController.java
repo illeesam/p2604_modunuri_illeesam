@@ -41,6 +41,12 @@ public class BoSyBatchController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<SyBatchDto>> getById(@PathVariable String id) {
+        SyBatchDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SyBatch>> create(@RequestBody SyBatch body) {
         SyBatch result = service.create(body);

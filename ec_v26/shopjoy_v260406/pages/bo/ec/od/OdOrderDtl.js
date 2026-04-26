@@ -39,9 +39,9 @@ window.OdOrderDtl = {
         if (!form.payDate) form.payDate = o.orderDate || '';
         if (!form.apprNo)   form.apprNo  = 'APR-' + String(o.orderId||'').slice(-6) + '01';
         if (!form.payIssuer) form.payIssuer = ({'토스페이먼츠':'토스','카카오페이':'카카오','네이버페이':'네이버','무통장입금':'은행','가상계좌':'은행'}[form.payMethodCd] || '-');
-        vendors.splice(0, vendors.length, ...(vendorsRes.data?.data?.list || []));
-        deliveries.splice(0, deliveries.length, ...(deliveriesRes.data?.data?.list || []));
-        claims.splice(0, claims.length, ...(claimsRes.data?.data?.list || []));
+        vendors.splice(0, vendors.length, ...(vendorsRes.data?.data?.pageList || vendorsRes.data?.data?.list || []));
+        deliveries.splice(0, deliveries.length, ...(deliveriesRes.data?.data?.pageList || deliveriesRes.data?.data?.list || []));
+        claims.splice(0, claims.length, ...(claimsRes.data?.data?.pageList || claimsRes.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);

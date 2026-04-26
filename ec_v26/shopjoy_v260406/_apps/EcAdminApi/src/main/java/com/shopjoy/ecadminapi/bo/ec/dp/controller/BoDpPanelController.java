@@ -48,6 +48,12 @@ public class BoDpPanelController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<DpPanelDto>> getById(@PathVariable String id) {
+        DpPanelDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<DpPanel>> create(@RequestBody DpPanel body) {
         DpPanel result = service.create(body);

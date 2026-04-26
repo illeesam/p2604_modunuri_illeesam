@@ -71,7 +71,7 @@ window.OdDlivDtl = {
         if (form.orderId) {
           try {
             const claimRes = await window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 100, orderId: form.orderId }, headers: { 'X-UI-Nm': '배송상세', 'X-Cmd-Nm': '조회' } });
-            relatedClaims.splice(0, relatedClaims.length, ...(claimRes.data?.data?.list || []));
+            relatedClaims.splice(0, relatedClaims.length, ...(claimRes.data?.data?.pageList || claimRes.data?.data?.list || []));
           } catch (_) { /* ignore */ }
         }
         uiState.error = null;

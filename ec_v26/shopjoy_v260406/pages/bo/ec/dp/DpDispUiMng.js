@@ -45,7 +45,7 @@ window.DpDispUiMng = {
           params: { pageNo: 1, pageSize: 10000 },
           headers: { 'X-UI-Nm': '전시UI관리', 'X-Cmd-Nm': '조회' }
         });
-        displays.splice(0, displays.length, ...(res.data?.data?.list || []));
+        displays.splice(0, displays.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);

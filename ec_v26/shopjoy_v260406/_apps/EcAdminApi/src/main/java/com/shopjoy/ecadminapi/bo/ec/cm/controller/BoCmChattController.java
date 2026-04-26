@@ -49,6 +49,12 @@ public class BoCmChattController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<CmChattRoomDto>> getById(@PathVariable String id) {
+        CmChattRoomDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<CmChattRoom>> create(@RequestBody CmChattRoom body) {
         CmChattRoom result = service.create(body);

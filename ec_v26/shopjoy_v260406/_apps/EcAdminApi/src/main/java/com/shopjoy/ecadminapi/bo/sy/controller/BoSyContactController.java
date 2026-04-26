@@ -41,6 +41,12 @@ public class BoSyContactController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<SyContactDto>> getById(@PathVariable String id) {
+        SyContactDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SyContact>> create(@RequestBody SyContact body) {
         SyContact result = service.create(body);

@@ -39,6 +39,12 @@ public class BoSySiteController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<SySiteDto>> getById(@PathVariable String id) {
+        SySiteDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SySite>> create(@RequestBody SySite body) {
         SySite result = service.create(body);

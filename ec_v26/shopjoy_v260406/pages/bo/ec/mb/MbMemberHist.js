@@ -18,7 +18,7 @@ window.MbMemberHist = {
           params: { pageNo: 1, pageSize: 10000 },
           headers: { 'X-UI-Nm': '회원상세', 'X-Cmd-Nm': '이력조회' }
         });
-        members.splice(0, members.length, ...(res.data?.data?.list || []));
+        members.splice(0, members.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);

@@ -48,6 +48,12 @@ public class BoCmNoticeController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<SyNoticeDto>> getById(@PathVariable String id) {
+        SyNoticeDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SyNotice>> create(@RequestBody SyNotice body) {
         SyNotice result = service.create(body);

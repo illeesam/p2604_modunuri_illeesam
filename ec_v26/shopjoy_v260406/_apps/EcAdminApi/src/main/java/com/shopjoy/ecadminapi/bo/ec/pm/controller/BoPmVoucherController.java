@@ -41,6 +41,12 @@ public class BoPmVoucherController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<PmVoucherDto>> getById(@PathVariable String id) {
+        PmVoucherDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<PmVoucher>> create(@RequestBody PmVoucher body) {
         PmVoucher result = service.create(body);

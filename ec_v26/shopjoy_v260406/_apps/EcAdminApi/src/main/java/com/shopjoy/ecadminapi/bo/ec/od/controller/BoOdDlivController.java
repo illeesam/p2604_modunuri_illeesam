@@ -49,6 +49,12 @@ public class BoOdDlivController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<OdDlivDto>> getById(@PathVariable String id) {
+        OdDlivDto result = service.getById(id);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<OdDliv>> create(@RequestBody OdDliv body) {
         OdDliv result = service.create(body);

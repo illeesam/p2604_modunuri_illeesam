@@ -18,7 +18,7 @@ window.OdDlivHist = {
           params: { pageNo: 1, pageSize: 10000 },
           headers: { 'X-UI-Nm': '배송이력', 'X-Cmd-Nm': '이력조회' }
         });
-        deliveries.splice(0, deliveries.length, ...(res.data?.data?.list || []));
+        deliveries.splice(0, deliveries.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);

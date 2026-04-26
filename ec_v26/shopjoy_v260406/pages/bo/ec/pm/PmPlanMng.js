@@ -45,7 +45,7 @@ window.PmPlanMng = {
           headers: { 'X-UI-Nm': '기획전관리', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
-        plans.splice(0, plans.length, ...(data?.list || []));
+        plans.splice(0, plans.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
