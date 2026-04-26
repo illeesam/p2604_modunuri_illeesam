@@ -542,6 +542,7 @@ window.Prod01View = {
 
     return {
       uiState,
+      product: svProduct,
       photoNavPrev, photoNavNext, cfPhotoNavIdx,
       cfPhotoGridPageCount, cfPhotoGridItems, photoGridPrev, photoGridNext,
       openPhotoFromGrid, openPhotoFromList, closePhotoDetail,

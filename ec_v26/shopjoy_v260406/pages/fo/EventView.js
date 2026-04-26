@@ -51,7 +51,7 @@ window.EventView = {
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     const cfEventId  = computed(() => Number(props.editId) || 1);
-    const cfEvent    = computed(() => events.find(e => e.id === cfEventId.value) || events[0]);
+    const cfEvent    = computed(() => events.find(e => e.id === cfEventId.value) || events[0] || null);
     
     /* 탭 변경 시 0으로 리셋 */
     const setTab = (i) => { uiState.activeTab = i; };
@@ -83,7 +83,7 @@ window.EventView = {
   },
 
   template: /* html */ `
-<div style="background:var(--bg-base);">
+<div v-if="cfEvent" style="background:var(--bg-base);">
 
   <!-- ① 히어로 배너 -->
   <div :style="{
