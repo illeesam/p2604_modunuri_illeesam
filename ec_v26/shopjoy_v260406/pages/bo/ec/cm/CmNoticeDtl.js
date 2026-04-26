@@ -7,7 +7,7 @@ window.CmNoticeDtl = {
     const { ref, reactive, computed, onMounted, onBeforeUnmount, onUnmounted, watch } = Vue;
     const notices = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({});
+    const codes = reactive({ noticeTypes: [], noticeStatuses: [] });
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -17,6 +17,10 @@ window.CmNoticeDtl = {
 
     const fnLoadCodes = async () => {
       try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.noticeTypes    = await codeStore.snGetGrpCodes('NOTICE_TYPE')   || [];
+        codes.noticeStatuses = await codeStore.snGetGrpCodes('NOTICE_STATUS') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -48,8 +52,8 @@ window.CmNoticeDtl = {
     };
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const form = reactive({
-      noticeId: null, title: '', noticeType: '일반', isFixed: false,
-      startDate: '', endDate: '', statusCd: '게시', contentHtml: '',
+      noticeId: null, title: '', noticeType: '', isFixed: false,
+      startDate: '', endDate: '', statusCd: '', contentHtml: '',
       attachGrpId: null,
     });
     const errors = reactive({});
@@ -60,6 +64,7 @@ window.CmNoticeDtl = {
     let quill = null;
 
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleFetchData();
       if (!cfIsNew.value) {
         const n = window.safeArrayUtils.safeFind(notices, x => x.noticeId === props.editId);
@@ -126,13 +131,15 @@ window.CmNoticeDtl = {
       <div class="form-group">
         <label class="form-label">유형</label>
         <select class="form-control" v-model="form.noticeType" :disabled="viewMode">
-          <option>일반</option><option>긴급</option><option>이벤트</option><option>시스템</option>
+          <option value="">선택</option>
+          <option v-for="c in codes.noticeTypes" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
         <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
-          <option>게시</option><option>예약</option><option>종료</option><option>임시</option>
+          <option value="">선택</option>
+          <option v-for="c in codes.noticeStatuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
     </div>

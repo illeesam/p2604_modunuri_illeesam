@@ -25,8 +25,11 @@ window.CmNoticeMng = {
         uiState.loading = false;
       }
     };
-    onMounted(() => { handleFetchData();
-    Object.assign(searchParamOrg, searchParam); });
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      handleFetchData();
+      Object.assign(searchParamOrg, searchParam);
+    });
     const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
