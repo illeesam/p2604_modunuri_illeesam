@@ -30,7 +30,7 @@
               p.*
             , cat.category_nm AS cate_nm,    cat.parent_category_id
             , b.brand_nm
-            , v.vendor_nm,    v.vendor_tel
+            , v.vendor_nm,    v.vendor_phone AS vendor_tel
             , u.user_nm                AS md_user_nm
             , cd_ps.code_label         AS prod_status_cd_nm
             , cd_pt.code_label         AS prod_type_cd_nm

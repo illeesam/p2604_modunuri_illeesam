@@ -29,7 +29,7 @@
         SELECT  /* base.ec.od :: OdDliv :: selectById */
               d.*
             , o.member_nm, o.order_date, o.pay_method_cd
-            , v.vendor_nm, v.vendor_tel
+            , v.vendor_nm, v.vendor_phone AS vendor_tel
             , cd_ds.code_label AS dliv_status_cd_nm
             , cd_dt.code_label AS dliv_type_cd_nm
             , cd_dd.code_label AS dliv_div_cd_nm

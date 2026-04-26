@@ -230,7 +230,7 @@ window.OdClaimHist = {
               <span class="ref-link" style="margin:0 6px;" @click="showRefModal('member', relatedOrder.userId)">{{ relatedOrder.userNm }}</span>
               <span style="color:#888;">주문일</span> <b style="margin-left:4px;">{{ relatedOrder.orderDate }}</b><br/>
               <span style="color:#888;">상품</span> <b style="margin-left:4px;">{{ relatedOrder.prodNm }}</b><br/>
-              <span style="color:#888;">금액</span> <b style="margin-left:4px;color:#e8587a;">{{ relatedOrder.totalPrice.toLocaleString() }}원</b>
+              <span style="color:#888;">금액</span> <b style="margin-left:4px;color:#e8587a;">{{ (relatedOrder.totalPrice||0).toLocaleString() }}원</b>
               &nbsp;·&nbsp;<span style="color:#888;">결제</span> <b style="margin-left:4px;">{{ relatedOrder.payMethodCd }}</b><br/>
               <span style="color:#888;">상태</span> <span class="badge badge-blue" style="margin-left:4px;">{{ relatedOrder.statusCd }}</span>
             </div>

@@ -15,7 +15,7 @@
             <if test="p.couponId != null and p.couponId != ''">AND ci.coupon_id = #{p.couponId}</if>
             <if test="p.kw != null and p.kw != ''">
                 AND (m.member_nm    ILIKE '%' || #{p.kw} || '%'
-                  OR m.member_email ILIKE '%' || #{p.kw} || '%'
+                  OR m.login_id                 ILIKE '%' || #{p.kw} || '%'
                   OR c.coupon_nm    ILIKE '%' || #{p.kw} || '%'
                   OR c.coupon_cd    ILIKE '%' || #{p.kw} || '%')
             </if>
@@ -30,7 +30,7 @@
               ci.*
             , c.coupon_nm,    c.coupon_cd,    c.coupon_type_cd
             , c.discount_rate, c.discount_amt, c.valid_from, c.valid_to
-            , m.member_nm,    m.member_email,  m.member_phone
+            , m.member_nm,    m.login_id AS member_email,  m.member_phone
             , cd_ct.code_label AS coupon_type_cd_nm
         FROM pm_coupon_issue ci
             LEFT JOIN pm_coupon  c ON c.coupon_id  = ci.coupon_id
@@ -45,7 +45,7 @@
               ci.*
             , c.coupon_nm,    c.coupon_cd,    c.coupon_type_cd
             , c.discount_rate, c.discount_amt, c.valid_from, c.valid_to
-            , m.member_nm,    m.member_email
+            , m.member_nm,    m.login_id AS member_email
             , cd_ct.code_label AS coupon_type_cd_nm
         FROM pm_coupon_issue ci
             LEFT JOIN pm_coupon  c ON c.coupon_id  = ci.coupon_id
@@ -68,7 +68,7 @@
               ci.*
             , c.coupon_nm,    c.coupon_cd,    c.coupon_type_cd
             , c.discount_rate, c.discount_amt, c.valid_from, c.valid_to
-            , m.member_nm,    m.member_email
+            , m.member_nm,    m.login_id AS member_email
             , cd_ct.code_label AS coupon_type_cd_nm
         FROM pm_coupon_issue ci
             LEFT JOIN pm_coupon  c ON c.coupon_id  = ci.coupon_id

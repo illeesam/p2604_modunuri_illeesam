@@ -117,7 +117,7 @@
     <select id="selectIssuesByCouponId" resultType="com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponIssueDto">
         SELECT  /* base.ec.pm :: PmCoupon :: selectIssuesByCouponId */
               ci.*
-            , m.member_nm,    m.member_email
+            , m.member_nm,    m.login_id AS member_email
         FROM pm_coupon_issue ci
             LEFT JOIN mb_member m ON m.member_id = ci.member_id
         WHERE ci.coupon_id = #{couponId}

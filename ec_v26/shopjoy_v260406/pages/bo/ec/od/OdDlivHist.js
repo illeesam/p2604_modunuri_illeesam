@@ -78,7 +78,7 @@ window.OdDlivHist = {
         <span class="detail-value"><span class="ref-link" @click="showRefModal('member', cfRelatedOrder.userId)">{{ cfRelatedOrder.userNm }}</span></span>
       </div>
       <div class="detail-row"><span class="detail-label">상품</span><span class="detail-value">{{ cfRelatedOrder.prodNm }}</span></div>
-      <div class="detail-row"><span class="detail-label">금액</span><span class="detail-value">{{ cfRelatedOrder.totalPrice.toLocaleString() }}원</span></div>
+      <div class="detail-row"><span class="detail-label">금액</span><span class="detail-value">{{ (cfRelatedOrder.totalPrice||0).toLocaleString() }}원</span></div>
       <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value">{{ cfRelatedOrder.statusCd }}</span></div>
       <div style="margin-top:14px;"><button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:cfRelatedOrder.orderId})">주문 상세 수정</button></div>
     </template>

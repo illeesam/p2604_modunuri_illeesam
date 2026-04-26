@@ -15,7 +15,7 @@
             <if test="p.kw != null and p.kw != ''">
                 AND (p.order_id::TEXT    ILIKE '%' || #{p.kw} || '%'
                   OR p.pg_transaction_id ILIKE '%' || #{p.kw} || '%'
-                  OR m.member_email      ILIKE '%' || #{p.kw} || '%'
+                  OR m.login_id                      ILIKE '%' || #{p.kw} || '%'
                   OR o.member_nm         ILIKE '%' || #{p.kw} || '%')
             </if>
             <if test="p.dateStart != null and p.dateStart != ''">AND p.pay_date &gt;= #{p.dateStart}::DATE</if>
@@ -28,7 +28,7 @@
         SELECT  /* base.ec.od :: OdPay :: selectById */
               p.*
             , o.member_nm, o.order_date, o.order_status_cd
-            , m.member_email
+            , m.login_id AS member_email
             , cd_ps.code_label AS pay_status_cd_nm
             , cd_pm.code_label AS pay_method_cd_nm
             , cd_pd.code_label AS pay_dir_cd_nm
@@ -54,7 +54,7 @@
         SELECT  /* base.ec.od :: OdPay :: selectList */
               p.*
             , o.member_nm,    o.order_date
-            , m.member_email
+            , m.login_id AS member_email
             , cd_ps.code_label AS pay_status_cd_nm
             , cd_pm.code_label AS pay_method_cd_nm
             , cd_pd.code_label AS pay_dir_cd_nm
@@ -88,7 +88,7 @@
         SELECT  /* base.ec.od :: OdPay :: selectPageList */
               p.*
             , o.member_nm,    o.order_date
-            , m.member_email
+            , m.login_id AS member_email
             , cd_ps.code_label AS pay_status_cd_nm
             , cd_pm.code_label AS pay_method_cd_nm
             , cd_pd.code_label AS pay_dir_cd_nm
