@@ -58,9 +58,11 @@ window.PdProdDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-        watch(topTab, v => { window._pdProdDtlState.tab = v; });
-        watch(viewMode2, v => { window._pdProdDtlState.viewMode = v; });
-    const showTab = id => uiState.viewMode2 !== 'tab' || uiState.topTab === id;
+    const topTab = ref(uiState.topTab);
+    const viewMode2 = ref(uiState.viewMode2);
+    watch(topTab, v => { uiState.topTab = v; window._pdProdDtlState.tab = v; });
+    watch(viewMode2, v => { uiState.viewMode2 = v; window._pdProdDtlState.viewMode = v; });
+    const showTab = id => viewMode2.value !== 'tab' || topTab.value === id;
 
     // ── form: pd_prod 전체 필드
     const form = reactive({
@@ -523,7 +525,7 @@ window.PdProdDtl = {
       }
     };
 
-    return { cfIsNew, showTab, form, errors, handleSave,
+    return { cfIsNew, showTab, topTab, viewMode2, form, errors, handleSave,
       uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
       clearOpt, optGroups, skus, cfTotalStock, generateSkus,
       cfSkuFilter1Options, cfSkuFilter2Options, cfSkusFiltered,

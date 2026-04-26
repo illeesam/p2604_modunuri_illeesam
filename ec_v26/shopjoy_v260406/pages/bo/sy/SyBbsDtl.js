@@ -16,7 +16,7 @@ window.SyBbsDtl = {
         const res = await window.boApi.get('/bo/sy/bbs/page', {
           params: { pageNo: 1, pageSize: 10000 }
         });
-        bbss = res.data?.data?.list || [];
+        bbss.splice(0, bbss.length, ...(res.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -48,7 +48,7 @@ window.SyBbsDtl = {
 
     const onBbmSelect = (b) => {
       uiState.showBbmModal = false;
-      if (uiState.selectedBbm && selectedBbm.value.bbmId === b.bbmId) return;
+      if (uiState.selectedBbm && uiState.selectedBbm.bbmId === b.bbmId) return;
       uiState.selectedBbm = b;
       form.bbmId = b.bbmId;
       /* 게시판 변경 시 레이아웃 초기화 */
@@ -82,7 +82,7 @@ window.SyBbsDtl = {
         const b = bbss.find(x => x.bbsId === props.editId);
         if (b) {
           Object.assign(form, { ...b });
-          uiState.selectedBbm = bbms.value.find(m => m.bbmId === b.bbmId) || null;
+          uiState.selectedBbm = null;
         }
       }
       /* htmleditor 초기화는 selectedBbm 결정 후 — viewMode 일 때는 초기화 불필요 */
@@ -141,8 +141,9 @@ window.SyBbsDtl = {
       }
     };
 
+    const selectedBbm = computed(() => uiState.selectedBbm);
     return { bbss, uiState, codes, cfIsNew, form, errors, selectedBbm, cfContentType, cfAllowAttach, cfAttachMaxCount,
-      showBbmModal, uiState, onBbmSelect, handleSave, cfSiteNm,
+      showBbmModal, onBbmSelect, handleSave, cfSiteNm,
     };
   },
   template: /* html */`

@@ -179,7 +179,7 @@ window.CmBlogMng = {
     const onSizeChange = () => { pager.page = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    return { uiStateDetail, blogs, uiState, codes, searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), blogs, uiState, codes, searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
               cfSelectedRow, detailModal, openDetail, openNew, closeDetail, handleSave, handleDelete, toggleUse, fnYnBadge, PAGE_SIZES, onSizeChange };
   },
   template: `

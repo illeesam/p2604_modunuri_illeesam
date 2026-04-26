@@ -98,6 +98,34 @@ window.DpDispWidgetMng = {
   };
   
 
+    const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
+    const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
+    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
+    const closeDetail = () => { uiStateDetail.selectedId = null; };
+    const inlineNavigate = (pg, opts = {}) => {
+      if (pg === 'dpDispWidgetMng') { uiStateDetail.selectedId = null; return; }
+      if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
+      props.navigate(pg, opts);
+    };
+    const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
+    const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
+
+    const cfFiltered = computed(() => (widgetLibs || []).filter(d => {
+      const kw = (applied.kw || '').toLowerCase();
+      if (kw && !(d.name || '').toLowerCase().includes(kw)) return false;
+      if (applied.type && d.widgetType !== applied.type) return false;
+      if (applied.status && d.status !== applied.status) return false;
+      return true;
+    }));
+    const cfTotalCount = computed(() => cfFiltered.value.length);
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotalCount.value / pager.size)));
+    const cfPageList = computed(() => cfFiltered.value.slice((pager.page - 1) * pager.size, pager.page * pager.size));
+    const cfPageNums = computed(() => { const c=pager.page,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfTree = computed(() => []);
+    const selectedTreeKey = ref('');
+    const fnStatusCls = (v) => ({ '활성':'badge-green', '비활성':'badge-gray' }[v] || 'badge-gray');
+    const contentSummary = (d) => d?.contents || d?.desc || '';
+
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.page = n; };
     const onSizeChange = () => { pager.page = 1; };
     return { widgets, widgetLibs, uiState, pathLabel,
@@ -106,6 +134,11 @@ window.DpDispWidgetMng = {
       applied, onSearch, onReset,
       cfSiteNm,
       setPage, onSizeChange,
+      uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId),
+      handleLoadDetail, openNew, closeDetail, inlineNavigate,
+      cfDetailEditId, cfDetailKey,
+      cfFiltered, cfTotalCount, cfTotalPages, cfPageList, cfPageNums,
+      cfTree, selectedTreeKey, fnStatusCls, contentSummary,
     };
   },
   template: /* html */`
