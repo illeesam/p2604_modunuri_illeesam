@@ -4,7 +4,7 @@ window.OdDlivHist = {
   name: 'OdDlivHist',
   props: ['navigate', 'showRefModal', 'orderId'],
   setup(props) {
-    const { ref, computed } = Vue;
+    const { ref, computed, reactive, watch, onMounted } = Vue;
     const deliveries = reactive([]);
     const uiState = reactive({ loading: false, botTab: window._ecDlivHistState.tab || 'order', viewMode2: 'tab'});
     const tab = Vue.toRef(uiState, 'tab');

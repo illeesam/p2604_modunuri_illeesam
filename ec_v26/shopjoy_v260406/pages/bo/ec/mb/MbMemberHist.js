@@ -4,7 +4,7 @@ window.MbMemberHist = {
   name: 'MbMemberHist',
   props: ['navigate', 'showRefModal', 'memberId'],
   setup(props) {
-    const { ref, computed } = Vue;
+    const { ref, computed, reactive, watch, onMounted } = Vue;
     const members = reactive([]);
     const uiState = reactive({ loading: false, tab: window._ecMemberHistState.tab || 'orders', viewMode2: window._ecMemberHistState.viewMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');

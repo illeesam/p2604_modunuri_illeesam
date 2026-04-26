@@ -3,7 +3,7 @@ window.SyBbsDtl = {
   name: 'SyBbsDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
-    const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
+    const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick, watch } = Vue;
 
     const bbss = reactive([]);
     const uiState = reactive({ loading: false, showBbmDetail: false, error: null, isPageCodeLoad: false, selectedBbm: null, showBbmModal: false });
@@ -92,7 +92,6 @@ window.SyBbsDtl = {
     });
 
     /* cfContentType 변화 감지 → Quill 초기화 */
-    const { watch } = Vue;
     watch(cfContentType, (val) => {
       if (!props.viewMode && val === 'htmleditor') {
         nextTick(() => { initQuill(); });

@@ -4,7 +4,7 @@ window.PdProdHist = {
   name: 'PdProdHist',
   props: ['navigate', 'showRefModal', 'prodId'],
   setup(props) {
-    const { ref, computed, onMounted } = Vue;
+    const { ref, computed, onMounted, reactive, watch } = Vue;
     const products = reactive([]);
     const uiState = reactive({ loading: false, botTab: window._ecProdHistState.tab || 'orders', viewMode2: window._ecProdHistState.viewMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');

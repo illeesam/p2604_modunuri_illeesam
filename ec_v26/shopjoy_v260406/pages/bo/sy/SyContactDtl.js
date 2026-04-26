@@ -5,7 +5,7 @@ window.SyContactDtl = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
-    const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
+    const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick, watch } = Vue;
 
     const contacts = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._syContactDtlState.tab || 'content', viewMode2: window._syContactDtlState.viewMode || 'tab', contentEl: null, answerEl: null });

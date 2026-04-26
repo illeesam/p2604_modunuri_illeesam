@@ -173,6 +173,7 @@ window.CmChattDtl = {
 
     const replyText = Vue.toRef(uiState, 'replyText');
     const searchUserId = Vue.toRef(uiState, 'searchUserId');
+    const chat = Vue.toRef(uiState, 'chat');
     return { cfIsNew, tab, viewMode2, showTab, chat, replyText, sendReply, closeChat, msgBoxRef,
       hasRef, refLabel, openMsgRef, refModal, closeRefModal,
       form, errors, handleSave, onUserChange,

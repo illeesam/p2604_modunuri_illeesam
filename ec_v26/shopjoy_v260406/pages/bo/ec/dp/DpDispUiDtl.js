@@ -94,7 +94,7 @@ window.DpDispUiDtl = {
           });
         }
       } else {
-        const uis = (codes || []).filter(c => c.codeGrp === 'DISP_UI');
+        const uis = (Array.isArray(codes) ? codes : []).filter(c => c.codeGrp === 'DISP_UI');
         form.sortOrd = uis.length ? Math.max(...uis.map(c => c.sortOrd || 0)) + 1 : 1;
         const t = new Date();
         const p = n => String(n).padStart(2, '0');
@@ -164,7 +164,7 @@ window.DpDispUiDtl = {
     const pickKw   = ref('');
     const pickSel  = reactive(new Set());
     const cfAvailableAreas = computed(() => {
-      const all = (codes || []).filter(c => c.codeGrp === 'DISP_AREA');
+      const all = (Array.isArray(codes) ? codes : []).filter(c => c.codeGrp === 'DISP_AREA');
       const kw  = uiState.pickKw.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(all, a => {
         if (a.uiCode === form.codeValue) return false;

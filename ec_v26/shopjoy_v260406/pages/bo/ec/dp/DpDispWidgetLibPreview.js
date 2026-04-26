@@ -5,7 +5,7 @@ const _WidgetPreview = {
   name: 'WidgetPreview',
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
-    const { ref, reactive, computed, watchEffect } = Vue;
+    const { ref, reactive, computed, watchEffect, onMounted } = Vue;
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
     const cfChartBars = computed(() => {
       const w = props.lib;
