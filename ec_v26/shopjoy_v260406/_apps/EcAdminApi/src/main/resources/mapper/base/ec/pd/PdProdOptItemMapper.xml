@@ -7,6 +7,8 @@
     <!-- 상품 옵션 아이템 조회 조건 -->
     <sql id="pdProdOptItemCond">
         <where>
+            <if test="p.prodId != null and p.prodId != ''">AND i.opt_id IN (SELECT opt_id FROM pd_prod_opt WHERE prod_id = #{p.prodId})</if>
+            <if test="p.optId != null and p.optId != ''">AND i.opt_id = #{p.optId}</if>
             <if test="p.siteId != null and p.siteId != ''">AND i.site_id = #{p.siteId}</if>
             <if test="p.typeCd != null and p.typeCd != ''">AND i.opt_type_cd = #{p.typeCd}</if>
             <if test="p.kw != null and p.kw != ''">

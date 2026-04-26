@@ -7,6 +7,7 @@
     <!-- 상품 상세 콘텐츠 조회 조건 -->
     <sql id="pdProdContentCond">
         <where>
+            <if test="p.prodId != null and p.prodId != ''">AND c.prod_id = #{p.prodId}</if>
             <if test="p.siteId != null and p.siteId != ''">AND c.site_id = #{p.siteId}</if>
             <if test="p.typeCd != null and p.typeCd != ''">AND c.content_type_cd = #{p.typeCd}</if>
             <if test="p.dateStart != null and p.dateStart != ''">AND c.reg_date &gt;= #{p.dateStart}::DATE</if>

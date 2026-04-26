@@ -7,6 +7,7 @@
     <!-- 연관 상품 조회 조건 -->
     <sql id="pdProdRelCond">
         <where>
+            <if test="p.prodId != null and p.prodId != ''">AND r.prod_id = #{p.prodId}</if>
             <if test="p.typeCd != null and p.typeCd != ''">AND r.prod_rel_type_cd = #{p.typeCd}</if>
             <if test="p.dateStart != null and p.dateStart != ''">AND r.reg_date &gt;= #{p.dateStart}::DATE</if>
             <if test="p.dateEnd   != null and p.dateEnd   != ''">AND r.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>

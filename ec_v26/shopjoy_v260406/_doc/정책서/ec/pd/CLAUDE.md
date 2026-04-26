@@ -15,6 +15,7 @@
 | `pd.07.사은상품.md` | 사은품 지급 조건 및 처리 정책 |
 | `pd.08.상품옵션.md` | 옵션 그룹·값·SKU 구조 (1단/2단 옵션) |
 | `pd.09.상품가격-재고.md` | 가격 구조(정가/판매가/할인가) 및 재고 관리 |
+| `pd.10.상품상세-API설계.md` | BO 탭별 API 분리 설계 표준 (FO 통합/BO 분리, 페이징, count 숨김 정책) |
 
 ## 관련 테이블
 `pd_category`, `pd_prod`, `pd_prod_opt_grp`, `pd_prod_opt_item`, `pd_prod_sku`, `pd_prod_bundle`, `pd_prod_set`, `pd_prod_gift`, `pd_dliv_tmpl`

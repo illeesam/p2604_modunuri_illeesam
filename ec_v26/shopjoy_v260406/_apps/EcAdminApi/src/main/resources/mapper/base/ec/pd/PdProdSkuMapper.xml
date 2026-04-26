@@ -7,6 +7,7 @@
     <!-- 상품 SKU 조회 조건 -->
     <sql id="pdProdSkuCond">
         <where>
+            <if test="p.prodId != null and p.prodId != ''">AND s.prod_id = #{p.prodId}</if>
             <if test="p.siteId != null and p.siteId != ''">AND s.site_id = #{p.siteId}</if>
             <if test="p.dateStart != null and p.dateStart != ''">AND s.reg_date &gt;= #{p.dateStart}::DATE</if>
             <if test="p.dateEnd   != null and p.dateEnd   != ''">AND s.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>

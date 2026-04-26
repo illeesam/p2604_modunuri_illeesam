@@ -42,21 +42,94 @@ window.PdProdDtl = {
       }
     });
 
-    // 보조 데이터(사용자/카테고리) + 단건 조회
+    // ── 탭별 페이징 상태
+    const tabPage = reactive({
+      images:  { pageNo: 1, pageSize: 10, totalCount: 0 },
+      opts:    { pageNo: 1, pageSize: 10, totalCount: 0 },
+      skus:    { pageNo: 1, pageSize: 10, totalCount: 0 },
+      content: { pageNo: 1, pageSize: 10, totalCount: 0 },
+      rels:    { pageNo: 1, pageSize: 10, totalCount: 0 },
+    });
+    // 탭별 전체 데이터 (페이징은 프론트 슬라이스)
+    const tabData = reactive({ images: [], opts: { groups: [], items: [] }, skus: [], content: [], rels: [] });
+
+    const cfTabPageList = computed(() => ({
+      images:  tabData.images.slice((tabPage.images.pageNo -1)*tabPage.images.pageSize,   tabPage.images.pageNo  *tabPage.images.pageSize),
+      skus:    tabData.skus.slice(  (tabPage.skus.pageNo   -1)*tabPage.skus.pageSize,     tabPage.skus.pageNo    *tabPage.skus.pageSize),
+      content: tabData.content.slice((tabPage.content.pageNo-1)*tabPage.content.pageSize, tabPage.content.pageNo *tabPage.content.pageSize),
+      rels:    tabData.rels.slice(  (tabPage.rels.pageNo   -1)*tabPage.rels.pageSize,     tabPage.rels.pageNo    *tabPage.rels.pageSize),
+    }));
+
+    const onTabPageChange = (tabKey, pageNo) => { tabPage[tabKey].pageNo = pageNo; };
+    const cfTabTotalPages = (tabKey) => Math.ceil(tabData[tabKey].length / tabPage[tabKey].pageSize) || 1;
+    const fnTabPageNos = (tabKey) => {
+      const total = cfTabTotalPages(tabKey);
+      const cur   = tabPage[tabKey].pageNo;
+      const start = Math.max(1, cur - 2);
+      const end   = Math.min(total, start + 4);
+      return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    };
+
+    const TAB_BASE = () => `/bo/ec/pd/prod/${props.editId}`;
+    const HDR = (cmd) => ({ headers: { 'X-UI-Nm': '상품상세', 'X-Cmd-Nm': cmd } });
+
+    // 보조 데이터(사용자/카테고리) + 기본정보 + 탭 전체 동시 조회
     const handleLoadData = async () => {
       uiState.loading = true;
       try {
-        const calls = [
-          window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 }, headers: { 'X-UI-Nm': '상품상세', 'X-Cmd-Nm': '조회' } }),
-          window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 1000 }, headers: { 'X-UI-Nm': '상품상세', 'X-Cmd-Nm': '조회' } }),
+        const isNew = !props.editId;
+        const baseCalls = [
+          window.boApi.get('/bo/sy/user/page',          { params: { pageNo: 1, pageSize: 1000 }, headers: { 'X-UI-Nm': '상품상세', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/ec/pd/category/page',   { params: { pageNo: 1, pageSize: 1000 }, headers: { 'X-UI-Nm': '상품상세', 'X-Cmd-Nm': '조회' } }),
         ];
-        if (!cfIsNew.value) calls.push(window.boApi.get(`/bo/ec/pd/prod/${props.editId}`, { headers: { 'X-UI-Nm': '상품상세', 'X-Cmd-Nm': '상세조회' } }));
-        const results = await Promise.all(calls);
-        boUsers.splice(0, boUsers.length, ...(results[0].data?.data?.pageList || results[0].data?.data?.list || []));
-        categories.splice(0, categories.length, ...(results[1].data?.data?.pageList || results[1].data?.data?.list || []));
-        if (!cfIsNew.value && results[2]) {
-          const p = results[2].data?.data || results[2].data;
+        if (!isNew) baseCalls.push(
+          window.boApi.get(`/api/bo/ec/pd/prod/${props.editId}`,          HDR('기본정보조회')),
+          window.boApi.get(`/api/bo/ec/pd/prod/${props.editId}/images`,   HDR('이미지조회')),
+          window.boApi.get(`/api/bo/ec/pd/prod/${props.editId}/opts`,     HDR('옵션조회')),
+          window.boApi.get(`/api/bo/ec/pd/prod/${props.editId}/skus`,     HDR('SKU조회')),
+          window.boApi.get(`/api/bo/ec/pd/prod/${props.editId}/contents`, HDR('상품설명조회')),
+          window.boApi.get(`/api/bo/ec/pd/prod/${props.editId}/rels`,     HDR('연관상품조회')),
+        );
+        const r = await Promise.all(baseCalls);
+
+        boUsers.splice(0,     boUsers.length,     ...(r[0].data?.data?.pageList || r[0].data?.data?.list || []));
+        categories.splice(0,  categories.length,  ...(r[1].data?.data?.pageList || r[1].data?.data?.list || []));
+
+        if (!isNew) {
+          // 기본정보
+          const p = r[2].data?.data || r[2].data;
           if (p) products.splice(0, products.length, p);
+
+          // 이미지 [3]
+          const imgList = r[3].data?.data || [];
+          tabData.images.splice(0, tabData.images.length, ...imgList.map(img => ({ ...img, id: imgIdSeq++, previewUrl: img.cdnImgUrl || img.cdnThumbUrl || '' })));
+
+          // 옵션그룹+아이템 [4]
+          const optD = r[4].data?.data || {};
+          const optGroups_ = optD.groups || [];
+          const optItems_  = optD.items  || [];
+          tabData.opts.groups.splice(0, tabData.opts.groups.length, ...optGroups_);
+          tabData.opts.items.splice(0,  tabData.opts.items.length,  ...optItems_);
+          if (optGroups_.length) {
+            const built = optGroups_.map(g => ({
+              ...g, _id: _optSeq++,
+              items: optItems_.filter(i => i.optId === g.optId).map(i => ({ ...i, _id: _itemSeq++, nm: i.optNm, val: i.optVal || '' }))
+            }));
+            optGroups.splice(0, optGroups.length, ...built);
+            uiState.useOpt = true;
+          }
+
+          // SKU [5]
+          const skuList = r[5].data?.data || [];
+          tabData.skus.splice(0, tabData.skus.length, ...skuList.map(s => ({ ...s, _id: 'sku_' + s.skuId, _optKey: s.skuId, _nm1: s.optItemNm1 || '', _nm2: s.optItemNm2 || '', stock: s.prodOptStock || 0 })));
+
+          // 상품설명 [6]
+          const contentList = r[6].data?.data || [];
+          tabData.content.splice(0, tabData.content.length, ...contentList);
+
+          // 연관상품 [7]
+          const relList = r[7].data?.data || [];
+          tabData.rels.splice(0, tabData.rels.length, ...relList.map(rel => ({ ...rel, _id: _relSeq++, prodNm: rel.relProdNm || rel.prodNm || '' })));
         }
         uiState.error = null;
       } catch (err) {
@@ -72,6 +145,14 @@ window.PdProdDtl = {
     const viewMode2 = ref(uiState.viewMode2);
 
     watch(topTab, v => { uiState.topTab = v; window._pdProdDtlState.tab = v; });
+
+    watch(() => props.editId, () => {
+      images.splice(0); optGroups.splice(0); skus.splice(0);
+      contentBlocks.splice(0); relProds.splice(0);
+      tabData.images.splice(0); tabData.skus.splice(0);
+      tabData.content.splice(0); tabData.rels.splice(0);
+      tabData.opts.groups.splice(0); tabData.opts.items.splice(0);
+    });
 
     watch(viewMode2, v => { uiState.viewMode2 = v; window._pdProdDtlState.viewMode = v; });
     const showTab = id => viewMode2.value !== 'tab' || topTab.value === id;
@@ -438,20 +519,24 @@ window.PdProdDtl = {
           form.isNew_         = p.isNew_ || 'N';
           form.isBest         = p.isBest || 'N';
           form.contentHtml    = p.contentHtml || p.description || '';
-          if (p.contentBlocks?.length) contentBlocks.splice(0, contentBlocks.length, ...p.contentBlocks.map(b => ({ ...b, _id: _blockSeq++ })));
-          else if (form.contentHtml) contentBlocks.splice(0, contentBlocks.length, { _id: _blockSeq++, type: 'html', content: form.contentHtml, fileName: '' });
-          if (p.images?.length) images.splice(0, images.length, ...p.images.map(img => ({ ...img, id: imgIdSeq++ })));
+          // 이미지 — tabData에서 채움 (handleLoadData에서 이미 로드)
+          if (tabData.images.length) images.splice(0, images.length, ...tabData.images);
           else if (p.mainImage) images.splice(0, images.length, { id: imgIdSeq++, previewUrl: p.mainImage, isMain: true, optItemId1: '', optItemId2: '' });
-          if (p.optGroups?.length) {
-            uiState.useOpt = true;
-            optGroups.splice(0, optGroups.length, ...p.optGroups.map(g => ({ ...g, _id: _optSeq++, items: g.items.map(i => ({ ...i, _id: _itemSeq++ })) })));
-            skus.splice(0, skus.length, ...(p.skus || []));
+
+          // 상품설명 — tabData.content에서 채움
+          if (tabData.content.length) {
+            contentBlocks.splice(0, contentBlocks.length, ...tabData.content.map(c => ({ _id: _blockSeq++, type: 'html', content: c.contentHtml || '', fileName: '', prodContentId: c.prodContentId })));
+          } else if (form.contentHtml) {
+            contentBlocks.splice(0, contentBlocks.length, { _id: _blockSeq++, type: 'html', content: form.contentHtml, fileName: '' });
           }
+
+          // 연관상품 — tabData.rels에서 채움
+          if (tabData.rels.length) relProds.splice(0, relProds.length, ...tabData.rels);
+
+          // SKU — tabData.skus에서 채움
+          if (tabData.skus.length) skus.splice(0, skus.length, ...tabData.skus);
+
           if (p.salePlans?.length) salePlans.splice(0, salePlans.length, ...p.salePlans.map(r => ({ ...r, _id: planIdSeq++, _checked: false })));
-          if (p.relProds?.length) {
-            relProds.splice(0, relProds.length, ...p.relProds.map(r => ({ ...r, _id: _relSeq++ })));
-          }
-          if (p.codeProds?.length) codeProds.splice(0, codeProds.length, ...p.codeProds.map(r => ({ ...r, _id: _relSeq++ })));
           // 카테고리 N개 로드 (pd_category_prod)
           const pid = String(p.prodId);
           const linked = (categoryProds||[])
@@ -488,7 +573,7 @@ window.PdProdDtl = {
       document.addEventListener('mouseup', _divUpH);
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
       await handleLoadData();
@@ -552,6 +637,7 @@ window.PdProdDtl = {
     // ── return ───────────────────────────────────────────────────────────────
 
     return { cfIsNew, showTab, topTab, viewMode2, form, errors, handleSave,
+      tabPage, tabData, cfTabPageList, onTabPageChange, cfTabTotalPages, fnTabPageNos,
       uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
       clearOpt, optGroups, skus, cfTotalStock, generateSkus,
       cfSkuFilter1Options, cfSkuFilter2Options, cfSkusFiltered,
@@ -583,11 +669,11 @@ window.PdProdDtl = {
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:topTab==='info'}"    :disabled="viewMode2!=='tab'" @click="topTab='info'">📋 기본정보</button>
       <button class="tab-btn" :class="{active:topTab==='detail'}"  :disabled="viewMode2!=='tab'" @click="topTab='detail'">📝 상세설정</button>
-      <button class="tab-btn" :class="{active:topTab==='image'}"   :disabled="viewMode2!=='tab'" @click="topTab='image'">🖼 이미지 <span class="tab-count">{{ images.length }}</span></button>
-      <button class="tab-btn" :class="{active:topTab==='content'}" :disabled="viewMode2!=='tab'" @click="topTab='content'">📄 상품설명 <span class="tab-count">{{ contentBlocks.length }}</span></button>
-      <button class="tab-btn" :class="{active:topTab==='option'}"  :disabled="viewMode2!=='tab'" @click="topTab='option'">⚙ 옵션설정</button>
-      <button class="tab-btn" :class="{active:topTab==='price'}"   :disabled="viewMode2!=='tab'" @click="topTab='price'">💰 옵션(가격/재고)</button>
-      <button class="tab-btn" :class="{active:topTab==='related'}" :disabled="viewMode2!=='tab'" @click="topTab='related'">🔗 연관상품 <span class="tab-count">{{ relProds.length + codeProds.length }}</span></button>
+      <button class="tab-btn" :class="{active:topTab==='image'}"   :disabled="viewMode2!=='tab'" @click="topTab='image'">🖼 이미지 <span class="tab-count">{{ tabData.images.length }}</span></button>
+      <button class="tab-btn" :class="{active:topTab==='content'}" :disabled="viewMode2!=='tab'" @click="topTab='content'">📄 상품설명 <span class="tab-count">{{ tabData.content.length }}</span></button>
+      <button class="tab-btn" :class="{active:topTab==='option'}"  :disabled="viewMode2!=='tab'" @click="topTab='option'">⚙ 옵션설정 <span class="tab-count">{{ tabData.opts.groups.length }}</span></button>
+      <button class="tab-btn" :class="{active:topTab==='price'}"   :disabled="viewMode2!=='tab'" @click="topTab='price'">💰 옵션(가격/재고) <span class="tab-count">{{ tabData.skus.length }}</span></button>
+      <button class="tab-btn" :class="{active:topTab==='related'}" :disabled="viewMode2!=='tab'" @click="topTab='related'">🔗 연관상품 <span class="tab-count">{{ tabData.rels.length }}</span></button>
     </div>
     <div class="tab-view-modes">
       <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}"  @click="viewMode2='tab'"  title="탭">📑</button>
@@ -1228,7 +1314,7 @@ window.PdProdDtl = {
     <div v-if="images.length===0"
       style="border:2px dashed #e0e0e0;border-radius:10px;padding:40px;text-align:center;color:#bbb;font-size:13px;cursor:pointer;"
       @click="triggerFileInput">클릭하거나 파일을 끌어다 놓으세요</div>
-    <div v-for="(img, idx) in images" :key="img?.id"
+    <div v-for="(img, idx) in cfTabPageList.images" :key="img?.id"
       draggable="true"
       @dragstart="onImgDragStart(idx)"
       @dragover.prevent="onImgDragOver(idx)"
@@ -1279,8 +1365,17 @@ window.PdProdDtl = {
         <button v-if="!img.isMain" class="btn btn-sm btn-secondary" @click="setMain(img.id)" style="font-size:11px;">대표 설정</button>
         <span v-else style="font-size:11px;font-weight:700;color:#e8587a;padding:4px 8px;background:#fde8ee;border-radius:4px;">★ 대표</span>
         <button class="btn btn-sm btn-danger" @click="removeImage(img.id)" style="font-size:11px;">삭제</button>
-        <span style="font-size:11px;color:#bbb;">{{ idx+1 }}/{{ images.length }}</span>
+        <span style="font-size:11px;color:#bbb;">{{ (tabPage.images.pageNo-1)*tabPage.images.pageSize+idx+1 }}/{{ images.length }}</span>
       </div>
+    </div>
+    <!-- 이미지 페이저 -->
+    <div v-if="images.length > tabPage.images.pageSize" class="pagination" style="margin:12px 0;">
+      <button class="pager" @click="onTabPageChange('images',1)" :disabled="tabPage.images.pageNo===1">«</button>
+      <button class="pager" @click="onTabPageChange('images',tabPage.images.pageNo-1)" :disabled="tabPage.images.pageNo===1">‹</button>
+      <button v-for="n in fnTabPageNos('images')" :key="n" class="pager" :class="{active:tabPage.images.pageNo===n}" @click="onTabPageChange('images',n)">{{ n }}</button>
+      <button class="pager" @click="onTabPageChange('images',tabPage.images.pageNo+1)" :disabled="tabPage.images.pageNo===cfTabTotalPages('images')">›</button>
+      <button class="pager" @click="onTabPageChange('images',cfTabTotalPages('images'))" :disabled="tabPage.images.pageNo===cfTabTotalPages('images')">»</button>
+      <span class="pager-right">{{ images.length }}개 / {{ tabPage.images.pageSize }}개씩</span>
     </div>
     <div class="form-actions">
       <button class="btn btn-primary" @click="handleSave">저장</button>
@@ -1317,29 +1412,35 @@ window.PdProdDtl = {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(p, idx) in relProds" :key="p?._id"
+          <tr v-for="(p, idx) in cfTabPageList.rels" :key="p?._id"
             draggable="true"
-            @dragstart="onRelDragStart(idx)"
-            @dragover.prevent="onRelDragOver(idx)"
+            @dragstart="onRelDragStart((tabPage.rels.pageNo-1)*tabPage.rels.pageSize+idx)"
+            @dragover.prevent="onRelDragOver((tabPage.rels.pageNo-1)*tabPage.rels.pageSize+idx)"
             @drop.prevent="onRelDrop()"
             @dragend="dragRelIdx=null;dragoverRelIdx=null"
-            :style="dragoverRelIdx===idx && dragRelIdx!==idx ? 'background:#e6f4ff;' : ''">
+            :style="dragoverRelIdx===((tabPage.rels.pageNo-1)*tabPage.rels.pageSize+idx) && dragRelIdx!==((tabPage.rels.pageNo-1)*tabPage.rels.pageSize+idx) ? 'background:#e6f4ff;' : ''">
             <td style="text-align:center;cursor:grab;color:#ccc;font-size:15px;user-select:none;letter-spacing:-2px;" title="드래그로 순서 변경">≡</td>
-            <td style="text-align:center;color:#888;">{{ p.productId }}</td>
-            <td><span class="ref-link" @click="navigate('pdProdDtl',{editId:p.productId})">{{ p.prodNm }}</span></td>
-            <td>{{ p.category }}</td>
-            <td style="text-align:right;">{{ (p.price||0).toLocaleString() }}원</td>
-            <td style="text-align:right;">{{ p.stock }}개</td>
-            <td><span class="badge" :class="p.status==='판매중'?'badge-green':'badge-gray'" style="font-size:10px;">{{ p.status }}</span></td>
+            <td style="text-align:center;color:#888;">{{ p.relProdId || p.prodId }}</td>
+            <td><span class="ref-link" @click="navigate('pdProdDtl',{editId:p.relProdId||p.prodId})">{{ p.prodNm }}</span></td>
+            <td>{{ p.prodRelTypeCdNm || p.prodRelTypeCd }}</td>
             <td style="text-align:center;">
-              <button class="btn btn-xs btn-danger" @click="removeRelProd(idx)">삭제</button>
+              <button class="btn btn-xs btn-danger" @click="removeRelProd((tabPage.rels.pageNo-1)*tabPage.rels.pageSize+idx)">삭제</button>
             </td>
           </tr>
           <tr v-if="relProds.length===0">
-            <td colspan="8" style="text-align:center;color:#bbb;padding:20px;font-size:12px;">+ 추가 버튼으로 연관상품을 등록하세요.</td>
+            <td colspan="5" style="text-align:center;color:#bbb;padding:20px;font-size:12px;">+ 추가 버튼으로 연관상품을 등록하세요.</td>
           </tr>
         </tbody>
       </table>
+      <!-- 페이저 -->
+      <div v-if="tabData.rels.length > tabPage.rels.pageSize" class="pagination" style="margin-top:12px;">
+        <button class="pager" @click="onTabPageChange('rels',1)" :disabled="tabPage.rels.pageNo===1">«</button>
+        <button class="pager" @click="onTabPageChange('rels',tabPage.rels.pageNo-1)" :disabled="tabPage.rels.pageNo===1">‹</button>
+        <button v-for="n in fnTabPageNos('rels')" :key="n" class="pager" :class="{active:tabPage.rels.pageNo===n}" @click="onTabPageChange('rels',n)">{{ n }}</button>
+        <button class="pager" @click="onTabPageChange('rels',tabPage.rels.pageNo+1)" :disabled="tabPage.rels.pageNo===cfTabTotalPages('rels')">›</button>
+        <button class="pager" @click="onTabPageChange('rels',cfTabTotalPages('rels'))" :disabled="tabPage.rels.pageNo===cfTabTotalPages('rels')">»</button>
+        <span class="pager-right">{{ tabData.rels.length }}건 / {{ tabPage.rels.pageSize }}개씩</span>
+      </div>
     </div>
 
     <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 24px;" />
@@ -1512,7 +1613,7 @@ window.PdProdDtl = {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="sku in cfSkusFiltered" :key="sku?._id"
+            <tr v-for="sku in cfSkusFiltered.slice((tabPage.skus.pageNo-1)*tabPage.skus.pageSize, tabPage.skus.pageNo*tabPage.skus.pageSize)" :key="sku?._id"
               :style="sku.useYn==='N' ? 'opacity:0.45;background:#f5f5f5;' : (sku.statusCd==='SOLD_OUT'||sku.stock===0 ? 'background:#fffbe6;' : sku.statusCd==='SUSPENDED'?'background:#fff1f0;':'')">
               <td><span class="badge badge-gray" style="font-size:11px;">{{ sku._nm1 }}</span></td>
               <td v-if="optGroups.length>1">
@@ -1562,6 +1663,15 @@ window.PdProdDtl = {
             </tr>
           </tbody>
         </table>
+      </div>
+      <!-- SKU 페이저 -->
+      <div v-if="cfSkusFiltered.length > tabPage.skus.pageSize" class="pagination" style="margin:8px 0 16px;">
+        <button class="pager" @click="onTabPageChange('skus',1)" :disabled="tabPage.skus.pageNo===1">«</button>
+        <button class="pager" @click="onTabPageChange('skus',tabPage.skus.pageNo-1)" :disabled="tabPage.skus.pageNo===1">‹</button>
+        <button v-for="n in fnTabPageNos('skus')" :key="n" class="pager" :class="{active:tabPage.skus.pageNo===n}" @click="onTabPageChange('skus',n)">{{ n }}</button>
+        <button class="pager" @click="onTabPageChange('skus',tabPage.skus.pageNo+1)" :disabled="tabPage.skus.pageNo===cfTabTotalPages('skus')">›</button>
+        <button class="pager" @click="onTabPageChange('skus',cfTabTotalPages('skus'))" :disabled="tabPage.skus.pageNo===cfTabTotalPages('skus')">»</button>
+        <span class="pager-right">{{ cfSkusFiltered.length }}개 / {{ tabPage.skus.pageSize }}개씩</span>
       </div>
       <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;" />
     </template>
