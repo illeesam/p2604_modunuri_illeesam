@@ -38,7 +38,16 @@ window.PdProdDtl = {
 
     watch(isAppReady, (newVal) => {
       if (newVal) {
-        fnLoadCodes();
+        fnLoadCodes().then(() => {
+          // 코드 로드 완료 후 옵션 카테고리 복원 재시도
+          if (optGroups.length && !uiState.prodOptCategoryTypeCd) {
+            const firstTypeCd = optGroups[0]?.optTypeCd || optGroups[0]?.typeCd || '';
+            if (firstTypeCd) {
+              const level2 = (codes||[]).find(c => c.codeGrp === 'OPT_TYPE' && c.codeValue === firstTypeCd);
+              if (level2?.parentCodeValue) uiState.prodOptCategoryTypeCd = level2.parentCodeValue;
+            }
+          }
+        });
       }
     });
 
@@ -195,14 +204,19 @@ window.PdProdDtl = {
     const skus = reactive([]);      // [{_id, _optKey, _nm1, _nm2, skuCode, addPrice, stock, useYn}]
     // ── 옵션 공통코드 ([] 기반 — OPT_TYPE 2레벨 트리)
      // OPT_TYPE 1레벨 (의류/신발/가방/커스텀)
+    // OPT_TYPE 2레벨 트리: 1레벨 = parentCodeValue가 null/빈값, 2레벨 = parentCodeValue가 1레벨 codeValue
+    // DB에서 parentCodeValue가 null 또는 '' 둘 다 올 수 있어 양쪽 처리
+    const cfOptTypeAllCodes  = computed(() => (codes||[]).filter(c => c.codeGrp === 'OPT_TYPE' && c.useYn === 'Y'));
     const cfOptTypeLevel1Codes = computed(() =>
-      (codes||[]).filter(c => c.codeGrp==='OPT_TYPE' && c.useYn==='Y' && !c.parentCodeValue && c.codeValue!=='NONE')
-        .sort((a,b) => a.sortOrd - b.sortOrd)
+      cfOptTypeAllCodes.value
+        .filter(c => !c.parentCodeValue && c.codeValue !== 'NONE')
+        .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0))
     );
     const cfOptTypeCodes = computed(() => {
       if (!uiState.prodOptCategoryTypeCd) return [];
-      return (codes||[]).filter(c => c.codeGrp==='OPT_TYPE' && c.useYn==='Y' && c.parentCodeValue===uiState.prodOptCategoryTypeCd)
-        .sort((a,b) => a.sortOrd - b.sortOrd);
+      return cfOptTypeAllCodes.value
+        .filter(c => c.parentCodeValue === uiState.prodOptCategoryTypeCd)
+        .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
     });
     const cfOptInputTypeCodes = computed(() => (codes||[]).filter(c => c.codeGrp==='OPT_INPUT_TYPE' && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd));
     const getOptValCodes    = (typeCd) => (codes||[]).filter(c => c.codeGrp==='OPT_VAL' && c.parentCodeValue===typeCd && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd);
@@ -564,6 +578,15 @@ window.PdProdDtl = {
           if (p.useOptYn !== undefined) uiState.useOpt = p.useOptYn === 'Y';
           else uiState.useOpt = true;
 
+          // 옵션 카테고리(1레벨) 복원 — optGroups의 optTypeCd로 parentCodeValue 역추적
+          if (optGroups.length && !uiState.prodOptCategoryTypeCd) {
+            const firstTypeCd = optGroups[0]?.optTypeCd || optGroups[0]?.typeCd || '';
+            if (firstTypeCd) {
+              const level2 = (codes||[]).find(c => c.codeGrp === 'OPT_TYPE' && c.codeValue === firstTypeCd);
+              if (level2?.parentCodeValue) uiState.prodOptCategoryTypeCd = level2.parentCodeValue;
+            }
+          }
+
           if (p.salePlans?.length) salePlans.splice(0, salePlans.length, ...p.salePlans.map(r => ({ ...r, _id: planIdSeq++, _checked: false })));
           // 카테고리 N개 로드 (pd_category_prod)
           const pid = String(p.prodId);
@@ -675,6 +698,7 @@ window.PdProdDtl = {
       contentBlocks, addContentBlock, removeContentBlock, onBlockFileChange, fnMountQuills,
       onBlockDragStart, onBlockDragOver, onBlockDrop,
       contentSplitRef, onDividerMousedown,
+      prodOptCategoryTypeCd,
       safeFirst, safeGet, safeFind, safeFilter,
     };
   },
@@ -946,18 +970,15 @@ window.PdProdDtl = {
     <!-- ── 옵션 사용 토글 + OPT_TYPE 2레벨 트리 선택 ──────────────────────────────── -->
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;padding:12px 14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;">
 
-      <!-- ── 옵션 사용 체크박스 ───────────────────────────────────────────────── -->
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;font-weight:600;flex-shrink:0;">
-        <input type="checkbox" v-model="useOpt" @change="!useOpt && clearOpt()" style="width:16px;height:16px;" />
+      <!-- ── 옵션 사용 체크박스 (disabled — 옵션 카테고리 선택 시 자동 체크) ─── -->
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;flex-shrink:0;cursor:default;">
+        <input type="checkbox" :checked="!!prodOptCategoryTypeCd" disabled style="width:16px;height:16px;cursor:not-allowed;opacity:0.6;" />
         옵션 사용
       </label>
-      <span v-if="!useOpt" style="font-size:12px;color:#888;">미사용 시 상품 단위 단일 재고 관리</span>
+      <span style="font-size:11px;color:#ddd;flex-shrink:0;">│</span>
 
-      <template v-if="useOpt">
-        <span style="font-size:11px;color:#ddd;flex-shrink:0;">│</span>
-
-        <!-- ── STEP 1: OPT_TYPE 1레벨 (카테고리) 선택 — pd_prod_opt.opt_type_cd 레벨 1 ──── -->
-        <div style="display:flex;align-items:center;gap:6px;">
+      <!-- ── STEP 1: OPT_TYPE 1레벨 (카테고리) 선택 — pd_prod_opt.opt_type_cd 레벨 1 ──── -->
+      <div style="display:flex;align-items:center;gap:6px;">
           <span style="font-size:12px;color:#555;font-weight:600;flex-shrink:0;">옵션 카테고리</span>
           <select class="form-control" v-model="prodOptCategoryTypeCd"
             style="width:170px;font-size:12px;"
@@ -984,13 +1005,12 @@ window.PdProdDtl = {
         </template>
         <span v-if="!prodOptCategoryTypeCd" style="font-size:12px;color:#f5a623;">← 옵션 카테고리를 먼저 선택하세요</span>
         <span v-else-if="optGroups.length===0" style="font-size:12px;color:#1677ff;">카테고리 선택 후 + 차원 추가로 1단·2단 설정</span>
-      </template>
     </div>
 
     <!-- ── 옵션 미사용 안내 ──────────────────────────────────────────────────── -->
-    <template v-if="!useOpt">
+    <template v-if="!prodOptCategoryTypeCd">
       <div style="padding:10px 14px;background:#f9f0ff;border-radius:8px;border:1px solid #d3adf7;font-size:12px;color:#531dab;margin-bottom:8px;">
-        💡 옵션 미사용 — 재고는 <strong>💰 옵션(가격/재고)</strong> 탭에서 관리합니다.
+        💡 옵션 카테고리를 선택하면 옵션 설정이 활성화됩니다.
       </div>
     </template>
 
@@ -1572,8 +1592,8 @@ window.PdProdDtl = {
   <div class="card" v-show="showTab('price')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💰 옵션(가격/재고)</div>
 
-    <!-- ─── 섹션1: SKU별 가격·재고 (옵션 사용 시) ─── -->
-    <template v-if="useOpt">
+    <!-- ─── 섹션1: SKU별 가격·재고 (옵션 카테고리 설정 시) ─── -->
+    <template v-if="prodOptCategoryTypeCd">
       <!-- ── 헤더 행 ─────────────────────────────────────────────────────── -->
       <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;flex-shrink:0;">
@@ -1695,8 +1715,8 @@ window.PdProdDtl = {
       <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;" />
     </template>
 
-    <!-- ─── 섹션2: 단일 재고 (옵션 미사용 시) ─── -->
-    <template v-if="!useOpt">
+    <!-- ─── 섹션2: 단일 재고 (옵션 카테고리 미설정 시) ─── -->
+    <template v-if="!prodOptCategoryTypeCd">
       <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">
         단일 재고 <span style="font-weight:400;font-size:11px;color:#888;">(옵션 미사용 — pd_prod.prod_stock)</span>
       </div>
