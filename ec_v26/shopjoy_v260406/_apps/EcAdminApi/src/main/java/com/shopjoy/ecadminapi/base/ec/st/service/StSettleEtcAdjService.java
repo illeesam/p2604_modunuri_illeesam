@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +27,9 @@ public class StSettleEtcAdjService {
 
     private final StSettleEtcAdjMapper mapper;
     private final StSettleEtcAdjRepository repository;
+
+    @PersistenceContext
+    private EntityManager em;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 

@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +29,9 @@ public class SyRoleMenuService {
     private final SyRoleMenuMapper      mapper;
     private final SyRoleMenuRepository  repository;
     private final SyRoleMenuRedisStore  roleMenuCache;
+
+    @PersistenceContext
+    private EntityManager em;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 

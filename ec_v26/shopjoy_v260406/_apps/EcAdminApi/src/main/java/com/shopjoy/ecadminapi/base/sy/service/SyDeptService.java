@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +27,9 @@ public class SyDeptService {
 
     private final SyDeptMapper mapper;
     private final SyDeptRepository repository;
+
+    @PersistenceContext
+    private EntityManager em;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 

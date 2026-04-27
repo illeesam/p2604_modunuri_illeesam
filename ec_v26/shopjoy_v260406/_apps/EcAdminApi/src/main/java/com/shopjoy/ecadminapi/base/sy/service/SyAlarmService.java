@@ -10,6 +10,8 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,9 +26,10 @@ import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 @RequiredArgsConstructor
 public class SyAlarmService {
 
-
     private final SyAlarmMapper mapper;
     private final SyAlarmRepository repository;
+    @PersistenceContext
+    private EntityManager em;
 
     // ── MyBatis 조회 ────────────────────────────────────────────
 
@@ -93,9 +96,6 @@ public class SyAlarmService {
         em.flush();
         if (repository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
-    }
-        // sy_alarm :: delete :: id [orm:jpa]
-        repository.deleteById(id);
     }
 
     // ── _row_status 기반 저장 ────────────────────────────────────

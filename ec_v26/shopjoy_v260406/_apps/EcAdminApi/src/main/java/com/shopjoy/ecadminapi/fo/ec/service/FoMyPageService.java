@@ -101,8 +101,8 @@ public class FoMyPageService {
     @Transactional
     public MbMemberAddr saveAddr(MbMemberAddr body) {
         String memberId = SecurityUtil.getAuthUser().authId();
-        if (body.getAddrId() == null) {
-            body.setAddrId(CmUtil.generateId("mb_member_addr"));
+        if (body.getMemberAddrId() == null) {
+            body.setMemberAddrId(CmUtil.generateId("mb_member_addr"));
         }
         body.setMemberId(memberId);
         body.setRegBy(memberId);
