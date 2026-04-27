@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -63,19 +64,7 @@ public class BoSyAlarmService {
     @Transactional
     public SyAlarmDto update(String id, SyAlarm body) {
         SyAlarm entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setSiteId(body.getSiteId());
-        entity.setAlarmTitle(body.getAlarmTitle());
-        entity.setAlarmTypeCd(body.getAlarmTypeCd());
-        entity.setChannelCd(body.getChannelCd());
-        entity.setTargetTypeCd(body.getTargetTypeCd());
-        entity.setTargetId(body.getTargetId());
-        entity.setTemplateId(body.getTemplateId());
-        entity.setAlarmMsg(body.getAlarmMsg());
-        entity.setAlarmSendDate(body.getAlarmSendDate());
-        entity.setAlarmStatusCd(body.getAlarmStatusCd());
-        entity.setAlarmSendCount(body.getAlarmSendCount());
-        entity.setAlarmFailCount(body.getAlarmFailCount());
-        entity.setDispPath(body.getDispPath());
+        VoUtil.voCopyExclude(body, entity, "alarmId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyAlarm saved = repository.save(entity);

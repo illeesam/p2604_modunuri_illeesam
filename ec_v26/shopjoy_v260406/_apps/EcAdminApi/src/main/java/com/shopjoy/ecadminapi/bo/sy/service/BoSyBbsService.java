@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -62,20 +63,7 @@ public class BoSyBbsService {
     @Transactional
     public SyBbsDto update(String id, SyBbs body) {
         SyBbs entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setSiteId(body.getSiteId());
-        entity.setBbmId(body.getBbmId());
-        entity.setParentBbsId(body.getParentBbsId());
-        entity.setMemberId(body.getMemberId());
-        entity.setAuthorNm(body.getAuthorNm());
-        entity.setBbsTitle(body.getBbsTitle());
-        entity.setContentHtml(body.getContentHtml());
-        entity.setAttachGrpId(body.getAttachGrpId());
-        entity.setViewCount(body.getViewCount());
-        entity.setLikeCount(body.getLikeCount());
-        entity.setCommentCount(body.getCommentCount());
-        entity.setIsFixed(body.getIsFixed());
-        entity.setBbsStatusCd(body.getBbsStatusCd());
-        entity.setDispPath(body.getDispPath());
+        VoUtil.voCopyExclude(body, entity, "bbsId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyBbs saved = repository.save(entity);

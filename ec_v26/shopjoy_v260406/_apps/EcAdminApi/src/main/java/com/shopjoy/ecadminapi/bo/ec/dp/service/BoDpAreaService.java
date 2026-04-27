@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -63,16 +64,7 @@ public class BoDpAreaService {
     @Transactional
     public DpAreaDto update(String id, DpArea body) {
         DpArea entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setUiId(body.getUiId());
-        entity.setSiteId(body.getSiteId());
-        entity.setAreaCd(body.getAreaCd());
-        entity.setAreaNm(body.getAreaNm());
-        entity.setAreaTypeCd(body.getAreaTypeCd());
-        entity.setAreaDesc(body.getAreaDesc());
-        entity.setDispPath(body.getDispPath());
-        entity.setUseYn(body.getUseYn());
-        entity.setUseStartDate(body.getUseStartDate());
-        entity.setUseEndDate(body.getUseEndDate());
+        VoUtil.voCopyExclude(body, entity, "areaId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         DpArea saved = repository.save(entity);

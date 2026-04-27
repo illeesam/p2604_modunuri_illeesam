@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +64,7 @@ public class BoPmEventService {
     @Transactional
     public PmEventDto update(String id, PmEvent body) {
         PmEvent entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        if (body.getEventNm() != null) entity.setEventNm(body.getEventNm());
+        VoUtil.voCopyExclude(body, entity, "eventId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmEvent saved = repository.save(entity);

@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -63,16 +64,7 @@ public class BoSyBrandService {
     @Transactional
     public SyBrandDto update(String id, SyBrand body) {
         SyBrand entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setSiteId(body.getSiteId());
-        entity.setBrandCode(body.getBrandCode());
-        entity.setBrandNm(body.getBrandNm());
-        entity.setBrandEnNm(body.getBrandEnNm());
-        entity.setDispPath(body.getDispPath());
-        entity.setLogoUrl(body.getLogoUrl());
-        entity.setVendorId(body.getVendorId());
-        entity.setSortOrd(body.getSortOrd());
-        entity.setUseYn(body.getUseYn());
-        entity.setBrandRemark(body.getBrandRemark());
+        VoUtil.voCopyExclude(body, entity, "brandId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyBrand saved = repository.save(entity);

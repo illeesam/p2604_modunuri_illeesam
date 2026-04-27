@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -63,20 +64,7 @@ public class BoSyBatchService {
     @Transactional
     public SyBatchDto update(String id, SyBatch body) {
         SyBatch entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setSiteId(body.getSiteId());
-        entity.setBatchCode(body.getBatchCode());
-        entity.setBatchNm(body.getBatchNm());
-        entity.setBatchDesc(body.getBatchDesc());
-        entity.setCronExpr(body.getCronExpr());
-        entity.setBatchCycleCd(body.getBatchCycleCd());
-        entity.setBatchLastRun(body.getBatchLastRun());
-        entity.setBatchNextRun(body.getBatchNextRun());
-        entity.setBatchRunCount(body.getBatchRunCount());
-        entity.setBatchStatusCd(body.getBatchStatusCd());
-        entity.setBatchRunStatus(body.getBatchRunStatus());
-        entity.setBatchTimeoutSec(body.getBatchTimeoutSec());
-        entity.setBatchMemo(body.getBatchMemo());
-        entity.setDispPath(body.getDispPath());
+        VoUtil.voCopyExclude(body, entity, "batchId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyBatch saved = repository.save(entity);

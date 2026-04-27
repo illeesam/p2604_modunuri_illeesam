@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -63,18 +64,7 @@ public class BoDpWidgetLibService {
     @Transactional
     public DpWidgetLibDto update(String id, DpWidgetLib body) {
         DpWidgetLib entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setSiteId(body.getSiteId());
-        entity.setWidgetCode(body.getWidgetCode());
-        entity.setWidgetNm(body.getWidgetNm());
-        entity.setWidgetTypeCd(body.getWidgetTypeCd());
-        entity.setWidgetLibDesc(body.getWidgetLibDesc());
-        entity.setDispPath(body.getDispPath());
-        entity.setThumbnailUrl(body.getThumbnailUrl());
-        entity.setTemplateHtml(body.getTemplateHtml());
-        entity.setConfigSchema(body.getConfigSchema());
-        entity.setIsSystem(body.getIsSystem());
-        entity.setSortOrd(body.getSortOrd());
-        entity.setUseYn(body.getUseYn());
+        VoUtil.voCopyExclude(body, entity, "widgetLibId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         DpWidgetLib saved = repository.save(entity);

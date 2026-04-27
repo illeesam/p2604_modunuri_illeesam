@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -63,16 +64,7 @@ public class BoDpUiService {
     @Transactional
     public DpUiDto update(String id, DpUi body) {
         DpUi entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setSiteId(body.getSiteId());
-        entity.setUiCd(body.getUiCd());
-        entity.setUiNm(body.getUiNm());
-        entity.setUiDesc(body.getUiDesc());
-        entity.setDeviceTypeCd(body.getDeviceTypeCd());
-        entity.setUiPath(body.getUiPath());
-        entity.setSortOrd(body.getSortOrd());
-        entity.setUseYn(body.getUseYn());
-        entity.setUseStartDate(body.getUseStartDate());
-        entity.setUseEndDate(body.getUseEndDate());
+        VoUtil.voCopyExclude(body, entity, "uiId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         DpUi saved = repository.save(entity);

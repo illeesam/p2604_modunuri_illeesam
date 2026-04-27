@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -63,26 +64,7 @@ public class BoSyAttachService {
     @Transactional
     public SyAttachDto update(String id, SyAttach body) {
         SyAttach entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setSiteId(body.getSiteId());
-        entity.setAttachGrpId(body.getAttachGrpId());
-        entity.setFileNm(body.getFileNm());
-        entity.setFileSize(body.getFileSize());
-        entity.setFileExt(body.getFileExt());
-        entity.setMimeTypeCd(body.getMimeTypeCd());
-        entity.setStoredNm(body.getStoredNm());
-        entity.setAttachUrl(body.getAttachUrl());
-        entity.setCdnHost(body.getCdnHost());
-        entity.setCdnImgUrl(body.getCdnImgUrl());
-        entity.setCdnThumbUrl(body.getCdnThumbUrl());
-        entity.setStorageType(body.getStorageType());
-        entity.setStoragePath(body.getStoragePath());
-        entity.setThumbFileNm(body.getThumbFileNm());
-        entity.setThumbStoredNm(body.getThumbStoredNm());
-        entity.setThumbUrl(body.getThumbUrl());
-        entity.setThumbCdnUrl(body.getThumbCdnUrl());
-        entity.setThumbGeneratedYn(body.getThumbGeneratedYn());
-        entity.setSortOrd(body.getSortOrd());
-        entity.setAttachMemo(body.getAttachMemo());
+        VoUtil.voCopyExclude(body, entity, "attachId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyAttach saved = repository.save(entity);

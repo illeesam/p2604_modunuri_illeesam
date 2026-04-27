@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -62,25 +63,7 @@ public class BoMbCustInfoService {
     @Transactional
     public MbMemberDto update(String id, MbMember body) {
         MbMember entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setSiteId(body.getSiteId());
-        entity.setLoginId(body.getLoginId());
-        entity.setLoginPwdHash(body.getLoginPwdHash());
-        entity.setMemberNm(body.getMemberNm());
-        entity.setMemberPhone(body.getMemberPhone());
-        entity.setMemberGender(body.getMemberGender());
-        entity.setBirthDate(body.getBirthDate());
-        entity.setGradeCd(body.getGradeCd());
-        entity.setMemberStatusCd(body.getMemberStatusCd());
-        entity.setMemberStatusCdBefore(body.getMemberStatusCdBefore());
-        entity.setJoinDate(body.getJoinDate());
-        entity.setLastLogin(body.getLastLogin());
-        entity.setOrderCount(body.getOrderCount());
-        entity.setTotalPurchaseAmt(body.getTotalPurchaseAmt());
-        entity.setCacheBalanceAmt(body.getCacheBalanceAmt());
-        entity.setMemberZipCode(body.getMemberZipCode());
-        entity.setMemberAddr(body.getMemberAddr());
-        entity.setMemberAddrDetail(body.getMemberAddrDetail());
-        entity.setMemberMemo(body.getMemberMemo());
+        VoUtil.voCopyExclude(body, entity, "memberId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         MbMember saved = repository.save(entity);

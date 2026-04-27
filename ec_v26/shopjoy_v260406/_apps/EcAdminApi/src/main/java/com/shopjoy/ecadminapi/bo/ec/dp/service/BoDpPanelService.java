@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -63,17 +64,7 @@ public class BoDpPanelService {
     @Transactional
     public DpPanelDto update(String id, DpPanel body) {
         DpPanel entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setSiteId(body.getSiteId());
-        entity.setPanelNm(body.getPanelNm());
-        entity.setPanelTypeCd(body.getPanelTypeCd());
-        entity.setDispPath(body.getDispPath());
-        entity.setVisibilityTargets(body.getVisibilityTargets());
-        entity.setUseYn(body.getUseYn());
-        entity.setUseStartDate(body.getUseStartDate());
-        entity.setUseEndDate(body.getUseEndDate());
-        entity.setDispPanelStatusCd(body.getDispPanelStatusCd());
-        entity.setDispPanelStatusCdBefore(body.getDispPanelStatusCdBefore());
-        entity.setContentJson(body.getContentJson());
+        VoUtil.voCopyExclude(body, entity, "panelId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         DpPanel saved = repository.save(entity);

@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -63,10 +64,7 @@ public class BoMbMemGroupService {
     @Transactional
     public MbMemberGroupDto update(String id, MbMemberGroup body) {
         MbMemberGroup entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setSiteId(body.getSiteId());
-        entity.setGroupNm(body.getGroupNm());
-        entity.setGroupMemo(body.getGroupMemo());
-        entity.setUseYn(body.getUseYn());
+        VoUtil.voCopyExclude(body, entity, "memberGroupId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         MbMemberGroup saved = repository.save(entity);

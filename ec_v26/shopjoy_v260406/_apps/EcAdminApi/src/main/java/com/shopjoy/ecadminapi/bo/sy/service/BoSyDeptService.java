@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -68,15 +69,7 @@ public class BoSyDeptService {
     @Transactional
     public SyDeptDto update(String id, SyDept body) {
         SyDept entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setSiteId(body.getSiteId());
-        entity.setDeptCode(body.getDeptCode());
-        entity.setDeptNm(body.getDeptNm());
-        entity.setParentDeptId(body.getParentDeptId());
-        entity.setDeptTypeCd(body.getDeptTypeCd());
-        entity.setManagerId(body.getManagerId());
-        entity.setSortOrd(body.getSortOrd());
-        entity.setUseYn(body.getUseYn());
-        entity.setDeptRemark(body.getDeptRemark());
+        VoUtil.voCopyExclude(body, entity, "deptId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyDept saved = repository.save(entity);

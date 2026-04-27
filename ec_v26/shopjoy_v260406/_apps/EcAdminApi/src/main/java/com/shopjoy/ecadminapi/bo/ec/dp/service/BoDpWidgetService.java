@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -63,20 +64,7 @@ public class BoDpWidgetService {
     @Transactional
     public DpWidgetDto update(String id, DpWidget body) {
         DpWidget entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setWidgetLibId(body.getWidgetLibId());
-        entity.setSiteId(body.getSiteId());
-        entity.setWidgetNm(body.getWidgetNm());
-        entity.setWidgetTypeCd(body.getWidgetTypeCd());
-        entity.setWidgetDesc(body.getWidgetDesc());
-        entity.setWidgetTitle(body.getWidgetTitle());
-        entity.setWidgetContent(body.getWidgetContent());
-        entity.setTitleShowYn(body.getTitleShowYn());
-        entity.setWidgetLibRefYn(body.getWidgetLibRefYn());
-        entity.setWidgetConfigJson(body.getWidgetConfigJson());
-        entity.setPreviewImgUrl(body.getPreviewImgUrl());
-        entity.setSortOrd(body.getSortOrd());
-        entity.setUseYn(body.getUseYn());
-        entity.setDispEnv(body.getDispEnv());
+        VoUtil.voCopyExclude(body, entity, "widgetId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         DpWidget saved = repository.save(entity);

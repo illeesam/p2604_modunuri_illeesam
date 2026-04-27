@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -63,11 +64,7 @@ public class BoCmBlogService {
     @Transactional
     public CmBlogDto update(String id, CmBlog body) {
         CmBlog entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setBlogTitle(body.getBlogTitle());
-        entity.setBlogContent(body.getBlogContent());
-        entity.setBlogAuthor(body.getBlogAuthor());
-        entity.setBlogCateId(body.getBlogCateId());
-        entity.setUseYn(body.getUseYn());
+        VoUtil.voCopyExclude(body, entity, "blogId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         CmBlog saved = repository.save(entity);
