@@ -27,6 +27,7 @@ window.StRawMng = {
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
+        handleSearchList('DEFAULT');
       }
     });
 
@@ -97,8 +98,10 @@ const rawList = reactive([]);
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      handleSearchList('DEFAULT');
+      if (isAppReady.value) {
+        fnLoadCodes();
+        handleSearchList('DEFAULT');
+      }
       Object.assign(searchParamOrg, searchParam);
     });
 
