@@ -9,6 +9,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbMemberMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberAddrRepository;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdClaimMapper;
@@ -65,13 +66,7 @@ public class FoMyPageService {
         MbMember member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
 
-        if (body.getMemberNm()      != null) member.setMemberNm(body.getMemberNm());
-        if (body.getMemberPhone()   != null) member.setMemberPhone(body.getMemberPhone());
-        if (body.getMemberGender()  != null) member.setMemberGender(body.getMemberGender());
-        if (body.getBirthDate()     != null) member.setBirthDate(body.getBirthDate());
-        if (body.getMemberZipCode() != null) member.setMemberZipCode(body.getMemberZipCode());
-        if (body.getMemberAddr()    != null) member.setMemberAddr(body.getMemberAddr());
-        if (body.getMemberAddrDetail() != null) member.setMemberAddrDetail(body.getMemberAddrDetail());
+        VoUtil.voCopyInclude(body, member, "memberNm^memberPhone^memberGender^birthDate^memberZipCode^memberAddr^memberAddrDetail");
         member.setUpdBy(memberId);
         member.setUpdDate(LocalDateTime.now());
         MbMember saved = memberRepository.save(member);
