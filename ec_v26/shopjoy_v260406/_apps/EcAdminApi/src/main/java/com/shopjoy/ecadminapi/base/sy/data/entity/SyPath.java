@@ -2,20 +2,19 @@ package com.shopjoy.ecadminapi.base.sy.data.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "sy_path", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
-// 경로 엔티티
 public class SyPath {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "path_id")
+    private Long pathId;
+
     @Column(name = "biz_cd", length = 50, nullable = false)
     private String bizCd;
 
@@ -45,5 +44,4 @@ public class SyPath {
 
     @Column(name = "upd_date")
     private LocalDateTime updDate;
-
 }

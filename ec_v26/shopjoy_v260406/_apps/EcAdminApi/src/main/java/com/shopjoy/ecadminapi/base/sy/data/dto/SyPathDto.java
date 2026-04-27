@@ -1,14 +1,12 @@
 package com.shopjoy.ecadminapi.base.sy.data.dto;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import java.time.LocalDateTime;
 
 @Getter @Setter @NoArgsConstructor
 public class SyPathDto {
 
-    // ── sy_path ──────────────────────────────────────────
+    private Long pathId;
     private String bizCd;
     private Long parentPathId;
     private String pathLabel;
@@ -19,6 +17,4 @@ public class SyPathDto {
     private LocalDateTime regDate;
     private String updBy;
     private LocalDateTime updDate;
-
-    // ── JOIN: 필요 시 추가 ────────────────────────────────────────
 }

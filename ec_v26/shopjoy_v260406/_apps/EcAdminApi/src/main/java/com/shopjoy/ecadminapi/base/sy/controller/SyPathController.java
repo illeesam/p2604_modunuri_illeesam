@@ -13,61 +13,46 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/base/sy/path")
+@RequestMapping("/api/bo/sy/path")
 @RequiredArgsConstructor
 public class SyPathController {
 
     private final SyPathService service;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<SyPathDto>>> list(
-            @RequestParam Map<String, Object> p) {
-        List<SyPathDto> result = service.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<List<SyPathDto>>> list(@RequestParam Map<String, Object> p) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
     }
 
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<SyPathDto>>> page(
-            @RequestParam Map<String, Object> p) {
-        PageResult<SyPathDto> result = service.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<PageResult<SyPathDto>>> page(@RequestParam Map<String, Object> p) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyPathDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyPathDto>> getById(@PathVariable Long id) {
         SyPathDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
-    /* ── 등록 (JPA) ── */
     @PostMapping
     public ResponseEntity<ApiResponse<SyPath>> create(@RequestBody SyPath entity) {
-        SyPath result = service.create(entity);
-        return ResponseEntity.status(201).body(ApiResponse.created(result));
+        return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 
-    /* ── 전체 수정 (JPA) ── */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyPath>> save(
-            @PathVariable String id, @RequestBody SyPath entity) {
-        entity.setBizCd(id);
-        SyPath result = service.save(entity);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<SyPath>> save(@PathVariable Long id, @RequestBody SyPath entity) {
+        return ResponseEntity.ok(ApiResponse.ok(service.save(id, entity)));
     }
 
-    /* ── 선택 필드 수정 (MyBatis) ── */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable String id, @RequestBody SyPath entity) {
-        entity.setBizCd(id);
-        int result = service.update(entity);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<Integer>> update(@PathVariable Long id, @RequestBody SyPath entity) {
+        return ResponseEntity.ok(ApiResponse.ok(service.update(id, entity)));
     }
 
-    /* ── 삭제 (JPA) ── */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

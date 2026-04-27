@@ -11,7 +11,7 @@ import java.util.Map;
 @Mapper
 public interface SyPathMapper {
 
-    SyPathDto selectById(@Param("id") String id);
+    SyPathDto selectById(@Param("id") Long id);
 
     List<SyPathDto> selectList(@Param("p") Map<String, Object> p);
 

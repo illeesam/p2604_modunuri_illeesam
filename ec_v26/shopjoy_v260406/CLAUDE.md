@@ -370,10 +370,15 @@ Order/Claim/Dliv Mng의 "변경작업 선택" 모달:
 | **Port** | 17632 |
 | **Database** | postgres |
 | **Username** | postgres |
-| **Password** | (별도 전달) |
+| **Password** | postgresilleesam |
 | **Default Schema** | shopjoy_2604 |
 
-> 데이터베이스 접속 비밀번호는 이후 별도로 전달 예정
+**Spring Boot 실행 파라미터**:
+```
+-Dspring.profiles.active=dev -DDB_HOST=illeesam.synology.me -DDB_PORT=17632 -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=postgresilleesam
+```
+
+> 상세 설정 → `_doc/정책서-dev/db-connection.md`
 
 ## EcAdminApi Controller / Service 파라미터 패턴
 

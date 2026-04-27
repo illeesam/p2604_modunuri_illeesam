@@ -39,36 +39,54 @@ window.PdCategoryMng = {
     /* ── 검색 파라미터 ── */
     const searchParam = reactive({
       kw: '',
-      depth: '',
-      status: ''
+      categoryDepth: '',
+      categoryStatusCd: ''
     });
     const searchParamOrg = reactive({
       kw: '',
-      depth: '',
-      status: ''
+      categoryDepth: '',
+      categoryStatusCd: ''
     });
 
     /* ── 트리 expanded 상태 (ref+Set 재할당으로 반응성 보장) ── */
     const expandedSet = reactive(new Set());
 
     /* depth 1 노드 기본 펼침 (2레벨 노출) */
-    const handleSearchList = async (searchType = 'DEFAULT') => {
+    /* 좌측 트리용 전체 카테고리 조회 (트리 렌더링 전용) */
+    const handleSearchList = async () => {
       try {
-        const res = await window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '카테고리관리', 'X-Cmd-Nm': '조회' } });
+        const res = await window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '카테고리관리', 'X-Cmd-Nm': '트리조회' } });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         categories.splice(0, categories.length, ...list);
+        expandedSet.clear();
+        categories.filter(c => c.categoryDepth === 1).forEach(c => expandedSet.add(c.categoryId));
+      } catch (e) {
+        console.error('[handleSearchList]', e);
+      }
+    };
+
+    /* 우측 그리드 조회 — 선택 카테고리의 직계 자식을 API로 조회 */
+    const handleGridSearch = async () => {
+      try {
+        const params = { pageNo: 1, pageSize: 10000, ...searchParam };
+        if (uiState.selectedCatId) params.parentCategoryId = uiState.selectedCatId;
+        const res = await window.boApi.get('/bo/ec/pd/category/page', { params, headers: { 'X-UI-Nm': '카테고리관리', 'X-Cmd-Nm': '조회' } });
+        const list = res.data?.data?.pageList || res.data?.data?.list || [];
         gridRows.splice(0);
         buildTreeRows(list).forEach(c => gridRows.push(makeRow(c)));
-      } catch (_) {
-      console.error('[catch-info]', _);}
-      expandedSet.clear();
-      categories.filter(c => c.depth === 1).forEach(c => expandedSet.add(c.categoryId));
+        pager.pageNo = 1;
+      } catch (e) {
+        console.error('[handleGridSearch]', e);
+      }
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
-    Object.assign(searchParamOrg, searchParam); });
+    onMounted(async () => {
+      if (isAppReady.value) fnLoadCodes();
+      Object.assign(searchParamOrg, searchParam);
+      await handleSearchList();
+      await handleGridSearch();
+    });
     const isExpanded  = id => expandedSet.has(id);
     const toggleNode  = id => {
       if (expandedSet.has(id)) expandedSet.delete(id); else expandedSet.add(id);
@@ -81,7 +99,7 @@ window.PdCategoryMng = {
       uiState.selectedCatId = (uiState.selectedCatId === id) ? null : id;
     };
 
-    watch(() => uiState.selectedCatId, () => handleSearchList());
+    watch(() => uiState.selectedCatId, () => handleGridSearch());
 
     /* ── 좌측 트리 빌드 (expanded 반영) ── */
     const cfCatTreeFlat = computed(() => {
@@ -89,8 +107,8 @@ window.PdCategoryMng = {
       const cats = categories;
       const map = {};
       window.safeArrayUtils.safeForEach(cats, c => { map[c.categoryId] = { ...c, _children: [] }; });
-      window.safeArrayUtils.safeForEach(cats, c => { if (c.parentId && map[c.parentId]) map[c.parentId]._children.push(map[c.categoryId]); });
-      const roots = window.safeArrayUtils.safeFilter(cats, c => !c.parentId).map(c => map[c.categoryId]).sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
+      window.safeArrayUtils.safeForEach(cats, c => { if (c.parentCategoryId && map[c.parentCategoryId]) map[c.parentCategoryId]._children.push(map[c.categoryId]); });
+      const roots = window.safeArrayUtils.safeFilter(cats, c => !c.parentCategoryId).map(c => map[c.categoryId]).sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
       const result = [];
       const traverse = (node, depth) => {
         result.push({ ...node, _depth: depth, _hasChildren: node._children.length > 0 });
@@ -106,7 +124,7 @@ window.PdCategoryMng = {
     const gridRows   = reactive([]);
     let   _tempId    = -1;
         const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status'];
+const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc', 'categoryStatusCd'];
 
     /* 그리드 트리 평탄화 */
     const buildTreeRows = (items) => {
@@ -114,7 +132,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status
       window.safeArrayUtils.safeForEach(items, c => { map[c.categoryId] = { ...c, _children: [] }; });
       const roots = [];
       window.safeArrayUtils.safeForEach(items, c => {
-        if (c.parentId && map[c.parentId]) map[c.parentId]._children.push(map[c.categoryId]);
+        if (c.parentCategoryId && map[c.parentCategoryId]) map[c.parentCategoryId]._children.push(map[c.categoryId]);
         else roots.push(map[c.categoryId]);
       });
       const result = [];
@@ -127,8 +145,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status
     };
 
     const makeRow = c => ({
-      ...c, _depth: c._depth || 0, _row_status: 'N', _row_check: false,
-      _orig: { categoryNm: c.categoryNm, parentId: c.parentId, sortOrd: c.sortOrd, description: c.description, status: c.status },
+      ...c, _depth: c._depth || 0, _row_status: null, _row_check: false,
+      _orig: { categoryNm: c.categoryNm, parentCategoryId: c.parentCategoryId, sortOrd: c.sortOrd, categoryDesc: c.categoryDesc, categoryStatusCd: c.categoryStatusCd },
     });
 
 
@@ -145,12 +163,12 @@ const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status
 
     const onSearch = async () => {
       pager.pageNo = 1;
-      await handleSearchList('DEFAULT');
+      await handleGridSearch();
     };
-  
-    const onReset = () => {
+
+    const onReset = async () => {
       Object.assign(searchParam, searchParamOrg);
-      handleSearchList();
+      await handleGridSearch();
     };
     const catPickerModal = reactive({ show: false, search: '', forCategoryId: null, forRowIdx: null });
     const cfCatPickerList = computed(() => {
@@ -160,7 +178,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status
     const onParentSelect = (c) => {
       const idx = catPickerModal.forRowIdx;
       if (idx != null && gridRows[idx]) {
-        gridRows[idx].parentId = c ? c.categoryId : null;
+        gridRows[idx].parentCategoryId = c ? c.categoryId : null;
         if (gridRows[idx]._row_status !== 'N') gridRows[idx]._row_status = 'U';
       }
       catPickerModal.show = false;
@@ -173,39 +191,66 @@ const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status
     const fnDepthColor = (d) => ({0:'#e8587a',1:'#1677ff',2:'#3ba87a'}[d] || '#999');
     const fnDepthBullet = (d) => ['●','○','▪'][d] || '·';
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
+    const parentNm = (id) => (categories || []).find(c => c.categoryId === id)?.categoryNm || id;
+
+    const onCellChange = (row) => { if (row._row_status !== 'N') row._row_status = 'U'; };
+
+    const checkAll = ref(false);
+    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = checkAll.value; }); };
+
+    const dragRowIdx = ref(null);
+    const dragoverRowIdx = ref(null);
+    const onRowDragStart = (idx) => { dragRowIdx.value = idx; };
+    const onRowDragOver = (idx) => { dragoverRowIdx.value = idx; };
+    const onRowDrop = () => {
+      const from = dragRowIdx.value, to = dragoverRowIdx.value;
+      dragRowIdx.value = null; dragoverRowIdx.value = null;
+      if (from == null || to == null || from === to) return;
+      const [moved] = gridRows.splice(from, 1);
+      gridRows.splice(to, 0, moved);
+      // 같은 부모 그룹 내 sortOrd 재계산
+      const parentId = moved.parentCategoryId || null;
+      let ord = 1;
+      gridRows.forEach(r => {
+        if ((r.parentCategoryId || null) === parentId) {
+          r.sortOrd = ord++;
+          if (r._row_status == null) r._row_status = 'U';
+        }
+      });
+    };
 
     /* ── 행 편집 ── */
     const focusedIdx = ref(-1);
     const setFocused = (idx) => { focusedIdx.value = idx; };
     const addRow = () => {
-      const parentId = uiState.selectedCatId || null;
-      const parent = parentId ? (categories || []).find(c => c.categoryId === parentId) : null;
-      const depth = parent ? ((parent.depth || 0) + 1) : 0;
+      const parentCategoryId = uiState.selectedCatId || null;
+      const parent = parentCategoryId ? (categories || []).find(c => c.categoryId === parentCategoryId) : null;
+      const categoryDepth = parent ? ((parent.categoryDepth || 0) + 1) : 1;
       gridRows.unshift({
         categoryId: _tempId--,
         categoryNm: '',
-        parentId,
+        parentCategoryId,
         sortOrd: 0,
-        description: '',
-        status: '활성',
-        depth,
-        _depth: depth,
+        categoryDesc: '',
+        categoryStatusCd: 'ACTIVE',
+        categoryDepth,
+        _depth: categoryDepth - 1,
         _row_status: 'N',
         _row_check: false,
       });
       pager.pageNo = 1;
     };
     const addChildRow = (row, idx) => {
-      const depth = (row.depth || row._depth || 0) + 1;
+      const categoryDepth = (row.categoryDepth || 1) + 1;
       gridRows.splice(idx + 1, 0, {
         categoryId: _tempId--,
         categoryNm: '',
-        parentId: row.categoryId,
+        parentCategoryId: row.categoryId,
         sortOrd: 0,
-        description: '',
-        status: '활성',
-        depth,
-        _depth: depth,
+        categoryDesc: '',
+        categoryStatusCd: 'ACTIVE',
+        categoryDepth,
+        _depth: categoryDepth - 1,
         _row_status: 'N',
         _row_check: false,
       });
@@ -289,7 +334,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status
         }
       }
       props.showToast?.('저장되었습니다.', 'success');
-      await handleSearchList();
+      await handleSearchList();   // 트리 갱신
+      await handleGridSearch();   // 그리드 갱신
     };
 
     // ── return ───────────────────────────────────────────────────────────────
@@ -297,13 +343,15 @@ const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status
     return {
       codes, uiState,
       expandedSet, isExpanded, toggleNode, expandAll, collapseAll, cfCatTreeFlat,
-      selectNode,
+      selectNode, handleGridSearch,
       searchParam, searchParamOrg,
       gridRows, cfPagedRows, cfTotal, pager, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       onSearch, onReset,
-      catPickerModal, cfCatPickerList, onParentSelect, openParentModal, fnDepthColor, fnDepthBullet,
+      catPickerModal, cfCatPickerList, onParentSelect, openParentModal, fnDepthColor, fnDepthBullet, parentNm,
       focusedIdx, setFocused, addRow, addChildRow, cancelRow, cancelChecked, deleteRow, deleteRows, handleSave,
-      fnStatusClass,
+      fnStatusClass, onCellChange,
+      checkAll, toggleCheckAll,
+      dragoverRowIdx, onRowDragStart, onRowDragOver, onRowDrop,
     };
   },
 
@@ -327,17 +375,17 @@ const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status
       <label class="search-label">카테고리명</label>
       <input class="form-control" v-model="searchParam.kw" placeholder="카테고리명 검색" style="max-width:240px" @keyup.enter="() => onSearch?.()">
       <label class="search-label">단계</label>
-      <select class="form-control" v-model="searchParam.depth" style="width:120px">
+      <select class="form-control" v-model="searchParam.categoryDepth" style="width:120px">
         <option value="">전체</option>
         <option value="1">1단계 (대)</option>
         <option value="2">2단계 (중)</option>
         <option value="3">3단계 (소)</option>
       </select>
       <label class="search-label">상태</label>
-      <select class="form-control" v-model="searchParam.status" style="width:100px">
+      <select class="form-control" v-model="searchParam.categoryStatusCd" style="width:100px">
         <option value="">전체</option>
-        <option>활성</option>
-        <option>비활성</option>
+        <option value="ACTIVE">활성</option>
+        <option value="INACTIVE">비활성</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
@@ -376,7 +424,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status
           <span v-else style="display:inline-block;width:16px"></span>
           <span :style="{ fontSize:'11px', fontWeight:600, color:fnDepthColor(cat._depth), marginRight:'5px' }">{{ fnDepthBullet(cat._depth) }}</span>
           <span style="font-size:12px">{{ cat.categoryNm }}</span>
-          <span v-if="cat.status==='비활성'" style="font-size:10px;color:#bbb;margin-left:4px">(비활성)</span>
+          <span v-if="cat.categoryStatusCd==='INACTIVE'" style="font-size:10px;color:#bbb;margin-left:4px">(비활성)</span>
         </div>
         <div v-if="!cfCatTreeFlat.length" style="text-align:center;padding:20px;color:#aaa;font-size:12px">카테고리 없음</div>
       </div>
@@ -469,8 +517,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status
             <td style="padding:3px 8px">
               <div style="display:flex;align-items:center;gap:4px">
                 <span style="flex:1;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
-                      :style="row.parentId ? 'color:#444' : 'color:#bbb;font-style:italic'">
-                  {{ row.parentId ? parentNm(row.parentId) : '최상위' }}
+                      :style="row.parentCategoryId ? 'color:#444' : 'color:#bbb;font-style:italic'">
+                  {{ row.parentCategoryId ? parentNm(row.parentCategoryId) : '최상위' }}
                 </span>
                 <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
                         style="flex-shrink:0;padding:1px 6px;font-size:11px;color:#e8587a"
@@ -486,16 +534,16 @@ const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status
 
             <!-- ── 설명 ─────────────────────────────────────────────────── -->
             <td style="padding:3px 6px">
-              <input class="grid-input" v-model="row.description"
+              <input class="grid-input" v-model="row.categoryDesc"
                      :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="설명">
             </td>
 
             <!-- ── 활성 ─────────────────────────────────────────────────── -->
             <td style="padding:3px 4px;text-align:center">
-              <select class="grid-select" v-model="row.status"
+              <select class="grid-select" v-model="row.categoryStatusCd"
                       :disabled="row._row_status==='D'" @change="onCellChange(row)" style="width:58px">
-                <option>활성</option>
-                <option>비활성</option>
+                <option value="ACTIVE">활성</option>
+                <option value="INACTIVE">비활성</option>
               </select>
             </td>
 
@@ -514,7 +562,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status
 
             <!-- ── 삭제 ─────────────────────────────────────────────────── -->
             <td style="text-align:center;padding:2px">
-              <button v-if="['N','U'].includes(row._row_status)"
+              <button v-if="row._row_status !== 'D'"
                       class="btn btn-danger btn-xs" @click.stop="deleteRow(getRealIdx(idx))">삭제</button>
             </td>
           </tr>
@@ -555,12 +603,12 @@ const EDIT_FIELDS = ['categoryNm', 'parentId', 'sortOrd', 'description', 'status
                @click="onParentSelect(null)">최상위 (상위없음)</div>
           <div v-for="c in cfCatPickerList" :key="c?.categoryId"
                style="padding:7px 12px;font-size:13px;border-bottom:1px solid #f9f9f9;cursor:pointer;display:flex;align-items:center;gap:6px"
-               :style="{ paddingLeft: (c.depth * 14 + 12) + 'px' }"
+               :style="{ paddingLeft: (c.categoryDepth * 14 + 12) + 'px' }"
                @mouseenter="$event.target.style.background='#f5f5f5'" @mouseleave="$event.target.style.background=''"
                @click="onParentSelect(c)">
-            <span :style="{ fontSize:'11px', fontWeight:700, color:fnDepthColor((c.depth||1)-1) }">{{ fnDepthBullet((c.depth||1)-1) }}</span>
+            <span :style="{ fontSize:'11px', fontWeight:700, color:fnDepthColor((c.categoryDepth||1)-1) }">{{ fnDepthBullet((c.categoryDepth||1)-1) }}</span>
             <span>{{ c.categoryNm }}</span>
-            <span style="font-size:11px;color:#aaa;margin-left:auto">depth {{ c.depth }}</span>
+            <span style="font-size:11px;color:#aaa;margin-left:auto">depth {{ c.categoryDepth }}</span>
           </div>
           <div v-if="!cfCatPickerList.length" style="text-align:center;padding:20px;color:#aaa">검색 결과 없음</div>
         </div>

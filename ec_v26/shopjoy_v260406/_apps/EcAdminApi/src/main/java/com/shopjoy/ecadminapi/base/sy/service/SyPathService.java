@@ -4,90 +4,74 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyPathDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyPath;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyPathMapper;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
-import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
 
 @Service
 @RequiredArgsConstructor
 public class SyPathService {
 
-
     private final SyPathMapper mapper;
     private final SyPathRepository repository;
 
-    // ── MyBatis 조회 ────────────────────────────────────────────
-
     @Transactional(readOnly = true)
-    public SyPathDto getById(String id) {
-        // sy_path :: select one :: id [orm:mybatis]
-        SyPathDto result = mapper.selectById(id);
-        return result;
+    public SyPathDto getById(Long id) {
+        return mapper.selectById(id);
     }
 
     @Transactional(readOnly = true)
     public List<SyPathDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // sy_path :: select list :: p [orm:mybatis]
-        List<SyPathDto> result = mapper.selectList(p);
-        return result;
+        return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyPathDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        // sy_path :: select page :: p [orm:mybatis]
-        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+        return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p),
+                PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
-
-    @Transactional
-    public int update(SyPath entity) {
-        // sy_path :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
-        return result;
-    }
-
-    // ── JPA 저장/삭제 ────────────────────────────────────────────
 
     @Transactional
     public SyPath create(SyPath entity) {
-        entity.setBizCd(CmUtil.generateId("sy_path"));
-        entity.setRegBy(SecurityUtil.getAuthUser().authId());
+        entity.setPathId(null); // BIGSERIAL — DB가 자동 생성
+        entity.setRegBy(CmUtil.nvl(SecurityUtil.getAuthUser().authId(), "system"));
         entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdBy(CmUtil.nvl(SecurityUtil.getAuthUser().authId(), "system"));
         entity.setUpdDate(LocalDateTime.now());
-        // sy_path :: insert or update :: [orm:jpa]
-        SyPath result = repository.save(entity);
-        return result;
+        return repository.save(entity);
     }
 
     @Transactional
-    public SyPath save(SyPath entity) {
-        if (!repository.existsById(entity.getBizCd()))
-            throw new CmBizException("존재하지 않는 SyPath입니다: " + entity.getBizCd());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        // sy_path :: insert or update :: [orm:jpa]
-        SyPath result = repository.save(entity);
-        return result;
-    }
-
-    @Transactional
-    public void delete(String id) {
+    public SyPath save(Long id, SyPath entity) {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 SyPath입니다: " + id);
-        // sy_path :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        entity.setPathId(id);
+        entity.setUpdBy(CmUtil.nvl(SecurityUtil.getAuthUser().authId(), "system"));
+        entity.setUpdDate(LocalDateTime.now());
+        return repository.save(entity);
     }
 
+    @Transactional
+    public int update(Long id, SyPath entity) {
+        entity.setPathId(id);
+        return mapper.updateSelective(entity);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        if (!repository.existsById(id))
+            throw new CmBizException("존재하지 않는 SyPath입니다: " + id);
+        repository.deleteById(id);
+    }
 }
