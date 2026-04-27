@@ -168,6 +168,49 @@ public void delete(String id) {
 
 ---
 
+## VoUtil을 이용한 필드 자동 복사
+
+Entity 수정 시 Request Body의 필드를 일일이 매핑하지 않고 `VoUtil.voCopy()`로 자동 복사 가능.
+
+### 사용법
+
+**기본 사용 (null이 아닌 필드만 복사)**:
+```java
+@Transactional
+public XxxDto update(String id, XxxVo body) {
+    Xxx entity = repository.findById(id)
+        .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+    VoUtil.voCopy(body, entity);  // null이 아닌 필드만 entity에 복사
+    entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+    entity.setUpdDate(LocalDateTime.now());
+    Xxx saved = repository.save(entity);
+    if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+    em.flush();
+    return getById(id);
+}
+```
+
+**제외 필드 지정**:
+```java
+// id, regBy, regDate는 복사하지 않음
+VoUtil.voCopy(body, entity, "id", "regBy", "regDate");
+```
+
+### 안전성 보장
+
+1. **null 안전**: null 값은 복사하지 않음 (선택적 수정만 반영)
+2. **타입 검증**: 타입이 다른 필드는 복사하지 않음
+3. **필드 누락 허용**: VO에 있지만 Entity에 없는 필드는 무시 (부분 복사)
+4. **필드명 일치**: 같은 이름의 필드만 자동 매핑
+
+### 사용 제약
+
+- Entity와 VO의 필드명이 **정확히 일치**해야 함
+- MyBatis `<if test="field != null">` 조건은 여전히 유효함 (null 값이 복사되지 않으므로)
+- JPA dirty checking은 정상 작동 (필드 변경이 감지됨)
+
+---
+
 ## FO Service CRUD 메서드 필수 패턴 (v2.0)
 
 **2026-04-28 업데이트**: 모든 FO Service에 필수 적용. 사용자 마주보는 API이므로 데이터 검증 및 오류 처리 필수.
