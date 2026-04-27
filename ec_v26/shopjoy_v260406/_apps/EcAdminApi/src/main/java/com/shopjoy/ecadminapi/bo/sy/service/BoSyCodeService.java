@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -66,15 +67,7 @@ public class BoSyCodeService {
     @Transactional
     public SyCodeDto update(String id, SyCode body) {
         SyCode entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setSiteId(body.getSiteId());
-        entity.setCodeGrp(body.getCodeGrp());
-        entity.setCodeValue(body.getCodeValue());
-        entity.setCodeLabel(body.getCodeLabel());
-        entity.setSortOrd(body.getSortOrd());
-        entity.setUseYn(body.getUseYn());
-        entity.setParentCodeValue(body.getParentCodeValue());
-        entity.setChildCodeValues(body.getChildCodeValues());
-        entity.setCodeRemark(body.getCodeRemark());
+        VoUtil.voCopy(body, entity, "codeId", "regBy", "regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyCode saved = repository.save(entity);
