@@ -380,11 +380,17 @@
       };
 
       /* ── Hash routing ── */
-      const readHash = () => {
+      const readHash = (showNotification = false) => {
         const raw = String(window.location.hash || '').replace(/^#/, '');
         const p   = new URLSearchParams(raw);
         const pg  = p.get('page');
         if (pg && ALL_PAGES.includes(pg)) {
+          const isLoggedIn = !!localStorage.getItem('modu-bo-accessToken');
+          if (!isLoggedIn && pg !== 'dashboard') {
+            if (showNotification) showToast('로그인이 필요합니다.', 'error');
+            page.value = 'dashboard';
+            return;
+          }
           page.value = pg;
           if (PAGE_TO_TOP[pg]) activeTop.value = PAGE_TO_TOP[pg];
           addTab(toTabId(pg));
@@ -392,9 +398,14 @@
         const id = p.get('id');
         editId.value = id !== null ? (isNaN(id) ? id : Number(id)) : null;
       };
-      readHash();
+      readHash(false);
 
       const navigate = (pg, opts = {}) => {
+        const isLoggedIn = !!localStorage.getItem('modu-bo-accessToken');
+        if (!isLoggedIn && pg !== 'dashboard') {
+          showToast('로그인이 필요합니다.', 'error');
+          return;
+        }
         page.value      = pg;
         editId.value    = opts.id ?? null;
         if (PAGE_TO_TOP[pg]) activeTop.value = PAGE_TO_TOP[pg];
@@ -409,8 +420,9 @@
         window.scrollTo(0, 0);
       };
 
-      window.addEventListener('hashchange', readHash);
-      onBeforeUnmount(() => window.removeEventListener('hashchange', readHash));
+      const readHashWithNotification = () => readHash(true);
+      window.addEventListener('hashchange', readHashWithNotification);
+      onBeforeUnmount(() => window.removeEventListener('hashchange', readHashWithNotification));
 
       /* ── Toast (누적 스택) ── */
       const toasts  = reactive([]);
