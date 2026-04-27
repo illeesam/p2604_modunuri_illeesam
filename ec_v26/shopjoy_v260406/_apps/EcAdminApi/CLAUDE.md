@@ -98,6 +98,169 @@ public List<XxxDto> getMyXxx(Map<String, Object> p) {
 
 ---
 
+## CRUD 메서드 필수 패턴 (v2.0)
+
+**2026-04-28 업데이트**: 모든 BO Service에 필수 적용
+
+### getById / getById - 필수 검증
+
+```java
+@Transactional(readOnly = true)
+public XxxDto getById(String id) {
+    XxxDto dto = mapper.selectById(id);
+    if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+    return dto;
+}
+```
+
+### create - 저장 확인
+
+```java
+@Transactional
+public Xxx create(Xxx body) {
+    body.setId("ID" + LocalDateTime.now().format(ID_FMT) + ...);
+    body.setRegBy(SecurityUtil.getAuthUser().authId());
+    body.setRegDate(LocalDateTime.now());
+    body.setUpdBy(SecurityUtil.getAuthUser().authId());
+    body.setUpdDate(LocalDateTime.now());
+    Xxx saved = repository.save(body);
+    if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+    return saved;
+}
+```
+
+### update - 필드 복사 + 저장 확인 필수
+
+```java
+@Transactional
+public XxxDto update(String id, Xxx body) {
+    Xxx entity = repository.findById(id)
+        .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+    // ← 모든 업데이트 가능 필드 복사 (updBy, updDate, regBy, regDate 제외)
+    entity.setField1(body.getField1());
+    entity.setField2(body.getField2());
+    entity.setField3(body.getField3());
+    entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+    entity.setUpdDate(LocalDateTime.now());
+    Xxx saved = repository.save(entity);
+    if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+    em.flush();
+    return getById(id);
+}
+```
+
+### delete - 존재 확인
+
+```java
+@Transactional
+public void delete(String id) {
+    if (!repository.existsById(id)) 
+        throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+    repository.deleteById(id);
+}
+```
+
+**⚠️ 주의사항**:
+- ❌ update() 메서드에서 body의 필드를 entity에 복사하지 않으면 UPDATE SQL이 생성되지 않음
+- ❌ save() 결과를 확인하지 않으면 저장 실패를 감지할 수 없음
+- ✅ 모든 수정 가능 필드를 명시적으로 복사 (`entity.setXxx(body.getXxx())`)
+- ✅ save() 반환값이 null이면 CmBizException 발생
+
+---
+
+## FO Service CRUD 메서드 필수 패턴 (v2.0)
+
+**2026-04-28 업데이트**: 모든 FO Service에 필수 적용. 사용자 마주보는 API이므로 데이터 검증 및 오류 처리 필수.
+
+### getById / getMyXxx - 필수 검증
+
+```java
+@Transactional(readOnly = true)
+public XxxDto getById(String id) {
+    XxxDto dto = mapper.selectById(id);
+    if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
+    return dto;
+}
+
+// FO 조회: memberId는 SecurityUtil로 주입 + 권한 검증
+@Transactional(readOnly = true)
+public List<XxxDto> getMyXxx(Map<String, Object> p) {
+    String memberId = SecurityUtil.getAuthUser().authId();
+    p.put("memberId", memberId);
+    List<XxxDto> list = mapper.selectList(p);
+    if (list == null || list.isEmpty()) 
+        throw new CmBizException("조회 결과가 없습니다.");
+    return list;
+}
+```
+
+### create - 저장 확인 + ID 생성
+
+```java
+@Transactional
+public Xxx create(Xxx body) {
+    body.setId(CmUtil.generateId("prefix"));
+    body.setMemberId(SecurityUtil.getAuthUser().authId());
+    body.setRegBy(SecurityUtil.getAuthUser().authId());
+    body.setRegDate(LocalDateTime.now());
+    body.setUpdBy(SecurityUtil.getAuthUser().authId());
+    body.setUpdDate(LocalDateTime.now());
+    Xxx saved = repository.save(body);
+    if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+    return saved;
+}
+```
+
+### update - 필드 복사 + 저장 확인 + 권한 검증
+
+```java
+@Transactional
+public XxxDto update(String id, Xxx body) {
+    Xxx entity = repository.findById(id)
+        .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+    
+    // ← 권한 검증: 본인 데이터인지 확인
+    if (!entity.getMemberId().equals(SecurityUtil.getAuthUser().authId()))
+        throw new CmBizException("접근 권한이 없습니다.");
+    
+    // ← 모든 업데이트 가능 필드 복사 (memberId, regBy, regDate 제외)
+    entity.setField1(body.getField1());
+    entity.setField2(body.getField2());
+    entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+    entity.setUpdDate(LocalDateTime.now());
+    Xxx saved = repository.save(entity);
+    if (saved == null) throw new CmBizException("데이터 수정에 실패했습니다.");
+    em.flush();
+    return getById(id);
+}
+```
+
+### delete - 존재 확인 + 권한 검증 + flush
+
+```java
+@Transactional
+public void delete(String id) {
+    Xxx entity = repository.findById(id)
+        .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+    
+    // ← 권한 검증: 본인 데이터인지 확인
+    if (!entity.getMemberId().equals(SecurityUtil.getAuthUser().authId()))
+        throw new CmBizException("접근 권한이 없습니다.");
+    
+    repository.deleteById(id);
+    em.flush();
+}
+```
+
+**⚠️ FO 필수 체크사항**:
+- ❌ 사용자 권한 검증(memberId 비교) 없으면 다른 회원 데이터 조회/수정/삭제 가능 (심각한 보안 결함)
+- ❌ save() / delete() 결과 확인 없으면 저장 실패를 감지할 수 없음
+- ✅ 모든 update/delete 메서드에서 memberId 권한 검증 필수
+- ✅ save() 반환값이 null이면 CmBizException 발생
+- ✅ delete() 후 em.flush() 호출로 즉시 반영
+
+---
+
 ## Mapper XML 패턴
 
 ```xml

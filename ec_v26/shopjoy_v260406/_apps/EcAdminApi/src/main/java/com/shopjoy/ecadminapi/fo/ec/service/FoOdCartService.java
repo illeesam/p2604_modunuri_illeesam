@@ -42,7 +42,9 @@ public class FoOdCartService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        return repository.save(entity);
+        OdCart saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("장바구니 추가에 실패했습니다.");
+        return saved;
     }
 
     @Transactional
@@ -54,7 +56,9 @@ public class FoOdCartService {
         cart.setOrderQty(qty);
         cart.setUpdBy(SecurityUtil.getAuthUser().authId());
         cart.setUpdDate(LocalDateTime.now());
-        return repository.save(cart);
+        OdCart saved = repository.save(cart);
+        if (saved == null) throw new CmBizException("수량 변경에 실패했습니다.");
+        return saved;
     }
 
     @Transactional

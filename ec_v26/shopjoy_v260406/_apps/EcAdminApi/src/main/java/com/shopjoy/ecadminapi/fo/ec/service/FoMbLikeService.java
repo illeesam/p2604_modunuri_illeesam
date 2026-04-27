@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbLikeDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbLike;
 import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbLikeMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbLikeRepository;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -61,7 +62,8 @@ public class FoMbLikeService {
             like.setRegDate(LocalDateTime.now());
             like.setUpdBy(authId);
             like.setUpdDate(LocalDateTime.now());
-            repository.save(like);
+            MbLike saved = repository.save(like);
+            if (saved == null) throw new CmBizException("찜 추가에 실패했습니다.");
             return true;
         }
     }

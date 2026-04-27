@@ -69,7 +69,9 @@ public class FoCmBlogService {
         entity.setUpdDate(LocalDateTime.now());
         if (entity.getUseYn() == null) entity.setUseYn("Y");
         if (entity.getViewCount() == null) entity.setViewCount(0);
-        return repository.save(entity);
+        CmBlog saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("게시물 작성에 실패했습니다.");
+        return saved;
     }
 
     @Transactional
@@ -83,7 +85,10 @@ public class FoCmBlogService {
         entity.setRegDate(existing.getRegDate());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        return repository.save(entity);
+        CmBlog saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("게시물 수정에 실패했습니다.");
+        em.flush();
+        return saved;
     }
 
     @Transactional
@@ -93,6 +98,7 @@ public class FoCmBlogService {
         if (!existing.getRegBy().equals(SecurityUtil.getAuthUser().authId()) && !SecurityUtil.isBo())
             throw new CmBizException("삭제 권한이 없습니다.");
         repository.deleteById(blogId);
+        em.flush();
     }
 
 }

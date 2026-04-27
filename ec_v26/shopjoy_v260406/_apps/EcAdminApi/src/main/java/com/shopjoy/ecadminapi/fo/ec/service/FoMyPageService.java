@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbMemberAddrMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbMemberMapper;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberAddrRepository;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
 import com.shopjoy.ecadminapi.base.ec.od.mapper.OdClaimMapper;
@@ -73,7 +74,8 @@ public class FoMyPageService {
         if (body.getMemberAddrDetail() != null) member.setMemberAddrDetail(body.getMemberAddrDetail());
         member.setUpdBy(memberId);
         member.setUpdDate(LocalDateTime.now());
-        memberRepository.save(member);
+        MbMember saved = memberRepository.save(member);
+        if (saved == null) throw new CmBizException("회원정보 수정에 실패했습니다.");
         em.flush();
         return memberMapper.selectById(memberId);
     }
@@ -90,7 +92,9 @@ public class FoMyPageService {
         member.setLoginPwdHash(passwordEncoder.encode(newPassword));
         member.setUpdBy(memberId);
         member.setUpdDate(LocalDateTime.now());
-        memberRepository.save(member);
+        MbMember saved = memberRepository.save(member);
+        if (saved == null) throw new CmBizException("비밀번호 변경에 실패했습니다.");
+        em.flush();
     }
 
     @Transactional(readOnly = true)
@@ -102,12 +106,17 @@ public class FoMyPageService {
     @Transactional
     public MbMemberAddr saveAddr(MbMemberAddr body) {
         String memberId = SecurityUtil.getAuthUser().authId();
+        if (body.getAddrId() == null) {
+            body.setAddrId(CmUtil.generateId("mb_member_addr"));
+        }
         body.setMemberId(memberId);
         body.setRegBy(memberId);
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(memberId);
         body.setUpdDate(LocalDateTime.now());
-        return addrRepository.save(body);
+        MbMemberAddr saved = addrRepository.save(body);
+        if (saved == null) throw new CmBizException("주소 저장에 실패했습니다.");
+        return saved;
     }
 
     @Transactional

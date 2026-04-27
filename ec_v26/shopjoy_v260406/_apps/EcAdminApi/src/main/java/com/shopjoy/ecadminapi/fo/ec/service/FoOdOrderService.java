@@ -62,7 +62,9 @@ public class FoOdOrderService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        return repository.save(entity);
+        OdOrder saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("주문 생성에 실패했습니다.");
+        return saved;
     }
 
 }

@@ -53,7 +53,9 @@ public class FoCmContactService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(authId);
         entity.setUpdDate(LocalDateTime.now());
-        return repository.save(entity);
+        CmBlog saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("문의 접수에 실패했습니다.");
+        return saved;
     }
 
     private String buildContent(Map<String, Object> body) {
