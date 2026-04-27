@@ -7,9 +7,10 @@
     <sql id="syUserCond">
         <where>
             <if test="p.siteId != null and p.siteId != ''">AND u.site_id = #{p.siteId}</if>
+            <if test="p.deptId != null and p.deptId != ''">AND u.dept_id = #{p.deptId}</if>
             <if test="p.status != null and p.status != ''">AND u.user_status_cd = #{p.status}</if>
             <if test="p.kw != null and p.kw != ''">
-                AND (u.user_nm ILIKE '%' || #{p.kw} || '%')
+                AND (u.user_nm ILIKE '%' || #{p.kw} || '%' OR u.login_id ILIKE '%' || #{p.kw} || '%' OR u.user_email ILIKE '%' || #{p.kw} || '%')
             </if>
             <if test="p.dateStart != null and p.dateStart != ''">AND u.reg_date &gt;= #{p.dateStart}::DATE</if>
             <if test="p.dateEnd   != null and p.dateEnd   != ''">AND u.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
@@ -24,12 +25,12 @@
             , rol.role_nm AS role_nm
             , cd_us.code_label AS user_status_cd_nm
             , cd_am.code_label AS auth_method_cd_nm
-        FROM sy_user u
-            LEFT JOIN sy_site ste ON ste.site_id = u.site_id
-            LEFT JOIN sy_dept dpt ON dpt.dept_id = u.dept_id
-            LEFT JOIN sy_role rol ON rol.role_id = u.role_id
-            LEFT JOIN sy_code cd_us ON cd_us.code_grp = 'USER_STATUS' AND cd_us.code_value = u.user_status_cd
-            LEFT JOIN sy_code cd_am ON cd_am.code_grp = 'AUTH_METHOD' AND cd_am.code_value = u.auth_method_cd
+        FROM shopjoy_2604.sy_user u
+            LEFT JOIN shopjoy_2604.sy_site ste ON ste.site_id = u.site_id
+            LEFT JOIN shopjoy_2604.sy_dept dpt ON dpt.dept_id = u.dept_id
+            LEFT JOIN shopjoy_2604.sy_role rol ON rol.role_id = u.role_id
+            LEFT JOIN shopjoy_2604.sy_code cd_us ON cd_us.code_grp = 'USER_STATUS' AND cd_us.code_value = u.user_status_cd
+            LEFT JOIN shopjoy_2604.sy_code cd_am ON cd_am.code_grp = 'AUTH_METHOD' AND cd_am.code_value = u.auth_method_cd
         WHERE u.user_id = #{id}
     </select>
 
@@ -41,12 +42,12 @@
             , rol.role_nm AS role_nm
             , cd_us.code_label AS user_status_cd_nm
             , cd_am.code_label AS auth_method_cd_nm
-        FROM sy_user u
-            LEFT JOIN sy_site ste ON ste.site_id = u.site_id
-            LEFT JOIN sy_dept dpt ON dpt.dept_id = u.dept_id
-            LEFT JOIN sy_role rol ON rol.role_id = u.role_id
-            LEFT JOIN sy_code cd_us ON cd_us.code_grp = 'USER_STATUS' AND cd_us.code_value = u.user_status_cd
-            LEFT JOIN sy_code cd_am ON cd_am.code_grp = 'AUTH_METHOD' AND cd_am.code_value = u.auth_method_cd
+        FROM shopjoy_2604.sy_user u
+            LEFT JOIN shopjoy_2604.sy_site ste ON ste.site_id = u.site_id
+            LEFT JOIN shopjoy_2604.sy_dept dpt ON dpt.dept_id = u.dept_id
+            LEFT JOIN shopjoy_2604.sy_role rol ON rol.role_id = u.role_id
+            LEFT JOIN shopjoy_2604.sy_code cd_us ON cd_us.code_grp = 'USER_STATUS' AND cd_us.code_value = u.user_status_cd
+            LEFT JOIN shopjoy_2604.sy_code cd_am ON cd_am.code_grp = 'AUTH_METHOD' AND cd_am.code_value = u.auth_method_cd
             <include refid="syUserCond"/>
         <choose>
             <when test="p.sort == 'id_asc'">ORDER BY u.user_id ASC</when>
@@ -68,12 +69,12 @@
             , rol.role_nm AS role_nm
             , cd_us.code_label AS user_status_cd_nm
             , cd_am.code_label AS auth_method_cd_nm
-        FROM sy_user u
-            LEFT JOIN sy_site ste ON ste.site_id = u.site_id
-            LEFT JOIN sy_dept dpt ON dpt.dept_id = u.dept_id
-            LEFT JOIN sy_role rol ON rol.role_id = u.role_id
-            LEFT JOIN sy_code cd_us ON cd_us.code_grp = 'USER_STATUS' AND cd_us.code_value = u.user_status_cd
-            LEFT JOIN sy_code cd_am ON cd_am.code_grp = 'AUTH_METHOD' AND cd_am.code_value = u.auth_method_cd
+        FROM shopjoy_2604.sy_user u
+            LEFT JOIN shopjoy_2604.sy_site ste ON ste.site_id = u.site_id
+            LEFT JOIN shopjoy_2604.sy_dept dpt ON dpt.dept_id = u.dept_id
+            LEFT JOIN shopjoy_2604.sy_role rol ON rol.role_id = u.role_id
+            LEFT JOIN shopjoy_2604.sy_code cd_us ON cd_us.code_grp = 'USER_STATUS' AND cd_us.code_value = u.user_status_cd
+            LEFT JOIN shopjoy_2604.sy_code cd_am ON cd_am.code_grp = 'AUTH_METHOD' AND cd_am.code_value = u.auth_method_cd
             <include refid="syUserCond"/>
         <choose>
             <when test="p.sort == 'id_asc'">ORDER BY u.user_id ASC</when>
@@ -89,12 +90,12 @@
 
     <select id="selectPageCount" resultType="long">
         SELECT COUNT(*)  /* base.sy :: SyUser :: selectPageCount */
-        FROM sy_user u
+        FROM shopjoy_2604.sy_user u
             <include refid="syUserCond"/>
     </select>
 
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.SyUser">
-        UPDATE sy_user  /* base.sy :: SyUser :: updateSelective */
+        UPDATE shopjoy_2604.sy_user  /* base.sy :: SyUser :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="loginId != null">login_id = #{loginId},</if>

@@ -9,26 +9,47 @@ window.SyDeptMng = {
     const uiState = reactive({ checkAll: false, loading: false, error: null, isPageCodeLoad: false, selectedTreeId: null, focusedIdx: null});
     const codes = reactive({ dept_status: [] });
 
-    // onMounted에서 API 로드
-    const handleSearchList = async (searchType = 'DEFAULT') => {
+    // 트리용 전체 로드 (dept_id, parent_dept_id, dept_nm 만)
+    const handleSearchTree = async () => {
+      try {
+        const res = await window.boApi.get('bo/sy/dept/tree');
+        const list = res.data?.data || [];
+        depts.splice(0, depts.length, ...list);
+      } catch (err) {
+        console.error('[handleSearchTree]', err);
+        if (props.showToast) props.showToast('부서 트리 로드 실패', 'error');
+      }
+    };
+
+    // 그리드용 조회 (트리 노드 선택 or 검색 조건 기반)
+    const handleGridSearch = async () => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/sy/dept/page', {
-          params: { pageNo: 1, pageSize: 10000 },
+        const params = { pageNo: 1, pageSize: 10000 };
+        if (searchParam.kw) params.kw = searchParam.kw;
+        if (searchParam.type) params.typeCd = searchParam.type;
+        if (searchParam.useYn) params.useYn = searchParam.useYn;
+        if (uiState.selectedTreeId != null) params.parentDeptId = uiState.selectedTreeId;
+        const res = await window.boApi.get('bo/sy/dept/page', {
+          params,
           headers: { 'X-UI-Nm': '부서관리', 'X-Cmd-Nm': '조회' }
         });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
-        depts.splice(0, depts.length, ...list);
         gridRows.splice(0);
         buildTreeRows(list).forEach(d => gridRows.push(makeRow(d)));
         uiState.error = null;
       } catch (err) {
-        console.error('[catch-info]', err);
+        console.error('[handleGridSearch]', err);
         uiState.error = err.message;
-        if (props.showToast) props.showToast('SyDept 로드 실패', 'error');
+        if (props.showToast) props.showToast('부서 목록 로드 실패', 'error');
       } finally {
         uiState.loading = false;
       }
+    };
+
+    const handleSearchList = async () => {
+      await handleSearchTree();
+      await handleGridSearch();
     };
     /* ── 검색 ── */
     const searchParam = reactive({
@@ -39,20 +60,39 @@ window.SyDeptMng = {
     });
 
     /* 좌측 부서 트리 */
-        const expanded = reactive(new Set([null]));
+    const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
-    const selectNode = (id) => { uiState.selectedTreeId = id; };
-    const cfTree = computed(() => window.boCmUtil.buildDeptTree());
-    const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
+    const selectNode = (id) => { uiState.selectedTreeId = id; handleGridSearch(); };
+
+    const buildTree = (items) => {
+      const map = {};
+      items.forEach(d => { map[d.deptId] = { ...d, children: [] }; });
+      const roots = [];
+      items.forEach(d => {
+        if (d.parentDeptId && map[d.parentDeptId]) map[d.parentDeptId].children.push(map[d.deptId]);
+        else roots.push(map[d.deptId]);
+      });
+      const sort = arr => arr.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
+      const sortAll = (node) => { sort(node.children); node.children.forEach(sortAll); };
+      sort(roots).forEach(sortAll);
+      return { deptId: null, deptNm: '전체', children: roots };
+    };
+
+    const cfTree = computed(() => buildTree(depts));
+    const expandAll = () => {
+      const walk = (n) => { expanded.add(n.deptId); n.children.forEach(walk); };
+      cfTree.value.children.forEach(walk);
+      expanded.add(null);
+    };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
+    onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
-      handleSearchList('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
-      const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
-      expanded.clear(); initSet.forEach(v => expanded.add(v));
+      await handleSearchTree();
+      expanded.add(null);
+      await handleGridSearch();
     });
 
     const isAppReady = computed(() => {
@@ -72,20 +112,7 @@ window.SyDeptMng = {
       }
     };
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
-
-    const cfAllowedTreeIds = computed(() => {
-      if (uiState.selectedTreeId == null) return null;
-      return window.boCmUtil.collectDescendantIds(depts, 'deptId', 'parentId', uiState.selectedTreeId);
-    });
-
-    watch(() => uiState.selectedTreeId, () => { handleSearchList(); });
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
 
     const cfTypeOptions = computed(() => [...new Set(depts.map(d => d.deptTypeCd))].sort());
@@ -94,7 +121,7 @@ window.SyDeptMng = {
     const gridRows   = reactive([]);
     let   _tempId    = -1;
     
-    const EDIT_FIELDS = ['deptCode', 'deptNm', 'parentId', 'deptTypeCd', 'sortOrd', 'useYn', 'remark'];
+    const EDIT_FIELDS = ['deptCode', 'deptNm', 'parentDeptId', 'deptTypeCd', 'sortOrd', 'useYn', 'deptRemark'];
     const DEPT_TYPES  = ['경영', '운영', '기술', '마케팅', 'CS', '물류', '재무', '인사', '법무', '기타'];
 
     /* ── 페이징 ── */
@@ -112,7 +139,7 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
       items.forEach(d => { map[d.deptId] = { ...d, _children: [] }; });
       const roots = [];
       items.forEach(d => {
-        if (d.parentId && map[d.parentId]) map[d.parentId]._children.push(map[d.deptId]);
+        if (d.parentDeptId && map[d.parentDeptId]) map[d.parentDeptId]._children.push(map[d.deptId]);
         else roots.push(map[d.deptId]);
       });
       const result = [];
@@ -125,9 +152,9 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
     };
 
     const makeRow = (d) => ({
-      ...d, _depth: d._depth || 0, _row_status: 'N', _row_check: false,
-      _orig: { deptCode: d.deptCode, deptNm: d.deptNm, parentId: d.parentId,
-               deptTypeCd: d.deptTypeCd, sortOrd: d.sortOrd, useYn: d.useYn, remark: d.remark },
+      ...d, _depth: d._depth || 0, _row_status: null, _row_check: false,
+      _orig: { deptCode: d.deptCode, deptNm: d.deptNm, parentDeptId: d.parentDeptId,
+               deptTypeCd: d.deptTypeCd, sortOrd: d.sortOrd, useYn: d.useYn, deptRemark: d.deptRemark },
     });
 
 
@@ -153,10 +180,10 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
     const addRow = () => {
       const ref = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
       const newRow = {
-        deptId: _tempId--, deptCode: '', deptNm: '', parentId: ref ? ref.parentId : null,
+        deptId: _tempId--, deptCode: '', deptNm: '', parentDeptId: ref ? ref.parentDeptId : null,
         deptTypeCd: ref ? ref.deptTypeCd : '운영',
         sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
-        useYn: 'Y', remark: '',
+        useYn: 'Y', deptRemark: '',
         _depth: ref ? ref._depth : 0, _row_status: 'I', _row_check: false, _orig: null,
       };
       const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
@@ -221,9 +248,8 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
       dRows.forEach(r => { const i = depts.findIndex(d => d.deptId === r.deptId); if (i !== -1) depts.splice(i, 1); });
-      uRows.forEach(r => { const i = depts.findIndex(d => d.deptId === r.deptId); if (i !== -1) Object.assign(depts[i], { deptCode: r.deptCode, deptNm: r.deptNm, parentId: r.parentId || null, deptTypeCd: r.deptTypeCd, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark }); });
-      let nextId = Math.max(...depts.map(d => d.deptId), 0);
-      iRows.forEach(r => { depts.push({ deptId: ++nextId, deptCode: r.deptCode, deptNm: r.deptNm, parentId: r.parentId || null, deptTypeCd: r.deptTypeCd, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
+      uRows.forEach(r => { const i = depts.findIndex(d => d.deptId === r.deptId); if (i !== -1) Object.assign(depts[i], { deptCode: r.deptCode, deptNm: r.deptNm, parentDeptId: r.parentDeptId || null, deptTypeCd: r.deptTypeCd, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, deptRemark: r.deptRemark }); });
+      iRows.forEach(r => { depts.push({ deptId: r.deptId, deptCode: r.deptCode, deptNm: r.deptNm, parentDeptId: r.parentDeptId || null, deptTypeCd: r.deptTypeCd, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, deptRemark: r.deptRemark, regDate: new Date().toISOString().slice(0, 10) }); });
       const toastParts = [];
       if (iRows.length) toastParts.push(`등록 ${iRows.length}건`);
       if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
@@ -234,16 +260,16 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
 
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
-    const parentNm = (parentId) => {
-      if (!parentId) return '';
-      const p = depts.find(d => d.deptId === parentId);
-      return p ? p.deptNm : `ID:${parentId}`;
+    const parentNm = (parentDeptId) => {
+      if (!parentDeptId) return '';
+      const p = depts.find(d => d.deptId === parentDeptId);
+      return p ? p.deptNm : `ID:${parentDeptId}`;
     };
 
     const deptTreeModal = reactive({ show: false, targetRow: null });
     const openParentModal = (row) => { deptTreeModal.targetRow = row; deptTreeModal.show = true; };
     const onParentSelect  = (dept) => {
-      if (deptTreeModal.targetRow) { deptTreeModal.targetRow.parentId = dept.deptId; deptTreeModal.targetRow._depth = 0; onCellChange(deptTreeModal.targetRow); }
+      if (deptTreeModal.targetRow) { deptTreeModal.targetRow.parentDeptId = dept.deptId; deptTreeModal.targetRow._depth = 0; onCellChange(deptTreeModal.targetRow); }
       deptTreeModal.show = false;
     };
 
@@ -252,11 +278,11 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
     const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
     const depthColor  = (d) => DEPTH_COLORS[d % 5];
-    const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
+    const fnStatusClass = s => ({ null: 'badge-gray', N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
     const exportExcel = () => window.boCmUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
-      [{label:'ID',key:'deptId'},{label:'부서코드',key:'deptCode'},{label:'부서명',key:'deptNm'},{label:'상위ID',key:'parentId'},{label:'유형',key:'deptTypeCd'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'remark'}],
+      [{label:'ID',key:'deptId'},{label:'부서코드',key:'deptCode'},{label:'부서명',key:'deptNm'},{label:'상위ID',key:'parentDeptId'},{label:'유형',key:'deptTypeCd'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'deptRemark'}],
       '부서목록.csv'
     );
 
@@ -303,7 +329,7 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedTreeId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <dept-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedTreeId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
     <div>
@@ -365,9 +391,9 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
           <!-- ── 상위부서 ─────────────────────────────────────────────────── -->
           <td style="padding:3px 8px;">
             <div style="display:flex;align-items:center;gap:5px;">
-              <span v-if="row.parentId"
+              <span v-if="row.parentDeptId"
                 style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-                :title="parentNm(row.parentId)">{{ parentNm(row.parentId) }}</span>
+                :title="parentNm(row.parentDeptId)">{{ parentNm(row.parentDeptId) }}</span>
               <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">최상위</span>
               <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
                 style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" title="상위부서 선택"
@@ -386,14 +412,14 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
               <option value="Y">사용</option><option value="N">미사용</option>
             </select>
           </td>
-          <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+          <td><input class="grid-input" v-model="row.deptRemark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
           <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
           <td class="col-act-cancel-val">
             <button v-if="['U','I','D'].includes(row._row_status)"
               class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>
           </td>
           <td class="col-act-delete-val">
-            <button v-if="['N','U'].includes(row._row_status)"
+            <button v-if="row._row_status == null || ['N','U'].includes(row._row_status)"
               class="btn btn-danger btn-xs" @click.stop="deleteRow(getRealIdx(idx))">삭제</button>
           </td>
         </tr>
@@ -423,4 +449,34 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
     @close="deptTreeModal.show=false" />
 </div>
 `,
+};
+
+window.DeptTreeNode = {
+  name: 'DeptTreeNode',
+  props: ['node', 'expanded', 'selected', 'onToggle', 'onSelect', 'depth'],
+  components: { 'dept-tree-node': null },
+  created() { this.$options.components['dept-tree-node'] = window.DeptTreeNode; },
+  template: `
+<div>
+  <div :style="{ paddingLeft: (depth * 14) + 'px', display:'flex', alignItems:'center',
+                 cursor:'pointer', padding:'4px 6px 4px ' + (depth*14+6) + 'px',
+                 borderRadius:'4px', background: selected === node.deptId ? '#ffeef2' : 'transparent',
+                 fontWeight: selected === node.deptId ? '600' : 'normal',
+                 color: selected === node.deptId ? '#e8587a' : '#333' }"
+       @click.stop="onSelect(node.deptId)">
+    <span v-if="node.children && node.children.length"
+          @click.stop="onToggle(node.deptId)"
+          style="margin-right:4px;font-size:10px;width:14px;text-align:center;flex-shrink:0;">
+      {{ expanded.has(node.deptId) ? '▼' : '▶' }}
+    </span>
+    <span v-else style="margin-right:4px;width:14px;flex-shrink:0;"></span>
+    <span style="font-size:13px;">{{ node.deptNm }}</span>
+  </div>
+  <template v-if="node.children && node.children.length && expanded.has(node.deptId)">
+    <dept-tree-node v-for="child in node.children" :key="child.deptId"
+      :node="child" :expanded="expanded" :selected="selected"
+      :on-toggle="onToggle" :on-select="onSelect" :depth="depth + 1" />
+  </template>
+</div>
+`
 };

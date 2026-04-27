@@ -2015,6 +2015,7 @@
   /* ── components/modals/ — 트리 모달 ── */
   .component('CategoryTreeModal',    window.CategoryTreeModal)
   .component('DeptTreeModal',        window.DeptTreeModal)
+  .component('DeptTreeNode',         window.DeptTreeNode)
   .component('MenuTreeModal',        window.MenuTreeModal)
   .component('RoleTreeModal',        window.RoleTreeModal)
   /* ── components/modals/ — 미리보기/전송 모달 ── */

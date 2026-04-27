@@ -13,22 +13,19 @@ window.SyUserMng = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const [resUsers, resDepts] = await Promise.all([
-          window.boApi.get('/bo/sy/user/page', {
-            params: {
-              pageNo: pager.pageNo, pageSize: pager.pageSize,
-              ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-            },
-            headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '조회' }
-          }),
-          window.boApi.get('/bo/sy/dept/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '조회' } }),
+        const params = {
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+        };
+        if (uiState.selectedDeptId != null) params.deptId = uiState.selectedDeptId;
+        const [resUsers] = await Promise.all([
+          window.boApi.get('bo/sy/user/page', { params, headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '조회' } }),
         ]);
         const data = resUsers.data?.data;
         users.splice(0, users.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || users.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
-        depts.splice(0, depts.length, ...(resDepts.data?.data?.pageList || []));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -39,12 +36,36 @@ window.SyUserMng = {
       }
     };
     /* 좌측 부서 트리 */
-        const expanded = reactive(new Set([null]));
+    const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
-    const selectNode = (id) => { uiState.selectedDeptId = id; };
-    const cfTree = computed(() => window.boCmUtil.buildDeptTree());
-    const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
+    const selectNode = (id) => { uiState.selectedDeptId = id; handleSearchData(); };
+
+    const buildTree = (items) => {
+      const map = {};
+      items.forEach(d => { map[d.deptId] = { ...d, children: [] }; });
+      const roots = [];
+      items.forEach(d => {
+        if (d.parentDeptId && map[d.parentDeptId]) map[d.parentDeptId].children.push(map[d.deptId]);
+        else roots.push(map[d.deptId]);
+      });
+      const sort = arr => arr.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
+      const sortAll = (node) => { sort(node.children); node.children.forEach(sortAll); };
+      sort(roots).forEach(sortAll);
+      return { deptId: null, deptNm: '전체', children: roots };
+    };
+
+    const cfTree = computed(() => buildTree(depts));
+    const expandAll = () => { const walk = (n) => { expanded.add(n.deptId); n.children.forEach(walk); }; cfTree.value.children.forEach(walk); expanded.add(null); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
+
+    const handleSearchTree = async () => {
+      try {
+        const res = await window.boApi.get('bo/sy/dept/tree');
+        depts.splice(0, depts.length, ...(res.data?.data || []));
+      } catch (err) {
+        console.error('[handleSearchTree]', err);
+      }
+    };
     /* 검색 파라미터 */
     const searchParam = reactive({
       kw: '', role: '', status: '', dateRange: '', dateStart: '', dateEnd: ''
@@ -54,12 +75,12 @@ window.SyUserMng = {
     });
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
+    onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
-      handleSearchData('DEFAULT');
-      const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
-      expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
+      await handleSearchTree();
+      expanded.add(null);
+      await handleSearchData('DEFAULT');
     });
 
     const isAppReady = computed(() => {
@@ -89,7 +110,7 @@ window.SyUserMng = {
     /* 선택 부서 + 자손의 dept 이름 Set */
     const cfAllowedDeptNms = computed(() => {
       if (uiState.selectedDeptId == null) return null;
-      const desc = window.boCmUtil.collectDescendantIds(depts, 'deptId', 'parentId', uiState.selectedDeptId);
+      const desc = window.boCmUtil.collectDescendantIds(depts, 'deptId', 'parentDeptId', uiState.selectedDeptId);
       if (!desc) return null;
       return new Set((depts || []).filter(d => desc.has(d.deptId)).map(d => d.deptNm));
     });
@@ -133,14 +154,13 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
 
     const handleDelete = async (u) => {
-      if (u.role === '슈퍼관리자') { props.showToast('슈퍼관리자는 삭제할 수 없습니다.', 'error'); return; }
-      const ok = await props.showConfirm('삭제', `[${u.name}] 사용자를 삭제하시겠습니까?`);
+      const ok = await props.showConfirm('삭제', `[${u.userNm}] 사용자를 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = users.findIndex(x => x.boUserId === u.boUserId);
+      const idx = users.findIndex(x => x.userId === u.userId);
       if (idx !== -1) users.splice(idx, 1);
-      if (uiStateDetail.selectedId === u.boUserId) uiStateDetail.selectedId = null;
+      if (uiStateDetail.selectedId === u.userId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/sy/user/${u.boUserId}`, { headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await window.boApi.delete(`bo/sy/user/${u.userId}`, { headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -151,7 +171,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(users, [{label:'ID',key:'boUserId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'name'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'권한',key:'role'},{label:'부서',key:'dept'},{label:'상태',key:'statusCd'},{label:'최종로그인',key:'lastLogin'}], '사용자목록.csv');
+    const exportExcel = () => window.boCmUtil.exportCsv(users, [{label:'ID',key:'userId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'userNm'},{label:'이메일',key:'userEmail'},{label:'연락처',key:'userPhone'},{label:'권한',key:'roleNm'},{label:'부서',key:'deptNm'},{label:'상태',key:'userStatusCd'},{label:'최종로그인',key:'lastLoginDate'}], '사용자목록.csv');
 
     // ── return ───────────────────────────────────────────────────────────────
 
@@ -186,7 +206,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedDeptId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <dept-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedDeptId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
     <div>
@@ -204,19 +224,19 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       </tr></thead>
       <tbody>
         <tr v-if="users.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="u in users" :key="u.boUserId" :style="uiStateDetail.selectedId===u.boUserId?'background:#fff8f9;':''">
-          <td>{{ u.boUserId }}</td>
+        <tr v-for="u in users" :key="u.userId" :style="uiStateDetail.selectedId===u.userId?'background:#fff8f9;':''">
+          <td style="font-size:11px;color:#999;">{{ u.userId }}</td>
           <td><code style="font-size:12px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ u.loginId }}</code></td>
-          <td><span class="title-link" @click="handleLoadDetail(u.boUserId)" :style="uiStateDetail.selectedId===u.boUserId?'color:#e8587a;font-weight:700;':''">{{ u.name }}<span v-if="uiStateDetail.selectedId===u.boUserId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td style="font-size:12px;">{{ u.email }}</td>
-          <td>{{ u.phone }}</td>
-          <td><span class="badge" :class="fnRoleBadge(u.role)">{{ u.role }}</span></td>
-          <td style="font-size:12px;color:#666;">{{ u.dept }}</td>
-          <td><span class="badge" :class="fnStatusBadge(u.statusCd)">{{ u.statusCd }}</span></td>
-          <td style="font-size:12px;color:#888;">{{ u.lastLogin }}</td>
+          <td><span class="title-link" @click="handleLoadDetail(u.userId)" :style="uiStateDetail.selectedId===u.userId?'color:#e8587a;font-weight:700;':''">{{ u.userNm }}<span v-if="uiStateDetail.selectedId===u.userId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td style="font-size:12px;">{{ u.userEmail }}</td>
+          <td>{{ u.userPhone }}</td>
+          <td><span class="badge" :class="fnRoleBadge(u.roleNm)">{{ u.roleNm }}</span></td>
+          <td style="font-size:12px;color:#666;">{{ u.deptNm }}</td>
+          <td><span class="badge" :class="fnStatusBadge(u.userStatusCd)">{{ u.userStatusCd }}</span></td>
+          <td style="font-size:12px;color:#888;">{{ u.lastLoginDate ? u.lastLoginDate.substring(0,10) : '-' }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(u.boUserId)">수정</button>
+            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(u.userId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="handleDelete(u)">삭제</button>
           </div></td>
         </tr>

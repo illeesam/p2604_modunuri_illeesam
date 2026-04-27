@@ -30,6 +30,11 @@ public class BoSyDeptService {
     private EntityManager em;
 
     @Transactional(readOnly = true)
+    public List<SyDeptDto> getTree() {
+        return mapper.selectTree();
+    }
+
+    @Transactional(readOnly = true)
     public List<SyDeptDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return mapper.selectList(p);

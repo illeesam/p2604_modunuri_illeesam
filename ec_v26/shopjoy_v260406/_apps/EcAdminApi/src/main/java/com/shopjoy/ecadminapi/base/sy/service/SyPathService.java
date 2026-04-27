@@ -31,15 +31,24 @@ public class SyPathService {
 
     @Transactional(readOnly = true)
     public List<SyPathDto> getList(Map<String, Object> p) {
+        castLongParam(p, "parentPathId");
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyPathDto> getPageData(Map<String, Object> p) {
+        castLongParam(p, "parentPathId");
         PageHelper.addPaging(p);
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p),
                 PageHelper.getPageNo(), PageHelper.getPageSize(), p);
+    }
+
+    private void castLongParam(Map<String, Object> p, String key) {
+        Object val = p.get(key);
+        if (val instanceof String s && !s.isBlank()) {
+            try { p.put(key, Long.parseLong(s)); } catch (NumberFormatException ignore) { p.remove(key); }
+        }
     }
 
     @Transactional

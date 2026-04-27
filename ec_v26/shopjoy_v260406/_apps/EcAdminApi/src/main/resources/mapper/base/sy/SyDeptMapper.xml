@@ -8,14 +8,23 @@
     <sql id="syDeptCond">
         <where>
             <if test="p.siteId != null and p.siteId != ''">AND d.site_id = #{p.siteId}</if>
+            <if test="p.parentDeptId != null and p.parentDeptId != ''">AND d.parent_dept_id = #{p.parentDeptId}</if>
             <if test="p.typeCd != null and p.typeCd != ''">AND d.dept_type_cd = #{p.typeCd}</if>
+            <if test="p.useYn != null and p.useYn != ''">AND d.use_yn = #{p.useYn}</if>
             <if test="p.kw != null and p.kw != ''">
-                AND (d.dept_nm ILIKE '%' || #{p.kw} || '%')
+                AND (d.dept_nm ILIKE '%' || #{p.kw} || '%' OR d.dept_code ILIKE '%' || #{p.kw} || '%')
             </if>
             <if test="p.dateStart != null and p.dateStart != ''">AND d.reg_date &gt;= #{p.dateStart}::DATE</if>
             <if test="p.dateEnd   != null and p.dateEnd   != ''">AND d.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
     </sql>
+
+    <!-- 부서 트리용 전체 조회 -->
+    <select id="selectTree" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyDeptDto">
+        SELECT d.dept_id, d.parent_dept_id, d.dept_nm, d.sort_ord
+        FROM shopjoy_2604.sy_dept d
+        ORDER BY d.sort_ord ASC, d.dept_id ASC
+    </select>
 
     <!-- 부서 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyDeptDto">
@@ -24,10 +33,10 @@
             , ste.site_nm AS site_nm
             , usr.user_nm AS manager_nm
             , cd_dt.code_label AS dept_type_cd_nm
-        FROM sy_dept d
-            LEFT JOIN sy_site ste ON ste.site_id = d.site_id
-            LEFT JOIN sy_user usr ON usr.user_id = d.manager_id
-            LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DEPT_TYPE' AND cd_dt.code_value = d.dept_type_cd
+        FROM shopjoy_2604.sy_dept d
+            LEFT JOIN shopjoy_2604.sy_site ste ON ste.site_id = d.site_id
+            LEFT JOIN shopjoy_2604.sy_user usr ON usr.user_id = d.manager_id
+            LEFT JOIN shopjoy_2604.sy_code cd_dt ON cd_dt.code_grp = 'DEPT_TYPE' AND cd_dt.code_value = d.dept_type_cd
         WHERE d.dept_id = #{id}
     </select>
 
@@ -38,10 +47,10 @@
             , ste.site_nm AS site_nm
             , usr.user_nm AS manager_nm
             , cd_dt.code_label AS dept_type_cd_nm
-        FROM sy_dept d
-            LEFT JOIN sy_site ste ON ste.site_id = d.site_id
-            LEFT JOIN sy_user usr ON usr.user_id = d.manager_id
-            LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DEPT_TYPE' AND cd_dt.code_value = d.dept_type_cd
+        FROM shopjoy_2604.sy_dept d
+            LEFT JOIN shopjoy_2604.sy_site ste ON ste.site_id = d.site_id
+            LEFT JOIN shopjoy_2604.sy_user usr ON usr.user_id = d.manager_id
+            LEFT JOIN shopjoy_2604.sy_code cd_dt ON cd_dt.code_grp = 'DEPT_TYPE' AND cd_dt.code_value = d.dept_type_cd
             <include refid="syDeptCond"/>
         <choose>
             <when test="p.sort == 'id_asc'">ORDER BY d.dept_id ASC</when>
@@ -62,10 +71,10 @@
             , ste.site_nm AS site_nm
             , usr.user_nm AS manager_nm
             , cd_dt.code_label AS dept_type_cd_nm
-        FROM sy_dept d
-            LEFT JOIN sy_site ste ON ste.site_id = d.site_id
-            LEFT JOIN sy_user usr ON usr.user_id = d.manager_id
-            LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DEPT_TYPE' AND cd_dt.code_value = d.dept_type_cd
+        FROM shopjoy_2604.sy_dept d
+            LEFT JOIN shopjoy_2604.sy_site ste ON ste.site_id = d.site_id
+            LEFT JOIN shopjoy_2604.sy_user usr ON usr.user_id = d.manager_id
+            LEFT JOIN shopjoy_2604.sy_code cd_dt ON cd_dt.code_grp = 'DEPT_TYPE' AND cd_dt.code_value = d.dept_type_cd
             <include refid="syDeptCond"/>
         <choose>
             <when test="p.sort == 'id_asc'">ORDER BY d.dept_id ASC</when>
@@ -82,13 +91,13 @@
     <!-- 부서 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
         SELECT COUNT(*)  /* base.sy :: SyDept :: selectPageCount */
-        FROM sy_dept d
+        FROM shopjoy_2604.sy_dept d
             <include refid="syDeptCond"/>
     </select>
 
     <!-- 부서 선택 필드 수정 -->
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.SyDept">
-        UPDATE sy_dept  /* base.sy :: SyDept :: updateSelective */
+        UPDATE shopjoy_2604.sy_dept  /* base.sy :: SyDept :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="deptCode != null">dept_code = #{deptCode},</if>

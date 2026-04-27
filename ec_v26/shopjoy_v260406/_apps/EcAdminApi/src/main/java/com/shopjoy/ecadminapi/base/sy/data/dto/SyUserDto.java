@@ -29,5 +29,10 @@ public class SyUserDto {
     private String authMethodCd;
     private LocalDateTime lastLoginDate;
 
-    // ── JOIN: 필요 시 추가 ────────────────────────────────────────
+    // ── JOIN ─────────────────────────────────────────────────────
+    private String siteNm;
+    private String deptNm;
+    private String roleNm;
+    private String userStatusCdNm;
+    private String authMethodCdNm;
 }

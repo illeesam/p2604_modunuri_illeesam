@@ -18,9 +18,9 @@
               p.*
             , ste.site_nm AS site_nm
             , cd_pt.code_label AS prop_type_cd_nm
-        FROM sy_prop p
-            LEFT JOIN sy_site ste ON ste.site_id = p.site_id
-            LEFT JOIN sy_code cd_pt ON cd_pt.code_grp = 'PROP_TYPE' AND cd_pt.code_value = p.prop_type_cd
+        FROM shopjoy_2604.sy_prop p
+            LEFT JOIN shopjoy_2604.sy_site ste ON ste.site_id = p.site_id
+            LEFT JOIN shopjoy_2604.sy_code cd_pt ON cd_pt.code_grp = 'PROP_TYPE' AND cd_pt.code_value = p.prop_type_cd
         WHERE p.prop_id = #{id}
     </select>
 
@@ -29,9 +29,9 @@
               p.*
             , ste.site_nm AS site_nm
             , cd_pt.code_label AS prop_type_cd_nm
-        FROM sy_prop p
-            LEFT JOIN sy_site ste ON ste.site_id = p.site_id
-            LEFT JOIN sy_code cd_pt ON cd_pt.code_grp = 'PROP_TYPE' AND cd_pt.code_value = p.prop_type_cd
+        FROM shopjoy_2604.sy_prop p
+            LEFT JOIN shopjoy_2604.sy_site ste ON ste.site_id = p.site_id
+            LEFT JOIN shopjoy_2604.sy_code cd_pt ON cd_pt.code_grp = 'PROP_TYPE' AND cd_pt.code_value = p.prop_type_cd
             <include refid="syPropCond"/>
         <choose>
             <when test="p.sort == 'id_asc'">ORDER BY p.prop_id ASC</when>
@@ -48,9 +48,9 @@
               p.*
             , ste.site_nm AS site_nm
             , cd_pt.code_label AS prop_type_cd_nm
-        FROM sy_prop p
-            LEFT JOIN sy_site ste ON ste.site_id = p.site_id
-            LEFT JOIN sy_code cd_pt ON cd_pt.code_grp = 'PROP_TYPE' AND cd_pt.code_value = p.prop_type_cd
+        FROM shopjoy_2604.sy_prop p
+            LEFT JOIN shopjoy_2604.sy_site ste ON ste.site_id = p.site_id
+            LEFT JOIN shopjoy_2604.sy_code cd_pt ON cd_pt.code_grp = 'PROP_TYPE' AND cd_pt.code_value = p.prop_type_cd
             <include refid="syPropCond"/>
         <choose>
             <when test="p.sort == 'id_asc'">ORDER BY p.prop_id ASC</when>
@@ -64,12 +64,12 @@
 
     <select id="selectPageCount" resultType="long">
         SELECT COUNT(*)  /* base.sy :: SyProp :: selectPageCount */
-        FROM sy_prop p
+        FROM shopjoy_2604.sy_prop p
             <include refid="syPropCond"/>
     </select>
 
     <update id="updateSelective" parameterType="com.shopjoy.ecadminapi.base.sy.data.entity.SyProp">
-        UPDATE sy_prop  /* base.sy :: SyProp :: updateSelective */
+        UPDATE shopjoy_2604.sy_prop  /* base.sy :: SyProp :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="dispPath != null">disp_path = #{dispPath},</if>

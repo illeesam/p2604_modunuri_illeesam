@@ -29,6 +29,11 @@ public class SyDeptService {
     // ── MyBatis 조회 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
+    public List<SyDeptDto> getTree() {
+        return mapper.selectTree();
+    }
+
+    @Transactional(readOnly = true)
     public SyDeptDto getById(String id) {
         // sy_dept :: select one :: id [orm:mybatis]
         SyDeptDto result = mapper.selectById(id);

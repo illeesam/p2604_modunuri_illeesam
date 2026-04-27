@@ -13,6 +13,8 @@ public interface SyDeptMapper {
 
     SyDeptDto selectById(@Param("id") String id);
 
+    List<SyDeptDto> selectTree();
+
     List<SyDeptDto> selectList(@Param("p") Map<String, Object> p);
 
     List<SyDeptDto> selectPageList(@Param("p") Map<String, Object> p);

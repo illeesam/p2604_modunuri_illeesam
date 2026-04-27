@@ -25,6 +25,11 @@ import java.util.Map;
 public class BoSyDeptController {
     private final BoSyDeptService service;
 
+    @GetMapping("/tree")
+    public ResponseEntity<ApiResponse<List<SyDeptDto>>> tree() {
+        return ResponseEntity.ok(ApiResponse.ok(service.getTree()));
+    }
+
     @GetMapping
     public ResponseEntity<ApiResponse<List<SyDeptDto>>> list(
             @RequestParam Map<String, Object> p) {
