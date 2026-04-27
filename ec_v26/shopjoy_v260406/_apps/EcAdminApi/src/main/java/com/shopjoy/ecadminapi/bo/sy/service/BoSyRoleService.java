@@ -69,6 +69,7 @@ public class BoSyRoleService {
     @Transactional
     public SyRoleDto update(String id, SyRole body) {
         SyRole entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        VoUtil.voCopyExclude(body, entity, "roleId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyRole saved = repository.save(entity);

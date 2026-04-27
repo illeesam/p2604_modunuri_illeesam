@@ -64,6 +64,7 @@ public class BoPmCacheService {
     @Transactional
     public PmCacheDto update(String id, PmCache body) {
         PmCache entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        VoUtil.voCopyExclude(body, entity, "cacheId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmCache saved = repository.save(entity);

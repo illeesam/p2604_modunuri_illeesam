@@ -64,18 +64,7 @@ public class BoSyContactService {
     @Transactional
     public SyContactDto update(String id, SyContact body) {
         SyContact entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setSiteId(body.getSiteId());
-        entity.setMemberId(body.getMemberId());
-        entity.setMemberNm(body.getMemberNm());
-        entity.setCategoryCd(body.getCategoryCd());
-        entity.setContactTitle(body.getContactTitle());
-        entity.setContactContent(body.getContactContent());
-        entity.setAttachGrpId(body.getAttachGrpId());
-        entity.setContactStatusCd(body.getContactStatusCd());
-        entity.setContactAnswer(body.getContactAnswer());
-        entity.setAnswerUserId(body.getAnswerUserId());
-        entity.setAnswerDate(body.getAnswerDate());
-        entity.setContactDate(body.getContactDate());
+        VoUtil.voCopyExclude(body, entity, "contactId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyContact saved = repository.save(entity);

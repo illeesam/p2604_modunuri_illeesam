@@ -67,6 +67,7 @@ public class BoSyMenuService {
     @Transactional
     public SyMenuDto update(String id, SyMenu body) {
         SyMenu entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        VoUtil.voCopyExclude(body, entity, "menuId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyMenu saved = repository.save(entity);

@@ -62,6 +62,7 @@ public class BoSySiteService {
     @Transactional
     public SySiteDto update(String id, SySite body) {
         SySite entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        VoUtil.voCopyExclude(body, entity, "siteId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);

@@ -64,6 +64,7 @@ public class BoPmDiscntService {
     @Transactional
     public PmDiscntDto update(String id, PmDiscnt body) {
         PmDiscnt entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        VoUtil.voCopyExclude(body, entity, "discntId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmDiscnt saved = repository.save(entity);

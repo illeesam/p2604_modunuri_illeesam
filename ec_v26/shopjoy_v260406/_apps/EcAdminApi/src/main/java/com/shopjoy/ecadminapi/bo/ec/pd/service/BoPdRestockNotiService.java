@@ -66,6 +66,7 @@ public class BoPdRestockNotiService {
     @Transactional
     public PdRestockNotiDto update(String id, PdRestockNoti body) {
         PdRestockNoti entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        VoUtil.voCopyExclude(body, entity, "restockNotiId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdRestockNoti saved = repository.save(entity);

@@ -64,6 +64,7 @@ public class BoCmChattService {
     @Transactional
     public CmChattRoomDto update(String id, CmChattRoom body) {
         CmChattRoom entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        VoUtil.voCopyExclude(body, entity, "chattRoomId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         CmChattRoom saved = repository.save(entity);

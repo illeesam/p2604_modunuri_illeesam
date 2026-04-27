@@ -62,6 +62,7 @@ public class BoSyVendorService {
     @Transactional
     public SyVendorDto update(String id, SyVendor body) {
         SyVendor entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        VoUtil.voCopyExclude(body, entity, "vendorId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
