@@ -11,8 +11,9 @@ window.StConfigMng = {
       uiState.loading = true;
       try {
         const res = await window.boApi.get('/bo/ec/st/config/page', { pageNo: 1, pageSize: 100 });
-        const data = res.data?.data || res.data || [];
-        configs.splice(0, configs.length, ...(Array.isArray(data) ? data : data.pageList || []));
+        const pageResult = res.data?.data;
+        const pageList = pageResult?.pageList || [];
+        configs.splice(0, configs.length, ...pageList);
       } catch (err) {
         console.error('[handleLoadList]', err);
         props.showToast?.(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
@@ -29,14 +30,44 @@ window.StConfigMng = {
         const form = reactive({});
     const errors = reactive({});
 
+    const fnMapUiToApi = (uiForm) => ({
+      settleConfigId: uiForm.settleConfigId,
+      siteId: uiForm.siteId,
+      vendorId: uiForm.vendorId || null,
+      categoryId: uiForm.categoryId || null,
+      settleCycleCd: uiForm.settleCycleCd,
+      settleDay: uiForm.settleDay,
+      commissionRate: uiForm.commissionRate,
+      minSettleAmt: uiForm.minSettleAmt,
+      settleConfigRemark: uiForm.settleConfigRemark,
+      useYn: uiForm.useYn
+    });
+
+    const fnMapApiToUi = (apiData) => ({
+      settleConfigId: apiData.settleConfigId,
+      siteId: apiData.siteId,
+      siteNm: apiData.siteNm || 'ShopJoy 01',
+      vendorId: apiData.vendorId || null,
+      vendorNm: apiData.vendorNm || '',
+      categoryId: apiData.categoryId || null,
+      categoryNm: apiData.categoryNm || '',
+      settleCycleCd: apiData.settleCycleCd,
+      settleCycleNm: apiData.settleCycleNm || apiData.settleCycleCd,
+      settleDay: apiData.settleDay,
+      commissionRate: apiData.commissionRate,
+      minSettleAmt: apiData.minSettleAmt,
+      settleConfigRemark: apiData.settleConfigRemark,
+      useYn: apiData.useYn
+    });
+
     const openEdit = (c) => {
-      Object.assign(form, { ...c });
-      uiState.selectedId = c.configId;
+      Object.assign(form, fnMapApiToUi(c));
+      uiState.selectedId = c.settleConfigId;
       uiState.isNew = false;
       Object.keys(errors).forEach(k => delete errors[k]);
     };
     const openNew = () => {
-      Object.assign(form, { configId: null, siteNm: 'ShopJoy 01', vendorType: '', commRate: 10, settleCycle: '월정산', settleDay: 10, minSettleAmt: 10000, taxYn: 'Y', autoCloseYn: 'Y', useYn: 'Y', remark: '' });
+      Object.assign(form, { settleConfigId: null, siteId: '01', siteNm: 'ShopJoy 01', settleCycleCd: 'MONTHLY', settleDay: 10, commissionRate: 10, minSettleAmt: 10000, useYn: 'Y', settleConfigRemark: '' });
       uiState.selectedId = '__new__';
       uiState.isNew = true;
       Object.keys(errors).forEach(k => delete errors[k]);
@@ -45,8 +76,8 @@ window.StConfigMng = {
 
     const validate = () => {
       Object.keys(errors).forEach(k => delete errors[k]);
-      if (!form.vendorType) errors.vendorType = '업체유형을 입력하세요.';
-      if (form.commRate === '' || form.commRate === null) errors.commRate = '수수료율을 입력하세요.';
+      if (!form.settleCycleCd) errors.settleCycleCd = '정산주기를 선택하세요.';
+      if (form.commissionRate === '' || form.commissionRate === null) errors.commissionRate = '수수료율을 입력하세요.';
       if (!form.settleDay) errors.settleDay = '정산일을 입력하세요.';
       return Object.keys(errors).length === 0;
     };
@@ -56,8 +87,9 @@ window.StConfigMng = {
       const ok = await props.showConfirm('저장', '정산기준을 저장하시겠습니까?');
       if (!ok) return;
       closeForm();
+      const apiData = fnMapUiToApi(form);
       try {
-        const res = await (uiState.isNew ? window.boApi.post('/bo/ec/st/config', { ...form }, { headers: { 'X-UI-Nm': '정산설정관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/ec/st/config/${form.configId}`, { ...form }, { headers: { 'X-UI-Nm': '정산설정관리', 'X-Cmd-Nm': '저장' } }));
+        const res = await (uiState.isNew ? window.boApi.post('/bo/ec/st/config', apiData, { headers: { 'X-UI-Nm': '정산설정관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/ec/st/config/${form.settleConfigId}`, apiData, { headers: { 'X-UI-Nm': '정산설정관리', 'X-Cmd-Nm': '저장' } }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
         await handleLoadList();
@@ -70,11 +102,12 @@ window.StConfigMng = {
     };
 
     const handleDelete = async (c) => {
-      const ok = await props.showConfirm('삭제', `[${c.vendorType}] 정산기준을 삭제하시겠습니까?`);
+      const cycleName = c.settleCycleNm || c.settleCycleCd;
+      const ok = await props.showConfirm('삭제', `[${cycleName}] 정산기준을 삭제하시겠습니까?`);
       if (!ok) return;
-      if (uiState.selectedId === c.configId) closeForm();
+      if (uiState.selectedId === c.settleConfigId) closeForm();
       try {
-        const res = await window.boApi.delete(`/bo/ec/st/config/${c.configId}`, { headers: { 'X-UI-Nm': '정산설정관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await window.boApi.delete(`/bo/ec/st/config/${c.settleConfigId}`, { headers: { 'X-UI-Nm': '정산설정관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
         await handleLoadList();
@@ -86,11 +119,12 @@ window.StConfigMng = {
       }
     };
 
-    const fnCycleBadge = s => ({ '월정산': 'badge-blue', '주정산': 'badge-green', '일정산': 'badge-orange' }[s] || 'badge-gray');
+    const fnCycleCdToLabel = (cd) => ({ 'DAILY': '일정산', 'WEEKLY': '주정산', 'MONTHLY': '월정산' }[cd] || cd);
+    const fnCycleBadge = (cd) => ({ 'DAILY': 'badge-orange', 'WEEKLY': 'badge-green', 'MONTHLY': 'badge-blue' }[cd] || 'badge-gray');
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, configs, form, errors, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge, handleLoadList };
+    return { uiState, configs, form, errors, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge, fnCycleCdToLabel, handleLoadList, fnMapUiToApi, fnMapApiToUi };
   },
   template: /* html */`
 <div>
@@ -110,19 +144,17 @@ window.StConfigMng = {
       <div style="margin-left:auto"><button class="btn btn-primary" @click="openNew">+ 기준 추가</button></div>
     </div>
     <table class="bo-table">
-      <thead><tr><th>사이트</th><th>업체유형</th><th>수수료율</th><th>정산주기</th><th>정산일</th><th>최소정산금</th><th>세금계산서</th><th>자동마감</th><th>사용여부</th><th>비고</th><th>액션</th></tr></thead>
+      <thead><tr><th>사이트</th><th>카테고리</th><th>수수료율</th><th>정산주기</th><th>정산일</th><th>최소정산금</th><th>사용여부</th><th>비고</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="c in configs" :key="c?.configId" :class="{selected: uiState.selectedId===c.configId}">
+        <tr v-for="c in configs" :key="c?.settleConfigId" :class="{selected: uiState.selectedId===c.settleConfigId}">
           <td>{{ c.siteNm }}</td>
-          <td><strong>{{ c.vendorType }}</strong></td>
-          <td><strong>{{ c.commRate }}%</strong></td>
-          <td><span class="badge" :class="fnCycleBadge(c.settleCycle)">{{ c.settleCycle }}</span></td>
+          <td><strong>{{ c.categoryNm || c.vendorNm || '-' }}</strong></td>
+          <td><strong>{{ c.commissionRate }}%</strong></td>
+          <td><span class="badge" :class="fnCycleBadge(c.settleCycleCd)">{{ fnCycleCdToLabel(c.settleCycleCd) }}</span></td>
           <td>매월 {{ c.settleDay }}일</td>
-          <td>{{ Number(c.minSettleAmt).toLocaleString() }}원</td>
-          <td><span class="badge" :class="c.taxYn==='Y'?'badge-green':'badge-gray'">{{ c.taxYn==='Y'?'발행':'미발행' }}</span></td>
-          <td><span class="badge" :class="c.autoCloseYn==='Y'?'badge-blue':'badge-gray'">{{ c.autoCloseYn==='Y'?'자동':'수동' }}</span></td>
+          <td>{{ Number(c.minSettleAmt || 0).toLocaleString() }}원</td>
           <td><span class="badge" :class="c.useYn==='Y'?'badge-green':'badge-gray'">{{ c.useYn==='Y'?'사용':'미사용' }}</span></td>
-          <td style="color:#888;font-size:12px">{{ c.remark }}</td>
+          <td style="color:#888;font-size:12px">{{ c.settleConfigRemark }}</td>
           <td class="actions">
             <button class="btn btn-sm btn-primary" @click="openEdit(c)">수정</button>
             <button class="btn btn-sm btn-danger"  @click="handleDelete(c)">삭제</button>
@@ -137,20 +169,20 @@ window.StConfigMng = {
     <div class="card-title" style="font-weight:700;margin-bottom:16px">{{ uiState.isNew ? '정산기준 추가' : '정산기준 수정' }}</div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">업체유형 <span style="color:red">*</span></label>
-        <input class="form-control" :class="{'is-invalid':errors.vendorType}" v-model="form.vendorType" placeholder="예: 판매업체" />
-        <div v-if="errors.vendorType" class="field-error">{{ errors.vendorType }}</div>
+        <label class="form-label">카테고리</label>
+        <input class="form-control" v-model="form.categoryNm" placeholder="카테고리명" />
       </div>
       <div class="form-group">
         <label class="form-label">수수료율(%) <span style="color:red">*</span></label>
-        <input class="form-control" :class="{'is-invalid':errors.commRate}" v-model.number="form.commRate" type="number" min="0" max="100" />
-        <div v-if="errors.commRate" class="field-error">{{ errors.commRate }}</div>
+        <input class="form-control" :class="{'is-invalid':errors.commissionRate}" v-model.number="form.commissionRate" type="number" min="0" max="100" step="0.01" />
+        <div v-if="errors.commissionRate" class="field-error">{{ errors.commissionRate }}</div>
       </div>
       <div class="form-group">
-        <label class="form-label">정산주기</label>
-        <select class="form-control" v-model="form.settleCycle">
-          <option>일정산</option><option>주정산</option><option>월정산</option>
+        <label class="form-label">정산주기 <span style="color:red">*</span></label>
+        <select class="form-control" :class="{'is-invalid':errors.settleCycleCd}" v-model="form.settleCycleCd">
+          <option value="">선택</option><option value="DAILY">일정산</option><option value="WEEKLY">주정산</option><option value="MONTHLY">월정산</option>
         </select>
+        <div v-if="errors.settleCycleCd" class="field-error">{{ errors.settleCycleCd }}</div>
       </div>
       <div class="form-group">
         <label class="form-label">정산일 <span style="color:red">*</span></label>
@@ -164,21 +196,13 @@ window.StConfigMng = {
         <input class="form-control" v-model.number="form.minSettleAmt" type="number" min="0" />
       </div>
       <div class="form-group">
-        <label class="form-label">세금계산서</label>
-        <select class="form-control" v-model="form.taxYn"><option value="Y">발행</option><option value="N">미발행</option></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">자동마감</label>
-        <select class="form-control" v-model="form.autoCloseYn"><option value="Y">자동</option><option value="N">수동</option></select>
-      </div>
-      <div class="form-group">
         <label class="form-label">사용여부</label>
         <select class="form-control" v-model="form.useYn"><option value="Y">사용</option><option value="N">미사용</option></select>
       </div>
     </div>
     <div class="form-group">
       <label class="form-label">비고</label>
-      <input class="form-control" v-model="form.remark" placeholder="비고 입력" />
+      <input class="form-control" v-model="form.settleConfigRemark" placeholder="비고 입력" />
     </div>
     <div class="form-actions">
       <button class="btn btn-primary" @click="handleSave">저장</button>
