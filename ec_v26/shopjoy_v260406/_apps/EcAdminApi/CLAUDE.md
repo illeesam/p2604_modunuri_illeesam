@@ -170,11 +170,10 @@ public void delete(String id) {
 
 ## VoUtil을 이용한 필드 자동 복사
 
-Entity 수정 시 Request Body의 필드를 일일이 매핑하지 않고 `VoUtil.voCopy()`로 자동 복사 가능.
+Entity 수정 시 Request Body의 필드를 일일이 매핑하지 않고 `VoUtil.voCopy()` 또는 `VoUtil.mapCopy()`로 자동 복사 가능.
 
-### 사용법
+### 방식 1: VO/DTO 사용
 
-**기본 사용 (null이 아닌 필드만 복사)**:
 ```java
 @Transactional
 public XxxDto update(String id, XxxVo body) {
@@ -190,24 +189,53 @@ public XxxDto update(String id, XxxVo body) {
 }
 ```
 
-**제외 필드 지정**:
+### 방식 2: Map<String, Object> 사용 (동적 필드)
+
+```java
+@Transactional
+public XxxDto update(String id, Map<String, Object> body) {
+    Xxx entity = repository.findById(id)
+        .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+    VoUtil.mapCopy(body, entity);  // Map의 모든 non-null 항목을 복사
+    entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+    entity.setUpdDate(LocalDateTime.now());
+    Xxx saved = repository.save(entity);
+    if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+    em.flush();
+    return getById(id);
+}
+```
+
+### 제외 필드 지정
+
 ```java
 // id, regBy, regDate는 복사하지 않음
 VoUtil.voCopy(body, entity, "id", "regBy", "regDate");
+// 또는
+VoUtil.mapCopy(body, entity, "id", "regBy", "regDate");
 ```
 
 ### 안전성 보장
 
 1. **null 안전**: null 값은 복사하지 않음 (선택적 수정만 반영)
 2. **타입 검증**: 타입이 다른 필드는 복사하지 않음
-3. **필드 누락 허용**: VO에 있지만 Entity에 없는 필드는 무시 (부분 복사)
+3. **필드 누락 허용**: VO/Map에 있지만 Entity에 없는 필드는 무시 (부분 복사)
 4. **필드명 일치**: 같은 이름의 필드만 자동 매핑
 
 ### 사용 제약
 
-- Entity와 VO의 필드명이 **정확히 일치**해야 함
+- Entity와 VO/Map의 필드명이 **정확히 일치**해야 함
 - MyBatis `<if test="field != null">` 조건은 여전히 유효함 (null 값이 복사되지 않으므로)
 - JPA dirty checking은 정상 작동 (필드 변경이 감지됨)
+
+### 메서드 요약
+
+| 메서드 | 용도 | 예시 |
+|---|---|---|
+| `voCopy(vo, entity)` | VO/DTO → Entity | `VoUtil.voCopy(body, entity)` |
+| `voCopy(vo, entity, excludes)` | VO/DTO → Entity (제외) | `VoUtil.voCopy(body, entity, "id", "regBy")` |
+| `mapCopy(map, entity)` | Map → Entity | `VoUtil.mapCopy(body, entity)` |
+| `mapCopy(map, entity, excludes)` | Map → Entity (제외) | `VoUtil.mapCopy(body, entity, "id", "regBy")` |
 
 ---
 

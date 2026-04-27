@@ -7,6 +7,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,13 +42,16 @@ public class FoCmContactService {
     public CmBlog submit(Map<String, Object> body) {
         CmBlog entity = new CmBlog();
         entity.setBlogId(CmUtil.generateId("fo_contact"));
-        entity.setSiteId((String) body.get("siteId"));
         entity.setBlogCateId(CONTACT_CATE);
         entity.setBlogTitle("[문의] " + body.getOrDefault("inquiryType", "일반"));
         entity.setBlogContent(buildContent(body));
-        entity.setBlogAuthor((String) body.getOrDefault("name", ""));
         entity.setUseYn("Y");
         entity.setViewCount(0);
+
+        // Map의 동적 필드 자동 복사 (siteId, blogAuthor 등)
+        // regBy, regDate, updBy, updDate는 제외하고 나머지는 자동 복사
+        VoUtil.mapCopy(body, entity, "blogId", "blogCateId", "blogTitle", "blogContent", "useYn", "viewCount", "regBy", "regDate", "updBy", "updDate");
+
         String authId = SecurityUtil.getAuthIdOrGuest();
         entity.setRegBy(authId);
         entity.setRegDate(LocalDateTime.now());

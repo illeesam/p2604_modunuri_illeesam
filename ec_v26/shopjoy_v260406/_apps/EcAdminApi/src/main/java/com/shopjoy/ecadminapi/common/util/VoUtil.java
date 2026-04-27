@@ -3,17 +3,21 @@ package com.shopjoy.ecadminapi.common.util;
 import java.lang.reflect.Field;
 
 /**
- * VO/DTO → Entity 필드 자동 복사 유틸.
+ * VO/DTO/Map → Entity 필드 자동 복사 유틸.
  *
  * 용도:
- * 1. Request Body(VO/DTO)의 필드를 Entity로 자동 복사
+ * 1. Request Body(VO/DTO/Map)의 필드를 Entity로 자동 복사
  * 2. null 값은 복사하지 않음 (선택적 수정만 반영)
  * 3. 타입 검증으로 잘못된 필드 주입 방지
  *
  * 예시:
  *   MbMember entity = repository.findById(id).orElseThrow(...);
+ *   // VO 방식
  *   MbMemberVo vo = (MbMemberVo) body;
- *   VoUtil.voCopy(vo, entity);  // null이 아닌 필드만 복사
+ *   VoUtil.voCopy(vo, entity);
+ *   // Map 방식
+ *   Map<String, Object> mapBody = (Map<String, Object>) body;
+ *   VoUtil.mapCopy(mapBody, entity);
  *   repository.save(entity);
  */
 public class VoUtil {
@@ -112,6 +116,99 @@ public class VoUtil {
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException("VoUtil.voCopy() 실패: " + e.getMessage(), e);
+        }
+
+        return target;
+    }
+
+    /**
+     * Map<String, Object>의 항목을 target Entity에 복사.
+     * null 값은 복사하지 않음 (선택적 수정만 반영).
+     *
+     * @param source Map 형태의 요청 데이터
+     * @param target 대상 Entity
+     * @return target 객체
+     */
+    public static <T> T mapCopy(java.util.Map<String, Object> source, T target) {
+        if (source == null || target == null) {
+            return target;
+        }
+
+        Class<?> targetClass = target.getClass();
+
+        try {
+            for (java.util.Map.Entry<String, Object> entry : source.entrySet()) {
+                String fieldName = entry.getKey();
+                Object value = entry.getValue();
+
+                // null 값은 건너뜀
+                if (value == null) {
+                    continue;
+                }
+
+                try {
+                    Field targetField = targetClass.getDeclaredField(fieldName);
+                    targetField.setAccessible(true);
+
+                    // 타입 호환성 확인
+                    if (targetField.getType().isAssignableFrom(value.getClass())) {
+                        targetField.set(target, value);
+                    }
+                } catch (NoSuchFieldException ignored) {
+                    // target에 해당 필드가 없으면 무시 (부분 복사 허용)
+                }
+            }
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("VoUtil.mapCopy() 실패: " + e.getMessage(), e);
+        }
+
+        return target;
+    }
+
+    /**
+     * Map<String, Object>의 항목을 target Entity에 복사 (지정된 필드 제외).
+     *
+     * @param source   Map 형태의 요청 데이터
+     * @param target   대상 Entity
+     * @param excludes 복사하지 않을 필드명 배열
+     * @return target 객체
+     */
+    public static <T> T mapCopy(java.util.Map<String, Object> source, T target, String... excludes) {
+        if (source == null || target == null) {
+            return target;
+        }
+
+        java.util.Set<String> excludeSet = java.util.Arrays.stream(excludes).collect(java.util.stream.Collectors.toSet());
+        Class<?> targetClass = target.getClass();
+
+        try {
+            for (java.util.Map.Entry<String, Object> entry : source.entrySet()) {
+                String fieldName = entry.getKey();
+
+                // 제외 필드 체크
+                if (excludeSet.contains(fieldName)) {
+                    continue;
+                }
+
+                Object value = entry.getValue();
+
+                if (value == null) {
+                    continue;
+                }
+
+                try {
+                    Field targetField = targetClass.getDeclaredField(fieldName);
+                    targetField.setAccessible(true);
+
+                    if (targetField.getType().isAssignableFrom(value.getClass())) {
+                        targetField.set(target, value);
+                    }
+                } catch (NoSuchFieldException ignored) {
+                    // target에 해당 필드가 없으면 무시
+                }
+            }
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("VoUtil.mapCopy() 실패: " + e.getMessage(), e);
         }
 
         return target;
