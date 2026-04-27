@@ -84,10 +84,12 @@ public class SyPropService {
 
     @Transactional
     public void delete(String id) {
-        if (!repository.existsById(id))
-            throw new CmBizException("존재하지 않는 SyProp입니다: " + id);
-        // sy_prop :: delete :: id [orm:jpa]
-        repository.deleteById(id);
+        SyProp entity = repository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        repository.delete(entity);
+        em.flush();
+        if (repository.existsById(id))
+            throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
 }
