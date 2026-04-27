@@ -168,7 +168,13 @@ window.CmNoticeMng = {
 
     // 상세 컴포넌트 내부 navigate 인터셉터 — 목록 복귀·편집전환은 페이지 이동 없이 처리
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'cmNoticeMng')      { uiStateDetail.selectedId = null; handleSearchList(); return; }
+      console.log('[inlineNavigate]', pg, opts);
+      if (pg === 'cmNoticeMng')      {
+        console.log('[inlineNavigate] 목록 복귀, 상세 패널 닫고 재조회');
+        uiStateDetail.selectedId = null;
+        handleSearchList();
+        return;
+      }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };

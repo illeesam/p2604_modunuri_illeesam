@@ -9,26 +9,22 @@ window.SyBbsMng = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null});
     const codes = reactive({ bbs_status: [] });
 
-    // onMounted에서 API 로드
-    const handleSearchData = async (searchType = 'DEFAULT') => {
+    // 게시글 목록 조회
+    const handleSearchBbs = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const [resBbs, resBbm] = await Promise.all([
-          window.boApi.get('/bo/sy/bbs/page', {
-            params: {
-              pageNo: pager.pageNo, pageSize: pager.pageSize,
-              ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-            },
-            headers: { 'X-UI-Nm': '게시판관리', 'X-Cmd-Nm': '조회' }
-          }),
-          window.boApi.get('/bo/sy/bbm/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '게시판관리', 'X-Cmd-Nm': '조회' } }),
-        ]);
-        const data = resBbs.data?.data;
+        const res = await window.boApi.get('/bo/sy/bbs/page', {
+          params: {
+            pageNo: pager.pageNo, pageSize: pager.pageSize,
+            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+          },
+          headers: { 'X-UI-Nm': '게시글관리', 'X-Cmd-Nm': '조회' }
+        });
+        const data = res.data?.data;
         bbss.splice(0, bbss.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || bbss.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
-        bbms.splice(0, bbms.length, ...(resBbm.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -36,6 +32,19 @@ window.SyBbsMng = {
         if (props.showToast) props.showToast('SyBbs 로드 실패', 'error');
       } finally {
         uiState.loading = false;
+      }
+    };
+
+    // 게시판 목록 조회 (초기 로드 시에만)
+    const handleLoadBbmList = async () => {
+      try {
+        const res = await window.boApi.get('/bo/sy/bbm/page', {
+          params: { pageNo: 1, pageSize: 10000 },
+          headers: { 'X-UI-Nm': '게시판관리', 'X-Cmd-Nm': '조회' }
+        });
+        bbms.splice(0, bbms.length, ...(res.data?.data?.list || []));
+      } catch (err) {
+        console.error('[handleLoadBbmList]', err);
       }
     };
     /* ── 표시경로 선택 모달 (sy_path) ── */
@@ -62,9 +71,10 @@ window.SyBbsMng = {
     /* _expand3: 기본 3레벨 펼침 */
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
+    onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
-      handleSearchData('DEFAULT');
+      await handleLoadBbmList();
+      await handleSearchBbs('DEFAULT');
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
@@ -136,10 +146,10 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
     const fnStatusBadge = s => ({ '게시': 'badge-green', '임시': 'badge-gray', '삭제': 'badge-red', '비공개': 'badge-orange' }[s] || 'badge-gray');
-    const onSearch = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
+    const onSearch = () => { pager.pageNo = 1; handleSearchBbs('DEFAULT'); };
     const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchBbs('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchBbs('DEFAULT'); };
     const handleDelete = async (b) => {
       const ok = await props.showConfirm('삭제', `[${b.title}]을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -147,7 +157,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       if (idx !== -1) bbss.splice(idx, 1);
       if (detailModal.editId === b.bbsId) { detailModal.show = false; detailModal.editId = null; }
       try {
-        const res = await window.boApi.delete(`/bo/sy/bbs/${b.bbsId}`, { headers: { 'X-UI-Nm': '게시판관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await window.boApi.delete(`/bo/sy/bbs/${b.bbsId}`, { headers: { 'X-UI-Nm': '게시글관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

@@ -72,7 +72,12 @@
     try { uiNm  = uiNm  ? decodeURIComponent(uiNm)  : ''; } catch (_) {}
     try { cmdNm = cmdNm ? decodeURIComponent(cmdNm) : ''; } catch (_) {}
     var uiTag = uiNm ? (' [' + uiNm + (cmdNm ? ' > ' + cmdNm : '') + ']') : '';
-    console.log(TAG + ' → ' + (cfg.method || 'GET').toUpperCase() + uiTag, cfg.url, cfg.data || cfg.params || '');
+    var displayUrl = cfg.url;
+    if (displayUrl && (displayUrl.includes('localhost') || displayUrl.includes('127'))) {
+      var pathMatch = displayUrl.match(/\/api(\/.*)?$/);
+      if (pathMatch) displayUrl = pathMatch[0];
+    }
+    console.log(TAG + ' → ' + (cfg.method || 'GET').toUpperCase() + uiTag, displayUrl, cfg.data || cfg.params || '');
     return cfg;
   }, function (err) {
     console.error(TAG + ' ✗ REQUEST ERROR', err && err.message);
@@ -100,14 +105,19 @@
     try { resUiNm  = resUiNm  ? decodeURIComponent(resUiNm)  : ''; } catch (_) {}
     try { resCmdNm = resCmdNm ? decodeURIComponent(resCmdNm) : ''; } catch (_) {}
     var resUiTag = resUiNm ? (' [' + resUiNm + (resCmdNm ? ' > ' + resCmdNm : '') + ']') : '';
-    console.log(TAG + ' ← ' + res.status + resUiTag, resCfg.url);
+    var resDisplayUrl = resCfg.url || '';
+    if (resDisplayUrl && (resDisplayUrl.includes('localhost') || resDisplayUrl.includes('127'))) {
+      var resPathMatch = resDisplayUrl.match(/\/api(\/.*)?$/);
+      if (resPathMatch) resDisplayUrl = resPathMatch[0];
+    }
+    console.log(TAG + ' ← ' + res.status + resUiTag, resDisplayUrl);
     try {
       var cfg = res.config || {};
       var method = (cfg.method || 'get').toUpperCase();
       var displayUrl = cfg.url || '';
-      if (displayUrl.includes('localhost') || displayUrl.includes('127')) {
-        var portMatch = displayUrl.match(/:(\d+)(\/.*)?$/);
-        if (portMatch) displayUrl = ':' + portMatch[1] + (portMatch[2] || '');
+      if (displayUrl && (displayUrl.includes('localhost') || displayUrl.includes('127'))) {
+        var pathMatch = displayUrl.match(/\/api(\/.*)?$/);
+        if (pathMatch) displayUrl = pathMatch[0];
       }
       var paramStr = cfg.params ? JSON.stringify(cfg.params) : '';
       var dataStr  = cfg.data  ? (typeof cfg.data === 'string' ? cfg.data : JSON.stringify(cfg.data)) : '';
@@ -123,7 +133,12 @@
     var res = err.response;
     var cfg = err.config || {};
     var status = res && res.status;
-    console.error(TAG + ' ✗ ' + (status || 'NETWORK'), cfg.url, err.message);
+    var errDisplayUrl = cfg.url;
+    if (errDisplayUrl && (errDisplayUrl.includes('localhost') || errDisplayUrl.includes('127'))) {
+      var errPathMatch = errDisplayUrl.match(/\/api(\/.*)?$/);
+      if (errPathMatch) errDisplayUrl = errPathMatch[0];
+    }
+    console.error(TAG + ' ✗ ' + (status || 'NETWORK'), errDisplayUrl, err.message);
 
     /* 200-299 범위가 아닌 모든 응답 → toast 출력 */
     if ((status && (status < 200 || status >= 300)) || !status) {
@@ -143,12 +158,12 @@
         if (!errorDetails && err.message) errorDetails = err.message;
       } catch (_) {}
       try {
-        // URL 정리 (localhost/127로 시작하면 :port부터만 표시)
+        // URL 정리 (localhost/127로 시작하면 /api/... 형태로 표시)
         var displayUrl = cfg.url;
         if (displayUrl && (displayUrl.includes('localhost') || displayUrl.includes('127'))) {
-          var portMatch = displayUrl.match(/:(\d+)(\/|$)/);
-          if (portMatch) {
-            displayUrl = ':' + portMatch[1] + displayUrl.substring(displayUrl.indexOf(portMatch[0]) + portMatch[0].length);
+          var pathMatch = displayUrl.match(/\/api(\/.*)?$/);
+          if (pathMatch) {
+            displayUrl = pathMatch[0];
           }
         }
         var uiLabel = getHdr(cfg.headers, 'x-ui-nm') + (getHdr(cfg.headers, 'x-cmd-nm') ? ' > ' + getHdr(cfg.headers, 'x-cmd-nm') : '');
@@ -162,9 +177,16 @@
     if ((status === 0 || !status || status >= 500) && !cfg._notified) {
       cfg._notified = true;
       try {
+        var errorUrl = cfg.url;
+        if (errorUrl && (errorUrl.includes('localhost') || errorUrl.includes('127'))) {
+          var errorPathMatch = errorUrl.match(/\/api(\/.*)?$/);
+          if (errorPathMatch) {
+            errorUrl = errorPathMatch[0];
+          }
+        }
         var uiLabelE = getHdr(cfg.headers, 'x-ui-nm') + (getHdr(cfg.headers, 'x-cmd-nm') ? ' > ' + getHdr(cfg.headers, 'x-cmd-nm') : '');
         global.dispatchEvent(new CustomEvent('api-error', {
-          detail: { scope: 'fo', status: status || 0, url: cfg.url, message: err.message, method: (cfg.method || 'get').toUpperCase(), uiLabel: uiLabelE },
+          detail: { scope: 'fo', status: status || 0, url: errorUrl, message: err.message, method: (cfg.method || 'get').toUpperCase(), uiLabel: uiLabelE },
         }));
       } catch (_) {}
     }

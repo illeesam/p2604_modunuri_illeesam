@@ -30,6 +30,8 @@ window.SyPropMng = {
       }
     });
 
+    const cfSiteId = computed(() => window.boCommonFilter?.siteId || null);
+
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -50,27 +52,27 @@ window.SyPropMng = {
     /* ── 데이터 (작업 상태 포함) ── */
     const rows = reactive([]);
     const _rawProps = reactive([]); // 원본 데이터 (cancelRow 복원용)
-        const reload = () => {
+    const reload = () => {
       rows.splice(0, rows.length, ..._rawProps.map(p => ({ ...p, _status: '' })));
     };
 
-    // onMounted에서 API 로드
-    const handleSearchList = async (searchType = 'DEFAULT') => {
+    // 검색/조회 함수
+    const fetchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await window.boApi.get('/bo/sy/prop/page', {
-          params: { pageNo: 1, pageSize: 10000 },
+          params: { pageNo: 1, pageSize: 10000, siteId: cfSiteId.value },
           headers: { 'X-UI-Nm': '속성관리', 'X-Cmd-Nm': '조회' }
         });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         _rawProps.splice(0, _rawProps.length, ...list);
         reload();
       } catch (err) {
-        console.error('[catch-info]', err);
+        console.error('[fetchData]', err);
         if (props.showToast) props.showToast('SyProp 로드 실패', 'error');
       }
     };
+
     /* ── 사이트 필터 (공통필터 사이트와 동기화) ── */
-    const cfSiteId = computed(() => window.boCommonFilter?.siteId || null);
     const cfFilteredBySite = computed(() => {
       const sid = cfSiteId.value;
       if (!sid) return rows;
@@ -95,7 +97,7 @@ window.SyPropMng = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleSearchList('DEFAULT');
+      fetchData('DEFAULT');
       const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
@@ -121,14 +123,14 @@ window.SyPropMng = {
     });
 
     /* ── 페이징 ── */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.length / pager.pageSize)));
-    const cfPageNums   = computed(() => { const c = pager.pageNo, l = pager.pageTotalPage; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setPage    = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.length / pager.pageSize)));
+    const cfPageNums   = computed(() => { const c = pager.pageNo, l = cfTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
+    const setPage    = n => { if (n >= 1 && n <= cfTotalPages.value) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
     const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageSize; return cfGridRows.value.slice(s, s + pager.pageSize); });
 
-    watch(() => cfGridRows.value.length, () => { if (pager.pageNo > pager.pageTotalPage) pager.pageNo = Math.max(1, pager.pageTotalPage); });
+    watch(() => cfGridRows.value.length, () => { if (pager.pageNo > cfTotalPages.value) pager.pageNo = Math.max(1, cfTotalPages.value); });
 
     /* ── 행 변경 추적 ── */
     const onChange = (row, field, val) => {
@@ -228,7 +230,7 @@ const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.lengt
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchParam, TYPES, cfTree, expanded, toggleNode, expandAll, collapseAll,
       selectNode, cfGridRows, cfPagedRows, cfDirtyRows,
-      pager, cfTotalPages, cfPageNums, setPage, onSizeChange,
+      pager, cfTotalPages, cfPageNums, setPage, onSizeChange, fetchData,
       onChange, addRow, delRow, cancelRow, handleSave, onReset, exportCsv,
     };
   },
@@ -353,8 +355,8 @@ const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.lengt
           <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
           <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
           <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-          <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
-          <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+          <button :disabled="pager.pageNo===cfTotalPages.value" @click="setPage(pager.pageNo+1)">›</button>
+          <button :disabled="pager.pageNo===cfTotalPages.value" @click="setPage(cfTotalPages.value)">»</button>
         </div>
         <div class="pager-right">
           <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
@@ -394,10 +396,6 @@ window.PropTreeNode = {
       :node="ch" :expanded="expanded" :selected="selected"
       :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" />
   </div>
-
-  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_prop"
-    :value="pathPickModal.row ? pathPickModal.row.pathId : null"
-    @select="onPathPicked" @close="closePathPick" />
 </div>
 `,
 };

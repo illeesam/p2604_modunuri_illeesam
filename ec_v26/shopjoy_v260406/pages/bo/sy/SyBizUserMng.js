@@ -70,11 +70,16 @@ window.SyBizUserMng = {
 
     const vendors = reactive([]);
     const handleLoadDetail = async () => {
+      uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/sy/vendor/page', { params: { pageNo:1, pageSize:10000 }, headers: { 'X-UI-Nm': '사업자사용자관리', 'X-Cmd-Nm': '조회' } });
-        const list = res.data?.data?.pageList || res.data?.data?.list || [];
+        const res = await window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '업체사용자관리', 'X-Cmd-Nm': '조회' } });
+        const list = res.data?.data?.pageList || res.data?.data || [];
         vendors.splice(0, vendors.length, ...list);
-      } catch(e) { console.warn('[SyBizUserMng] vendor load failed', e); }
+      } catch(e) {
+        console.error('[SyBizUserMng] vendor load failed', e);
+      } finally {
+        uiState.loading = false;
+      }
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
@@ -129,10 +134,10 @@ window.SyBizUserMng = {
       return true;
     }));
     const bizPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const cfBizTotalPages = computed(() => Math.max(1, Math.ceil(cfVendorList.value.length / bizPager.size)));
-    const cfBizPageNums   = computed(() => { const c=bizPager.page,l=cfBizTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
-    const cfBizPagedRows  = computed(() => cfVendorList.value.slice((bizPager.page-1)*bizPager.size, bizPager.page*bizPager.size));
-    const setBizPage    = n => { if(n>=1&&n<=cfBizTotalPages.value) bizPager.page=n; };
+    const cfBizTotalPages = computed(() => Math.max(1, Math.ceil(cfVendorList.value.length / bizPager.pageSize)));
+    const cfBizPageNums   = computed(() => { const c=bizPager.pageNo,l=cfBizTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfBizPagedRows  = computed(() => cfVendorList.value.slice((bizPager.pageNo-1)*bizPager.pageSize, bizPager.pageNo*bizPager.pageSize));
+    const setBizPage    = n => { if(n>=1&&n<=cfBizTotalPages.value) bizPager.pageNo=n; };
 
     const fnVendorStatusBadge = (s) => ({ ACTIVE:'badge-green', SUSPENDED:'badge-orange', TERMINATED:'badge-red' }[s] || 'badge-gray');
     const fnVendorStatusLabel = (s) => ({ ACTIVE:'운영중', SUSPENDED:'중지', TERMINATED:'종료' }[s] || s);
@@ -150,12 +155,12 @@ window.SyBizUserMng = {
       pager.pageNo = 1;
     };
 
-    const onSearch = () => { bizPager.page = 1; };
+    const onSearch = () => { bizPager.pageNo = 1; };
     const onReset = () => {
       uiState.bizKw = '';
       uiState.bizVendorFlt = '';
       uiState.bizStatusFlt = '';
-      bizPager.page = 1;
+      bizPager.pageNo = 1;
     };
 
     const onVendorPicked = (v) => { uiState.vendorPickOpen=false; pickVendorRow(v); };
@@ -449,7 +454,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       <tbody>
         <tr v-if="cfBizPagedRows.length===0"><td colspan="6" style="text-align:center;color:#999;padding:20px;">데이터가 없습니다.</td></tr>
         <tr v-for="v in cfBizPagedRows" :key="v.vendorId"
-          :style="{cursor:'pointer',background:searchVendorId===v.vendorId?'#fff0f4':'transparent'}"
+          :style="{cursor:'pointer',background:uiState.searchVendorId===v.vendorId?'#fff0f4':'transparent'}"
           @click="pickVendorRow(v)">
           <td><span class="badge" :class="fnVendorTypeBadge(v.vendorTypeCd)" style="font-size:10px;">{{ fnVendorTypeLabel(v.vendorTypeCd) }}</span></td>
           <td style="font-weight:600;">{{ v.vendorNm }}</td>
@@ -457,7 +462,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           <td>{{ v.ceo }}</td>
           <td style="font-size:11.5px;">{{ v.phone }}</td>
           <td style="text-align:right;">
-            <button class="btn btn-primary btn-xs" @click.stop="pickVendorRow(v)">{{ searchVendorId===v.vendorId ? '선택됨' : '선택' }}</button>
+            <button class="btn btn-primary btn-xs" @click.stop="pickVendorRow(v)">{{ uiState.searchVendorId===v.vendorId ? '선택됨' : '선택' }}</button>
           </td>
         </tr>
       </tbody>
@@ -465,11 +470,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     <div class="pagination">
       <div></div>
       <div class="pager">
-        <button :disabled="bizPager.page===1" @click="setBizPage(1)">«</button>
-        <button :disabled="bizPager.page===1" @click="setBizPage(bizPager.page-1)">‹</button>
-        <button v-for="n in cfBizPageNums" :key="n" :class="{active:bizPager.page===n}" @click="setBizPage(n)">{{ n }}</button>
-        <button :disabled="bizPager.page===cfBizTotalPages" @click="setBizPage(bizPager.page+1)">›</button>
-        <button :disabled="bizPager.page===cfBizTotalPages" @click="setBizPage(cfBizTotalPages)">»</button>
+        <button :disabled="bizPager.pageNo===1" @click="setBizPage(1)">«</button>
+        <button :disabled="bizPager.pageNo===1" @click="setBizPage(bizPager.pageNo-1)">‹</button>
+        <button v-for="n in cfBizPageNums" :key="n" :class="{active:bizPager.pageNo===n}" @click="setBizPage(n)">{{ n }}</button>
+        <button :disabled="bizPager.pageNo===cfBizTotalPages.value" @click="setBizPage(bizPager.pageNo+1)">›</button>
+        <button :disabled="bizPager.pageNo===cfBizTotalPages.value" @click="setBizPage(cfBizTotalPages.value)">»</button>
       </div>
       <div></div>
     </div>

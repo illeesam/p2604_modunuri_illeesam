@@ -89,11 +89,14 @@ window.CmNoticeDtl = {
         const res = await (isNewNotice
           ? window.boApi.post('/bo/ec/cm/notice', { ...form }, { headers: { 'X-UI-Nm': '공지사항관리', 'X-Cmd-Nm': '등록' } })
           : window.boApi.put(`/bo/ec/cm/notice/${props.editId}`, { ...form }, { headers: { 'X-UI-Nm': '공지사항관리', 'X-Cmd-Nm': '저장' } }));
+        console.log('[handleSave] API Response:', res);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewNotice ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        // 200ms 딜레이 후 목록으로 복귀 (서버 반영 대기)
+        await new Promise(r => setTimeout(r, 200));
         if (props.navigate) props.navigate('cmNoticeMng');
       } catch (err) {
-        console.error('[catch-info]', err);
+        console.error('[handleSave] Error:', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
         if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
         if (props.showToast) props.showToast(errMsg, 'error', 0);
@@ -102,7 +105,7 @@ window.CmNoticeDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { cfIsNew, form, errors, handleSave, codes };
+    return { cfIsNew, form, errors, handleSave, codes, navigate: props.navigate, viewMode: props.viewMode };
   },
   template: /* html */`
 <div>

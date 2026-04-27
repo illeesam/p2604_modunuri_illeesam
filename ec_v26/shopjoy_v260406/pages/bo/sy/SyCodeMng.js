@@ -63,8 +63,6 @@ window.SyCodeMng = {
 
     const cfSiteNm         = computed(() => window.boCmUtil.getSiteNm()); // 현재 사이트명
     const cfGrpOptions     = computed(() => [...new Set(codes.map(c => c.codeGrp))].sort()); // 그룹 선택 옵션
-    const cfTotal          = computed(() => gridRows.filter(r => r._row_status !== 'D').length); // 코드 유효 건수
-    const cfGrpDirty       = computed(() => grpRows.filter(r => r._row_status !== 'N').length); // 그룹 변경 건수
 
     const cfGrpTree        = computed(() => window.boCmUtil.buildPathTree('sy_code_grp')); // 표시경로 트리
     const cfFilteredGrpRows = computed(() => {              // 트리 선택 경로로 필터된 그룹 행
@@ -84,16 +82,25 @@ window.SyCodeMng = {
       return cfFilteredGrpRows.value.slice(s, s + grpPager.size);
     });
 
-    const cfPagedRows      = computed(() => {               // 코드 현재 페이지 행
-      const s = (pager.pageNo - 1) * pager.pageSize;
-      return gridRows.slice(s, s + pager.pageSize);
+    const cfFilteredRows   = computed(() => {               // 선택된 그룹으로 필터된 행
+      if (!uiState.selectedGrp) return gridRows;
+      return gridRows.filter(r => r.codeGrp === uiState.selectedGrp && r._row_status !== 'D');
     });
-    const cfTotalPages     = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.pageSize)));
+    const cfTotal          = computed(() => cfFilteredRows.value.length); // 코드 유효 건수
+    const cfGrpDirty       = computed(() => grpRows.filter(r => r._row_status !== 'N').length); // 그룹 변경 건수
+    const cfPagedRows      = computed(() => {               // 코드 현재 페이지 행 (스크롤용 전체)
+      return cfFilteredRows.value;
+    });
+    const cfTotalPages     = computed(() => Math.max(1, Math.ceil(cfFilteredRows.value.length / pager.pageSize)));
     const cfPageNums       = computed(() => {               // 코드 페이지 번호 배열
-      const c = pager.pageNo, l = pager.pageTotalPage;
+      const c = pager.pageNo, l = cfTotalPages.value;
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
+
+    const fnGetCodeCountByGrp = (grpCode) => {              // 그룹별 코드 개수 계산
+      return gridRows.filter(r => r.codeGrp === grpCode && r._row_status !== 'D').length;
+    };
 
     const cfIsTreeTypeGrp  = computed(() => {               // 선택 그룹이 트리형 여부
       if (!uiState.selectedGrp || !codeGroups?.length) return false;
@@ -177,8 +184,8 @@ window.SyCodeMng = {
     // 트리 path 변경 시 — 그룹 페이지 리셋 + selectedGrp 해제 + 코드목록 재조회
     watch(() => uiState.grpSelectedPath, () => { grpPager.page = 1; uiState.selectedGrp = ''; handleSearchList(); });
 
-    // selectedGrp 변경 시 코드목록 재조회
-    watch(() => uiState.selectedGrp, () => handleSearchList());
+    // selectedGrp 변경 시 코드목록 재조회 + 페이지 리셋
+    watch(() => uiState.selectedGrp, () => { pager.pageNo = 1; handleSearchList(); });
 
     // ── 초기화부 ──────────────────────────────────────────────────────────────
 
@@ -494,10 +501,11 @@ window.SyCodeMng = {
       uiState, pageCodeGroups,
       cfSiteNm, cfGrpOptions, cfTotal, cfGrpDirty,
       searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange,
-      gridRows, cfPagedRows, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfFilteredRows, cfPagedRows, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       pager, setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       dragSrc, onDragStart, onDragOver, onDragEnd, toggleCheckAll, fnStatusClass, exportExcel,
+      fnGetCodeCountByGrp,
       codeGroups,
       grpRows, addGrp, handleDeleteGrp, cancelGrp, handleSaveGrp, onGrpChange,
       cfGrpTree, grpExpanded, grpToggleNode, grpSelectNode, grpExpandAll, grpCollapseAll,
@@ -610,7 +618,12 @@ window.SyCodeMng = {
               </div>
             </td>
             <td><input class="grid-input grid-mono" v-model="g.codeGrp" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
-            <td><input class="grid-input" v-model="g.grpNm" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
+            <td>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <input class="grid-input" v-model="g.grpNm" :disabled="g._row_status==='D'" @input="onGrpChange(g)" style="flex:1;" />
+                <span v-if="g._row_status !== 'D'" style="font-size:11px;color:#666;font-weight:500;white-space:nowrap;padding:4px 8px;background:#f3f4f6;border-radius:4px;">{{ fnGetCodeCountByGrp(g.codeGrp) }}개</span>
+              </div>
+            </td>
             <td style="text-align:center;">
               <span v-if="g.type" style="display:inline-block;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;"
                 :style="g.type==='트리' ? {background:'#fecaca',color:'#991b1b'} : {background:'#dbeafe',color:'#1e40af'}">
@@ -682,93 +695,86 @@ window.SyCodeMng = {
         :disabled="!uiState.selectedGrp">트리</button>
     </div>
 
-    <!-- ── 일반 탭: 테이블 ───────────────────────────────────────────────── -->
-    <table v-if="uiState.activeCodeTab==='일반'" class="bo-table crud-grid">
-      <thead>
-        <tr>
-          <th class="col-drag"></th>
-          <th class="col-id">ID</th>
-          <th class="col-status">상태</th>
-          <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
-          <th>코드그룹</th>
-          <th>코드라벨</th>
-          <th>코드값</th>
-          <th v-if="cfIsTreeTypeGrp" style="width:140px;">상위코드값</th>
-          <th class="col-ord">순서</th>
-          <th class="col-use">사용여부</th>
-          <th>비고</th>
-          <th style="width:80px;">사이트명</th>
-          <th class="col-act-cancel"></th>
-          <th class="col-act-delete"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="gridRows.length===0">
-          <td :colspan="cfIsTreeTypeGrp ? 13 : 12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
-        </tr>
-        <tr v-for="(row, idx) in cfPagedRows" :key="row.codeId"
-          class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '']"
-          draggable="true"
-          @click="setFocused(getRealIdx(idx))"
-          @dblclick="handleLoadDetail(row.codeId)"
-          @dragstart="onDragStart(getRealIdx(idx))"
-          @dragover="onDragOver($event, getRealIdx(idx))"
-          @dragend="onDragEnd">
-          <td class="drag-handle" title="드래그로 순서 변경">⠿</td>
-          <td class="col-id-val">{{ row.codeId > 0 ? row.codeId : 'NEW' }}</td>
-          <td class="col-status-val">
-            <span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span>
-          </td>
-          <td class="col-check-val">
-            <input type="checkbox" v-model="row._row_check" />
-          </td>
-          <td><input class="grid-input" v-model="row.codeGrp"   :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td><input class="grid-input" v-model="row.codeLabel"  :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td><input class="grid-input grid-mono" v-model="row.codeValue" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td v-if="cfIsTreeTypeGrp">
-            <select class="grid-select" v-model="row.parentCodeValue" :disabled="row._row_status==='D'" @change="onCellChange(row)">
-              <option :value="null">-- 없음 --</option>
-              <option v-for="opt in cfParentCodeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-            </select>
-          </td>
-          <td><input class="grid-input grid-num" type="number" v-model.number="row.sortOrd" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td>
-            <select class="grid-select" v-model="row.useYn" :disabled="row._row_status==='D'" @change="onCellChange(row)">
-              <option value="Y">사용</option><option value="N">미사용</option>
-            </select>
-          </td>
-          <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
-          <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
-          <td class="col-act-cancel-val">
-            <button v-if="['U','I','D'].includes(row._row_status)"
-              class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>
-          </td>
-          <td class="col-act-delete-val">
-            <button v-if="['N','U'].includes(row._row_status)"
-              class="btn btn-danger btn-xs" @click.stop="deleteRow(getRealIdx(idx))">삭제</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- ── 페이징 ────────────────────────────────────────────────────────── -->
-    <div class="pagination">
-      <div></div>
-      <div class="pager">
-        <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
-        <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
-        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
-      </div>
-      <div class="pager-right">
-        <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
-          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
-        </select>
-      </div>
+    <!-- ── 일반 탭: 테이블 (스크롤) ────────────────────────────────────── -->
+    <div v-if="uiState.activeCodeTab==='일반'" style="overflow-y:auto;max-height:400px;border:1px solid #e5e7eb;">
+      <table class="bo-table crud-grid">
+        <thead style="position:sticky;top:0;background:#fff;z-index:10;">
+          <tr>
+            <th class="col-drag"></th>
+            <th class="col-id">ID</th>
+            <th class="col-status">상태</th>
+            <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
+            <th>코드그룹</th>
+            <th style="width:60px;">유형</th>
+            <th>코드라벨</th>
+            <th>코드값</th>
+            <th v-if="cfIsTreeTypeGrp" style="width:140px;">상위코드값</th>
+            <th class="col-ord">순서</th>
+            <th class="col-use">사용여부</th>
+            <th>비고</th>
+            <th style="width:80px;">사이트명</th>
+            <th class="col-act-cancel"></th>
+            <th class="col-act-delete"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-if="cfFilteredRows.length===0">
+            <td :colspan="cfIsTreeTypeGrp ? 13 : 12" style="text-align:center;color:#999;padding:30px;">{{ uiState.selectedGrp ? '데이터가 없습니다.' : '그룹을 선택해주세요.' }}</td>
+          </tr>
+          <tr v-for="(row, idx) in cfPagedRows" :key="row.codeId"
+            class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '']"
+            draggable="true"
+            @click="setFocused(getRealIdx(idx))"
+            @dblclick="handleLoadDetail(row.codeId)"
+            @dragstart="onDragStart(getRealIdx(idx))"
+            @dragover="onDragOver($event, getRealIdx(idx))"
+            @dragend="onDragEnd">
+            <td class="drag-handle" title="드래그로 순서 변경">⠿</td>
+            <td class="col-id-val">{{ row.codeId > 0 ? row.codeId : 'NEW' }}</td>
+            <td class="col-status-val">
+              <span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span>
+            </td>
+            <td class="col-check-val">
+              <input type="checkbox" v-model="row._row_check" />
+            </td>
+            <td><input class="grid-input" v-model="row.codeGrp"   :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+            <td style="text-align:center;">
+              <span v-if="codeGroups.find(g => g.codeGrp === row.codeGrp)" style="display:inline-block;padding:3px 6px;border-radius:3px;font-size:10px;font-weight:600;"
+                :style="codeGroups.find(g => g.codeGrp === row.codeGrp)?.type === '트리' ? {background:'#fecaca',color:'#991b1b'} : {background:'#dbeafe',color:'#1e40af'}">
+                {{ codeGroups.find(g => g.codeGrp === row.codeGrp)?.type || '-' }}
+              </span>
+              <span v-else style="color:#999;">-</span>
+            </td>
+            <td><input class="grid-input" v-model="row.codeLabel"  :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+            <td><input class="grid-input grid-mono" v-model="row.codeValue" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+            <td v-if="cfIsTreeTypeGrp">
+              <select class="grid-select" v-model="row.parentCodeValue" :disabled="row._row_status==='D'" @change="onCellChange(row)">
+                <option :value="null">-- 없음 --</option>
+                <option v-for="opt in cfParentCodeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+              </select>
+            </td>
+            <td><input class="grid-input grid-num" type="number" v-model.number="row.sortOrd" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+            <td>
+              <select class="grid-select" v-model="row.useYn" :disabled="row._row_status==='D'" @change="onCellChange(row)">
+                <option value="Y">사용</option><option value="N">미사용</option>
+              </select>
+            </td>
+            <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
+            <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
+            <td class="col-act-cancel-val">
+              <button v-if="['U','I','D'].includes(row._row_status)"
+                class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>
+            </td>
+            <td class="col-act-delete-val">
+              <button v-if="['N','U'].includes(row._row_status)"
+                class="btn btn-danger btn-xs" @click.stop="deleteRow(getRealIdx(idx))">삭제</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
-    <!-- ── 트리 탭: 편집 가능한 테이블 ──────────────────────────────────── -->
+    <!-- ── 트리 탭: 편집 가능한 테이블 (스크롤) ────────────────────────── -->
     <div v-if="uiState.activeCodeTab==='트리' && uiState.selectedGrp">
       <div class="toolbar" style="background:#f9fafb;padding:12px;border-bottom:1px solid #e5e7eb;">
         <span class="list-title">트리 형식 편집</span>
@@ -778,7 +784,8 @@ window.SyCodeMng = {
           <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
         </div>
       </div>
-      <table class="bo-table crud-grid" style="margin-top:0;">
+      <div style="overflow-y:auto;max-height:400px;border:1px solid #e5e7eb;">
+        <table class="bo-table crud-grid" style="margin-top:0;">
         <thead>
           <tr>
             <th class="col-status">상태</th>
@@ -798,7 +805,7 @@ window.SyCodeMng = {
           <tr v-if="cfCodeTree.count===0">
             <td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
           </tr>
-          <tr v-else v-for="(row, idx) in cfPagedTreeRows" :key="row.node.value" class="crud-row" :class="['status-'+row.node.code._row_status]" style="user-select:none;" @click="setFocused(gridRows.indexOf(row.node.code))">
+          <tr v-else v-for="(row, idx) in cfFlatTreeRows" :key="row.node.value" class="crud-row" :class="['status-'+row.node.code._row_status]" style="user-select:none;" @click="setFocused(gridRows.indexOf(row.node.code))">
             <td class="col-status-val">
               <span class="badge badge-xs" :class="fnStatusClass(row.node.code._row_status)">{{ row.node.code._row_status }}</span>
             </td>
@@ -846,22 +853,6 @@ window.SyCodeMng = {
           </tr>
         </tbody>
       </table>
-
-      <!-- ── 트리 페이징 ────────────────────────────────────────────────── -->
-      <div class="pagination">
-        <div></div>
-        <div class="pager">
-          <button :disabled="treePager.page===1" @click="setTreePage(1)">«</button>
-          <button :disabled="treePager.page===1" @click="setTreePage(treePager.page-1)">‹</button>
-          <button v-for="n in cfTreePageNums" :key="n" :class="{active:treePager.page===n}" @click="setTreePage(n)">{{ n }}</button>
-          <button :disabled="treePager.page===cfTreeTotalPages" @click="setTreePage(treePager.page+1)">›</button>
-          <button :disabled="treePager.page===cfTreeTotalPages" @click="setTreePage(cfTreeTotalPages)">»</button>
-        </div>
-        <div class="pager-right">
-          <select class="size-select" v-model.number="treePager.size" @change="onTreeSizeChange">
-            <option v-for="s in TREE_PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
-          </select>
-        </div>
       </div>
     </div>
   </div>

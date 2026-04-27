@@ -12,7 +12,7 @@ window.SyBizMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/sy/biz/page', {
+        const res = await window.boApi.get('/bo/sy/vendor/page', {
           params: {
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
@@ -111,27 +111,27 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       // '' | 'new' | 'edit'
     const formData = reactive({});
     const blankForm = () => ({
-      bizId: null, bizNo: '', bizNm: '', bizNmEn: '', ceoNm: '',
-      vendorTypeCd: 'SALES', bizClassCd: '법인', bizType: '', bizItem: '',
-      pathId: null, zipCode: '', addr: '', addrDetail: '',
-      phone: '', fax: '', email: '', homepage: '',
-      bankNm: '', bankAccount: '', bankHolder: '',
-      openDate: '', contractDate: '', statusCd: 'ACTIVE', remark: '',
+      vendorId: null, corpNo: '', vendorNm: '', vendorNmEn: '', ceoNm: '',
+      vendorType: 'SALES', vendorClassCd: '법인', vendorItem: '', vendorItem: '',
+      dispPath: null, vendorZipCode: '', vendorAddr: '', vendorAddrDetail: '',
+      vendorPhone: '', vendorFax: '', vendorEmail: '', vendorHomepage: '',
+      vendorBankNm: '', vendorBankAccount: '', vendorBankHolder: '',
+      openDate: '', contractDate: '', vendorStatusCd: 'ACTIVE', vendorRemark: '',
     });
     const openNew = () => { Object.assign(formData, blankForm()); uiState.formMode = 'new'; };
     const openEdit = (b) => { Object.assign(formData, b); uiState.formMode = 'edit'; };
     const closeForm = () => { uiState.formMode = ''; };
     const handleSaveForm = async () => {
-      if (!formData.bizNo || !formData.bizNm) {
-        if (window.boToast) window.boToast('사업자번호와 상호는 필수입니다.', 'error');
+      if (!formData.corpNo || !formData.vendorNm) {
+        if (window.boToast) window.boToast('사업자번호와 업체명은 필수입니다.', 'error');
         return;
       }
       if (uiState.formMode === 'new') {
-        const newId = (bizs.reduce((m,x) => Math.max(m, x.bizId || 0), 0) || 0) + 1;
-        bizs.push({ ...formData, bizId: newId });
+        const newId = (bizs.reduce((m,x) => Math.max(m, parseInt(x.vendorId||'0')||0), 0) || 0) + 1;
+        bizs.push({ ...formData, vendorId: newId.toString() });
         if (window.boToast) window.boToast('신규 업체가 등록되었습니다.', 'success');
       } else {
-        const idx = bizs.findIndex(b => b.bizId === formData.bizId);
+        const idx = bizs.findIndex(b => b.vendorId === formData.vendorId);
         if (idx >= 0) bizs[idx] = { ...formData };
         if (window.boToast) window.boToast('수정 완료', 'success');
       }
@@ -203,17 +203,17 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           </tr></thead>
           <tbody>
             <tr v-if="bizs.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-            <tr v-for="b in bizs" :key="b.bizId">
-              <td><span style="font-family:monospace;font-size:11.5px;color:#374151;">{{ pathLabel(b.pathId) || '-' }}</span></td>
-              <td><span class="badge" :class="fnVendorTypeBadge(b.vendorTypeCd)" style="font-size:10px;">{{ fnVendorTypeLabel(b.vendorTypeCd) }}</span></td>
-              <td><span :style="{background:fnRoleCatColor(b.vendorTypeCd),color:'#fff',fontSize:'10px',fontWeight:700,padding:'2px 7px',borderRadius:'9px'}">{{ fnRoleCatLabel(b.vendorTypeCd) }}</span></td>
-              <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;">{{ b.bizNo }}</code></td>
-              <td style="font-weight:600;">{{ b.bizNm }}</td>
+            <tr v-for="b in bizs" :key="b.vendorId">
+              <td><span style="font-family:monospace;font-size:11.5px;color:#374151;">{{ pathLabel(b.dispPath) || '-' }}</span></td>
+              <td><span class="badge" :class="fnVendorTypeBadge(b.vendorType)" style="font-size:10px;">{{ fnVendorTypeLabel(b.vendorType) }}</span></td>
+              <td><span :style="{background:fnRoleCatColor(b.vendorType),color:'#fff',fontSize:'10px',fontWeight:700,padding:'2px 7px',borderRadius:'9px'}">{{ fnRoleCatLabel(b.vendorType) }}</span></td>
+              <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;">{{ b.corpNo }}</code></td>
+              <td style="font-weight:600;">{{ b.vendorNm }}</td>
               <td>{{ b.ceoNm }}</td>
-              <td><span class="badge badge-blue" style="font-size:10px;">{{ b.bizClassCd }}</span></td>
-              <td style="font-size:11.5px;color:#666;">{{ b.bizType }} / {{ b.bizItem }}</td>
-              <td style="font-size:11.5px;">{{ b.phone }}</td>
-              <td><span class="badge" :class="fnStatusBadge(b.statusCd)" style="font-size:10px;">{{ fnStatusLabel(b.statusCd) }}</span></td>
+              <td><span class="badge badge-blue" style="font-size:10px;">{{ b.vendorClassCd }}</span></td>
+              <td style="font-size:11.5px;color:#666;">{{ b.vendorItem }}</td>
+              <td style="font-size:11.5px;">{{ b.vendorPhone }}</td>
+              <td><span class="badge" :class="fnStatusBadge(b.vendorStatusCd)" style="font-size:10px;">{{ fnStatusLabel(b.vendorStatusCd) }}</span></td>
               <td style="font-size:11px;color:#888;">{{ (b.contractDate||'').slice(0,10) }}</td>
               <td style="text-align:right;"><button class="btn btn-primary btn-xs" @click="openEdit(b)">수정</button></td>
             </tr>
@@ -241,7 +241,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <div class="toolbar">
           <span class="list-title">
             <span style="color:#e8587a;">{{ uiState.formMode==='new' ? '+ 신규 업체' : '✏ 업체 수정' }}</span>
-            <span v-if="uiState.formMode==='edit'" style="margin-left:8px;font-size:11px;color:#888;">#{{ formData.bizId }}</span>
+            <span v-if="uiState.formMode==='edit'" style="margin-left:8px;font-size:11px;color:#888;">#{{ formData.vendorId }}</span>
           </span>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-secondary btn-sm" @click="closeForm">취소</button>
@@ -250,74 +250,74 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         </div>
         <div style="padding:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
           <div class="form-group"><label class="form-label">업체유형 <span class="req">*</span></label>
-            <select class="form-control" v-model="formData.vendorTypeCd">
+            <select class="form-control" v-model="formData.vendorType">
               <option v-for="v in VENDOR_TYPES" :key="v[0]" :value="v[0]">{{ v[1] }}</option>
             </select>
           </div>
           <div class="form-group"><label class="form-label">역할구분</label>
             <div class="form-control" style="background:#f9fafb;display:flex;align-items:center;">
-              <span :style="{background:fnRoleCatColor(formData.vendorTypeCd),color:'#fff',fontSize:'11px',fontWeight:700,padding:'3px 10px',borderRadius:'10px'}">{{ fnRoleCatLabel(formData.vendorTypeCd) }}</span>
+              <span :style="{background:fnRoleCatColor(formData.vendorType),color:'#fff',fontSize:'11px',fontWeight:700,padding:'3px 10px',borderRadius:'10px'}">{{ fnRoleCatLabel(formData.vendorType) }}</span>
               <span style="margin-left:8px;font-size:11px;color:#9ca3af;">(업체유형에 따라 자동)</span>
             </div>
           </div>
           <div class="form-group"><label class="form-label">사업자번호 <span class="req">*</span></label>
-            <input class="form-control" v-model="formData.bizNo" placeholder="123-45-67890" />
+            <input class="form-control" v-model="formData.corpNo" placeholder="123-45-67890" />
           </div>
           <div class="form-group"><label class="form-label">사업자구분</label>
-            <select class="form-control" v-model="formData.bizClassCd">
+            <select class="form-control" v-model="formData.vendorClassCd">
               <option v-for="c in BIZ_CLASS" :key="c" :value="c">{{ c }}</option>
             </select>
           </div>
-          <div class="form-group"><label class="form-label">상호 <span class="req">*</span></label>
-            <input class="form-control" v-model="formData.bizNm" />
+          <div class="form-group"><label class="form-label">업체명 <span class="req">*</span></label>
+            <input class="form-control" v-model="formData.vendorNm" />
           </div>
-          <div class="form-group"><label class="form-label">영문상호</label>
-            <input class="form-control" v-model="formData.bizNmEn" />
+          <div class="form-group"><label class="form-label">영문업체명</label>
+            <input class="form-control" v-model="formData.vendorNmEn" />
           </div>
           <div class="form-group"><label class="form-label">대표자</label>
             <input class="form-control" v-model="formData.ceoNm" />
           </div>
           <div class="form-group"><label class="form-label">업태</label>
-            <input class="form-control" v-model="formData.bizType" />
+            <input class="form-control" v-model="formData.vendorItem" />
           </div>
           <div class="form-group"><label class="form-label">종목</label>
-            <input class="form-control" v-model="formData.bizItem" />
+            <input class="form-control" v-model="formData.vendorItem" />
           </div>
           <div class="form-group"><label class="form-label">표시경로</label>
-            <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:formData.pathId!=null?'#374151':'#9ca3af',display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
-              <span style="flex:1;">{{ pathLabel(formData.pathId) || '경로 선택...' }}</span>
+            <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:formData.dispPath!=null?'#374151':'#9ca3af',display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
+              <span style="flex:1;">{{ pathLabel(formData.dispPath) || '경로 선택...' }}</span>
               <button type="button" @click="openPathPick" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}">🔍</button>
             </div>
           </div>
           <div class="form-group"><label class="form-label">우편번호</label>
-            <input class="form-control" v-model="formData.zipCode" />
+            <input class="form-control" v-model="formData.vendorZipCode" />
           </div>
           <div class="form-group" style="grid-column:span 2;"><label class="form-label">주소</label>
-            <input class="form-control" v-model="formData.addr" />
+            <input class="form-control" v-model="formData.vendorAddr" />
           </div>
           <div class="form-group" style="grid-column:span 3;"><label class="form-label">상세주소</label>
-            <input class="form-control" v-model="formData.addrDetail" />
+            <input class="form-control" v-model="formData.vendorAddrDetail" />
           </div>
           <div class="form-group"><label class="form-label">전화</label>
-            <input class="form-control" v-model="formData.phone" />
+            <input class="form-control" v-model="formData.vendorPhone" />
           </div>
           <div class="form-group"><label class="form-label">팩스</label>
-            <input class="form-control" v-model="formData.fax" />
+            <input class="form-control" v-model="formData.vendorFax" />
           </div>
           <div class="form-group"><label class="form-label">이메일</label>
-            <input class="form-control" v-model="formData.email" />
+            <input class="form-control" v-model="formData.vendorEmail" />
           </div>
           <div class="form-group"><label class="form-label">홈페이지</label>
-            <input class="form-control" v-model="formData.homepage" />
+            <input class="form-control" v-model="formData.vendorHomepage" />
           </div>
           <div class="form-group"><label class="form-label">은행</label>
-            <input class="form-control" v-model="formData.bankNm" />
+            <input class="form-control" v-model="formData.vendorBankNm" />
           </div>
           <div class="form-group"><label class="form-label">계좌번호</label>
-            <input class="form-control" v-model="formData.bankAccount" />
+            <input class="form-control" v-model="formData.vendorBankAccount" />
           </div>
           <div class="form-group"><label class="form-label">예금주</label>
-            <input class="form-control" v-model="formData.bankHolder" />
+            <input class="form-control" v-model="formData.vendorBankHolder" />
           </div>
           <div class="form-group"><label class="form-label">개업일</label>
             <input class="form-control" type="date" v-model="formData.openDate" />
@@ -326,12 +326,12 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
             <input class="form-control" type="date" v-model="formData.contractDate" />
           </div>
           <div class="form-group"><label class="form-label">상태</label>
-            <select class="form-control" v-model="formData.statusCd">
+            <select class="form-control" v-model="formData.vendorStatusCd">
               <option v-for="s in STATUS" :key="s[0]" :value="s[0]">{{ s[1] }}</option>
             </select>
           </div>
           <div class="form-group" style="grid-column:span 3;"><label class="form-label">비고</label>
-            <input class="form-control" v-model="formData.remark" />
+            <input class="form-control" v-model="formData.vendorRemark" />
           </div>
         </div>
       </div>
