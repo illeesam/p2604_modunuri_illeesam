@@ -55,15 +55,29 @@ public class BoDpPanelService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        return repository.save(body);
+        DpPanel saved = repository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        return saved;
     }
 
     @Transactional
     public DpPanelDto update(String id, DpPanel body) {
         DpPanel entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        entity.setSiteId(body.getSiteId());
+        entity.setPanelNm(body.getPanelNm());
+        entity.setPanelTypeCd(body.getPanelTypeCd());
+        entity.setDispPath(body.getDispPath());
+        entity.setVisibilityTargets(body.getVisibilityTargets());
+        entity.setUseYn(body.getUseYn());
+        entity.setUseStartDate(body.getUseStartDate());
+        entity.setUseEndDate(body.getUseEndDate());
+        entity.setDispPanelStatusCd(body.getDispPanelStatusCd());
+        entity.setDispPanelStatusCdBefore(body.getDispPanelStatusCdBefore());
+        entity.setContentJson(body.getContentJson());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        DpPanel saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
     }
@@ -72,5 +86,6 @@ public class BoDpPanelService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
+        em.flush();
     }
 }

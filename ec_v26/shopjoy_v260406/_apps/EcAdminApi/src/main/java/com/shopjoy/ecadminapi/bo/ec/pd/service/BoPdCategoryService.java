@@ -58,15 +58,27 @@ public class BoPdCategoryService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        return repository.save(body);
+        PdCategory saved = repository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        return saved;
     }
 
     @Transactional
     public PdCategoryDto update(String id, PdCategory body) {
         PdCategory entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        entity.setSiteId(body.getSiteId());
+        entity.setParentCategoryId(body.getParentCategoryId());
+        entity.setCategoryNm(body.getCategoryNm());
+        entity.setCategoryDepth(body.getCategoryDepth());
+        entity.setSortOrd(body.getSortOrd());
+        entity.setCategoryStatusCd(body.getCategoryStatusCd());
+        entity.setCategoryStatusCdBefore(body.getCategoryStatusCdBefore());
+        entity.setImgUrl(body.getImgUrl());
+        entity.setCategoryDesc(body.getCategoryDesc());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        PdCategory saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
     }
@@ -75,6 +87,7 @@ public class BoPdCategoryService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
+        em.flush();
     }
 
     @Transactional

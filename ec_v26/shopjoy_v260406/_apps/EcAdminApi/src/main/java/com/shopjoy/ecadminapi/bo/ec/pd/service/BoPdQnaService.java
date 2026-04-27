@@ -55,15 +55,19 @@ public class BoPdQnaService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        return repository.save(body);
+        PdProdQna saved = repository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        return saved;
     }
 
     @Transactional
     public PdProdQnaDto update(String id, PdProdQna body) {
         PdProdQna entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        if (body.getQnaContent() != null) entity.setQnaContent(body.getQnaContent());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        PdProdQna saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
     }
@@ -72,6 +76,7 @@ public class BoPdQnaService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
+        em.flush();
     }
 
     @Transactional
@@ -81,7 +86,8 @@ public class BoPdQnaService {
         entity.setAnswDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        PdProdQna saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
     }

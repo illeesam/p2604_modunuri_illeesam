@@ -58,6 +58,7 @@ public class BoSyMenuService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         SyMenu saved = repository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         menuCache.evictAll();
         return saved;
     }
@@ -67,7 +68,8 @@ public class BoSyMenuService {
         SyMenu entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        SyMenu saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         menuCache.evictAll();
         return getById(id);
@@ -77,6 +79,7 @@ public class BoSyMenuService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
+        em.flush();
         menuCache.evictAll();
     }
 }

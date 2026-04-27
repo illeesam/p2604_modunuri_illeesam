@@ -55,12 +55,22 @@ public class BoCmNoticeService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        return repository.save(body);
+        SyNotice saved = repository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        return saved;
     }
 
     @Transactional
     public SyNoticeDto update(String id, SyNotice body) {
         SyNotice entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        entity.setNoticeTitle(body.getNoticeTitle());
+        entity.setNoticeTypeCd(body.getNoticeTypeCd());
+        entity.setIsFixed(body.getIsFixed());
+        entity.setStartDate(body.getStartDate());
+        entity.setEndDate(body.getEndDate());
+        entity.setNoticeStatusCd(body.getNoticeStatusCd());
+        entity.setContentHtml(body.getContentHtml());
+        entity.setAttachGrpId(body.getAttachGrpId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
@@ -72,5 +82,6 @@ public class BoCmNoticeService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
+        em.flush();
     }
 }

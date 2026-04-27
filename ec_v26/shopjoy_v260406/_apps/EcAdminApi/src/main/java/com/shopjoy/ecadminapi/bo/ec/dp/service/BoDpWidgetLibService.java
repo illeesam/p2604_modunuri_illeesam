@@ -55,15 +55,30 @@ public class BoDpWidgetLibService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        return repository.save(body);
+        DpWidgetLib saved = repository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        return saved;
     }
 
     @Transactional
     public DpWidgetLibDto update(String id, DpWidgetLib body) {
         DpWidgetLib entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        entity.setSiteId(body.getSiteId());
+        entity.setWidgetCode(body.getWidgetCode());
+        entity.setWidgetNm(body.getWidgetNm());
+        entity.setWidgetTypeCd(body.getWidgetTypeCd());
+        entity.setWidgetLibDesc(body.getWidgetLibDesc());
+        entity.setDispPath(body.getDispPath());
+        entity.setThumbnailUrl(body.getThumbnailUrl());
+        entity.setTemplateHtml(body.getTemplateHtml());
+        entity.setConfigSchema(body.getConfigSchema());
+        entity.setIsSystem(body.getIsSystem());
+        entity.setSortOrd(body.getSortOrd());
+        entity.setUseYn(body.getUseYn());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        DpWidgetLib saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
     }
@@ -72,5 +87,6 @@ public class BoDpWidgetLibService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
+        em.flush();
     }
 }

@@ -55,15 +55,31 @@ public class BoSyAlarmService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        return repository.save(body);
+        SyAlarm saved = repository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        return saved;
     }
 
     @Transactional
     public SyAlarmDto update(String id, SyAlarm body) {
         SyAlarm entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        entity.setSiteId(body.getSiteId());
+        entity.setAlarmTitle(body.getAlarmTitle());
+        entity.setAlarmTypeCd(body.getAlarmTypeCd());
+        entity.setChannelCd(body.getChannelCd());
+        entity.setTargetTypeCd(body.getTargetTypeCd());
+        entity.setTargetId(body.getTargetId());
+        entity.setTemplateId(body.getTemplateId());
+        entity.setAlarmMsg(body.getAlarmMsg());
+        entity.setAlarmSendDate(body.getAlarmSendDate());
+        entity.setAlarmStatusCd(body.getAlarmStatusCd());
+        entity.setAlarmSendCount(body.getAlarmSendCount());
+        entity.setAlarmFailCount(body.getAlarmFailCount());
+        entity.setDispPath(body.getDispPath());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        SyAlarm saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
     }
@@ -72,5 +88,6 @@ public class BoSyAlarmService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
+        em.flush();
     }
 }

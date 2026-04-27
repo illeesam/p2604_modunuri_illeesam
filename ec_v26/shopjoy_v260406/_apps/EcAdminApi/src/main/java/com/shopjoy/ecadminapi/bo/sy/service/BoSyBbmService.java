@@ -55,15 +55,31 @@ public class BoSyBbmService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        return repository.save(body);
+        SyBbm saved = repository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        return saved;
     }
 
     @Transactional
     public SyBbmDto update(String id, SyBbm body) {
         SyBbm entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        entity.setSiteId(body.getSiteId());
+        entity.setBbmCode(body.getBbmCode());
+        entity.setBbmNm(body.getBbmNm());
+        entity.setDispPath(body.getDispPath());
+        entity.setBbmTypeCd(body.getBbmTypeCd());
+        entity.setAllowComment(body.getAllowComment());
+        entity.setAllowAttach(body.getAllowAttach());
+        entity.setAllowLike(body.getAllowLike());
+        entity.setContentTypeCd(body.getContentTypeCd());
+        entity.setScopeTypeCd(body.getScopeTypeCd());
+        entity.setSortOrd(body.getSortOrd());
+        entity.setUseYn(body.getUseYn());
+        entity.setBbmRemark(body.getBbmRemark());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        SyBbm saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
     }
@@ -72,5 +88,6 @@ public class BoSyBbmService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
+        em.flush();
     }
 }

@@ -55,15 +55,30 @@ public class BoSyContactService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        return repository.save(body);
+        SyContact saved = repository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        return saved;
     }
 
     @Transactional
     public SyContactDto update(String id, SyContact body) {
         SyContact entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        entity.setSiteId(body.getSiteId());
+        entity.setMemberId(body.getMemberId());
+        entity.setMemberNm(body.getMemberNm());
+        entity.setCategoryCd(body.getCategoryCd());
+        entity.setContactTitle(body.getContactTitle());
+        entity.setContactContent(body.getContactContent());
+        entity.setAttachGrpId(body.getAttachGrpId());
+        entity.setContactStatusCd(body.getContactStatusCd());
+        entity.setContactAnswer(body.getContactAnswer());
+        entity.setAnswerUserId(body.getAnswerUserId());
+        entity.setAnswerDate(body.getAnswerDate());
+        entity.setContactDate(body.getContactDate());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        SyContact saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
     }
@@ -72,5 +87,6 @@ public class BoSyContactService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
+        em.flush();
     }
 }

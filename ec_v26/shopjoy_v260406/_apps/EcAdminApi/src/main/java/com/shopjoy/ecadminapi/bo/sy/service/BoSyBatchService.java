@@ -55,15 +55,32 @@ public class BoSyBatchService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        return repository.save(body);
+        SyBatch saved = repository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        return saved;
     }
 
     @Transactional
     public SyBatchDto update(String id, SyBatch body) {
         SyBatch entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        entity.setSiteId(body.getSiteId());
+        entity.setBatchCode(body.getBatchCode());
+        entity.setBatchNm(body.getBatchNm());
+        entity.setBatchDesc(body.getBatchDesc());
+        entity.setCronExpr(body.getCronExpr());
+        entity.setBatchCycleCd(body.getBatchCycleCd());
+        entity.setBatchLastRun(body.getBatchLastRun());
+        entity.setBatchNextRun(body.getBatchNextRun());
+        entity.setBatchRunCount(body.getBatchRunCount());
+        entity.setBatchStatusCd(body.getBatchStatusCd());
+        entity.setBatchRunStatus(body.getBatchRunStatus());
+        entity.setBatchTimeoutSec(body.getBatchTimeoutSec());
+        entity.setBatchMemo(body.getBatchMemo());
+        entity.setDispPath(body.getDispPath());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        SyBatch saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
     }
@@ -72,5 +89,6 @@ public class BoSyBatchService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
+        em.flush();
     }
 }

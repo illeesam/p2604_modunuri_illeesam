@@ -60,6 +60,7 @@ public class BoSyRoleService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         SyRole saved = repository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         roleCache.evictAll();
         return saved;
     }
@@ -69,7 +70,8 @@ public class BoSyRoleService {
         SyRole entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        SyRole saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         roleCache.evictAll();
         return getById(id);
@@ -79,6 +81,7 @@ public class BoSyRoleService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
+        em.flush();
         roleCache.evictAll();
         roleMenuCache.evict(id);  // 역할 삭제 시 해당 역할의 메뉴 매핑 캐시도 제거
     }

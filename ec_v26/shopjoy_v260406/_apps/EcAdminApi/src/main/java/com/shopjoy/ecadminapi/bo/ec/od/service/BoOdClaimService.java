@@ -55,15 +55,19 @@ public class BoOdClaimService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        return repository.save(body);
+        OdClaim saved = repository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        return saved;
     }
 
     @Transactional
     public OdClaimDto update(String id, OdClaim body) {
         OdClaim entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        if (body.getClaimStatusCd() != null) entity.setClaimStatusCd(body.getClaimStatusCd());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        OdClaim saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
     }
@@ -72,6 +76,7 @@ public class BoOdClaimService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
+        em.flush();
     }
 
     @Transactional
@@ -81,7 +86,8 @@ public class BoOdClaimService {
         entity.setClaimStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        OdClaim saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
     }
@@ -100,7 +106,8 @@ public class BoOdClaimService {
                 e.setClaimStatusCd(statusCd);
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
-                repository.save(e);
+                OdClaim saved = repository.save(e);
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
             });
         }
     }
@@ -117,7 +124,8 @@ public class BoOdClaimService {
                 e.setClaimTypeCd(type);
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
-                repository.save(e);
+                OdClaim saved = repository.save(e);
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
             });
         }
     }
@@ -132,7 +140,8 @@ public class BoOdClaimService {
             repository.findById(id).ifPresent(e -> {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
-                repository.save(e);
+                OdClaim saved = repository.save(e);
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
             });
         }
     }
@@ -147,7 +156,8 @@ public class BoOdClaimService {
             repository.findById(id).ifPresent(e -> {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
-                repository.save(e);
+                OdClaim saved = repository.save(e);
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
             });
         }
     }

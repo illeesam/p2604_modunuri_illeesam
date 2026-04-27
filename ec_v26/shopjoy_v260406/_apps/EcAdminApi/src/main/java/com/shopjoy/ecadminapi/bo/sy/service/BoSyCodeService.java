@@ -58,6 +58,7 @@ public class BoSyCodeService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
         SyCode saved = repository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         codeCache.evictAll();
         return saved;
     }
@@ -65,9 +66,19 @@ public class BoSyCodeService {
     @Transactional
     public SyCodeDto update(String id, SyCode body) {
         SyCode entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        entity.setSiteId(body.getSiteId());
+        entity.setCodeGrp(body.getCodeGrp());
+        entity.setCodeValue(body.getCodeValue());
+        entity.setCodeLabel(body.getCodeLabel());
+        entity.setSortOrd(body.getSortOrd());
+        entity.setUseYn(body.getUseYn());
+        entity.setParentCodeValue(body.getParentCodeValue());
+        entity.setChildCodeValues(body.getChildCodeValues());
+        entity.setCodeRemark(body.getCodeRemark());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        SyCode saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         codeCache.evictAll();
         return getById(id);
@@ -77,6 +88,7 @@ public class BoSyCodeService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
+        em.flush();
         codeCache.evictAll();
     }
 }

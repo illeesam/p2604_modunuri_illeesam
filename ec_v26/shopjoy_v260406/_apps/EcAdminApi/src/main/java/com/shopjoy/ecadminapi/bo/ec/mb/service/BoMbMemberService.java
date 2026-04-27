@@ -61,9 +61,17 @@ public class BoMbMemberService {
     @Transactional
     public MbMemberDto update(String id, MbMember body) {
         MbMember entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        entity.setMemberStatusCd(body.getMemberStatusCd());
+        entity.setMemberNm(body.getMemberNm());
+        entity.setMemberEmail(body.getMemberEmail());
+        entity.setMemberPhone(body.getMemberPhone());
+        entity.setMemberBirth(body.getMemberBirth());
+        entity.setMemberGradeCd(body.getMemberGradeCd());
+        entity.setMemberGroupCd(body.getMemberGroupCd());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        MbMember saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
     }

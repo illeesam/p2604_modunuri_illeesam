@@ -55,15 +55,28 @@ public class BoSyBrandService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
-        return repository.save(body);
+        SyBrand saved = repository.save(body);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        return saved;
     }
 
     @Transactional
     public SyBrandDto update(String id, SyBrand body) {
         SyBrand entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        entity.setSiteId(body.getSiteId());
+        entity.setBrandCode(body.getBrandCode());
+        entity.setBrandNm(body.getBrandNm());
+        entity.setBrandEnNm(body.getBrandEnNm());
+        entity.setDispPath(body.getDispPath());
+        entity.setLogoUrl(body.getLogoUrl());
+        entity.setVendorId(body.getVendorId());
+        entity.setSortOrd(body.getSortOrd());
+        entity.setUseYn(body.getUseYn());
+        entity.setBrandRemark(body.getBrandRemark());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        repository.save(entity);
+        SyBrand saved = repository.save(entity);
+        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
         em.flush();
         return getById(id);
     }
@@ -72,5 +85,6 @@ public class BoSyBrandService {
     public void delete(String id) {
         if (!repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id);
         repository.deleteById(id);
+        em.flush();
     }
 }
