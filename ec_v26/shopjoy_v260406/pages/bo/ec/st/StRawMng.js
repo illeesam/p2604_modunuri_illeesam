@@ -23,7 +23,13 @@ window.StRawMng = {
     };
 
     // ── watch ────────────────────────────────────────────────────────────────
-    // (onMounted의 async 대기로 처리하므로 watch 제거)
+
+    watch(isAppReady, (newVal) => {
+      if (newVal) {
+        fnLoadCodes();
+        handleSearchList('DEFAULT');
+      }
+    });
 
     const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
             const dateEnd   = ref('');
@@ -91,27 +97,12 @@ const rawList = reactive([]);
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    // 공통부 초기 데이터 로드 완료 후 순차 실행
-    onMounted(async () => {
-      Object.assign(searchParamOrg, searchParam);
-
-      // isAppReady 대기 (최대 3초)
-      let ready = false;
-      for (let i = 0; i < 30; i++) {
-        if (isAppReady.value) {
-          ready = true;
-          break;
-        }
-        await new Promise(r => setTimeout(r, 100));
-      }
-
-      if (ready) {
+    onMounted(() => {
+      if (isAppReady.value) {
         fnLoadCodes();
-        await handleSearchList('DEFAULT');
-      } else {
-        console.warn('[StRawMng] 공통부 초기 데이터 로드 타임아웃');
-        if (props.showToast) props.showToast('시스템 초기화 중입니다. 잠시 후 다시 시도해주세요.', 'error');
+        handleSearchList('DEFAULT');
       }
+      Object.assign(searchParamOrg, searchParam);
     });
 
 
