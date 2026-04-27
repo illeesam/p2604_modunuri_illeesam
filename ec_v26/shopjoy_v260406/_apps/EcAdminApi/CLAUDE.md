@@ -230,12 +230,56 @@ VoUtil.mapCopy(body, entity, "id", "regBy", "regDate");
 
 ### 메서드 요약
 
+#### 기본 메서드 (배열 형식)
 | 메서드 | 용도 | 예시 |
 |---|---|---|
-| `voCopy(vo, entity)` | VO/DTO → Entity | `VoUtil.voCopy(body, entity)` |
-| `voCopy(vo, entity, excludes)` | VO/DTO → Entity (제외) | `VoUtil.voCopy(body, entity, "id", "regBy")` |
-| `mapCopy(map, entity)` | Map → Entity | `VoUtil.mapCopy(body, entity)` |
-| `mapCopy(map, entity, excludes)` | Map → Entity (제외) | `VoUtil.mapCopy(body, entity, "id", "regBy")` |
+| `voCopy(vo, entity)` | VO/DTO → Entity (모두) | `VoUtil.voCopy(body, entity)` |
+| `voCopy(vo, entity, excludes...)` | VO/DTO → Entity (제외) | `VoUtil.voCopy(body, entity, "id", "regBy")` |
+| `mapCopy(map, entity)` | Map → Entity (모두) | `VoUtil.mapCopy(body, entity)` |
+| `mapCopy(map, entity, excludes...)` | Map → Entity (제외) | `VoUtil.mapCopy(body, entity, "id", "regBy")` |
+
+#### 편의 메서드 (문자열 형식, ^ 구분)
+
+**VO/DTO 편의 메서드:**
+
+| 메서드 | 용도 | 예시 |
+|---|---|---|
+| `voCopyExclude(vo, entity, "id^regBy^regDate")` | VO/DTO → Entity (제외, 문자열) | 감시 필드 제외 |
+| `voCopyInclude(vo, entity, "memberNm^memberEmail")` | VO/DTO → Entity (포함만) | 특정 필드만 복사 |
+| `voCopyIncludeExclude(vo, entity, "id^memberNm^email", "id^regBy")` | VO/DTO → Entity (포함 중 제외) | 포함 목록에서 감시 필드만 제외 |
+
+**Map 편의 메서드:**
+
+| 메서드 | 용도 | 예시 |
+|---|---|---|
+| `mapCopyExclude(map, entity, "id^regBy^regDate")` | Map → Entity (제외, 문자열) | 감시 필드 제외 |
+| `mapCopyInclude(map, entity, "siteId^memberNm^email")` | Map → Entity (포함만) | 특정 필드만 복사 |
+
+### 사용 예시 비교
+
+**예시 1: 감시 필드 제외 (제외 방식)**
+```java
+// 배열 형식 (기존)
+VoUtil.voCopy(body, entity, "id", "regBy", "regDate");
+
+// 문자열 형식 (편의)
+VoUtil.voCopyExclude(body, entity, "id^regBy^regDate");
+```
+
+**예시 2: 특정 필드만 복사 (포함 방식)**
+```java
+// 이름, 이메일, 폰만 복사
+VoUtil.voCopyInclude(body, entity, "memberNm^memberEmail^memberPhone");
+```
+
+**예시 3: 포함 중 일부 제외**
+```java
+// 아래 필드들만 복사하되, id와 regBy는 제외
+VoUtil.voCopyIncludeExclude(body, entity, 
+    "id^memberNm^memberEmail^regBy^regDate",  // 포함
+    "id^regBy"  // 포함 중 제외
+);
+```
 
 ---
 
