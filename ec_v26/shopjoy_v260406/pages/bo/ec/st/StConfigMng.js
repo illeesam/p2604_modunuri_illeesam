@@ -4,43 +4,27 @@ window.StConfigMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const uiState = reactive({ descOpen: false, isNew: false, error: null, isPageCodeLoad: false, selectedId: null});
-    const codes = reactive({});
+    const uiState = reactive({ descOpen: false, isNew: false, error: null, loading: false, selectedId: null });
+    const configs = reactive([]);
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = () => {
-      const codeStore = window.getBoCodeStore();
+    const handleLoadList = async () => {
+      uiState.loading = true;
       try {
-        uiState.isPageCodeLoad = true;
+        const res = await window.boApi.get('/bo/ec/st/config/page', { pageNo: 1, pageSize: 100 });
+        const data = res.data?.data || res.data || [];
+        configs.splice(0, configs.length, ...(Array.isArray(data) ? data : data.pageList || []));
       } catch (err) {
-        console.error('[fnLoadCodes]', err);
+        console.error('[handleLoadList]', err);
+        props.showToast?.(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+      } finally {
+        uiState.loading = false;
       }
     };
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
-
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted — 진입 시 목록 초기 조회
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      handleLoadList();
     });
-
-    const configs = reactive([
-      { configId: 1, siteId: 1, siteNm: 'ShopJoy 01', vendorType: '판매업체', commRate: 10, settleCycle: '월정산', settleDay: 10, minSettleAmt: 10000, taxYn: 'Y', autoCloseYn: 'Y', useYn: 'Y', remark: '기본 판매업체 정산 기준' },
-      { configId: 2, siteId: 1, siteNm: 'ShopJoy 01', vendorType: '배송업체', commRate: 0,  settleCycle: '월정산', settleDay: 15, minSettleAmt: 50000, taxYn: 'Y', autoCloseYn: 'N', useYn: 'Y', remark: '배송비 정산 기준' },
-      { configId: 3, siteId: 1, siteNm: 'ShopJoy 01', vendorType: 'MD입점',   commRate: 12, settleCycle: '주정산', settleDay: 5,  minSettleAmt: 5000,  taxYn: 'Y', autoCloseYn: 'Y', useYn: 'Y', remark: 'MD 특별 입점 기준' },
-      { configId: 4, siteId: 1, siteNm: 'ShopJoy 01', vendorType: '위탁업체', commRate: 8,  settleCycle: '월정산', settleDay: 10, minSettleAmt: 10000, taxYn: 'N', autoCloseYn: 'Y', useYn: 'N', remark: '위탁 판매 기준 (미사용)' },
-    ]);
 
         const form = reactive({});
     const errors = reactive({});
@@ -71,13 +55,12 @@ window.StConfigMng = {
       if (!validate()) { props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const ok = await props.showConfirm('저장', '정산기준을 저장하시겠습니까?');
       if (!ok) return;
-      if (uiState.isNew) { form.configId = Date.now(); configs.push({ ...form }); }
-      else { const idx = configs.findIndex(c => c.configId === form.configId); if (idx !== -1) Object.assign(configs[idx], { ...form }); }
       closeForm();
       try {
         const res = await (uiState.isNew ? window.boApi.post('/bo/ec/st/config', { ...form }, { headers: { 'X-UI-Nm': '정산설정관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/ec/st/config/${form.configId}`, { ...form }, { headers: { 'X-UI-Nm': '정산설정관리', 'X-Cmd-Nm': '저장' } }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
+        await handleLoadList();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -89,11 +72,12 @@ window.StConfigMng = {
     const handleDelete = async (c) => {
       const ok = await props.showConfirm('삭제', `[${c.vendorType}] 정산기준을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = configs.findIndex(x => x.configId === c.configId); if (idx !== -1) configs.splice(idx, 1); if (uiState.selectedId === c.configId) closeForm();
+      if (uiState.selectedId === c.configId) closeForm();
       try {
         const res = await window.boApi.delete(`/bo/ec/st/config/${c.configId}`, { headers: { 'X-UI-Nm': '정산설정관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+        await handleLoadList();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -106,7 +90,7 @@ window.StConfigMng = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, configs, form, errors, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge };
+    return { uiState, configs, form, errors, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge, handleLoadList };
   },
   template: /* html */`
 <div>

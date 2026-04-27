@@ -4,7 +4,7 @@ window.StRawMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '', searchMoreOpen: false});
+    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '', searchMoreOpen: false, loading: false });
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -73,20 +73,25 @@ const rawList = reactive([]);
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
+        uiState.loading = true;
         const res = await window.boApi.get('/bo/ec/st/raw/page', {
           params: {
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           },
-          headers: { 'X-UI-Nm': '원본데이터관리', 'X-Cmd-Nm': '조회' }
+          headers: { 'X-UI-Nm': '정산수집원장', 'X-Cmd-Nm': '조회' }
         });
         const data = res.data?.data;
-        rawList.splice(0, rawList.length, ...(data?.list || rawList));
+        rawList.splice(0, rawList.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || rawList.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
-      } catch (_) {
-        console.error('[catch-info]', _);
+      } catch (err) {
+        console.error('[handleSearchList]', err);
+        uiState.error = err.message;
+        if (props.showToast) props.showToast('데이터 조회 실패', 'error');
+      } finally {
+        uiState.loading = false;
       }
     };
 
