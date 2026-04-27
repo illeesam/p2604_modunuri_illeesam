@@ -106,8 +106,8 @@ const rawList = reactive([]);
     const cfPageNums = computed(() => { const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c-2), e = Math.min(l, s+4); return Array.from({length: e-s+1}, (_, i) => s+i); });
 
     const cfSummary = computed(() => ({
-      totalAmt:   rawList.reduce((s, r) => s + (r.amount || 0), 0),
-      collectCnt: rawList.filter(r => r.collectYn === 'Y').length,
+      totalAmt:   rawList.reduce((s, r) => s + (r.settleTargetAmt || 0), 0),
+      collectCnt: rawList.filter(r => r.rawStatusCd === 'COLLECTED').length,
       settleAmt:  rawList.reduce((s, r) => s + (r.settleAmt || 0), 0),
       feeAmt:     rawList.reduce((s, r) => s + (r.settleFeeAmt || 0), 0),
       closeCnt:   rawList.filter(r => r.closeYn === 'Y').length,
@@ -288,8 +288,8 @@ const rawList = reactive([]);
     <div class="toolbar">
       <span class="list-count">총 {{ pager.pageTotalCount.toLocaleString() }}건</span>
       <div style="margin-left:auto;display:flex;gap:6px">
-        <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(!isExpanded(r.rawId)) toggleRow(r.rawId); }) }">▼ 전체펼치기</button>
-        <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(isExpanded(r.rawId)) toggleRow(r.rawId); }) }">▲ 전체접기</button>
+        <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(!isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">▼ 전체펼치기</button>
+        <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">▲ 전체접기</button>
         <button class="btn btn-blue btn-sm" @click="doCollect">🔄 재수집</button>
       </div>
     </div>
@@ -313,16 +313,16 @@ const rawList = reactive([]);
         </tr>
       </thead>
       <tbody>
-        <template v-for="r in rawList" :key="r?.rawId">
+        <template v-for="r in rawList" :key="r?.settleRawId">
           <!-- ── 기본 행 ─────────────────────────────────────────────────── -->
-          <tr :style="isExpanded(r.rawId) ? 'background:#fafbff' : ''" style="cursor:pointer" @click="toggleRow(r.rawId)">
+          <tr :style="isExpanded(r.settleRawId) ? 'background:#fafbff' : ''" style="cursor:pointer" @click="toggleRow(r.settleRawId)">
             <td style="text-align:center;color:#aaa;font-size:11px;user-select:none">
-              {{ isExpanded(r.rawId) ? '▲' : '▼' }}
+              {{ isExpanded(r.settleRawId) ? '▲' : '▼' }}
             </td>
-            <td style="font-size:12px;color:#555">{{ r.rawId }}</td>
-            <td>{{ r.txDate }}</td>
-            <td><span class="badge" :class="r.sourceType==='주문'?'badge-blue':'badge-orange'">{{ r.sourceType }}</span></td>
-            <td style="font-size:12px;color:#555">{{ r.sourceId }}</td>
+            <td style="font-size:12px;color:#555">{{ r.settleRawId }}</td>
+            <td>{{ r.orderDate }}</td>
+            <td><span class="badge" :class="r.rawTypeCd==='ORDER'?'badge-blue':'badge-orange'">{{ r.rawTypeCd }}</span></td>
+            <td style="font-size:12px;color:#555">{{ r.orderId }}</td>
             <td>
               <div>{{ r.vendorNm }}</div>
               <div style="font-size:11px;color:#aaa">{{ vendorTypeLabel(r.vendorTypeCd) }}</div>
@@ -331,7 +331,7 @@ const rawList = reactive([]);
               <div style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.prodNm }}</div>
               <div style="font-size:11px;color:#aaa">{{ r.brandNm }}</div>
             </td>
-            <td style="text-align:right">{{ (r.qty||0).toLocaleString() }}</td>
+            <td style="text-align:right">{{ (r.orderQty||0).toLocaleString() }}</td>
             <td style="text-align:right;font-weight:600" :style="r.settleTargetAmt<0?'color:#e74c3c':''">{{ fmtW(r.settleTargetAmt) }}</td>
             <td style="text-align:right;color:#e74c3c">{{ fmtW(r.settleFeeAmt) }}</td>
             <td style="text-align:right;font-weight:700" :style="r.settleAmt<0?'color:#e74c3c':'color:#2980b9'">{{ fmtW(r.settleAmt) }}</td>
@@ -340,15 +340,15 @@ const rawList = reactive([]);
             <td><span class="badge" :class="r.erpSendYn==='Y'?'badge-green':'badge-gray'">{{ r.erpSendYn==='Y'?'전송':'미전송' }}</span></td>
           </tr>
           <!-- ── 펼침 상세 행 ──────────────────────────────────────────────── -->
-          <tr v-if="isExpanded(r.rawId)">
+          <tr v-if="isExpanded(r.settleRawId)">
             <td colspan="14" style="background:#f4f6fb;padding:12px 20px;border-top:none">
               <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;font-size:12px">
                 <!-- ── 주문정보 ───────────────────────────────────────────── -->
                 <div>
                   <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">주문 정보</div>
                   <table style="width:100%;border-collapse:collapse">
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">소스ID</td><td style="padding:2px 0">{{ r.sourceId }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">거래일자</td><td>{{ r.txDate }}</td></tr>
+                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">주문ID</td><td style="padding:2px 0">{{ r.orderId }}</td></tr>
+                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">거래일자</td><td>{{ r.orderDate }}</td></tr>
                     <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">주문상태</td><td>{{ orderStatusLabel(r.orderItemStatusCd) }}</td></tr>
                     <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">결제수단</td><td>{{ r.payMethodCd }}</td></tr>
                     <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">구매확정</td><td>
@@ -367,7 +367,7 @@ const rawList = reactive([]);
                     <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">SKU ID</td><td style="font-size:11px;color:#888">{{ r.skuId }}</td></tr>
                     <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">정상가</td><td>{{ fmtW(r.normalPrice) }}</td></tr>
                     <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">단가</td><td>{{ fmtW(r.unitPrice) }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">수량</td><td>{{ (r.qty||0).toLocaleString() }}개</td></tr>
+                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">수량</td><td>{{ (r.orderQty||0).toLocaleString() }}개</td></tr>
                     <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">소계</td><td style="font-weight:600">{{ fmtW(r.itemPrice) }}</td></tr>
                   </table>
                 </div>
