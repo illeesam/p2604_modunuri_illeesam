@@ -51,6 +51,7 @@ public class BoCmChattService {
 
     @Transactional
     public CmChattRoom create(CmChattRoom body) {
+        if (body.getChattStatusCd() == null) body.setChattStatusCd("ACTIVE");
         body.setChattRoomId("CR" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());

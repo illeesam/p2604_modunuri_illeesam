@@ -51,6 +51,8 @@ public class BoCmNoticeService {
 
     @Transactional
     public SyNotice create(SyNotice body) {
+        if (body.getIsFixed() == null) body.setIsFixed("N");
+        if (body.getNoticeStatusCd() == null) body.setNoticeStatusCd("DRAFT");
         body.setNoticeId("NT" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());

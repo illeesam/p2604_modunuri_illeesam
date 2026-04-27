@@ -51,6 +51,8 @@ public class BoPmEventService {
 
     @Transactional
     public PmEvent create(PmEvent body) {
+        if (body.getEventStatusCd() == null) body.setEventStatusCd("DRAFT");
+        if (body.getUseYn() == null) body.setUseYn("Y");
         body.setEventId("EV" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());

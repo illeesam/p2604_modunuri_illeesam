@@ -51,6 +51,7 @@ public class BoDpUiService {
 
     @Transactional
     public DpUi create(DpUi body) {
+        if (body.getUseYn() == null) body.setUseYn("Y");
         body.setUiId("UI" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());

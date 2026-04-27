@@ -51,6 +51,7 @@ public class BoOdDlivService {
 
     @Transactional
     public OdDliv create(OdDliv body) {
+        if (body.getDlivStatusCd() == null) body.setDlivStatusCd("PENDING");
         body.setDlivId("DL" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
