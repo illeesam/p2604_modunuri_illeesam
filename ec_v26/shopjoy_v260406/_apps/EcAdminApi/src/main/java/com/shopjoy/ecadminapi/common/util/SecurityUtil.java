@@ -82,4 +82,18 @@ public final class SecurityUtil {
         return auth.getAuthorities().stream()
             .anyMatch(a -> "BO_GUEST".equals(a.getAuthority()));
     }
+
+    /** 현재 인증된 사용자의 authId 반환, 미인증 시 기본값 반환 */
+    public static String getAuthIdOrDefault(String defaultValue) {
+        AuthPrincipal p = currentPrincipal();
+        if (p != null && p.authId() != null && !p.authId().isEmpty()) {
+            return p.authId();
+        }
+        return defaultValue;
+    }
+
+    /** 현재 인증된 사용자의 authId 반환, 미인증 시 "GUEST" 반환 */
+    public static String getAuthIdOrGuest() {
+        return getAuthIdOrDefault("GUEST");
+    }
 }
