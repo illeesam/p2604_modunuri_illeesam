@@ -21,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -66,15 +67,7 @@ public class BoPdCategoryService {
     @Transactional
     public PdCategoryDto update(String id, PdCategory body) {
         PdCategory entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setSiteId(body.getSiteId());
-        entity.setParentCategoryId(body.getParentCategoryId());
-        entity.setCategoryNm(body.getCategoryNm());
-        entity.setCategoryDepth(body.getCategoryDepth());
-        entity.setSortOrd(body.getSortOrd());
-        entity.setCategoryStatusCd(body.getCategoryStatusCd());
-        entity.setCategoryStatusCdBefore(body.getCategoryStatusCdBefore());
-        entity.setImgUrl(body.getImgUrl());
-        entity.setCategoryDesc(body.getCategoryDesc());
+        VoUtil.voCopyExclude(body, entity, "categoryId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdCategory saved = repository.save(entity);

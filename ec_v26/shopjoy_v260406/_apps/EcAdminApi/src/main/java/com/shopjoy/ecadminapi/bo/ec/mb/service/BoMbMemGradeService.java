@@ -19,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -63,10 +64,7 @@ public class BoMbMemGradeService {
     @Transactional
     public MbMemberGradeDto update(String id, MbMemberGrade body) {
         MbMemberGrade entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setMemberGradeNm(body.getMemberGradeNm());
-        entity.setMemberGradeCondition(body.getMemberGradeCondition());
-        entity.setMemberGradePoint(body.getMemberGradePoint());
-        entity.setMemberGradeStatus(body.getMemberGradeStatus());
+        VoUtil.voCopyExclude(body, entity, "memberGradeId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         MbMemberGrade saved = repository.save(entity);

@@ -19,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -63,14 +64,7 @@ public class BoCmNoticeService {
     @Transactional
     public SyNoticeDto update(String id, SyNotice body) {
         SyNotice entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setNoticeTitle(body.getNoticeTitle());
-        entity.setNoticeTypeCd(body.getNoticeTypeCd());
-        entity.setIsFixed(body.getIsFixed());
-        entity.setStartDate(body.getStartDate());
-        entity.setEndDate(body.getEndDate());
-        entity.setNoticeStatusCd(body.getNoticeStatusCd());
-        entity.setContentHtml(body.getContentHtml());
-        entity.setAttachGrpId(body.getAttachGrpId());
+        VoUtil.voCopyExclude(body, entity, "noticeId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
