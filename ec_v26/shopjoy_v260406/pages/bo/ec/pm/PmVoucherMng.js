@@ -38,7 +38,7 @@ window.PmVoucherMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pm/voucher/page', { params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, headers: { 'X-UI-Nm': '상품권관리', 'X-Cmd-Nm': '조회' } });
+        const res = await window.boApi.get('/bo/ec/pm/voucher/page', { params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, ...apiHdr('바우처관리', '조회') });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         vouchers.splice(0, vouchers.length, ...list);
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
@@ -123,7 +123,7 @@ window.PmVoucherMng = {
       if (idx !== -1) voucherList.splice(idx, 1);
       if (uiStateDetail.selectedId === v.voucherId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/ec/pm/voucher/${v.voucherId}`, { headers: { 'X-UI-Nm': '상품권관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await window.boApi.delete(`/bo/ec/pm/voucher/${v.voucherId}`, { ...apiHdr('바우처관리', '삭제') });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

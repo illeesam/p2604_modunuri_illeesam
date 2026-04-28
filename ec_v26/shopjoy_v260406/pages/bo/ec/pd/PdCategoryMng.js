@@ -55,7 +55,7 @@ window.PdCategoryMng = {
     /* 좌측 트리용 전체 카테고리 조회 (트리 렌더링 전용) */
     const handleSearchList = async () => {
       try {
-        const res = await window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '카테고리관리', 'X-Cmd-Nm': '트리조회' } });
+        const res = await window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('카테고리관리', '목록조회') });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         categories.splice(0, categories.length, ...list);
         expandedSet.clear();
@@ -70,7 +70,7 @@ window.PdCategoryMng = {
       try {
         const params = { pageNo: 1, pageSize: 10000, ...searchParam };
         if (uiState.selectedCatId) params.parentCategoryId = uiState.selectedCatId;
-        const res = await window.boApi.get('/bo/ec/pd/category/page', { params, headers: { 'X-UI-Nm': '카테고리관리', 'X-Cmd-Nm': '조회' } });
+        const res = await window.boApi.get('/bo/ec/pd/category/page', { params, ...apiHdr('카테고리관리', '목록조회') });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         gridRows.splice(0);
         buildTreeRows(list).forEach(c => gridRows.push(makeRow(c)));
@@ -278,7 +278,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       if (!ok) return;
       row._row_status = 'D';
       try {
-        const res = await window.boApi.delete(`/bo/ec/pd/category/${row.categoryId}`, { headers: { 'X-UI-Nm': '카테고리관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await window.boApi.delete(`/bo/ec/pd/category/${row.categoryId}`, { ...apiHdr('카테고리관리', '삭제') });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
         gridRows.splice(idx, 1);
@@ -321,8 +321,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         if (isNew) delete payload.categoryId;
         try {
           const res = isNew
-            ? await window.boApi.post('/bo/ec/pd/category', payload, { headers: { 'X-UI-Nm': '카테고리관리', 'X-Cmd-Nm': '등록' } })
-            : await window.boApi.put(`/bo/ec/pd/category/${row.categoryId}`, payload, { headers: { 'X-UI-Nm': '카테고리관리', 'X-Cmd-Nm': '저장' } });
+            ? await window.boApi.post('/bo/ec/pd/category', payload, { ...apiHdr('카테고리관리', '저장') })
+            : await window.boApi.put(`/bo/ec/pd/category/${row.categoryId}`, payload, { ...apiHdr('카테고리관리', '저장') });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           row._row_status = null;
         } catch (err) {

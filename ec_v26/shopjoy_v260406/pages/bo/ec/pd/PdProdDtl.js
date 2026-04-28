@@ -87,7 +87,7 @@ window.PdProdDtl = {
     };
 
     const TAB_BASE = () => `/bo/ec/pd/prod/${props.editId}`;
-    const HDR = (cmd) => ({ headers: { 'X-UI-Nm': '상품상세', 'X-Cmd-Nm': cmd } });
+    const HDR = (cmd) => apiHdr('상품관리', cmd);
 
     // 보조 데이터(사용자/카테고리) + 기본정보 + 탭 전체 동시 조회
     const handleLoadData = async () => {
@@ -95,8 +95,8 @@ window.PdProdDtl = {
       try {
         const isNew = !props.editId;
         const baseCalls = [
-          window.boApi.get('/bo/sy/user/page',          { params: { pageNo: 1, pageSize: 1000 }, headers: { 'X-UI-Nm': '상품상세', 'X-Cmd-Nm': '조회' } }),
-          window.boApi.get('/bo/ec/pd/category/page',   { params: { pageNo: 1, pageSize: 1000 }, headers: { 'X-UI-Nm': '상품상세', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/sy/user/page',          { params: { pageNo: 1, pageSize: 1000 }, ...apiHdr('상품관리', '상세조회') }),
+          window.boApi.get('/bo/ec/pd/category/page',   { params: { pageNo: 1, pageSize: 1000 }, ...apiHdr('상품관리', '상세조회') }),
         ];
         if (!isNew) baseCalls.push(
           window.boApi.get(`/bo/ec/pd/prod/${props.editId}`,          HDR('기본정보조회')),
@@ -637,8 +637,8 @@ window.PdProdDtl = {
       try {
         const payload = { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans };
         const res = await (cfIsNew.value
-          ? window.boApi.post(`/bo/ec/pd/prod`, payload, { headers: { 'X-UI-Nm': '상품관리', 'X-Cmd-Nm': '등록' } })
-          : window.boApi.put(`/bo/ec/pd/prod/${form.prodId}`, payload, { headers: { 'X-UI-Nm': '상품관리', 'X-Cmd-Nm': '저장' } }));
+          ? window.boApi.post(`/bo/ec/pd/prod`, payload, { ...apiHdr('상품관리', '등록') })
+          : window.boApi.put(`/bo/ec/pd/prod/${form.prodId}`, payload, { ...apiHdr('상품관리', '저장') }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pdProdMng');

@@ -43,8 +43,8 @@ window.DpDispPanelMng = {
       uiState.loading = true;
       try {
         const [panelsRes, displaysRes] = await Promise.all([
-          window.boApi.get('/bo/ec/dp/panel/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '전시패널관리', 'X-Cmd-Nm': '조회' } }),
-          window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '전시패널관리', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/ec/dp/panel/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('전시패널관리', '조회') }),
+          window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('전시패널관리', '조회') }),
         ]);
         panels.splice(0, panels.length, ...(panelsRes.data?.data?.pageList || panelsRes.data?.data?.list || []));
         displays.splice(0, displays.length, ...(displaysRes.data?.data?.pageList || displaysRes.data?.data?.list || []));
@@ -240,7 +240,7 @@ window.DpDispPanelMng = {
     const onSearch = async () => {
     try {
       const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await window.boApi.get('/bo/ec/resource/page', { params, headers: { 'X-UI-Nm': '전시패널관리', 'X-Cmd-Nm': '조회' } });
+      const res = await window.boApi.get('/bo/ec/resource/page', { params, ...apiHdr('전시패널관리', '조회') });
       // TODO: Update items array based on response
       pager.pageNo = 1;
       await handleSearchData();
@@ -265,7 +265,7 @@ window.DpDispPanelMng = {
       if (idx !== -1) displays.splice(idx, 1);
       if (uiStateDetail.selectedId === d.dispId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/ec/dp/panel/${d.dispId}`, { headers: { 'X-UI-Nm': '전시패널관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await window.boApi.delete(`/bo/ec/dp/panel/${d.dispId}`, { ...apiHdr('전시패널관리', '삭제') });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

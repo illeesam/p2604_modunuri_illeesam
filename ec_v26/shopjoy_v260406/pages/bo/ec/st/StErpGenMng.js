@@ -44,8 +44,8 @@ window.StErpGenMng = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resO, resV] = await Promise.all([
-          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': 'ERP연동생성', 'X-Cmd-Nm': '조회' } }),
-          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': 'ERP연동생성', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('정산ERP생성', '목록조회') }),
+          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('정산ERP생성', '목록조회') }),
         ]);
         orderList.splice(0, orderList.length, ...(resO.data?.data?.pageList || []));
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.pageList || []));
@@ -85,7 +85,7 @@ window.StErpGenMng = {
         genDate: new Date().toISOString().slice(0,10), status: '생성완료', regUserNm: '관리자',
       });
       try {
-        const res = await window.boApi.post('/bo/ec/st/erp/gen', { targetMon: targetMon.value, slipType: slipType.value, rows: cfPreviewRows.value }, { headers: { 'X-UI-Nm': 'ERP전표생성', 'X-Cmd-Nm': '전송' } });
+        const res = await window.boApi.post('/bo/ec/st/erp/gen', { targetMon: targetMon.value, slipType: slipType.value, rows: cfPreviewRows.value }, { ...apiHdr('정산ERP생성', '저장') });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('ERP 전표가 생성되었습니다.', 'success');
       } catch (err) {

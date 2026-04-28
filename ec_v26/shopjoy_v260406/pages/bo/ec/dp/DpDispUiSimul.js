@@ -13,9 +13,9 @@ window.DpDispUiSimul = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [dpRes, sitesRes, membersRes] = await Promise.all([
-          window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '전시UI관리', 'X-Cmd-Nm': '조회' } }),
-          window.boApi.get('/bo/sy/site/page', { params: { pageNo: 1, pageSize: 1000 }, headers: { 'X-UI-Nm': '전시UI관리', 'X-Cmd-Nm': '조회' } }),
-          window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '전시UI관리', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('전시UI시뮬레이션', '조회') }),
+          window.boApi.get('/bo/sy/site/page', { params: { pageNo: 1, pageSize: 1000 }, ...apiHdr('전시UI시뮬레이션', '조회') }),
+          window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('전시UI시뮬레이션', '조회') }),
         ]);
         displays.splice(0, displays.length, ...(dpRes.data?.data?.pageList || dpRes.data?.data?.list || []));
         sites.splice(0, sites.length, ...(sitesRes.data?.data?.pageList || sitesRes.data?.data?.list || []));

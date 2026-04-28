@@ -38,7 +38,7 @@ window.PmSaveMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pm/save/page', { params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, headers: { 'X-UI-Nm': '적립금관리', 'X-Cmd-Nm': '조회' } });
+        const res = await window.boApi.get('/bo/ec/pm/save/page', { params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, ...apiHdr('적립금관리', '조회') });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         saves.splice(0, saves.length, ...list);
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
@@ -125,7 +125,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
       if (idx !== -1) saveList.value.splice(idx, 1);
       if (uiStateDetail.selectedId === s.saveId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/ec/pm/save/${s.saveId}`, { headers: { 'X-UI-Nm': '적립금관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await window.boApi.delete(`/bo/ec/pm/save/${s.saveId}`, { ...apiHdr('적립금관리', '삭제') });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

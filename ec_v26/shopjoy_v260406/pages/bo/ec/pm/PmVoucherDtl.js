@@ -15,7 +15,7 @@ window.PmVoucherDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get(`/bo/ec/pm/voucher/${props.editId}`, { headers: { 'X-UI-Nm': '상품권상세', 'X-Cmd-Nm': '상세조회' } });
+        const res = await window.boApi.get(`/bo/ec/pm/voucher/${props.editId}`, { ...apiHdr('바우처관리', '상세조회') });
         const v = res.data?.data || res.data;
         if (v) Object.assign(form, { ...v });
         if (!form.startDate) form.startDate = DEFAULT_START;
@@ -159,7 +159,7 @@ window.PmVoucherDtl = {
       if (!ok) return;
       snsModal.show = false;
       try {
-        const res = await window.boApi.post(`/bo/ec/pm/voucher/${form.voucherId}/send-sns`, { channel: snsModal.channel, message: uiState.snsMsg }, { headers: { 'X-UI-Nm': '상품권관리', 'X-Cmd-Nm': '전송' } });
+        const res = await window.boApi.post(`/bo/ec/pm/voucher/${form.voucherId}/send-sns`, { channel: snsModal.channel, message: uiState.snsMsg }, { ...apiHdr('바우처관리', '전송') });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('SNS전송되었습니다.', 'success');
       } catch (err) {
@@ -183,7 +183,7 @@ window.PmVoucherDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/voucher`, { ...form }, { headers: { 'X-UI-Nm': '상품권관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/ec/pm/voucher/${form.voucherId}`, { ...form }, { headers: { 'X-UI-Nm': '상품권관리', 'X-Cmd-Nm': '저장' } }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/voucher`, { ...form }, { ...apiHdr('바우처관리', '등록') }) : window.boApi.put(`/bo/ec/pm/voucher/${form.voucherId}`, { ...form }, { ...apiHdr('바우처관리', '저장') }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmVoucherMng');

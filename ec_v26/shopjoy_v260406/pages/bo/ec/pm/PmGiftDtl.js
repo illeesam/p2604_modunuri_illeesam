@@ -15,7 +15,7 @@ window.PmGiftDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get(`/bo/ec/pm/gift/${props.editId}`, { headers: { 'X-UI-Nm': '사은품상세', 'X-Cmd-Nm': '상세조회' } });
+        const res = await window.boApi.get(`/bo/ec/pm/gift/${props.editId}`, { ...apiHdr('선물관리', '상세조회') });
         const g = res.data?.data || res.data;
         if (g) Object.assign(form, g);
         uiState.error = null;
@@ -122,7 +122,7 @@ window.PmGiftDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/gift`, { ...form }, { headers: { 'X-UI-Nm': '사은품관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/ec/pm/gift/${form.giftId}`, { ...form }, { headers: { 'X-UI-Nm': '사은품관리', 'X-Cmd-Nm': '저장' } }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/gift`, { ...form }, { ...apiHdr('선물관리', '등록') }) : window.boApi.put(`/bo/ec/pm/gift/${form.giftId}`, { ...form }, { ...apiHdr('선물관리', '저장') }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmGiftMng');
