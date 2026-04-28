@@ -53,18 +53,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await boApi.get('/bo/ec/st/erp/recon/page', {
-          params: {
-            pageNo: pager.pageNo, pageSize: pager.pageSize,
-            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          },
-          ...coUtil.apiHdr('정산ERP연동관리', '목록조회')
-        });
-        const data = res.data?.data;
-        reconList.splice(0, reconList.length, ...(data?.list || reconList));
-        pager.pageTotalCount = data?.pageTotalCount || reconList.length;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        reconList.splice(0, reconList.length);
+        pager.pageTotalCount = 0;
+        pager.pageTotalPage = 1;
       } catch (_) { console.error('[catch-info]', _); }
     };
 

@@ -52,12 +52,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await boApi.get('/bo/ec/st/recon/vendor/page', {
+        const res = await boApi.get('/bo/ec/st/recon/page', {
           params: {
-            pageNo: pager.pageNo, pageSize: pager.pageSize,
+            pageNo: pager.pageNo, pageSize: pager.pageSize, typeCd: 'VENDOR',
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           },
-          ...coUtil.apiHdr('정산판매자조정', '목록조회')
+          ...coUtil.apiHdr('업체-정산 대사', '목록조회')
         });
         const data = res.data?.data;
         rows.splice(0, rows.length, ...(data?.list || rows));

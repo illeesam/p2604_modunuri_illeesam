@@ -43,12 +43,8 @@ window.StErpGenMng = {
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
-        const [resO, resV] = await Promise.all([
-          boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('정산ERP생성', '목록조회') }),
-          boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('정산ERP생성', '목록조회') }),
-        ]);
-        orderList.splice(0, orderList.length, ...(resO.data?.data?.pageList || []));
-        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.pageList || []));
+        orderList.splice(0, orderList.length);
+        vendorList.splice(0, vendorList.length);
       } catch (_) {}
     };
 

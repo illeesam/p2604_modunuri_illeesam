@@ -89,7 +89,7 @@ window.SyPropMng = {
     };
     const expandAll = () => {
       const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); };
-      walk(tree.value);
+      walk(cfTree.value);
     };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */

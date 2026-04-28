@@ -47,18 +47,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await boApi.get('/bo/ec/st/erp/slip/page', {
-          params: {
-            pageNo: pager.pageNo, pageSize: pager.pageSize,
-            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          },
-          ...coUtil.apiHdr('정산ERP조회관리', '목록조회')
-        });
-        const data = res.data?.data;
-        slips.splice(0, slips.length, ...(data?.list || slips));
-        pager.pageTotalCount = data?.pageTotalCount || slips.length;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        slips.splice(0, slips.length);
+        pager.pageTotalCount = 0;
+        pager.pageTotalPage = 1;
       } catch (_) { console.error('[catch-info]', _); }
     };
 
