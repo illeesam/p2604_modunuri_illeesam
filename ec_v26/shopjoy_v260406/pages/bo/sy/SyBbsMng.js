@@ -224,7 +224,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           <td style="font-size:11px;color:#888;">{{ b.attachGrpId || '-' }}</td>
           <td><span class="badge" :class="fnStatusBadge(b.statusCd)">{{ b.statusCd }}</span></td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-          <td>{{ b.regDate }}</td>
+          <td>{{ String(b.regDate||'').slice(0,10) }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="handleLoadDetail(b.bbsId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="handleDelete(b)">삭제</button>

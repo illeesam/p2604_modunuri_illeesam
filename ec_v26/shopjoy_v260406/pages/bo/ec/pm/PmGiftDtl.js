@@ -138,7 +138,7 @@ window.PmGiftDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { gifts, uiState, codes, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfCondValLabel, cfSelectedVendorNm, selectVendor };
+    return { uiState, codes, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfCondValLabel, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>

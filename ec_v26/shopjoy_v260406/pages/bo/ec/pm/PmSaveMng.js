@@ -121,8 +121,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
     const handleDelete = async (s) => {
       const ok = await props.showConfirm('삭제', `[${s.saveNm}] 마일리지를 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = (saveList).findIndex(x => x.saveId === s.saveId);
-      if (idx !== -1) saveList.value.splice(idx, 1);
+      const idx = (saves || []).findIndex(x => x.saveId === s.saveId);
+      if (idx !== -1) saves.splice(idx, 1);
       if (uiStateDetail.selectedId === s.saveId) uiStateDetail.selectedId = null;
       try {
         const res = await boApi.delete(`/bo/ec/pm/save/${s.saveId}`, { ...coUtil.apiHdr('적립금관리', '삭제') });
@@ -144,7 +144,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), saves, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), saves, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
+      get viewMode() { return uiState.viewMode; }, set viewMode(v) { uiState.viewMode = v; } };
   },
   template: /* html */`
 <div>

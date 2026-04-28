@@ -203,7 +203,7 @@ window.PmVoucherDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { vouchers, uiState, codes, cfIsNew, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, viewMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, uiState, cfSelectedVendorNm, selectVendor };
+    return { uiState, codes, cfIsNew, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, viewMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>

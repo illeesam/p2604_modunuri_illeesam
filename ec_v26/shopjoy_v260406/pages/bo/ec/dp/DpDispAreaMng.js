@@ -90,9 +90,6 @@ const searchParam = reactive({
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const onSearch = async () => {
     try {
-      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await boApi.get('/bo/ec/resource/page', { params, headers: { 'X-UI-Nm': '전시영역관리', 'X-Cmd-Nm': '조회' } });
-      // TODO: Update items array based on response
       pager.pageNo = 1;
       await handleSearchData();
     } catch (err) {

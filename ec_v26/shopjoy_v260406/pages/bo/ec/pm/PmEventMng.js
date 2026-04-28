@@ -181,7 +181,7 @@ window.PmEventMng = {
         <tr v-for="e in events" :key="e?.eventId" :style="uiStateDetail.selectedId===e.eventId?'background:#fff8f9;':''">
           <td>{{ e.eventId }}</td>
           <td><span class="title-link" @click="handleLoadDetail(e.eventId)" :style="uiStateDetail.selectedId===e.eventId?'color:#e8587a;font-weight:700;':''">{{ e.title }}<span v-if="uiStateDetail.selectedId===e.eventId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td>{{ e.targetProducts.length }}개 상품</td>
+          <td>{{ (e.targetProducts||[]).length }}개 상품</td>
           <td><span class="badge" :class="e.authRequired ? 'badge-orange' : 'badge-gray'">{{ e.authRequired ? '필요' : '불필요' }}</span></td>
           <td>{{ e.startDate }}</td><td>{{ e.endDate }}</td>
           <td><span class="badge" :class="fnStatusBadge(e.status)">{{ e.status }}</span></td>
@@ -212,7 +212,7 @@ window.PmEventMng = {
             <span class="badge" :class="e.authRequired ? 'badge-orange' : 'badge-gray'" style="font-size:11px;">{{ e.authRequired ? '인증필요' : '인증불필요' }}</span>
           </div>
           <div style="font-size:12px;color:#666;line-height:1.5;">
-            <div>🎯 {{ e.targetProducts.length }}개 상품</div>
+            <div>🎯 {{ (e.targetProducts||[]).length }}개 상품</div>
             <div>📅 {{ e.startDate }} ~ {{ e.endDate }}</div>
             <div style="color:#999;margin-top:4px;">등록 {{ e.regDate }}</div>
           </div>

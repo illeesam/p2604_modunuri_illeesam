@@ -126,19 +126,25 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
 <div>
   <div class="page-title">상품리뷰관리</div>
     <div class="card">
-      <div class="search-bar">
-        <label class="search-label">리뷰제목</label>
-        <input class="form-control" v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="리뷰 제목 검색">
-        <label class="search-label">상태</label>
-        <select class="form-control" v-model="searchParam.status">
-          <option value="">전체</option><option v-for="s in STATUS_LIST" :key="Math.random()" :value="s">{{ STATUS_LABEL[s] }}</option>
-        </select>
-        <label class="search-label">평점</label>
-        <select class="form-control" v-model="searchParam.rating">
-          <option value="">전체</option><option value="5">5점</option><option value="4">4점대</option>
-          <option value="3">3점대</option><option value="2">2점대</option><option value="1">1점대</option>
-        </select>
-        <div class="search-actions">
+      <div class="search-bar" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:flex-end">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label class="search-label">리뷰제목</label>
+          <input class="form-control" v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="리뷰 제목 검색">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label class="search-label">상태</label>
+          <select class="form-control" v-model="searchParam.status">
+            <option value="">전체</option><option v-for="s in STATUS_LIST" :key="Math.random()" :value="s">{{ STATUS_LABEL[s] }}</option>
+          </select>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label class="search-label">평점</label>
+          <select class="form-control" v-model="searchParam.rating">
+            <option value="">전체</option><option value="5">5점</option><option value="4">4점대</option>
+            <option value="3">3점대</option><option value="2">2점대</option><option value="1">1점대</option>
+          </select>
+        </div>
+        <div class="search-actions" style="gap:6px">
           <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
           <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
         </div>

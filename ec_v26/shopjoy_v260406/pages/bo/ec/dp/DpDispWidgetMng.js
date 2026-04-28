@@ -84,11 +84,8 @@ window.DpDispWidgetMng = {
 const applied = reactive({ kw: '', type: '', status: '' });
     const onSearch = async () => {
     try {
-      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await boApi.get('/bo/ec/resource/page', { params, ...coUtil.apiHdr('전시위젯관리', '조회') });
-      // TODO: Update items array based on response
+      Object.assign(applied, searchParam);
       pager.pageNo = 1;
-      await handleSearchData();
     } catch (err) {
       console.error('[catch-info]', err);
       if (props.showToast) props.showToast('조회 실패', 'error');
@@ -129,8 +126,35 @@ const applied = reactive({ kw: '', type: '', status: '' });
     const fnStatusCls = (v) => ({ '활성':'badge-green', '비활성':'badge-gray' }[v] || 'badge-gray');
     const contentSummary = (d) => d?.contents || d?.desc || '';
 
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
+
+    const openNodes = reactive(new Set(['__root__']));
+    const toggleNode = (label) => {
+      if (openNodes.has(label)) openNodes.delete(label);
+      else openNodes.add(label);
+    };
+    const isOpen = (label) => openNodes.has(label);
+    const expandAll = () => {
+      openNodes.add('__root__');
+      cfTree.value.forEach(node => openNodes.add(node.label));
+    };
+    const collapseAll = () => {
+      openNodes.clear();
+      openNodes.add('__root__');
+    };
+    const selectTree = (label) => { applied.kw = ''; applied.type = ''; applied.status = ''; };
+    const handleDelete = async (d) => {
+      const ok = await props.showConfirm('삭제', '삭제하시겠습니까?');
+      if (!ok) return;
+      try {
+        await boApi.delete(`/bo/ec/dp/widget/${d.libId}`, { ...coUtil.apiHdr('전시위젯관리', '삭제') });
+        props.showToast('삭제되었습니다.', 'success');
+        handleSearchData();
+      } catch (err) {
+        props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+      }
+    };
 
     // ── return ───────────────────────────────────────────────────────────────
 
@@ -145,6 +169,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
       cfDetailEditId, cfDetailKey,
       cfFiltered, cfTotalCount, cfTotalPages, cfPageList, cfPageNums,
       cfTree, selectedTreeKey, fnStatusCls, contentSummary,
+      toggleNode, isOpen, expandAll, collapseAll, selectTree, handleDelete,
     };
   },
   template: /* html */`
@@ -191,7 +216,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
   <div class="card" style="width:240px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid #f0f0f0;margin-bottom:8px;">
       <span style="font-size:12px;font-weight:700;color:#555;">표시경로</span>
-      <span style="font-size:10px;color:#aaa;">{{ tree.length }}그룹</span>
+      <span style="font-size:10px;color:#aaa;">{{ cfTree.length }}그룹</span>
     </div>
     <!-- ── 전체펼치기 / 전체닫기 ───────────────────────────────────────────────── -->
     <div style="display:flex;gap:4px;margin-bottom:8px;">
@@ -323,7 +348,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
          <div class="pager">
            <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
            <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-           <button v-for="n in cfPageNumbers" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
            <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
          </div>

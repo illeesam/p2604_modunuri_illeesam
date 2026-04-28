@@ -155,7 +155,8 @@ const CATEGORIES = [
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), plans, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, CATEGORIES, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), plans, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, CATEGORIES, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
+      get viewMode() { return uiState.viewMode; }, set viewMode(v) { uiState.viewMode = v; } };
   },
   template: /* html */`
 <div>
@@ -196,7 +197,7 @@ const CATEGORIES = [
           <td><span class="title-link" @click="handleLoadDetail(p.planId)" :style="selectedId===p.planId?'color:#e8587a;font-weight:700;':''">{{ p.planNm }}<span v-if="selectedId===p.planId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><span style="font-size:11px;background:#e8f0fe;color:#1577db;border-radius:4px;padding:2px 8px;">{{ p.category }}</span></td>
           <td>{{ p.theme }}</td>
-          <td>{{ p.productIds.length }}개</td>
+          <td>{{ (p.productIds||[]).length }}개</td>
           <td><span class="badge" :class="fnStatusBadge(p.status)">{{ p.status }}</span></td>
           <td>{{ (p.viewCount||0).toLocaleString() }}</td>
           <td style="font-size:11px;color:#666;">{{ p.startDate }} ~ {{ p.endDate }}</td>
@@ -227,7 +228,7 @@ const CATEGORIES = [
             <span class="badge badge-blue" style="font-size:11px;">{{ p.category }}</span>
           </div>
           <div style="font-size:12px;color:#666;line-height:1.5;">
-            <div>🎯 {{ p.theme }} {{ p.productIds.length }}개 상품</div>
+            <div>🎯 {{ p.theme }} {{ (p.productIds||[]).length }}개 상품</div>
             <div>📅 {{ p.startDate }} ~ {{ p.endDate }}</div>
             <div style="color:#999;margin-top:4px;">👁 {{ (p.viewCount||0).toLocaleString() }} 조회</div>
             <div style="color:#999;">📅 등록 {{ p.regDate }}</div>

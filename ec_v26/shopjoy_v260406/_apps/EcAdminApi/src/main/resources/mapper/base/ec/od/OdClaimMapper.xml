@@ -9,7 +9,7 @@
 
     <!-- 클레임(취소/반품/교환) 조회 조건 -->
     <sql id="odClaimCond">
-<where>
+        <where>
             <if test="siteId != null and siteId != ''">AND c.site_id = #{siteId}</if>
             <if test="status != null and status != ''">AND c.claim_status_cd = #{status}</if>
             <if test="claimType != null and claimType != ''">AND c.claim_type_cd = #{claimType}</if>

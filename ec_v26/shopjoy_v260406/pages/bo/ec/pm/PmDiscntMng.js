@@ -150,7 +150,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), discounts, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), discounts, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
+      get viewMode() { return uiState.viewMode; }, set viewMode(v) { uiState.viewMode = v; } };
   },
   template: /* html */`
 <div>

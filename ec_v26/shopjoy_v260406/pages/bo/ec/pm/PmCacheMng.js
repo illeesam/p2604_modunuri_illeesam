@@ -184,8 +184,8 @@ window.PmCacheMng = {
           <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
           <td>{{ c.date }}</td>
           <td><span class="badge" :class="fnTypeBadge(c.type)">{{ c.type }}</span></td>
-          <td :style="c.amount > 0 ? 'color:#389e0d;font-weight:600' : 'color:#cf1322;font-weight:600'">{{ c.amount > 0 ? '+' : '' }}{{ c.amount.toLocaleString() }}원</td>
-          <td>{{ c.balance.toLocaleString() }}원</td>
+          <td :style="(c.amount||0) > 0 ? 'color:#389e0d;font-weight:600' : 'color:#cf1322;font-weight:600'">{{ (c.amount||0) > 0 ? '+' : '' }}{{ (c.amount||0).toLocaleString() }}원</td>
+          <td>{{ (c.balance||0).toLocaleString() }}원</td>
           <td><span class="title-link" @click="handleLoadDetail(c.cacheId)" :style="selectedId===c.cacheId?'color:#e8587a;font-weight:700;':''">{{ c.desc }}<span v-if="selectedId===c.cacheId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
@@ -209,9 +209,9 @@ window.PmCacheMng = {
             <span class="badge" :class="fnTypeBadge(c.type)" style="font-size:11px;">{{ c.type }}</span>
           </div>
           <div style="font-size:12px;color:#666;line-height:1.5;">
-            <div>💰 {{ c.amount > 0 ? '+' : '' }}{{ c.amount.toLocaleString() }}원</div>
+            <div>💰 {{ (c.amount||0) > 0 ? '+' : '' }}{{ (c.amount||0).toLocaleString() }}원</div>
             <div>📅 {{ c.date }}</div>
-            <div style="color:#999;margin-top:4px;">잔액 {{ c.balance.toLocaleString() }}원</div>
+            <div style="color:#999;margin-top:4px;">잔액 {{ (c.balance||0).toLocaleString() }}원</div>
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">

@@ -131,7 +131,7 @@ window.PmDiscntDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { discounts, uiState, codes, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfSelectedVendorNm, selectVendor };
+    return { uiState, codes, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>

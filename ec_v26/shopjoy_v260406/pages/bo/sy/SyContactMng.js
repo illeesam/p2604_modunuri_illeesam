@@ -175,7 +175,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
           <td><span class="tag">{{ c.categoryCd }}</span></td>
           <td><span class="title-link" @click="handleLoadDetail(c.inquiryId)" :style="detailModal.editId===c.inquiryId?'color:#e8587a;font-weight:700;':''">{{ c.title }}<span v-if="detailModal.editId===c.inquiryId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><span class="badge" :class="fnStatusBadge(c.statusCd)">{{ c.statusCd }}</span></td>
-          <td>{{ c.date.slice(0,10) }}</td>
+          <td>{{ String(c.regDate||c.date||'').slice(0,10) }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.inquiryId)">수정</button>

@@ -124,8 +124,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
     const handleDelete = async (g) => {
       const ok = await props.showConfirm('삭제', `[${g.giftNm}] 사은품을 삭제하시겠습니까?`);
       if (!ok) return;
-      const idx = (giftList).findIndex(x => x.giftId === g.giftId);
-      if (idx !== -1) giftList.value.splice(idx, 1);
+      const idx = (gifts || []).findIndex(x => x.giftId === g.giftId);
+      if (idx !== -1) gifts.splice(idx, 1);
       if (uiStateDetail.selectedId === g.giftId) uiStateDetail.selectedId = null;
       try {
         const res = await boApi.delete(`/bo/ec/pm/gift/${g.giftId}`, { headers: { 'X-UI-Nm': '사은품관리', 'X-Cmd-Nm': '삭제' } });
@@ -147,7 +147,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), gifts, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), gifts, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
+      get viewMode() { return uiState.viewMode; }, set viewMode(v) { uiState.viewMode = v; } };
   },
   template: /* html */`
 <div>
