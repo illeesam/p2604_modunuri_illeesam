@@ -38,7 +38,7 @@ window.PmEventMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pm/event/page', {
+        const res = await boApi.get('/bo/ec/pm/event/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) },
           ...coUtil.apiHdr('이벤트관리', '목록조회')
         });
@@ -126,7 +126,7 @@ window.PmEventMng = {
       if (idx !== -1) events.splice(idx, 1);
       if (uiStateDetail.selectedId === e.eventId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/ec/pm/event/${e.eventId}`, { headers: { 'X-UI-Nm': '이벤트관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await boApi.delete(`/bo/ec/pm/event/${e.eventId}`, { headers: { 'X-UI-Nm': '이벤트관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

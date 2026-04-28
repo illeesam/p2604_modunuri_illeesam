@@ -302,7 +302,7 @@ window.SyCodeMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         uiState.loading = true;
-        const res = await window.boApi.get('/bo/sy/code/page', {
+        const res = await boApi.get('/bo/sy/code/page', {
           params: { pageNo: 1, pageSize: 100000 },
           ...coUtil.apiHdr('코드관리', '목록조회'),
         });

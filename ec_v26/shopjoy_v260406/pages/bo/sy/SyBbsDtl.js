@@ -13,7 +13,7 @@ window.SyBbsDtl = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/sy/bbs/page', {
+        const res = await boApi.get('/bo/sy/bbs/page', {
           params: { pageNo: 1, pageSize: 10000 },
           ...coUtil.apiHdr('게시판관리', '상세조회')
         });
@@ -147,7 +147,7 @@ window.SyBbsDtl = {
         if (idx !== -1) Object.assign(bbss[idx], { ...form, bbmId: Number(form.bbmId) });
       }
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/bbs/${form.bbsId}`, { ...form }, coUtil.apiHdr('게시판관리', '등록')) : window.boApi.put(`/bo/sy/bbs/${form.bbsId}`, { ...form }, coUtil.apiHdr('게시판관리', '저장')));
+        const res = await (cfIsNew.value ? boApi.post(`/bo/sy/bbs/${form.bbsId}`, { ...form }, coUtil.apiHdr('게시판관리', '등록')) : boApi.put(`/bo/sy/bbs/${form.bbsId}`, { ...form }, coUtil.apiHdr('게시판관리', '저장')));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syBbsMng');

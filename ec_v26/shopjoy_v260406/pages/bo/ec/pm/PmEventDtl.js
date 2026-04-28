@@ -16,8 +16,8 @@ window.PmEventDtl = {
     const handleSearchDetail = async () => {
       uiState.loading = true;
       try {
-        const calls = [window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('이벤트관리', '조회') })];
-        if (!cfIsNew.value) calls.unshift(window.boApi.get(`/bo/ec/pm/event/${props.editId}`, { ...coUtil.apiHdr('이벤트관리', '상세조회') }));
+        const calls = [boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('이벤트관리', '조회') })];
+        if (!cfIsNew.value) calls.unshift(boApi.get(`/bo/ec/pm/event/${props.editId}`, { ...coUtil.apiHdr('이벤트관리', '상세조회') }));
         const results = await Promise.all(calls);
         if (!cfIsNew.value) {
           const e = results[0].data?.data || results[0].data;
@@ -179,7 +179,7 @@ window.PmEventDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/event`, { ...form }, { ...coUtil.apiHdr('이벤트관리', '등록') }) : window.boApi.put(`/bo/ec/pm/event/${form.eventId}`, { ...form }, { ...coUtil.apiHdr('이벤트관리', '저장') }));
+        const res = await (cfIsNew.value ? boApi.post(`/bo/ec/pm/event`, { ...form }, { ...coUtil.apiHdr('이벤트관리', '등록') }) : boApi.put(`/bo/ec/pm/event/${form.eventId}`, { ...form }, { ...coUtil.apiHdr('이벤트관리', '저장') }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmEventMng');

@@ -587,7 +587,7 @@ window.SiteSelectModal = {
     const handleSearchList = async () => {
       modalState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/sy/site', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '사이트관리', 'X-Cmd-Nm': '목록조회' } });
+        const res = await boApi.get('/bo/sy/site', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '사이트관리', 'X-Cmd-Nm': '목록조회' } });
         modalState.list = res.data?.data || [];
       } catch (e) { modalState.list = []; } finally { modalState.loading = false; }
     };
@@ -639,7 +639,7 @@ window.VendorSelectModal = {
     const handleSearchList = async () => {
       modalState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/sy/vendor', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '판매자관리', 'X-Cmd-Nm': '목록조회' } });
+        const res = await boApi.get('/bo/sy/vendor', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '판매자관리', 'X-Cmd-Nm': '목록조회' } });
         modalState.list = res.data?.data || [];
       } catch (e) { modalState.list = []; } finally { modalState.loading = false; }
     };
@@ -692,8 +692,8 @@ window.BoUserSelectModal = {
       modalState.loading = true;
       try {
         const [deptRes, userRes] = await Promise.all([
-          window.boApi.get('/bo/sy/dept', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '부서관리', 'X-Cmd-Nm': '목록조회' } }),
-          window.boApi.get('/bo/sy/user', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '목록조회' } }),
+          boApi.get('/bo/sy/dept', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '부서관리', 'X-Cmd-Nm': '목록조회' } }),
+          boApi.get('/bo/sy/user', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '목록조회' } }),
         ]);
         modalState.depts = deptRes.data?.data || [];
         modalState.users = userRes.data?.data || [];
@@ -919,7 +919,7 @@ window.MemberSelectModal = {
     const handleSearchList = async () => {
       modalState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/mb/member', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '회원관리', 'X-Cmd-Nm': '목록조회' } });
+        const res = await boApi.get('/bo/ec/mb/member', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '회원관리', 'X-Cmd-Nm': '목록조회' } });
         modalState.list = res.data?.data || [];
       } catch (e) { modalState.list = []; } finally { modalState.loading = false; }
     };
@@ -966,7 +966,7 @@ window.OrderSelectModal = {
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/ec/ord/order', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '주문관리', 'X-Cmd-Nm': '목록조회' } });
+        const res = await boApi.get('/bo/ec/ord/order', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '주문관리', 'X-Cmd-Nm': '목록조회' } });
         list.value = res.data?.data || [];
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
@@ -1013,7 +1013,7 @@ window.BbmSelectModal = {
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const res = await window.boApi.get('/bo/sy/bbm', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '게시판모드관리', 'X-Cmd-Nm': '목록조회' } });
+        const res = await boApi.get('/bo/sy/bbm', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '게시판모드관리', 'X-Cmd-Nm': '목록조회' } });
         list.value = res.data?.data || [];
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
@@ -1200,9 +1200,9 @@ window.TemplateSendModal = {
     const handleSearchList = async () => {
       try {
         const [deptRes, memberRes, userRes] = await Promise.all([
-          window.boApi.get('/bo/sy/dept', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '부서관리', 'X-Cmd-Nm': '목록조회' } }),
-          window.boApi.get('/bo/ec/mb/member', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '회원관리', 'X-Cmd-Nm': '목록조회' } }),
-          window.boApi.get('/bo/sy/user', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '목록조회' } }),
+          boApi.get('/bo/sy/dept', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '부서관리', 'X-Cmd-Nm': '목록조회' } }),
+          boApi.get('/bo/ec/mb/member', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '회원관리', 'X-Cmd-Nm': '목록조회' } }),
+          boApi.get('/bo/sy/user', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '목록조회' } }),
         ]);
         allDepts.value = deptRes.data?.data || [];
         allMembers.value = memberRes.data?.data || [];
@@ -1492,7 +1492,7 @@ window.RoleTreeModal = {
     const allRoles = ref([]);
     const handleSearchList = async () => {
       try {
-        const res = await window.boApi.get('/bo/sy/role', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '역할관리', 'X-Cmd-Nm': '목록조회' } });
+        const res = await boApi.get('/bo/sy/role', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '역할관리', 'X-Cmd-Nm': '목록조회' } });
         allRoles.value = res.data?.data || [];
       } catch (e) { allRoles.value = []; }
     };
@@ -1586,7 +1586,7 @@ window.MenuTreeModal = {
     const allMenus = ref([]);
     const handleSearchList = async () => {
       try {
-        const res = await window.boApi.get('/bo/sy/menu', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '메뉴관리', 'X-Cmd-Nm': '목록조회' } });
+        const res = await boApi.get('/bo/sy/menu', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '메뉴관리', 'X-Cmd-Nm': '목록조회' } });
         allMenus.value = res.data?.data || [];
       } catch (e) { allMenus.value = []; }
     };
@@ -1720,7 +1720,7 @@ window.DeptTreeModal = {
     const allDepts = ref([]);
     const handleSearchList = async () => {
       try {
-        const res = await window.boApi.get('/bo/sy/dept', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '부서관리', 'X-Cmd-Nm': '목록조회' } });
+        const res = await boApi.get('/bo/sy/dept', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '부서관리', 'X-Cmd-Nm': '목록조회' } });
         allDepts.value = res.data?.data || [];
       } catch (e) { allDepts.value = []; }
     };
@@ -1864,7 +1864,7 @@ window.CategoryTreeModal = {
     const allCategories = ref([]);
     const handleSearchList = async () => {
       try {
-        const res = await window.boApi.get('/bo/ec/pd/category', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '카테고리관리', 'X-Cmd-Nm': '목록조회' } });
+        const res = await boApi.get('/bo/ec/pd/category', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '카테고리관리', 'X-Cmd-Nm': '목록조회' } });
         allCategories.value = res.data?.data || [];
       } catch (e) { allCategories.value = []; }
     };
@@ -3380,7 +3380,7 @@ window.BizPickModal = {
     const bizs = reactive([]);
     const handleSearchList = async () => {
       try {
-        const res = await window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '판매자관리', 'X-Cmd-Nm': '목록조회' } });
+        const res = await boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '판매자관리', 'X-Cmd-Nm': '목록조회' } });
         bizs.splice(0, bizs.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
@@ -3483,7 +3483,7 @@ window.SimpleUserPickModal = {
     const boUsers = reactive([]);
     const handleSearchList = async () => {
       try {
-        const res = await window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 }, headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '목록조회' } });
+        const res = await boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 }, headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '목록조회' } });
         boUsers.splice(0, boUsers.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };

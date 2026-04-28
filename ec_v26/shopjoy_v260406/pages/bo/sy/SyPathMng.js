@@ -54,7 +54,7 @@ window.SyPathMng = {
     /* ── 트리 전체 조회 (path_id / parent_path_id 기반) ── */
     const handleSearchTree = async () => {
       try {
-        const res = await window.boApi.get('/bo/sy/path/page', {
+        const res = await boApi.get('/bo/sy/path/page', {
           params: { pageNo: 1, pageSize: 10000 },
           ...coUtil.apiHdr('경로관리', '트리조회')
         });
@@ -70,7 +70,7 @@ window.SyPathMng = {
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...searchParam };
         if (uiState.selectedPathId != null) params.parentPathId = uiState.selectedPathId;
-        const res = await window.boApi.get('/bo/sy/path/page', { params, ...coUtil.apiHdr('경로관리', '목록조회') });
+        const res = await boApi.get('/bo/sy/path/page', { params, ...coUtil.apiHdr('경로관리', '목록조회') });
         const data = res.data?.data || {};
         const list = data.pageList || data.list || [];
         gridRows.splice(0, gridRows.length, ...list.map(r => ({ ...r, _status: null, _orig: { ...r } })));
@@ -130,7 +130,7 @@ window.SyPathMng = {
       const ok = await props.showConfirm?.('삭제', `[${row.pathLabel}] 경로를 삭제하시겠습니까?`);
       if (!ok) return;
       try {
-        const res = await window.boApi.delete(`/bo/sy/path/${row.pathId}`, coUtil.apiHdr('경로관리', '삭제'));
+        const res = await boApi.delete(`/bo/sy/path/${row.pathId}`, coUtil.apiHdr('경로관리', '삭제'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         props.showToast?.('삭제되었습니다.', 'success');
         await handleSearchTree();
@@ -157,8 +157,8 @@ window.SyPathMng = {
         const payload = { bizCd: row.bizCd, parentPathId: row.parentPathId, pathLabel: row.pathLabel, sortOrd: row.sortOrd, useYn: row.useYn, pathRemark: row.pathRemark };
         try {
           const res = isNew
-            ? await window.boApi.post('/bo/sy/path', payload, coUtil.apiHdr('경로관리', '등록'))
-            : await window.boApi.put(`/bo/sy/path/${row.pathId}`, payload, coUtil.apiHdr('경로관리', '저장'));
+            ? await boApi.post('/bo/sy/path', payload, coUtil.apiHdr('경로관리', '등록'))
+            : await boApi.put(`/bo/sy/path/${row.pathId}`, payload, coUtil.apiHdr('경로관리', '저장'));
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         } catch (err) {
           const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';

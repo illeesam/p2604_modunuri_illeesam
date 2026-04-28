@@ -23,7 +23,7 @@ window.SyBrandMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/sy/brand/page', {
+        const res = await boApi.get('/bo/sy/brand/page', {
           params: { pageNo: 1, pageSize: 10000 },
           ...coUtil.apiHdr('브랜드관리', '목록조회')
         });

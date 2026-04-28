@@ -41,7 +41,7 @@ window.DpDispUiMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/dp/ui/page', {
+        const res = await boApi.get('/bo/ec/dp/ui/page', {
           params: { pageNo: 1, pageSize: 10000 },
           ...coUtil.apiHdr('전시UI관리', '조회')
         });

@@ -119,8 +119,8 @@ window.ZdStore = {
         return;
       }
       try {
-        const api = storeName.startsWith('useFo') ? window.foApi : window.boApi;
-        if (!api) {
+        const api = storeName.startsWith('useFo') ? foApi : boApi;
+        if (!api || (storeName.startsWith('useFo') && typeof foApi === 'undefined') || (!storeName.startsWith('useFo') && typeof boApi === 'undefined')) {
           props.showToast('API 클라이언트를 찾을 수 없습니다.', 'error');
           return;
         }

@@ -138,8 +138,8 @@ window.Contact = {
 
     const handleSubmit = async () => {
       if (!validate()) return;
-      if (window.foApi) {
-        await window.foApi.post('/fo/inquiry/create', {
+      if (typeof foApi !== 'undefined') {
+        await foApi.post('/fo/inquiry/create', {
           source: 'shopjoy',
           name: form.name,
           email: form.email,

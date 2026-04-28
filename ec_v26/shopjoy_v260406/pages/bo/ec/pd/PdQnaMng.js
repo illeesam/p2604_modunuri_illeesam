@@ -40,7 +40,7 @@ window.PdQnaMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pd/qna/page', {
+        const res = await boApi.get('/bo/ec/pd/qna/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) },
           ...coUtil.apiHdr('상품Q&A관리', '목록조회')
         });

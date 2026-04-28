@@ -1,5 +1,5 @@
 /**
- * BO axios 클라이언트 (window.boApi)
+ * BO axios 클라이언트 (boApi)
  * - Bearer 토큰 자동 주입 (modu-bo-accessToken)
  * - 401 → /auth/bo/refresh 로 토큰 재갱신 후 원 요청 재시도 (1회)
  * - request / response / error 콘솔 로그

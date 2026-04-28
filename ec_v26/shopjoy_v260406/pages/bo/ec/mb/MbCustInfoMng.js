@@ -117,10 +117,10 @@
       uiState.loading = true;
       try {
         const [resCust, resLogin, resCoupon, resSend] = await Promise.all([
-          window.boApi.get('/bo/ec/mb/cust-info/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('고객종합정보', '조회') }),
-          window.boApi.get('/bo/sy/user/login-hist/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('고객종합정보', '조회') }),
-          window.boApi.get('/bo/ec/pm/coupon-usage/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('고객종합정보', '조회') }),
-          window.boApi.get('/bo/sy/alarm/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('고객종합정보', '조회') }),
+          boApi.get('/bo/ec/mb/cust-info/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('고객종합정보', '조회') }),
+          boApi.get('/bo/sy/user/login-hist/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('고객종합정보', '조회') }),
+          boApi.get('/bo/ec/pm/coupon-usage/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('고객종합정보', '조회') }),
+          boApi.get('/bo/sy/alarm/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('고객종합정보', '조회') }),
         ]);
         custInfos.splice(0, custInfos.length, ...(resCust.data?.data?.pageList || []));
         loginHistory.splice(0, loginHistory.length, ...(resLogin.data?.data?.pageList || []));

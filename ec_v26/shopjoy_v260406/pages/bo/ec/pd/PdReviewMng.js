@@ -40,7 +40,7 @@ window.PdReviewMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pd/review/page', {
+        const res = await boApi.get('/bo/ec/pd/review/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) },
           ...coUtil.apiHdr('상품리뷰관리', '목록조회')
         });
@@ -93,7 +93,7 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
       if (!ok) return;
       row.reviewStatusCd = newStatus; if (cfSelectedRow.value) cfSelectedRow.value.reviewStatusCd = newStatus;
       try {
-        const res = await window.boApi.put(`/bo/ec/pd/review/${row.reviewId}/status`, { reviewStatusCd: newStatus }, { headers: { 'X-UI-Nm': '리뷰관리', 'X-Cmd-Nm': '상태변경' } });
+        const res = await boApi.put(`/bo/ec/pd/review/${row.reviewId}/status`, { reviewStatusCd: newStatus }, { headers: { 'X-UI-Nm': '리뷰관리', 'X-Cmd-Nm': '상태변경' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
         console.error('[catch-info]', err);

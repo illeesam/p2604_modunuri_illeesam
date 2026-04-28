@@ -51,7 +51,7 @@ window.CmNoticeDtl = {
     const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       try {
-        const res = await window.boApi.get(`/bo/ec/cm/notice/${props.editId}`, { ...coUtil.apiHdr('공지사항관리', '상세조회') });
+        const res = await boApi.get(`/bo/ec/cm/notice/${props.editId}`, { ...coUtil.apiHdr('공지사항관리', '상세조회') });
         Object.assign(form, res.data?.data || {});
       } catch (err) {
         console.error('[handleSearchDetail]', err);
@@ -87,8 +87,8 @@ window.CmNoticeDtl = {
       if (!ok) return;
       try {
         const res = await (isNewNotice
-          ? window.boApi.post('/bo/ec/cm/notice', { ...form }, { ...coUtil.apiHdr('공지사항관리', '등록') })
-          : window.boApi.put(`/bo/ec/cm/notice/${props.editId}`, { ...form }, { ...coUtil.apiHdr('공지사항관리', '저장') }));
+          ? boApi.post('/bo/ec/cm/notice', { ...form }, { ...coUtil.apiHdr('공지사항관리', '등록') })
+          : boApi.put(`/bo/ec/cm/notice/${props.editId}`, { ...form }, { ...coUtil.apiHdr('공지사항관리', '저장') }));
         console.log('[handleSave] API Response:', res);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewNotice ? '등록되었습니다.' : '저장되었습니다.', 'success');

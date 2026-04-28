@@ -134,8 +134,8 @@ window.XsStore = {
         return;
       }
       try {
-        const api = window.foApi;
-        if (!api) {
+        const api = foApi;
+        if (!api || typeof foApi === 'undefined') {
           props.showToast('API 클라이언트를 찾을 수 없습니다.', 'error');
           return;
         }

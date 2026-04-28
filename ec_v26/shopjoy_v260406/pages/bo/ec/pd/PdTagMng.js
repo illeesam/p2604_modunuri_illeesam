@@ -35,7 +35,7 @@ window.PdTagMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pd/tag/page', {
+        const res = await boApi.get('/bo/ec/pd/tag/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) },
           ...coUtil.apiHdr('태그관리', '목록조회')
         });
@@ -88,7 +88,7 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
       if (!ok) return;
       const si = tags.findIndex(t => t.tagId === row.tagId); if (si !== -1) tags.splice(si, 1); gridRows.splice(idx, 1);
       try {
-        const res = await window.boApi.delete(`/bo/ec/pd/tag/${row.tagId}`, { headers: { 'X-UI-Nm': '태그관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await boApi.delete(`/bo/ec/pd/tag/${row.tagId}`, { headers: { 'X-UI-Nm': '태그관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
         console.error('[catch-info]', err);
@@ -110,7 +110,7 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
         else { const si = src.findIndex(t => t.tagId === row.tagId); if (si !== -1) Object.assign(src[si], row); }
         row._row_status = null;
         try {
-          const res = await (isNewRow ? window.boApi.post(`/bo/ec/pd/tag/${row.tagId}`, { ...row }, { headers: { 'X-UI-Nm': '태그관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/ec/pd/tag/${row.tagId}`, { ...row }, { headers: { 'X-UI-Nm': '태그관리', 'X-Cmd-Nm': '저장' } }));
+          const res = await (isNewRow ? boApi.post(`/bo/ec/pd/tag/${row.tagId}`, { ...row }, { headers: { 'X-UI-Nm': '태그관리', 'X-Cmd-Nm': '등록' } }) : boApi.put(`/bo/ec/pd/tag/${row.tagId}`, { ...row }, { headers: { 'X-UI-Nm': '태그관리', 'X-Cmd-Nm': '저장' } }));
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast('저장되었습니다.', 'success');
         } catch (err) {

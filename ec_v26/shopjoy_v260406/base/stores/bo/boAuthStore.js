@@ -54,7 +54,7 @@
       async sfLogin(loginId, loginPwd, authMethod = '메인') {
         try {
           const loginPwdHash = window.CryptoJS ? CryptoJS.SHA256(loginPwd).toString() : loginPwd;
-          const res = await window.boApi.post('/auth/bo/auth/login', {
+          const res = await boApi.post('/auth/bo/auth/login', {
             loginId,
             loginPwd: loginPwdHash,
             authMethod,
@@ -101,7 +101,7 @@
 
           /* 로그인 후 초기 데이터 조회 */
           try {
-            const initRes = await window.boApi.get('/co/cm/bo-app-store/getInitData?names=ALL', {
+            const initRes = await boApi.get('/co/cm/bo-app-store/getInitData?names=ALL', {
               headers: { 'X-UI-Nm': '시스템', 'X-Cmd-Nm': '초기화데이터조회' }
             });
             if (initRes?.data?.data) {
@@ -141,7 +141,7 @@
       async sfRefreshAccessToken() {
         if (!this.svRefreshToken) { this.sfReset(); return false; }
         try {
-          const res = await window.boApi.post('/auth/bo/auth/refresh', {
+          const res = await boApi.post('/auth/bo/auth/refresh', {
             refreshToken: this.svRefreshToken,
           }, {
             headers: { 'X-UI-Nm': '로그인', 'X-Cmd-Nm': '토큰갱신' }
@@ -165,7 +165,7 @@
       async sfLogout() {
         if (this.svRefreshToken) {
           try {
-            await window.boApi.post('/auth/bo/auth/logout', { refreshToken: this.svRefreshToken }, {
+            await boApi.post('/auth/bo/auth/logout', { refreshToken: this.svRefreshToken }, {
               headers: { 'X-UI-Nm': '로그인', 'X-Cmd-Nm': '로그아웃' }
             });
           } catch (_) {}

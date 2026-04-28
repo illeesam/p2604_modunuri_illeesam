@@ -12,7 +12,7 @@ window.SyTemplateMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/sy/template/page', {
+        const res = await boApi.get('/bo/sy/template/page', {
           params: {
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
@@ -166,7 +166,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       if (idx !== -1) templates.splice(idx, 1);
       if (uiStateDetail.selectedId === t.templateId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/sy/template/${t.templateId}`, coUtil.apiHdr('템플릿관리', '삭제'));
+        const res = await boApi.delete(`/bo/sy/template/${t.templateId}`, coUtil.apiHdr('템플릿관리', '삭제'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

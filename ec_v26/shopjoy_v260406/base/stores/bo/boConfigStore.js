@@ -53,7 +53,7 @@
       async sfLoadCodes() {
         this.svLoading = true;
         try {
-          const res = await window.boApi.get('/bo/sy/code', { headers: { 'X-UI-Nm': '코드관리', 'X-Cmd-Nm': '목록조회' } });
+          const res = await boApi.get('/bo/sy/code', { headers: { 'X-UI-Nm': '코드관리', 'X-Cmd-Nm': '목록조회' } });
           const codeList = res?.data?.data || [];
 
           // 코드 그룹별로 정렬

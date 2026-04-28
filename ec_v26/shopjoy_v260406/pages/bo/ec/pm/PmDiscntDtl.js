@@ -15,7 +15,7 @@ window.PmDiscntDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get(`/bo/ec/pm/discnt/${props.editId}`, { ...coUtil.apiHdr('할인관리', '상세조회') });
+        const res = await boApi.get(`/bo/ec/pm/discnt/${props.editId}`, { ...coUtil.apiHdr('할인관리', '상세조회') });
         const d = res.data?.data || res.data;
         if (d) Object.assign(form, d);
         uiState.error = null;
@@ -105,7 +105,7 @@ window.PmDiscntDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }, { ...coUtil.apiHdr('할인관리', '등록') }) : window.boApi.put(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }, { ...coUtil.apiHdr('할인관리', '저장') }));
+        const res = await (cfIsNew.value ? boApi.post(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }, { ...coUtil.apiHdr('할인관리', '등록') }) : boApi.put(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }, { ...coUtil.apiHdr('할인관리', '저장') }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmDiscntMng');

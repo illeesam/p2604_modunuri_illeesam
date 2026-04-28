@@ -34,7 +34,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     });
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await window.boApi.get('/bo/ec/st/pay/page', {
+        const res = await boApi.get('/bo/ec/st/pay/page', {
           params: {
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
@@ -97,7 +97,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       if (!ok) return;
       r.payStatus = '지급완료'; r.payAmt = r.settleAmt; r.payDate = new Date().toISOString().slice(0,10);
       try {
-        const res = await window.boApi.put(`/bo/ec/st/pay/${r.payId}/pay`, { payAmt: r.settleAmt }, { ...coUtil.apiHdr('정산지급관리', '저장') });
+        const res = await boApi.put(`/bo/ec/st/pay/${r.payId}/pay`, { payAmt: r.settleAmt }, { ...coUtil.apiHdr('정산지급관리', '저장') });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('지급처리가 완료되었습니다.', 'success');
       } catch (err) {

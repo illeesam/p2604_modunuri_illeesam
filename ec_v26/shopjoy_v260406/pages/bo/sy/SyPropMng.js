@@ -59,7 +59,7 @@ window.SyPropMng = {
     // 검색/조회 함수
     const fetchData = async (searchType = 'DEFAULT') => {
       try {
-        const res = await window.boApi.get('/bo/sy/prop/page', {
+        const res = await boApi.get('/bo/sy/prop/page', {
           params: { pageNo: 1, pageSize: 10000, siteId: cfSiteId.value },
           ...coUtil.apiHdr('속성관리', '목록조회')
         });

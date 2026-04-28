@@ -13,7 +13,7 @@ window.SySiteDtl = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/sy/site/page', {
+        const res = await boApi.get('/bo/sy/site/page', {
           params: { pageNo: 1, pageSize: 10000 },
           ...coUtil.apiHdr('사이트관리', '상세조회')
         });
@@ -111,7 +111,7 @@ window.SySiteDtl = {
         if (idx !== -1) Object.assign(sites[idx], { ...form });
       }
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/site`, { ...form }, coUtil.apiHdr('사이트관리', '등록')) : window.boApi.put(`/bo/sy/site/${form.siteId}`, { ...form }, coUtil.apiHdr('사이트관리', '저장')));
+        const res = await (cfIsNew.value ? boApi.post(`/bo/sy/site`, { ...form }, coUtil.apiHdr('사이트관리', '등록')) : boApi.put(`/bo/sy/site/${form.siteId}`, { ...form }, coUtil.apiHdr('사이트관리', '저장')));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('sySiteMng');

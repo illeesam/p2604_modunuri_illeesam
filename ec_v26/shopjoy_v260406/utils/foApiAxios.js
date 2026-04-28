@@ -1,5 +1,5 @@
 /**
- * FO axios 클라이언트 (window.foApi)
+ * FO axios 클라이언트 (foApi)
  * - Bearer 토큰 자동 주입 (modu-fo-accessToken)
  * - 401 → /auth/fo/refresh 로 토큰 재갱신 후 원 요청 재시도 (1회)
  * - request / response / error 콘솔 로그

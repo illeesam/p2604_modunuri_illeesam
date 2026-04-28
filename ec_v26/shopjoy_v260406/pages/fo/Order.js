@@ -38,7 +38,7 @@ window.Order = {
     const allCoupons  = reactive([]);
     const handleLoadCoupons = async () => {
       try {
-        const res = await window.foApi.get('/fo/my/coupon/list', coUtil.apiHdr('주문', '쿠폰조회'));
+        const res = await foApi.get('/fo/my/coupon/list', coUtil.apiHdr('주문', '쿠폰조회'));
         allCoupons.splice(0, allCoupons.length, ...(res.data?.data || []).filter(c => !c.used));
       } catch (e) { allCoupons.length = 0; }
     };
@@ -91,7 +91,7 @@ window.Order = {
     /* ── 캐쉬 ── */
     const handleLoadCash = async () => {
       try {
-        const res = await window.foApi.get('/fo/my/cash/info', coUtil.apiHdr('주문', '캐시조회'));
+        const res = await foApi.get('/fo/my/cash/info', coUtil.apiHdr('주문', '캐시조회'));
         uiState.cashBalance = res.data?.data?.balance || 0;
       } catch (e) {}
     };
@@ -186,7 +186,7 @@ window.Order = {
           cashUsed:           cfAppliedCash.value,
           finalPrice:         cfFinalPrice.value,
         };
-        if (window.foApi) await window.foApi.post('/fo/order/create', payload, coUtil.apiHdr('주문', '저장')).catch(() => {});
+        if (typeof foApi !== 'undefined') await foApi.post('/fo/order/create', payload, coUtil.apiHdr('주문', '저장')).catch(() => {});
         uiState.resultData = payload;
         uiState.view = 'result';
         if (!props.instantOrder) props.clearCart(); // 바로구매는 장바구니 건드리지 않음

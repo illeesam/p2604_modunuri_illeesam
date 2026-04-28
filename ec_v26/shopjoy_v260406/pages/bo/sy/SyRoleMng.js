@@ -23,7 +23,7 @@ window.SyRoleMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/sy/role/page', {
+        const res = await boApi.get('/bo/sy/role/page', {
           params: { pageNo: 1, pageSize: 10000 },
           ...coUtil.apiHdr('역할관리', '목록조회')
         });

@@ -40,7 +40,7 @@ window.PmPlanMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pm/plan/page', {
+        const res = await boApi.get('/bo/ec/pm/plan/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...(searchType === 'PAGE_CLICK' ? pager.pageCond : searchParam) },
           ...coUtil.apiHdr('요금제관리', '목록조회')
         });
@@ -138,7 +138,7 @@ const CATEGORIES = [
       if (idx !== -1) plans.splice(idx, 1);
       if (uiStateDetail.selectedId === p.planId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/ec/pm/plan/${p.planId}`, { headers: { 'X-UI-Nm': '기획전관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await boApi.delete(`/bo/ec/pm/plan/${p.planId}`, { headers: { 'X-UI-Nm': '기획전관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

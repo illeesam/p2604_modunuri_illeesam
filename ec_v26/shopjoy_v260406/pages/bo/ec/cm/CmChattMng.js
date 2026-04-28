@@ -42,7 +42,7 @@ const isAppReady = computed(() => {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/cm/chatt/page', {
+        const res = await boApi.get('/bo/ec/cm/chatt/page', {
           params: {
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
@@ -106,7 +106,7 @@ const isAppReady = computed(() => {
       if (idx !== -1) chatts.splice(idx, 1);
       if (uiStateDetail.selectedId === c.chatId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/ec/cm/chatt/${c.chatId}`, { headers: { 'X-UI-Nm': '채팅관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await boApi.delete(`/bo/ec/cm/chatt/${c.chatId}`, { headers: { 'X-UI-Nm': '채팅관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

@@ -24,7 +24,7 @@ window.EventPage = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize };
-        const res = await window.foApi.get('/fo/ec/pm/event/page', { params, ...coUtil.apiHdr('이벤트', '목록조회') });
+        const res = await foApi.get('/fo/ec/pm/event/page', { params, ...coUtil.apiHdr('이벤트', '목록조회') });
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;
         events.splice(0, events.length, ...(res.data?.data?.pageList || []));

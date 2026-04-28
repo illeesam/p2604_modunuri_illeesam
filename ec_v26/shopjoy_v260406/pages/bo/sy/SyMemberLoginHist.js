@@ -22,7 +22,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('회원로그인이력', '목록조회') });
+        const res = await boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('회원로그인이력', '목록조회') });
         memberList.splice(0, memberList.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
       } catch (_) {}
     };

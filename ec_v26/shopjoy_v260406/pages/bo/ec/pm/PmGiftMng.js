@@ -38,7 +38,7 @@ window.PmGiftMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pm/gift/page', {
+        const res = await boApi.get('/bo/ec/pm/gift/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) },
           ...coUtil.apiHdr('선물관리', '목록조회')
         });
@@ -128,7 +128,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
       if (idx !== -1) giftList.value.splice(idx, 1);
       if (uiStateDetail.selectedId === g.giftId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/ec/pm/gift/${g.giftId}`, { headers: { 'X-UI-Nm': '사은품관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await boApi.delete(`/bo/ec/pm/gift/${g.giftId}`, { headers: { 'X-UI-Nm': '사은품관리', 'X-Cmd-Nm': '삭제' } });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

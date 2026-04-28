@@ -33,7 +33,7 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
       this.svError = null;
 
       try {
-        const res = await window.boApi.get(`/co/cm/bo-app-store/getInitData?names=${encodeURIComponent(names || '')}`, {
+        const res = await boApi.get(`/co/cm/bo-app-store/getInitData?names=${encodeURIComponent(names || '')}`, {
           headers: { 'X-UI-Nm': '시스템', 'X-Cmd-Nm': '초기화데이터조회' }
         });
         console.log('[boAppInitStore] API response:', res);

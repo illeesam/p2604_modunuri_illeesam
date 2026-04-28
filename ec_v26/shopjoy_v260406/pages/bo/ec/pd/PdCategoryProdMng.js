@@ -95,7 +95,7 @@ window.PdCategoryProdMng = {
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...(searchType === 'PAGE_CLICK' ? pager.pageCond : Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined))) };
         console.log('[handleSearchList] params:', params);
-        const res = await window.boApi.get('/bo/ec/pd/category-prod/page', {
+        const res = await boApi.get('/bo/ec/pd/category-prod/page', {
           params,
           ...coUtil.apiHdr('카테고리상품관리', '목록조회')
         });
@@ -135,7 +135,7 @@ window.PdCategoryProdMng = {
     /* 좌측 트리용 전체 카테고리 조회 */
     const handleSearchCategoriesList = async () => {
       try {
-        const res = await window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('카테고리관리', '목록조회') });
+        const res = await boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('카테고리관리', '목록조회') });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         categories.splice(0, categories.length, ...list);
         expandedSet.clear();
@@ -281,7 +281,7 @@ window.PdCategoryProdMng = {
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await window.boApi.put(`/bo/ec/pd/category-prod`, { categoryProds }, { ...coUtil.apiHdr('카테고리상품관리', '저장') });
+        const res = await boApi.put(`/bo/ec/pd/category-prod`, { categoryProds }, { ...coUtil.apiHdr('카테고리상품관리', '저장') });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {

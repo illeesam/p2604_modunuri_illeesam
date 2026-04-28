@@ -13,7 +13,7 @@ window.MbMemberMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
-        const res = await window.boApi.get('/bo/ec/mb/member/page', { params, ...coUtil.apiHdr('회원관리', '조회') });
+        const res = await boApi.get('/bo/ec/mb/member/page', { params, ...coUtil.apiHdr('회원관리', '조회') });
         members.splice(0, members.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
@@ -79,7 +79,7 @@ window.MbMemberMng = {
       const ok = await props.showConfirm('삭제', `[${m.memberNm}] 회원을 삭제하시겠습니까?`);
       if (!ok) return;
       try {
-        const res = await window.boApi.delete(`/bo/ec/mb/member/${m.userId}`, { ...coUtil.apiHdr('회원관리', '삭제') });
+        const res = await boApi.delete(`/bo/ec/mb/member/${m.userId}`, { ...coUtil.apiHdr('회원관리', '삭제') });
         const idx = members.findIndex(x => x.userId === m.userId);
         if (idx !== -1) members.splice(idx, 1);
         if (uiStateDetail.selectedId === m.userId) uiStateDetail.selectedId = null;

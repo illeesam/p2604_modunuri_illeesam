@@ -19,7 +19,7 @@ window.EventView = {
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
-        const res = await window.foApi.get(`/fo/ec/pm/event/${props.editId}`, coUtil.apiHdr('이벤트상세', '상세조회'));
+        const res = await foApi.get(`/fo/ec/pm/event/${props.editId}`, coUtil.apiHdr('이벤트상세', '상세조회'));
         events.splice(0, events.length, ...(res.data?.data ? [res.data.data] : []));
       } catch (e) {
         events.splice(0, events.length, ...[

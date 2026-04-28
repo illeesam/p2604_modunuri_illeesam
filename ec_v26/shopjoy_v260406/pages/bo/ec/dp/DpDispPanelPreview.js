@@ -181,8 +181,8 @@ window.DpDispPanelPreview = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [wlRes, dpRes] = await Promise.all([
-          window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시패널관리', '조회') }),
-          window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시패널관리', '조회') }),
+          boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시패널관리', '조회') }),
+          boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시패널관리', '조회') }),
         ]);
         widgetLibs.splice(0, widgetLibs.length, ...(wlRes.data?.data?.pageList || wlRes.data?.data?.list || []));
         displays.splice(0, displays.length, ...(dpRes.data?.data?.pageList || dpRes.data?.data?.list || []));

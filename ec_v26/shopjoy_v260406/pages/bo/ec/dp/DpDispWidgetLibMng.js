@@ -38,7 +38,7 @@ window.DpDispWidgetLibMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', {
+        const res = await boApi.get('/bo/ec/dp/widget-lib/page', {
           params: { pageNo: 1, pageSize: 10000 },
           ...coUtil.apiHdr('전시위젯라이브러리', '조회')
         });
@@ -196,7 +196,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
       if (idx !== -1) widgetLibs.splice(idx, 1);
       if (uiStateDetail.selectedId === lib.libId) { uiStateDetail.selectedId = null; }
       try {
-        const res = await window.boApi.delete(`/bo/ec/widget-lib/${lib.libId}`, { ...coUtil.apiHdr('전시위젯라이브러리', '삭제') });
+        const res = await boApi.delete(`/bo/ec/widget-lib/${lib.libId}`, { ...coUtil.apiHdr('전시위젯라이브러리', '삭제') });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

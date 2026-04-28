@@ -12,7 +12,7 @@ window.SyContactMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/sy/contact/page', {
+        const res = await boApi.get('/bo/sy/contact/page', {
           params: {
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
@@ -117,7 +117,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
       if (idx !== -1) contacts.splice(idx, 1);
       if (detailModal.editId === c.inquiryId) { detailModal.show = false; detailModal.editId = null; }
       try {
-        const res = await window.boApi.delete(`/bo/sy/contact/${c.inquiryId}`, coUtil.apiHdr('문의관리', '삭제'));
+        const res = await boApi.delete(`/bo/sy/contact/${c.inquiryId}`, coUtil.apiHdr('문의관리', '삭제'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

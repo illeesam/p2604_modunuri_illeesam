@@ -37,7 +37,7 @@ window.DpDispRelationMng = {
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
-        const res = await window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시연관관리', '조회') });
+        const res = await boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시연관관리', '조회') });
         displays.splice(0, displays.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
       } catch (_) {
       console.error('[catch-info]', _);}
@@ -61,7 +61,7 @@ window.DpDispRelationMng = {
     const onSearch = async () => {
     try {
       const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await window.boApi.get('/bo/ec/resource/page', { params, ...coUtil.apiHdr('전시연관관리', '조회') });
+      const res = await boApi.get('/bo/ec/resource/page', { params, ...coUtil.apiHdr('전시연관관리', '조회') });
       // TODO: Update items array based on response
       pager.pageNo = 1;
       await handleSearchData();

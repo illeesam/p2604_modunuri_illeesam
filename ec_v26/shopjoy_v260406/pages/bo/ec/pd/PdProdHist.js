@@ -47,23 +47,23 @@ window.PdProdHist = {
       uiState.loading = true;
       try {
         if (tab === 'orders') {
-          const res = await window.boApi.get(BASE('orders'), HDR('연관주문조회'));
+          const res = await boApi.get(BASE('orders'), HDR('연관주문조회'));
           const list = res.data?.data || [];
           relatedOrders.splice(0, relatedOrders.length, ...list);
         } else if (tab === 'stock') {
-          const res = await window.boApi.get(BASE('stock'), HDR('재고이력조회'));
+          const res = await boApi.get(BASE('stock'), HDR('재고이력조회'));
           const list = res.data?.data || [];
           stockHistory.splice(0, stockHistory.length, ...list);
         } else if (tab === 'price') {
-          const res = await window.boApi.get(BASE('price'), HDR('가격이력조회'));
+          const res = await boApi.get(BASE('price'), HDR('가격이력조회'));
           const list = res.data?.data || [];
           priceHistory.splice(0, priceHistory.length, ...list);
         } else if (tab === 'status') {
-          const res = await window.boApi.get(BASE('status'), HDR('상태이력조회'));
+          const res = await boApi.get(BASE('status'), HDR('상태이력조회'));
           const list = res.data?.data || [];
           statusHistory.splice(0, statusHistory.length, ...list);
         } else if (tab === 'changes') {
-          const res = await window.boApi.get(BASE('changes'), HDR('변경이력조회'));
+          const res = await boApi.get(BASE('changes'), HDR('변경이력조회'));
           const list = res.data?.data || [];
           changeHistory.splice(0, changeHistory.length, ...list);
         }

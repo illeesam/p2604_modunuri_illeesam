@@ -741,7 +741,7 @@
           let roles = window.getBoRoleStore?.()?.svRoles || [];
           if (!roles.length) {
             try {
-              const res = await window.boApi.get('/bo/sy/role/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '역할관리', 'X-Cmd-Nm': '목록조회' } });
+              const res = await boApi.get('/bo/sy/role/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '역할관리', 'X-Cmd-Nm': '목록조회' } });
               roles = res.data?.data?.list || [];
             } catch (_) {}
           }
@@ -749,7 +749,7 @@
           let userRoles = [];
           if (user.userId) {
             try {
-              const res = await window.boApi.get(`/bo/sy/user/${user.userId}/roles`, { headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '권한조회', 'X-Skip-Error-Toast': 'true' } });
+              const res = await boApi.get(`/bo/sy/user/${user.userId}/roles`, { headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '권한조회', 'X-Skip-Error-Toast': 'true' } });
               userRoles = res.data?.data || [];
             } catch (_) {}
           }
@@ -797,7 +797,7 @@
       const testAccounts = ref([]);
       const handleFetchTestAccounts = async () => {
         try {
-          const res = await window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 }, headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '목록조회' } });
+          const res = await boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 }, headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '목록조회' } });
           testAccounts.value = res.data?.data?.list || [];
         } catch (_) {}
       };
@@ -805,8 +805,8 @@
         setTimeout(() => { window.useBoAppInitStore?.()?.sfRestoreFromStorage?.(); }, 0);
         _loadApiLogsFromStorage();
         setTimeout(() => {
-          if (window.boApi && window.boApi.raw) {
-            const inst = window.boApi.raw;
+          if (typeof boApi !== 'undefined' && boApi.raw) {
+            const inst = boApi.raw;
             const startTime = {};
             const reqData = {};
             const reqHeaders = {};
@@ -975,7 +975,7 @@
         if (!regForm.name || !regForm.email || !regForm.password) { loginError.value = '필수 항목을 입력하세요.'; return; }
         if (regForm.password !== regForm.confirmPw) { loginError.value = '비밀번호가 일치하지 않습니다.'; return; }
         try {
-          await window.boApi.post('/bo/sy/user', {
+          await boApi.post('/bo/sy/user', {
             name: regForm.name,
             email: regForm.email,
             password: regForm.password,

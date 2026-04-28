@@ -13,7 +13,7 @@ window.SyMenuMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/sy/menu/page', {
+        const res = await boApi.get('/bo/sy/menu/page', {
           params: { pageNo: 1, pageSize: 10000 },
           ...coUtil.apiHdr('메뉴관리', '목록조회')
         });

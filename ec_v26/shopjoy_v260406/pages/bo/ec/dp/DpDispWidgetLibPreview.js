@@ -160,7 +160,7 @@ window.DpDispWidgetLibPreview = {
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시위젯라이브러리', '조회') });
+        const res = await boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시위젯라이브러리', '조회') });
         widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
       } catch (_) {}
     };

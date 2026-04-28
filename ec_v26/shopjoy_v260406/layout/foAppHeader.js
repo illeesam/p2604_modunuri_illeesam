@@ -63,9 +63,9 @@ window.foAppHeader = {
       if (pw.next.length < 6) { pw.err = '새 비밀번호는 6자 이상이어야 합니다.'; return; }
       if (pw.next !== pw.next2) { pw.err = '새 비밀번호가 일치하지 않습니다.'; return; }
       /* TODO: API 호출로 비밀번호 변경 */
-      if (window.foApi) {
+      if (typeof foApi !== 'undefined') {
         try {
-          await window.foApi.post('/auth/fo/change-password', {
+          await foApi.post('/auth/fo/change-password', {
             email: props.auth.user?.email,
             currentPassword: pw.current,
             newPassword: pw.next,
