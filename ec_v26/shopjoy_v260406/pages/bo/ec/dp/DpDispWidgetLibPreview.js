@@ -156,7 +156,7 @@ window.DpDispWidgetLibPreview = {
       return codeStore?.snGetGrpCodes?.('DISP_WIDGET_TYPE') || [];
     });
     const widgetLibs = reactive([]);
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {

@@ -30,7 +30,7 @@ window.SyDashboardMng = {
       if (isAppReady.value) fnLoadCodes();
     });
 
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     const cfStats = computed(() => [
       { label: '전체 회원',   value: members.value?.length || 0,

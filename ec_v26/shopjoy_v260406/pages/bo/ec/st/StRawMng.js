@@ -31,12 +31,12 @@ window.StRawMng = {
       }
     });
 
-    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
             const dateEnd   = ref('');
     const handleDateRangeChange = () => {
-      if (uiState.dateRange) { const r = window.boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
+      if (uiState.dateRange) { const r = boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
-    (() => { const r = window.boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
+    (() => { const r = boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     // 검색 필드
   const searchParam = reactive({

@@ -44,7 +44,7 @@ window.SyBatchDtl = {
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
     const form = reactive({
       batchId: null, batchNm: '', batchCode: '', description: '', cron: '0 0 * * *', statusCd: '활성',
     });

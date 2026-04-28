@@ -46,7 +46,7 @@ window.SyMenuMng = {
         const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { uiState.selectedTreeId = id; };
-    const cfTree = computed(() => window.boUtil.buildMenuTree());
+    const cfTree = computed(() => boUtil.buildMenuTree());
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
 
@@ -54,7 +54,7 @@ window.SyMenuMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      const initSet = window.boUtil.collectExpandedToDepth(cfTree.value, 2);
+      const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
     });
@@ -87,7 +87,7 @@ window.SyMenuMng = {
 
     const cfAllowedTreeIds = computed(() => {
       if (uiState.selectedTreeId == null) return null;
-      return window.boUtil.collectDescendantIds(menus, 'menuId', 'parentId', uiState.selectedTreeId);
+      return boUtil.collectDescendantIds(menus, 'menuId', 'parentId', uiState.selectedTreeId);
     });
 
     watch(() => uiState.selectedTreeId, () => { handleSearchList(); });
@@ -252,7 +252,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
       menuTreeModal.show = false;
     };
 
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
     const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
@@ -260,7 +260,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
     const fnTypeClass   = t => ({ '페이지': 'badge-blue', '폴더': 'badge-gray', '외부링크': 'badge-green', '구분선': 'badge-orange' }[t] || 'badge-gray');
 
-    const exportExcel = () => window.boUtil.exportCsv(
+    const exportExcel = () => boUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'menuId'},{label:'메뉴코드',key:'menuCode'},{label:'메뉴명',key:'menuNm'},{label:'상위ID',key:'parentId'},{label:'URL',key:'menuUrl'},{label:'유형',key:'menuType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'remark'}],
       '메뉴목록.csv'

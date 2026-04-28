@@ -58,12 +58,12 @@ window.PmSaveMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
-    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.boUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      if (searchDateRange.value) { const r = boUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
      // 'list' | 'card'
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
@@ -136,7 +136,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
       }
     };
 
-    const exportExcel = () => window.boUtil.exportCsv(saves,
+    const exportExcel = () => boUtil.exportCsv(saves,
       [{label:'ID',key:'saveId'},{label:'마일리지명',key:'saveNm'},{label:'유형',key:'saveType'},{label:'적립값',key:'saveVal'},{label:'단위',key:'saveUnit'},{label:'상태',key:'saveStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '마일리지목록.csv');
 

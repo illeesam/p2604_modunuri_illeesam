@@ -8,12 +8,12 @@ window.CmChattMng = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ chatt_message_types: [] });
 
-    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = window.boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -117,7 +117,7 @@ const isAppReady = computed(() => {
       }
     };
 
-    const exportExcel = () => window.boUtil.exportCsv(chatts, [{label:'채팅ID',key:'chattId'},{label:'회원명',key:'userNm'},{label:'상태',key:'status'},{label:'마지막메시지',key:'lastMessage'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
+    const exportExcel = () => boUtil.exportCsv(chatts, [{label:'채팅ID',key:'chattId'},{label:'회원명',key:'userNm'},{label:'상태',key:'status'},{label:'마지막메시지',key:'lastMessage'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
 
     // ── return ───────────────────────────────────────────────────────────────
 

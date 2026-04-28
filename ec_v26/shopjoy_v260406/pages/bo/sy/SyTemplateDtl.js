@@ -27,7 +27,7 @@ window.SyTemplateDtl = {
       }
     };
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
     const TEMPLATE_TYPES = ['메일템플릿', '문자템플릿', 'MMS템플릿', 'kakao톡템플릿', 'kakao알림톡템플릿', '시스템알림', '회원알림'];
     const form = reactive({
       templateId: null, templateTypeCd: '메일템플릿', templateCode: '', templateNm: '', subject: '', content: '', useYn: 'Y', sampleParams: '{}',

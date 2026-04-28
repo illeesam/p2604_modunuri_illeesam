@@ -59,16 +59,16 @@ window.OdOrderMng = {
       Object.assign(searchParamOrg, searchParam);
     });
 
-    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
-        const r = window.boUtil.getDateRange(searchParam.dateRange);
+        const r = boUtil.getDateRange(searchParam.dateRange);
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd = r ? r.to : '';
       }
       pager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -159,7 +159,7 @@ const isAppReady = computed(() => {
       }
     };
 
-    const exportExcel = () => window.boUtil.exportCsv(orders, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userNm'},{label:'상태',key:'statusCd'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethodCd'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
+    const exportExcel = () => boUtil.exportCsv(orders, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userNm'},{label:'상태',key:'statusCd'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethodCd'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
 
     /* 클레임 조회 */
     const claimByOrder = (orderId) =>

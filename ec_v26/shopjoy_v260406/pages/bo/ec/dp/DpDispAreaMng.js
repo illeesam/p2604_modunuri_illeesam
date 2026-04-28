@@ -58,10 +58,10 @@ window.DpDispAreaMng = {
       if (isAppReady.value) fnLoadCodes();
       handleSearchData('DEFAULT');
     });
-    const fnPathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const fnPathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* ── 검색 ── */
-    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const searchParam = reactive({
     kw: '',
@@ -82,12 +82,12 @@ const searchParam = reactive({
 
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
-        const r = window.boUtil.getDateRange(searchParam.dateRange);
+        const r = boUtil.getDateRange(searchParam.dateRange);
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd   = r ? r.to   : '';
       }
     };
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
     const onSearch = async () => {
     try {
       const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };

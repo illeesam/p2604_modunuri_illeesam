@@ -30,7 +30,7 @@ window.SyPropMng = {
       }
     });
 
-    const cfSiteId = computed(() => window.boCommonFilter?.siteId || null);
+    const cfSiteId = computed(() => boCommonFilter?.siteId || null);
 
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, row: null });
@@ -43,7 +43,7 @@ window.SyPropMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
-    const pathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* ── 검색 ── */
     const searchParam = reactive({ kw: '', useFlt: '', typeFlt: '' });
@@ -80,7 +80,7 @@ window.SyPropMng = {
     });
 
     /* ── 트리 구성 (disp_path 점 분리) ── */
-    const cfTree = computed(() => window.boUtil.buildPathTree('sy_prop'));
+    const cfTree = computed(() => boUtil.buildPathTree('sy_prop'));
 
     /* ── 트리 펼침 상태 ── */
     const expanded = reactive(new Set(['']));
@@ -98,7 +98,7 @@ window.SyPropMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       fetchData('DEFAULT');
-      const initSet = window.boUtil.collectExpandedToDepth(cfTree.value, 2);
+      const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 

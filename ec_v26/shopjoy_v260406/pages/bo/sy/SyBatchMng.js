@@ -41,14 +41,14 @@ window.SyBatchMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
-    const pathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     /* ── 좌측 표시경로 트리 ── */
         const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { uiState.selectedPath = path; };
-    const cfTree = computed(() => window.boUtil.buildPathTree('sy_batch'));
+    const cfTree = computed(() => boUtil.buildPathTree('sy_batch'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
@@ -57,7 +57,7 @@ window.SyBatchMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      const initSet = window.boUtil.collectExpandedToDepth(cfTree.value, 2);
+      const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
     });
@@ -95,10 +95,10 @@ window.SyBatchMng = {
     const searchParamOrg = reactive({
       kw: '', status: '', runStatus: '', dateRange: '', dateStart: '', dateEnd: ''
     });
-    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
-        const r = window.boUtil.getDateRange(searchParam.dateRange);
+        const r = boUtil.getDateRange(searchParam.dateRange);
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd = r ? r.to : '';
       }
@@ -365,7 +365,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const fnStatusBadge  = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
     const fnRunBadge     = s => ({ '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' }[s] || 'badge-gray');
     const fnStatusClass  = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
-    const cfSiteNm     = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm     = computed(() => boUtil.getSiteNm());
 
     const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageSize; return gridRows.slice(s, s + pager.pageSize); });
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.pageSize)));
@@ -373,7 +373,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const setPage    = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
 
-    const exportExcel = () => window.boUtil.exportCsv(
+    const exportExcel = () => boUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'batchId'},{label:'배치명',key:'batchNm'},{label:'배치코드',key:'batchCode'},{label:'Cron',key:'cron'},{label:'최근실행',key:'lastRun'},{label:'실행횟수',key:'runCount'},{label:'활성',key:'statusCd'},{label:'실행상태',key:'runStatus'},{label:'설명',key:'description'}],
       '배치목록.csv'

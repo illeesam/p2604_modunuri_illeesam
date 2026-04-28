@@ -56,16 +56,16 @@ window.PdProdMng = {
       status: ''
     });
 
-    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
-        const r = window.boUtil.getDateRange(searchParam.dateRange);
+        const r = boUtil.getDateRange(searchParam.dateRange);
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd = r ? r.to : '';
       }
       pager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -162,7 +162,7 @@ const isAppReady = computed(() => {
       window.open(`${window.pageUrl('index.html')}#page=prodView&pid=${pid}`, '_blank', 'width=1200,height=800,scrollbars=yes');
     };
 
-    const exportExcel = () => window.boUtil.exportCsv(products, [{label:'ID',key:'prodId'},{label:'상품명',key:'prodNm'},{label:'카테고리',key:'cateNm'},{label:'가격',key:'listPrice'},{label:'재고',key:'prodStock'},{label:'브랜드',key:'brandNm'},{label:'상태',key:'prodStatusCdNm'},{label:'등록일',key:'regDate'}], '상품목록.csv');
+    const exportExcel = () => boUtil.exportCsv(products, [{label:'ID',key:'prodId'},{label:'상품명',key:'prodNm'},{label:'카테고리',key:'cateNm'},{label:'가격',key:'listPrice'},{label:'재고',key:'prodStock'},{label:'브랜드',key:'brandNm'},{label:'상태',key:'prodStatusCdNm'},{label:'등록일',key:'regDate'}], '상품목록.csv');
 
 
     const selectedId = computed(() => uiStateDetail.selectedId);

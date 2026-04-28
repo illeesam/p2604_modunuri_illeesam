@@ -57,7 +57,7 @@ window.DpDispRelationMng = {
     dateStart: '',
     dateEnd: ''
   });
-    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const onSearch = async () => {
     try {
       const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };

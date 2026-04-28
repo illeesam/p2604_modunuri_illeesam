@@ -61,9 +61,9 @@ window.DpDispWidgetMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
-    const pathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     const WIDGET_ICONS = {
       'image_banner':'🖼', 'product_slider':'🛒', 'product':'📦',

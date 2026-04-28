@@ -1,6 +1,6 @@
 /**
  * 공통 유틸 — 각 ec_v26 앱에서 동일 API로 사용합니다.
- * @see window.foUtil
+ * @see foUtil
  */
 (function (global) {
   'use strict';

@@ -213,7 +213,7 @@ window.DpDispWidgetPreview = {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
     });
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     const today   = new Date().toISOString().slice(0, 10);
     const nowTime = new Date().toTimeString().slice(0, 5);

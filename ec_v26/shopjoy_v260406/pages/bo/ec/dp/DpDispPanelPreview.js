@@ -150,7 +150,7 @@ window.DpDispPanelPreview = {
     const displays = reactive([]);
     const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null});
     const tab = Vue.toRef(uiState, 'tab');
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     // App 초기화 준비 상태
     const isAppReady = computed(() => {

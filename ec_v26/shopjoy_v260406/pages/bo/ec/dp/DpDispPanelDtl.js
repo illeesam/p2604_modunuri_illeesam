@@ -66,7 +66,7 @@ window.DpDispPanelDtl = {
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
-    const fnPathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const fnPathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfIsNew = computed(() => !props.editId);
             const PREVIEW_MODES = [

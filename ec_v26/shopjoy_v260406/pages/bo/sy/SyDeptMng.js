@@ -273,14 +273,14 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
       deptTreeModal.show = false;
     };
 
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
     const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
     const depthColor  = (d) => DEPTH_COLORS[d % 5];
     const fnStatusClass = s => ({ null: 'badge-gray', N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
-    const exportExcel = () => window.boUtil.exportCsv(
+    const exportExcel = () => boUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'deptId'},{label:'부서코드',key:'deptCode'},{label:'부서명',key:'deptNm'},{label:'상위ID',key:'parentDeptId'},{label:'유형',key:'deptTypeCd'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'deptRemark'}],
       '부서목록.csv'

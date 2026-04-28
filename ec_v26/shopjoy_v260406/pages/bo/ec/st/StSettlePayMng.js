@@ -58,12 +58,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       Object.assign(searchParamOrg, searchParam);
     });
 
-    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
             const dateEnd   = ref('');
     const handleDateRangeChange = () => {
-      if (uiState.dateRange) { const r = window.boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
+      if (uiState.dateRange) { const r = boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
-    (() => { const r = window.boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
+    (() => { const r = boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     const payList = reactive([
       { payId: 'PAY-2026-009', payDate: '2026-04-10', vendorId: 1, vendorNm: '패션스타일 주식회사', closeMon: '2026-03', settleAmt: 300000, payAmt: 300000, bankNm: '국민은행', bankAccount: '123-45-678901', bankHolder: '패션스타일', payStatus: '지급완료', regUserNm: '이관리자' },

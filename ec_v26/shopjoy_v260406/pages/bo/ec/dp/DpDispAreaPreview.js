@@ -176,7 +176,7 @@ window.DpDispAreaPreview = {
       }
     });
 
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {

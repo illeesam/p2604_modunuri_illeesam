@@ -61,7 +61,7 @@ window.DpDispAreaDtl = {
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
-    const fnPathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const fnPathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfIsNew = computed(() => !props.editId);
 
@@ -263,7 +263,7 @@ window.DpDispAreaDtl = {
       if (!ok) return;
       const codesData = codes;
       if (isNewArea) {
-        const newId = window.boUtil.nextId(codesData, 'codeId');
+        const newId = boUtil.nextId(codesData, 'codeId');
         codesData.push({ ...form, codeId: newId });
       } else {
         const idx = codesData.findIndex(c => c.codeId === form.codeId);

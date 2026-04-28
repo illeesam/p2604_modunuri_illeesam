@@ -32,7 +32,7 @@ window.SyContactDtl = {
       }
     };
     const cfIsNew = computed(() => !props.editId);
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     // ── watch ────────────────────────────────────────────────────────────────
 

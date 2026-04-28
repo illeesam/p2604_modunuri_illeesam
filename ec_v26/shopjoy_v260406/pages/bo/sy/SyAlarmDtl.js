@@ -44,7 +44,7 @@ window.SyAlarmDtl = {
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
     const form = reactive({
       alarmId: null, title: '', alarmTypeCd: '푸시', targetTypeCd: '전체', targetId: '',
       message: '', sendDate: '', statusCd: '임시',

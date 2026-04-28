@@ -90,8 +90,8 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
 
             if (data.sySites) {
               window._boCmSites = data.sySites?.sites || data.sySites || [];
-              if (window._boCmSites.length && window.boCommonFilter) {
-                window.boCommonFilter.siteId = window._boCmSites[0]?.siteId ?? null;
+              if (window._boCmSites.length && boCommonFilter) {
+                boCommonFilter.siteId = window._boCmSites[0]?.siteId ?? null;
               }
             }
 

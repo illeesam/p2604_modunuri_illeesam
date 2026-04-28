@@ -8,7 +8,7 @@ window.DpDispUiSimul = {
     const displays = reactive([]);
     const sites = reactive([]);
     const members = reactive([]);
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
@@ -673,7 +673,7 @@ window.DpDispUiSimul = {
         dispUiForm.time         = searchParam.previewTime;
         dispUiForm.status       = searchParam.status;
         dispUiForm.visibility   = searchParam.visibility;
-        const cf   = window.boCommonFilter || {};
+        const cf   = boCommonFilter || {};
         const site = (Array.isArray(sites) ? sites : []).find(s => s.siteId === cf.siteId);
         dispUiForm.siteId   = cf.siteId ? String(cf.siteId) : '';
         dispUiForm.siteNm   = site?.siteNm || '';

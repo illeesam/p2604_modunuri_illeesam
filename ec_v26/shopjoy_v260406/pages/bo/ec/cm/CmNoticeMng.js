@@ -23,11 +23,11 @@ window.CmNoticeMng = {
       kw: '', type: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
     });                                                                              // 초기화용 검색 조건 스냅샷
 
-    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;                  // 날짜범위 옵션 (오늘·이번주 등)
+    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;                  // 날짜범위 옵션 (오늘·이번주 등)
 
     // ── computed ──────────────────────────────────────────────────────────────
 
-    const cfSiteNm       = computed(() => window.boUtil.getSiteNm());             // 현재 사이트명
+    const cfSiteNm       = computed(() => boUtil.getSiteNm());             // 현재 사이트명
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId); // 신규 시 null, 수정 시 ID
     const cfIsViewMode   = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__'); // 조회 모드 여부
     const cfDetailKey    = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`); // 상세 컴포넌트 강제 재마운트 키
@@ -87,7 +87,7 @@ window.CmNoticeMng = {
     // 날짜범위 옵션 변경 — 선택된 옵션으로 dateStart·dateEnd 자동 세팅
     const onDateRangeChange = () => {
       if (searchParam.dateRange) {
-        const r = window.boUtil.getDateRange(searchParam.dateRange);
+        const r = boUtil.getDateRange(searchParam.dateRange);
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd   = r ? r.to   : '';
       }
@@ -186,7 +186,7 @@ window.CmNoticeMng = {
     const fnTypeBadge   = t => ({ '일반': 'badge-gray', '긴급': 'badge-red', '이벤트': 'badge-blue', '시스템': 'badge-orange' }[t] || 'badge-gray');
 
     // 현재 목록을 CSV로 내보내기
-    const exportExcel = () => window.boUtil.exportCsv(
+    const exportExcel = () => boUtil.exportCsv(
       notices,
       [{ label: 'ID', key: 'noticeId' }, { label: '제목', key: 'noticeTitle' }, { label: '유형', key: 'noticeTypeCd' },
        { label: '상태', key: 'noticeStatusCd' }, { label: '조회수', key: 'viewCount' }, { label: '등록일', key: 'regDate' }],

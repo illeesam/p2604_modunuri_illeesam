@@ -51,7 +51,7 @@ window.SyBrandMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
-    const pathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     /* 트리 선택 path (loadGrid 보다 먼저 선언) */
@@ -62,10 +62,10 @@ window.SyBrandMng = {
     const searchParamOrg = reactive({
       kw: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
     });
-    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
-        const r = window.boUtil.getDateRange(searchParam.dateRange);
+        const r = boUtil.getDateRange(searchParam.dateRange);
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd = r ? r.to : '';
       }
@@ -260,7 +260,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
     const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
 
-    const exportExcel = () => window.boUtil.exportCsv(
+    const exportExcel = () => boUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [
         { label: 'ID',       key: 'brandId' },
@@ -280,7 +280,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
     const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { uiState.selectedPath = path; };
-    const cfTree = computed(() => window.boUtil.buildPathTree('sy_brand'));
+    const cfTree = computed(() => boUtil.buildPathTree('sy_brand'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
@@ -289,7 +289,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      const initSet = window.boUtil.collectExpandedToDepth(cfTree.value, 2);
+      const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
     });

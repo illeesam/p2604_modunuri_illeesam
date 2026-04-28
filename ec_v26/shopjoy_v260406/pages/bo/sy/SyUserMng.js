@@ -110,20 +110,20 @@ window.SyUserMng = {
     /* 선택 부서 + 자손의 dept 이름 Set */
     const cfAllowedDeptNms = computed(() => {
       if (uiState.selectedDeptId == null) return null;
-      const desc = window.boUtil.collectDescendantIds(depts, 'deptId', 'parentDeptId', uiState.selectedDeptId);
+      const desc = boUtil.collectDescendantIds(depts, 'deptId', 'parentDeptId', uiState.selectedDeptId);
       if (!desc) return null;
       return new Set((depts || []).filter(d => desc.has(d.deptId)).map(d => d.deptNm));
     });
-    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
-        const r = window.boUtil.getDateRange(searchParam.dateRange);
+        const r = boUtil.getDateRange(searchParam.dateRange);
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd = r ? r.to : '';
       }
       pager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
 const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
@@ -171,7 +171,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       }
     };
 
-    const exportExcel = () => window.boUtil.exportCsv(users, [{label:'ID',key:'userId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'userNm'},{label:'이메일',key:'userEmail'},{label:'연락처',key:'userPhone'},{label:'권한',key:'roleNm'},{label:'부서',key:'deptNm'},{label:'상태',key:'userStatusCd'},{label:'최종로그인',key:'lastLoginDate'}], '사용자목록.csv');
+    const exportExcel = () => boUtil.exportCsv(users, [{label:'ID',key:'userId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'userNm'},{label:'이메일',key:'userEmail'},{label:'연락처',key:'userPhone'},{label:'권한',key:'roleNm'},{label:'부서',key:'deptNm'},{label:'상태',key:'userStatusCd'},{label:'최종로그인',key:'lastLoginDate'}], '사용자목록.csv');
 
     // ── return ───────────────────────────────────────────────────────────────
 

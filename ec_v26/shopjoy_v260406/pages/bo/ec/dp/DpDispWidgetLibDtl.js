@@ -40,7 +40,7 @@ window.DpDispWidgetLibDtl = {
     const openPathPick = () => { pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; };
     const onPathPicked = (pathId) => { form.pathId = pathId; };
-    const pathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
     const widgetLibs = reactive([]);
     const cfIsNew = computed(() => !props.editId);
 

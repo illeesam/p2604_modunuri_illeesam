@@ -118,8 +118,8 @@ window.XsSample04 = {
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     /* ── boUtil mock (index.html 미포함 → 가드) ── */
-    if (!window.boUtil) {
-      window.boUtil = {
+    if (!globalThis.boUtil) {
+      globalThis.boUtil = {
         getSiteNm: () => 'ShopJoy', DATE_RANGE_OPTIONS: [],
         getDateRange: () => ({ from: '', to: '' }),
         isInRange: () => true, exportCsv: () => {},

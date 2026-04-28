@@ -71,12 +71,12 @@ window.SyContactMng = {
     const searchParamOrg = reactive({
       kw: '', category: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
     });
-    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = window.boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
 const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* 하단 상세 */
@@ -128,7 +128,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
       }
     };
 
-    const exportExcel = () => window.boUtil.exportCsv(contacts, [{label:'ID',key:'inquiryId'},{label:'회원명',key:'userNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'title'},{label:'상태',key:'statusCd'},{label:'등록일',key:'date'}], '문의목록.csv');
+    const exportExcel = () => boUtil.exportCsv(contacts, [{label:'ID',key:'inquiryId'},{label:'회원명',key:'userNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'title'},{label:'상태',key:'statusCd'},{label:'등록일',key:'date'}], '문의목록.csv');
 
     // ── return ───────────────────────────────────────────────────────────────
 

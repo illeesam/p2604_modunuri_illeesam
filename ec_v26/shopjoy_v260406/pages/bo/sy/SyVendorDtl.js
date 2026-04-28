@@ -44,7 +44,7 @@ window.SyVendorDtl = {
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
-    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     const form = reactive({
       vendorId: null, vendorType: '판매업체', vendorNm: '', ceo: '', bizNo: '', phone: '', email: '',

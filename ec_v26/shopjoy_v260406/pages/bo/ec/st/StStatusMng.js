@@ -41,17 +41,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     ];
 
     /* ── 공통 날짜 필터 ── */
-    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
             const dateEnd   = ref('');
     const onDateRangeChange = () => {
       if (uiState.dateRange) {
-        const r = window.boUtil.getDateRange(uiState.dateRange);
+        const r = boUtil.getDateRange(uiState.dateRange);
         uiState.dateStart = r ? r.from : '';
         uiState.dateEnd   = r ? r.to   : '';
       }
     };
     /* 초기 날짜 설정 */
-    (() => { const r = window.boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
+    (() => { const r = boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     /* ── 원본 데이터 ── */
     const orderList = reactive([]);

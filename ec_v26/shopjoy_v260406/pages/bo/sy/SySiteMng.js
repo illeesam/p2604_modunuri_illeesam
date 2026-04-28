@@ -44,14 +44,14 @@ window.SySiteMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
-    const pathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     /* ── 좌측 표시경로 트리 ── */
         const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { uiState.selectedPath = path; };
-    const cfTree = computed(() => window.boUtil.buildPathTree('sy_site'));
+    const cfTree = computed(() => boUtil.buildPathTree('sy_site'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
@@ -60,7 +60,7 @@ window.SySiteMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      const initSet = window.boUtil.collectExpandedToDepth(cfTree.value, 2);
+      const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
     });
@@ -86,7 +86,7 @@ window.SySiteMng = {
         fnLoadCodes();
       }
     });
-    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
   const searchParam = reactive({
     kw: '',
     type: '',
@@ -105,7 +105,7 @@ window.SySiteMng = {
   });
 
     const onDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = window.boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
     };
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -166,7 +166,7 @@ const detailModal = reactive({
       }
     };
 
-    const exportExcel = () => window.boUtil.exportCsv(sites, [{label:'ID',key:'siteId'},{label:'사이트코드',key:'siteCode'},{label:'사이트명',key:'siteNm'},{label:'도메인',key:'domain'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '사이트목록.csv');
+    const exportExcel = () => boUtil.exportCsv(sites, [{label:'ID',key:'siteId'},{label:'사이트코드',key:'siteCode'},{label:'사이트명',key:'siteNm'},{label:'도메인',key:'domain'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '사이트목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
     watch(() => uiState.selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });

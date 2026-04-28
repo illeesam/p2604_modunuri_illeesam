@@ -514,7 +514,7 @@
 
       /* ── 공통 필터 & 선택 모달 ── */
       const rightPanelOpen = ref(true);
-      const commonFilter   = window.boCommonFilter;
+      const commonFilter   = boCommonFilter;
       const selectModal    = reactive({ type: '', show: false });
       const openSelectModal  = (type) => { selectModal.type = type; selectModal.show = true; };
       const closeSelectModal = () => { selectModal.show = false; selectModal.type = ''; };
