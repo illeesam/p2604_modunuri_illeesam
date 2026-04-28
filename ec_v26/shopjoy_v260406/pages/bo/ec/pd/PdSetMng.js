@@ -43,9 +43,9 @@ window.PdSetMng = {
       uiState.loading = true;
       try {
         const [setsRes, prodsRes, catsRes] = await Promise.all([
-          window.boApi.get('/bo/ec/pd/set/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('상품세트관리', '목록조회') }),
-          window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('상품세트관리', '목록조회') }),
-          window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('상품세트관리', '목록조회') }),
+          window.boApi.get('/bo/ec/pd/set/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('상품세트관리', '목록조회') }),
+          window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('상품세트관리', '목록조회') }),
+          window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('상품세트관리', '목록조회') }),
         ]);
         sets.splice(0, sets.length, ...(setsRes.data?.data?.pageList || setsRes.data?.data?.list || []));
         products.splice(0, products.length, ...(prodsRes.data?.data?.pageList || prodsRes.data?.data?.list || []));

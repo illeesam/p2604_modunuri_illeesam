@@ -32,12 +32,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         fnLoadCodes();
       }
     });
-    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
             const dateEnd   = ref('');
     const handleDateRangeChange = () => {
-      if (uiState.dateRange) { const r = window.boCmUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
+      if (uiState.dateRange) { const r = window.boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
-    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
+    (() => { const r = window.boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     const slips = reactive([]);
     const searchParam = reactive({ kw: '', type: '', status: '', dateEnd: '' });
@@ -52,7 +52,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           },
-          ...apiHdr('정산ERP조회관리', '목록조회')
+          ...coUtil.apiHdr('정산ERP조회관리', '목록조회')
         });
         const data = res.data?.data;
         slips.splice(0, slips.length, ...(data?.list || slips));

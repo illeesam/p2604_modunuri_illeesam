@@ -17,7 +17,7 @@ window.SyContactMng = {
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           },
-          ...apiHdr('문의관리', '목록조회')
+          ...coUtil.apiHdr('문의관리', '목록조회')
         });
         const data = res.data?.data;
         contacts.splice(0, contacts.length, ...(data?.pageList || []));
@@ -71,12 +71,12 @@ window.SyContactMng = {
     const searchParamOrg = reactive({
       kw: '', category: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
     });
-    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      if (searchParam.dateRange) { const r = window.boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
 const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* 하단 상세 */
@@ -117,7 +117,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
       if (idx !== -1) contacts.splice(idx, 1);
       if (detailModal.editId === c.inquiryId) { detailModal.show = false; detailModal.editId = null; }
       try {
-        const res = await window.boApi.delete(`/bo/sy/contact/${c.inquiryId}`, apiHdr('문의관리', '삭제'));
+        const res = await window.boApi.delete(`/bo/sy/contact/${c.inquiryId}`, coUtil.apiHdr('문의관리', '삭제'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -128,7 +128,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(contacts, [{label:'ID',key:'inquiryId'},{label:'회원명',key:'userNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'title'},{label:'상태',key:'statusCd'},{label:'등록일',key:'date'}], '문의목록.csv');
+    const exportExcel = () => window.boUtil.exportCsv(contacts, [{label:'ID',key:'inquiryId'},{label:'회원명',key:'userNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'title'},{label:'상태',key:'statusCd'},{label:'등록일',key:'date'}], '문의목록.csv');
 
     // ── return ───────────────────────────────────────────────────────────────
 

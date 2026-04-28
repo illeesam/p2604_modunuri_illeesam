@@ -40,7 +40,7 @@ window.MbMemberDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get(`/bo/ec/mb/member/${props.editId}`, { ...apiHdr('회원관리', '상세조회') });
+        const res = await window.boApi.get(`/bo/ec/mb/member/${props.editId}`, { ...coUtil.apiHdr('회원관리', '상세조회') });
         const m = res.data?.data || res.data || {};
         Object.assign(form, { ...m });
         uiState.error = null;
@@ -102,7 +102,7 @@ window.MbMemberDtl = {
       const ok = await props.showConfirm(isNewMember ? '등록' : '저장', isNewMember ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (isNewMember ? window.boApi.post(`/bo/ec/mb/member`, { ...form }, { ...apiHdr('회원관리', '등록') }) : window.boApi.put(`/bo/ec/mb/member/${form.userId}`, { ...form }, { ...apiHdr('회원관리', '저장') }));
+        const res = await (isNewMember ? window.boApi.post(`/bo/ec/mb/member`, { ...form }, { ...coUtil.apiHdr('회원관리', '등록') }) : window.boApi.put(`/bo/ec/mb/member/${form.userId}`, { ...form }, { ...coUtil.apiHdr('회원관리', '저장') }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewMember ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('mbMemberMng');
@@ -120,7 +120,7 @@ window.MbMemberDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { cfIsNew, form, errors, handleSave, memoEl, codes, uiState };
+    return { cfIsNew, form, errors, handleSave, memoEl, codes, uiState, navigate: props.navigate, showRefModal: props.showRefModal, showToast: props.showToast, showConfirm: props.showConfirm, viewMode: props.viewMode, editId: props.editId };
   },
   template: /* html */`
 <div>

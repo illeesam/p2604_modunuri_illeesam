@@ -1,9 +1,9 @@
 /* ShopJoy BO - 공통 유틸리티 + 공통 필터 전역 상태 */
-(function () {
+(function (global) {
   const { reactive } = Vue;
 
-  /* ── 공통 필터 전역 상태 (window.boCommonFilter) ── */
-  window.boCommonFilter = reactive({
+  /* ── 공통 필터 전역 상태 (boCommonFilter) ── */
+  const boCommonFilter = reactive({
     siteId:   null,   // sy_site.siteId
     vendorId: null,   // sy_vendor.vendorId (판매업체)
     dlivVendorId: null, // sy_vendor.vendorId (배송업체)
@@ -66,7 +66,7 @@
     return d >= r.from && d <= r.to;
   }
 
-  window.boCmUtil = { DATE_RANGE_OPTIONS, getDateRange, isInRange };
+  window.boUtil = { DATE_RANGE_OPTIONS, getDateRange, isInRange };
 
   /* nextId(arr, key): 배열에서 key 컬럼의 최대 숫자 +1 반환 (신규 ID 채번용 임시 헬퍼) */
   function nextIdFn(arr, key) {
@@ -130,7 +130,7 @@
     },
   };
 
-  window.boCmUtil.getSiteNm = function() {
+  window.boUtil.getSiteNm = function() {
     if (!window.boCommonFilter.siteId) return 'ShopJoy';
     const sites = window._boCmSites || [];
     const site = sites.find(s => s.siteId === window.boCommonFilter.siteId);
@@ -140,7 +140,7 @@
   /* ── CSV/엑셀 다운로드 ──
      columns: [{ label:'표시명', key:'필드명' } | { label:'표시명', value: row => ... }]
   ── */
-  window.boCmUtil.exportCsv = function(rows, columns, filename) {
+  window.boUtil.exportCsv = function(rows, columns, filename) {
     const header = columns.map(c => `"${c.label}"`).join(',');
     const body = rows.map(row =>
       columns.map(c => {
@@ -159,7 +159,7 @@
   /* ──────────────────────────────────────────────
      sy_path 기반 트리 헬퍼 (공통)
   ────────────────────────────────────────────── */
-  window.boCmUtil.buildPathTree = function (bizCd) {
+  window.boUtil.buildPathTree = function (bizCd) {
     const list = (window._boCmPaths || [])
       .filter(p => p.bizCd === bizCd && p.useYn !== 'N');
     const byParent = {};
@@ -184,7 +184,7 @@
     return root;
   };
 
-  window.boCmUtil.getPathDescendants = function (bizCd, pathId) {
+  window.boUtil.getPathDescendants = function (bizCd, pathId) {
     if (pathId == null) return null;
     const set = new Set([pathId]);
     const list = (window._boCmPaths || []).filter(p => p.bizCd === bizCd);
@@ -201,7 +201,7 @@
   /* 일반 부모-자식 트리 빌더
    * items: 배열, idKey: PK, parentKey: 부모 FK, labelKey: 표시명, sortKey: 정렬 (선택)
    */
-  window.boCmUtil.buildGenericTree = function (items, idKey, parentKey, labelKey, sortKey) {
+  window.boUtil.buildGenericTree = function (items, idKey, parentKey, labelKey, sortKey) {
     const list = (items || []).filter(x => x.useYn !== 'N');
     const byParent = {};
     list.forEach(x => {
@@ -222,20 +222,20 @@
     recur(root);
     return root;
   };
-  window.boCmUtil.buildDeptTree = function () {
+  window.boUtil.buildDeptTree = function () {
     const depts = window.useBoDeptStore?.()?.depts || window._boCmDepts || [];
-    return window.boCmUtil.buildGenericTree(depts, 'deptId', 'parentId', 'deptNm', 'sortOrd');
+    return window.boUtil.buildGenericTree(depts, 'deptId', 'parentId', 'deptNm', 'sortOrd');
   };
-  window.boCmUtil.buildMenuTree = function () {
+  window.boUtil.buildMenuTree = function () {
     const menus = window.useBoMenuStore?.()?.svMenus || window._boCmMenus || [];
-    return window.boCmUtil.buildGenericTree(menus, 'menuId', 'parentId', 'menuNm', 'sortOrd');
+    return window.boUtil.buildGenericTree(menus, 'menuId', 'parentId', 'menuNm', 'sortOrd');
   };
-  window.boCmUtil.buildRoleTree = function () {
+  window.boUtil.buildRoleTree = function () {
     const roles = window.getBoRoleStore?.()?.svRoles || [];
-    return window.boCmUtil.buildGenericTree(roles, 'roleId', 'parentId', 'roleNm', 'sortOrd');
+    return window.boUtil.buildGenericTree(roles, 'roleId', 'parentId', 'roleNm', 'sortOrd');
   };
   /* 일반 트리 후손 ID Set */
-  window.boCmUtil.collectDescendantIds = function (items, idKey, parentKey, rootId) {
+  window.boUtil.collectDescendantIds = function (items, idKey, parentKey, rootId) {
     if (rootId == null) return null;
     const set = new Set([rootId]);
     let added = true;
@@ -249,7 +249,7 @@
   };
 
   /* 트리에서 N레벨까지 펼친 pathId Set 반환 (root=null 포함) */
-  window.boCmUtil.collectExpandedToDepth = function (tree, maxDepth) {
+  window.boUtil.collectExpandedToDepth = function (tree, maxDepth) {
     const set = new Set([null]);
     const walk = (n, d) => {
       if (d >= maxDepth) return;
@@ -259,7 +259,7 @@
     return set;
   };
 
-  window.boCmUtil.getPathLabel = function (pathId) {
+  window.boUtil.getPathLabel = function (pathId) {
     if (pathId == null) return '';
     const list = window._boCmPaths || [];
     const byId = Object.fromEntries(list.map(p => [p.pathId, p]));

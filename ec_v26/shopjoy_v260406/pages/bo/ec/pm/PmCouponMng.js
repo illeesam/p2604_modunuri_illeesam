@@ -36,8 +36,8 @@ window.PmCouponMng = {
       }
     });
 
-    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
-    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
+    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 /* 하단 상세 */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
@@ -57,7 +57,7 @@ window.PmCouponMng = {
     }); // 'view' | 'edit'
 
     const handleDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      if (searchParam.dateRange) { const r = window.boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
     };
 
@@ -67,7 +67,7 @@ window.PmCouponMng = {
       try {
         const res = await window.boApi.get('/bo/ec/pm/coupon/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) },
-          ...apiHdr('쿠폰관리', '목록조회')
+          ...coUtil.apiHdr('쿠폰관리', '목록조회')
         });
         const data = res.data?.data;
         coupons.splice(0, coupons.length, ...(data?.pageList || []));
@@ -141,7 +141,7 @@ window.PmCouponMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(coupons, [{label:'ID',key:'couponId'},{label:'쿠폰명',key:'couponNm'},{label:'유형',key:'discountTypeCd'},{label:'할인값',key:'discountValue'},{label:'최소금액',key:'minOrderAmount'},{label:'상태',key:'statusCd'},{label:'유효기간(시작)',key:'validFrom'},{label:'유효기간(종료)',key:'validTo'}], '쿠폰목록.csv');
+    const exportExcel = () => window.boUtil.exportCsv(coupons, [{label:'ID',key:'couponId'},{label:'쿠폰명',key:'couponNm'},{label:'유형',key:'discountTypeCd'},{label:'할인값',key:'discountValue'},{label:'최소금액',key:'minOrderAmount'},{label:'상태',key:'statusCd'},{label:'유효기간(시작)',key:'validFrom'},{label:'유효기간(종료)',key:'validTo'}], '쿠폰목록.csv');
 
     const viewMode = Vue.toRef(uiState, 'viewMode');
 

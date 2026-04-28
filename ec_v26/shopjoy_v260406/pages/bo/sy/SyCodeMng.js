@@ -22,7 +22,7 @@ window.SyCodeMng = {
     const searchParamOrg = reactive({                       // 검색 초기값 (리셋용)
       kw: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: '',
     });
-    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
 
     const gridRows  = reactive([]);                         // 코드 CRUD 그리드 행
     const grpRows   = reactive([]);                         // 코드그룹 CRUD 그리드 행
@@ -61,10 +61,10 @@ window.SyCodeMng = {
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
-    const cfSiteNm         = computed(() => window.boCmUtil.getSiteNm()); // 현재 사이트명
+    const cfSiteNm         = computed(() => window.boUtil.getSiteNm()); // 현재 사이트명
     const cfGrpOptions     = computed(() => [...new Set(codes.map(c => c.codeGrp))].sort()); // 그룹 선택 옵션
 
-    const cfGrpTree        = computed(() => window.boCmUtil.buildPathTree('sy_code_grp')); // 표시경로 트리
+    const cfGrpTree        = computed(() => window.boUtil.buildPathTree('sy_code_grp')); // 표시경로 트리
     const cfFilteredGrpRows = computed(() => {              // 트리 선택 경로로 필터된 그룹 행
       const sp = uiState.grpSelectedPath;
       if (!sp) return grpRows;
@@ -224,7 +224,7 @@ window.SyCodeMng = {
       loadGrp();
       handleSearchList('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
-      const initSet = window.boCmUtil.collectExpandedToDepth(cfGrpTree.value, 2);
+      const initSet = window.boUtil.collectExpandedToDepth(cfGrpTree.value, 2);
       grpExpanded.clear(); initSet.forEach(v => grpExpanded.add(v));
     });
 
@@ -239,7 +239,7 @@ window.SyCodeMng = {
     // 날짜 범위 옵션 변경
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
-        const r = window.boCmUtil.getDateRange(searchParam.dateRange);
+        const r = window.boUtil.getDateRange(searchParam.dateRange);
         searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : '';
       }
     };
@@ -304,7 +304,7 @@ window.SyCodeMng = {
         uiState.loading = true;
         const res = await window.boApi.get('/bo/sy/code/page', {
           params: { pageNo: 1, pageSize: 100000 },
-          ...apiHdr('코드관리', '목록조회'),
+          ...coUtil.apiHdr('코드관리', '목록조회'),
         });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         codes.splice(0, codes.length, ...list);
@@ -485,7 +485,7 @@ window.SyCodeMng = {
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
     // 엑셀 내보내기
-    const exportExcel = () => window.boCmUtil.exportCsv(
+    const exportExcel = () => window.boUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{ label: 'ID', key: 'codeId' }, { label: '코드그룹', key: 'codeGrp' }, { label: '코드라벨', key: 'codeLabel' },
        { label: '코드값', key: 'codeValue' }, { label: '순서', key: 'sortOrd' }, { label: '사용여부', key: 'useYn' }, { label: '비고', key: 'remark' }],
@@ -493,7 +493,7 @@ window.SyCodeMng = {
     );
 
     // 표시경로 라벨 반환
-    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     // ── return ────────────────────────────────────────────────────────────────
 

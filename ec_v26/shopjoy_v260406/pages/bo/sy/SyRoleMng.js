@@ -25,7 +25,7 @@ window.SyRoleMng = {
       try {
         const res = await window.boApi.get('/bo/sy/role/page', {
           params: { pageNo: 1, pageSize: 10000 },
-          ...apiHdr('역할관리', '목록조회')
+          ...coUtil.apiHdr('역할관리', '목록조회')
         });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         roles.splice(0, roles.length, ...list);
@@ -51,7 +51,7 @@ window.SyRoleMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
-    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     /* ── 좌측 표시경로 트리 ── */
@@ -59,7 +59,7 @@ window.SyRoleMng = {
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { uiState.selectedPath = path; };
     const cfTree = computed(() => {
-      const t = window.boCmUtil.buildRoleTree();
+      const t = window.boUtil.buildRoleTree();
       const rolesById = Object.fromEntries((roles || []).map(r => [r.roleId, r]));
       const ROOT_MAP = { SUPER_ADMIN:['관리자','#7c3aed'], SITE_GROUP:['사이트','#2563eb'],
                           SITE_MGR_ROOT:['판매업체','#16a34a'], DLIV_ROOT:['배송업체','#f59e0b'] };
@@ -84,7 +84,7 @@ window.SyRoleMng = {
     /* 선택 권한 + 자손 roleId Set */
     const cfAllowedRoleIds = computed(() => {
       if (uiState.selectedPath == null) return null;
-      return window.boCmUtil.collectDescendantIds(roles, 'roleId', 'parentId', uiState.selectedPath);
+      return window.boUtil.collectDescendantIds(roles, 'roleId', 'parentId', uiState.selectedPath);
     });
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
@@ -94,7 +94,7 @@ window.SyRoleMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
+      const initSet = window.boUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
     });
@@ -124,7 +124,7 @@ window.SyRoleMng = {
       }
     });
 
-    const cfSiteNm  = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm  = computed(() => window.boUtil.getSiteNm());
     const ROLE_TYPES  = ['시스템', '업무', '기타'];
     const PERM_LEVELS = ['없음', '읽기', '쓰기', '관리', '차단'];
     const ROLE_CATS   = [['ADMIN','관리자역할'],['SITE','사이트역할'],['SALES','판매업체역할'],['DLIV','배송업체역할']];
@@ -145,7 +145,7 @@ window.SyRoleMng = {
       row.roleCat = (cur.length === 1 && cur[0] === code) ? [] : [code];
       onCellChange(row);
     };
-    window.boCmUtil.__roleCatOf = (roleId) => {
+    window.boUtil.__roleCatOf = (roleId) => {
       const rolesData = roles || [];
       const r = roles.find(x => x.roleId === roleId);
       if (!r) return [];
@@ -155,8 +155,8 @@ window.SyRoleMng = {
       const code = cur && ROOT_CAT_MAP[cur.roleCode];
       return code ? [code] : [];
     };
-    window.boCmUtil.__roleCatLabel = (code) => (ROLE_CATS.find(x=>x[0]===code) || [,code])[1];
-    window.boCmUtil.__roleCatColor = (code) => ROLE_CAT_COLOR[code] || '#9ca3af';
+    window.boUtil.__roleCatLabel = (code) => (ROLE_CATS.find(x=>x[0]===code) || [,code])[1];
+    window.boUtil.__roleCatColor = (code) => ROLE_CAT_COLOR[code] || '#9ca3af';
     const PERM_COLORS = { '없음': '#9ca3af', '읽기': '#2563eb', '쓰기': '#16a34a', '관리': '#f59e0b', '차단': '#e8587a' };
     const fnPermColor   = (p) => PERM_COLORS[p] || '#9ca3af';
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
@@ -446,7 +446,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
       return r ? r.roleNm : '';
     });
 
-    const exportExcel = () => window.boCmUtil.exportCsv(
+    const exportExcel = () => window.boUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'roleId'},{label:'역할코드',key:'roleCode'},{label:'역할명',key:'roleNm'},{label:'상위ID',key:'parentId'},{label:'유형',key:'roleType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'제한',key:'restrictPerm'},{label:'비고',key:'remark'}],
       '역할목록.csv'

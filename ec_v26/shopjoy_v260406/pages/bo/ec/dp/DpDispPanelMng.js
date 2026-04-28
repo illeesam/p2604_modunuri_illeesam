@@ -43,8 +43,8 @@ window.DpDispPanelMng = {
       uiState.loading = true;
       try {
         const [panelsRes, displaysRes] = await Promise.all([
-          window.boApi.get('/bo/ec/dp/panel/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('전시패널관리', '조회') }),
-          window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('전시패널관리', '조회') }),
+          window.boApi.get('/bo/ec/dp/panel/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시패널관리', '조회') }),
+          window.boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시패널관리', '조회') }),
         ]);
         panels.splice(0, panels.length, ...(panelsRes.data?.data?.pageList || panelsRes.data?.data?.list || []));
         displays.splice(0, displays.length, ...(displaysRes.data?.data?.pageList || displaysRes.data?.data?.list || []));
@@ -67,14 +67,14 @@ window.DpDispPanelMng = {
       handleSearchData('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
-    const fnPathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const fnPathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      if (searchParam.dateRange) { const r = window.boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
 
     const VISIBILITY_OPTS  = [
       { value: '', label: '전체' },
@@ -240,7 +240,7 @@ window.DpDispPanelMng = {
     const onSearch = async () => {
     try {
       const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await window.boApi.get('/bo/ec/resource/page', { params, ...apiHdr('전시패널관리', '조회') });
+      const res = await window.boApi.get('/bo/ec/resource/page', { params, ...coUtil.apiHdr('전시패널관리', '조회') });
       // TODO: Update items array based on response
       pager.pageNo = 1;
       await handleSearchData();
@@ -265,7 +265,7 @@ window.DpDispPanelMng = {
       if (idx !== -1) displays.splice(idx, 1);
       if (uiStateDetail.selectedId === d.dispId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/ec/dp/panel/${d.dispId}`, { ...apiHdr('전시패널관리', '삭제') });
+        const res = await window.boApi.delete(`/bo/ec/dp/panel/${d.dispId}`, { ...coUtil.apiHdr('전시패널관리', '삭제') });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -276,7 +276,7 @@ window.DpDispPanelMng = {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'dispId'},{label:'영역',key:'dispArea'},{label:'제목',key:'title'},{label:'유형',key:'dispType'},{label:'상태',key:'status'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}], '전시목록.csv');
+    const exportExcel = () => window.boUtil.exportCsv(cfFiltered.value, [{label:'ID',key:'dispId'},{label:'영역',key:'dispArea'},{label:'제목',key:'title'},{label:'유형',key:'dispType'},{label:'상태',key:'status'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}], '전시목록.csv');
 
     /* 영역 레이블 조회 */
     const fnAreaLabel = (code) => {

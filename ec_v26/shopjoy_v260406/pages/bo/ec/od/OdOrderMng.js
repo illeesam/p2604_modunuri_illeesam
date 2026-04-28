@@ -16,9 +16,9 @@ window.OdOrderMng = {
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         const [ordersRes, membersRes, claimsRes] = await Promise.all([
-          window.boApi.get('/bo/ec/od/order/page', { params, ...apiHdr('주문관리', '목록조회') }),
-          window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('주문관리', '목록조회') }),
-          window.boApi.get('/bo/ec/od/claim/page',  { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('주문관리', '목록조회') }),
+          window.boApi.get('/bo/ec/od/order/page', { params, ...coUtil.apiHdr('주문관리', '목록조회') }),
+          window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('주문관리', '목록조회') }),
+          window.boApi.get('/bo/ec/od/claim/page',  { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('주문관리', '목록조회') }),
         ]);
         orders.splice(0, orders.length, ...(ordersRes.data?.data?.pageList || ordersRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
@@ -59,16 +59,16 @@ window.OdOrderMng = {
       Object.assign(searchParamOrg, searchParam);
     });
 
-    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
-        const r = window.boCmUtil.getDateRange(searchParam.dateRange);
+        const r = window.boUtil.getDateRange(searchParam.dateRange);
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd = r ? r.to : '';
       }
       pager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -148,7 +148,7 @@ const isAppReady = computed(() => {
       if (idx !== -1) orders.splice(idx, 1);
       if (uiStateDetail.selectedId === o.orderId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/ec/od/order/${o.orderId}`, { ...apiHdr('주문관리', '삭제') });
+        const res = await window.boApi.delete(`/bo/ec/od/order/${o.orderId}`, { ...coUtil.apiHdr('주문관리', '삭제') });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -159,7 +159,7 @@ const isAppReady = computed(() => {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(orders, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userNm'},{label:'상태',key:'statusCd'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethodCd'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
+    const exportExcel = () => window.boUtil.exportCsv(orders, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userNm'},{label:'상태',key:'statusCd'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethodCd'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
 
     /* 클레임 조회 */
     const claimByOrder = (orderId) =>
@@ -273,7 +273,7 @@ const isAppReady = computed(() => {
       checked = new Set();
       uiState.bulkOpen = false;
       try {
-        const res = await window.boApi.put(cfg.path, { ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value }, { ...apiHdr('주문관리', '목록조회') });
+        const res = await window.boApi.put(cfg.path, { ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value }, { ...coUtil.apiHdr('주문관리', '목록조회') });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(`${ids.length}건 처리되었습니다.`, 'success');
       } catch (err) {

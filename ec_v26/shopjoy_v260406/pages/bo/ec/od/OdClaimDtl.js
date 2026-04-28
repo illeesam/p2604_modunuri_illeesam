@@ -69,7 +69,7 @@ window.OdClaimDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get(`/bo/ec/od/claim/${props.editId}`, { ...apiHdr('클레임관리', '상세조회') });
+        const res = await window.boApi.get(`/bo/ec/od/claim/${props.editId}`, { ...coUtil.apiHdr('클레임관리', '상세조회') });
         const c = res.data?.data || res.data || {};
         Object.assign(form, { ...c });
         if (!form.claimId) form.claimId = props.editId;

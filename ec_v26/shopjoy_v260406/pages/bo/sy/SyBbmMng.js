@@ -17,7 +17,7 @@ window.SyBbmMng = {
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           },
-          ...apiHdr('게시판모드관리', '목록조회')
+          ...coUtil.apiHdr('게시판모드관리', '목록조회')
         });
         const data = res.data?.data;
         bbms.splice(0, bbms.length, ...(data?.pageList || []));
@@ -37,7 +37,7 @@ window.SyBbmMng = {
         const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { uiState.selectedPath = id; };
-    const cfTree = computed(() => window.boCmUtil.buildPathTree('sy_bbm'));
+    const cfTree = computed(() => window.boUtil.buildPathTree('sy_bbm'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     /* _expand3: 기본 3레벨 펼침 */
@@ -46,7 +46,7 @@ window.SyBbmMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
+      const initSet = window.boUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
     });
@@ -80,8 +80,8 @@ window.SyBbmMng = {
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
     const onPathPicked = (pathId) => { if (pathPickModal.row) pathPickModal.row.pathId = pathId; };
-    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
-    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    const pathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
     const searchParam = reactive({
       kw: '', type: '', useYn: ''
     });
@@ -131,7 +131,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       if (idx !== -1) bbms.splice(idx, 1);
       if (detailModal.editId === b.bbmId) { detailModal.show = false; detailModal.editId = null; }
       try {
-        const res = await window.boApi.delete(`/bo/sy/bbm/${b.bbmId}`, apiHdr('게시판모드관리', '삭제'));
+        const res = await window.boApi.delete(`/bo/sy/bbm/${b.bbmId}`, coUtil.apiHdr('게시판모드관리', '삭제'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -141,7 +141,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
-    const exportExcel = () => window.boCmUtil.exportCsv(bbms, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
+    const exportExcel = () => window.boUtil.exportCsv(bbms, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
     // ── return ───────────────────────────────────────────────────────────────
 

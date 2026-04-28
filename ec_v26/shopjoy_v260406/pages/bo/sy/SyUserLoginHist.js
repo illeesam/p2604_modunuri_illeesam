@@ -9,11 +9,11 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
     const activeTab = Vue.toRef(uiState, 'activeTab');
      // 'log' | 'hist' | 'token'
 
-    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
-      if (uiState.dateRange) { const r = window.boCmUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
+      if (uiState.dateRange) { const r = window.boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
-    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
+    (() => { const r = window.boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
@@ -22,7 +22,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('사용자로그인이력', '목록조회') });
+        const res = await window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('사용자로그인이력', '목록조회') });
         boUserList.splice(0, boUserList.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
       } catch (_) {}
     };

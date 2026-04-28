@@ -18,7 +18,7 @@ window.SyBbsMng = {
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           },
-          ...apiHdr('게시판관리', '목록조회')
+          ...coUtil.apiHdr('게시판관리', '목록조회')
         });
         const data = res.data?.data;
         bbss.splice(0, bbss.length, ...(data?.pageList || []));
@@ -40,7 +40,7 @@ window.SyBbsMng = {
       try {
         const res = await window.boApi.get('/bo/sy/bbm/page', {
           params: { pageNo: 1, pageSize: 10000 },
-          ...apiHdr('게시판관리', '목록조회')
+          ...coUtil.apiHdr('게시판관리', '목록조회')
         });
         bbms.splice(0, bbms.length, ...(res.data?.data?.list || []));
       } catch (err) {
@@ -58,14 +58,14 @@ window.SyBbsMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
-    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
     /* ── 좌측 표시경로 트리 ── */
         const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { uiState.selectedPath = path; };
-    const cfTree = computed(() => window.boCmUtil.buildPathTree('sy_bbs'));
+    const cfTree = computed(() => window.boUtil.buildPathTree('sy_bbs'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
@@ -75,7 +75,7 @@ window.SyBbsMng = {
       if (isAppReady.value) fnLoadCodes();
       await handleLoadBbmList();
       await handleSearchBbs('DEFAULT');
-      const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
+      const initSet = window.boUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
     });
@@ -105,16 +105,16 @@ window.SyBbsMng = {
       }
     });
 
-    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
     const searchParam = reactive({
       kw: '', bbmId: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
     });
     const searchParamOrg = reactive({
       kw: '', bbmId: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
     });
-    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = window.boCmUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      if (searchParam.dateRange) { const r = window.boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
     };
 const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -157,7 +157,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       if (idx !== -1) bbss.splice(idx, 1);
       if (detailModal.editId === b.bbsId) { detailModal.show = false; detailModal.editId = null; }
       try {
-        const res = await window.boApi.delete(`/bo/sy/bbs/${b.bbsId}`, apiHdr('게시판관리', '삭제'));
+        const res = await window.boApi.delete(`/bo/sy/bbs/${b.bbsId}`, coUtil.apiHdr('게시판관리', '삭제'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -167,7 +167,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
-    const exportExcel = () => window.boCmUtil.exportCsv(bbss, [{label:'ID',key:'bbsId'},{label:'제목',key:'title'},{label:'작성자',key:'authorNm'},{label:'조회수',key:'viewCount'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '게시글목록.csv');
+    const exportExcel = () => window.boUtil.exportCsv(bbss, [{label:'ID',key:'bbsId'},{label:'제목',key:'title'},{label:'작성자',key:'authorNm'},{label:'조회수',key:'viewCount'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '게시글목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
     watch(() => uiState.selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });

@@ -42,7 +42,7 @@ window.PdRestockNotiMng = {
       try {
         const res = await window.boApi.get('/bo/ec/pd/restock-noti/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) },
-          ...apiHdr('재입고알림관리', '목록조회')
+          ...coUtil.apiHdr('재입고알림관리', '목록조회')
         });
         const data = res.data?.data;
         restockNotis.splice(0, restockNotis.length, ...(data?.pageList || []));

@@ -38,7 +38,7 @@ window.PmSaveMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await window.boApi.get('/bo/ec/pm/save/page', { params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, ...apiHdr('적립금관리', '조회') });
+        const res = await window.boApi.get('/bo/ec/pm/save/page', { params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, ...coUtil.apiHdr('적립금관리', '조회') });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         saves.splice(0, saves.length, ...list);
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
@@ -58,12 +58,12 @@ window.PmSaveMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     Object.assign(searchParamOrg, searchParam); });
-    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
-      if (searchDateRange.value) { const r = window.boCmUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      if (searchDateRange.value) { const r = window.boUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
       pager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
      // 'list' | 'card'
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
@@ -125,7 +125,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
       if (idx !== -1) saveList.value.splice(idx, 1);
       if (uiStateDetail.selectedId === s.saveId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/ec/pm/save/${s.saveId}`, { ...apiHdr('적립금관리', '삭제') });
+        const res = await window.boApi.delete(`/bo/ec/pm/save/${s.saveId}`, { ...coUtil.apiHdr('적립금관리', '삭제') });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -136,7 +136,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(saves,
+    const exportExcel = () => window.boUtil.exportCsv(saves,
       [{label:'ID',key:'saveId'},{label:'마일리지명',key:'saveNm'},{label:'유형',key:'saveType'},{label:'적립값',key:'saveVal'},{label:'단위',key:'saveUnit'},{label:'상태',key:'saveStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '마일리지목록.csv');
 

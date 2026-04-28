@@ -117,9 +117,9 @@ window.XsSample04 = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    /* ── boCmUtil mock (index.html 미포함 → 가드) ── */
-    if (!window.boCmUtil) {
-      window.boCmUtil = {
+    /* ── boUtil mock (index.html 미포함 → 가드) ── */
+    if (!window.boUtil) {
+      window.boUtil = {
         getSiteNm: () => 'ShopJoy', DATE_RANGE_OPTIONS: [],
         getDateRange: () => ({ from: '', to: '' }),
         isInRange: () => true, exportCsv: () => {},

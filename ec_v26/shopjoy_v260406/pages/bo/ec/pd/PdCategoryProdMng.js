@@ -37,6 +37,16 @@ window.PdCategoryProdMng = {
       }
     });
 
+    watch(() => cfSelectedCatId.value, async (newVal) => {
+      if (newVal) {
+        pager.pageNo = 1;
+        searchParam.categoryId = newVal;
+        await handleSearchList('DEFAULT');
+      } else {
+        categoryProds.splice(0, categoryProds.length);
+      }
+    });
+
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
@@ -78,22 +88,27 @@ window.PdCategoryProdMng = {
 
     /* ── 검색 ── */
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const searchParam = reactive({ prodNm: '' });
-    const searchParamOrg = reactive({ prodNm: '' });
+    const searchParam = reactive({ prodNm: '', categoryId: '' });
+    const searchParamOrg = reactive({ prodNm: '', categoryId: '' });
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...(searchType === 'PAGE_CLICK' ? pager.pageCond : Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined))) };
+        console.log('[handleSearchList] params:', params);
         const res = await window.boApi.get('/bo/ec/pd/category-prod/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...(searchType === 'PAGE_CLICK' ? pager.pageCond : searchParam) },
-          ...apiHdr('상품카테고리관리', '목록조회')
+          params,
+          ...coUtil.apiHdr('카테고리상품관리', '목록조회')
         });
+        console.log('[handleSearchList] response:', res.data);
         const data = res.data?.data;
-        categoryProds.splice(0, categoryProds.length, ...(data?.pageList || []));
+        categoryProds.splice(0, categoryProds.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
       } catch (err) {
-        console.error('[catch-info]', err);
+        console.error('[handleSearchList]', err);
+        // API 실패 시 빈 배열로 초기화하여 계속 진행
+        categoryProds.splice(0, categoryProds.length);
       }
     };
 
@@ -107,19 +122,192 @@ window.PdCategoryProdMng = {
     Object.assign(searchParam, searchParamOrg);
     onSearch();
   };
-    const cfCatTreeFlat = computed(() => []);
-    const cfFilteredRows = computed(() => []);
-    const cfPickerList = computed(() => []);
+
+    /* ── 트리 expanded 상태 (ref+Set 재할당으로 반응성 보장) ── */
+    const expandedSet = reactive(new Set());
+    const isExpanded  = id => expandedSet.has(id);
+    const toggleNode  = id => {
+      if (expandedSet.has(id)) expandedSet.delete(id); else expandedSet.add(id);
+    };
+    const expandAll  = () => { expandedSet.clear(); categories.forEach(c => expandedSet.add(c.categoryId)); };
+    const collapseAll = () => { expandedSet.clear(); };
+
+    /* 좌측 트리용 전체 카테고리 조회 */
+    const handleSearchCategoriesList = async () => {
+      try {
+        const res = await window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('카테고리관리', '목록조회') });
+        const list = res.data?.data?.pageList || res.data?.data?.list || [];
+        categories.splice(0, categories.length, ...list);
+        expandedSet.clear();
+        categories.filter(c => c.categoryDepth === 1).forEach(c => expandedSet.add(c.categoryId));
+      } catch (e) {
+        console.error('[handleSearchCategoriesList]', e);
+      }
+    };
+
+    /* ★ onMounted — 진입 시 카테고리 목록 조회 */
+    onMounted(async () => {
+      if (isAppReady.value) fnLoadCodes();
+      Object.assign(searchParamOrg, searchParam);
+      await handleSearchCategoriesList();
+      // handleSearchList는 선택적 - API 에러 시에도 진행
+      try {
+        await handleSearchList('DEFAULT');
+      } catch (err) {
+        console.warn('[onMounted] handleSearchList failed:', err.message);
+      }
+    });
+
+    /* 선택된 카테고리 */
+    const cfSelectedCatId = ref(null);
+    const selectNode = id => {
+      cfSelectedCatId.value = (cfSelectedCatId.value === id) ? null : id;
+    };
+    const cfSelectedCat = computed(() => categories.find(c => c.categoryId === cfSelectedCatId.value));
+    const cfIsLeafCat = computed(() => !categories.some(c => c.parentCategoryId === cfSelectedCatId.value));
+
+    /* 좌측 트리 빌드 (expanded 반영) */
+    const cfCatTreeFlat = computed(() => {
+      const _ = expandedSet; // reactive dependency
+      const cats = categories;
+      const map = {};
+      window.safeArrayUtils.safeForEach(cats, c => { map[c.categoryId] = { ...c, _children: [] }; });
+      window.safeArrayUtils.safeForEach(cats, c => { if (c.parentCategoryId && map[c.parentCategoryId]) map[c.parentCategoryId]._children.push(map[c.categoryId]); });
+      const roots = window.safeArrayUtils.safeFilter(cats, c => !c.parentCategoryId).map(c => map[c.categoryId]).sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
+      const result = [];
+      const traverse = (node, depth) => {
+        result.push({ ...node, _depth: depth, _hasChildren: node._children.length > 0 });
+        if (isExpanded(node.categoryId))
+          [...node._children].sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => traverse(c, depth + 1));
+      };
+      window.safeArrayUtils.safeForEach(roots, r => traverse(r, 0));
+      return result;
+    });
+
+    const fnDepthColor = (d) => ({0:'#e8587a',1:'#1677ff',2:'#3ba87a'}[d] || '#999');
+    const fnDepthBullet = (d) => ['●','○','▪'][d] || '·';
+    const totalProdCount = (catId) => categoryProds.filter(cp => cp.categoryId === catId).length;
+    const cfTypeCountMap = computed(() => {
+      const map = {};
+      TYPE_TABS.forEach(t => { map[t.cd] = categoryProds.filter(cp => cp.typeCd === t.cd).length; });
+      return map;
+    });
+    const cfFilteredRows = computed(() => {
+      if (!cfSelectedCatId.value) return [];
+      return categoryProds.filter(cp => {
+        const isSameCategory = cp.categoryId === cfSelectedCatId.value;
+        const isChildCategory = categories.some(c => c.parentCategoryId === cfSelectedCatId.value && cp.categoryId === c.categoryId);
+        const isSameType = cp.typeCd === uiState.activeTypeCd;
+        return (isSameCategory || isChildCategory) && isSameType;
+      });
+    });
+
+    /* ── 드래그 상태 ── */
+    const dragoverIdx = ref(null);
+    let dragStartIdx = null;
+    const onDragStart = (idx) => { dragStartIdx = idx; };
+    const onDragOver = (idx) => { dragoverIdx.value = idx; };
+    const onDrop = () => {
+      if (dragStartIdx !== null && dragoverIdx.value !== null && dragStartIdx !== dragoverIdx.value) {
+        const temp = categoryProds[dragStartIdx];
+        categoryProds.splice(dragStartIdx, 1);
+        categoryProds.splice(dragoverIdx.value, 0, temp);
+      }
+      dragoverIdx.value = null;
+      dragStartIdx = null;
+    };
+
+    /* ── 상품 정보 조회 헬퍼 ── */
+    const getProdNm = (prodId) => {
+      const prod = window.adminData?.products?.find(p => p.productId === prodId);
+      return prod?.prodNm || prod?.productName || `[${prodId}]`;
+    };
+    const getProd = (prodId) => window.adminData?.products?.find(p => p.productId === prodId);
+    const getCatPath = (catId) => {
+      const cat = categories.find(c => c.categoryId === catId);
+      if (!cat) return '-';
+      const path = [cat.categoryNm];
+      let parent = cat.parentCategoryId;
+      while (parent && categories.some(c => c.categoryId === parent)) {
+        const p = categories.find(c => c.categoryId === parent);
+        path.unshift(p.categoryNm);
+        parent = p.parentCategoryId;
+      }
+      return path.join(' > ');
+    };
+
+    /* ── 행 제거 ── */
+    const removeRow = (row) => {
+      const idx = categoryProds.findIndex(r => r === row);
+      if (idx !== -1) categoryProds.splice(idx, 1);
+    };
+
+    /* ── 상품 추가 ── */
+    const addProd = (prod) => {
+      const exists = categoryProds.some(cp => cp.prodId === prod.productId && cp.categoryId === cfSelectedCatId.value && cp.typeCd === uiState.activeTypeCd);
+      if (exists) {
+        if (props.showToast) props.showToast('이미 추가된 상품입니다.', 'warning');
+        return;
+      }
+      const newRow = {
+        _id: Math.random(),
+        _isNew: true,
+        prodId: prod.productId,
+        categoryId: cfSelectedCatId.value,
+        typeCd: uiState.activeTypeCd,
+        emphasisCd: '',
+        dispStartDate: defaultDispStartDate(),
+        dispEndDate: defaultDispEndDate(),
+        dispYn: 'Y'
+      };
+      categoryProds.push(newRow);
+      pickerOpen.value = false;
+      if (props.showToast) props.showToast('상품이 추가되었습니다.', 'success');
+    };
+
+    /* ── 피커 검색 ── */
+    const cfPickerList = computed(() => {
+      const filtered = (window.adminData?.products || []).filter(p => {
+        const q = pickerSearch.value.toLowerCase();
+        return !q || p.prodNm?.toLowerCase().includes(q) || p.productId?.toString().includes(q);
+      });
+      return filtered.slice(0, 50);
+    });
+
+    const pickerOpen = ref(false);
+    const pickerSearch = ref('');
+    const applied = searchParam;
+    const onSave = async () => {
+      const ok = await props.showConfirm('저장', '저장하시겠습니까?');
+      if (!ok) return;
+      try {
+        const res = await window.boApi.put(`/bo/ec/pd/category-prod`, { categoryProds }, { ...coUtil.apiHdr('카테고리상품관리', '저장') });
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
+    };
 
     // ── return ───────────────────────────────────────────────────────────────
 
-  return {
-      codes, uiState,
+    return {
+      codes, uiState, categories, categoryProds,
       TYPE_TABS, EMPHASIS_OPTS, parseEmphasis, hasEmphasis, toggleEmphasis,
       defaultDispStartDate, defaultDispEndDate,
-      searchParam, searchParamOrg, onSearch, onReset,
+      searchParam, searchParamOrg, onSearch, onReset, applied,
       pager,
       cfCatTreeFlat, cfFilteredRows, cfPickerList,
+      expandedSet, isExpanded, toggleNode, expandAll, collapseAll,
+      cfSelectedCatId, cfSelectedCat, cfIsLeafCat, selectNode,
+      fnDepthColor, fnDepthBullet, totalProdCount, cfTypeCountMap,
+      dragoverIdx, onDragStart, onDragOver, onDrop,
+      getProdNm, getProd, getCatPath, removeRow, addProd,
+      pickerOpen, pickerSearch, onSave,
+      showRefModal: props.showRefModal, showToast: props.showToast, showConfirm: props.showConfirm, setApiRes: props.setApiRes, navigate: props.navigate,
     };
   },
 

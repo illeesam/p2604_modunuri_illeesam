@@ -61,7 +61,7 @@ window.OdDlivDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get(`/bo/ec/od/dliv/${props.editId}`, { ...apiHdr('배송관리', '상세조회') });
+        const res = await window.boApi.get(`/bo/ec/od/dliv/${props.editId}`, { ...coUtil.apiHdr('배송관리', '상세조회') });
         const d = res.data?.data || res.data || {};
         Object.assign(form, { ...d });
         if (!form.dlivId) form.dlivId = props.editId;
@@ -70,7 +70,7 @@ window.OdDlivDtl = {
         // 연관 클레임 로드 (주문ID 기준)
         if (form.orderId) {
           try {
-            const claimRes = await window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 100, orderId: form.orderId }, ...apiHdr('배송관리', '조회') });
+            const claimRes = await window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 100, orderId: form.orderId }, ...coUtil.apiHdr('배송관리', '조회') });
             relatedClaims.splice(0, relatedClaims.length, ...(claimRes.data?.data?.pageList || claimRes.data?.data?.list || []));
           } catch (_) { /* ignore */ }
         }
@@ -116,8 +116,8 @@ window.OdDlivDtl = {
       if (!ok) return;
       try {
         const res = await (isNewDliv
-          ? window.boApi.post('/bo/ec/od/dliv', { ...form }, { ...apiHdr('배송관리', '등록') })
-          : window.boApi.put(`/bo/ec/od/dliv/${form.dlivId}`, { ...form }, { ...apiHdr('배송관리', '저장') }));
+          ? window.boApi.post('/bo/ec/od/dliv', { ...form }, { ...coUtil.apiHdr('배송관리', '등록') })
+          : window.boApi.put(`/bo/ec/od/dliv/${form.dlivId}`, { ...form }, { ...coUtil.apiHdr('배송관리', '저장') }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewDliv ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('odDlivMng');

@@ -16,7 +16,7 @@ window.OdDlivHist = {
       try {
         const res = await window.boApi.get('/bo/ec/od/dliv/page', {
           params: { pageNo: 1, pageSize: 10000 },
-          ...apiHdr('배송관리', '이력조회')
+          ...coUtil.apiHdr('배송관리', '이력조회')
         });
         deliveries.splice(0, deliveries.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;

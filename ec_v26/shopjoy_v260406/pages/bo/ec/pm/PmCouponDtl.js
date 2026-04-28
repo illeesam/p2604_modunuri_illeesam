@@ -15,7 +15,7 @@ window.PmCouponDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get(`/bo/ec/pm/coupon/${props.editId}`, { ...apiHdr('쿠폰관리', '상세조회') });
+        const res = await window.boApi.get(`/bo/ec/pm/coupon/${props.editId}`, { ...coUtil.apiHdr('쿠폰관리', '상세조회') });
         const c = res.data?.data || res.data;
         if (c) Object.assign(form, { ...c });
         if (!form.startDate) form.startDate = DEFAULT_START;
@@ -212,7 +212,7 @@ window.PmCouponDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/coupon/${form.couponId}`, { ...form }, { ...apiHdr('쿠폰관리', '등록') }) : window.boApi.put(`/bo/ec/pm/coupon/${form.couponId}`, { ...form }, { ...apiHdr('쿠폰관리', '저장') }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/coupon/${form.couponId}`, { ...form }, { ...coUtil.apiHdr('쿠폰관리', '등록') }) : window.boApi.put(`/bo/ec/pm/coupon/${form.couponId}`, { ...form }, { ...coUtil.apiHdr('쿠폰관리', '저장') }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmCouponMng');

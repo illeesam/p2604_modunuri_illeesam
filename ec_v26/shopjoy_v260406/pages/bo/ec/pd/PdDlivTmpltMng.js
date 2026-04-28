@@ -49,7 +49,7 @@ window.PdDlivTmpltMng = {
       try {
         const res = await window.boApi.get('/bo/ec/pd/dliv-tmplt/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) },
-          ...apiHdr('배송템플릿관리', '목록조회')
+          ...coUtil.apiHdr('배송템플릿관리', '목록조회')
         });
         const data = res.data?.data;
         dlivTmplts.splice(0, dlivTmplts.length, ...(data?.pageList || []));

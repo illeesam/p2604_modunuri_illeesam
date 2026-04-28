@@ -43,7 +43,7 @@ window.DpDispUiDtl = {
       try {
         const res = await window.boApi.get('/bo/ec/dp/ui/page', {
           params: { pageNo: 1, pageSize: 10000 },
-          ...apiHdr('전시UI관리', '상세조회')
+          ...coUtil.apiHdr('전시UI관리', '상세조회')
         });
         displays.splice(0, displays.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;
@@ -60,7 +60,7 @@ window.DpDispUiDtl = {
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
-    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfIsNew = computed(() => !props.editId);
 
@@ -298,7 +298,7 @@ window.DpDispUiDtl = {
       if (!ok) return;
       const codesData = codes;
       if (isNewUi) {
-        const newId = window.boCmUtil.nextId(codesData, 'codeId');
+        const newId = window.boUtil.nextId(codesData, 'codeId');
         codesData.push({ ...form, codeId: newId });
       } else {
         const idx = codesData.findIndex(c => c.codeId === form.codeId);

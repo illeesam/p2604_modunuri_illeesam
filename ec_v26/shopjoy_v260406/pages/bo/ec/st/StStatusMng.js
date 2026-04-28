@@ -41,17 +41,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     ];
 
     /* ── 공통 날짜 필터 ── */
-    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
             const dateEnd   = ref('');
     const onDateRangeChange = () => {
       if (uiState.dateRange) {
-        const r = window.boCmUtil.getDateRange(uiState.dateRange);
+        const r = window.boUtil.getDateRange(uiState.dateRange);
         uiState.dateStart = r ? r.from : '';
         uiState.dateEnd   = r ? r.to   : '';
       }
     };
     /* 초기 날짜 설정 */
-    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
+    (() => { const r = window.boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     /* ── 원본 데이터 ── */
     const orderList = reactive([]);
@@ -63,11 +63,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resO, resC, resV, resCp, resCa] = await Promise.all([
-          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('정산상태관리', '목록조회') }),
-          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('정산상태관리', '목록조회') }),
-          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('정산상태관리', '목록조회') }),
-          window.boApi.get('/bo/ec/pm/coupon/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('정산상태관리', '목록조회') }),
-          window.boApi.get('/bo/ec/pm/cache/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('정산상태관리', '목록조회') }),
+          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('정산상태관리', '목록조회') }),
+          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('정산상태관리', '목록조회') }),
+          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('정산상태관리', '목록조회') }),
+          window.boApi.get('/bo/ec/pm/coupon/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('정산상태관리', '목록조회') }),
+          window.boApi.get('/bo/ec/pm/cache/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('정산상태관리', '목록조회') }),
         ]);
         orderList.splice(0, orderList.length, ...(resO.data?.data?.list || []));
         claimList.splice(0, claimList.length, ...(resC.data?.data?.list || []));

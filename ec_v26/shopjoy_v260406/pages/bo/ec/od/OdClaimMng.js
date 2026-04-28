@@ -15,8 +15,8 @@ window.OdClaimMng = {
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         const [claimsRes, membersRes] = await Promise.all([
-          window.boApi.get('/bo/ec/od/claim/page', { params, ...apiHdr('클레임관리', '조회') }),
-          window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('클레임관리', '조회') })
+          window.boApi.get('/bo/ec/od/claim/page', { params, ...coUtil.apiHdr('클레임관리', '조회') }),
+          window.boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('클레임관리', '조회') })
         ]);
         claims.splice(0, claims.length, ...(claimsRes.data?.data?.pageList || claimsRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
@@ -58,16 +58,16 @@ window.OdClaimMng = {
       Object.assign(searchParamOrg, searchParam);
     });
 
-    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
-        const r = window.boCmUtil.getDateRange(searchParam.dateRange);
+        const r = window.boUtil.getDateRange(searchParam.dateRange);
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd = r ? r.to : '';
       }
       pager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -146,7 +146,7 @@ const isAppReady = computed(() => {
       if (idx !== -1) claims.splice(idx, 1);
       if (uiStateDetail.selectedId === c.claimId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/ec/od/claim/${c.claimId}`, { ...apiHdr('클레임관리', '삭제') });
+        const res = await window.boApi.delete(`/bo/ec/od/claim/${c.claimId}`, { ...coUtil.apiHdr('클레임관리', '삭제') });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -157,7 +157,7 @@ const isAppReady = computed(() => {
       }
     };
 
-    const exportExcel = () => window.boCmUtil.exportCsv(claims, [{label:'클레임ID',key:'claimId'},{label:'회원명',key:'userNm'},{label:'주문ID',key:'orderId'},{label:'유형',key:'type'},{label:'상태',key:'statusCd'},{label:'상품명',key:'prodNm'},{label:'사유',key:'reasonCd'},{label:'요청일',key:'requestDate'}], '클레임목록.csv');
+    const exportExcel = () => window.boUtil.exportCsv(claims, [{label:'클레임ID',key:'claimId'},{label:'회원명',key:'userNm'},{label:'주문ID',key:'orderId'},{label:'유형',key:'type'},{label:'상태',key:'statusCd'},{label:'상품명',key:'prodNm'},{label:'사유',key:'reasonCd'},{label:'요청일',key:'requestDate'}], '클레임목록.csv');
 
     /* 일괄선택 */
     const checked = reactive(new Set());
@@ -263,7 +263,7 @@ const isAppReady = computed(() => {
         checked = new Set();
         uiState.bulkOpen = false;
         try {
-          const res = await window.boApi.put('/bo/ec/od/claim/bulk-status', { changes }, { ...apiHdr('클레임관리', '일괄처리') });
+          const res = await window.boApi.put('/bo/ec/od/claim/bulk-status', { changes }, { ...coUtil.apiHdr('클레임관리', '일괄처리') });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${totalCnt}건 변경되었습니다.`, 'success');
         } catch (err) {
@@ -282,7 +282,7 @@ const isAppReady = computed(() => {
         checked = new Set();
         uiState.bulkOpen = false;
         try {
-          const res = await window.boApi.put('/bo/ec/od/claim/bulk-type', { ids, type: val }, { ...apiHdr('클레임관리', '일괄처리') });
+          const res = await window.boApi.put('/bo/ec/od/claim/bulk-type', { ids, type: val }, { ...coUtil.apiHdr('클레임관리', '일괄처리') });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 변경되었습니다.`, 'success');
         } catch (err) {
@@ -299,7 +299,7 @@ const isAppReady = computed(() => {
         window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) { c.apprStatus = bulkForm.apprAction; c.apprComment = bulkForm.apprComment; } });
         checked = new Set(); uiState.bulkOpen = false;
         try {
-          const res = await window.boApi.put('/bo/ec/od/claim/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment }, { ...apiHdr('클레임관리', '결재처리') });
+          const res = await window.boApi.put('/bo/ec/od/claim/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment }, { ...coUtil.apiHdr('클레임관리', '결재처리') });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 처리되었습니다.`, 'success');
         } catch (err) {
@@ -320,7 +320,7 @@ const isAppReady = computed(() => {
         } });
         checked = new Set(); uiState.bulkOpen = false;
         try {
-          const res = await window.boApi.put('/bo/ec/od/claim/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value }, { ...apiHdr('클레임관리', '추가결재요청') });
+          const res = await window.boApi.put('/bo/ec/od/claim/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value }, { ...coUtil.apiHdr('클레임관리', '추가결재요청') });
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 요청되었습니다.`, 'success');
         } catch (err) {

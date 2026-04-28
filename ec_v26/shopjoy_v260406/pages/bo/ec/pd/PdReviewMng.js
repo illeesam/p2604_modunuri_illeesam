@@ -42,7 +42,7 @@ window.PdReviewMng = {
       try {
         const res = await window.boApi.get('/bo/ec/pd/review/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) },
-          ...apiHdr('상품리뷰관리', '목록조회')
+          ...coUtil.apiHdr('상품리뷰관리', '목록조회')
         });
         const data = res.data?.data;
         reviews.splice(0, reviews.length, ...(data?.pageList || []));

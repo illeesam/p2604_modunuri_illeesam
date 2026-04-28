@@ -15,7 +15,7 @@ window.PmSaveDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await window.boApi.get(`/bo/ec/pm/save/${props.editId}`, { ...apiHdr('적립금관리', '상세조회') });
+        const res = await window.boApi.get(`/bo/ec/pm/save/${props.editId}`, { ...coUtil.apiHdr('적립금관리', '상세조회') });
         const s = res.data?.data || res.data;
         if (s) Object.assign(form, s);
         uiState.error = null;
@@ -115,7 +115,7 @@ window.PmSaveDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/save`, { ...form }, { ...apiHdr('적립금관리', '등록') }) : window.boApi.put(`/bo/ec/pm/save/${form.saveId}`, { ...form }, { ...apiHdr('적립금관리', '저장') }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/ec/pm/save`, { ...form }, { ...coUtil.apiHdr('적립금관리', '등록') }) : window.boApi.put(`/bo/ec/pm/save/${form.saveId}`, { ...form }, { ...coUtil.apiHdr('적립금관리', '저장') }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmSaveMng');

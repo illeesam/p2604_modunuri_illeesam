@@ -12,7 +12,7 @@ window.SyDeptMng = {
     // 트리용 전체 로드 (dept_id, parent_dept_id, dept_nm 만)
     const handleSearchTree = async () => {
       try {
-        const res = await window.boApi.get('bo/sy/dept/tree', apiHdr('부서관리', '트리조회'));
+        const res = await window.boApi.get('bo/sy/dept/tree', coUtil.apiHdr('부서관리', '트리조회'));
         const list = res.data?.data || [];
         depts.splice(0, depts.length, ...list);
       } catch (err) {
@@ -32,7 +32,7 @@ window.SyDeptMng = {
         if (uiState.selectedTreeId != null) params.parentDeptId = uiState.selectedTreeId;
         const res = await window.boApi.get('bo/sy/dept/page', {
           params,
-          ...apiHdr('부서관리', '목록조회')
+          ...coUtil.apiHdr('부서관리', '목록조회')
         });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         gridRows.splice(0);
@@ -273,14 +273,14 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
       deptTreeModal.show = false;
     };
 
-    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
     const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
     const depthColor  = (d) => DEPTH_COLORS[d % 5];
     const fnStatusClass = s => ({ null: 'badge-gray', N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
-    const exportExcel = () => window.boCmUtil.exportCsv(
+    const exportExcel = () => window.boUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'deptId'},{label:'부서코드',key:'deptCode'},{label:'부서명',key:'deptNm'},{label:'상위ID',key:'parentDeptId'},{label:'유형',key:'deptTypeCd'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'deptRemark'}],
       '부서목록.csv'

@@ -16,7 +16,7 @@ window.SyUserDtl = {
       try {
         const res = await window.boApi.get('/bo/sy/user/page', {
           params: { pageNo: 1, pageSize: 10000 },
-          ...apiHdr('사용자관리', '상세조회')
+          ...coUtil.apiHdr('사용자관리', '상세조회')
         });
         users = res.data?.data?.pageList || res.data?.data?.list || [];
         uiState.error = null;
@@ -44,7 +44,7 @@ window.SyUserDtl = {
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
-    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
 
     const form = reactive({
       boUserId: null, loginId: '', name: '', email: '', phone: '',
@@ -135,7 +135,7 @@ window.SyUserDtl = {
         }
       }
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/user`, { ...form }, apiHdr('사용자관리', '등록')) : window.boApi.put(`/bo/sy/user/${form.boUserId}`, { ...form }, apiHdr('사용자관리', '저장')));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/user`, { ...form }, coUtil.apiHdr('사용자관리', '등록')) : window.boApi.put(`/bo/sy/user/${form.boUserId}`, { ...form }, coUtil.apiHdr('사용자관리', '저장')));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syUserMng');

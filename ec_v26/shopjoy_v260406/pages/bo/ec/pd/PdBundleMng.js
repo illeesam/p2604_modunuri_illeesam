@@ -45,9 +45,9 @@ window.PdBundleMng = {
       uiState.loading = true;
       try {
         const [bundlesRes, prodsRes, catsRes] = await Promise.all([
-          window.boApi.get('/bo/ec/pd/bundle/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('상품번들관리', '목록조회') }),
-          window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('상품번들관리', '목록조회') }),
-          window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('상품번들관리', '목록조회') }),
+          window.boApi.get('/bo/ec/pd/bundle/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('상품번들관리', '목록조회') }),
+          window.boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('상품번들관리', '목록조회') }),
+          window.boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('상품번들관리', '목록조회') }),
         ]);
         bundles.splice(0, bundles.length, ...(bundlesRes.data?.data?.pageList || bundlesRes.data?.data?.list || []));
         products.splice(0, products.length, ...(prodsRes.data?.data?.pageList || prodsRes.data?.data?.list || []));

@@ -22,10 +22,10 @@ window.OdOrderDtl = {
       uiState.loading = true;
       try {
         const [orderRes, vendorsRes, deliveriesRes, claimsRes] = await Promise.all([
-          window.boApi.get(`/bo/ec/od/order/${props.editId}`, { ...apiHdr('주문관리', '상세조회') }),
-          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('주문관리', '조회') }),
-          window.boApi.get('/bo/ec/od/dliv/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('주문관리', '조회') }),
-          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('주문관리', '조회') }),
+          window.boApi.get(`/bo/ec/od/order/${props.editId}`, { ...coUtil.apiHdr('주문관리', '상세조회') }),
+          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('주문관리', '조회') }),
+          window.boApi.get('/bo/ec/od/dliv/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('주문관리', '조회') }),
+          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('주문관리', '조회') }),
         ]);
         const o = orderRes.data?.data || orderRes.data || {};
         Object.assign(form, { ...o });
@@ -135,8 +135,8 @@ window.OdOrderDtl = {
       if (!ok) return;
       try {
         const res = await (isNewOrder
-          ? window.boApi.post('/bo/ec/od/order', { ...form, totalPrice: Number(form.totalPrice) }, { ...apiHdr('주문관리', '등록') })
-          : window.boApi.put(`/bo/ec/od/order/${form.orderId}`, { ...form, totalPrice: Number(form.totalPrice) }, { ...apiHdr('주문관리', '저장') }));
+          ? window.boApi.post('/bo/ec/od/order', { ...form, totalPrice: Number(form.totalPrice) }, { ...coUtil.apiHdr('주문관리', '등록') })
+          : window.boApi.put(`/bo/ec/od/order/${form.orderId}`, { ...form, totalPrice: Number(form.totalPrice) }, { ...coUtil.apiHdr('주문관리', '저장') }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewOrder ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('odOrderMng');

@@ -13,7 +13,7 @@ window.MbMemGroupMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
-        const res = await window.boApi.get('/bo/ec/mb/member-group/page', { params, ...apiHdr('회원그룹관리', '조회') });
+        const res = await window.boApi.get('/bo/ec/mb/member-group/page', { params, ...coUtil.apiHdr('회원그룹관리', '조회') });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         groups.splice(0, groups.length, ...list);
         gridRows.splice(0);
@@ -87,7 +87,7 @@ const isAppReady = computed(() => {
       if (si !== -1) groups.splice(si, 1);
       gridRows.splice(idx, 1);
       try {
-        const res = await window.boApi.delete(`/bo/ec/mb/member-group/${row.groupId}`, { ...apiHdr('회원그룹관리', '삭제') });
+        const res = await window.boApi.delete(`/bo/ec/mb/member-group/${row.groupId}`, { ...coUtil.apiHdr('회원그룹관리', '삭제') });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -110,7 +110,7 @@ const isAppReady = computed(() => {
         else { const si = src.findIndex(g => g.groupId === row.groupId); if (si !== -1) Object.assign(src[si], row); }
         row._row_status = null;
         try {
-          const res = await (isNewRow ? window.boApi.post(`/bo/ec/mb/member-group/${row.groupId}`, { ...row }, { ...apiHdr('회원그룹관리', '등록') }) : window.boApi.put(`/bo/ec/mb/member-group/${row.groupId}`, { ...row }, { ...apiHdr('회원그룹관리', '저장') }));
+          const res = await (isNewRow ? window.boApi.post(`/bo/ec/mb/member-group/${row.groupId}`, { ...row }, { ...coUtil.apiHdr('회원그룹관리', '등록') }) : window.boApi.put(`/bo/ec/mb/member-group/${row.groupId}`, { ...row }, { ...coUtil.apiHdr('회원그룹관리', '저장') }));
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast('저장되었습니다.', 'success');
         } catch (err) {

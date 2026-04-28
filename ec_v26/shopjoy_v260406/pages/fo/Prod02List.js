@@ -62,7 +62,7 @@ window.Prod02List = {
     const handleLoadProducts = async () => {
       uiState.loading = true;
       try {
-        const res = await window.foApi.get('/fo/ec/pd/prod/page', { params: { pageNo: pager.pageNo, pageSize: pager.pageSize }, ...apiHdr('상품목록', '목록조회') });
+        const res = await window.foApi.get('/fo/ec/pd/prod/page', { params: { pageNo: pager.pageNo, pageSize: pager.pageSize }, ...coUtil.apiHdr('상품목록', '목록조회') });
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;
         allProducts.splice(0, allProducts.length, ...(res.data?.data?.pageList || []).map(p => assignImage({

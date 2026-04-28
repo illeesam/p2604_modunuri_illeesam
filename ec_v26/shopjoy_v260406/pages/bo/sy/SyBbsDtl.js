@@ -15,7 +15,7 @@ window.SyBbsDtl = {
       try {
         const res = await window.boApi.get('/bo/sy/bbs/page', {
           params: { pageNo: 1, pageSize: 10000 },
-          ...apiHdr('게시판관리', '상세조회')
+          ...coUtil.apiHdr('게시판관리', '상세조회')
         });
         bbss.splice(0, bbss.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;
@@ -43,7 +43,7 @@ window.SyBbsDtl = {
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
-    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
 
     /* ── 선택된 게시판 정보 ── */
     
@@ -147,7 +147,7 @@ window.SyBbsDtl = {
         if (idx !== -1) Object.assign(bbss[idx], { ...form, bbmId: Number(form.bbmId) });
       }
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/bbs/${form.bbsId}`, { ...form }, apiHdr('게시판관리', '등록')) : window.boApi.put(`/bo/sy/bbs/${form.bbsId}`, { ...form }, apiHdr('게시판관리', '저장')));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/bbs/${form.bbsId}`, { ...form }, coUtil.apiHdr('게시판관리', '등록')) : window.boApi.put(`/bo/sy/bbs/${form.bbsId}`, { ...form }, coUtil.apiHdr('게시판관리', '저장')));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syBbsMng');

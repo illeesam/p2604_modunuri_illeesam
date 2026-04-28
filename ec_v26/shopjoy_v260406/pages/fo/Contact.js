@@ -119,7 +119,7 @@ window.Contact = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     const cfInquiryCodes = computed(() =>
-      window.foCmUtil.codesByGroup(props.config || {}, 'shopjoy_contact_inquiry')
+      window.foUtil.codesByGroup(props.config || {}, 'shopjoy_contact_inquiry')
     );
 
     const form = reactive({ name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
@@ -147,7 +147,7 @@ window.Contact = {
           orderNo: form.orderNo,
           inquiryType: form.inquiryType,
           desc: form.desc,
-        }, apiHdr('문의', '저장')).catch(() => {});
+        }, coUtil.apiHdr('문의', '저장')).catch(() => {});
       }
       props.showToast('문의가 접수되었습니다. 빠르게 답변드리겠습니다!', 'success');
       Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });

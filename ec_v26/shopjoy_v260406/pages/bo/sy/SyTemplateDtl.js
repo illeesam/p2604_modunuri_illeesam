@@ -14,7 +14,7 @@ window.SyTemplateDtl = {
       try {
         const res = await window.boApi.get('/bo/sy/template/page', {
           params: { pageNo: 1, pageSize: 10000 },
-          ...apiHdr('템플릿관리', '상세조회')
+          ...coUtil.apiHdr('템플릿관리', '상세조회')
         });
         templates = res.data?.data?.pageList || res.data?.data?.list || [];
         uiState.error = null;
@@ -27,7 +27,7 @@ window.SyTemplateDtl = {
       }
     };
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
-    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
     const TEMPLATE_TYPES = ['메일템플릿', '문자템플릿', 'MMS템플릿', 'kakao톡템플릿', 'kakao알림톡템플릿', '시스템알림', '회원알림'];
     const form = reactive({
       templateId: null, templateTypeCd: '메일템플릿', templateCode: '', templateNm: '', subject: '', content: '', useYn: 'Y', sampleParams: '{}',
@@ -115,7 +115,7 @@ window.SyTemplateDtl = {
         if (idx !== -1) Object.assign(templates[idx], { ...form });
       }
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/template`, { ...form }, apiHdr('템플릿관리', '등록')) : window.boApi.put(`/bo/sy/template/${form.templateId}`, { ...form }, apiHdr('템플릿관리', '저장')));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/template`, { ...form }, coUtil.apiHdr('템플릿관리', '등록')) : window.boApi.put(`/bo/sy/template/${form.templateId}`, { ...form }, coUtil.apiHdr('템플릿관리', '저장')));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syTemplateMng');

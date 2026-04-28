@@ -39,7 +39,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           },
-          ...apiHdr('정산지급관리', '목록조회')
+          ...coUtil.apiHdr('정산지급관리', '목록조회')
         });
         const data = res.data?.data;
         payList.splice(0, payList.length, ...(data?.list || payList));
@@ -58,12 +58,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       Object.assign(searchParamOrg, searchParam);
     });
 
-    const DATE_RANGE_OPTIONS = window.boCmUtil.DATE_RANGE_OPTIONS;
+    const DATE_RANGE_OPTIONS = window.boUtil.DATE_RANGE_OPTIONS;
             const dateEnd   = ref('');
     const handleDateRangeChange = () => {
-      if (uiState.dateRange) { const r = window.boCmUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
+      if (uiState.dateRange) { const r = window.boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
-    (() => { const r = window.boCmUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
+    (() => { const r = window.boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     const payList = reactive([
       { payId: 'PAY-2026-009', payDate: '2026-04-10', vendorId: 1, vendorNm: '패션스타일 주식회사', closeMon: '2026-03', settleAmt: 300000, payAmt: 300000, bankNm: '국민은행', bankAccount: '123-45-678901', bankHolder: '패션스타일', payStatus: '지급완료', regUserNm: '이관리자' },
@@ -97,7 +97,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       if (!ok) return;
       r.payStatus = '지급완료'; r.payAmt = r.settleAmt; r.payDate = new Date().toISOString().slice(0,10);
       try {
-        const res = await window.boApi.put(`/bo/ec/st/pay/${r.payId}/pay`, { payAmt: r.settleAmt }, { ...apiHdr('정산지급관리', '저장') });
+        const res = await window.boApi.put(`/bo/ec/st/pay/${r.payId}/pay`, { payAmt: r.settleAmt }, { ...coUtil.apiHdr('정산지급관리', '저장') });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('지급처리가 완료되었습니다.', 'success');
       } catch (err) {

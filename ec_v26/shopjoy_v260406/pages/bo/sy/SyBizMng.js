@@ -17,7 +17,7 @@ window.SyBizMng = {
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           },
-          ...apiHdr('업체관리', '목록조회')
+          ...coUtil.apiHdr('업체관리', '목록조회')
         });
         const data = res.data?.data;
         bizs.splice(0, bizs.length, ...(data?.pageList || []));
@@ -36,7 +36,7 @@ window.SyBizMng = {
         const expanded = reactive(new Set([null]));
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { uiState.selectedPath = id; };
-    const cfTree = computed(() => window.boCmUtil.buildPathTree('sy_biz'));
+    const cfTree = computed(() => window.boUtil.buildPathTree('sy_biz'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
 
@@ -44,7 +44,7 @@ window.SyBizMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
+      const initSet = window.boUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 
@@ -72,7 +72,7 @@ window.SyBizMng = {
         fnLoadCodes();
       }
     });
-    const cfAllowedPathIds = computed(() => uiState.selectedPath == null ? null : window.boCmUtil.getPathDescendants('sy_biz', uiState.selectedPath));
+    const cfAllowedPathIds = computed(() => uiState.selectedPath == null ? null : window.boUtil.getPathDescendants('sy_biz', uiState.selectedPath));
 
     /* 검색 */
     const searchParam = reactive({ kw: '', statusFlt: '', vendorTypeFlt: '' });
@@ -97,7 +97,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       onSearch();
     };
 
-    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : '#'+id);
+    const pathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : '#'+id);
     const fnVendorTypeLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
     const fnVendorTypeBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', CS:'badge-orange', SITE:'badge-purple', PROG:'badge-red', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
     /* 업체유형 → 역할구분 매핑 */

@@ -40,7 +40,7 @@ window.DpDispWidgetLibMng = {
       try {
         const res = await window.boApi.get('/bo/ec/dp/widget-lib/page', {
           params: { pageNo: 1, pageSize: 10000 },
-          ...apiHdr('전시위젯라이브러리', '조회')
+          ...coUtil.apiHdr('전시위젯라이브러리', '조회')
         });
         widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;
@@ -58,9 +58,9 @@ window.DpDispWidgetLibMng = {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
     });
-    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
     const WIDGET_ICONS = {
       'image_banner':'🖼', 'product_slider':'🛒', 'product':'📦',
       'cond_product':'🔍', 'chart_bar':'📊',      'chart_line':'📈',
@@ -196,7 +196,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
       if (idx !== -1) widgetLibs.splice(idx, 1);
       if (uiStateDetail.selectedId === lib.libId) { uiStateDetail.selectedId = null; }
       try {
-        const res = await window.boApi.delete(`/bo/ec/widget-lib/${lib.libId}`, { ...apiHdr('전시위젯라이브러리', '삭제') });
+        const res = await window.boApi.delete(`/bo/ec/widget-lib/${lib.libId}`, { ...coUtil.apiHdr('전시위젯라이브러리', '삭제') });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

@@ -44,7 +44,7 @@ window.DpDispAreaDtl = {
       try {
         const res = await window.boApi.get('/bo/ec/dp/area/page', {
           params: { pageNo: 1, pageSize: 10000 },
-          ...apiHdr('전시영역관리', '상세조회')
+          ...coUtil.apiHdr('전시영역관리', '상세조회')
         });
         areas.splice(0, areas.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;
@@ -61,7 +61,7 @@ window.DpDispAreaDtl = {
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
-    const fnPathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const fnPathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfIsNew = computed(() => !props.editId);
 
@@ -263,7 +263,7 @@ window.DpDispAreaDtl = {
       if (!ok) return;
       const codesData = codes;
       if (isNewArea) {
-        const newId = window.boCmUtil.nextId(codesData, 'codeId');
+        const newId = window.boUtil.nextId(codesData, 'codeId');
         codesData.push({ ...form, codeId: newId });
       } else {
         const idx = codesData.findIndex(c => c.codeId === form.codeId);

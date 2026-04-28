@@ -42,7 +42,7 @@ window.PdQnaMng = {
       try {
         const res = await window.boApi.get('/bo/ec/pd/qna/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) },
-          ...apiHdr('상품Q&A관리', '목록조회')
+          ...coUtil.apiHdr('상품Q&A관리', '목록조회')
         });
         const data = res.data?.data;
         qnas.splice(0, qnas.length, ...(data?.pageList || []));
@@ -76,7 +76,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
     const getProdNm = id => { const p = (products||[]).find(p => p.prodId === id); return p ? p.prodNm : (id||''); };
     const getMemNm  = id => { const m = (members||[]).find(m => m.memberId === id); return m ? m.memberNm : (id||''); };
     const fnStatusBadge = s => ({ WAIT:'badge-orange', ANSWER:'badge-green', CLOSE:'badge-gray' }[s] || 'badge-gray');
-    const cfSiteNm = computed(() => window.boCmUtil.getSiteNm());
+    const cfSiteNm = computed(() => window.boUtil.getSiteNm());
 
     // ── return ───────────────────────────────────────────────────────────────
 

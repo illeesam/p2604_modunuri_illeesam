@@ -43,7 +43,7 @@ window.SyPropMng = {
         if (row._row_status === 'N') row._row_status = 'U';
       }
     };
-    const pathLabel = (id) => window.boCmUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+    const pathLabel = (id) => window.boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* ── 검색 ── */
     const searchParam = reactive({ kw: '', useFlt: '', typeFlt: '' });
@@ -61,7 +61,7 @@ window.SyPropMng = {
       try {
         const res = await window.boApi.get('/bo/sy/prop/page', {
           params: { pageNo: 1, pageSize: 10000, siteId: cfSiteId.value },
-          ...apiHdr('속성관리', '목록조회')
+          ...coUtil.apiHdr('속성관리', '목록조회')
         });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         _rawProps.splice(0, _rawProps.length, ...list);
@@ -80,7 +80,7 @@ window.SyPropMng = {
     });
 
     /* ── 트리 구성 (disp_path 점 분리) ── */
-    const cfTree = computed(() => window.boCmUtil.buildPathTree('sy_prop'));
+    const cfTree = computed(() => window.boUtil.buildPathTree('sy_prop'));
 
     /* ── 트리 펼침 상태 ── */
     const expanded = reactive(new Set(['']));
@@ -98,7 +98,7 @@ window.SyPropMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       fetchData('DEFAULT');
-      const initSet = window.boCmUtil.collectExpandedToDepth(cfTree.value, 2);
+      const initSet = window.boUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 
