@@ -104,14 +104,18 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <select class="form-control" v-model.number="pager.pageSize" @change="onSizeChange" style="width:80px;">
-          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}건</option>
+      <span class="list-title">
+        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+        Q&A 목록
+        <span class="list-count">{{ pager.pageTotalCount }}건</span>
+      </span>
+      <div class="pager-right">
+        <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr>
         <th>번호</th><th>사이트</th><th>상품명</th><th>제목</th><th>작성자</th><th>상태</th><th>등록일</th>
       </tr></thead>
@@ -124,15 +128,21 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
           <td>{{ getProdNm(q.prodId) }}</td>
           <td class="title-link" @click="">{{ q.qnaTitle }}</td>
           <td>{{ getMemNm(q.memberId) }}</td>
-          <td><span :class="'badge '+fnStatusBadge(q.qnaStatusCd)">{{ q.qnaStatusCd }}</span></td>
+          <td><span :class="['badge',fnStatusBadge(q.qnaStatusCd)]">{{ q.qnaStatusCd }}</span></td>
           <td>{{ (q.regDate||'').slice(0,10) }}</td>
         </tr>
       </tbody>
     </table>
     <div class="pagination">
-      <button class="pager" @click="setPage(pager.pageNo-1)" :disabled="pager.pageNo===1">◀</button>
-      <button v-for="n in cfPageNums" :key="n" class="pager" :class="{active:n===pager.pageNo}" @click="setPage(n)">{{ n }}</button>
-      <button class="pager" @click="setPage(pager.pageNo+1)" :disabled="pager.pageNo===pager.pageTotalPage">▶</button>
+      <div></div>
+      <div class="pager">
+        <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+        <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
+      </div>
+      <div></div>
     </div>
   </div>
 </div>`

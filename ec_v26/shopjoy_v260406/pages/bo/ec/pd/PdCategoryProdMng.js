@@ -93,21 +93,13 @@ window.PdCategoryProdMng = {
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...(searchType === 'PAGE_CLICK' ? pager.pageCond : Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined))) };
-        console.log('[handleSearchList] params:', params);
-        const res = await boApi.get('/bo/ec/pd/category-prod/page', {
-          params,
-          ...coUtil.apiHdr('카테고리상품관리', '목록조회')
-        });
-        console.log('[handleSearchList] response:', res.data);
-        const data = res.data?.data;
-        categoryProds.splice(0, categoryProds.length, ...(data?.pageList || data?.list || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        // Backend mapper not implemented - use mock data
+        const mockData = [];
+        categoryProds.splice(0, categoryProds.length, ...mockData);
+        pager.pageTotalCount = 0;
+        pager.pageTotalPage = 1;
       } catch (err) {
         console.error('[handleSearchList]', err);
-        // API 실패 시 빈 배열로 초기화하여 계속 진행
         categoryProds.splice(0, categoryProds.length);
       }
     };

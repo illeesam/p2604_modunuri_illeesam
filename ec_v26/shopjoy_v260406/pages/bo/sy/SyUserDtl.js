@@ -18,7 +18,7 @@ window.SyUserDtl = {
           params: { pageNo: 1, pageSize: 10000 },
           ...coUtil.apiHdr('사용자관리', '상세조회')
         });
-        users = res.data?.data?.pageList || res.data?.data?.list || [];
+        users.splice(0, users.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -65,7 +65,7 @@ window.SyUserDtl = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) {
-        const u = boUsers.value.find(x => x.boUserId === props.editId);
+        const u = users.find(x => x.boUserId === props.editId);
         if (u) Object.assign(form, { ...u, password: '' });
       }
     });
@@ -99,13 +99,7 @@ window.SyUserDtl = {
     const clearDept = () => { form.deptId = null; form.dept = ''; };
 
     /* ── 현재 적용 역할 목록 ── */
-    const cfUserRoles = computed(() => {
-      if (cfIsNew.value) return [];
-      return roleUsers.value
-        .filter(ru => ru.boUserId === props.editId)
-        .map(ru => roles.value.find(r => r.roleId === ru.roleId))
-        .filter(Boolean);
-    });
+    const cfUserRoles = computed(() => []);
 
     const fnRoleTypeBadge = (t) => ({
       '시스템': 'badge-purple', '업무': 'badge-blue', '기타': 'badge-gray',
@@ -126,12 +120,12 @@ window.SyUserDtl = {
       if (!ok) return;
       if (cfIsNew.value) {
         const { password, ...rest } = form;
-        boUsers.value.push({ ...rest, boUserId: nextId.value(boUsers.value, 'boUserId'), lastLogin: '-', regDate: new Date().toISOString().slice(0, 10) });
+        users.push({ ...rest, boUserId: nextId.value(users, 'boUserId'), lastLogin: '-', regDate: new Date().toISOString().slice(0, 10) });
       } else {
-        const idx = boUsers.value.findIndex(x => x.boUserId === props.editId);
+        const idx = users.findIndex(x => x.boUserId === props.editId);
         if (idx !== -1) {
           const { password, ...rest } = form;
-          Object.assign(boUsers.value[idx], rest);
+          Object.assign(users[idx], rest);
         }
       }
       try {

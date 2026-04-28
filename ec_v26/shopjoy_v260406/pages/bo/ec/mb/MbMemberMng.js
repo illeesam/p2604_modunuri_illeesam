@@ -170,9 +170,9 @@ window.MbMemberMng = {
       </tr></thead>
       <tbody>
         <tr v-if="members.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="m in members" :key="m?.userId" :style="selectedId===m.userId?'background:#fff8f9;':''">
+        <tr v-for="m in members" :key="m?.userId" :style="uiStateDetail.selectedId===m.userId?'background:#fff8f9;':''">
           <td>{{ m.userId }}</td>
-          <td><span class="title-link" @click="loadView(m.userId)" :style="selectedId===m.userId?'color:#e8587a;font-weight:700;':''">{{ m.memberNm }}<span v-if="selectedId===m.userId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="loadView(m.userId)" :style="uiStateDetail.selectedId===m.userId?'color:#e8587a;font-weight:700;':''">{{ m.memberNm }}<span v-if="uiStateDetail.selectedId===m.userId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td>{{ m.email }}</td>
           <td>{{ m.phone }}</td>
           <td><span class="badge" :class="fnGradeBadge(m.gradeCd)">{{ m.gradeCd }}</span></td>
@@ -206,7 +206,7 @@ window.MbMemberMng = {
   </div>
 
   <!-- ── 하단 상세: MemberDtl 임베드 ─────────────────────────────────────────── -->
-  <div v-if="selectedId" style="margin-top:4px;">
+  <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>

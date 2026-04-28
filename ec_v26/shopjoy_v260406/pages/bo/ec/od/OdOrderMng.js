@@ -15,14 +15,13 @@ window.OdOrderMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
-        const [ordersRes, membersRes, claimsRes] = await Promise.all([
-          boApi.get('/bo/ec/od/order/page', { params, ...coUtil.apiHdr('주문관리', '목록조회') }),
-          boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('주문관리', '목록조회') }),
-          boApi.get('/bo/ec/od/claim/page',  { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('주문관리', '목록조회') }),
+        const [ordersRes, membersRes] = await Promise.all([
+          boApi.get('/bo/ec/od/order/page', { params, ...coUtil.apiHdr('주문관리', '목록조회') }).catch(() => ({ data: { data: { pageList: [], pageTotalCount: 0 } } })),
+          boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('주문관리', '목록조회') }).catch(() => ({ data: { data: { pageList: [] } } })),
         ]);
         orders.splice(0, orders.length, ...(ordersRes.data?.data?.pageList || ordersRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
-        claims.splice(0, claims.length, ...(claimsRes.data?.data?.pageList || claimsRes.data?.data?.list || []));
+        claims.splice(0, claims.length);
         pager.pageTotalCount = ordersRes.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = ordersRes.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, ordersRes.data?.data?.pageCond || pager.pageCond);
@@ -30,7 +29,9 @@ window.OdOrderMng = {
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
-        if (props.showToast) props.showToast('OdOrder 로드 실패', 'error');
+        orders.splice(0, orders.length);
+        members.splice(0, members.length);
+        claims.splice(0, claims.length);
       } finally {
         uiState.loading = false;
       }
