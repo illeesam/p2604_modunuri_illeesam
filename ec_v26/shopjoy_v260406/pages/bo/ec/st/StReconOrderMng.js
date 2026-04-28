@@ -60,7 +60,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           },
-          headers: { 'X-UI-Nm': '주문대사관리', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('정산주문조정', '목록조회')
         });
         const data = res.data?.data;
         rows.splice(0, rows.length, ...(data?.list || rows));

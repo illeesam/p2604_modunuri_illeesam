@@ -37,7 +37,7 @@ window.PdTagMng = {
       try {
         const res = await window.boApi.get('/bo/ec/pd/tag/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) },
-          headers: { 'X-UI-Nm': '태그관리', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('태그관리', '목록조회')
         });
         const data = res.data?.data;
         tags.splice(0, tags.length, ...(data?.pageList || []));

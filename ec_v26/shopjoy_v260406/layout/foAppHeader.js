@@ -69,6 +69,8 @@ window.foAppHeader = {
             email: props.auth.user?.email,
             currentPassword: pw.current,
             newPassword: pw.next,
+          }, {
+            headers: { 'X-UI-Nm': '비밀번호변경', 'X-Cmd-Nm': '변경' }
           });
           pw.ok = true;
           setTimeout(() => { uiState.pwOpen = false; }, 1400);

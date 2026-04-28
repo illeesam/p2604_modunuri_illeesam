@@ -95,7 +95,9 @@
     try {
       if (!window.foApi) throw new Error('no api');
       const loginPwdHash = window.CryptoJS ? CryptoJS.SHA256(loginPwd).toString() : loginPwd;
-      const res = await window.foApi.post('/auth/fo/auth/login', { loginId, loginPwd: loginPwdHash });
+      const res = await window.foApi.post('/auth/fo/auth/login', { loginId, loginPwd: loginPwdHash }, {
+        headers: { 'X-UI-Nm': '로그인', 'X-Cmd-Nm': '이메일로그인' }
+      });
       console.log('[foAuth.login] full response:', res);
       console.log('[foAuth.login] response.data:', res.data);
       console.log('[foAuth.login] response.data.data:', res.data?.data);
@@ -122,7 +124,9 @@
 
         /* 로그인 후 추가 사용자 정보 조회 */
         try {
-          const userRes = await window.foApi.post('/co/cm/fo-app-store/getUser', '');
+          const userRes = await window.foApi.post('/co/cm/fo-app-store/getUser', '', {
+            headers: { 'X-UI-Nm': '시스템', 'X-Cmd-Nm': '사용자정보조회' }
+          });
           if (userRes?.data?.data?.member) {
             const authStore = window.useFoAuthStore?.();
             authStore?.sfSetAuthUser(userRes.data.data.member);
@@ -162,7 +166,9 @@
       if (!window.foApi) throw new Error('no api');
       const passwordHash = window.CryptoJS ? CryptoJS.SHA256(extra.password || '').toString() : extra.password;
       const body = { memberNm, loginId, loginPwdHash: passwordHash, ...extra };
-      const res = await window.foApi.post('/auth/fo/auth/join', body);
+      const res = await window.foApi.post('/auth/fo/auth/join', body, {
+        headers: { 'X-UI-Nm': '회원가입', 'X-Cmd-Nm': '가입' }
+      });
       console.log('[foAuth.signup] response:', res.data);
       if (res.data?.data) {
         const d = res.data.data;

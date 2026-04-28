@@ -34,7 +34,7 @@ window.BlogEdit = {
     const handleSearchDetail = async (searchType = 'DEFAULT') => {
       if (!cfIsEdit.value) return;
       try {
-        const res = await window.foApi.get(`/fo/ec/cm/bltn/${props.editId}`, { headers: { 'X-UI-Nm': '블로그작성', 'X-Cmd-Nm': '상세조회' } });
+        const res = await window.foApi.get(`/fo/ec/cm/bltn/${props.editId}`, apiHdr('블로그편집', '상세조회'));
         Object.assign(form, res.data?.data || {});
       } catch (e) {
         Object.assign(form, {

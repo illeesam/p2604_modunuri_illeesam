@@ -17,7 +17,7 @@ window.SyVendorMng = {
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           },
-          headers: { 'X-UI-Nm': '업체관리', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('판매자관리', '목록조회')
         });
         const data = res.data?.data;
         vendors.splice(0, vendors.length, ...(data?.pageList || []));
@@ -149,7 +149,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       if (idx !== -1) vendors.splice(idx, 1);
       if (uiStateDetail.selectedId === v.vendorId) uiStateDetail.selectedId = null;
       try {
-        const res = await window.boApi.delete(`/bo/sy/vendor/${v.vendorId}`, { headers: { 'X-UI-Nm': '업체관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await window.boApi.delete(`/bo/sy/vendor/${v.vendorId}`, apiHdr('판매자관리', '삭제'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

@@ -52,7 +52,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           },
-          headers: { 'X-UI-Nm': 'ERP연동조회', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('정산ERP조회관리', '목록조회')
         });
         const data = res.data?.data;
         slips.splice(0, slips.length, ...(data?.list || slips));

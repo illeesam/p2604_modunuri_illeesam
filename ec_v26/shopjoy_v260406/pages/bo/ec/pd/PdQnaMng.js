@@ -42,7 +42,7 @@ window.PdQnaMng = {
       try {
         const res = await window.boApi.get('/bo/ec/pd/qna/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) },
-          headers: { 'X-UI-Nm': '상품문의관리', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('상품Q&A관리', '목록조회')
         });
         const data = res.data?.data;
         qnas.splice(0, qnas.length, ...(data?.pageList || []));

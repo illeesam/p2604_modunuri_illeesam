@@ -17,7 +17,7 @@ window.SySiteMng = {
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           },
-          headers: { 'X-UI-Nm': '사이트관리', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('사이트관리', '목록조회')
         });
         const data = res.data?.data;
         sites.splice(0, sites.length, ...(data?.pageList || []));
@@ -155,7 +155,7 @@ const detailModal = reactive({
       if (idx !== -1) sites.splice(idx, 1);
       if (detailModal.editId === s.siteId) { detailModal.show = false; detailModal.editId = null; }
       try {
-        const res = await window.boApi.delete(`/bo/sy/site/${s.siteId}`, { headers: { 'X-UI-Nm': '사이트관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await window.boApi.delete(`/bo/sy/site/${s.siteId}`, apiHdr('사이트관리', '삭제'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

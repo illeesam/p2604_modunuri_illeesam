@@ -43,7 +43,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           },
-          headers: { 'X-UI-Nm': '블로그관리', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('블로그관리', '목록조회')
         });
         const data = res.data?.data;
         blogs.splice(0, blogs.length, ...(data?.pageList || []));

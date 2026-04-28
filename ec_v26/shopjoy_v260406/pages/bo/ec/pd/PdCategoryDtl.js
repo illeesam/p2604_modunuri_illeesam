@@ -37,7 +37,7 @@ window.PdCategoryDtl = {
       try {
         const res = await window.boApi.get('/bo/ec/pd/category/page', {
           params: { pageNo: 1, pageSize: 10000 },
-          headers: { 'X-UI-Nm': '카테고리상세', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('카테고리관리', '상세조회')
         });
         categories.splice(0, categories.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;

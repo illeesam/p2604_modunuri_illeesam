@@ -42,7 +42,7 @@ window.PmDiscntMng = {
       try {
         const res = await window.boApi.get('/bo/ec/pm/discnt/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) },
-          headers: { 'X-UI-Nm': '할인관리', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('할인관리', '목록조회')
         });
         const data = res.data?.data;
         discounts.splice(0, discounts.length, ...(data?.pageList || []));

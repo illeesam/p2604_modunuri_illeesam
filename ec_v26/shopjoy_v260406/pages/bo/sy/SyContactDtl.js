@@ -19,7 +19,7 @@ window.SyContactDtl = {
       try {
         const res = await window.boApi.get('/bo/sy/contact/page', {
           params: { pageNo: 1, pageSize: 10000 },
-          headers: { 'X-UI-Nm': '고객문의상세', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('문의관리', '상세조회')
         });
         contacts = res.data?.data?.pageList || res.data?.data?.list || [];
         uiState.error = null;
@@ -151,7 +151,7 @@ window.SyContactDtl = {
         if (idx !== -1) Object.assign(contacts[idx], { ...form });
       }
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/contact/${form.inquiryId}`, { ...form }, { headers: { 'X-UI-Nm': '고객문의관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/sy/contact/${form.inquiryId}`, { ...form }, { headers: { 'X-UI-Nm': '고객문의관리', 'X-Cmd-Nm': '저장' } }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/contact/${form.inquiryId}`, { ...form }, apiHdr('문의관리', '등록')) : window.boApi.put(`/bo/sy/contact/${form.inquiryId}`, { ...form }, apiHdr('문의관리', '저장')));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syContactMng');

@@ -46,13 +46,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resV, resA] = await Promise.all([
-          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '정산조정관리', 'X-Cmd-Nm': '조회' } }),
+          window.boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('정산조정관리', '목록조회') }),
           window.boApi.get('/bo/ec/st/adj/page', {
             params: {
               pageNo: pager.pageNo, pageSize: pager.pageSize,
               ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
             },
-            headers: { 'X-UI-Nm': '정산조정관리', 'X-Cmd-Nm': '조회' }
+            headers: { 'X-UI-Nm': '정산조정관리', 'X-Cmd-Nm': '목록조회' }
           })
         ]);
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));

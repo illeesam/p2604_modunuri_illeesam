@@ -61,7 +61,7 @@ window.SyPropMng = {
       try {
         const res = await window.boApi.get('/bo/sy/prop/page', {
           params: { pageNo: 1, pageSize: 10000, siteId: cfSiteId.value },
-          headers: { 'X-UI-Nm': '속성관리', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('속성관리', '목록조회')
         });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         _rawProps.splice(0, _rawProps.length, ...list);

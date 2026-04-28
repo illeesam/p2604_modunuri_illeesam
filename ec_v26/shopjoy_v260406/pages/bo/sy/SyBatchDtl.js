@@ -16,7 +16,7 @@ window.SyBatchDtl = {
       try {
         const res = await window.boApi.get('/bo/sy/batch/page', {
           params: { pageNo: 1, pageSize: 10000 },
-          headers: { 'X-UI-Nm': '배치상세', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('배치관리', '상세조회')
         });
         batches = res.data?.data?.pageList || res.data?.data?.list || [];
         uiState.error = null;
@@ -94,7 +94,7 @@ window.SyBatchDtl = {
         if (idx !== -1) Object.assign(batches[idx], { batchNm: form.batchNm, batchCode: form.batchCode, description: form.description, cron: form.cron, statusCd: form.statusCd });
       }
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/batch/${form.batchId}`, { ...form }, { headers: { 'X-UI-Nm': '배치관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/sy/batch/${form.batchId}`, { ...form }, { headers: { 'X-UI-Nm': '배치관리', 'X-Cmd-Nm': '저장' } }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/batch/${form.batchId}`, { ...form }, apiHdr('배치관리', '등록')) : window.boApi.put(`/bo/sy/batch/${form.batchId}`, { ...form }, apiHdr('배치관리', '저장')));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syBatchMng');

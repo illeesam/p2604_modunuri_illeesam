@@ -40,7 +40,7 @@ window.PmGiftMng = {
       try {
         const res = await window.boApi.get('/bo/ec/pm/gift/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) },
-          headers: { 'X-UI-Nm': '사은품관리', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('선물관리', '목록조회')
         });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         gifts.splice(0, gifts.length, ...list);

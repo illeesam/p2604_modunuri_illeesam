@@ -62,13 +62,27 @@
         }
       } catch (_) {}
     } catch (_) {}
+    /* X-UI-Nm / X-Cmd-Nm: 필수 헤더 검증 */
+    var uiNm  = (cfg.headers && (cfg.headers['X-UI-Nm']  || cfg.headers['x-ui-nm']))  || '';
+    var cmdNm = (cfg.headers && (cfg.headers['X-Cmd-Nm'] || cfg.headers['x-cmd-nm'])) || '';
+    if (!uiNm || !cmdNm) {
+      var missingHeaders = [];
+      if (!uiNm) missingHeaders.push('X-UI-Nm');
+      if (!cmdNm) missingHeaders.push('X-Cmd-Nm');
+      var errMsg = '[BO API] 필수 헤더 누락: ' + missingHeaders.join(', ') + '\n\n' +
+                   'Method: ' + (cfg.method || 'GET').toUpperCase() + '\n' +
+                   'URL: ' + (cfg.url || '') + '\n' +
+                   'X-UI-Nm: ' + (uiNm || '(미설정)') + '\n' +
+                   'X-Cmd-Nm: ' + (cmdNm || '(미설정)');
+      try { if (typeof global.alert === 'function') global.alert(errMsg); } catch (_) {}
+      console.error(TAG + ' ✗ REQUIRED HEADERS MISSING', { method: cfg.method, url: cfg.url, uiNm: uiNm, cmdNm: cmdNm });
+      return Promise.reject(new Error('[BO API] 필수 헤더 누락: X-UI-Nm, X-Cmd-Nm'));
+    }
     /* X-UI-Nm / X-Cmd-Nm: 한글은 ISO-8859-1 불가 → encodeURIComponent로 인코딩 후 전송, 로그는 디코딩 */
     try {
       if (cfg.headers['X-UI-Nm'])  cfg.headers['X-UI-Nm']  = encodeURIComponent(cfg.headers['X-UI-Nm']);
       if (cfg.headers['X-Cmd-Nm']) cfg.headers['X-Cmd-Nm'] = encodeURIComponent(cfg.headers['X-Cmd-Nm']);
     } catch (_) {}
-    var uiNm  = (cfg.headers && (cfg.headers['X-UI-Nm']  || cfg.headers['x-ui-nm']))  || '';
-    var cmdNm = (cfg.headers && (cfg.headers['X-Cmd-Nm'] || cfg.headers['x-cmd-nm'])) || '';
     try { uiNm  = uiNm  ? decodeURIComponent(uiNm)  : ''; } catch (_) {}
     try { cmdNm = cmdNm ? decodeURIComponent(cmdNm) : ''; } catch (_) {}
     var uiTag = uiNm ? (' [' + uiNm + (cmdNm ? ' > ' + cmdNm : '') + ']') : '';

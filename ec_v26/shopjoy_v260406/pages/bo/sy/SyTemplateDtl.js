@@ -14,7 +14,7 @@ window.SyTemplateDtl = {
       try {
         const res = await window.boApi.get('/bo/sy/template/page', {
           params: { pageNo: 1, pageSize: 10000 },
-          headers: { 'X-UI-Nm': '템플릿상세', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('템플릿관리', '상세조회')
         });
         templates = res.data?.data?.pageList || res.data?.data?.list || [];
         uiState.error = null;
@@ -115,7 +115,7 @@ window.SyTemplateDtl = {
         if (idx !== -1) Object.assign(templates[idx], { ...form });
       }
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/template`, { ...form }, { headers: { 'X-UI-Nm': '템플릿관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/sy/template/${form.templateId}`, { ...form }, { headers: { 'X-UI-Nm': '템플릿관리', 'X-Cmd-Nm': '저장' } }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/template`, { ...form }, apiHdr('템플릿관리', '등록')) : window.boApi.put(`/bo/sy/template/${form.templateId}`, { ...form }, apiHdr('템플릿관리', '저장')));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syTemplateMng');

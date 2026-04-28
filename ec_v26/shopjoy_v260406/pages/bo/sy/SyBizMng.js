@@ -17,7 +17,7 @@ window.SyBizMng = {
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           },
-          headers: { 'X-UI-Nm': '사업자관리', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('업체관리', '목록조회')
         });
         const data = res.data?.data;
         bizs.splice(0, bizs.length, ...(data?.pageList || []));

@@ -304,7 +304,7 @@ window.SyCodeMng = {
         uiState.loading = true;
         const res = await window.boApi.get('/bo/sy/code/page', {
           params: { pageNo: 1, pageSize: 100000 },
-          headers: { 'X-UI-Nm': '공통코드관리', 'X-Cmd-Nm': '조회' },
+          ...apiHdr('코드관리', '목록조회'),
         });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         codes.splice(0, codes.length, ...list);

@@ -16,7 +16,7 @@ window.SyBbmDtl = {
       try {
         const res = await window.boApi.get('/bo/sy/bbm/page', {
           params: { pageNo: 1, pageSize: 10000 },
-          headers: { 'X-UI-Nm': 'BBM상세', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('게시판모드관리', '상세조회')
         });
         bbms = res.data?.data?.pageList || res.data?.data?.list || [];
         uiState.error = null;
@@ -93,7 +93,7 @@ window.SyBbmDtl = {
         if (idx !== -1) Object.assign(bbms[idx], { ...form });
       }
       try {
-        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/bbm/${form.bbmId}`, { ...form }, { headers: { 'X-UI-Nm': 'BBM관리', 'X-Cmd-Nm': '등록' } }) : window.boApi.put(`/bo/sy/bbm/${form.bbmId}`, { ...form }, { headers: { 'X-UI-Nm': 'BBM관리', 'X-Cmd-Nm': '저장' } }));
+        const res = await (cfIsNew.value ? window.boApi.post(`/bo/sy/bbm/${form.bbmId}`, { ...form }, apiHdr('게시판모드관리', '등록')) : window.boApi.put(`/bo/sy/bbm/${form.bbmId}`, { ...form }, apiHdr('게시판모드관리', '저장')));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syBbmMng');

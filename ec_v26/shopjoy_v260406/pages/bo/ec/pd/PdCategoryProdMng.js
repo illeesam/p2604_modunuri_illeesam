@@ -85,7 +85,7 @@ window.PdCategoryProdMng = {
       try {
         const res = await window.boApi.get('/bo/ec/pd/category-prod/page', {
           params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...(searchType === 'PAGE_CLICK' ? pager.pageCond : searchParam) },
-          headers: { 'X-UI-Nm': '카테고리상품관리', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('상품카테고리관리', '목록조회')
         });
         const data = res.data?.data;
         categoryProds.splice(0, categoryProds.length, ...(data?.pageList || []));

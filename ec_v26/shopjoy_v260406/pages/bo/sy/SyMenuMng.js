@@ -15,7 +15,7 @@ window.SyMenuMng = {
       try {
         const res = await window.boApi.get('/bo/sy/menu/page', {
           params: { pageNo: 1, pageSize: 10000 },
-          headers: { 'X-UI-Nm': '메뉴관리', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('메뉴관리', '목록조회')
         });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         menus.splice(0, menus.length, ...list);

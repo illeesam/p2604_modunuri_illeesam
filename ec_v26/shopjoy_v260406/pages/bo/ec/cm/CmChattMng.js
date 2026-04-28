@@ -47,7 +47,7 @@ const isAppReady = computed(() => {
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           },
-          headers: { 'X-UI-Nm': '채팅관리', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('채팅관리', '목록조회')
         });
         const data = res.data?.data;
         chatts.splice(0, chatts.length, ...(data?.pageList || []));

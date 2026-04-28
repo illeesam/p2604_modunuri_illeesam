@@ -17,9 +17,9 @@ window.OdOrderHist = {
       uiState.loading = true;
       try {
         const [resO, resC, resD] = await Promise.all([
-          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '주문이력', 'X-Cmd-Nm': '이력조회' } }),
-          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '주문이력', 'X-Cmd-Nm': '이력조회' } }),
-          window.boApi.get('/bo/ec/od/dliv/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '주문이력', 'X-Cmd-Nm': '이력조회' } }),
+          window.boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('주문관리', '이력조회') }),
+          window.boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('클레임관리', '이력조회') }),
+          window.boApi.get('/bo/ec/od/dliv/page', { params: { pageNo: 1, pageSize: 10000 }, ...apiHdr('배송관리', '이력조회') }),
         ]);
         orders.splice(0, orders.length, ...(resO.data?.data?.list || []));
         claims.splice(0, claims.length, ...(resC.data?.data?.list || []));

@@ -34,7 +34,9 @@ window.useFoAppInitStore = Pinia.defineStore('foAppInit', {
       this.svError = null;
 
       try {
-        const res = await window.foApi.get(`/co/cm/fo-app-store/getInitData?names=${encodeURIComponent(names || 'ALL')}`);
+        const res = await window.foApi.get(`/co/cm/fo-app-store/getInitData?names=${encodeURIComponent(names || 'ALL')}`, {
+          headers: { 'X-UI-Nm': '시스템', 'X-Cmd-Nm': '초기화데이터조회' }
+        });
 
         if (res?.data?.data) {
           const data = res.data.data;

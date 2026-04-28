@@ -15,7 +15,7 @@ window.SyBatchMng = {
       try {
         const res = await window.boApi.get('/bo/sy/batch/page', {
           params: { pageNo: 1, pageSize: 10000 },
-          headers: { 'X-UI-Nm': '배치관리', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('배치관리', '목록조회')
         });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         batches.splice(0, batches.length, ...list);

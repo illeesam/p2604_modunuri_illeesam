@@ -80,7 +80,7 @@ const rawList = reactive([]);
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           },
-          headers: { 'X-UI-Nm': '정산수집원장', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('정산데이터관리', '목록조회')
         });
         const data = res.data?.data;
         rawList.splice(0, rawList.length, ...(data?.pageList || data?.list || []));

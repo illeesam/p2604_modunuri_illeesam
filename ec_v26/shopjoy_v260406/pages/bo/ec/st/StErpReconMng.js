@@ -58,7 +58,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           },
-          headers: { 'X-UI-Nm': 'ERP대사관리', 'X-Cmd-Nm': '조회' }
+          ...apiHdr('정산ERP연동관리', '목록조회')
         });
         const data = res.data?.data;
         reconList.splice(0, reconList.length, ...(data?.list || reconList));

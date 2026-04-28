@@ -58,6 +58,8 @@
             loginId,
             loginPwd: loginPwdHash,
             authMethod,
+          }, {
+            headers: { 'X-UI-Nm': '로그인', 'X-Cmd-Nm': '이메일로그인' }
           });
 
           const loginData = res.data?.data || {};
@@ -99,7 +101,9 @@
 
           /* 로그인 후 초기 데이터 조회 */
           try {
-            const initRes = await window.boApi.get('/co/cm/bo-app-store/getInitData?names=ALL');
+            const initRes = await window.boApi.get('/co/cm/bo-app-store/getInitData?names=ALL', {
+              headers: { 'X-UI-Nm': '시스템', 'X-Cmd-Nm': '초기화데이터조회' }
+            });
             if (initRes?.data?.data) {
               const data = initRes.data.data;
 
@@ -139,6 +143,8 @@
         try {
           const res = await window.boApi.post('/auth/bo/auth/refresh', {
             refreshToken: this.svRefreshToken,
+          }, {
+            headers: { 'X-UI-Nm': '로그인', 'X-Cmd-Nm': '토큰갱신' }
           });
           this.svAccessToken = res.data?.accessToken || '';
           this.svRefreshToken = res.data?.refreshToken || '';
@@ -159,7 +165,9 @@
       async sfLogout() {
         if (this.svRefreshToken) {
           try {
-            await window.boApi.post('/auth/bo/auth/logout', { refreshToken: this.svRefreshToken });
+            await window.boApi.post('/auth/bo/auth/logout', { refreshToken: this.svRefreshToken }, {
+              headers: { 'X-UI-Nm': '로그인', 'X-Cmd-Nm': '로그아웃' }
+            });
           } catch (_) {}
         }
         this.sfReset();

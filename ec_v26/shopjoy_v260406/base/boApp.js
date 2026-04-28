@@ -741,7 +741,7 @@
           let roles = window.getBoRoleStore?.()?.svRoles || [];
           if (!roles.length) {
             try {
-              const res = await window.boApi.get('/bo/sy/role/page', { params: { pageNo: 1, pageSize: 10000 } });
+              const res = await window.boApi.get('/bo/sy/role/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '역할관리', 'X-Cmd-Nm': '목록조회' } });
               roles = res.data?.data?.list || [];
             } catch (_) {}
           }
@@ -797,7 +797,7 @@
       const testAccounts = ref([]);
       const handleFetchTestAccounts = async () => {
         try {
-          const res = await window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 } });
+          const res = await window.boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 }, headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '목록조회' } });
           testAccounts.value = res.data?.data?.list || [];
         } catch (_) {}
       };
@@ -981,6 +981,8 @@
             password: regForm.password,
             phone: regForm.phone,
             role: regForm.role,
+          }, {
+            headers: { 'X-UI-Nm': '사용자등록', 'X-Cmd-Nm': '저장' }
           });
           Object.assign(regForm, { name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
           loginModal.tab = 'login';
