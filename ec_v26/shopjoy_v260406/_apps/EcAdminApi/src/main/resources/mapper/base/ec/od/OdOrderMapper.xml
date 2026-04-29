@@ -13,17 +13,17 @@
     <!-- 주문 조회 조건 -->
     <sql id="odOrderCond">
         <where>
-            <if test="siteId != null and siteId != ''">AND o.site_id = #{siteId}</if>
-            <if test="status != null and status != ''">AND o.order_status_cd = #{status}</if>
-            <if test="kw != null and kw != ''">
-                AND (o.order_id::TEXT ILIKE '%' || #{kw} || '%'
-                  OR o.member_nm      ILIKE '%' || #{kw} || '%'
-                  OR m.login_id       ILIKE '%' || #{kw} || '%'
-                  OR o.recv_nm        ILIKE '%' || #{kw} || '%'
-                  OR o.recv_phone     ILIKE '%' || #{kw} || '%')
+            <if test="p.siteId != null and p.siteId != ''">AND o.site_id = #{p.siteId}</if>
+            <if test="p.status != null and p.status != ''">AND o.order_status_cd = #{p.status}</if>
+            <if test="p.kw != null and p.kw != ''">
+                AND (o.order_id::TEXT ILIKE '%' || #{p.kw} || '%'
+                  OR o.member_nm      ILIKE '%' || #{p.kw} || '%'
+                  OR m.login_id       ILIKE '%' || #{p.kw} || '%'
+                  OR o.recv_nm        ILIKE '%' || #{p.kw} || '%'
+                  OR o.recv_phone     ILIKE '%' || #{p.kw} || '%')
             </if>
-            <if test="dateStart != null and dateStart != ''">AND o.order_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND o.order_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="p.dateStart != null and p.dateStart != ''">AND o.order_date &gt;= #{p.dateStart}::DATE</if>
+            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND o.order_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
     </sql>
 
