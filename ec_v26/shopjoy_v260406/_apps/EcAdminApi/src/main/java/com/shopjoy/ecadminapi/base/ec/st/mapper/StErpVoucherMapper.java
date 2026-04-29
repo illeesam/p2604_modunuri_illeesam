@@ -13,11 +13,11 @@ public interface StErpVoucherMapper {
 
     StErpVoucherDto selectById(@Param("id") String id);
 
-    List<StErpVoucherDto> selectList(@Param("p") Map<String, Object> p);
+    List<StErpVoucherDto> selectList(Map<String, Object> p);
 
-    List<StErpVoucherDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<StErpVoucherDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(StErpVoucher entity);
 }

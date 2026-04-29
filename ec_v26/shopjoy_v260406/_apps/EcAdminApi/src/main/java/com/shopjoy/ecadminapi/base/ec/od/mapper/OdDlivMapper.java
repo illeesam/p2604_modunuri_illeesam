@@ -13,11 +13,11 @@ public interface OdDlivMapper {
 
     OdDlivDto selectById(@Param("id") String id);
 
-    List<OdDlivDto> selectList(@Param("p") Map<String, Object> p);
+    List<OdDlivDto> selectList(Map<String, Object> p);
 
-    List<OdDlivDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<OdDlivDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(OdDliv entity);
 }

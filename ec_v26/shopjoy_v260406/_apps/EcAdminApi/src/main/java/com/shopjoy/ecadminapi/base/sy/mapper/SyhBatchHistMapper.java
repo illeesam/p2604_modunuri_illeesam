@@ -13,11 +13,11 @@ public interface SyhBatchHistMapper {
 
     SyhBatchHistDto selectById(@Param("id") String id);
 
-    List<SyhBatchHistDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyhBatchHistDto> selectList(Map<String, Object> p);
 
-    List<SyhBatchHistDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyhBatchHistDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyhBatchHist entity);
 }

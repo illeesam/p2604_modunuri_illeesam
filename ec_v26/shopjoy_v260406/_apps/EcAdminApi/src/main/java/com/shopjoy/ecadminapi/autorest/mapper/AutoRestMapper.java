@@ -10,15 +10,15 @@ import java.util.List;
 @Mapper
 public interface AutoRestMapper {
 
-    List<RowMap> selectList(@Param("p") QueryParam p);
+    List<RowMap> selectList(QueryParam p);
 
-    List<RowMap> selectPage(@Param("p") QueryParam p);
+    List<RowMap> selectPage(QueryParam p);
 
-    long selectCount(@Param("p") QueryParam p);
+    long selectCount(QueryParam p);
 
-    RowMap selectById(@Param("p") QueryParam p);
+    RowMap selectById(QueryParam p);
 
-    List<RowMap> selectChildren(@Param("p") QueryParam p);
+    List<RowMap> selectChildren(QueryParam p);
 
     List<RowMap> selectCodeLabels(@Param("codeGrp") String codeGrp,
                                   @Param("siteId") String siteId);

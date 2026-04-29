@@ -13,11 +13,11 @@ public interface SyBatchMapper {
 
     SyBatchDto selectById(@Param("id") String id);
 
-    List<SyBatchDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyBatchDto> selectList(Map<String, Object> p);
 
-    List<SyBatchDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyBatchDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyBatch entity);
 }

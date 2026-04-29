@@ -6,10 +6,10 @@
 
     <sql id="mbDeviceTokenCond">
         <where>
-            <if test="p.siteId != null and p.siteId != ''">AND t.site_id = #{p.siteId}</if>
-            <if test="p.memberId != null and p.memberId != ''">AND t.member_id = #{p.memberId}</if>
-            <if test="p.dateStart != null and p.dateStart != ''">AND t.reg_date &gt;= #{p.dateStart}::DATE</if>
-            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND t.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="siteId != null and siteId != ''">AND t.site_id = #{siteId}</if>
+            <if test="memberId != null and memberId != ''">AND t.member_id = #{memberId}</if>
+            <if test="dateStart != null and dateStart != ''">AND t.reg_date &gt;= #{dateStart}::DATE</if>
+            <if test="dateEnd   != null and dateEnd   != ''">AND t.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
     </sql>
 
@@ -30,13 +30,13 @@
             LEFT JOIN mb_member mem ON mem.member_id = t.member_id
             <include refid="mbDeviceTokenCond"/>
         <choose>
-            <when test="p.sort == 'id_asc'">ORDER BY t.device_token_id ASC</when>
-            <when test="p.sort == 'id_desc'">ORDER BY t.device_token_id DESC</when>
-            <when test="p.sort == 'reg_asc'">ORDER BY t.reg_date ASC</when>
-            <when test="p.sort == 'reg_desc'">ORDER BY t.reg_date DESC</when>
+            <when test="sort == 'id_asc'">ORDER BY t.device_token_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY t.device_token_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY t.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY t.reg_date DESC</when>
             <otherwise>ORDER BY t.reg_date DESC</otherwise>
         </choose>
-        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+        <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto">
@@ -47,13 +47,13 @@
             LEFT JOIN mb_member mem ON mem.member_id = t.member_id
             <include refid="mbDeviceTokenCond"/>
         <choose>
-            <when test="p.sort == 'id_asc'">ORDER BY t.device_token_id ASC</when>
-            <when test="p.sort == 'id_desc'">ORDER BY t.device_token_id DESC</when>
-            <when test="p.sort == 'reg_asc'">ORDER BY t.reg_date ASC</when>
-            <when test="p.sort == 'reg_desc'">ORDER BY t.reg_date DESC</when>
+            <when test="sort == 'id_asc'">ORDER BY t.device_token_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY t.device_token_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY t.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY t.reg_date DESC</when>
             <otherwise>ORDER BY t.reg_date DESC</otherwise>
         </choose>
-        LIMIT #{p.limit} OFFSET #{p.offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="selectPageCount" resultType="long">

@@ -13,11 +13,11 @@ public interface PdhProdStatusHistMapper {
 
     PdhProdStatusHistDto selectById(@Param("id") String id);
 
-    List<PdhProdStatusHistDto> selectList(@Param("p") Map<String, Object> p);
+    List<PdhProdStatusHistDto> selectList(Map<String, Object> p);
 
-    List<PdhProdStatusHistDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<PdhProdStatusHistDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(PdhProdStatusHist entity);
 }

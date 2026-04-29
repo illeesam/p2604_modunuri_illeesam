@@ -13,11 +13,11 @@ public interface PmCacheMapper {
 
     PmCacheDto selectById(@Param("id") String id);
 
-    List<PmCacheDto> selectList(@Param("p") Map<String, Object> p);
+    List<PmCacheDto> selectList(Map<String, Object> p);
 
-    List<PmCacheDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<PmCacheDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(PmCache entity);
 }

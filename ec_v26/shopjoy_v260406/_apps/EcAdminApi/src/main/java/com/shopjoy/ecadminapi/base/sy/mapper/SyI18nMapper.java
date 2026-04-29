@@ -13,11 +13,11 @@ public interface SyI18nMapper {
 
     SyI18nDto selectById(@Param("id") String id);
 
-    List<SyI18nDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyI18nDto> selectList(Map<String, Object> p);
 
-    List<SyI18nDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyI18nDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyI18n entity);
 }

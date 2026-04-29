@@ -13,11 +13,11 @@ public interface PdRestockNotiMapper {
 
     PdRestockNotiDto selectById(@Param("id") String id);
 
-    List<PdRestockNotiDto> selectList(@Param("p") Map<String, Object> p);
+    List<PdRestockNotiDto> selectList(Map<String, Object> p);
 
-    List<PdRestockNotiDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<PdRestockNotiDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(PdRestockNoti entity);
 }

@@ -13,11 +13,11 @@ public interface SyhAlarmSendHistMapper {
 
     SyhAlarmSendHistDto selectById(@Param("id") String id);
 
-    List<SyhAlarmSendHistDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyhAlarmSendHistDto> selectList(Map<String, Object> p);
 
-    List<SyhAlarmSendHistDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyhAlarmSendHistDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyhAlarmSendHist entity);
 }

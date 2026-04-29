@@ -6,14 +6,14 @@
 
     <sql id="syUserCond">
         <where>
-            <if test="p.siteId != null and p.siteId != ''">AND u.site_id = #{p.siteId}</if>
-            <if test="p.deptId != null and p.deptId != ''">AND u.dept_id = #{p.deptId}</if>
-            <if test="p.status != null and p.status != ''">AND u.user_status_cd = #{p.status}</if>
-            <if test="p.kw != null and p.kw != ''">
-                AND (u.user_nm ILIKE '%' || #{p.kw} || '%' OR u.login_id ILIKE '%' || #{p.kw} || '%' OR u.user_email ILIKE '%' || #{p.kw} || '%')
+            <if test="siteId != null and siteId != ''">AND u.site_id = #{siteId}</if>
+            <if test="deptId != null and deptId != ''">AND u.dept_id = #{deptId}</if>
+            <if test="status != null and status != ''">AND u.user_status_cd = #{status}</if>
+            <if test="kw != null and kw != ''">
+                AND (u.user_nm ILIKE '%' || #{kw} || '%' OR u.login_id ILIKE '%' || #{kw} || '%' OR u.user_email ILIKE '%' || #{kw} || '%')
             </if>
-            <if test="p.dateStart != null and p.dateStart != ''">AND u.reg_date &gt;= #{p.dateStart}::DATE</if>
-            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND u.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != ''">AND u.reg_date &gt;= #{dateStart}::DATE</if>
+            <if test="dateEnd   != null and dateEnd   != ''">AND u.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
     </sql>
 
@@ -50,15 +50,15 @@
             LEFT JOIN shopjoy_2604.sy_code cd_am ON cd_am.code_grp = 'AUTH_METHOD' AND cd_am.code_value = u.auth_method_cd
             <include refid="syUserCond"/>
         <choose>
-            <when test="p.sort == 'id_asc'">ORDER BY u.user_id ASC</when>
-            <when test="p.sort == 'id_desc'">ORDER BY u.user_id DESC</when>
-            <when test="p.sort == 'nm_asc'">ORDER BY u.user_nm ASC</when>
-            <when test="p.sort == 'nm_desc'">ORDER BY u.user_nm DESC</when>
-            <when test="p.sort == 'reg_asc'">ORDER BY u.reg_date ASC</when>
-            <when test="p.sort == 'reg_desc'">ORDER BY u.reg_date DESC</when>
+            <when test="sort == 'id_asc'">ORDER BY u.user_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY u.user_id DESC</when>
+            <when test="sort == 'nm_asc'">ORDER BY u.user_nm ASC</when>
+            <when test="sort == 'nm_desc'">ORDER BY u.user_nm DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY u.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY u.reg_date DESC</when>
             <otherwise>ORDER BY u.reg_date DESC</otherwise>
         </choose>
-        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+        <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto">
@@ -77,15 +77,15 @@
             LEFT JOIN shopjoy_2604.sy_code cd_am ON cd_am.code_grp = 'AUTH_METHOD' AND cd_am.code_value = u.auth_method_cd
             <include refid="syUserCond"/>
         <choose>
-            <when test="p.sort == 'id_asc'">ORDER BY u.user_id ASC</when>
-            <when test="p.sort == 'id_desc'">ORDER BY u.user_id DESC</when>
-            <when test="p.sort == 'nm_asc'">ORDER BY u.user_nm ASC</when>
-            <when test="p.sort == 'nm_desc'">ORDER BY u.user_nm DESC</when>
-            <when test="p.sort == 'reg_asc'">ORDER BY u.reg_date ASC</when>
-            <when test="p.sort == 'reg_desc'">ORDER BY u.reg_date DESC</when>
+            <when test="sort == 'id_asc'">ORDER BY u.user_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY u.user_id DESC</when>
+            <when test="sort == 'nm_asc'">ORDER BY u.user_nm ASC</when>
+            <when test="sort == 'nm_desc'">ORDER BY u.user_nm DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY u.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY u.reg_date DESC</when>
             <otherwise>ORDER BY u.reg_date DESC</otherwise>
         </choose>
-        LIMIT #{p.limit} OFFSET #{p.offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="selectPageCount" resultType="long">

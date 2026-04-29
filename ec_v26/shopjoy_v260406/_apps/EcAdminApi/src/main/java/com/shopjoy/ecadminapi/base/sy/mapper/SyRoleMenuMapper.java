@@ -13,11 +13,11 @@ public interface SyRoleMenuMapper {
 
     SyRoleMenuDto selectById(@Param("id") String id);
 
-    List<SyRoleMenuDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyRoleMenuDto> selectList(Map<String, Object> p);
 
-    List<SyRoleMenuDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyRoleMenuDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyRoleMenu entity);
 }

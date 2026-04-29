@@ -13,17 +13,17 @@
     <!-- 주문 조회 조건 -->
     <sql id="odOrderCond">
         <where>
-            <if test="p.siteId != null and p.siteId != ''">AND o.site_id = #{p.siteId}</if>
-            <if test="p.status != null and p.status != ''">AND o.order_status_cd = #{p.status}</if>
-            <if test="p.kw != null and p.kw != ''">
-                AND (o.order_id::TEXT ILIKE '%' || #{p.kw} || '%'
-                  OR o.member_nm      ILIKE '%' || #{p.kw} || '%'
-                  OR m.login_id       ILIKE '%' || #{p.kw} || '%'
-                  OR o.recv_nm        ILIKE '%' || #{p.kw} || '%'
-                  OR o.recv_phone     ILIKE '%' || #{p.kw} || '%')
+            <if test="siteId != null and siteId != ''">AND o.site_id = #{siteId}</if>
+            <if test="status != null and status != ''">AND o.order_status_cd = #{status}</if>
+            <if test="kw != null and kw != ''">
+                AND (o.order_id::TEXT ILIKE '%' || #{kw} || '%'
+                  OR o.member_nm      ILIKE '%' || #{kw} || '%'
+                  OR m.login_id       ILIKE '%' || #{kw} || '%'
+                  OR o.recv_nm        ILIKE '%' || #{kw} || '%'
+                  OR o.recv_phone     ILIKE '%' || #{kw} || '%')
             </if>
-            <if test="p.dateStart != null and p.dateStart != ''">AND o.order_date &gt;= #{p.dateStart}::DATE</if>
-            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND o.order_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != ''">AND o.order_date &gt;= #{dateStart}::DATE</if>
+            <if test="dateEnd   != null and dateEnd   != ''">AND o.order_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
     </sql>
 
@@ -170,14 +170,14 @@
     <select id="selectItemsByOrderId" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto">
         SELECT  /* base.ec.od :: OdOrder :: selectItemsByOrderId */
               oi.*
-            , p.thumbnail_url
+            , thumbnail_url
             , sk.sku_code
             , oi1.opt_item_nm  AS opt_item_nm_1
             , oi2.opt_item_nm  AS opt_item_nm_2
             , cd_is.code_label AS order_item_status_cd_nm
             , cd_dc.code_label AS dliv_courier_cd_nm
         FROM od_order_item oi
-            LEFT JOIN pd_prod          p   ON p.prod_id      = oi.prod_id
+            LEFT JOIN pd_prod          p   ON prod_id      = oi.prod_id
             LEFT JOIN pd_prod_sku      sk  ON sk.sku_id      = oi.sku_id
             LEFT JOIN pd_prod_opt_item oi1 ON oi1.opt_item_id = oi.opt_item_id_1
             LEFT JOIN pd_prod_opt_item oi2 ON oi2.opt_item_id = oi.opt_item_id_2

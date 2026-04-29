@@ -13,11 +13,11 @@ public interface MbMemberMapper {
 
     MbMemberDto selectById(@Param("id") String id);
 
-    List<MbMemberDto> selectList(@Param("p") Map<String, Object> p);
+    List<MbMemberDto> selectList(Map<String, Object> p);
 
-    List<MbMemberDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<MbMemberDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(MbMember entity);
 }

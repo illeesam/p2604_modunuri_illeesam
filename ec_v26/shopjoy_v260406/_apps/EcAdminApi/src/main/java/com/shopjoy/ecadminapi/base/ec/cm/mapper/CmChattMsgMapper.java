@@ -13,11 +13,11 @@ public interface CmChattMsgMapper {
 
     CmChattMsgDto selectById(@Param("id") String id);
 
-    List<CmChattMsgDto> selectList(@Param("p") Map<String, Object> p);
+    List<CmChattMsgDto> selectList(Map<String, Object> p);
 
-    List<CmChattMsgDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<CmChattMsgDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(CmChattMsg entity);
 }

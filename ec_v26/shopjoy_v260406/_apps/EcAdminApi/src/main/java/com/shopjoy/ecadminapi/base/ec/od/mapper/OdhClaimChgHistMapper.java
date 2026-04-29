@@ -13,11 +13,11 @@ public interface OdhClaimChgHistMapper {
 
     OdhClaimChgHistDto selectById(@Param("id") String id);
 
-    List<OdhClaimChgHistDto> selectList(@Param("p") Map<String, Object> p);
+    List<OdhClaimChgHistDto> selectList(Map<String, Object> p);
 
-    List<OdhClaimChgHistDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<OdhClaimChgHistDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(OdhClaimChgHist entity);
 }

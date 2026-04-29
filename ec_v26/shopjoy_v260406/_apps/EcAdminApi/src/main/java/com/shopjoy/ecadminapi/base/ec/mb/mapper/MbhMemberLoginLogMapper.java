@@ -13,11 +13,11 @@ public interface MbhMemberLoginLogMapper {
 
     MbhMemberLoginLogDto selectById(@Param("id") String id);
 
-    List<MbhMemberLoginLogDto> selectList(@Param("p") Map<String, Object> p);
+    List<MbhMemberLoginLogDto> selectList(Map<String, Object> p);
 
-    List<MbhMemberLoginLogDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<MbhMemberLoginLogDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(MbhMemberLoginLog entity);
 }

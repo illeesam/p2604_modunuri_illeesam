@@ -13,11 +13,11 @@ public interface OdhOrderItemChgHistMapper {
 
     OdhOrderItemChgHistDto selectById(@Param("id") String id);
 
-    List<OdhOrderItemChgHistDto> selectList(@Param("p") Map<String, Object> p);
+    List<OdhOrderItemChgHistDto> selectList(Map<String, Object> p);
 
-    List<OdhOrderItemChgHistDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<OdhOrderItemChgHistDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(OdhOrderItemChgHist entity);
 }

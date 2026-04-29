@@ -13,11 +13,11 @@ public interface PdhProdViewLogMapper {
 
     PdhProdViewLogDto selectById(@Param("id") String id);
 
-    List<PdhProdViewLogDto> selectList(@Param("p") Map<String, Object> p);
+    List<PdhProdViewLogDto> selectList(Map<String, Object> p);
 
-    List<PdhProdViewLogDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<PdhProdViewLogDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(PdhProdViewLog entity);
 }

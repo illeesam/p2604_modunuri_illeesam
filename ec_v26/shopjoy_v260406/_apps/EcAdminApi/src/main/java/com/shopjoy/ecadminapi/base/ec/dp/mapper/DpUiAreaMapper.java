@@ -13,11 +13,11 @@ public interface DpUiAreaMapper {
 
     DpUiAreaDto selectById(@Param("id") String id);
 
-    List<DpUiAreaDto> selectList(@Param("p") Map<String, Object> p);
+    List<DpUiAreaDto> selectList(Map<String, Object> p);
 
-    List<DpUiAreaDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<DpUiAreaDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(DpUiArea entity);
 }

@@ -13,11 +13,11 @@ public interface OdhClaimItemStatusHistMapper {
 
     OdhClaimItemStatusHistDto selectById(@Param("id") String id);
 
-    List<OdhClaimItemStatusHistDto> selectList(@Param("p") Map<String, Object> p);
+    List<OdhClaimItemStatusHistDto> selectList(Map<String, Object> p);
 
-    List<OdhClaimItemStatusHistDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<OdhClaimItemStatusHistDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(OdhClaimItemStatusHist entity);
 }

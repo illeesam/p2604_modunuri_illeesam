@@ -6,10 +6,10 @@
 
     <sql id="odhOrderStatusHistCond">
         <where>
-            <if test="p.siteId != null and p.siteId != ''">AND h.site_id = #{p.siteId}</if>
-            <if test="p.status != null and p.status != ''">AND h.order_status_cd = #{p.status}</if>
-            <if test="p.dateStart != null and p.dateStart != ''">AND h.reg_date &gt;= #{p.dateStart}::DATE</if>
-            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND h.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="siteId != null and siteId != ''">AND h.site_id = #{siteId}</if>
+            <if test="status != null and status != ''">AND h.order_status_cd = #{status}</if>
+            <if test="dateStart != null and dateStart != ''">AND h.reg_date &gt;= #{dateStart}::DATE</if>
+            <if test="dateEnd   != null and dateEnd   != ''">AND h.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
     </sql>
 
@@ -42,13 +42,13 @@
             LEFT JOIN sy_code cd_os ON cd_os.code_grp = 'ORDER_STATUS' AND cd_os.code_value = h.order_status_cd
             <include refid="odhOrderStatusHistCond"/>
         <choose>
-            <when test="p.sort == 'id_asc'">ORDER BY h.order_status_hist_id ASC</when>
-            <when test="p.sort == 'id_desc'">ORDER BY h.order_status_hist_id DESC</when>
-            <when test="p.sort == 'reg_asc'">ORDER BY h.reg_date ASC</when>
-            <when test="p.sort == 'reg_desc'">ORDER BY h.reg_date DESC</when>
+            <when test="sort == 'id_asc'">ORDER BY h.order_status_hist_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY h.order_status_hist_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY h.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY h.reg_date DESC</when>
             <otherwise>ORDER BY h.reg_date DESC</otherwise>
         </choose>
-        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+        <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderStatusHistDto">
@@ -65,13 +65,13 @@
             LEFT JOIN sy_code cd_os ON cd_os.code_grp = 'ORDER_STATUS' AND cd_os.code_value = h.order_status_cd
             <include refid="odhOrderStatusHistCond"/>
         <choose>
-            <when test="p.sort == 'id_asc'">ORDER BY h.order_status_hist_id ASC</when>
-            <when test="p.sort == 'id_desc'">ORDER BY h.order_status_hist_id DESC</when>
-            <when test="p.sort == 'reg_asc'">ORDER BY h.reg_date ASC</when>
-            <when test="p.sort == 'reg_desc'">ORDER BY h.reg_date DESC</when>
+            <when test="sort == 'id_asc'">ORDER BY h.order_status_hist_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY h.order_status_hist_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY h.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY h.reg_date DESC</when>
             <otherwise>ORDER BY h.reg_date DESC</otherwise>
         </choose>
-        LIMIT #{p.limit} OFFSET #{p.offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="selectPageCount" resultType="long">

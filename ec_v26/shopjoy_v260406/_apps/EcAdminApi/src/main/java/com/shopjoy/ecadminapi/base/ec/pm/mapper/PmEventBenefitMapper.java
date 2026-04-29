@@ -13,11 +13,11 @@ public interface PmEventBenefitMapper {
 
     PmEventBenefitDto selectById(@Param("id") String id);
 
-    List<PmEventBenefitDto> selectList(@Param("p") Map<String, Object> p);
+    List<PmEventBenefitDto> selectList(Map<String, Object> p);
 
-    List<PmEventBenefitDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<PmEventBenefitDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(PmEventBenefit entity);
 }

@@ -7,10 +7,10 @@
     <!-- 정산 기타 조정 조회 조건 -->
     <sql id="stSettleEtcAdjCond">
         <where>
-            <if test="p.siteId != null and p.siteId != ''">AND a.site_id = #{p.siteId}</if>
-            <if test="p.typeCd != null and p.typeCd != ''">AND a.etc_adj_type_cd = #{p.typeCd}</if>
-            <if test="p.dateStart != null and p.dateStart != ''">AND a.reg_date &gt;= #{p.dateStart}::DATE</if>
-            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND a.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="siteId != null and siteId != ''">AND a.site_id = #{siteId}</if>
+            <if test="typeCd != null and typeCd != ''">AND a.etc_adj_type_cd = #{typeCd}</if>
+            <if test="dateStart != null and dateStart != ''">AND a.reg_date &gt;= #{dateStart}::DATE</if>
+            <if test="dateEnd   != null and dateEnd   != ''">AND a.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
     </sql>
 
@@ -41,13 +41,13 @@
             LEFT JOIN sy_code cd_ad ON cd_ad.code_grp = 'ADJ_DIR' AND cd_ad.code_value = a.etc_adj_dir_cd
             <include refid="stSettleEtcAdjCond"/>
         <choose>
-            <when test="p.sort == 'id_asc'">ORDER BY a.settle_etc_adj_id ASC</when>
-            <when test="p.sort == 'id_desc'">ORDER BY a.settle_etc_adj_id DESC</when>
-            <when test="p.sort == 'reg_asc'">ORDER BY a.reg_date ASC</when>
-            <when test="p.sort == 'reg_desc'">ORDER BY a.reg_date DESC</when>
+            <when test="sort == 'id_asc'">ORDER BY a.settle_etc_adj_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY a.settle_etc_adj_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY a.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY a.reg_date DESC</when>
             <otherwise>ORDER BY a.reg_date DESC</otherwise>
         </choose>
-        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+        <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
     <!-- 정산 기타 조정 페이징 목록 조회 -->
@@ -63,13 +63,13 @@
             LEFT JOIN sy_code cd_ad ON cd_ad.code_grp = 'ADJ_DIR' AND cd_ad.code_value = a.etc_adj_dir_cd
             <include refid="stSettleEtcAdjCond"/>
         <choose>
-            <when test="p.sort == 'id_asc'">ORDER BY a.settle_etc_adj_id ASC</when>
-            <when test="p.sort == 'id_desc'">ORDER BY a.settle_etc_adj_id DESC</when>
-            <when test="p.sort == 'reg_asc'">ORDER BY a.reg_date ASC</when>
-            <when test="p.sort == 'reg_desc'">ORDER BY a.reg_date DESC</when>
+            <when test="sort == 'id_asc'">ORDER BY a.settle_etc_adj_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY a.settle_etc_adj_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY a.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY a.reg_date DESC</when>
             <otherwise>ORDER BY a.reg_date DESC</otherwise>
         </choose>
-        LIMIT #{p.limit} OFFSET #{p.offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- 정산 기타 조정 전체 건수 조회 -->

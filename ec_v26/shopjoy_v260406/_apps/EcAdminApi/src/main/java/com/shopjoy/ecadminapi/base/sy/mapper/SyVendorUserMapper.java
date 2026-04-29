@@ -13,11 +13,11 @@ public interface SyVendorUserMapper {
 
     SyVendorUserDto selectById(@Param("id") String id);
 
-    List<SyVendorUserDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyVendorUserDto> selectList(Map<String, Object> p);
 
-    List<SyVendorUserDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyVendorUserDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyVendorUser entity);
 }

@@ -13,11 +13,11 @@ public interface DpPanelItemMapper {
 
     DpPanelItemDto selectById(@Param("id") String id);
 
-    List<DpPanelItemDto> selectList(@Param("p") Map<String, Object> p);
+    List<DpPanelItemDto> selectList(Map<String, Object> p);
 
-    List<DpPanelItemDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<DpPanelItemDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(DpPanelItem entity);
 }

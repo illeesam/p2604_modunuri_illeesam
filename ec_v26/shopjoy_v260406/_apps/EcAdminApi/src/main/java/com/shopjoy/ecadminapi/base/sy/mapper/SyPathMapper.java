@@ -13,11 +13,11 @@ public interface SyPathMapper {
 
     SyPathDto selectById(@Param("id") Long id);
 
-    List<SyPathDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyPathDto> selectList(Map<String, Object> p);
 
-    List<SyPathDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyPathDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyPath entity);
 }

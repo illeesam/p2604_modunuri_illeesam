@@ -13,11 +13,11 @@ public interface MbLikeMapper {
 
     MbLikeDto selectById(@Param("id") String id);
 
-    List<MbLikeDto> selectList(@Param("p") Map<String, Object> p);
+    List<MbLikeDto> selectList(Map<String, Object> p);
 
-    List<MbLikeDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<MbLikeDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(MbLike entity);
 }

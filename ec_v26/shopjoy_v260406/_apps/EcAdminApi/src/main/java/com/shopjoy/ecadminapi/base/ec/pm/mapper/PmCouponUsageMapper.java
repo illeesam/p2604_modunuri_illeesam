@@ -13,11 +13,11 @@ public interface PmCouponUsageMapper {
 
     PmCouponUsageDto selectById(@Param("id") String id);
 
-    List<PmCouponUsageDto> selectList(@Param("p") Map<String, Object> p);
+    List<PmCouponUsageDto> selectList(Map<String, Object> p);
 
-    List<PmCouponUsageDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<PmCouponUsageDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(PmCouponUsage entity);
 }

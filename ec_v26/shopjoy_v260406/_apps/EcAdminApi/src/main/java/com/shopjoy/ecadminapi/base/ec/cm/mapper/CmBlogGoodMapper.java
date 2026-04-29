@@ -13,11 +13,11 @@ public interface CmBlogGoodMapper {
 
     CmBlogGoodDto selectById(@Param("id") String id);
 
-    List<CmBlogGoodDto> selectList(@Param("p") Map<String, Object> p);
+    List<CmBlogGoodDto> selectList(Map<String, Object> p);
 
-    List<CmBlogGoodDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<CmBlogGoodDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(CmBlogGood entity);
 }

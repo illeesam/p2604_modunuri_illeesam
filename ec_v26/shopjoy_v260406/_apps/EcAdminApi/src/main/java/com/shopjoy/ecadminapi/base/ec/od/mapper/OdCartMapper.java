@@ -13,11 +13,11 @@ public interface OdCartMapper {
 
     OdCartDto selectById(@Param("id") String id);
 
-    List<OdCartDto> selectList(@Param("p") Map<String, Object> p);
+    List<OdCartDto> selectList(Map<String, Object> p);
 
-    List<OdCartDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<OdCartDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(OdCart entity);
 }

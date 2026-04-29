@@ -13,11 +13,11 @@ public interface SyhApiLogMapper {
 
     SyhApiLogDto selectById(@Param("id") String id);
 
-    List<SyhApiLogDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyhApiLogDto> selectList(Map<String, Object> p);
 
-    List<SyhApiLogDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyhApiLogDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyhApiLog entity);
 }

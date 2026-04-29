@@ -13,11 +13,11 @@ public interface OdPayMethodMapper {
 
     OdPayMethodDto selectById(@Param("id") String id);
 
-    List<OdPayMethodDto> selectList(@Param("p") Map<String, Object> p);
+    List<OdPayMethodDto> selectList(Map<String, Object> p);
 
-    List<OdPayMethodDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<OdPayMethodDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(OdPayMethod entity);
 }

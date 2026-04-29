@@ -7,11 +7,11 @@
     <!-- 정산 항목 조회 조건 -->
     <sql id="stSettleItemCond">
         <where>
-            <if test="p.siteId != null and p.siteId != ''">AND i.site_id = #{p.siteId}</if>
-            <if test="p.vendorId != null and p.vendorId != ''">AND i.vendor_id = #{p.vendorId}</if>
-            <if test="p.typeCd != null and p.typeCd != ''">AND i.settle_item_type_cd = #{p.typeCd}</if>
-            <if test="p.dateStart != null and p.dateStart != ''">AND i.order_date &gt;= #{p.dateStart}::DATE</if>
-            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND i.order_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="siteId != null and siteId != ''">AND i.site_id = #{siteId}</if>
+            <if test="vendorId != null and vendorId != ''">AND i.vendor_id = #{vendorId}</if>
+            <if test="typeCd != null and typeCd != ''">AND i.settle_item_type_cd = #{typeCd}</if>
+            <if test="dateStart != null and dateStart != ''">AND i.order_date &gt;= #{dateStart}::DATE</if>
+            <if test="dateEnd   != null and dateEnd   != ''">AND i.order_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
     </sql>
 
@@ -46,13 +46,13 @@
             LEFT JOIN sy_code cd_sit ON cd_sit.code_grp = 'SETTLE_ITEM_TYPE' AND cd_sit.code_value = i.settle_item_type_cd
             <include refid="stSettleItemCond"/>
         <choose>
-            <when test="p.sort == 'id_asc'">ORDER BY i.settle_item_id ASC</when>
-            <when test="p.sort == 'id_desc'">ORDER BY i.settle_item_id DESC</when>
-            <when test="p.sort == 'reg_asc'">ORDER BY i.order_date ASC</when>
-            <when test="p.sort == 'reg_desc'">ORDER BY i.order_date DESC</when>
+            <when test="sort == 'id_asc'">ORDER BY i.settle_item_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY i.settle_item_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY i.order_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY i.order_date DESC</when>
             <otherwise>ORDER BY i.reg_date DESC</otherwise>
         </choose>
-        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+        <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
     <!-- 정산 항목 페이징 목록 조회 -->
@@ -70,13 +70,13 @@
             LEFT JOIN sy_code cd_sit ON cd_sit.code_grp = 'SETTLE_ITEM_TYPE' AND cd_sit.code_value = i.settle_item_type_cd
             <include refid="stSettleItemCond"/>
         <choose>
-            <when test="p.sort == 'id_asc'">ORDER BY i.settle_item_id ASC</when>
-            <when test="p.sort == 'id_desc'">ORDER BY i.settle_item_id DESC</when>
-            <when test="p.sort == 'reg_asc'">ORDER BY i.order_date ASC</when>
-            <when test="p.sort == 'reg_desc'">ORDER BY i.order_date DESC</when>
+            <when test="sort == 'id_asc'">ORDER BY i.settle_item_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY i.settle_item_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY i.order_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY i.order_date DESC</when>
             <otherwise>ORDER BY i.reg_date DESC</otherwise>
         </choose>
-        LIMIT #{p.limit} OFFSET #{p.offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- 정산 항목 전체 건수 조회 -->

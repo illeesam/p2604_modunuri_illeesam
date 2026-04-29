@@ -13,11 +13,11 @@ public interface PdCategoryMapper {
 
     PdCategoryDto selectById(@Param("id") String id);
 
-    List<PdCategoryDto> selectList(@Param("p") Map<String, Object> p);
+    List<PdCategoryDto> selectList(Map<String, Object> p);
 
-    List<PdCategoryDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<PdCategoryDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(PdCategory entity);
 }

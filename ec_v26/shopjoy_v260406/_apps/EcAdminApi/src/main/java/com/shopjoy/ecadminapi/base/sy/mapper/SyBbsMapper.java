@@ -13,11 +13,11 @@ public interface SyBbsMapper {
 
     SyBbsDto selectById(@Param("id") String id);
 
-    List<SyBbsDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyBbsDto> selectList(Map<String, Object> p);
 
-    List<SyBbsDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyBbsDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyBbs entity);
 }

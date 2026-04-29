@@ -13,11 +13,11 @@ public interface PmDiscntItemMapper {
 
     PmDiscntItemDto selectById(@Param("id") String id);
 
-    List<PmDiscntItemDto> selectList(@Param("p") Map<String, Object> p);
+    List<PmDiscntItemDto> selectList(Map<String, Object> p);
 
-    List<PmDiscntItemDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<PmDiscntItemDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(PmDiscntItem entity);
 }

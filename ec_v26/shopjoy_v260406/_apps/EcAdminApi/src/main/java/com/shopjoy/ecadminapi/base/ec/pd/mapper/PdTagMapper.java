@@ -13,11 +13,11 @@ public interface PdTagMapper {
 
     PdTagDto selectById(@Param("id") String id);
 
-    List<PdTagDto> selectList(@Param("p") Map<String, Object> p);
+    List<PdTagDto> selectList(Map<String, Object> p);
 
-    List<PdTagDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<PdTagDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(PdTag entity);
 }

@@ -13,11 +13,11 @@ public interface SySiteMapper {
 
     SySiteDto selectById(@Param("id") String id);
 
-    List<SySiteDto> selectList(@Param("p") Map<String, Object> p);
+    List<SySiteDto> selectList(Map<String, Object> p);
 
-    List<SySiteDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SySiteDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SySite entity);
 }

@@ -13,11 +13,11 @@ public interface PdDlivTmpltMapper {
 
     PdDlivTmpltDto selectById(@Param("id") String id);
 
-    List<PdDlivTmpltDto> selectList(@Param("p") Map<String, Object> p);
+    List<PdDlivTmpltDto> selectList(Map<String, Object> p);
 
-    List<PdDlivTmpltDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<PdDlivTmpltDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(PdDlivTmplt entity);
 }

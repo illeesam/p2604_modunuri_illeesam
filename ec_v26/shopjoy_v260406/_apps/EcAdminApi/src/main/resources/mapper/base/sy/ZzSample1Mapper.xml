@@ -6,12 +6,12 @@
 
     <sql id="zzSample1Cond">
         <where>
-            <if test="p.sample1Id != null and p.sample1Id != ''">AND sample1_id = #{p.sample1Id}</if>
-            <if test="p.category != null and p.category != ''">AND category = #{p.category}</if>
-            <if test="p.title != null and p.title != ''">AND title ILIKE '%' || #{p.title} || '%'</if>
-            <if test="p.status != null and p.status != ''">AND status = #{p.status}</if>
-            <if test="p.regDateStart != null and p.regDateStart != ''">AND reg_date >= #{p.regDateStart}::DATE</if>
-            <if test="p.regDateEnd != null and p.regDateEnd != ''">AND reg_date &lt; (#{p.regDateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="sample1Id != null and sample1Id != ''">AND sample1_id = #{sample1Id}</if>
+            <if test="category != null and category != ''">AND category = #{category}</if>
+            <if test="title != null and title != ''">AND title ILIKE '%' || #{title} || '%'</if>
+            <if test="status != null and status != ''">AND status = #{status}</if>
+            <if test="regDateStart != null and regDateStart != ''">AND reg_date >= #{regDateStart}::DATE</if>
+            <if test="regDateEnd != null and regDateEnd != ''">AND reg_date &lt; (#{regDateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
     </sql>
 
@@ -28,15 +28,15 @@
         FROM shopjoy_2604.zz_sample1
             <include refid="zzSample1Cond"/>
         <choose>
-            <when test="p.sort == 'id_asc'">ORDER BY sample1_id ASC</when>
-            <when test="p.sort == 'id_desc'">ORDER BY sample1_id DESC</when>
-            <when test="p.sort == 'title_asc'">ORDER BY title ASC</when>
-            <when test="p.sort == 'title_desc'">ORDER BY title DESC</when>
-            <when test="p.sort == 'reg_asc'">ORDER BY reg_date ASC</when>
-            <when test="p.sort == 'reg_desc'">ORDER BY reg_date DESC</when>
+            <when test="sort == 'id_asc'">ORDER BY sample1_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY sample1_id DESC</when>
+            <when test="sort == 'title_asc'">ORDER BY title ASC</when>
+            <when test="sort == 'title_desc'">ORDER BY title DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY reg_date DESC</when>
             <otherwise>ORDER BY reg_date DESC</otherwise>
         </choose>
-        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+        <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample1Dto">
@@ -45,15 +45,15 @@
         FROM shopjoy_2604.zz_sample1
             <include refid="zzSample1Cond"/>
         <choose>
-            <when test="p.sort == 'id_asc'">ORDER BY sample1_id ASC</when>
-            <when test="p.sort == 'id_desc'">ORDER BY sample1_id DESC</when>
-            <when test="p.sort == 'title_asc'">ORDER BY title ASC</when>
-            <when test="p.sort == 'title_desc'">ORDER BY title DESC</when>
-            <when test="p.sort == 'reg_asc'">ORDER BY reg_date ASC</when>
-            <when test="p.sort == 'reg_desc'">ORDER BY reg_date DESC</when>
+            <when test="sort == 'id_asc'">ORDER BY sample1_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY sample1_id DESC</when>
+            <when test="sort == 'title_asc'">ORDER BY title ASC</when>
+            <when test="sort == 'title_desc'">ORDER BY title DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY reg_date DESC</when>
             <otherwise>ORDER BY reg_date DESC</otherwise>
         </choose>
-        LIMIT #{p.limit} OFFSET #{p.offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="selectPageCount" resultType="long">

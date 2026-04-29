@@ -13,11 +13,11 @@ public interface DpWidgetMapper {
 
     DpWidgetDto selectById(@Param("id") String id);
 
-    List<DpWidgetDto> selectList(@Param("p") Map<String, Object> p);
+    List<DpWidgetDto> selectList(Map<String, Object> p);
 
-    List<DpWidgetDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<DpWidgetDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(DpWidget entity);
 }

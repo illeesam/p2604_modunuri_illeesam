@@ -13,11 +13,11 @@ public interface SyAttachGrpMapper {
 
     SyAttachGrpDto selectById(@Param("id") String id);
 
-    List<SyAttachGrpDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyAttachGrpDto> selectList(Map<String, Object> p);
 
-    List<SyAttachGrpDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyAttachGrpDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyAttachGrp entity);
 }

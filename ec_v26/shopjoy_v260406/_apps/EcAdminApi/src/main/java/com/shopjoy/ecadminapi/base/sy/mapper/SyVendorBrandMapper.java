@@ -13,11 +13,11 @@ public interface SyVendorBrandMapper {
 
     SyVendorBrandDto selectById(@Param("id") String id);
 
-    List<SyVendorBrandDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyVendorBrandDto> selectList(Map<String, Object> p);
 
-    List<SyVendorBrandDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyVendorBrandDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyVendorBrand entity);
 }

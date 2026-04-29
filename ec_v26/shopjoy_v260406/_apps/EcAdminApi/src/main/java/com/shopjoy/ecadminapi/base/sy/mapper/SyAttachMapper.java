@@ -13,11 +13,11 @@ public interface SyAttachMapper {
 
     SyAttachDto selectById(@Param("id") String id);
 
-    List<SyAttachDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyAttachDto> selectList(Map<String, Object> p);
 
-    List<SyAttachDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyAttachDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyAttach entity);
 }

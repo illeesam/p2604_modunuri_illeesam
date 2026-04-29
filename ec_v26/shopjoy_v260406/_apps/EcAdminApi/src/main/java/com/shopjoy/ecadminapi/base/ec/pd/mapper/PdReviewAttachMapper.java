@@ -13,11 +13,11 @@ public interface PdReviewAttachMapper {
 
     PdReviewAttachDto selectById(@Param("id") String id);
 
-    List<PdReviewAttachDto> selectList(@Param("p") Map<String, Object> p);
+    List<PdReviewAttachDto> selectList(Map<String, Object> p);
 
-    List<PdReviewAttachDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<PdReviewAttachDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(PdReviewAttach entity);
 }

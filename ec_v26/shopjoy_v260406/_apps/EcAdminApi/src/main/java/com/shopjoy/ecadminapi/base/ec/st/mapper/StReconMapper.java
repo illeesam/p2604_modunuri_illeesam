@@ -13,11 +13,11 @@ public interface StReconMapper {
 
     StReconDto selectById(@Param("id") String id);
 
-    List<StReconDto> selectList(@Param("p") Map<String, Object> p);
+    List<StReconDto> selectList(Map<String, Object> p);
 
-    List<StReconDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<StReconDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(StRecon entity);
 }

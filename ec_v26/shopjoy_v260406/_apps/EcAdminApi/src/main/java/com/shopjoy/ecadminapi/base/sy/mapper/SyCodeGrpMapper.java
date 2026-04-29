@@ -13,11 +13,11 @@ public interface SyCodeGrpMapper {
 
     SyCodeGrpDto selectById(@Param("id") String id);
 
-    List<SyCodeGrpDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyCodeGrpDto> selectList(Map<String, Object> p);
 
-    List<SyCodeGrpDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyCodeGrpDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyCodeGrp entity);
 }

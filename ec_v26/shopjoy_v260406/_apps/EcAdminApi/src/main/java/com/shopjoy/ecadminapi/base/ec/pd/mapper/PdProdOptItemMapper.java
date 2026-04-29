@@ -13,11 +13,11 @@ public interface PdProdOptItemMapper {
 
     PdProdOptItemDto selectById(@Param("id") String id);
 
-    List<PdProdOptItemDto> selectList(@Param("p") Map<String, Object> p);
+    List<PdProdOptItemDto> selectList(Map<String, Object> p);
 
-    List<PdProdOptItemDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<PdProdOptItemDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(PdProdOptItem entity);
 }

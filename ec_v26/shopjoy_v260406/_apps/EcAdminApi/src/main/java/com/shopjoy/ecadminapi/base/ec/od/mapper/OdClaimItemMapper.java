@@ -13,11 +13,11 @@ public interface OdClaimItemMapper {
 
     OdClaimItemDto selectById(@Param("id") String id);
 
-    List<OdClaimItemDto> selectList(@Param("p") Map<String, Object> p);
+    List<OdClaimItemDto> selectList(Map<String, Object> p);
 
-    List<OdClaimItemDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<OdClaimItemDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(OdClaimItem entity);
 }

@@ -15,11 +15,11 @@ public interface SyDeptMapper {
 
     List<SyDeptDto> selectTree();
 
-    List<SyDeptDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyDeptDto> selectList(Map<String, Object> p);
 
-    List<SyDeptDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyDeptDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyDept entity);
 }

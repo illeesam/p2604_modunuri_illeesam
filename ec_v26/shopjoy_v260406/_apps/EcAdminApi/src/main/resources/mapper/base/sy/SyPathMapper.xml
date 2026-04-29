@@ -5,40 +5,40 @@
 <mapper namespace="com.shopjoy.ecadminapi.base.sy.mapper.SyPathMapper">
 
     <sql id="cols">
-        p.path_id, p.biz_cd, p.parent_path_id, p.path_label, p.sort_ord,
-        p.use_yn, p.path_remark, p.reg_by, p.reg_date, p.upd_by, p.upd_date
+        path_id, biz_cd, parent_path_id, path_label, sort_ord,
+        use_yn, path_remark, reg_by, reg_date, upd_by, upd_date
     </sql>
 
     <sql id="cond">
         <where>
-            <if test="p.bizCd != null and p.bizCd != ''">AND p.biz_cd = #{p.bizCd}</if>
-            <if test="p.parentPathId != null">AND p.parent_path_id = #{p.parentPathId}</if>
-            <if test="p.useYn != null and p.useYn != ''">AND p.use_yn = #{p.useYn}</if>
-            <if test="p.kw != null and p.kw != ''">AND (p.path_label ILIKE '%'||#{p.kw}||'%' OR p.path_remark ILIKE '%'||#{p.kw}||'%')</if>
+            <if test="bizCd != null and bizCd != ''">AND biz_cd = #{bizCd}</if>
+            <if test="parentPathId != null">AND parent_path_id = #{parentPathId}</if>
+            <if test="useYn != null and useYn != ''">AND use_yn = #{useYn}</if>
+            <if test="kw != null and kw != ''">AND (p.path_label ILIKE '%'||#{kw}||'%' OR path_remark ILIKE '%'||#{kw}||'%')</if>
         </where>
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyPathDto">
         SELECT <include refid="cols"/>
         FROM shopjoy_2604.sy_path p
-        WHERE p.path_id = #{id}
+        WHERE path_id = #{id}
     </select>
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyPathDto">
         SELECT <include refid="cols"/>
         FROM shopjoy_2604.sy_path p
         <include refid="cond"/>
-        ORDER BY p.sort_ord ASC, p.path_id ASC
-        <if test="p.limit != null">LIMIT #{p.limit}</if>
-        <if test="p.offset != null">OFFSET #{p.offset}</if>
+        ORDER BY sort_ord ASC, path_id ASC
+        <if test="limit != null">LIMIT #{limit}</if>
+        <if test="offset != null">OFFSET #{offset}</if>
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyPathDto">
         SELECT <include refid="cols"/>
         FROM shopjoy_2604.sy_path p
         <include refid="cond"/>
-        ORDER BY p.sort_ord ASC, p.path_id ASC
-        LIMIT #{p.limit} OFFSET #{p.offset}
+        ORDER BY sort_ord ASC, path_id ASC
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="selectPageCount" resultType="long">

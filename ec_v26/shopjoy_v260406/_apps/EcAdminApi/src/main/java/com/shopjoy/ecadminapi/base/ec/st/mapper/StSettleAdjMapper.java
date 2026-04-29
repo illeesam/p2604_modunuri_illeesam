@@ -13,11 +13,11 @@ public interface StSettleAdjMapper {
 
     StSettleAdjDto selectById(@Param("id") String id);
 
-    List<StSettleAdjDto> selectList(@Param("p") Map<String, Object> p);
+    List<StSettleAdjDto> selectList(Map<String, Object> p);
 
-    List<StSettleAdjDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<StSettleAdjDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(StSettleAdj entity);
 }

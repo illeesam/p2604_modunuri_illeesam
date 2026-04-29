@@ -6,13 +6,13 @@
 
     <sql id="syTemplateCond">
         <where>
-            <if test="p.siteId != null and p.siteId != ''">AND t.site_id = #{p.siteId}</if>
-            <if test="p.typeCd != null and p.typeCd != ''">AND t.template_type_cd = #{p.typeCd}</if>
-            <if test="p.kw != null and p.kw != ''">
-                AND (t.template_nm ILIKE '%' || #{p.kw} || '%')
+            <if test="siteId != null and siteId != ''">AND t.site_id = #{siteId}</if>
+            <if test="typeCd != null and typeCd != ''">AND t.template_type_cd = #{typeCd}</if>
+            <if test="kw != null and kw != ''">
+                AND (t.template_nm ILIKE '%' || #{kw} || '%')
             </if>
-            <if test="p.dateStart != null and p.dateStart != ''">AND t.reg_date &gt;= #{p.dateStart}::DATE</if>
-            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND t.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != ''">AND t.reg_date &gt;= #{dateStart}::DATE</if>
+            <if test="dateEnd   != null and dateEnd   != ''">AND t.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
     </sql>
 
@@ -37,15 +37,15 @@
             LEFT JOIN sy_code cd_tt ON cd_tt.code_grp = 'TEMPLATE_TYPE' AND cd_tt.code_value = t.template_type_cd
             <include refid="syTemplateCond"/>
         <choose>
-            <when test="p.sort == 'id_asc'">ORDER BY t.template_id ASC</when>
-            <when test="p.sort == 'id_desc'">ORDER BY t.template_id DESC</when>
-            <when test="p.sort == 'nm_asc'">ORDER BY t.template_nm ASC</when>
-            <when test="p.sort == 'nm_desc'">ORDER BY t.template_nm DESC</when>
-            <when test="p.sort == 'reg_asc'">ORDER BY t.reg_date ASC</when>
-            <when test="p.sort == 'reg_desc'">ORDER BY t.reg_date DESC</when>
+            <when test="sort == 'id_asc'">ORDER BY t.template_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY t.template_id DESC</when>
+            <when test="sort == 'nm_asc'">ORDER BY t.template_nm ASC</when>
+            <when test="sort == 'nm_desc'">ORDER BY t.template_nm DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY t.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY t.reg_date DESC</when>
             <otherwise>ORDER BY t.reg_date DESC</otherwise>
         </choose>
-        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+        <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyTemplateDto">
@@ -58,15 +58,15 @@
             LEFT JOIN sy_code cd_tt ON cd_tt.code_grp = 'TEMPLATE_TYPE' AND cd_tt.code_value = t.template_type_cd
             <include refid="syTemplateCond"/>
         <choose>
-            <when test="p.sort == 'id_asc'">ORDER BY t.template_id ASC</when>
-            <when test="p.sort == 'id_desc'">ORDER BY t.template_id DESC</when>
-            <when test="p.sort == 'nm_asc'">ORDER BY t.template_nm ASC</when>
-            <when test="p.sort == 'nm_desc'">ORDER BY t.template_nm DESC</when>
-            <when test="p.sort == 'reg_asc'">ORDER BY t.reg_date ASC</when>
-            <when test="p.sort == 'reg_desc'">ORDER BY t.reg_date DESC</when>
+            <when test="sort == 'id_asc'">ORDER BY t.template_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY t.template_id DESC</when>
+            <when test="sort == 'nm_asc'">ORDER BY t.template_nm ASC</when>
+            <when test="sort == 'nm_desc'">ORDER BY t.template_nm DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY t.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY t.reg_date DESC</when>
             <otherwise>ORDER BY t.reg_date DESC</otherwise>
         </choose>
-        LIMIT #{p.limit} OFFSET #{p.offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="selectPageCount" resultType="long">

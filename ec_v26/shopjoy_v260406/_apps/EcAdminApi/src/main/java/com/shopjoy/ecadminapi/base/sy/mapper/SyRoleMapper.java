@@ -13,11 +13,11 @@ public interface SyRoleMapper {
 
     SyRoleDto selectById(@Param("id") String id);
 
-    List<SyRoleDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyRoleDto> selectList(Map<String, Object> p);
 
-    List<SyRoleDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyRoleDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyRole entity);
 }

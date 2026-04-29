@@ -13,11 +13,11 @@ public interface PmGiftIssueMapper {
 
     PmGiftIssueDto selectById(@Param("id") String id);
 
-    List<PmGiftIssueDto> selectList(@Param("p") Map<String, Object> p);
+    List<PmGiftIssueDto> selectList(Map<String, Object> p);
 
-    List<PmGiftIssueDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<PmGiftIssueDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(PmGiftIssue entity);
 }

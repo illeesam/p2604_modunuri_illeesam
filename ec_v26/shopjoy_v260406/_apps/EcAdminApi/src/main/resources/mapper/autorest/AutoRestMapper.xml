@@ -9,35 +9,35 @@
          ============================================================ -->
     <sql id="commonWhere">
         <where>
-            <if test="p.kw != null and p.kw != ''">
+            <if test="kw != null and kw != ''">
                 AND (
                 <foreach collection="p.searchFields" item="col" separator=" OR ">
-                    t.${col}::TEXT ILIKE '%' || #{p.kw} || '%'
+                    t.${col}::TEXT ILIKE '%' || #{kw} || '%'
                 </foreach>
                 )
             </if>
-            <if test="p.dateStart != null and p.dateStart != ''">
-                AND t.${p.dateField} &gt;= #{p.dateStart}::DATE
+            <if test="dateStart != null and dateStart != ''">
+                AND t.${p.dateField} &gt;= #{dateStart}::DATE
             </if>
-            <if test="p.dateEnd != null and p.dateEnd != ''">
-                AND t.${p.dateField} &lt; (#{p.dateEnd}::DATE + INTERVAL '1 day')
+            <if test="dateEnd != null and dateEnd != ''">
+                AND t.${p.dateField} &lt; (#{dateEnd}::DATE + INTERVAL '1 day')
             </if>
-            <if test="p.siteId != null and p.siteId != ''">
-                AND t.site_id = #{p.siteId}
+            <if test="siteId != null and siteId != ''">
+                AND t.site_id = #{siteId}
             </if>
-            <if test="p.status != null and p.status != ''">
+            <if test="status != null and status != ''">
                 AND (
-                    t.use_yn = #{p.status}
-                    OR t.status_cd = #{p.status}
-                    OR t.order_status_cd = #{p.status}
-                    OR t.member_status_cd = #{p.status}
-                    OR t.prod_status_cd = #{p.status}
-                    OR t.claim_status_cd = #{p.status}
-                    OR t.dliv_status_cd = #{p.status}
-                    OR t.settle_status_cd = #{p.status}
+                    t.use_yn = #{status}
+                    OR t.status_cd = #{status}
+                    OR t.order_status_cd = #{status}
+                    OR t.member_status_cd = #{status}
+                    OR t.prod_status_cd = #{status}
+                    OR t.claim_status_cd = #{status}
+                    OR t.dliv_status_cd = #{status}
+                    OR t.settle_status_cd = #{status}
                 )
             </if>
-            <if test="p.filters != null">
+            <if test="filters != null">
                 <foreach collection="p.filters.entrySet()" index="col" item="val">
                     <if test="val != null and val != ''">
                         AND t.${col} = #{val}
@@ -52,7 +52,7 @@
          각 FK는 targetTable 에서 가장 대표적인 이름 컬럼을 가져옴
          ============================================================ -->
     <sql id="fkJoins">
-        <if test="p.fkFields != null">
+        <if test="fkFields != null">
             <foreach collection="p.fkFields.entrySet()" index="fkCol" item="targetTable">
                 LEFT JOIN ${p.schema}.${targetTable} fk_${fkCol}
                     ON fk_${fkCol}.<![CDATA[
@@ -69,14 +69,14 @@
         FROM ${p.schema}.${p.table} t
         <include refid="commonWhere"/>
         <choose>
-            <when test="p.orderBy != null and p.orderBy != ''">
+            <when test="orderBy != null and orderBy != ''">
                 ORDER BY ${p.orderBy}
             </when>
             <otherwise>
                 ORDER BY t.${p.pk} DESC
             </otherwise>
         </choose>
-        LIMIT #{p.limit} OFFSET #{p.offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- ============================================================
@@ -87,14 +87,14 @@
         FROM ${p.schema}.${p.table} t
         <include refid="commonWhere"/>
         <choose>
-            <when test="p.orderBy != null and p.orderBy != ''">
+            <when test="orderBy != null and orderBy != ''">
                 ORDER BY ${p.orderBy}
             </when>
             <otherwise>
                 ORDER BY t.${p.pk} DESC
             </otherwise>
         </choose>
-        LIMIT #{p.limit} OFFSET #{p.offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- ============================================================
@@ -112,7 +112,7 @@
     <select id="selectById" resultType="com.shopjoy.ecadminapi.autorest.data.dto.RowMap">
         SELECT t.*  /* autorest :: AutoRest :: selectById */
         FROM ${p.schema}.${p.table} t
-        WHERE t.${p.pk} = #{p.id}
+        WHERE t.${p.pk} = #{id}
     </select>
 
     <!-- ============================================================
@@ -121,7 +121,7 @@
     <select id="selectChildren" resultType="com.shopjoy.ecadminapi.autorest.data.dto.RowMap">
         SELECT *  /* autorest :: AutoRest :: selectChildren */
         FROM ${p.schema}.${p.table}
-        WHERE ${p.fkCol} = #{p.fkVal}
+        WHERE ${p.fkCol} = #{fkVal}
         ORDER BY ${p.pk} ASC
     </select>
 

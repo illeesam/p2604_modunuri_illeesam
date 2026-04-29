@@ -13,11 +13,11 @@ public interface SyMenuMapper {
 
     SyMenuDto selectById(@Param("id") String id);
 
-    List<SyMenuDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyMenuDto> selectList(Map<String, Object> p);
 
-    List<SyMenuDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyMenuDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyMenu entity);
 }

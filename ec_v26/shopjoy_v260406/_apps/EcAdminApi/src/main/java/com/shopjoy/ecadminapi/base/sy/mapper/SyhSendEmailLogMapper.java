@@ -13,11 +13,11 @@ public interface SyhSendEmailLogMapper {
 
     SyhSendEmailLogDto selectById(@Param("id") String id);
 
-    List<SyhSendEmailLogDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyhSendEmailLogDto> selectList(Map<String, Object> p);
 
-    List<SyhSendEmailLogDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyhSendEmailLogDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyhSendEmailLog entity);
 }

@@ -15,11 +15,11 @@ public interface SyUserRoleMapper {
 
     List<SyUserRoleDto> selectByUserId(@Param("userId") String userId);
 
-    List<SyUserRoleDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyUserRoleDto> selectList(Map<String, Object> p);
 
-    List<SyUserRoleDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyUserRoleDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyUserRole entity);
 }

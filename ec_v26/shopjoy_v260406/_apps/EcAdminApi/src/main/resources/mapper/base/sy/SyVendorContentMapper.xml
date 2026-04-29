@@ -6,15 +6,15 @@
 
     <sql id="syVendorContentCond">
         <where>
-            <if test="p.siteId != null and p.siteId != ''">AND c.site_id = #{p.siteId}</if>
-            <if test="p.vendorId != null and p.vendorId != ''">AND c.vendor_id = #{p.vendorId}</if>
-            <if test="p.status != null and p.status != ''">AND c.vendor_content_status_cd = #{p.status}</if>
-            <if test="p.typeCd != null and p.typeCd != ''">AND c.content_type_cd = #{p.typeCd}</if>
-            <if test="p.kw != null and p.kw != ''">
-                AND (c.vendor_content_title ILIKE '%' || #{p.kw} || '%')
+            <if test="siteId != null and siteId != ''">AND c.site_id = #{siteId}</if>
+            <if test="vendorId != null and vendorId != ''">AND c.vendor_id = #{vendorId}</if>
+            <if test="status != null and status != ''">AND c.vendor_content_status_cd = #{status}</if>
+            <if test="typeCd != null and typeCd != ''">AND c.content_type_cd = #{typeCd}</if>
+            <if test="kw != null and kw != ''">
+                AND (c.vendor_content_title ILIKE '%' || #{kw} || '%')
             </if>
-            <if test="p.dateStart != null and p.dateStart != ''">AND c.reg_date &gt;= #{p.dateStart}::DATE</if>
-            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND c.reg_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != ''">AND c.reg_date &gt;= #{dateStart}::DATE</if>
+            <if test="dateEnd   != null and dateEnd   != ''">AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
     </sql>
 
@@ -51,15 +51,15 @@
             LEFT JOIN sy_code cd_vcs ON cd_vcs.code_grp = 'VENDOR_CONTENT_STATUS' AND cd_vcs.code_value = c.vendor_content_status_cd
             <include refid="syVendorContentCond"/>
         <choose>
-            <when test="p.sort == 'id_asc'">ORDER BY c.vendor_content_id ASC</when>
-            <when test="p.sort == 'id_desc'">ORDER BY c.vendor_content_id DESC</when>
-            <when test="p.sort == 'nm_asc'">ORDER BY c.vendor_content_title ASC</when>
-            <when test="p.sort == 'nm_desc'">ORDER BY c.vendor_content_title DESC</when>
-            <when test="p.sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
-            <when test="p.sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <when test="sort == 'id_asc'">ORDER BY c.vendor_content_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY c.vendor_content_id DESC</when>
+            <when test="sort == 'nm_asc'">ORDER BY c.vendor_content_title ASC</when>
+            <when test="sort == 'nm_desc'">ORDER BY c.vendor_content_title DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
             <otherwise>ORDER BY c.reg_date DESC</otherwise>
         </choose>
-        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+        <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorContentDto">
@@ -78,15 +78,15 @@
             LEFT JOIN sy_code cd_vcs ON cd_vcs.code_grp = 'VENDOR_CONTENT_STATUS' AND cd_vcs.code_value = c.vendor_content_status_cd
             <include refid="syVendorContentCond"/>
         <choose>
-            <when test="p.sort == 'id_asc'">ORDER BY c.vendor_content_id ASC</when>
-            <when test="p.sort == 'id_desc'">ORDER BY c.vendor_content_id DESC</when>
-            <when test="p.sort == 'nm_asc'">ORDER BY c.vendor_content_title ASC</when>
-            <when test="p.sort == 'nm_desc'">ORDER BY c.vendor_content_title DESC</when>
-            <when test="p.sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
-            <when test="p.sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
+            <when test="sort == 'id_asc'">ORDER BY c.vendor_content_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY c.vendor_content_id DESC</when>
+            <when test="sort == 'nm_asc'">ORDER BY c.vendor_content_title ASC</when>
+            <when test="sort == 'nm_desc'">ORDER BY c.vendor_content_title DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY c.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY c.reg_date DESC</when>
             <otherwise>ORDER BY c.reg_date DESC</otherwise>
         </choose>
-        LIMIT #{p.limit} OFFSET #{p.offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="selectPageCount" resultType="long">

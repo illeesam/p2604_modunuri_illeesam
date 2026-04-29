@@ -7,10 +7,10 @@
     <!-- 바우처(상품권) 발행 이력 조회 조건 -->
     <sql id="pmVoucherIssueCond">
         <where>
-            <if test="p.siteId != null and p.siteId != ''">AND i.site_id = #{p.siteId}</if>
-            <if test="p.status != null and p.status != ''">AND i.voucher_issue_status_cd = #{p.status}</if>
-            <if test="p.dateStart != null and p.dateStart != ''">AND i.issue_date &gt;= #{p.dateStart}::DATE</if>
-            <if test="p.dateEnd   != null and p.dateEnd   != ''">AND i.issue_date &lt;  (#{p.dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="siteId != null and siteId != ''">AND i.site_id = #{siteId}</if>
+            <if test="status != null and status != ''">AND i.voucher_issue_status_cd = #{status}</if>
+            <if test="dateStart != null and dateStart != ''">AND i.issue_date &gt;= #{dateStart}::DATE</if>
+            <if test="dateEnd   != null and dateEnd   != ''">AND i.issue_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
     </sql>
 
@@ -45,13 +45,13 @@
             LEFT JOIN sy_code cd_vis ON cd_vis.code_grp = 'VOUCHER_ISSUE_STATUS' AND cd_vis.code_value = i.voucher_issue_status_cd
             <include refid="pmVoucherIssueCond"/>
         <choose>
-            <when test="p.sort == 'id_asc'">ORDER BY i.voucher_issue_id ASC</when>
-            <when test="p.sort == 'id_desc'">ORDER BY i.voucher_issue_id DESC</when>
-            <when test="p.sort == 'reg_asc'">ORDER BY i.issue_date ASC</when>
-            <when test="p.sort == 'reg_desc'">ORDER BY i.issue_date DESC</when>
+            <when test="sort == 'id_asc'">ORDER BY i.voucher_issue_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY i.voucher_issue_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY i.issue_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY i.issue_date DESC</when>
             <otherwise>ORDER BY i.reg_date DESC</otherwise>
         </choose>
-        <if test="p.limit != null and p.offset != null">LIMIT #{p.limit} OFFSET #{p.offset}</if>
+        <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
     <!-- 바우처(상품권) 발행 이력 페이징 목록 조회 -->
@@ -69,13 +69,13 @@
             LEFT JOIN sy_code cd_vis ON cd_vis.code_grp = 'VOUCHER_ISSUE_STATUS' AND cd_vis.code_value = i.voucher_issue_status_cd
             <include refid="pmVoucherIssueCond"/>
         <choose>
-            <when test="p.sort == 'id_asc'">ORDER BY i.voucher_issue_id ASC</when>
-            <when test="p.sort == 'id_desc'">ORDER BY i.voucher_issue_id DESC</when>
-            <when test="p.sort == 'reg_asc'">ORDER BY i.issue_date ASC</when>
-            <when test="p.sort == 'reg_desc'">ORDER BY i.issue_date DESC</when>
+            <when test="sort == 'id_asc'">ORDER BY i.voucher_issue_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY i.voucher_issue_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY i.issue_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY i.issue_date DESC</when>
             <otherwise>ORDER BY i.reg_date DESC</otherwise>
         </choose>
-        LIMIT #{p.limit} OFFSET #{p.offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- 바우처(상품권) 발행 이력 전체 건수 조회 -->

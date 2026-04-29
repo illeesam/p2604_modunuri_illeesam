@@ -13,11 +13,11 @@ public interface OdOrderItemMapper {
 
     OdOrderItemDto selectById(@Param("id") String id);
 
-    List<OdOrderItemDto> selectList(@Param("p") Map<String, Object> p);
+    List<OdOrderItemDto> selectList(Map<String, Object> p);
 
-    List<OdOrderItemDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<OdOrderItemDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(OdOrderItem entity);
 }

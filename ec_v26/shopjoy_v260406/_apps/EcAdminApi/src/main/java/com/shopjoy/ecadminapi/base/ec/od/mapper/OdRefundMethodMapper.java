@@ -13,11 +13,11 @@ public interface OdRefundMethodMapper {
 
     OdRefundMethodDto selectById(@Param("id") String id);
 
-    List<OdRefundMethodDto> selectList(@Param("p") Map<String, Object> p);
+    List<OdRefundMethodDto> selectList(Map<String, Object> p);
 
-    List<OdRefundMethodDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<OdRefundMethodDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(OdRefundMethod entity);
 }

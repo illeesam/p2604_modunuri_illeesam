@@ -13,11 +13,11 @@ public interface SyhUserTokenLogMapper {
 
     SyhUserTokenLogDto selectById(@Param("id") String id);
 
-    List<SyhUserTokenLogDto> selectList(@Param("p") Map<String, Object> p);
+    List<SyhUserTokenLogDto> selectList(Map<String, Object> p);
 
-    List<SyhUserTokenLogDto> selectPageList(@Param("p") Map<String, Object> p);
+    List<SyhUserTokenLogDto> selectPageList(Map<String, Object> p);
 
-    long selectPageCount(@Param("p") Map<String, Object> p);
+    long selectPageCount(Map<String, Object> p);
 
     int updateSelective(SyhUserTokenLog entity);
 }
