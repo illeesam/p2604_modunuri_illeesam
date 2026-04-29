@@ -27,51 +27,53 @@
     <!-- 상품 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto">
         SELECT  /* base.ec.pd :: PdProd :: selectById */
-              *
-            , cat.category_nm AS cate_nm,    cat.parent_category_id
+              p.*
+            , cat.category_nm        AS cate_nm
+            , cat.parent_category_id
             , b.brand_nm
-            , v.vendor_nm,    v.vendor_phone AS vendor_tel
-            , u.user_nm                AS md_user_nm
-            , cd_ps.code_label         AS prod_status_cd_nm
-            , cd_pt.code_label         AS prod_type_cd_nm
-            , cd_sz.code_label         AS size_info_cd_nm
+            , v.vendor_nm
+            , v.vendor_phone         AS vendor_tel
+            , u.user_nm              AS md_user_nm
+            , cd_ps.code_label       AS prod_status_cd_nm
+            , cd_pt.code_label       AS prod_type_cd_nm
+            , cd_sz.code_label       AS size_info_cd_nm
         FROM pd_prod p
-            LEFT JOIN pd_category cat ON cat.category_id = category_id
-            LEFT JOIN sy_brand     b   ON b.brand_id     = brand_id
-            LEFT JOIN sy_vendor    v   ON v.vendor_id    = vendor_id
-            LEFT JOIN sy_user      u   ON u.user_id      = md_user_id
-            LEFT JOIN sy_code cd_ps ON cd_ps.code_grp = 'PRODUCT_STATUS' AND cd_ps.code_value = prod_status_cd
-            LEFT JOIN sy_code cd_pt ON cd_pt.code_grp = 'PRODUCT_TYPE'   AND cd_pt.code_value = prod_type_cd
-            LEFT JOIN sy_code cd_sz ON cd_sz.code_grp = 'PRODUCT_SIZE'   AND cd_sz.code_value = size_info_cd
-        WHERE prod_id = #{id}
+            LEFT JOIN pd_category cat ON cat.category_id = p.category_id
+            LEFT JOIN sy_brand     b   ON b.brand_id     = p.brand_id
+            LEFT JOIN sy_vendor    v   ON v.vendor_id    = p.vendor_id
+            LEFT JOIN sy_user      u   ON u.user_id      = p.md_user_id
+            LEFT JOIN sy_code cd_ps ON cd_ps.code_grp = 'PRODUCT_STATUS' AND cd_ps.code_value = p.prod_status_cd
+            LEFT JOIN sy_code cd_pt ON cd_pt.code_grp = 'PRODUCT_TYPE'   AND cd_pt.code_value = p.prod_type_cd
+            LEFT JOIN sy_code cd_sz ON cd_sz.code_grp = 'PRODUCT_SIZE'   AND cd_sz.code_value = p.size_info_cd
+        WHERE p.prod_id = #{id}
     </select>
 
     <!-- 상품 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto">
         SELECT  /* base.ec.pd :: PdProd :: selectList */
-              *
-            , cat.category_nm AS cate_nm
+              p.*
+            , cat.category_nm        AS cate_nm
             , b.brand_nm
             , v.vendor_nm
-            , u.user_nm                AS md_user_nm
-            , cd_ps.code_label         AS prod_status_cd_nm
-            , cd_pt.code_label         AS prod_type_cd_nm
+            , u.user_nm              AS md_user_nm
+            , cd_ps.code_label       AS prod_status_cd_nm
+            , cd_pt.code_label       AS prod_type_cd_nm
         FROM pd_prod p
-            LEFT JOIN pd_category cat ON cat.category_id = category_id
-            LEFT JOIN sy_brand     b   ON b.brand_id     = brand_id
-            LEFT JOIN sy_vendor    v   ON v.vendor_id    = vendor_id
-            LEFT JOIN sy_user      u   ON u.user_id      = md_user_id
-            LEFT JOIN sy_code cd_ps ON cd_ps.code_grp = 'PRODUCT_STATUS' AND cd_ps.code_value = prod_status_cd
-            LEFT JOIN sy_code cd_pt ON cd_pt.code_grp = 'PRODUCT_TYPE'   AND cd_pt.code_value = prod_type_cd
+            LEFT JOIN pd_category cat ON cat.category_id = p.category_id
+            LEFT JOIN sy_brand     b   ON b.brand_id     = p.brand_id
+            LEFT JOIN sy_vendor    v   ON v.vendor_id    = p.vendor_id
+            LEFT JOIN sy_user      u   ON u.user_id      = p.md_user_id
+            LEFT JOIN sy_code cd_ps ON cd_ps.code_grp = 'PRODUCT_STATUS' AND cd_ps.code_value = p.prod_status_cd
+            LEFT JOIN sy_code cd_pt ON cd_pt.code_grp = 'PRODUCT_TYPE'   AND cd_pt.code_value = p.prod_type_cd
                 <include refid="pdProdCond"/>
         <choose>
-            <when test="sort == 'id_asc'">ORDER BY prod_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY prod_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY prod_nm ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY prod_nm DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY reg_date DESC</when>
-            <otherwise>ORDER BY reg_date DESC</otherwise>
+            <when test="sort == 'id_asc'">ORDER BY p.prod_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY p.prod_id DESC</when>
+            <when test="sort == 'nm_asc'">ORDER BY p.prod_nm ASC</when>
+            <when test="sort == 'nm_desc'">ORDER BY p.prod_nm DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
         </choose>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
@@ -79,36 +81,36 @@
     <!-- 상품 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto">
         SELECT  /* base.ec.pd :: PdProd :: selectPageList */
-              *
-            , cat.category_nm AS cate_nm
+              p.*
+            , cat.category_nm        AS cate_nm
             , b.brand_nm
             , v.vendor_nm
-            , u.user_nm                AS md_user_nm
-            , cd_ps.code_label         AS prod_status_cd_nm
-            , cd_pt.code_label         AS prod_type_cd_nm
+            , u.user_nm              AS md_user_nm
+            , cd_ps.code_label       AS prod_status_cd_nm
+            , cd_pt.code_label       AS prod_type_cd_nm
         FROM pd_prod p
-            LEFT JOIN pd_category cat ON cat.category_id = category_id
-            LEFT JOIN sy_brand     b   ON b.brand_id     = brand_id
-            LEFT JOIN sy_vendor    v   ON v.vendor_id    = vendor_id
-            LEFT JOIN sy_user      u   ON u.user_id      = md_user_id
-            LEFT JOIN sy_code cd_ps ON cd_ps.code_grp = 'PRODUCT_STATUS' AND cd_ps.code_value = prod_status_cd
-            LEFT JOIN sy_code cd_pt ON cd_pt.code_grp = 'PRODUCT_TYPE'   AND cd_pt.code_value = prod_type_cd
+            LEFT JOIN pd_category cat ON cat.category_id = p.category_id
+            LEFT JOIN sy_brand     b   ON b.brand_id     = p.brand_id
+            LEFT JOIN sy_vendor    v   ON v.vendor_id    = p.vendor_id
+            LEFT JOIN sy_user      u   ON u.user_id      = p.md_user_id
+            LEFT JOIN sy_code cd_ps ON cd_ps.code_grp = 'PRODUCT_STATUS' AND cd_ps.code_value = p.prod_status_cd
+            LEFT JOIN sy_code cd_pt ON cd_pt.code_grp = 'PRODUCT_TYPE'   AND cd_pt.code_value = p.prod_type_cd
                 <include refid="pdProdCond"/>
         <choose>
-            <when test="sort == 'id_asc'">ORDER BY prod_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY prod_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY prod_nm ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY prod_nm DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY reg_date DESC</when>
-            <otherwise>ORDER BY reg_date DESC</otherwise>
+            <when test="sort == 'id_asc'">ORDER BY p.prod_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY p.prod_id DESC</when>
+            <when test="sort == 'nm_asc'">ORDER BY p.prod_nm ASC</when>
+            <when test="sort == 'nm_desc'">ORDER BY p.prod_nm DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
         </choose>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- 상품 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pd :: PdProd :: selectPageCount */
+        SELECT COUNT(p.*)  /* base.ec.pd :: PdProd :: selectPageCount */
         FROM pd_prod p
             LEFT JOIN sy_brand b ON b.brand_id = p.brand_id
         <include refid="pdProdCond"/>

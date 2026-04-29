@@ -74,7 +74,7 @@
 
     <!-- 결제수단 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.od :: OdPayMethod :: selectPageCount */
+        SELECT COUNT(m.*)  /* base.ec.od :: OdPayMethod :: selectPageCount */
         FROM od_pay_method m
             <include refid="odPayMethodCond"/>
     </select>

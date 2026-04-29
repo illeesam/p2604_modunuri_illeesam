@@ -68,7 +68,7 @@
 
     <!-- 회원 그룹 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.mb :: MbMemberGroup :: selectPageCount */
+        SELECT COUNT(g.*)  /* base.ec.mb :: MbMemberGroup :: selectPageCount */
         FROM mb_member_group g
             <include refid="mbMemberGroupCond"/>
     </select>

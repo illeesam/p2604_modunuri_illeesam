@@ -186,7 +186,7 @@
 
     <!-- 정산 원천 데이터 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.st :: StSettleRaw :: selectPageCount */
+        SELECT COUNT(r.*)  /* base.ec.st :: StSettleRaw :: selectPageCount */
         FROM st_settle_raw r
             <include refid="stSettleRawCond"/>
     </select>

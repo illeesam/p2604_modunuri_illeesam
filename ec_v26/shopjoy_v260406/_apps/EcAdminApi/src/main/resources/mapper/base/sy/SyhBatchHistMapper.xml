@@ -63,7 +63,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyhBatchHist :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyhBatchHist :: selectPageCount */
         FROM syh_batch_hist h
             <include refid="syhBatchHistCond"/>
     </select>

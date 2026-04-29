@@ -86,7 +86,7 @@
 
     <!-- 환불수단 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.od :: OdRefundMethod :: selectPageCount */
+        SELECT COUNT(m.*)  /* base.ec.od :: OdRefundMethod :: selectPageCount */
         FROM od_refund_method m
             <include refid="odRefundMethodCond"/>
     </select>

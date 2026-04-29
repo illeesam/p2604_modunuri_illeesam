@@ -88,7 +88,7 @@
 
     <!-- 알람 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyAlarm :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyAlarm :: selectPageCount */
         FROM sy_alarm a
             <include refid="syAlarmCond"/>
     </select>

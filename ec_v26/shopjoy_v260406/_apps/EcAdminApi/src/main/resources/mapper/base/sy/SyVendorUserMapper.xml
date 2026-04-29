@@ -90,7 +90,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyVendorUser :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyVendorUser :: selectPageCount */
         FROM sy_vendor_user u
             <include refid="syVendorUserCond"/>
     </select>

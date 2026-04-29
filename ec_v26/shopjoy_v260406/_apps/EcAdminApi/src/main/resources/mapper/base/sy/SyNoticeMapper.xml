@@ -76,7 +76,7 @@
 
     <!-- 공지사항 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyNotice :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyNotice :: selectPageCount */
         FROM sy_notice n
             <include refid="syNoticeCond"/>
     </select>

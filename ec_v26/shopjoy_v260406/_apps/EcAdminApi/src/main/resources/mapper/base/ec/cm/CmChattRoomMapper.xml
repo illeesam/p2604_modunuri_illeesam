@@ -81,7 +81,7 @@
 
     <!-- 채팅방 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.cm :: CmChattRoom :: selectPageCount */
+        SELECT COUNT(r.*)  /* base.ec.cm :: CmChattRoom :: selectPageCount */
         FROM cm_chatt_room r
             <include refid="cmChattRoomCond"/>
     </select>

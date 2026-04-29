@@ -76,7 +76,7 @@
 
     <!-- 사이트 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SySite :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SySite :: selectPageCount */
         FROM sy_site s
             <include refid="sySiteCond"/>
     </select>

@@ -81,7 +81,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.od :: OdhOrderItemStatusHist :: selectPageCount */
+        SELECT COUNT(h.*)  /* base.ec.od :: OdhOrderItemStatusHist :: selectPageCount */
         FROM odh_order_item_status_hist h
             <include refid="odhOrderItemStatusHistCond"/>
     </select>

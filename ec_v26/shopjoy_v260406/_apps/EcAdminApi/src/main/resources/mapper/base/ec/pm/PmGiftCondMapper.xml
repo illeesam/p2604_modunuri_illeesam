@@ -74,7 +74,7 @@
 
     <!-- 사은품 지급 조건 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pm :: PmGiftCond :: selectPageCount */
+        SELECT COUNT(c.*)  /* base.ec.pm :: PmGiftCond :: selectPageCount */
         FROM pm_gift_cond c
             <include refid="pmGiftCondCond"/>
     </select>

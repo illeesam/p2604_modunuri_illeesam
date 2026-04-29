@@ -70,7 +70,7 @@
 
     <!-- 첨부파일 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyAttach :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyAttach :: selectPageCount */
         FROM sy_attach a
             <include refid="syAttachCond"/>
     </select>

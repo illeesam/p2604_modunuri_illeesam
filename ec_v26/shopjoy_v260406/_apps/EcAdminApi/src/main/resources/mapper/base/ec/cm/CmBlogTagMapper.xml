@@ -68,7 +68,7 @@
 
     <!-- 게시물 태그 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.cm :: CmBlogTag :: selectPageCount */
+        SELECT COUNT(t.*)  /* base.ec.cm :: CmBlogTag :: selectPageCount */
         FROM cm_blog_tag t
             <include refid="cmBlogTagCond"/>
     </select>

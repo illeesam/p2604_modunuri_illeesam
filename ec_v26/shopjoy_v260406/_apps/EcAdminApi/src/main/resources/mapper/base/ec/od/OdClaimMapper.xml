@@ -124,7 +124,7 @@
 
     <!-- 클레임(취소/반품/교환) 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.od :: OdClaim :: selectPageCount */
+        SELECT COUNT(c.*)  /* base.ec.od :: OdClaim :: selectPageCount */
         FROM od_claim c
             LEFT JOIN mb_member m ON m.member_id = c.member_id
                 <include refid="odClaimCond"/>

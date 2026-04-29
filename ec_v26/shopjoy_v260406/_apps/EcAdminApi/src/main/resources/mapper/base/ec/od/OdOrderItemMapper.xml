@@ -106,7 +106,7 @@
 
     <!-- 주문 아이템(상품) 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*) FROM od_order_item oi  /* base.ec.od :: OdOrderItem :: selectPageCount */
+        SELECT COUNT(oi.*) FROM od_order_item oi  /* base.ec.od :: OdOrderItem :: selectPageCount */
                 <include refid="odOrderItemCond"/>
     </select>
 

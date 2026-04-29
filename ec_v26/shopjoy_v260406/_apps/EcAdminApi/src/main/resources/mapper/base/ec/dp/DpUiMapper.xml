@@ -69,7 +69,7 @@
 
     <!-- 전시 UI 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.dp :: DpUi :: selectPageCount */
+        SELECT COUNT(u.*)  /* base.ec.dp :: DpUi :: selectPageCount */
         FROM dp_ui u
             <include refid="dpUiCond"/>
     </select>

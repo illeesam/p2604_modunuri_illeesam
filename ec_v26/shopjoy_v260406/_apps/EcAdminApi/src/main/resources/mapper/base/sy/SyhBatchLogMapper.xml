@@ -63,7 +63,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyhBatchLog :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyhBatchLog :: selectPageCount */
         FROM syh_batch_log l
             <include refid="syhBatchLogCond"/>
     </select>

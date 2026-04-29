@@ -57,7 +57,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyhAlarmSendHist :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyhAlarmSendHist :: selectPageCount */
         FROM syh_alarm_send_hist h
             <include refid="syhAlarmSendHistCond"/>
     </select>

@@ -94,7 +94,7 @@
 
     <!-- 할인 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pm :: PmDiscnt :: selectPageCount */
+        SELECT COUNT(d.*)  /* base.ec.pm :: PmDiscnt :: selectPageCount */
         FROM pm_discnt d
             <include refid="pmDiscntCond"/>
     </select>

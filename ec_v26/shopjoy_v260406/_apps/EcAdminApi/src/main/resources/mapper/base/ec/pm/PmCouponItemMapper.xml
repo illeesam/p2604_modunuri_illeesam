@@ -74,7 +74,7 @@
 
     <!-- 쿠폰 대상 상품 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pm :: PmCouponItem :: selectPageCount */
+        SELECT COUNT(i.*)  /* base.ec.pm :: PmCouponItem :: selectPageCount */
         FROM pm_coupon_item i
             <include refid="pmCouponItemCond"/>
     </select>

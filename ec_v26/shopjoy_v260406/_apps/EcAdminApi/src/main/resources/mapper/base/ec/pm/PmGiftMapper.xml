@@ -94,7 +94,7 @@
 
     <!-- 사은품 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pm :: PmGift :: selectPageCount */
+        SELECT COUNT(g.*)  /* base.ec.pm :: PmGift :: selectPageCount */
         FROM pm_gift g
             <include refid="pmGiftCond"/>
     </select>

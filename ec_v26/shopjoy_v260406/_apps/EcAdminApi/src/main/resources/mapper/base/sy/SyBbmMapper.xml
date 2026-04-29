@@ -87,7 +87,7 @@
 
     <!-- 게시판 마스터 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyBbm :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyBbm :: selectPageCount */
         FROM sy_bbm b
             <include refid="syBbmCond"/>
     </select>

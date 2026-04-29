@@ -60,7 +60,7 @@
 
     <!-- 다국어 메시지 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyI18nMsg :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyI18nMsg :: selectPageCount */
         FROM sy_i18n_msg m
             <include refid="syI18nMsgCond"/>
     </select>

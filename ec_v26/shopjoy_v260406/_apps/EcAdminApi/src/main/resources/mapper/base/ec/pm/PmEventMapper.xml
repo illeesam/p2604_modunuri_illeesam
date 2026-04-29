@@ -89,7 +89,7 @@
 
     <!-- 이벤트 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pm :: PmEvent :: selectPageCount */
+        SELECT COUNT(e.*)  /* base.ec.pm :: PmEvent :: selectPageCount */
         FROM pm_event e
             <include refid="pmEventCond"/>
     </select>

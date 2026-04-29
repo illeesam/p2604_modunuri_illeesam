@@ -80,7 +80,7 @@
 
     <!-- 주문 할인 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.od :: OdOrderDiscnt :: selectPageCount */
+        SELECT COUNT(d.*)  /* base.ec.od :: OdOrderDiscnt :: selectPageCount */
         FROM od_order_discnt d
             <include refid="odOrderDiscntCond"/>
     </select>

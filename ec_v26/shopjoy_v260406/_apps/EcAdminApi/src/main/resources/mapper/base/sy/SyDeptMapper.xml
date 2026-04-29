@@ -90,7 +90,7 @@
 
     <!-- 부서 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyDept :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyDept :: selectPageCount */
         FROM shopjoy_2604.sy_dept d
             <include refid="syDeptCond"/>
     </select>

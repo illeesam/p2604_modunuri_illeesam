@@ -81,7 +81,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyhSendMsgLog :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyhSendMsgLog :: selectPageCount */
         FROM syh_send_msg_log l
             <include refid="syhSendMsgLogCond"/>
     </select>

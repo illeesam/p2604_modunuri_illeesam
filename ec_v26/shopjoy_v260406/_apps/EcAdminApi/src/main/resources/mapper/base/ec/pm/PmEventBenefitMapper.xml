@@ -75,7 +75,7 @@
 
     <!-- 이벤트 혜택 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pm :: PmEventBenefit :: selectPageCount */
+        SELECT COUNT(b.*)  /* base.ec.pm :: PmEventBenefit :: selectPageCount */
         FROM pm_event_benefit b
             <include refid="pmEventBenefitCond"/>
     </select>

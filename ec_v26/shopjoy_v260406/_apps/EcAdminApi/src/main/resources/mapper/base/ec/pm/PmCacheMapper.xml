@@ -75,7 +75,7 @@
 
     <!-- 캐시(충전금) 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pm :: PmCache :: selectPageCount */
+        SELECT COUNT(c.*)  /* base.ec.pm :: PmCache :: selectPageCount */
         FROM pm_cache c
             <include refid="pmCacheCond"/>
     </select>

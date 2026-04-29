@@ -74,7 +74,7 @@
 
     <!-- 리뷰 첨부파일 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pd :: PdReviewAttach :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.ec.pd :: PdReviewAttach :: selectPageCount */
         FROM pd_review_attach a
             <include refid="pdReviewAttachCond"/>
     </select>

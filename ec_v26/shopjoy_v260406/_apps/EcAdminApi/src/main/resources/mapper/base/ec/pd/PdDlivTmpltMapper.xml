@@ -88,7 +88,7 @@
 
     <!-- 배송 템플릿 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pd :: PdDlivTmplt :: selectPageCount */
+        SELECT COUNT(t.*)  /* base.ec.pd :: PdDlivTmplt :: selectPageCount */
         FROM pd_dliv_tmplt t
             <include refid="pdDlivTmpltCond"/>
     </select>

@@ -74,7 +74,7 @@
 
     <!-- 이벤트 대상 상품 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pm :: PmEventItem :: selectPageCount */
+        SELECT COUNT(i.*)  /* base.ec.pm :: PmEventItem :: selectPageCount */
         FROM pm_event_item i
             <include refid="pmEventItemCond"/>
     </select>

@@ -75,7 +75,7 @@
 
     <!-- 전시 위젯 라이브러리 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.dp :: DpWidgetLib :: selectPageCount */
+        SELECT COUNT(l.*)  /* base.ec.dp :: DpWidgetLib :: selectPageCount */
         FROM dp_widget_lib l
             <include refid="dpWidgetLibCond"/>
     </select>

@@ -6,64 +6,64 @@
 
     <sql id="syPropCond">
         <where>
-            <if test="siteId != null and siteId != ''">AND site_id = #{siteId}</if>
-            <if test="typeCd != null and typeCd != ''">AND prop_type_cd = #{typeCd}</if>
-            <if test="dateStart != null and dateStart != ''">AND reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="siteId != null and siteId != ''">AND p.site_id = #{siteId}</if>
+            <if test="typeCd != null and typeCd != ''">AND p.prop_type_cd = #{typeCd}</if>
+            <if test="dateStart != null and dateStart != ''">AND p.reg_date &gt;= #{dateStart}::DATE</if>
+            <if test="dateEnd   != null and dateEnd   != ''">AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto">
         SELECT  /* base.sy :: SyProp :: selectById */
-              *
-            , ste.site_nm AS site_nm
-            , cd_pt.code_label AS prop_type_cd_nm
+              p.*
+            , ste.site_nm            AS site_nm
+            , cd_pt.code_label       AS prop_type_cd_nm
         FROM shopjoy_2604.sy_prop p
-            LEFT JOIN shopjoy_2604.sy_site ste ON ste.site_id = site_id
-            LEFT JOIN shopjoy_2604.sy_code cd_pt ON cd_pt.code_grp = 'PROP_TYPE' AND cd_pt.code_value = prop_type_cd
-        WHERE prop_id = #{id}
+            LEFT JOIN shopjoy_2604.sy_site ste ON ste.site_id = p.site_id
+            LEFT JOIN shopjoy_2604.sy_code cd_pt ON cd_pt.code_grp = 'PROP_TYPE' AND cd_pt.code_value = p.prop_type_cd
+        WHERE p.prop_id = #{id}
     </select>
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto">
         SELECT  /* base.sy :: SyProp :: selectList */
-              *
-            , ste.site_nm AS site_nm
-            , cd_pt.code_label AS prop_type_cd_nm
+              p.*
+            , ste.site_nm            AS site_nm
+            , cd_pt.code_label       AS prop_type_cd_nm
         FROM shopjoy_2604.sy_prop p
-            LEFT JOIN shopjoy_2604.sy_site ste ON ste.site_id = site_id
-            LEFT JOIN shopjoy_2604.sy_code cd_pt ON cd_pt.code_grp = 'PROP_TYPE' AND cd_pt.code_value = prop_type_cd
+            LEFT JOIN shopjoy_2604.sy_site ste ON ste.site_id = p.site_id
+            LEFT JOIN shopjoy_2604.sy_code cd_pt ON cd_pt.code_grp = 'PROP_TYPE' AND cd_pt.code_value = p.prop_type_cd
             <include refid="syPropCond"/>
         <choose>
-            <when test="sort == 'id_asc'">ORDER BY prop_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY prop_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY reg_date DESC</when>
-            <otherwise>ORDER BY reg_date DESC</otherwise>
+            <when test="sort == 'id_asc'">ORDER BY p.prop_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY p.prop_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
         </choose>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto">
         SELECT  /* base.sy :: SyProp :: selectPageList */
-              *
-            , ste.site_nm AS site_nm
-            , cd_pt.code_label AS prop_type_cd_nm
+              p.*
+            , ste.site_nm            AS site_nm
+            , cd_pt.code_label       AS prop_type_cd_nm
         FROM shopjoy_2604.sy_prop p
-            LEFT JOIN shopjoy_2604.sy_site ste ON ste.site_id = site_id
-            LEFT JOIN shopjoy_2604.sy_code cd_pt ON cd_pt.code_grp = 'PROP_TYPE' AND cd_pt.code_value = prop_type_cd
+            LEFT JOIN shopjoy_2604.sy_site ste ON ste.site_id = p.site_id
+            LEFT JOIN shopjoy_2604.sy_code cd_pt ON cd_pt.code_grp = 'PROP_TYPE' AND cd_pt.code_value = p.prop_type_cd
             <include refid="syPropCond"/>
         <choose>
-            <when test="sort == 'id_asc'">ORDER BY prop_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY prop_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY reg_date DESC</when>
-            <otherwise>ORDER BY reg_date DESC</otherwise>
+            <when test="sort == 'id_asc'">ORDER BY p.prop_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY p.prop_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
         </choose>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyProp :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyProp :: selectPageCount */
         FROM shopjoy_2604.sy_prop p
             <include refid="syPropCond"/>
     </select>

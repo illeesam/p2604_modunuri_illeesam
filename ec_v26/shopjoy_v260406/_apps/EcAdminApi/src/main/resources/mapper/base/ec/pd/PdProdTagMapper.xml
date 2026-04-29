@@ -67,7 +67,7 @@
 
     <!-- 상품 태그 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pd :: PdProdTag :: selectPageCount */
+        SELECT COUNT(t.*)  /* base.ec.pd :: PdProdTag :: selectPageCount */
         FROM pd_prod_tag t
             <include refid="pdProdTagCond"/>
     </select>

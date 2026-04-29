@@ -82,7 +82,7 @@
 
     <!-- 상품 카테고리 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*) FROM pd_category c  /* base.ec.pd :: PdCategory :: selectPageCount */
+        SELECT COUNT(c.*) FROM pd_category c  /* base.ec.pd :: PdCategory :: selectPageCount */
                 <include refid="pdCategoryCond"/>
     </select>
 

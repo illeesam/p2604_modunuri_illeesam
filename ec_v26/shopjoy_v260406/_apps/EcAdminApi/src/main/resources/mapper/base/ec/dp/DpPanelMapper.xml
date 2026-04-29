@@ -7,51 +7,51 @@
     <!-- 전시 패널 조회 조건 -->
     <sql id="dpPanelCond">
         <where>
-            <if test="siteId != null and siteId != ''">AND site_id = #{siteId}</if>
-            <if test="status != null and status != ''">AND disp_panel_status_cd = #{status}</if>
-            <if test="typeCd != null and typeCd != ''">AND panel_type_cd = #{typeCd}</if>
+            <if test="siteId != null and siteId != ''">AND p.site_id = #{siteId}</if>
+            <if test="status != null and status != ''">AND p.disp_panel_status_cd = #{status}</if>
+            <if test="typeCd != null and typeCd != ''">AND p.panel_type_cd = #{typeCd}</if>
             <if test="kw != null and kw != ''">
                 AND (p.panel_nm ILIKE '%' || #{kw} || '%')
             </if>
-            <if test="dateStart != null and dateStart != ''">AND reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != ''">AND p.reg_date &gt;= #{dateStart}::DATE</if>
+            <if test="dateEnd   != null and dateEnd   != ''">AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
     </sql>
 
     <!-- 전시 패널 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpPanelDto">
         SELECT  /* base.ec.dp :: DpPanel :: selectById */
-              *
+              p.*
             , ste.site_nm AS site_nm
             , cd_dt.code_label AS panel_type_cd_nm
             , cd_ds.code_label AS disp_panel_status_cd_nm
         FROM dp_panel p
-            LEFT JOIN sy_site ste ON ste.site_id = site_id
-            LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DISP_TYPE' AND cd_dt.code_value = panel_type_cd
-            LEFT JOIN sy_code cd_ds ON cd_ds.code_grp = 'DISP_STATUS' AND cd_ds.code_value = disp_panel_status_cd
-        WHERE panel_id = #{id}
+            LEFT JOIN sy_site ste ON ste.site_id = p.site_id
+            LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DISP_TYPE' AND cd_dt.code_value = p.panel_type_cd
+            LEFT JOIN sy_code cd_ds ON cd_ds.code_grp = 'DISP_STATUS' AND cd_ds.code_value = p.disp_panel_status_cd
+        WHERE p.panel_id = #{id}
     </select>
 
     <!-- 전시 패널 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpPanelDto">
         SELECT  /* base.ec.dp :: DpPanel :: selectList */
-              *
+              p.*
             , ste.site_nm AS site_nm
             , cd_dt.code_label AS panel_type_cd_nm
             , cd_ds.code_label AS disp_panel_status_cd_nm
         FROM dp_panel p
-            LEFT JOIN sy_site ste ON ste.site_id = site_id
-            LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DISP_TYPE' AND cd_dt.code_value = panel_type_cd
-            LEFT JOIN sy_code cd_ds ON cd_ds.code_grp = 'DISP_STATUS' AND cd_ds.code_value = disp_panel_status_cd
+            LEFT JOIN sy_site ste ON ste.site_id = p.site_id
+            LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DISP_TYPE' AND cd_dt.code_value = p.panel_type_cd
+            LEFT JOIN sy_code cd_ds ON cd_ds.code_grp = 'DISP_STATUS' AND cd_ds.code_value = p.disp_panel_status_cd
             <include refid="dpPanelCond"/>
         <choose>
-            <when test="sort == 'id_asc'">ORDER BY panel_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY panel_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY panel_nm ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY panel_nm DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY reg_date DESC</when>
-            <otherwise>ORDER BY reg_date DESC</otherwise>
+            <when test="sort == 'id_asc'">ORDER BY p.panel_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY p.panel_id DESC</when>
+            <when test="sort == 'nm_asc'">ORDER BY p.panel_nm ASC</when>
+            <when test="sort == 'nm_desc'">ORDER BY p.panel_nm DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
         </choose>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
@@ -59,30 +59,30 @@
     <!-- 전시 패널 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpPanelDto">
         SELECT  /* base.ec.dp :: DpPanel :: selectPageList */
-              *
+              p.*
             , ste.site_nm AS site_nm
             , cd_dt.code_label AS panel_type_cd_nm
             , cd_ds.code_label AS disp_panel_status_cd_nm
         FROM dp_panel p
-            LEFT JOIN sy_site ste ON ste.site_id = site_id
-            LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DISP_TYPE' AND cd_dt.code_value = panel_type_cd
-            LEFT JOIN sy_code cd_ds ON cd_ds.code_grp = 'DISP_STATUS' AND cd_ds.code_value = disp_panel_status_cd
+            LEFT JOIN sy_site ste ON ste.site_id = p.site_id
+            LEFT JOIN sy_code cd_dt ON cd_dt.code_grp = 'DISP_TYPE' AND cd_dt.code_value = p.panel_type_cd
+            LEFT JOIN sy_code cd_ds ON cd_ds.code_grp = 'DISP_STATUS' AND cd_ds.code_value = p.disp_panel_status_cd
             <include refid="dpPanelCond"/>
         <choose>
-            <when test="sort == 'id_asc'">ORDER BY panel_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY panel_id DESC</when>
-            <when test="sort == 'nm_asc'">ORDER BY panel_nm ASC</when>
-            <when test="sort == 'nm_desc'">ORDER BY panel_nm DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY reg_date DESC</when>
-            <otherwise>ORDER BY reg_date DESC</otherwise>
+            <when test="sort == 'id_asc'">ORDER BY p.panel_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY p.panel_id DESC</when>
+            <when test="sort == 'nm_asc'">ORDER BY p.panel_nm ASC</when>
+            <when test="sort == 'nm_desc'">ORDER BY p.panel_nm DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
         </choose>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- 전시 패널 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.dp :: DpPanel :: selectPageCount */
+        SELECT COUNT(p.*)  /* base.ec.dp :: DpPanel :: selectPageCount */
         FROM dp_panel p
             <include refid="dpPanelCond"/>
     </select>
@@ -105,7 +105,7 @@
             <if test="updBy != null">upd_by = #{updBy},</if>
             <if test="updDate != null">upd_date = #{updDate},</if>
         </set>
-        WHERE panel_id = #{panelId}
+        WHERE p.panel_id = #{panelId}
     </update>
 
 </mapper>

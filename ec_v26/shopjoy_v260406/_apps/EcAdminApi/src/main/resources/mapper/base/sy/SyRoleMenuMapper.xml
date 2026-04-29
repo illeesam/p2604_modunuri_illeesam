@@ -56,7 +56,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyRoleMenu :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyRoleMenu :: selectPageCount */
         FROM sy_role_menu m
             <include refid="syRoleMenuCond"/>
     </select>

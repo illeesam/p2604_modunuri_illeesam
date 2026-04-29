@@ -61,7 +61,7 @@
 
     <!-- 채팅 메시지 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.cm :: CmChattMsg :: selectPageCount */
+        SELECT COUNT(m.*)  /* base.ec.cm :: CmChattMsg :: selectPageCount */
         FROM cm_chatt_msg m
             <include refid="cmChattMsgCond"/>
     </select>

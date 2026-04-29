@@ -75,7 +75,7 @@
 
     <!-- 회원 주소 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.mb :: MbMemberAddr :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.ec.mb :: MbMemberAddr :: selectPageCount */
         FROM mb_member_addr a
             <include refid="mbMemberAddrCond"/>
     </select>

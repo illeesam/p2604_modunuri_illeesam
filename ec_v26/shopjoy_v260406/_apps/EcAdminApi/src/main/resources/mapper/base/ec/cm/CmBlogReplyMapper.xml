@@ -87,7 +87,7 @@
 
     <!-- 게시물 댓글 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.cm :: CmBlogReply :: selectPageCount */
+        SELECT COUNT(r.*)  /* base.ec.cm :: CmBlogReply :: selectPageCount */
         FROM cm_blog_reply r
             <include refid="cmBlogReplyCond"/>
     </select>

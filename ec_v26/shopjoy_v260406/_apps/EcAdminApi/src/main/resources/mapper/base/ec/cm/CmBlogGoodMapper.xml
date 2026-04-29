@@ -60,7 +60,7 @@
 
     <!-- 게시물 좋아요 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.cm :: CmBlogGood :: selectPageCount */
+        SELECT COUNT(g.*)  /* base.ec.cm :: CmBlogGood :: selectPageCount */
         FROM cm_blog_good g
             <include refid="cmBlogGoodCond"/>
     </select>

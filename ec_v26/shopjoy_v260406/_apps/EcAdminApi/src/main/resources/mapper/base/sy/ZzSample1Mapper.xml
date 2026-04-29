@@ -6,59 +6,59 @@
 
     <sql id="zzSample1Cond">
         <where>
-            <if test="sample1Id != null and sample1Id != ''">AND sample1_id = #{sample1Id}</if>
-            <if test="category != null and category != ''">AND category = #{category}</if>
-            <if test="title != null and title != ''">AND title ILIKE '%' || #{title} || '%'</if>
-            <if test="status != null and status != ''">AND status = #{status}</if>
-            <if test="regDateStart != null and regDateStart != ''">AND reg_date >= #{regDateStart}::DATE</if>
-            <if test="regDateEnd != null and regDateEnd != ''">AND reg_date &lt; (#{regDateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="sample1Id != null and sample1Id != ''">AND s.sample1_id = #{sample1Id}</if>
+            <if test="category != null and category != ''">AND s.category = #{category}</if>
+            <if test="title != null and title != ''">AND s.title ILIKE '%' || #{title} || '%'</if>
+            <if test="status != null and status != ''">AND s.status = #{status}</if>
+            <if test="regDateStart != null and regDateStart != ''">AND s.reg_date >= #{regDateStart}::DATE</if>
+            <if test="regDateEnd != null and regDateEnd != ''">AND s.reg_date &lt; (#{regDateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
     </sql>
 
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample1Dto">
         SELECT  /* base.sy :: ZzSample1 :: selectById */
-              *
-        FROM shopjoy_2604.zz_sample1
-        WHERE sample1_id = #{id}
+              s.*
+        FROM shopjoy_2604.zz_sample1 s
+        WHERE s.sample1_id = #{id}
     </select>
 
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample1Dto">
         SELECT  /* base.sy :: ZzSample1 :: selectList */
-              *
-        FROM shopjoy_2604.zz_sample1
+              s.*
+        FROM shopjoy_2604.zz_sample1 s
             <include refid="zzSample1Cond"/>
         <choose>
-            <when test="sort == 'id_asc'">ORDER BY sample1_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY sample1_id DESC</when>
-            <when test="sort == 'title_asc'">ORDER BY title ASC</when>
-            <when test="sort == 'title_desc'">ORDER BY title DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY reg_date DESC</when>
-            <otherwise>ORDER BY reg_date DESC</otherwise>
+            <when test="sort == 'id_asc'">ORDER BY s.sample1_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY s.sample1_id DESC</when>
+            <when test="sort == 'title_asc'">ORDER BY s.title ASC</when>
+            <when test="sort == 'title_desc'">ORDER BY s.title DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY s.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY s.reg_date DESC</when>
+            <otherwise>ORDER BY s.reg_date DESC</otherwise>
         </choose>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
 
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.ZzSample1Dto">
         SELECT  /* base.sy :: ZzSample1 :: selectPageList */
-              *
-        FROM shopjoy_2604.zz_sample1
+              s.*
+        FROM shopjoy_2604.zz_sample1 s
             <include refid="zzSample1Cond"/>
         <choose>
-            <when test="sort == 'id_asc'">ORDER BY sample1_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY sample1_id DESC</when>
-            <when test="sort == 'title_asc'">ORDER BY title ASC</when>
-            <when test="sort == 'title_desc'">ORDER BY title DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY reg_date DESC</when>
-            <otherwise>ORDER BY reg_date DESC</otherwise>
+            <when test="sort == 'id_asc'">ORDER BY s.sample1_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY s.sample1_id DESC</when>
+            <when test="sort == 'title_asc'">ORDER BY s.title ASC</when>
+            <when test="sort == 'title_desc'">ORDER BY s.title DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY s.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY s.reg_date DESC</when>
+            <otherwise>ORDER BY s.reg_date DESC</otherwise>
         </choose>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: ZzSample1 :: selectPageCount */
-        FROM shopjoy_2604.zz_sample1
+        SELECT COUNT(s.*)  /* base.sy :: ZzSample1 :: selectPageCount */
+        FROM shopjoy_2604.zz_sample1 s
             <include refid="zzSample1Cond"/>
     </select>
 

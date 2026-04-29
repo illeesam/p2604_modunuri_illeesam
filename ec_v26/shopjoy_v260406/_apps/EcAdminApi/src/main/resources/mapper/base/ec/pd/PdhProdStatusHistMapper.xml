@@ -73,7 +73,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pd :: PdhProdStatusHist :: selectPageCount */
+        SELECT COUNT(h.*)  /* base.ec.pd :: PdhProdStatusHist :: selectPageCount */
         FROM pdh_prod_status_hist h
             <include refid="pdhProdStatusHistCond"/>
     </select>

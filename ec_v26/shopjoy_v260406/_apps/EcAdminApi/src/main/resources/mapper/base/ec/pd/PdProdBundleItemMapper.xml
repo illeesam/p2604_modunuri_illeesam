@@ -73,7 +73,7 @@
 
     <!-- 묶음상품 구성 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pd :: PdProdBundleItem :: selectPageCount */
+        SELECT COUNT(i.*)  /* base.ec.pd :: PdProdBundleItem :: selectPageCount */
         FROM pd_prod_bundle_item i
             <include refid="pdProdBundleItemCond"/>
     </select>

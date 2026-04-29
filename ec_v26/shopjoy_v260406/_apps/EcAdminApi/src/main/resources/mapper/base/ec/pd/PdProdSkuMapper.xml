@@ -62,7 +62,7 @@
 
     <!-- 상품 SKU 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pd :: PdProdSku :: selectPageCount */
+        SELECT COUNT(s.*)  /* base.ec.pd :: PdProdSku :: selectPageCount */
         FROM pd_prod_sku s
             <include refid="pdProdSkuCond"/>
     </select>

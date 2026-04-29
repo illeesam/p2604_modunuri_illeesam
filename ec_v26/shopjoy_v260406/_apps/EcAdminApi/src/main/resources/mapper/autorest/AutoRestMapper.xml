@@ -101,7 +101,7 @@
          건수 조회
          ============================================================ -->
     <select id="selectCount" resultType="long">
-        SELECT COUNT(*)  /* autorest :: AutoRest :: selectCount */
+        SELECT COUNT(a.*)  /* autorest :: AutoRest :: selectCount */
         FROM ${p.schema}.${p.table} t
         <include refid="commonWhere"/>
     </select>

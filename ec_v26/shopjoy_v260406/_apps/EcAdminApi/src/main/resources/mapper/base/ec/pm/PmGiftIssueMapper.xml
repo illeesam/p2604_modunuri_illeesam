@@ -86,7 +86,7 @@
 
     <!-- 사은품 발행 이력 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pm :: PmGiftIssue :: selectPageCount */
+        SELECT COUNT(i.*)  /* base.ec.pm :: PmGiftIssue :: selectPageCount */
         FROM pm_gift_issue i
             <include refid="pmGiftIssueCond"/>
     </select>

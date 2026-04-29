@@ -67,7 +67,7 @@
 
     <!-- 상품 SKU 가격 이력 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pd :: PdhProdSkuPriceHist :: selectPageCount */
+        SELECT COUNT(h.*)  /* base.ec.pd :: PdhProdSkuPriceHist :: selectPageCount */
         FROM pdh_prod_sku_price_hist h
             <include refid="pdhProdSkuPriceHistCond"/>
     </select>

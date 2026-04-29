@@ -77,7 +77,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.mb :: MbhMemberTokenLog :: selectPageCount */
+        SELECT COUNT(l.*)  /* base.ec.mb :: MbhMemberTokenLog :: selectPageCount */
         FROM mbh_member_token_log l
         <include refid="mbhMemberTokenLogCond"/>
     </select>

@@ -80,7 +80,7 @@
 
     <!-- 전시 패널 아이템 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.dp :: DpPanelItem :: selectPageCount */
+        SELECT COUNT(i.*)  /* base.ec.dp :: DpPanelItem :: selectPageCount */
         FROM dp_panel_item i
             <include refid="dpPanelItemCond"/>
     </select>

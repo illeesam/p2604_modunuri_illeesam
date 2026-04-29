@@ -87,7 +87,7 @@
 
     <!-- 쿠폰 발행 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pm :: PmCouponIssue :: selectPageCount */
+        SELECT COUNT(ci.*)  /* base.ec.pm :: PmCouponIssue :: selectPageCount */
         FROM pm_coupon_issue ci
             LEFT JOIN pm_coupon  c ON c.coupon_id = ci.coupon_id
             LEFT JOIN mb_member  m ON m.member_id = ci.member_id

@@ -69,7 +69,7 @@
 
     <!-- 배송 아이템 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.od :: OdDlivItem :: selectPageCount */
+        SELECT COUNT(i.*)  /* base.ec.od :: OdDlivItem :: selectPageCount */
         FROM od_dliv_item i
             <include refid="odDlivItemCond"/>
     </select>

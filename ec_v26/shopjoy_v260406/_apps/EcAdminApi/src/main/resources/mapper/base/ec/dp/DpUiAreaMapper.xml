@@ -66,7 +66,7 @@
 
     <!-- 전시 UI-영역 매핑 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.dp :: DpUiArea :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.ec.dp :: DpUiArea :: selectPageCount */
         FROM dp_ui_area a
             <include refid="dpUiAreaCond"/>
     </select>

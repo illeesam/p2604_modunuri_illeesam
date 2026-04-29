@@ -59,7 +59,7 @@
 
     <!-- ERP 전표 상세 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.st :: StErpVoucherLine :: selectPageCount */
+        SELECT COUNT(l.*)  /* base.ec.st :: StErpVoucherLine :: selectPageCount */
         FROM st_erp_voucher_line l
             <include refid="stErpVoucherLineCond"/>
     </select>

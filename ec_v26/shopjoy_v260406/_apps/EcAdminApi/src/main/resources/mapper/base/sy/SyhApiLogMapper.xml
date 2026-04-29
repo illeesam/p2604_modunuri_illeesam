@@ -64,7 +64,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyhApiLog :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyhApiLog :: selectPageCount */
         FROM syh_api_log l
             <include refid="syhApiLogCond"/>
     </select>

@@ -75,7 +75,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyVendorBrand :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyVendorBrand :: selectPageCount */
         FROM sy_vendor_brand b
             <include refid="syVendorBrandCond"/>
     </select>

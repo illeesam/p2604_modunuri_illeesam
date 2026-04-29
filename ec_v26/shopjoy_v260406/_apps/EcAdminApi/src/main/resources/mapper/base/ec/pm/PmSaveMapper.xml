@@ -74,7 +74,7 @@
 
     <!-- 적립금 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pm :: PmSave :: selectPageCount */
+        SELECT COUNT(s.*)  /* base.ec.pm :: PmSave :: selectPageCount */
         FROM pm_save s
             <include refid="pmSaveCond"/>
     </select>

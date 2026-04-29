@@ -7,39 +7,39 @@
     <!-- 전시 영역-패널 매핑 조회 조건 -->
     <sql id="dpAreaPanelCond">
         <where>
-            <if test="dateStart != null and dateStart != ''">AND reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != ''">AND p.reg_date &gt;= #{dateStart}::DATE</if>
+            <if test="dateEnd   != null and dateEnd   != ''">AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
     </sql>
 
     <!-- 전시 영역-패널 매핑 상세 조회 -->
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpAreaPanelDto">
         SELECT  /* base.ec.dp :: DpAreaPanel :: selectById */
-              *
+              p.*
             , are.area_nm AS area_nm
             , pan.panel_nm AS panel_nm
         FROM dp_area_panel p
-            LEFT JOIN dp_area are ON are.area_id = area_id
-            LEFT JOIN dp_panel pan ON pan.panel_id = panel_id
-        WHERE area_panel_id = #{id}
+            LEFT JOIN dp_area are ON are.area_id = p.area_id
+            LEFT JOIN dp_panel pan ON pan.panel_id = p.panel_id
+        WHERE p.area_panel_id = #{id}
     </select>
 
     <!-- 전시 영역-패널 매핑 목록 조회 -->
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpAreaPanelDto">
         SELECT  /* base.ec.dp :: DpAreaPanel :: selectList */
-              *
+              p.*
             , are.area_nm AS area_nm
             , pan.panel_nm AS panel_nm
         FROM dp_area_panel p
-            LEFT JOIN dp_area are ON are.area_id = area_id
-            LEFT JOIN dp_panel pan ON pan.panel_id = panel_id
+            LEFT JOIN dp_area are ON are.area_id = p.area_id
+            LEFT JOIN dp_panel pan ON pan.panel_id = p.panel_id
             <include refid="dpAreaPanelCond"/>
         <choose>
-            <when test="sort == 'id_asc'">ORDER BY area_panel_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY area_panel_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY reg_date DESC</when>
-            <otherwise>ORDER BY reg_date DESC</otherwise>
+            <when test="sort == 'id_asc'">ORDER BY p.area_panel_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY p.area_panel_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
         </choose>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>
@@ -47,26 +47,26 @@
     <!-- 전시 영역-패널 매핑 페이징 목록 조회 -->
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpAreaPanelDto">
         SELECT  /* base.ec.dp :: DpAreaPanel :: selectPageList */
-              *
+              p.*
             , are.area_nm AS area_nm
             , pan.panel_nm AS panel_nm
         FROM dp_area_panel p
-            LEFT JOIN dp_area are ON are.area_id = area_id
-            LEFT JOIN dp_panel pan ON pan.panel_id = panel_id
+            LEFT JOIN dp_area are ON are.area_id = p.area_id
+            LEFT JOIN dp_panel pan ON pan.panel_id = p.panel_id
             <include refid="dpAreaPanelCond"/>
         <choose>
-            <when test="sort == 'id_asc'">ORDER BY area_panel_id ASC</when>
-            <when test="sort == 'id_desc'">ORDER BY area_panel_id DESC</when>
-            <when test="sort == 'reg_asc'">ORDER BY reg_date ASC</when>
-            <when test="sort == 'reg_desc'">ORDER BY reg_date DESC</when>
-            <otherwise>ORDER BY reg_date DESC</otherwise>
+            <when test="sort == 'id_asc'">ORDER BY p.area_panel_id ASC</when>
+            <when test="sort == 'id_desc'">ORDER BY p.area_panel_id DESC</when>
+            <when test="sort == 'reg_asc'">ORDER BY p.reg_date ASC</when>
+            <when test="sort == 'reg_desc'">ORDER BY p.reg_date DESC</when>
+            <otherwise>ORDER BY p.reg_date DESC</otherwise>
         </choose>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- 전시 영역-패널 매핑 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.dp :: DpAreaPanel :: selectPageCount */
+        SELECT COUNT(p.*)  /* base.ec.dp :: DpAreaPanel :: selectPageCount */
         FROM dp_area_panel p
             <include refid="dpAreaPanelCond"/>
     </select>
@@ -89,7 +89,7 @@
             <if test="updBy != null">upd_by = #{updBy},</if>
             <if test="updDate != null">upd_date = #{updDate},</if>
         </set>
-        WHERE area_panel_id = #{areaPanelId}
+        WHERE p.area_panel_id = #{areaPanelId}
     </update>
 
 </mapper>

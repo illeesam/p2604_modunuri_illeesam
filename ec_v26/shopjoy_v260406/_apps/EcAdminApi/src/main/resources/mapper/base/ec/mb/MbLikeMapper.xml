@@ -80,7 +80,7 @@
 
     <!-- 좋아요(찜) 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.mb :: MbLike :: selectPageCount */
+        SELECT COUNT(l.*)  /* base.ec.mb :: MbLike :: selectPageCount */
         FROM mb_like l
             <include refid="mbLikeCond"/>
     </select>

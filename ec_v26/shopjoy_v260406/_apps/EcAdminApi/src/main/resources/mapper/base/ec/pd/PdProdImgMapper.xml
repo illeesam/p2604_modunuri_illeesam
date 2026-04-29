@@ -74,7 +74,7 @@
 
     <!-- 상품 이미지 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pd :: PdProdImg :: selectPageCount */
+        SELECT COUNT(i.*)  /* base.ec.pd :: PdProdImg :: selectPageCount */
         FROM pd_prod_img i
             <include refid="pdProdImgCond"/>
     </select>

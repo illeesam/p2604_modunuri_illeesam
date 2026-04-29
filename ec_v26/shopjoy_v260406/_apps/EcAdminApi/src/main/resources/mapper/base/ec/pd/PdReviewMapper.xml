@@ -87,7 +87,7 @@
 
     <!-- 상품 리뷰 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pd :: PdReview :: selectPageCount */
+        SELECT COUNT(r.*)  /* base.ec.pd :: PdReview :: selectPageCount */
         FROM pd_review r
             <include refid="pdReviewCond"/>
     </select>

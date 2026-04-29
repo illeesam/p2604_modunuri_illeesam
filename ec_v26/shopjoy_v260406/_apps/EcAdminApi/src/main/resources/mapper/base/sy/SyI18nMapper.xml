@@ -67,7 +67,7 @@
 
     <!-- 다국어 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyI18n :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyI18n :: selectPageCount */
         FROM sy_i18n i
             <include refid="syI18nCond"/>
     </select>

@@ -57,7 +57,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.mb :: MbDeviceToken :: selectPageCount */
+        SELECT COUNT(t.*)  /* base.ec.mb :: MbDeviceToken :: selectPageCount */
         FROM mb_device_token t
             <include refid="mbDeviceTokenCond"/>
     </select>

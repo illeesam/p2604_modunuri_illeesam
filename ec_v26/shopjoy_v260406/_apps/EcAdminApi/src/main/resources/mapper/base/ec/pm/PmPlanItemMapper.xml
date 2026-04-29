@@ -73,7 +73,7 @@
 
     <!-- 프로모션 플랜 아이템 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pm :: PmPlanItem :: selectPageCount */
+        SELECT COUNT(i.*)  /* base.ec.pm :: PmPlanItem :: selectPageCount */
         FROM pm_plan_item i
             <include refid="pmPlanItemCond"/>
     </select>

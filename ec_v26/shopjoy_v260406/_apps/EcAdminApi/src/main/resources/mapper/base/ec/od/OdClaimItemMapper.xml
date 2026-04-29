@@ -75,7 +75,7 @@
 
     <!-- 클레임 아이템 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.od :: OdClaimItem :: selectPageCount */
+        SELECT COUNT(i.*)  /* base.ec.od :: OdClaimItem :: selectPageCount */
         FROM od_claim_item i
             <include refid="odClaimItemCond"/>
     </select>

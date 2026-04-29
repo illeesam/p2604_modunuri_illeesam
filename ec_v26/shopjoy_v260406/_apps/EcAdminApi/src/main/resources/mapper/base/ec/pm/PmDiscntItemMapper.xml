@@ -74,7 +74,7 @@
 
     <!-- 할인 대상 상품 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pm :: PmDiscntItem :: selectPageCount */
+        SELECT COUNT(i.*)  /* base.ec.pm :: PmDiscntItem :: selectPageCount */
         FROM pm_discnt_item i
             <include refid="pmDiscntItemCond"/>
     </select>

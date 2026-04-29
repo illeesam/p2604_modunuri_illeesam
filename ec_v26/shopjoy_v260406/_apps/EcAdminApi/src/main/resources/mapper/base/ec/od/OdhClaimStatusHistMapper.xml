@@ -86,7 +86,7 @@
 
     <!-- 클레임 상태 이력 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.od :: OdhClaimStatusHist :: selectPageCount */
+        SELECT COUNT(h.*)  /* base.ec.od :: OdhClaimStatusHist :: selectPageCount */
         FROM odh_claim_status_hist h
             <include refid="odhClaimStatusHistCond"/>
     </select>

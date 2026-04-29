@@ -140,7 +140,7 @@
 
     <!-- 주문 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.od :: OdOrder :: selectPageCount */
+        SELECT COUNT(o.*)  /* base.ec.od :: OdOrder :: selectPageCount */
         FROM od_order o
             LEFT JOIN mb_member m ON m.member_id = o.member_id
         <include refid="odOrderCond"/>
@@ -170,17 +170,17 @@
     <select id="selectItemsByOrderId" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto">
         SELECT  /* base.ec.od :: OdOrder :: selectItemsByOrderId */
               oi.*
-            , thumbnail_url
+            , p.thumbnail_url
             , sk.sku_code
             , oi1.opt_item_nm  AS opt_item_nm_1
             , oi2.opt_item_nm  AS opt_item_nm_2
             , cd_is.code_label AS order_item_status_cd_nm
             , cd_dc.code_label AS dliv_courier_cd_nm
         FROM od_order_item oi
-            LEFT JOIN pd_prod          p   ON prod_id      = oi.prod_id
-            LEFT JOIN pd_prod_sku      sk  ON sk.sku_id      = oi.sku_id
-            LEFT JOIN pd_prod_opt_item oi1 ON oi1.opt_item_id = oi.opt_item_id_1
-            LEFT JOIN pd_prod_opt_item oi2 ON oi2.opt_item_id = oi.opt_item_id_2
+            LEFT JOIN pd_prod          p   ON p.prod_id        = oi.prod_id
+            LEFT JOIN pd_prod_sku      sk  ON sk.sku_id        = oi.sku_id
+            LEFT JOIN pd_prod_opt_item oi1 ON oi1.opt_item_id   = oi.opt_item_id_1
+            LEFT JOIN pd_prod_opt_item oi2 ON oi2.opt_item_id   = oi.opt_item_id_2
             LEFT JOIN sy_code          cd_is
                 ON cd_is.code_grp = 'ORDER_ITEM_STATUS' AND cd_is.code_value = oi.order_item_status_cd
             LEFT JOIN sy_code          cd_dc

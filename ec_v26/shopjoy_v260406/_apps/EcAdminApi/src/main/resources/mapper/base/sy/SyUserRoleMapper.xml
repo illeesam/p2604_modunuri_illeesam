@@ -80,7 +80,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyUserRole :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyUserRole :: selectPageCount */
         FROM sy_user_role r
             <include refid="syUserRoleCond"/>
     </select>

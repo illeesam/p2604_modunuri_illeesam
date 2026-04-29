@@ -99,7 +99,7 @@
 
     <!-- 적립금 지급 이력 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pm :: PmSaveIssue :: selectPageCount */
+        SELECT COUNT(i.*)  /* base.ec.pm :: PmSaveIssue :: selectPageCount */
         FROM pm_save_issue i
             <include refid="pmSaveIssueCond"/>
     </select>

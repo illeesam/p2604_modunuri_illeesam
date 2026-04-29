@@ -112,7 +112,7 @@
 
     <!-- 배송 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.od :: OdDliv :: selectPageCount */
+        SELECT COUNT(d.*)  /* base.ec.od :: OdDliv :: selectPageCount */
         FROM od_dliv d
             LEFT JOIN od_order o ON o.order_id = d.order_id
                 <include refid="odDlivCond"/>

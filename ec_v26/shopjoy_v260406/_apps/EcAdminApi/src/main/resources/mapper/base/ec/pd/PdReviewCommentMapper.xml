@@ -76,7 +76,7 @@
 
     <!-- 리뷰 댓글 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pd :: PdReviewComment :: selectPageCount */
+        SELECT COUNT(c.*)  /* base.ec.pd :: PdReviewComment :: selectPageCount */
         FROM pd_review_comment c
             <include refid="pdReviewCommentCond"/>
     </select>

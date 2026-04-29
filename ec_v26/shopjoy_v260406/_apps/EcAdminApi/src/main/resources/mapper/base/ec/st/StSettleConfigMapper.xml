@@ -80,7 +80,7 @@
 
     <!-- 정산 설정 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.st :: StSettleConfig :: selectPageCount */
+        SELECT COUNT(c.*)  /* base.ec.st :: StSettleConfig :: selectPageCount */
         FROM st_settle_config c
             <include refid="stSettleConfigCond"/>
     </select>

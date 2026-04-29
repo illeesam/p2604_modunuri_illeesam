@@ -68,7 +68,7 @@
 
     <!-- 게시판 카테고리 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.cm :: CmBlogCate :: selectPageCount */
+        SELECT COUNT(c.*)  /* base.ec.cm :: CmBlogCate :: selectPageCount */
         FROM cm_blog_cate c
             <include refid="cmBlogCateCond"/>
     </select>

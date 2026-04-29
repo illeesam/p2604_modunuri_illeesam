@@ -75,7 +75,7 @@
 
     <!-- 전시 영역 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.dp :: DpArea :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.ec.dp :: DpArea :: selectPageCount */
         FROM dp_area a
             <include refid="dpAreaCond"/>
     </select>

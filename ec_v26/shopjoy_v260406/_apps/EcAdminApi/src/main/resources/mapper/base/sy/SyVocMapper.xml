@@ -75,7 +75,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyVoc :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyVoc :: selectPageCount */
         FROM sy_voc v
             <include refid="syVocCond"/>
     </select>

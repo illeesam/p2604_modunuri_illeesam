@@ -68,7 +68,7 @@
 
     <!-- 클레임 변경 이력 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.od :: OdhClaimChgHist :: selectPageCount */
+        SELECT COUNT(h.*)  /* base.ec.od :: OdhClaimChgHist :: selectPageCount */
         FROM odh_claim_chg_hist h
             <include refid="odhClaimChgHistCond"/>
     </select>

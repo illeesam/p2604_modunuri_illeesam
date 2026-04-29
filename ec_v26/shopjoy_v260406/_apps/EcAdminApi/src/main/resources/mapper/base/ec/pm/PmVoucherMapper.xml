@@ -82,7 +82,7 @@
 
     <!-- 바우처(상품권) 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pm :: PmVoucher :: selectPageCount */
+        SELECT COUNT(v.*)  /* base.ec.pm :: PmVoucher :: selectPageCount */
         FROM pm_voucher v
             <include refid="pmVoucherCond"/>
     </select>

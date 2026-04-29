@@ -81,7 +81,7 @@
 
     <!-- 정산 항목 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.st :: StSettleItem :: selectPageCount */
+        SELECT COUNT(i.*)  /* base.ec.st :: StSettleItem :: selectPageCount */
         FROM st_settle_item i
             <include refid="stSettleItemCond"/>
     </select>

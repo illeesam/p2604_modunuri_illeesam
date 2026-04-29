@@ -88,7 +88,7 @@
 
     <!-- 정산 대사 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.st :: StRecon :: selectPageCount */
+        SELECT COUNT(r.*)  /* base.ec.st :: StRecon :: selectPageCount */
         FROM st_recon r
             <include refid="stReconCond"/>
     </select>

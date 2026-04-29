@@ -74,7 +74,7 @@
 
     <!-- 회원 등급 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.mb :: MbMemberGrade :: selectPageCount */
+        SELECT COUNT(g.*)  /* base.ec.mb :: MbMemberGrade :: selectPageCount */
         FROM mb_member_grade g
             <include refid="mbMemberGradeCond"/>
     </select>

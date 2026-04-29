@@ -68,7 +68,7 @@
 
     <!-- 정산 조정 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.st :: StSettleAdj :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.ec.st :: StSettleAdj :: selectPageCount */
         FROM st_settle_adj a
             <include refid="stSettleAdjCond"/>
     </select>

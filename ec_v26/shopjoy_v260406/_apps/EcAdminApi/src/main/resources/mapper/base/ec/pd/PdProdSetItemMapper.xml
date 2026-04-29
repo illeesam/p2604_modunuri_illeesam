@@ -80,7 +80,7 @@
 
     <!-- 세트상품 구성 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pd :: PdProdSetItem :: selectPageCount */
+        SELECT COUNT(i.*)  /* base.ec.pd :: PdProdSetItem :: selectPageCount */
         FROM pd_prod_set_item i
             <include refid="pdProdSetItemCond"/>
     </select>

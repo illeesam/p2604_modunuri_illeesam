@@ -99,7 +99,7 @@
 
     <!-- 상품 문의 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pd :: PdProdQna :: selectPageCount */
+        SELECT COUNT(q.*)  /* base.ec.pd :: PdProdQna :: selectPageCount */
         FROM pd_prod_qna q
             <include refid="pdProdQnaCond"/>
     </select>

@@ -73,7 +73,7 @@
 
     <!-- 장바구니 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.od :: OdCart :: selectPageCount */
+        SELECT COUNT(c.*)  /* base.ec.od :: OdCart :: selectPageCount */
         FROM od_cart c
             <include refid="odCartCond"/>
     </select>

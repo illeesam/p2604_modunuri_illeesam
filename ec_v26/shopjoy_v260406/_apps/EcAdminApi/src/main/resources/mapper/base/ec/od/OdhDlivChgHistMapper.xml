@@ -64,7 +64,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.od :: OdhDlivChgHist :: selectPageCount */
+        SELECT COUNT(h.*)  /* base.ec.od :: OdhDlivChgHist :: selectPageCount */
         FROM odh_dliv_chg_hist h
             <include refid="odhDlivChgHistCond"/>
     </select>

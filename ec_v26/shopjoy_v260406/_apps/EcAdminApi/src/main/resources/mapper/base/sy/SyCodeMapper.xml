@@ -61,7 +61,7 @@
 
     <!-- 공통 코드 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyCode :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyCode :: selectPageCount */
         FROM sy_code c
             <include refid="syCodeCond"/>
     </select>

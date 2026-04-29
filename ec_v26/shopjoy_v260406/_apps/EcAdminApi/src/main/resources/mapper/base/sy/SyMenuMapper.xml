@@ -75,7 +75,7 @@
 
     <!-- 메뉴 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.sy :: SyMenu :: selectPageCount */
+        SELECT COUNT(a.*)  /* base.sy :: SyMenu :: selectPageCount */
         FROM sy_menu m
             <include refid="syMenuCond"/>
     </select>

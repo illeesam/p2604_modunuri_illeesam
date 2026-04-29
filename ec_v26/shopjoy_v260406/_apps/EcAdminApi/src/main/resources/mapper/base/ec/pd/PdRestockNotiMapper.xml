@@ -73,7 +73,7 @@
 
     <!-- 재입고 알림 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pd :: PdRestockNoti :: selectPageCount */
+        SELECT COUNT(n.*)  /* base.ec.pd :: PdRestockNoti :: selectPageCount */
         FROM pd_restock_noti n
             <include refid="pdRestockNotiCond"/>
     </select>

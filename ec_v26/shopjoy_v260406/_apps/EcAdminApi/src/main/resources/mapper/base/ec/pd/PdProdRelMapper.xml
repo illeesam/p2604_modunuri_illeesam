@@ -74,7 +74,7 @@
 
     <!-- 연관 상품 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(*)  /* base.ec.pd :: PdProdRel :: selectPageCount */
+        SELECT COUNT(r.*)  /* base.ec.pd :: PdProdRel :: selectPageCount */
         FROM pd_prod_rel r
             <include refid="pdProdRelCond"/>
     </select>
