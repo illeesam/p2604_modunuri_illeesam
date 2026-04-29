@@ -4,36 +4,16 @@ window.MbMemberHist = {
   name: 'MbMemberHist',
   props: ['navigate', 'showRefModal', 'memberId'],
   setup(props) {
-    const { ref, computed, reactive, watch, onMounted } = Vue;
-    const members = reactive([]);
+    const { computed, reactive, watch, onMounted } = Vue;
     const uiState = reactive({ loading: false, isPageCodeLoad: false, tab: window._ecMemberHistState.tab || 'orders', viewMode2: window._ecMemberHistState.viewMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
 
-    // onMounted에서 API 로드
-    const handleSearchList = async (searchType = 'DEFAULT') => {
-      uiState.loading = true;
-      try {
-        const res = await boApi.get('/bo/ec/mb/member/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('회원관리', '이력조회')
-        });
-        members.splice(0, members.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-        if (props.showToast) props.showToast('MbMember 로드 실패', 'error');
-      } finally {
-        uiState.loading = false;
-      }
-    };
-
     // ── watch ────────────────────────────────────────────────────────────────
 
-        watch(() => uiState.tab, v => { window._ecMemberHistState.tab = v; });
+    watch(() => uiState.tab, v => { window._ecMemberHistState.tab = v; });
 
-        watch(() => uiState.viewMode2, v => { window._ecMemberHistState.viewMode = v; });
+    watch(() => uiState.viewMode2, v => { window._ecMemberHistState.viewMode = v; });
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -43,28 +23,37 @@ window.MbMemberHist = {
 
     const fnLoadCodes = async () => {
       uiState.isPageCodeLoad = true;
-      handleSearchList();
     };
 
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    watch(() => props.memberId, () => {
+      // 회원ID 변경시 자동으로 computed 값 갱신 (별도 로드 불필요 - 목업 데이터)
+    });
+
+    // ★ onMounted — 진입 시 코드 로드
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
     const cfMemberOrders = computed(() => {
-      const memberData = members.find(m => m.userId === props.memberId);
-      return memberData?.orders || [];
+      // 목업: 회원별 주문 이력 샘플 데이터
+      const sampleOrders = {
+        'MB000001': [{ orderId: 'ORD001', orderDate: '2026-04-20 10:00', prodNm: '상품A', totalPrice: 50000, statusCd: 'PAID' }],
+        'MB000002': [{ orderId: 'ORD002', orderDate: '2026-04-19 14:00', prodNm: '상품B', totalPrice: 30000, statusCd: 'SHIPPED' }],
+      };
+      return sampleOrders[props.memberId] || [];
     });
     const cfMemberClaims = computed(() => {
-      const memberData = members.find(m => m.userId === props.memberId);
-      return memberData?.claims || [];
+      // 목업: 회원별 클레임 이력 샘플 데이터
+      const sampleClaims = {
+        'MB000001': [{ claimId: 'CLAIM001', orderId: 'ORD001', type: '반품', statusCd: 'PENDING', reasonCd: '상품오류', requestDate: '2026-04-20' }],
+      };
+      return sampleClaims[props.memberId] || [];
     });
 
     // ── return ───────────────────────────────────────────────────────────────
 
     return {
-      members,
       uiState,
       cfMemberOrders,
       cfMemberClaims,

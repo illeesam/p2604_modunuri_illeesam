@@ -1,14 +1,16 @@
-/* ShopJoy Admin - 회원관리 상세/등록 (모달 카드) */
+/* ShopJoy Admin - 회원관리 상세/등록 */
 window.MbMemberDtl = {
   name: 'MbMemberDtl',
   props: ['detailModal', 'handleSave', 'handleDelete', 'closeDetail'],
   setup(props) {
-    return {
-      detailModal: props.detailModal,
-      handleSave: props.handleSave,
-      handleDelete: props.handleDelete,
-      closeDetail: props.closeDetail
-    };
+    const { watch, ref } = Vue;
+    const currentId = ref(props.detailModal.editId);
+
+    watch(() => props.detailModal.editId, (newId) => {
+      if (newId) currentId.value = newId;
+    }, { immediate: true });
+
+    return { currentId };
   },
   template: /* html */`
 <div v-if="detailModal.show">
@@ -22,8 +24,6 @@ window.MbMemberDtl = {
         <button class="btn btn-secondary btn-sm" @click="closeDetail">닫기</button>
       </div>
     </div>
-
-    <!-- 기본정보 폼 -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px">
       <div class="form-group"><label class="form-label">이메일 <span style="color:red">*</span></label><input class="form-control" v-model="detailModal.form.email" placeholder="이메일 주소"></div>
       <div class="form-group"><label class="form-label">이름 <span style="color:red">*</span></label><input class="form-control" v-model="detailModal.form.memberNm" placeholder="이름"></div>
@@ -35,9 +35,9 @@ window.MbMemberDtl = {
     </div>
   </div>
 
-  <!-- ── 이력정보 카드 (별도 분리) ─────────────────────────────────────────── -->
+  <!-- ── 이력정보 카드 ─────────────────────────────────────────────────────── -->
   <div v-if="!detailModal.isNew" class="card">
-    <mb-member-hist :member-id="detailModal.editId" />
+    <mb-member-hist :member-id="currentId" :key="currentId" />
   </div>
 </div>
 `

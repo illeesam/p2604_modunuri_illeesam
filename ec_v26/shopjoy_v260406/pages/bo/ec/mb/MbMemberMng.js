@@ -12,7 +12,12 @@ window.MbMemberMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const searchParam = reactive({ kw: '', grade: '', status: '' });
     const searchParamOrg = reactive({ kw: '', grade: '', status: '' });
-    const detailModal = reactive({ show: false, isNew: false, editId: null, form: {} });
+    const detailModal = reactive({
+      show: false,
+      isNew: false,
+      editId: null,
+      form: { memberId: null, email: '', memberNm: '', phone: '', gradeCd: '일반', statusCd: '활성', joinDate: '', memo: '' }
+    });
 
     // 2️⃣ computed 선언
     const isAppReady = computed(() => {
@@ -21,7 +26,7 @@ window.MbMemberMng = {
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
-    const cfSelectedRow = computed(() => members.find(m => m.userId === detailModal.editId) || null);
+    const cfSelectedRow = computed(() => members.find(m => m.memberId === detailModal.editId) || null);
 
     const cfPageNums = computed(() => {
       const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
@@ -66,16 +71,32 @@ window.MbMemberMng = {
       }
     };
 
-    const openDetail = (row) => {
-      if (detailModal.editId === row.userId) { detailModal.show = false; detailModal.editId = null; return; }
-      Object.assign(detailModal.form, { ...row });
-      detailModal.editId = row.userId;
+    const fnFmtDate = v => v ? String(v).slice(0, 10) : '';
+
+    const fnApplyForm = (d) => {
+      Object.assign(detailModal.form, {
+        memberId: d.memberId, email: d.email || '', memberNm: d.memberNm || '',
+        phone: d.phone || '', gradeCd: d.gradeCd || '', statusCd: d.statusCd || '',
+        joinDate: fnFmtDate(d.joinDate), memo: d.memo || ''
+      });
+    };
+
+    const openDetail = async (row) => {
+      detailModal.editId = row.memberId;
       detailModal.isNew = false;
       detailModal.show = true;
+      fnApplyForm(row); // 목록 row 데이터로 먼저 표시
+      try {
+        const res = await boApi.get(`/bo/ec/mb/member/${row.memberId}`, coUtil.apiHdr('회원관리', '상세조회'));
+        const d = res.data?.data || res.data;
+        if (d) fnApplyForm(d);
+      } catch (err) {
+        console.error('[openDetail]', err);
+      }
     };
 
     const openNew = () => {
-      Object.assign(detailModal.form, { userId: null, email: '', memberNm: '', phone: '', gradeCd: '일반', statusCd: '활성', joinDate: new Date().toISOString().split('T')[0], memo: '' });
+      Object.assign(detailModal.form, { memberId: null, email: '', memberNm: '', phone: '', gradeCd: '일반', statusCd: '활성', joinDate: new Date().toISOString().split('T')[0], memo: '' });
       detailModal.editId = '__new__';
       detailModal.isNew = true;
       detailModal.show = true;
@@ -93,20 +114,20 @@ window.MbMemberMng = {
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
       if (isNewMember) {
-        detailModal.form.userId = 'MB' + String(Date.now()).slice(-6);
+        detailModal.form.memberId = 'MB' + String(Date.now()).slice(-6);
         detailModal.form.orderCount = 0;
         detailModal.form.totalPurchase = 0;
         members.unshift({ ...detailModal.form });
-        detailModal.editId = detailModal.form.userId;
+        detailModal.editId = detailModal.form.memberId;
         detailModal.isNew = false;
       } else {
-        const si = members.findIndex(m => m.userId === detailModal.form.userId);
+        const si = members.findIndex(m => m.memberId === detailModal.form.memberId);
         if (si !== -1) Object.assign(members[si], detailModal.form);
       }
       try {
         const res = await (isNewMember
           ? boApi.post(`/bo/ec/mb/member`, { ...detailModal.form }, { ...coUtil.apiHdr('회원관리', '등록') })
-          : boApi.put(`/bo/ec/mb/member/${detailModal.form.userId}`, { ...detailModal.form }, { ...coUtil.apiHdr('회원관리', '저장') }));
+          : boApi.put(`/bo/ec/mb/member/${detailModal.form.memberId}`, { ...detailModal.form }, { ...coUtil.apiHdr('회원관리', '저장') }));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {
@@ -121,11 +142,12 @@ window.MbMemberMng = {
       if (!cfSelectedRow.value) return;
       const ok = await props.showConfirm('삭제', `[${cfSelectedRow.value.memberNm}] 회원을 삭제하시겠습니까?`);
       if (!ok) return;
-      const si = members.findIndex(m => m.userId === cfSelectedRow.value.userId);
+      const memberId = cfSelectedRow.value.memberId;
+      const si = members.findIndex(m => m.memberId === memberId);
       if (si !== -1) members.splice(si, 1);
       closeDetail();
       try {
-        const res = await boApi.delete(`/bo/ec/mb/member/${cfSelectedRow.value.userId}`, { ...coUtil.apiHdr('회원관리', '삭제') });
+        const res = await boApi.delete(`/bo/ec/mb/member/${memberId}`, { ...coUtil.apiHdr('회원관리', '삭제') });
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -158,7 +180,7 @@ window.MbMemberMng = {
       selectedId: computed(() => detailModal.editId), members, uiState, codes,
       searchParam, searchParamOrg, pager, cfPageNums, setPage,
       onSearch, onReset, cfSelectedRow, detailModal, openDetail, openNew, closeDetail,
-      handleSave, handleDelete, fnGradeBadge, fnStatusBadge, onSizeChange
+      handleSave, handleDelete, fnGradeBadge, fnStatusBadge, fnFmtDate, onSizeChange
     };
   },
   template: /* html */`
@@ -193,14 +215,14 @@ window.MbMemberMng = {
         <th>ID</th><th>이름</th><th>이메일</th><th>연락처</th><th>등급</th><th>상태</th><th>가입일</th><th style="width:80px;text-align:right">주문수</th><th style="width:100px;text-align:right">총구매액</th><th style="text-align:center;width:80px">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-for="row in members" :key="row?.userId" :class="{active:selectedId===row.userId}" style="cursor:pointer">
-          <td style="font-size:12px">{{ row.userId }}</td>
+        <tr v-for="row in members" :key="row?.memberId" :class="{active:selectedId===row.memberId}" style="cursor:pointer">
+          <td style="font-size:12px">{{ row.memberId }}</td>
           <td><span class="title-link" @click="openDetail(row)">{{ row.memberNm }}</span></td>
           <td style="font-size:12px">{{ row.email }}</td>
           <td style="font-size:12px">{{ row.phone }}</td>
           <td><span class="badge" :class="fnGradeBadge(row.gradeCd)">{{ row.gradeCd }}</span></td>
           <td><span class="badge" :class="fnStatusBadge(row.statusCd)">{{ row.statusCd }}</span></td>
-          <td style="font-size:12px">{{ row.joinDate }}</td>
+          <td style="font-size:12px">{{ fnFmtDate(row.joinDate) }}</td>
           <td style="text-align:right;font-size:12px">{{ (row.orderCount||0) }}건</td>
           <td style="text-align:right;font-size:12px">{{ (row.totalPurchase||0).toLocaleString() }}원</td>
           <td style="text-align:center"><button class="btn btn-blue btn-sm" @click.stop="openDetail(row)">수정</button></td>
