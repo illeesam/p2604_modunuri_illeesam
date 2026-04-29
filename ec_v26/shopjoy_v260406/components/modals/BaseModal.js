@@ -3140,7 +3140,17 @@ window.PathPickModal = {
       };
       walk(cfTree.value, 0);
     };
-    Vue.onMounted(() => expandLevels(2));
+    /* 모달 마운트 시 최신 경로 목록 API 재조회 → window._boCmPaths 갱신 */
+    Vue.onMounted(async () => {
+      try {
+        const res = await boApi.get('/bo/sy/path/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('표시경로', '목록조회') });
+        const list = res.data?.data?.pageList || res.data?.data?.list || [];
+        if (list.length > 0) window._boCmPaths = list;
+      } catch (e) {
+        console.error('[PathPickModal] 경로 조회 실패', e);
+      }
+      expandLevels(2);
+    });
 
     const selectedId = ref(props.value || null);
     const select = (id) => { selectedId.value = id; };

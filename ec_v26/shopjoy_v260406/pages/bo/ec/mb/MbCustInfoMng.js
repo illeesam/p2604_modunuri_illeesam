@@ -225,8 +225,9 @@
       });
 
       /* ── 고객선택 모달 ── */
-      const openMemberModal = () => {
+      const openMemberModal = async () => {
         memberModal.keyword = '';
+        await handleSearchData('DEFAULT');
         memberModal.list = [...members];
         memberModal.show = true;
       };

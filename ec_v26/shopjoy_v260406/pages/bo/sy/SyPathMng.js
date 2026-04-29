@@ -188,10 +188,11 @@ window.SyPathMng = {
       return { pathId: null, pathLabel: '전체', children: roots.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)) };
     });
 
-    const openParentModal = (row) => {
+    const openParentModal = async (row) => {
       parentModal.targetRow = row;
       parentModal.expanded.clear();
       parentModal.expanded.add(null);
+      await handleSearchTree();
       allPaths.filter(r => r.parentPathId == null && r.pathId !== row.pathId).forEach(r => parentModal.expanded.add(r.pathId));
       parentModal.show = true;
     };

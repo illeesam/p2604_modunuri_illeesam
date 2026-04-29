@@ -353,7 +353,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
     };
 
     const roleTreeModal = reactive({ show: false, targetRow: null });
-    const openParentModal = (row) => { roleTreeModal.targetRow = row; roleTreeModal.show = true; };
+    const openParentModal = async (row) => { roleTreeModal.targetRow = row; await handleSearchList('DEFAULT'); roleTreeModal.show = true; };
     const onParentSelect  = (role) => {
       if (roleTreeModal.targetRow) { roleTreeModal.targetRow.parentId = role.roleId; roleTreeModal.targetRow._depth = 0; onCellChange(roleTreeModal.targetRow); }
       roleTreeModal.show = false;

@@ -307,9 +307,10 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       return buildBranch(null, false);
     });
 
-    const openRoleModal = () => {
+    const openRoleModal = async () => {
       uiState.roleModalTemp = null;
       roleTreeExpanded.clear();
+      await handleLoadData();
       const root = roles.find(r=>r.roleCode===cfFormAllowedRootCode.value);
       if (root) roleTreeExpanded.add(root.roleId);
       uiState.roleModalOpen = true;

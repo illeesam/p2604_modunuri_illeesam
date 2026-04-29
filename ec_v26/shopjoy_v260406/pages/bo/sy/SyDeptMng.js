@@ -267,7 +267,7 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
     };
 
     const deptTreeModal = reactive({ show: false, targetRow: null });
-    const openParentModal = (row) => { deptTreeModal.targetRow = row; deptTreeModal.show = true; };
+    const openParentModal = async (row) => { deptTreeModal.targetRow = row; await handleSearchList(); deptTreeModal.show = true; };
     const onParentSelect  = (dept) => {
       if (deptTreeModal.targetRow) { deptTreeModal.targetRow.parentDeptId = dept.deptId; deptTreeModal.targetRow._depth = 0; onCellChange(deptTreeModal.targetRow); }
       deptTreeModal.show = false;

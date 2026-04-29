@@ -119,7 +119,7 @@ const isAppReady = computed(() => {
 
     /* ── 카테고리 선택 모달 ── */
     const catModal = reactive({ show: false });
-    const openCatModal = () => { catModal.show = true; };
+    const openCatModal = async () => { await handleSearchList('DEFAULT'); catModal.show = true; };
     const onCatSelect = (cat) => {
       searchParam.cate = cat.categoryNm || '';
       catModal.show = false;

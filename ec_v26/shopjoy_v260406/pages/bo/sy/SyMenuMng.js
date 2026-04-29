@@ -246,7 +246,7 @@ const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
     };
 
     const menuTreeModal = reactive({ show: false, targetRow: null });
-    const openParentModal = (row) => { menuTreeModal.targetRow = row; menuTreeModal.show = true; };
+    const openParentModal = async (row) => { menuTreeModal.targetRow = row; await handleSearchList('DEFAULT'); menuTreeModal.show = true; };
     const onParentSelect  = (menu) => {
       if (menuTreeModal.targetRow) { menuTreeModal.targetRow.parentId = menu.menuId; menuTreeModal.targetRow._depth = 0; onCellChange(menuTreeModal.targetRow); }
       menuTreeModal.show = false;

@@ -60,7 +60,8 @@ window.MyClaim = {
       myStore.customerModal.order = order || null;
       myStore.customerModal.show = true;
     };
-    const openOrderModal = orderId => {
+    const openOrderModal = async orderId => {
+      await myStore.handleLoadOrders();
       const ok = myStore.openOrderModal(orderId);
       if (!ok) props.showToast('주문 정보를 찾을 수 없습니다.', 'error');
     };

@@ -607,3 +607,51 @@ props.showRefModal({ type: 'member', onSelect: (m) => { form.memberId = m.userId
 ## 관련 정책
 - `sy.51.프로그램설계정책.md` — 초기값·데이터 정렬·ID 표시
 - `base.기술-admin.md` — 컴포넌트 등록 4단계·Props 표준·adminApiCall 패턴
+
+---
+
+## 17. 팝업/모달 오픈 시 API 재조회 정책
+
+**원칙**: 모든 선택 팝업(목록·트리·피커)은 오픈 시점에 최신 데이터를 API에서 재조회한다.
+
+### 17.1 일반 선택 모달 (`open*Modal`)
+
+```js
+// ✅ 올바른 패턴 — async + 재조회 후 show = true
+const openCatModal = async () => {
+  await handleSearchList('DEFAULT'); // 최신 데이터 로드
+  catModal.show = true;
+};
+
+// ❌ 잘못된 패턴 — 캐시된 데이터로 팝업 표시
+const openCatModal = () => {
+  catModal.show = true;
+};
+```
+
+### 17.2 표시경로 선택 팝업 (`PathPickModal`)
+
+`PathPickModal` 컴포넌트 자체가 `onMounted`에서 `/bo/sy/path/page` API를 호출하여  
+`window._boCmPaths`를 갱신한다. 각 화면의 `openPathPick`에서 별도 재조회 불필요.
+
+```js
+// PathPickModal 내부 (BaseModal.js) — 마운트 시 자동 재조회
+Vue.onMounted(async () => {
+  const res = await boApi.get('/bo/sy/path/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('표시경로', '목록조회') });
+  const list = res.data?.data?.pageList || [];
+  if (list.length > 0) window._boCmPaths = list;
+  expandLevels(2);
+});
+```
+
+### 17.3 적용 범위
+
+| 유형 | 재조회 방법 | 적용 파일 |
+|------|------------|---------|
+| 상위카테고리 선택 | `await handleSearchList()` | `PdCategoryMng` |
+| 카테고리 선택 | `await handleSearchList()` | `PdProdMng` |
+| 부서 선택 | `await handleSearchList()` | `SyDeptMng`, `SyUserDtl` |
+| 메뉴 선택 | `await handleSearchList()` | `SyMenuMng` |
+| 역할 선택 | `await handleSearchList()` | `SyRoleMng`, `SyBizUserMng` |
+| 경로 선택 | `PathPickModal` 내부 자동 처리 | 전체 (18개 파일) |
+| 회원 선택 | `await handleSearchData()` | `MbCustInfoMng` |

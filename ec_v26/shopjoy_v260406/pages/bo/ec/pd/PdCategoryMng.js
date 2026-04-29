@@ -183,10 +183,11 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       }
       catPickerModal.show = false;
     };
-    const openParentModal = (row) => {
+    const openParentModal = async (row) => {
       catPickerModal.forRowIdx = gridRows.indexOf(row);
       catPickerModal.search = '';
       catPickerModal.show = true;
+      await handleSearchList(); // 팝업 오픈 시 최신 카테고리 목록 재조회
     };
     const fnDepthColor = (d) => ({0:'#e8587a',1:'#1677ff',2:'#3ba87a'}[d] || '#999');
     const fnDepthBullet = (d) => ['●','○','▪'][d] || '·';

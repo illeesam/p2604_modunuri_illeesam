@@ -51,7 +51,8 @@ window.MyCache = {
       props.showToast(amount.toLocaleString() + '원이 충전되었습니다!', 'success');
     };
 
-    const openOrderModal = orderId => {
+    const openOrderModal = async orderId => {
+      await myStore.handleLoadOrders();
       const ok = myStore.openOrderModal(orderId);
       if (!ok) props.showToast('주문 정보를 찾을 수 없습니다.', 'error');
     };
