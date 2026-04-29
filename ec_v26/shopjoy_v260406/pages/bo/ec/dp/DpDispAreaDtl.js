@@ -664,8 +664,8 @@ window.DpDispAreaDtl = {
             <span class="badge" :class="cfActivePanel.status==='활성'?'badge-green':'badge-gray'" style="font-size:11px;margin-left:8px;">{{ cfActivePanel.status }}</span>
           </div>
           <div style="display:flex;gap:6px;">
-            <button class="btn btn-blue btn-sm" @click="navigate('dpDispPanelDtl', { editId: cfActivePanel.dispId })">패널 편집</button>
-            <button class="btn btn-danger btn-sm" @click="removePanel(activePanel)">영역에서 제거</button>
+            <button class="btn btn-blue btn-sm" @click="props.navigate('dpDispPanelDtl', { editId: cfActivePanel.dispId })">패널 편집</button>
+            <button class="btn btn-danger btn-sm" @click="removePanel(cfActivePanel)">영역에서 제거</button>
           </div>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:#555;margin-bottom:12px;">

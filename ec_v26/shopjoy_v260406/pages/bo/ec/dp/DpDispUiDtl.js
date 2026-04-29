@@ -551,7 +551,7 @@ window.DpDispUiDtl = {
           </div>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-blue btn-sm" @click="navigate('dpDispAreaMng')">영역 편집</button>
-            <button class="btn btn-danger btn-sm" @click="removeArea(activeArea)">UI에서 제거</button>
+            <button class="btn btn-danger btn-sm" @click="removeArea(cfActiveArea)">UI에서 제거</button>
           </div>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:#555;margin-bottom:12px;">
@@ -716,7 +716,7 @@ window.DpDispUiDtl = {
           <disp-x02-area
             :params="{ date: form.regDate || '', time: '00:00', status: '활성' }"
             :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }"
-            :area-item="{ code: cfActiveArea.codeValue, label: cfActiveArea.codeLabel, info: activeArea, panels: panelsOfArea(cfActiveArea.codeValue) }" />
+            :area-item="{ code: cfActiveArea.codeValue, label: cfActiveArea.codeLabel, info: cfActiveArea, panels: panelsOfArea(cfActiveArea.codeValue) }" />
         </div>
       </div>
     </div>
