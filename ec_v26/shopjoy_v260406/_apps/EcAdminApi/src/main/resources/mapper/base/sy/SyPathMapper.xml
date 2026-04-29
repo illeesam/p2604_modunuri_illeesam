@@ -42,7 +42,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(a.*)
+        SELECT COUNT(p.*)
         FROM shopjoy_2604.sy_path p
         <include refid="cond"/>
     </select>

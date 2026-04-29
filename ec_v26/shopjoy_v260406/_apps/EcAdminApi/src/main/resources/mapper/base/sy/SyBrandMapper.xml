@@ -70,7 +70,7 @@
 
     <!-- 브랜드 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(a.*)  /* base.sy :: SyBrand :: selectPageCount */
+        SELECT COUNT(b.*)  /* base.sy :: SyBrand :: selectPageCount */
         FROM sy_brand b
             <include refid="syBrandCond"/>
     </select>

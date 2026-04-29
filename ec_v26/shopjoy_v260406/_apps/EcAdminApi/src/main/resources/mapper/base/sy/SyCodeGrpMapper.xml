@@ -68,7 +68,7 @@
 
     <!-- 공통 코드 그룹 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(a.*)  /* base.sy :: SyCodeGrp :: selectPageCount */
+        SELECT COUNT(g.*)  /* base.sy :: SyCodeGrp :: selectPageCount */
         FROM sy_code_grp g
             <include refid="syCodeGrpCond"/>
     </select>

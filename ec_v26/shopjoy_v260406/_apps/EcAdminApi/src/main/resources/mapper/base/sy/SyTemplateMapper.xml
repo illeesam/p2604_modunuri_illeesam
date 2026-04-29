@@ -70,7 +70,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(a.*)  /* base.sy :: SyTemplate :: selectPageCount */
+        SELECT COUNT(t.*)  /* base.sy :: SyTemplate :: selectPageCount */
         FROM sy_template t
             <include refid="syTemplateCond"/>
     </select>

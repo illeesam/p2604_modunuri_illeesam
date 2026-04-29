@@ -76,7 +76,7 @@
 
     <!-- 문의 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(a.*)  /* base.sy :: SyContact :: selectPageCount */
+        SELECT COUNT(c.*)  /* base.sy :: SyContact :: selectPageCount */
         FROM sy_contact c
             <include refid="syContactCond"/>
     </select>

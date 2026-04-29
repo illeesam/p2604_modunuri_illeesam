@@ -58,7 +58,7 @@
 
     <!-- 첨부파일 그룹 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(a.*)  /* base.sy :: SyAttachGrp :: selectPageCount */
+        SELECT COUNT(g.*)  /* base.sy :: SyAttachGrp :: selectPageCount */
         FROM sy_attach_grp g
             <include refid="syAttachGrpCond"/>
     </select>

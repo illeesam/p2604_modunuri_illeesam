@@ -63,7 +63,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(a.*)  /* base.sy :: SyProp :: selectPageCount */
+        SELECT COUNT(p.*)  /* base.sy :: SyProp :: selectPageCount */
         FROM shopjoy_2604.sy_prop p
             <include refid="syPropCond"/>
     </select>

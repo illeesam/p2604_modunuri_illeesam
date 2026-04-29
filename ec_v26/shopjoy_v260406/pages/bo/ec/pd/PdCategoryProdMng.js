@@ -29,6 +29,9 @@ window.PdCategoryProdMng = {
       }
     };
 
+    /* 선택된 카테고리 (watch 이전에 선언 필수) */
+    const cfSelectedCatId = ref(null);
+
     // ── watch ────────────────────────────────────────────────────────────────
 
     watch(isAppReady, (newVal) => {
@@ -150,8 +153,7 @@ window.PdCategoryProdMng = {
       }
     });
 
-    /* 선택된 카테고리 */
-    const cfSelectedCatId = ref(null);
+    /* 선택된 카테고리 - selectNode 헬퍼 */
     const selectNode = id => {
       cfSelectedCatId.value = (cfSelectedCatId.value === id) ? null : id;
     };

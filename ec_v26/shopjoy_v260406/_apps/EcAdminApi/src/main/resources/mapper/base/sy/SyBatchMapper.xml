@@ -81,7 +81,7 @@
 
     <!-- 배치 전체 건수 조회 -->
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(a.*)  /* base.sy :: SyBatch :: selectPageCount */
+        SELECT COUNT(b.*)  /* base.sy :: SyBatch :: selectPageCount */
         FROM sy_batch b
             <include refid="syBatchCond"/>
     </select>

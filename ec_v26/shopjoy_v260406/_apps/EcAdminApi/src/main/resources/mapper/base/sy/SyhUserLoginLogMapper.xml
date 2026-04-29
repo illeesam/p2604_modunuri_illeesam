@@ -68,7 +68,7 @@
     </select>
 
     <select id="selectPageCount" resultType="long">
-        SELECT COUNT(a.*)  /* base.sy :: SyhUserLoginLog :: selectPageCount */
+        SELECT COUNT(l.*)  /* base.sy :: SyhUserLoginLog :: selectPageCount */
         FROM syh_user_login_log l
             <include refid="syhUserLoginLogCond"/>
     </select>
