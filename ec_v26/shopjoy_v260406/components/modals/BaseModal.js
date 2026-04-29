@@ -1540,7 +1540,7 @@ window.RoleTreeModal = {
   props: ['dispDataset', 'excludeId', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ kw: '', hoverId: null });
     const allRoles = ref([]);
     const handleSearchList = async () => {
@@ -1634,7 +1634,7 @@ window.MenuTreeModal = {
   props: ['dispDataset', 'excludeId', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ kw: '', hoverId: null });
     const allMenus = ref([]);
     const handleSearchList = async () => {
@@ -1768,7 +1768,7 @@ window.DeptTreeModal = {
   props: ['dispDataset', 'excludeId', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ kw: '', hoverId: null });
     const allDepts = ref([]);
     const handleSearchList = async () => {
@@ -1912,7 +1912,7 @@ window.CategoryTreeModal = {
   props: ['dispDataset', 'excludeId', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ kw: '', hoverId: null });
     const allCategories = ref([]);
     const handleSearchList = async () => {
