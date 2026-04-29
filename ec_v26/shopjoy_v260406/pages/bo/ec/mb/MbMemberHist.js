@@ -52,12 +52,28 @@ window.MbMemberHist = {
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
-    const cfMemberOrders = computed(() => window.safeArrayUtils.safeFilter(orders, o => o.userId === props.memberId));
-    const cfMemberClaims = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.userId === props.memberId));
+    const cfMemberOrders = computed(() => {
+      const memberData = members.find(m => m.userId === props.memberId);
+      return memberData?.orders || [];
+    });
+    const cfMemberClaims = computed(() => {
+      const memberData = members.find(m => m.userId === props.memberId);
+      return memberData?.claims || [];
+    });
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { members, uiState, cfMemberOrders, cfMemberClaims, showTab };
+    return {
+      members,
+      uiState,
+      cfMemberOrders,
+      cfMemberClaims,
+      showTab,
+      tab,
+      viewMode2,
+      navigate: props.navigate,
+      showRefModal: props.showRefModal
+    };
   },
   template: /* html */`
 <div>

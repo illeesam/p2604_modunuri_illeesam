@@ -1,132 +1,34 @@
-/* ShopJoy Admin - 회원관리 목록 + 하단 MemberDtl 임베드 */
+/* ShopJoy Admin - 회원관리 */
 window.MbMemberMng = {
   name: 'MbMemberMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
+
+    // 1️⃣ ref/reactive 선언
     const members = reactive([]);
-    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ member_statuses: [], member_grades: [] });
-
-    // onMounted에서 API 로드
-    const handleSearchList = async (searchType = 'DEFAULT') => {
-      uiState.loading = true;
-      try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
-        const res = await boApi.get('/bo/ec/mb/member/page', { params, ...coUtil.apiHdr('회원관리', '조회') });
-        members.splice(0, members.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
-        pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
-        pager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        Object.assign(pager.pageCond, res.data?.data?.pageCond || pager.pageCond);
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-        props.showToast('회원 목록 로드 실패', 'error');
-      } finally {
-        uiState.loading = false;
-      }
-    };
-
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
-    Object.assign(searchParamOrg, searchParam); });
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
-    const handleDateRangeChange = () => {
-      if (searchDateRange.value) {
-        const r = boUtil.getDateRange(searchDateRange.value);
-        searchParam.dateStart = r ? r.from : '';
-        searchParam.dateEnd = r ? r.to : '';
-      }
-      pager.pageNo = 1;
-    };
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const searchParam = reactive({ kw: '', grade: '', status: '' });
+    const searchParamOrg = reactive({ kw: '', grade: '', status: '' });
+    const detailModal = reactive({ show: false, isNew: false, editId: null, form: {} });
 
-    // 검색 조건 (ref)
-    const searchDateRange = ref('');
-    const searchDateStart = ref('');
-    const searchDateEnd = ref('');
-
-/* 하단 상세 */
-    const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
-    const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
-    const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
-    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
-    const closeDetail = () => { uiStateDetail.selectedId = null; };
-    const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'mbMemberMng') { uiStateDetail.selectedId = null; return; }
-      if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
-      props.navigate(pg, opts);
-    };
-    const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
-    const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
-
-    const cfPageNums = computed(() => {
-      const cur = pager.pageNo, last = pager.pageTotalPage;
-      const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
-      return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-    });
-
-    const fnGradeBadge = g => ({ 'VIP': 'badge-purple', '우수': 'badge-blue', '일반': 'badge-gray' }[g] || 'badge-gray');
-    const fnStatusBadge = s => ({ '활성': 'badge-green', '정지': 'badge-red' }[s] || 'badge-gray');
-    const onSearch = async () => {
-      pager.pageNo = 1;
-      await handleSearchList('DEFAULT');
-    };
-  
-    const onReset = () => {
-    Object.assign(searchParam, searchParamOrg);
-    onSearch();
-  };
-  
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
-
-    const handleDelete = async (m) => {
-      const ok = await props.showConfirm('삭제', `[${m.memberNm}] 회원을 삭제하시겠습니까?`);
-      if (!ok) return;
-      try {
-        const res = await boApi.delete(`/bo/ec/mb/member/${m.userId}`, { ...coUtil.apiHdr('회원관리', '삭제') });
-        const idx = members.findIndex(x => x.userId === m.userId);
-        if (idx !== -1) members.splice(idx, 1);
-        if (uiStateDetail.selectedId === m.userId) uiStateDetail.selectedId = null;
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
-      }
-    };
-
-    const exportExcel = () => boUtil.exportCsv(members, [{label:'ID',key:'userId'},{label:'이름',key:'memberNm'},{label:'이메일',key:'email'},{label:'연락처',key:'phone'},{label:'등급',key:'gradeCd'},{label:'상태',key:'statusCd'},{label:'가입일',key:'joinDate'},{label:'주문수',key:'orderCount'},{label:'총구매액',key:'totalPurchase'}], '회원목록.csv');
-
-  const searchParam = reactive({
-    kw: '',
-    dateRange: '',
-    dateStart: '',
-    dateEnd: '',
-    grade: '',
-    status: ''
-  });
-  const searchParamOrg = reactive({
-    kw: '',
-    dateRange: '',
-    dateStart: '',
-    dateEnd: '',
-    grade: '',
-    status: ''
-  });
+    // 2️⃣ computed 선언
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
       const codeStore = window.getBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
+    const cfSelectedRow = computed(() => members.find(m => m.userId === detailModal.editId) || null);
+
+    const cfPageNums = computed(() => {
+      const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    });
+
+    // 3️⃣ 함수 정의
     const fnLoadCodes = async () => {
       try {
         const codeStore = window.getBoCodeStore?.();
@@ -139,27 +41,141 @@ window.MbMemberMng = {
       }
     };
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
+    const handleSearchList = async (searchType = 'DEFAULT') => {
+      uiState.loading = true;
+      try {
+        const res = await boApi.get('/bo/ec/mb/member/page', {
+          params: {
+            pageNo: pager.pageNo, pageSize: pager.pageSize,
+            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+          },
+          ...coUtil.apiHdr('회원관리', '목록조회')
+        });
+        const data = res.data?.data;
+        members.splice(0, members.length, ...(data?.pageList || []));
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+        if (props.showToast) props.showToast('회원 목록 로드 실패', 'error');
+      } finally {
+        uiState.loading = false;
       }
+    };
+
+    const openDetail = (row) => {
+      if (detailModal.editId === row.userId) { detailModal.show = false; detailModal.editId = null; return; }
+      Object.assign(detailModal.form, { ...row });
+      detailModal.editId = row.userId;
+      detailModal.isNew = false;
+      detailModal.show = true;
+    };
+
+    const openNew = () => {
+      Object.assign(detailModal.form, { userId: null, email: '', memberNm: '', phone: '', gradeCd: '일반', statusCd: '활성', joinDate: new Date().toISOString().split('T')[0], memo: '' });
+      detailModal.editId = '__new__';
+      detailModal.isNew = true;
+      detailModal.show = true;
+    };
+
+    const closeDetail = () => {
+      detailModal.show = false;
+      detailModal.editId = null;
+    };
+
+    const handleSave = async () => {
+      if (!detailModal.form.email) { props.showToast('이메일은 필수입니다.', 'error'); return; }
+      if (!detailModal.form.memberNm) { props.showToast('이름은 필수입니다.', 'error'); return; }
+      const isNewMember = detailModal.isNew;
+      const ok = await props.showConfirm('저장', '저장하시겠습니까?');
+      if (!ok) return;
+      if (isNewMember) {
+        detailModal.form.userId = 'MB' + String(Date.now()).slice(-6);
+        detailModal.form.orderCount = 0;
+        detailModal.form.totalPurchase = 0;
+        members.unshift({ ...detailModal.form });
+        detailModal.editId = detailModal.form.userId;
+        detailModal.isNew = false;
+      } else {
+        const si = members.findIndex(m => m.userId === detailModal.form.userId);
+        if (si !== -1) Object.assign(members[si], detailModal.form);
+      }
+      try {
+        const res = await (isNewMember
+          ? boApi.post(`/bo/ec/mb/member`, { ...detailModal.form }, { ...coUtil.apiHdr('회원관리', '등록') })
+          : boApi.put(`/bo/ec/mb/member/${detailModal.form.userId}`, { ...detailModal.form }, { ...coUtil.apiHdr('회원관리', '저장') }));
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
+    };
+
+    const handleDelete = async () => {
+      if (!cfSelectedRow.value) return;
+      const ok = await props.showConfirm('삭제', `[${cfSelectedRow.value.memberNm}] 회원을 삭제하시겠습니까?`);
+      if (!ok) return;
+      const si = members.findIndex(m => m.userId === cfSelectedRow.value.userId);
+      if (si !== -1) members.splice(si, 1);
+      closeDetail();
+      try {
+        const res = await boApi.delete(`/bo/ec/mb/member/${cfSelectedRow.value.userId}`, { ...coUtil.apiHdr('회원관리', '삭제') });
+        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
+      }
+    };
+
+    const fnGradeBadge = g => ({ 'VIP': 'badge-purple', '우수': 'badge-blue', '일반': 'badge-gray' }[g] || 'badge-gray');
+    const fnStatusBadge = s => ({ '활성': 'badge-green', '정지': 'badge-red' }[s] || 'badge-gray');
+    const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    // 4️⃣ watch 선언
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
+    // 5️⃣ onMounted
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      handleSearchList('DEFAULT');
+      Object.assign(searchParamOrg, searchParam);
     });
 
     // ── return ───────────────────────────────────────────────────────────────
-
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), members, uiState, codes, searchParam, searchParamOrg, searchDateRange, searchDateStart, searchDateEnd, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, cfPageNums, onSearch, onReset, setPage, onSizeChange, fnGradeBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, showRefModal: props.showRefModal, showToast: props.showToast, showConfirm: props.showConfirm, setApiRes: props.setApiRes };
+    return {
+      selectedId: computed(() => detailModal.editId), members, uiState, codes,
+      searchParam, searchParamOrg, pager, cfPageNums, setPage,
+      onSearch, onReset, cfSelectedRow, detailModal, openDetail, openNew, closeDetail,
+      handleSave, handleDelete, fnGradeBadge, fnStatusBadge, onSizeChange
+    };
   },
   template: /* html */`
 <div>
   <div class="page-title">회원관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="이름 / 이메일 / ID 검색" />
-      <select v-model="searchParam.grade"><option value="">등급 전체</option><option>VIP</option><option>우수</option><option>일반</option></select>
-      <select v-model="searchParam.status"><option value="">상태 전체</option><option>활성</option><option>정지</option></select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchDateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
+      <label class="search-label">이름/이메일/ID</label>
+      <input v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="이름 또는 이메일 검색" />
+      <label class="search-label">등급</label>
+      <select v-model="searchParam.grade">
+        <option value="">전체</option><option>일반</option><option>우수</option><option>VIP</option>
+      </select>
+      <label class="search-label">상태</label>
+      <select v-model="searchParam.status">
+        <option value="">전체</option><option>활성</option><option>정지</option>
+      </select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -168,34 +184,28 @@ window.MbMemberMng = {
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>회원목록 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-        <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
-      </div>
+      <span class="list-title">회원목록</span>
+      <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
+      <button class="btn btn-primary btn-sm" style="margin-left:auto" @click="openNew">+ 신규</button>
     </div>
     <table class="bo-table">
       <thead><tr>
-        <th>ID</th><th>이름</th><th>이메일</th><th>연락처</th><th>등급</th><th>상태</th><th>가입일</th><th>주문수</th><th>총구매액</th><th>사이트명</th><th style="text-align:right">관리</th>
+        <th>ID</th><th>이름</th><th>이메일</th><th>연락처</th><th>등급</th><th>상태</th><th>가입일</th><th style="width:80px;text-align:right">주문수</th><th style="width:100px;text-align:right">총구매액</th><th style="text-align:center;width:80px">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="members.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="m in members" :key="m?.userId" :style="uiStateDetail.selectedId===m.userId?'background:#fff8f9;':''">
-          <td>{{ m.userId }}</td>
-          <td><span class="title-link" @click="loadView(m.userId)" :style="uiStateDetail.selectedId===m.userId?'color:#e8587a;font-weight:700;':''">{{ m.memberNm }}<span v-if="uiStateDetail.selectedId===m.userId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
-          <td>{{ m.email }}</td>
-          <td>{{ m.phone }}</td>
-          <td><span class="badge" :class="fnGradeBadge(m.gradeCd)">{{ m.gradeCd }}</span></td>
-          <td><span class="badge" :class="fnStatusBadge(m.statusCd)">{{ m.statusCd }}</span></td>
-          <td>{{ m.joinDate }}</td>
-          <td>{{ m.orderCount }}건</td>
-          <td>{{ (m.totalPurchase||0).toLocaleString() }}원</td>
-          <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
-          <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(m.userId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(m)">삭제</button>
-          </div></td>
+        <tr v-for="row in members" :key="row?.userId" :class="{active:selectedId===row.userId}" style="cursor:pointer">
+          <td style="font-size:12px">{{ row.userId }}</td>
+          <td><span class="title-link" @click="openDetail(row)">{{ row.memberNm }}</span></td>
+          <td style="font-size:12px">{{ row.email }}</td>
+          <td style="font-size:12px">{{ row.phone }}</td>
+          <td><span class="badge" :class="fnGradeBadge(row.gradeCd)">{{ row.gradeCd }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(row.statusCd)">{{ row.statusCd }}</span></td>
+          <td style="font-size:12px">{{ row.joinDate }}</td>
+          <td style="text-align:right;font-size:12px">{{ (row.orderCount||0) }}건</td>
+          <td style="text-align:right;font-size:12px">{{ (row.totalPurchase||0).toLocaleString() }}원</td>
+          <td style="text-align:center"><button class="btn btn-blue btn-sm" @click.stop="openDetail(row)">수정</button></td>
         </tr>
+        <tr v-if="!members.length"><td colspan="10" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">
@@ -214,23 +224,7 @@ window.MbMemberMng = {
       </div>
     </div>
   </div>
-
-  <!-- ── 하단 상세: MemberDtl 임베드 ─────────────────────────────────────────── -->
-  <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
-    </div>
-    <mb-member-dtl
-      :key="cfDetailKey"
-      :navigate="inlineNavigate"
-      :show-ref-modal="showRefModal"
-      :show-toast="showToast"
-      :show-confirm="showConfirm"
-      :set-api-res="setApiRes"
-      :edit-id="cfDetailEditId"
-      :view-mode="cfIsViewMode"
-    />
-  </div>
+  <mb-member-dtl :detail-modal="detailModal" :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail" />
 </div>
 `
 };

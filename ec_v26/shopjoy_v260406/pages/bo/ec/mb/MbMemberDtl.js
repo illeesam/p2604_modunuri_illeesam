@@ -1,191 +1,43 @@
-/* ShopJoy Admin - 회원관리 상세/등록 */
+/* ShopJoy Admin - 회원관리 상세/등록 (모달 카드) */
 window.MbMemberDtl = {
   name: 'MbMemberDtl',
-  props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
+  props: ['detailModal', 'handleSave', 'handleDelete', 'closeDetail'],
   setup(props) {
-    const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, memoEl: null});
-    const codes = reactive({ member_grades: [], member_statuses: [] });
-
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.getBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.member_grades = await codeStore.snGetGrpCodes('MEMBER_GRADE') || [];
-        codes.member_statuses = await codeStore.snGetGrpCodes('MEMBER_STATUS') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    return {
+      detailModal: props.detailModal,
+      handleSave: props.handleSave,
+      handleDelete: props.handleDelete,
+      closeDetail: props.closeDetail
     };
-
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
-
-    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
-
-    // 단건 GET
-    const handleSearchDetail = async () => {
-      if (cfIsNew.value) return;
-      uiState.loading = true;
-      try {
-        const res = await boApi.get(`/bo/ec/mb/member/${props.editId}`, { ...coUtil.apiHdr('회원관리', '상세조회') });
-        const m = res.data?.data || res.data || {};
-        Object.assign(form, { ...m });
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-        if (props.showToast) props.showToast('회원 상세 로드 실패', 'error');
-      } finally {
-        uiState.loading = false;
-      }
-    };
-    const form = reactive({
-      userId: null,
-      email: '', memberNm: '', phone: '', gradeCd: '일반', statusCd: '활성',
-      joinDate: '', lastLogin: '', orderCount: 0, totalPurchase: 0, memo: '',
-    });
-    const errors = reactive({});
-
-        let _qMemo = null;
-
-    const schema = yup.object({
-      email: yup.string().required('이메일을 입력해주세요.').email('올바른 이메일 형식이 아닙니다.'),
-      memberNm:  yup.string().required('이름을 입력해주세요.'),
-    });
-
-    const handleInitQuill = async () => {
-      await nextTick();
-      if (uiState.memoEl) {
-        _qMemo = new Quill(uiState.memoEl, {
-          theme: 'snow',
-          placeholder: '관리자 메모',
-          modules: { toolbar: [['bold','italic','underline'],[{color:[]}],[{list:'ordered'},{list:'bullet'}],['link','clean']] }
-        });
-        if (form.memo) _qMemo.root.innerHTML = form.memo;
-        _qMemo.on('text-change', () => { form.memo = _qMemo.root.innerHTML; });
-      }
-    };
-
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
-      await handleSearchDetail();
-      handleInitQuill();
-    });
-
-    onBeforeUnmount(() => { if (_qMemo) { form.memo = _qMemo.root.innerHTML; _qMemo = null; } });
-
-    const handleSave = async () => {
-      Object.keys(errors).forEach(k => delete errors[k]);
-      try {
-        await schema.validate(form, { abortEarly: false });
-      } catch (err) {
-        console.error('[catch-info]', err);
-        err.inner.forEach(e => { errors[e.path] = e.message; });
-        props.showToast('입력 내용을 확인해주세요.', 'error');
-        return;
-      }
-      const isNewMember = cfIsNew.value;
-      const ok = await props.showConfirm(isNewMember ? '등록' : '저장', isNewMember ? '등록하시겠습니까?' : '저장하시겠습니까?');
-      if (!ok) return;
-      try {
-        const res = await (isNewMember ? boApi.post(`/bo/ec/mb/member`, { ...form }, { ...coUtil.apiHdr('회원관리', '등록') }) : boApi.put(`/bo/ec/mb/member/${form.userId}`, { ...form }, { ...coUtil.apiHdr('회원관리', '저장') }));
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNewMember ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('mbMemberMng');
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
-      }
-    };
-
-    const memoEl = ref(null);
-
-    watch(memoEl, (el) => { uiState.memoEl = el; });
-
-    // ── return ───────────────────────────────────────────────────────────────
-
-    return { cfIsNew, form, errors, handleSave, memoEl, codes, uiState, navigate: props.navigate, showRefModal: props.showRefModal, showToast: props.showToast, showConfirm: props.showConfirm, viewMode: props.viewMode, editId: props.editId };
   },
   template: /* html */`
-<div>
-  <div class="page-title">{{ cfIsNew ? '회원 등록' : (viewMode ? '회원 상세' : '회원 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.userId }}</span></div>
+<div v-if="detailModal.show">
+  <!-- ── 상세/수정 카드 ───────────────────────────────────────────────────── -->
   <div class="card">
-    <!-- ── 기본정보 폼 ─────────────────────────────────────────────────────── -->
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">이메일 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.email" placeholder="이메일 주소" :readonly="viewMode" :class="errors.email ? 'is-invalid' : ''" />
-        <span v-if="errors.email" class="field-error">{{ errors.email }}</span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">이름 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.memberNm" placeholder="이름" :readonly="viewMode" :class="errors.memberNm ? 'is-invalid' : ''" />
-        <span v-if="errors.memberNm" class="field-error">{{ errors.memberNm }}</span>
+    <div class="toolbar">
+      <span class="list-title">{{ detailModal.isNew ? '신규 등록' : '상세 / 수정' }}</span>
+      <div style="margin-left:auto;display:flex;gap:6px;">
+        <button class="btn btn-blue btn-sm" @click="handleSave">저장</button>
+        <button v-if="!detailModal.isNew" class="btn btn-danger btn-sm" @click="handleDelete">삭제</button>
+        <button class="btn btn-secondary btn-sm" @click="closeDetail">닫기</button>
       </div>
     </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">연락처</label>
-        <input class="form-control" v-model="form.phone" placeholder="010-0000-0000" :readonly="viewMode" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">등급</label>
-        <select class="form-control" v-model="form.gradeCd" :disabled="viewMode">
-          <option>일반</option><option>우수</option><option>VIP</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
-          <option>활성</option><option>정지</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">가입일</label>
-        <input class="form-control" type="date" v-model="form.joinDate" :readonly="viewMode" />
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">메모</label>
-      <div v-if="viewMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
-      <div v-else ref="memoEl" style="min-height:90px;background:#fff;"></div>
-    </div>
-    <div class="form-actions">
-      <template v-if="viewMode">
-        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
-        <button class="btn btn-secondary" @click="navigate('mbMemberMng')">닫기</button>
-      </template>
-      <template v-else>
-        <button class="btn btn-primary" @click="handleSave">저장</button>
-        <button class="btn btn-secondary" @click="navigate('mbMemberMng')">취소</button>
-      </template>
+
+    <!-- 기본정보 폼 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px">
+      <div class="form-group"><label class="form-label">이메일 <span style="color:red">*</span></label><input class="form-control" v-model="detailModal.form.email" placeholder="이메일 주소"></div>
+      <div class="form-group"><label class="form-label">이름 <span style="color:red">*</span></label><input class="form-control" v-model="detailModal.form.memberNm" placeholder="이름"></div>
+      <div class="form-group"><label class="form-label">연락처</label><input class="form-control" v-model="detailModal.form.phone" placeholder="010-0000-0000"></div>
+      <div class="form-group"><label class="form-label">등급</label><select class="form-control" v-model="detailModal.form.gradeCd"><option>일반</option><option>우수</option><option>VIP</option></select></div>
+      <div class="form-group"><label class="form-label">상태</label><select class="form-control" v-model="detailModal.form.statusCd"><option>활성</option><option>정지</option></select></div>
+      <div class="form-group"><label class="form-label">가입일</label><input class="form-control" type="date" v-model="detailModal.form.joinDate"></div>
+      <div class="form-group" style="grid-column:1/-1"><label class="form-label">메모</label><textarea class="form-control" rows="6" v-model="detailModal.form.memo" placeholder="관리자 메모"></textarea></div>
     </div>
   </div>
 
-  <!-- ── 연관 이력 ────────────────────────────────────────────────────────── -->
-  <div v-if="!cfIsNew" style="margin-top:20px;">
-    <mb-member-hist
-      :navigate="navigate" :show-ref-modal="showRefModal"
-      :member-id="editId"
-    />
+  <!-- ── 이력정보 카드 (별도 분리) ─────────────────────────────────────────── -->
+  <div v-if="!detailModal.isNew" class="card">
+    <mb-member-hist :member-id="detailModal.editId" />
   </div>
 </div>
 `

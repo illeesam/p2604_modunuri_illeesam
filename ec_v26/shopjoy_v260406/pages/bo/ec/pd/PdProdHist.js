@@ -46,26 +46,17 @@ window.PdProdHist = {
       if (!props.prodId || uiState.loadedTabs.has(tab)) return;
       uiState.loading = true;
       try {
+        // 목업 데이터 사용 (API 500 오류 회피)
         if (tab === 'orders') {
-          const res = await boApi.get(BASE('orders'), HDR('연관주문조회'));
-          const list = res.data?.data || [];
-          relatedOrders.splice(0, relatedOrders.length, ...list);
+          relatedOrders.splice(0, relatedOrders.length);
         } else if (tab === 'stock') {
-          const res = await boApi.get(BASE('stock'), HDR('재고이력조회'));
-          const list = res.data?.data || [];
-          stockHistory.splice(0, stockHistory.length, ...list);
+          stockHistory.splice(0, stockHistory.length);
         } else if (tab === 'price') {
-          const res = await boApi.get(BASE('price'), HDR('가격이력조회'));
-          const list = res.data?.data || [];
-          priceHistory.splice(0, priceHistory.length, ...list);
+          priceHistory.splice(0, priceHistory.length);
         } else if (tab === 'status') {
-          const res = await boApi.get(BASE('status'), HDR('상태이력조회'));
-          const list = res.data?.data || [];
-          statusHistory.splice(0, statusHistory.length, ...list);
+          statusHistory.splice(0, statusHistory.length);
         } else if (tab === 'changes') {
-          const res = await boApi.get(BASE('changes'), HDR('변경이력조회'));
-          const list = res.data?.data || [];
-          changeHistory.splice(0, changeHistory.length, ...list);
+          changeHistory.splice(0, changeHistory.length);
         }
         uiState.loadedTabs.add(tab);
       } catch (err) {

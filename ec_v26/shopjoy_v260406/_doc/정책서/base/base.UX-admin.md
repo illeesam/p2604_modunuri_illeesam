@@ -384,7 +384,7 @@ Vue.onMounted(() => {
 
 ## 9. 검색 카드 (search-bar)
 
-### 9.1 레이아웃
+### 9.1 단일 행 레이아웃 (기본)
 
 `search-bar` = flex row, 항목 간 8px gap. 버튼은 `search-actions` div 로 우측 정렬.
 
@@ -396,20 +396,59 @@ Vue.onMounted(() => {
     <label class="search-label">상태</label>
     <select class="form-control" v-model="searchStatus">...</select>
     <div class="search-actions">
-      <button class="btn btn-primary btn-sm" @click="onSearch">검색</button>
+      <button class="btn btn-primary" @click="onSearch">조회</button>
       <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
     </div>
   </div>
 </div>
 ```
 
-### 9.2 적용 정책
+**적용 사례**: 공지사항관리 (필드 4개)
+
+### 9.2 다중 행 레이아웃 (2열 그리드) ⭐ 표준
+
+검색 필드가 4개 이상일 때 2열 그리드로 배치. 라벨은 입력 필드 위에 위치.
+
+```html
+<div class="card">
+  <div class="search-bar">
+    <label class="search-label">이름/이메일</label>
+    <input v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="이름 또는 이메일 검색" />
+    
+    <label class="search-label">등급</label>
+    <select v-model="searchParam.grade">
+      <option value="">전체</option><option>일반</option><option>우수</option><option>VIP</option>
+    </select>
+    
+    <label class="search-label">상태</label>
+    <select v-model="searchParam.status">
+      <option value="">전체</option><option>활성</option><option>정지</option>
+    </select>
+    
+    <div class="search-actions">
+      <button class="btn btn-primary" @click="onSearch">조회</button>
+      <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
+    </div>
+  </div>
+</div>
+```
+
+**특징**:
+- 라벨과 입력필드가 함께 수직 배치됨 (가로 공간 효율적)
+- `search-bar` 클래스의 기본 flex row + wrap 으로 자동 2열 구성
+- `search-label` 너비로 필드별 라벨 정렬
+- 검색/초기화 버튼은 `search-actions` 로 자동 우측 배치
+
+**적용 사례**: 회원관리 (필드 3개)
+
+### 9.3 적용 정책
 
 - Enter 키 → 검색 실행 (`@keyup.enter="onSearch"`)
 - "초기화" → 화면 검색 필드만 초기화 (공통 필터 값 유지)
 - 검색 실행 시 `pager.page = 1` 리셋 필수
 - `applied` reactive 객체를 통해 filter computed 참조 (`searchKw` 직접 참조 금지)
 - 화면 오픈 시 공통 필터 자동 적용 후 즉시 검색 (§8.3)
+- 버튼: "조회" (btn-primary) + "초기화" (btn-secondary btn-sm)
 
 ---
 
