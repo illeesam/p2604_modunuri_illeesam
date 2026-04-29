@@ -577,29 +577,35 @@ window.SiteSelectModal = {
   props: ['dispDataset', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props) {
-    const { reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.getSiteNm());
-    const modalState = reactive({
-      kw: '',
-      list: [],
-      loading: false
-    });
+    const pageSize = 10;
+    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
+    const searchParam = reactive({ kw: '' });
+    const list = ref([]);
+    const loading = ref(false);
     const handleSearchList = async () => {
-      modalState.loading = true;
+      loading.value = true;
       try {
-        const res = await boApi.get('/bo/sy/site', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '사이트관리', 'X-Cmd-Nm': '목록조회' } });
-        modalState.list = res.data?.data || [];
-      } catch (e) { modalState.list = []; } finally { modalState.loading = false; }
+        const res = await boApi.get('/bo/sy/site/page', {
+          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined },
+          headers: { 'X-UI-Nm': '사이트관리', 'X-Cmd-Nm': '목록조회' }
+        });
+        const data = res.data?.data;
+        list.value = data?.pageList || data?.list || [];
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+      } catch (e) { list.value = []; } finally { loading.value = false; }
     };
     onMounted(() => { handleSearchList(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
-    const cfFiltered = computed(() => modalState.list.filter(s => {
-      if (!modalState.kw) return true;
-      const k = modalState.kw.toLowerCase();
-      const siteNo = String(s.siteId).padStart(2,'0');
-      return s.siteNm.toLowerCase().includes(k) || s.siteCode.toLowerCase().includes(k) || s.domain.toLowerCase().includes(k) || siteNo.includes(k);
-    }));
-    return { cfSiteNm, ...modalState, cfFiltered };
+    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchList(); });
+    const cfPageNums = computed(() => {
+      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
+      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    });
+    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
+    return { cfSiteNm, searchParam, list, loading, pager, cfPageNums, onSetPage };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -608,16 +614,25 @@ window.SiteSelectModal = {
       <span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#e5e7eb;color:#555;font-size:11px;text-align:center;line-height:16px;margin-left:8px;cursor:help;font-weight:700;"
         title="사이트번호 : 프로그램 작업코드 (01, 02, 03…)&#10;사이트코드 : 라이선스코드 (ST0001 형식)">?</span>
     </span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <input class="form-control" v-model="kw" placeholder="사이트번호 / 사이트코드 / 사이트명 / 도메인 검색" style="margin-bottom:12px;" />
+    <input class="form-control" v-model="searchParam.kw" placeholder="사이트번호 / 사이트코드 / 사이트명 / 도메인 검색" style="margin-bottom:12px;" />
+    <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ pager.pageTotalCount }}건</div>
     <div class="sel-modal-list">
       <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
-      <div v-else-if="cfFiltered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
-      <div v-for="s in cfFiltered" :key="s.siteId" class="sel-modal-item">
+      <div v-else-if="list.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-for="s in list" :key="s.siteId" class="sel-modal-item">
         <div class="sel-modal-item-name">{{ s.siteNm }}</div>
         <span class="sel-modal-item-id">{{ s.siteCode }}</span>
         <span style="font-family:monospace;font-size:12px;color:#e8587a;font-weight:700;min-width:26px;text-align:right;">{{ String(s.siteId).padStart(2,'0') }}</span>
         <button class="sel-modal-item-btn" @click="$emit('select', s)">선택</button>
       </div>
+    </div>
+    <!-- 페이징 -->
+    <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
+      <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(1)">«</button>
+      <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">‹</button>
+      <button v-for="n in cfPageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
+      <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
+      <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
     </div>
   </div>
 </div>`,
@@ -629,42 +644,58 @@ window.VendorSelectModal = {
   props: ['dispDataset', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props) {
-    const { reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.getSiteNm());
-    const modalState = reactive({
-      kw: '',
-      list: [],
-      loading: false
-    });
+    const pageSize = 8;
+    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
+    const searchParam = reactive({ kw: '' });
+    const list = ref([]);
+    const loading = ref(false);
     const handleSearchList = async () => {
-      modalState.loading = true;
+      loading.value = true;
       try {
-        const res = await boApi.get('/bo/sy/vendor', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '판매자관리', 'X-Cmd-Nm': '목록조회' } });
-        modalState.list = res.data?.data || [];
-      } catch (e) { modalState.list = []; } finally { modalState.loading = false; }
+        const res = await boApi.get('/bo/sy/vendor/page', {
+          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined },
+          headers: { 'X-UI-Nm': '판매자관리', 'X-Cmd-Nm': '목록조회' }
+        });
+        const data = res.data?.data;
+        list.value = data?.pageList || data?.list || [];
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+      } catch (e) { list.value = []; } finally { loading.value = false; }
     };
     onMounted(() => { handleSearchList(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
-    const cfFiltered = computed(() => modalState.list.filter(v => {
-      if (!modalState.kw) return true;
-      const k = modalState.kw.toLowerCase();
-      return v.vendorNm.toLowerCase().includes(k) || String(v.bizNo || '').includes(k);
-    }));
-    return { cfSiteNm, ...modalState, cfFiltered };
+    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchList(); });
+    const cfPageNums = computed(() => {
+      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
+      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    });
+    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
+    return { cfSiteNm, searchParam, list, loading, pager, cfPageNums, onSetPage };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
     <div class="modal-header"><span class="modal-title">판매업체 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <input class="form-control" v-model="kw" placeholder="업체명 / 사업자번호 검색" style="margin-bottom:12px;" />
+    <input class="form-control" v-model="searchParam.kw" placeholder="업체명 / 사업자번호 검색" style="margin-bottom:12px;" />
+    <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ pager.pageTotalCount }}건</div>
     <div class="sel-modal-list">
       <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
-      <div v-else-if="cfFiltered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
-      <div v-for="v in cfFiltered" :key="v.vendorId" class="sel-modal-item">
+      <div v-else-if="list.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-for="v in list" :key="v.vendorId" class="sel-modal-item">
         <div class="sel-modal-item-name">{{ v.vendorNm }}</div>
         <span class="sel-modal-item-id">{{ v.vendorId }}</span>
         <button class="sel-modal-item-btn" @click="$emit('select', v)">선택</button>
       </div>
+    </div>
+    <!-- 페이징 -->
+    <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
+      <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(1)">«</button>
+      <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">‹</button>
+      <button v-for="n in cfPageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
+      <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
+      <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
     </div>
   </div>
 </div>`,
@@ -909,44 +940,58 @@ window.MemberSelectModal = {
   props: ['dispDataset', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props) {
-    const { reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.getSiteNm());
-    const modalState = reactive({
-      kw: '',
-      list: [],
-      loading: false
-    });
+    const pageSize = 8;
+    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
+    const searchParam = reactive({ kw: '' });
+    const list = ref([]);
+    const loading = ref(false);
     const handleSearchList = async () => {
-      modalState.loading = true;
+      loading.value = true;
       try {
-        const res = await boApi.get('/bo/ec/mb/member', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '회원관리', 'X-Cmd-Nm': '목록조회' } });
-        modalState.list = res.data?.data || [];
-      } catch (e) { modalState.list = []; } finally { modalState.loading = false; }
+        const res = await boApi.get('/bo/ec/mb/member/page', {
+          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined },
+          headers: { 'X-UI-Nm': '회원관리', 'X-Cmd-Nm': '목록조회' }
+        });
+        const data = res.data?.data;
+        list.value = data?.pageList || data?.list || [];
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+      } catch (e) { list.value = []; } finally { loading.value = false; }
     };
     onMounted(() => { handleSearchList(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
-    const cfFiltered = computed(() => modalState.list.filter(m => {
-      if (!modalState.kw) return true;
-      const k = modalState.kw.toLowerCase();
-      return (m.memberNm || '').toLowerCase().includes(k) ||
-             (m.memberEmail || m.email || '').toLowerCase().includes(k) ||
-             String(m.memberId || m.userId || '').includes(k);
-    }));
-    return { cfSiteNm, ...modalState, cfFiltered };
+    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchList(); });
+    const cfPageNums = computed(() => {
+      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
+      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    });
+    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
+    return { cfSiteNm, searchParam, list, loading, pager, cfPageNums, onSetPage };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
     <div class="modal-header"><span class="modal-title">회원 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <input class="form-control" v-model="kw" placeholder="이름 / 이메일 / ID 검색" style="margin-bottom:12px;" />
+    <input class="form-control" v-model="searchParam.kw" placeholder="이름 / 이메일 / ID 검색" style="margin-bottom:12px;" />
+    <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ pager.pageTotalCount }}건</div>
     <div class="sel-modal-list">
       <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
-      <div v-else-if="cfFiltered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
-      <div v-for="m in cfFiltered" :key="m.memberId || m.userId" class="sel-modal-item">
+      <div v-else-if="list.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-for="m in list" :key="m.memberId || m.userId" class="sel-modal-item">
         <div class="sel-modal-item-name">{{ m.memberNm }} <span style="font-size:11px;color:#888;">{{ m.memberEmail || m.email }}</span></div>
         <span class="sel-modal-item-id">{{ m.memberId || m.userId }}</span>
         <button class="sel-modal-item-btn" @click="$emit('select', m)">선택</button>
       </div>
+    </div>
+    <!-- 페이징 -->
+    <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
+      <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(1)">«</button>
+      <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">‹</button>
+      <button v-for="n in cfPageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
+      <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
+      <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
     </div>
   </div>
 </div>`,
@@ -958,42 +1003,58 @@ window.OrderSelectModal = {
   props: ['dispDataset', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props) {
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const pageSize = 8;
+    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
     const searchParam = reactive({ kw: '' });
     const list = ref([]);
     const loading = ref(false);
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const res = await boApi.get('/bo/ec/ord/order', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '주문관리', 'X-Cmd-Nm': '목록조회' } });
-        list.value = res.data?.data || [];
+        const res = await boApi.get('/bo/ec/od/order/page', {
+          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined },
+          headers: { 'X-UI-Nm': '주문관리', 'X-Cmd-Nm': '목록조회' }
+        });
+        const data = res.data?.data;
+        list.value = data?.pageList || data?.list || [];
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
     onMounted(() => { handleSearchList(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
-    const cfFiltered = computed(() => list.value.filter(o => {
-      if (!searchParam.kw) return true;
-      const k = searchParam.kw.toLowerCase();
-      return (o.orderId || '').toLowerCase().includes(k) ||
-             (o.memberNm || o.userNm || '').toLowerCase().includes(k) ||
-             (o.prodNm || '').toLowerCase().includes(k);
-    }));
-    return { cfSiteNm, searchParam, cfFiltered, loading };
+    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchList(); });
+    const cfPageNums = computed(() => {
+      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
+      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    });
+    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
+    return { cfSiteNm, searchParam, list, loading, pager, cfPageNums, onSetPage };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box">
     <div class="modal-header"><span class="modal-title">주문 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="searchParam.kw" placeholder="주문ID / 회원명 / 상품명 검색" style="margin-bottom:12px;" />
+    <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ pager.pageTotalCount }}건</div>
     <div class="sel-modal-list">
       <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
-      <div v-else-if="cfFiltered.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
-      <div v-for="o in cfFiltered" :key="o.orderId" class="sel-modal-item">
+      <div v-else-if="list.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-for="o in list" :key="o.orderId" class="sel-modal-item">
         <div class="sel-modal-item-name">{{ o.orderId }} <span style="font-size:11px;color:#888;">{{ o.memberNm || o.userNm }}</span></div>
         <span class="sel-modal-item-id" style="background:#f0fff0;color:#389e0d;">{{ (o.totalAmt || o.totalPrice || 0).toLocaleString() }}원</span>
         <button class="sel-modal-item-btn" @click="$emit('select', o)">선택</button>
       </div>
+    </div>
+    <!-- 페이징 -->
+    <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
+      <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(1)">«</button>
+      <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">‹</button>
+      <button v-for="n in cfPageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
+      <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
+      <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
     </div>
   </div>
 </div>`,
@@ -1006,55 +1067,47 @@ window.BbmSelectModal = {
   emits: ['select', 'close'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const searchParam = reactive({ kw: '', page: 1 });
+    const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pageSize = 6;
+    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
+    const searchParam = reactive({ kw: '' });
     const list = ref([]);
     const loading = ref(false);
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const res = await boApi.get('/bo/sy/bbm', { params: { pageSize: 10000 }, headers: { 'X-UI-Nm': '게시판모드관리', 'X-Cmd-Nm': '목록조회' } });
-        list.value = res.data?.data || [];
+        const res = await boApi.get('/bo/sy/bbm/page', {
+          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined },
+          headers: { 'X-UI-Nm': '게시판모드관리', 'X-Cmd-Nm': '목록조회' }
+        });
+        const data = res.data?.data;
+        list.value = data?.pageList || data?.list || [];
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
     onMounted(() => { handleSearchList(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
-
-    const cfFiltered = computed(() => list.value.filter(b => {
-      if (b.useYn === 'N') return false;
-      if (!searchParam.kw) return true;
-      const k = searchParam.kw.toLowerCase();
-      return b.bbmNm.toLowerCase().includes(k) || b.bbmCode.toLowerCase().includes(k) || (b.bbmType || '').toLowerCase().includes(k);
-    }));
-
-    /* 검색어 변경 시 첫 페이지로 */
-    watch(() => searchParam.kw, () => { searchParam.page = 1; });
-
-    const cfTotal      = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pageSize)));
-    const cfPageList   = computed(() => cfFiltered.value.slice((searchParam.page - 1) * pageSize, searchParam.page * pageSize));
-    const cfPageNums   = computed(() => {
-      const s = Math.max(1, searchParam.page - 2), e = Math.min(cfTotalPages.value, s + 4);
+    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchList(); });
+    const cfPageNums = computed(() => {
+      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
-    const onSetPage = n => { if (n >= 1 && n <= cfTotalPages.value) searchParam.page = n; };
-
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
+    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
     const fnTypeBadge = t => ({ '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' }[t] || 'badge-gray');
     const fnScopeBadge = s => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[s] || 'badge-gray');
-
-    return { cfSiteNm, searchParam, cfTotal, cfTotalPages, cfPageList, cfPageNums, onSetPage, fnTypeBadge, fnScopeBadge, loading };
+    return { cfSiteNm, searchParam, list, loading, pager, cfPageNums, onSetPage, fnTypeBadge, fnScopeBadge };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
   <div class="modal-box" style="max-width:560px;">
     <div class="modal-header"><span class="modal-title">게시판 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
     <input class="form-control" v-model="searchParam.kw" placeholder="게시판명 / 코드 / 유형 검색" style="margin-bottom:10px;" />
-    <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ cfTotal }}건</div>
+    <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ pager.pageTotalCount }}건</div>
     <div class="sel-modal-list" style="min-height:200px;">
       <div v-if="loading" style="text-align:center;color:#999;padding:30px;font-size:13px;">로딩 중...</div>
-      <div v-else-if="cfPageList.length===0" style="text-align:center;color:#999;padding:30px;font-size:13px;">검색 결과가 없습니다.</div>
-      <div v-for="b in cfPageList" :key="b.bbmId" class="sel-modal-item" style="gap:6px;">
+      <div v-else-if="list.length===0" style="text-align:center;color:#999;padding:30px;font-size:13px;">검색 결과가 없습니다.</div>
+      <div v-for="b in list" :key="b.bbmId" class="sel-modal-item" style="gap:6px;">
         <div class="sel-modal-item-name" style="flex:1;min-width:0;">
           <span>{{ b.bbmNm }}</span>
           <span class="badge" :class="fnTypeBadge(b.bbmType)" style="margin-left:5px;font-size:10px;">{{ b.bbmType }}</span>
@@ -1067,11 +1120,11 @@ window.BbmSelectModal = {
     </div>
     <!-- 페이징 -->
     <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
-      <button class="pager-btn" :disabled="searchParam.page===1" @click="onSetPage(1)">«</button>
-      <button class="pager-btn" :disabled="searchParam.page===1" @click="onSetPage(searchParam.page-1)">‹</button>
-      <button v-for="n in cfPageNums" :key="n" class="pager-btn" :class="{active:searchParam.page===n}" @click="onSetPage(n)">{{ n }}</button>
-      <button class="pager-btn" :disabled="searchParam.page===cfTotalPages" @click="onSetPage(searchParam.page+1)">›</button>
-      <button class="pager-btn" :disabled="searchParam.page===cfTotalPages" @click="onSetPage(cfTotalPages)">»</button>
+      <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(1)">«</button>
+      <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">‹</button>
+      <button v-for="n in cfPageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
+      <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
+      <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
     </div>
   </div>
 </div>`,
