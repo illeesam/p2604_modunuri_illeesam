@@ -9,18 +9,18 @@
 
     <!-- 상품 조회 조건 -->
     <sql id="pdProdCond">
-<where>
-            <if test="siteId != null and siteId != ''">AND site_id = #{siteId}</if>
-            <if test="status != null and status != ''">AND prod_status_cd = #{status}</if>
-            <if test="categoryId != null and categoryId != ''">AND category_id = #{categoryId}</if>
-            <if test="vendorId != null and vendorId != ''">AND vendor_id = #{vendorId}</if>
+        <where>
+            <if test="siteId != null and siteId != ''">AND p.site_id = #{siteId}</if>
+            <if test="status != null and status != ''">AND p.prod_status_cd = #{status}</if>
+            <if test="categoryId != null and categoryId != ''">AND p.category_id = #{categoryId}</if>
+            <if test="vendorId != null and vendorId != ''">AND p.vendor_id = #{vendorId}</if>
             <if test="kw != null and kw != ''">
                 AND (p.prod_nm   ILIKE '%' || #{kw} || '%'
-                  OR prod_code ILIKE '%' || #{kw} || '%'
+                  OR p.prod_code ILIKE '%' || #{kw} || '%'
                   OR b.brand_nm  ILIKE '%' || #{kw} || '%')
             </if>
-            <if test="dateStart != null and dateStart != ''">AND reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="dateStart != null and dateStart != ''">AND p.reg_date &gt;= #{dateStart}::DATE</if>
+            <if test="dateEnd   != null and dateEnd   != ''">AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
     </sql>
 
@@ -110,8 +110,8 @@
     <select id="selectPageCount" resultType="long">
         SELECT COUNT(*)  /* base.ec.pd :: PdProd :: selectPageCount */
         FROM pd_prod p
-            LEFT JOIN sy_brand b ON b.brand_id = brand_id
-                <include refid="pdProdCond"/>
+            LEFT JOIN sy_brand b ON b.brand_id = p.brand_id
+        <include refid="pdProdCond"/>
     </select>
 
     <!-- 상품 선택 필드 수정 -->
