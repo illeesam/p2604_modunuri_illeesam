@@ -71,7 +71,8 @@
       });
       const truncate = (v) => v && v.length > 10 ? v.slice(0, 5) + '...' + v.slice(-5) : (v || '');
       const NO_TRUNCATE = ['x-trace-id', 'x-line-no', 'x-site-type', 'x-site-id', 'x-site-no', 'x-func-nm', 'x-file-nm'];
-      const row = (keys) => keys.filter(k => map[k]).map(k => `${k}: ${NO_TRUNCATE.includes(k) ? map[k] : truncate(map[k])}`).join(' | ');
+      const fmtVal = (k, v) => k === 'x-func-nm' ? v + '()' : NO_TRUNCATE.includes(k) ? v : truncate(v);
+      const row = (keys) => keys.filter(k => map[k]).map(k => `${k}: ${fmtVal(k, map[k])}`).join(' | ');
       const lines = [
         row(['x-site-type', 'x-ui-nm', 'x-cmd-nm']),
         row(['x-file-nm', 'x-func-nm', 'x-line-no']),

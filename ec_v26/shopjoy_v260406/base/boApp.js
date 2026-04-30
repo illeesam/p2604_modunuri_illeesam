@@ -197,7 +197,8 @@
         });
         const truncate = (v) => v && v.length > 10 ? v.slice(0, 5) + '...' + v.slice(-5) : (v || '');
         const NO_TRUNCATE = ['x-trace-id', 'x-line-no', 'x-site-type', 'x-site-id', 'x-site-no', 'x-func-nm', 'x-file-nm'];
-        const row = (keys) => keys.filter(k => map[k]).map(k => `${k}: ${NO_TRUNCATE.includes(k) ? map[k] : truncate(map[k])}`).join(' | ');
+        const fmtVal = (k, v) => k === 'x-func-nm' ? v + '()' : NO_TRUNCATE.includes(k) ? v : truncate(v);
+        const row = (keys) => keys.filter(k => map[k]).map(k => `${k}: ${fmtVal(k, map[k])}`).join(' | ');
         const lines = [
           row(['x-site-type', 'x-ui-nm', 'x-cmd-nm']),
           row(['x-file-nm', 'x-func-nm', 'x-line-no']),
@@ -845,13 +846,7 @@
         }
       };
       const bizInfoOfUser = () => '';
-      const testAccounts = ref([]);
-      const handleFetchTestAccounts = async () => {
-        try {
-          const res = await boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 }, ...coUtil.apiHdr('사용자관리', '목록조회') });
-          testAccounts.value = res.data?.data?.list || [];
-        } catch (_) {}
-      };
+
       onMounted(() => {
         setTimeout(() => { window.useBoAppInitStore?.()?.sfRestoreFromStorage?.(); }, 0);
         _loadApiLogsFromStorage();
@@ -888,7 +883,6 @@
           }
         }, 100);
         checkWidth(); window.addEventListener('resize', checkWidth);
-        handleFetchTestAccounts();
       });
       watch(currentAuthUser, (u) => {
         try {
@@ -961,12 +955,6 @@
       };
       const closeLogin = () => { loginModal.show = false; loginError.value = ''; };
 
-      const quickLogin = (loginId) => {
-        loginForm.loginId = loginId;
-        loginForm.loginPwd = 'demo1234';
-        loginForm.authMethod = '메인';
-        doLogin();
-      };
       const doLogin = async () => {
         loginError.value = '';
         if (!loginForm.loginId || !loginForm.loginPwd) { loginError.value = '아이디와 비밀번호를 입력하세요.'; return; }
@@ -1124,7 +1112,7 @@
         tabBarRef, scrollTabs,
         cfIsLoggedIn, currentAuthUser, currentAuthUserRoles, activeRoleId, rolePath, onRoleChange, rolesOfUser, bizInfoOfUser,
         loginModal, loginForm, regForm, loginError, uiState,
-        openLogin, closeLogin, doLogin, quickLogin, doLogout, doRegister,
+        openLogin, closeLogin, doLogin, doLogout, doRegister,
         profileForm, openProfile, saveProfile,
         pwForm, pwError, openPwChange, savePwChange,
         favorites, favKeepSet, sidebarTab, isFav, toggleFav, cfFavList, toggleFavKeep,
@@ -1850,23 +1838,6 @@
         <div style="text-align:center;margin-top:12px;font-size:12px;color:#aaa;">
           <span>계정이 없으신가요?</span>
           <span style="color:#e8587a;cursor:pointer;margin-left:6px;font-weight:600;" @click="loginModal.tab='register';loginError=''">회원가입</span>
-        </div>
-        <div style="margin-top:14px;padding:10px 12px;background:#f8f9fa;border-radius:6px;font-size:11px;color:#888;">
-          <div style="font-weight:700;margin-bottom:6px;color:#555;">테스트 계정 <span style="font-weight:400;color:#aaa;">(클릭 시 자동 로그인)</span></div>
-          <div style="display:flex;flex-direction:column;gap:4px;max-height:420px;overflow:auto;">
-            <button v-for="u in testAccounts" :key="u?.boUserId" type="button" @click="quickLogin(u?.email)"
-              style="display:grid;grid-template-columns:200px 32px 1fr;align-items:center;gap:10px;padding:7px 10px;font-size:12px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;cursor:pointer;color:#444;text-align:left;transition:all .12s;"
-              onmouseover="this.style.background='#ffe4ec';this.style.borderColor='#e8587a';"
-              onmouseout="this.style.background='#fff';this.style.borderColor='#e5e7eb';">
-              <span style="font-weight:600;color:#374151;">{{ u.email }}</span>
-              <span style="display:inline-block;text-align:center;background:#e8587a;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;">{{ rolesOfUser(u.boUserId).length }}</span>
-              <span style="color:#6b7280;font-size:10.5px;line-height:1.5;white-space:normal;display:flex;flex-direction:column;gap:2px;">
-                <span v-for="(r, i) in rolesOfUser(u.boUserId)" :key="i">• {{ rolePath(r, u.boUserId) }}</span>
-                <span v-if="bizInfoOfUser(u.boUserId)" style="margin-top:2px;color:#2563eb;font-weight:600;">{{ bizInfoOfUser(u.boUserId) }}</span>
-              </span>
-            </button>
-          </div>
-          <div style="margin-top:6px;color:#aaa;">비밀번호는 모두 <code style="background:#eef;padding:1px 4px;border-radius:3px;">demo1234</code></div>
         </div>
       </div>
 
