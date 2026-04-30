@@ -54,7 +54,6 @@ window.PdSetMng = {
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
-        if (props.showToast) props.showToast('세트상품 로드 실패', 'error');
       } finally {
         uiState.loading = false;
       }

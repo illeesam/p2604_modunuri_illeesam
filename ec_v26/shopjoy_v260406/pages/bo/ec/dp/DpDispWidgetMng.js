@@ -49,7 +49,6 @@ window.DpDispWidgetMng = {
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
-        if (props.showToast) props.showToast('DpDispWidget 로드 실패', 'error');
       } finally {
         uiState.loading = false;
       }
@@ -88,7 +87,6 @@ const applied = reactive({ kw: '', type: '', status: '' });
       pager.pageNo = 1;
     } catch (err) {
       console.error('[catch-info]', err);
-      if (props.showToast) props.showToast('조회 실패', 'error');
     }
   };
   

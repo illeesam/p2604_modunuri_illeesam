@@ -47,7 +47,6 @@ window.DpDispAreaMng = {
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
-        if (props.showToast) props.showToast('DpDispArea 로드 실패', 'error');
       } finally {
         uiState.loading = false;
       }
@@ -94,7 +93,6 @@ const searchParam = reactive({
       await handleSearchData();
     } catch (err) {
       console.error('[catch-info]', err);
-      if (props.showToast) props.showToast('조회 실패', 'error');
     }
   };
   

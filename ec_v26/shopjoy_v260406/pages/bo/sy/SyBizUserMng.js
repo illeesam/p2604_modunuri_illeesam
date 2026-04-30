@@ -173,7 +173,6 @@ window.SyBizUserMng = {
         const list = res.data?.data || [];
         vendorUsers.splice(0, vendorUsers.length, ...list);
       } catch(e) {
-        props.showToast('사용자 목록 로드 실패', 'error');
       } finally {
         uiState.loading = false;
       }
@@ -276,7 +275,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         const res = await boApi.get('/base/sy/vendor-user-role', { params: { userId: vendorUserId }, ...coUtil.apiHdr('사업자사용자관리', '조회') });
         userRoles.splice(0, userRoles.length, ...(res.data?.data || []));
       } catch(e) {
-        props.showToast('역할 목록 로드 실패', 'error');
       } finally {
         uiState.roleLoading = false;
       }

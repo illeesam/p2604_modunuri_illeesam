@@ -77,7 +77,6 @@ window.OdClaimDtl = {
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
-        if (props.showToast) props.showToast('클레임 상세 로드 실패', 'error');
       } finally {
         uiState.loading = false;
       }

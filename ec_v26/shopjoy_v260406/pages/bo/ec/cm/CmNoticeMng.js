@@ -120,7 +120,6 @@ window.CmNoticeMng = {
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
-        if (props.showToast) props.showToast('CmNotice 로드 실패', 'error');
       } finally {
         uiState.loading = false;
       }

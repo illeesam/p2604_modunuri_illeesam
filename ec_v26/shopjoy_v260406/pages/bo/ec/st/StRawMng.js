@@ -90,7 +90,6 @@ const rawList = reactive([]);
       } catch (err) {
         console.error('[handleSearchList]', err);
         uiState.error = err.message;
-        if (props.showToast) props.showToast('데이터 조회 실패', 'error');
       } finally {
         uiState.loading = false;
       }

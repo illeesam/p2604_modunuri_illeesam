@@ -68,7 +68,6 @@ window.SyPropMng = {
         reload();
       } catch (err) {
         console.error('[fetchData]', err);
-        if (props.showToast) props.showToast('SyProp 로드 실패', 'error');
       }
     };
 

@@ -17,7 +17,6 @@ window.SyDeptMng = {
         depts.splice(0, depts.length, ...list);
       } catch (err) {
         console.error('[handleSearchTree]', err);
-        if (props.showToast) props.showToast('부서 트리 로드 실패', 'error');
       }
     };
 
@@ -41,7 +40,6 @@ window.SyDeptMng = {
       } catch (err) {
         console.error('[handleGridSearch]', err);
         uiState.error = err.message;
-        if (props.showToast) props.showToast('부서 목록 로드 실패', 'error');
       } finally {
         uiState.loading = false;
       }

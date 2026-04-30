@@ -67,7 +67,6 @@ window.DpDispRelationMng = {
       await handleSearchData();
     } catch (err) {
       console.error('[catch-info]', err);
-      if (props.showToast) props.showToast('조회 실패', 'error');
     }
   };
   

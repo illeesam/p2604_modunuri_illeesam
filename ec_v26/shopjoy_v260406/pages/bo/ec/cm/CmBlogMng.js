@@ -54,7 +54,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
-        if (props.showToast) props.showToast('CmBlog 로드 실패', 'error');
       } finally {
         uiState.loading = false;
       }
