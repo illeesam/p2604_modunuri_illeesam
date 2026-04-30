@@ -128,7 +128,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
       if (idx !== -1) gifts.splice(idx, 1);
       if (uiStateDetail.selectedId === g.giftId) uiStateDetail.selectedId = null;
       try {
-        const res = await boApi.delete(`/bo/ec/pm/gift/${g.giftId}`, { headers: { 'X-UI-Nm': '사은품관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await boApi.delete(`/bo/ec/pm/gift/${g.giftId}`, coUtil.apiHdr('사은품관리', '삭제'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

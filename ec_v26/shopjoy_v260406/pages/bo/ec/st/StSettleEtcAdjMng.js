@@ -52,7 +52,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
               pageNo: pager.pageNo, pageSize: pager.pageSize,
               ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
             },
-            headers: { 'X-UI-Nm': '정산기타조정', 'X-Cmd-Nm': '목록조회' }
+            ...coUtil.apiHdr('정산기타조정', '목록조회')
           })
         ]);
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));

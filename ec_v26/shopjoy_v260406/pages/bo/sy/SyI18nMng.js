@@ -97,7 +97,7 @@ const searchParam = reactive({ kw: '', scope: '', use: '' });
         else if (msgForm[lang]) src.push({ i18nMsgId: 'IM' + Date.now() + lang, i18nId: cfSelectedKey.value.i18nId, langCd: lang, i18nMsg: msgForm[lang] });
       });
       try {
-        const res = await boApi.put(`/bo/sy/i18n/${cfSelectedKey.value.i18nId}/msgs`, { msgs: { ...msgForm } }, { headers: { 'X-UI-Nm': '다국어관리', 'X-Cmd-Nm': '저장' } });
+        const res = await boApi.put(`/bo/sy/i18n/${cfSelectedKey.value.i18nId}/msgs`, { msgs: { ...msgForm } }, coUtil.apiHdr('다국어관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {

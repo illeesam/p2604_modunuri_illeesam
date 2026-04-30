@@ -183,17 +183,53 @@
       const page   = ref('dashboard');
       const cfDashboardComp = computed(() => 'DashboardBoEc' + (window.BO_SITE_NO || '01'));
       const errorMessage = ref('');
+      /* X- 헤더 배열을 압축 포맷으로 변환
+         x-ui-nm: 사이트관리 | x-cmd-nm: 목록조회 | x-trace-id: 20260501_063729_0223
+         x-site-type: BO | x-site-id: SITE_BO_01
+         x-file-nm: SySiteMng.js | x-func-nm: onSearch | x-line-no: 42
+         x-buyer-id: BUYER_001 | x-license-code: eyJz~ (64자 초과 시 앞 64자 + ~) */
+      const _fmtXHeaders = (headers) => {
+        if (!headers || headers.length === 0) return '';
+        const map = {};
+        headers.forEach(h => {
+          const idx = h.indexOf(': ');
+          if (idx > -1) map[h.slice(0, idx).toLowerCase()] = h.slice(idx + 2);
+        });
+        const truncate = (v) => v && v.length > 10 ? v.slice(0, 5) + '...' + v.slice(-5) : (v || '');
+        const NO_TRUNCATE = ['x-trace-id', 'x-line-no', 'x-site-type', 'x-site-id', 'x-site-no', 'x-func-nm', 'x-file-nm'];
+        const row = (keys) => keys.filter(k => map[k]).map(k => `${k}: ${NO_TRUNCATE.includes(k) ? map[k] : truncate(map[k])}`).join(' | ');
+        const lines = [
+          row(['x-site-type', 'x-ui-nm', 'x-cmd-nm']),
+          row(['x-file-nm', 'x-func-nm', 'x-line-no']),
+          row(['x-trace-id', 'x-site-id', 'x-buyer-id', 'x-license-code', 'x-user-agent']),
+        ].filter(Boolean);
+        // 위 그룹에 포함되지 않은 나머지 x- 헤더
+        const known = ['x-site-type','x-ui-nm','x-cmd-nm','x-file-nm','x-func-nm','x-line-no','x-trace-id','x-site-id','x-buyer-id','x-license-code','x-user-agent'];
+        const rest = Object.entries(map).filter(([k]) => !known.includes(k)).map(([k,v]) => `${k}: ${truncate(v)}`).join(' | ');
+        if (rest) lines.push(rest);
+        return lines.join('\n');
+      };
+
       /* API Validation 에러 → toast 출력 (boAxios 에서 window.dispatchEvent('api-validation-error')) */
       window.addEventListener('api-validation-error', (ev) => {
         const d = ev.detail || {};
         let msg = d.message || '오류가 발생했습니다.';
-        let title = '';
         if (d.method && d.url && d.status) {
-          title = `${d.method} ${d.url} ${d.status}`;
+          let title = `${d.method} ${d.url} ${d.status}`;
           if (d.uiLabel) title += `  [${d.uiLabel}]`;
           msg = `${title}\n${msg}`;
         }
-        showToast(msg, 'error', 0, d.errorDetails || '');
+        // X- 헤더 정보를 errorDetails(펼침 영역)에 추가
+        let details = d.errorDetails || '';
+        const reqFmt = _fmtXHeaders(d.reqHeaders);
+        const resFmt = _fmtXHeaders(d.resHeaders);
+        if (reqFmt || resFmt) {
+          let headerInfo = '';
+          if (reqFmt) headerInfo += '━━ 요청 헤더 ━━\n' + reqFmt;
+          if (resFmt) headerInfo += (headerInfo ? '\n\n' : '') + '━━ 응답 헤더 ━━\n' + resFmt;
+          details = details ? headerInfo + '\n\n' + details : headerInfo;
+        }
+        showToast(msg, 'error', 0, details);
       });
 
       /* API 성공 → 로그만 기록 (toast 미출력) */
@@ -208,7 +244,21 @@
           label = `${d.method} ${d.url} ${st}`;
           if (d.uiLabel) label += `  [${d.uiLabel}]`;
         }
-        const msg = label ? `${label}\n${d.message || ''}` : (d.message || '');
+        let msg = label ? `${label}\n${d.message || ''}` : (d.message || '');
+        // 비 401/500 에러는 toast로 X- 헤더 정보 표시
+        if (st !== 401 && !(st >= 500 || st === 0)) {
+          let details = d.errorDetails || '';
+          const reqFmt = _fmtXHeaders(d.reqHeaders);
+          const resFmt = _fmtXHeaders(d.resHeaders);
+          if (reqFmt || resFmt) {
+            let headerInfo = '';
+            if (reqFmt) headerInfo += '━━ 요청 헤더 ━━\n' + reqFmt;
+            if (resFmt) headerInfo += (headerInfo ? '\n\n' : '') + '━━ 응답 헤더 ━━\n' + resFmt;
+            details = details ? headerInfo + '\n\n' + details : headerInfo;
+          }
+          showToast(msg, 'error', 0, details);
+          return;
+        }
         if (st === 401) { errorMessage.value = msg; page.value = 'error401'; }
         else if (st >= 500 || st === 0) { errorMessage.value = msg; page.value = 'error500'; }
       });
@@ -741,7 +791,7 @@
           let roles = window.getBoRoleStore?.()?.svRoles || [];
           if (!roles.length) {
             try {
-              const res = await boApi.get('/bo/sy/role/page', { params: { pageNo: 1, pageSize: 10000 }, headers: { 'X-UI-Nm': '역할관리', 'X-Cmd-Nm': '목록조회' } });
+              const res = await boApi.get('/bo/sy/role/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('역할관리', '목록조회') });
               roles = res.data?.data?.list || [];
             } catch (_) {}
           }
@@ -749,7 +799,8 @@
           let userRoles = [];
           if (user.userId) {
             try {
-              const res = await boApi.get(`/bo/sy/user/${user.userId}/roles`, { headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '권한조회', 'X-Skip-Error-Toast': 'true' } });
+              const _hdr = coUtil.apiHdr('사용자관리', '권한조회'); _hdr.headers['X-Skip-Error-Toast'] = 'true';
+              const res = await boApi.get(`/bo/sy/user/${user.userId}/roles`, _hdr);
               userRoles = res.data?.data || [];
             } catch (_) {}
           }
@@ -797,7 +848,7 @@
       const testAccounts = ref([]);
       const handleFetchTestAccounts = async () => {
         try {
-          const res = await boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 }, headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '목록조회' } });
+          const res = await boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 }, ...coUtil.apiHdr('사용자관리', '목록조회') });
           testAccounts.value = res.data?.data?.list || [];
         } catch (_) {}
       };
@@ -981,9 +1032,7 @@
             password: regForm.password,
             phone: regForm.phone,
             role: regForm.role,
-          }, {
-            headers: { 'X-UI-Nm': '사용자등록', 'X-Cmd-Nm': '저장' }
-          });
+          }, coUtil.apiHdr('사용자등록', '저장'));
           Object.assign(regForm, { name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
           loginModal.tab = 'login';
           loginError.value = '';

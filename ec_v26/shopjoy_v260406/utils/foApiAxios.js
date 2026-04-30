@@ -61,6 +61,31 @@
           if (lic.licenseCode) cfg.headers['X-License-Code'] = lic.licenseCode;
         }
       } catch (_) {}
+      /* coUtil.apiHdr 미사용 호출 대비 — X-Trace-Id / X-File-Nm / X-Func-Nm / X-Line-No 자동 보충 */
+      try {
+        if (!cfg.headers['X-Trace-Id'] && !cfg.headers['x-trace-id']) {
+          var now = new Date();
+          var pad = function(n){ return String(n).padStart(2,'0'); };
+          var rand = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+          cfg.headers['X-Trace-Id'] = now.getFullYear() + pad(now.getMonth()+1) + pad(now.getDate()) +
+            '_' + pad(now.getHours()) + pad(now.getMinutes()) + pad(now.getSeconds()) + '_' + rand;
+          /* 호출 위치 정보도 보충 */
+          try {
+            var stack = new Error().stack.split('\n');
+            for (var si = 1; si < stack.length; si++) {
+              if (!stack[si].includes('foApiAxios.js') && !stack[si].includes('axios.min.js')) {
+                var fm = stack[si].match(/([a-zA-Z0-9_-]+\.js)/);
+                var fnm = stack[si].match(/at\s+(?:Object\.)?([a-zA-Z0-9_$.<>]+)\s+/);
+                var lm = stack[si].match(/:(\d+):\d+[\)$]/);
+                if (fm) cfg.headers['X-File-Nm'] = fm[1];
+                if (fnm && fnm[1] !== '<anonymous>') cfg.headers['X-Func-Nm'] = fnm[1];
+                if (lm) cfg.headers['X-Line-No'] = lm[1];
+                break;
+              }
+            }
+          } catch (_) {}
+        }
+      } catch (_) {}
     } catch (_) {}
     /* X-UI-Nm / X-Cmd-Nm: 필수 헤더 검증 */
     var uiNm  = (cfg.headers && (cfg.headers['X-UI-Nm']  || cfg.headers['x-ui-nm']))  || '';
@@ -137,8 +162,32 @@
       var dataStr  = cfg.data  ? (typeof cfg.data === 'string' ? cfg.data : JSON.stringify(cfg.data)) : '';
       var detail   = [paramStr && ('params: ' + paramStr), dataStr && ('data: ' + dataStr)].filter(Boolean).join('\n');
       var uiLabel  = getHdr(cfg.headers, 'x-ui-nm') + (getHdr(cfg.headers, 'x-cmd-nm') ? ' > ' + getHdr(cfg.headers, 'x-cmd-nm') : '');
+
+      // 요청 헤더에서 X- 정보 수집 (보냈던 정보)
+      var reqHeaders = cfg.headers || {};
+      var reqHeaderInfo = [];
+      (function collectReqHeaders(h) {
+        var keys = [];
+        try { keys = Object.keys(h); } catch (_) {}
+        keys.forEach(function (k) {
+          if (k.toLowerCase().startsWith('x-')) {
+            var v = getHdr(h, k);
+            if (v) reqHeaderInfo.push(k.toLowerCase() + ': ' + v);
+          }
+        });
+      })(reqHeaders);
+
+      // 응답 헤더에서 X- 정보 수집 (받은 정보)
+      var resHeaders = res.headers || {};
+      var resHeaderInfo = [];
+      resHeaders.forEach(function (val, key) {
+        if (key.toLowerCase().startsWith('x-')) {
+          resHeaderInfo.push(key + ': ' + val);
+        }
+      });
+
       global.dispatchEvent(new CustomEvent('api-success', {
-        detail: { scope: 'fo', method: method, url: displayUrl, status: res.status, detail: detail, uiLabel: uiLabel },
+        detail: { scope: 'fo', method: method, url: displayUrl, status: res.status, detail: detail, uiLabel: uiLabel, reqHeaders: reqHeaderInfo, resHeaders: resHeaderInfo },
       }));
     } catch (_) {}
     return res;
@@ -181,8 +230,34 @@
           }
         }
         var uiLabel = getHdr(cfg.headers, 'x-ui-nm') + (getHdr(cfg.headers, 'x-cmd-nm') ? ' > ' + getHdr(cfg.headers, 'x-cmd-nm') : '');
+
+        // 요청 헤더에서 X- 정보 수집
+        var errReqHeaders = cfg.headers || {};
+        var errReqHeaderInfo = [];
+        (function collectReqHeaders(h) {
+          var keys = [];
+          try { keys = Object.keys(h); } catch (_) {}
+          keys.forEach(function (k) {
+            if (k.toLowerCase().startsWith('x-')) {
+              var v = getHdr(h, k);
+              if (v) errReqHeaderInfo.push(k.toLowerCase() + ': ' + v);
+            }
+          });
+        })(errReqHeaders);
+
+        // 응답 헤더에서 X- 정보 수집
+        var errResHeaders = (res && res.headers) || {};
+        var errResHeaderInfo = [];
+        if (errResHeaders && typeof errResHeaders.forEach === 'function') {
+          errResHeaders.forEach(function (val, key) {
+            if (key.toLowerCase().startsWith('x-')) {
+              errResHeaderInfo.push(key + ': ' + val);
+            }
+          });
+        }
+
         global.dispatchEvent(new CustomEvent('api-validation-error', {
-          detail: { scope: 'fo', method: (cfg.method || 'get').toUpperCase(), url: displayUrl, status: status || 0, message: errMsg, errorDetails: errorDetails, uiLabel: uiLabel },
+          detail: { scope: 'fo', method: (cfg.method || 'get').toUpperCase(), url: displayUrl, status: status || 0, message: errMsg, errorDetails: errorDetails, uiLabel: uiLabel, reqHeaders: errReqHeaderInfo, resHeaders: errResHeaderInfo },
         }));
       } catch (_) {}
     }
@@ -199,8 +274,34 @@
           }
         }
         var uiLabelE = getHdr(cfg.headers, 'x-ui-nm') + (getHdr(cfg.headers, 'x-cmd-nm') ? ' > ' + getHdr(cfg.headers, 'x-cmd-nm') : '');
+
+        // 요청 헤더에서 X- 정보 수집
+        var errReqHeadersE = cfg.headers || {};
+        var errReqHeaderInfoE = [];
+        (function collectReqHeaders(h) {
+          var keys = [];
+          try { keys = Object.keys(h); } catch (_) {}
+          keys.forEach(function (k) {
+            if (k.toLowerCase().startsWith('x-')) {
+              var v = getHdr(h, k);
+              if (v) errReqHeaderInfoE.push(k.toLowerCase() + ': ' + v);
+            }
+          });
+        })(errReqHeadersE);
+
+        // 응답 헤더에서 X- 정보 수집
+        var errResHeadersE = (res && res.headers) || {};
+        var errResHeaderInfoE = [];
+        if (errResHeadersE && typeof errResHeadersE.forEach === 'function') {
+          errResHeadersE.forEach(function (val, key) {
+            if (key.toLowerCase().startsWith('x-')) {
+              errResHeaderInfoE.push(key + ': ' + val);
+            }
+          });
+        }
+
         global.dispatchEvent(new CustomEvent('api-error', {
-          detail: { scope: 'fo', status: status || 0, url: errorUrl, message: err.message, method: (cfg.method || 'get').toUpperCase(), uiLabel: uiLabelE },
+          detail: { scope: 'fo', status: status || 0, url: errorUrl, message: err.message, method: (cfg.method || 'get').toUpperCase(), uiLabel: uiLabelE, reqHeaders: errReqHeaderInfoE, resHeaders: errResHeaderInfoE },
         }));
       } catch (_) {}
     }

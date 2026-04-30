@@ -301,7 +301,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         const row = gridRows[idx];
         if (row._row_status === 'N') { gridRows.splice(idx, 1); continue; }
         try {
-          await boApi.delete(`/bo/ec/pd/category/${row.categoryId}`, { headers: { 'X-UI-Nm': '카테고리관리', 'X-Cmd-Nm': '삭제' } });
+          await boApi.delete(`/bo/ec/pd/category/${row.categoryId}`, coUtil.apiHdr('카테고리관리', '삭제'));
           gridRows.splice(idx, 1);
         } catch (err) { console.error('[deleteRows]', err); }
       }

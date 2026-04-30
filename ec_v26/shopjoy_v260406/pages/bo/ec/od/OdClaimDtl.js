@@ -105,8 +105,8 @@ window.OdClaimDtl = {
       if (!ok) return;
       try {
         const res = await (isNewClaim
-          ? boApi.post('/bo/ec/od/claim', { ...form, refundAmount: Number(form.refundAmount) }, { headers: { 'X-UI-Nm': '클레임관리', 'X-Cmd-Nm': '등록' } })
-          : boApi.put(`/bo/ec/od/claim/${form.claimId}`, { ...form, refundAmount: Number(form.refundAmount) }, { headers: { 'X-UI-Nm': '클레임관리', 'X-Cmd-Nm': '저장' } }));
+          ? boApi.post('/bo/ec/od/claim', { ...form, refundAmount: Number(form.refundAmount) }, coUtil.apiHdr('클레임관리', '등록'))
+          : boApi.put(`/bo/ec/od/claim/${form.claimId}`, { ...form, refundAmount: Number(form.refundAmount) }, coUtil.apiHdr('클레임관리', '저장')));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewClaim ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('odClaimMng');

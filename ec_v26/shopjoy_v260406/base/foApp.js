@@ -61,6 +61,28 @@
     /* ── Navigation ── */
     const page = ref('home');
     const errorMessage = ref('');
+    /* X- 헤더 배열을 압축 포맷으로 변환 */
+    const _fmtXHeaders = (headers) => {
+      if (!headers || headers.length === 0) return '';
+      const map = {};
+      headers.forEach(h => {
+        const idx = h.indexOf(': ');
+        if (idx > -1) map[h.slice(0, idx).toLowerCase()] = h.slice(idx + 2);
+      });
+      const truncate = (v) => v && v.length > 10 ? v.slice(0, 5) + '...' + v.slice(-5) : (v || '');
+      const NO_TRUNCATE = ['x-trace-id', 'x-line-no', 'x-site-type', 'x-site-id', 'x-site-no', 'x-func-nm', 'x-file-nm'];
+      const row = (keys) => keys.filter(k => map[k]).map(k => `${k}: ${NO_TRUNCATE.includes(k) ? map[k] : truncate(map[k])}`).join(' | ');
+      const lines = [
+        row(['x-site-type', 'x-ui-nm', 'x-cmd-nm']),
+        row(['x-file-nm', 'x-func-nm', 'x-line-no']),
+        row(['x-trace-id', 'x-site-id', 'x-buyer-id', 'x-license-code', 'x-user-agent']),
+      ].filter(Boolean);
+      const known = ['x-site-type','x-ui-nm','x-cmd-nm','x-file-nm','x-func-nm','x-line-no','x-trace-id','x-site-id','x-buyer-id','x-license-code','x-user-agent'];
+      const rest = Object.entries(map).filter(([k]) => !known.includes(k)).map(([k,v]) => `${k}: ${truncate(v)}`).join(' | ');
+      if (rest) lines.push(rest);
+      return lines.join('\n');
+    };
+
     /* API Validation 에러 → toast 출력 (foAxios 에서 window.dispatchEvent('api-validation-error')) */
     window.addEventListener('api-validation-error', (ev) => {
       const d = ev.detail || {};
@@ -70,7 +92,16 @@
         if (d.uiLabel) title += ` :: ${d.uiLabel}`;
         msg = `${title}\n${msg}`;
       }
-      showToast(msg, 'error', 0, d.errorDetails || '');
+      let details = d.errorDetails || '';
+      const reqFmt = _fmtXHeaders(d.reqHeaders);
+      const resFmt = _fmtXHeaders(d.resHeaders);
+      if (reqFmt || resFmt) {
+        let headerInfo = '';
+        if (reqFmt) headerInfo += '━━ 요청 헤더 ━━\n' + reqFmt;
+        if (resFmt) headerInfo += (headerInfo ? '\n\n' : '') + '━━ 응답 헤더 ━━\n' + resFmt;
+        details = details ? headerInfo + '\n\n' + details : headerInfo;
+      }
+      showToast(msg, 'error', 0, details);
     });
 
     /* API 성공 → toast info 출력 (foAxios 에서 window.dispatchEvent('api-success')) */
@@ -88,7 +119,20 @@
         label = `${d.method} ${d.url} ${st}`;
         if (d.uiLabel) label += ` :: ${d.uiLabel}`;
       }
-      const msg = label ? `${label}\n${d.message || ''}` : (d.message || '');
+      let msg = label ? `${label}\n${d.message || ''}` : (d.message || '');
+      if (st !== 401 && !(st >= 500 || st === 0)) {
+        let details = d.errorDetails || '';
+        const reqFmt = _fmtXHeaders(d.reqHeaders);
+        const resFmt = _fmtXHeaders(d.resHeaders);
+        if (reqFmt || resFmt) {
+          let headerInfo = '';
+          if (reqFmt) headerInfo += '━━ 요청 헤더 ━━\n' + reqFmt;
+          if (resFmt) headerInfo += (headerInfo ? '\n\n' : '') + '━━ 응답 헤더 ━━\n' + resFmt;
+          details = details ? headerInfo + '\n\n' + details : headerInfo;
+        }
+        showToast(msg, 'error', 0, details);
+        return;
+      }
       if (st === 401) { errorMessage.value = msg; page.value = 'error401'; }
       else if (st >= 500 || st === 0) { errorMessage.value = msg; page.value = 'error500'; }
     });
@@ -319,7 +363,7 @@
     /* ── 상품 데이터 로드 ── */
     const handleFetchProducts = async () => {
       try {
-        const res = await foApi.get('/fo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 200 }, headers: { 'X-UI-Nm': '상품', 'X-Cmd-Nm': '목록조회' } });
+        const res = await foApi.get('/fo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 200 }, ...coUtil.apiHdr('상품', '목록조회') });
         const list = res.data?.data?.pageList || [];
         list.forEach(_assignImg);
         products.splice(0, products.length, ...list);

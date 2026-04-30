@@ -62,7 +62,7 @@ window.PdCategoryDtl = {
     const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       try {
-        const res = await boApi.get(`/bo/ec/pd/category/${props.editId}`, { headers: { 'X-UI-Nm': '카테고리상세', 'X-Cmd-Nm': '상세조회' } });
+        const res = await boApi.get(`/bo/ec/pd/category/${props.editId}`, coUtil.apiHdr('카테고리상세', '상세조회'));
         const c = res.data?.data || res.data;
         if (c) Object.assign(form, { ...c });
       } catch (err) {
@@ -105,7 +105,7 @@ window.PdCategoryDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (cfIsNew.value ? boApi.post(`/bo/ec/pd/category/${form.categoryId}`, { ...form }, { headers: { 'X-UI-Nm': '카테고리관리', 'X-Cmd-Nm': '등록' } }) : boApi.put(`/bo/ec/pd/category/${form.categoryId}`, { ...form }, { headers: { 'X-UI-Nm': '카테고리관리', 'X-Cmd-Nm': '저장' } }));
+        const res = await (cfIsNew.value ? boApi.post(`/bo/ec/pd/category/${form.categoryId}`, { ...form }, coUtil.apiHdr('카테고리관리', '등록')) : boApi.put(`/bo/ec/pd/category/${form.categoryId}`, { ...form }, coUtil.apiHdr('카테고리관리', '저장')));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pdCategoryMng');

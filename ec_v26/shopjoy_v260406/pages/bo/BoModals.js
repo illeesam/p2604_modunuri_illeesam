@@ -28,11 +28,11 @@ window.BoRefModal = {
     const coupon = reactive({});
 
     const API_MAP = {
-      member:  (id) => boApi.get(`/bo/ec/mb/member/${id}`, { headers: { 'X-UI-Nm': '회원상세', 'X-Cmd-Nm': '상세조회' } }),
-      product: (id) => boApi.get(`/bo/ec/pd/prod/${id}`, { headers: { 'X-UI-Nm': '상품상세', 'X-Cmd-Nm': '상세조회' } }),
-      order:   (id) => boApi.get(`/bo/ec/od/order/${id}`, { headers: { 'X-UI-Nm': '주문상세', 'X-Cmd-Nm': '상세조회' } }),
-      claim:   (id) => boApi.get(`/bo/ec/od/claim/${id}`, { headers: { 'X-UI-Nm': '클레임상세', 'X-Cmd-Nm': '상세조회' } }),
-      coupon:  (id) => boApi.get(`/bo/ec/pm/coupon/${id}`, { headers: { 'X-UI-Nm': '쿠폰상세', 'X-Cmd-Nm': '상세조회' } }),
+      member:  (id) => boApi.get(`/bo/ec/mb/member/${id}`, coUtil.apiHdr('회원상세', '상세조회')),
+      product: (id) => boApi.get(`/bo/ec/pd/prod/${id}`, coUtil.apiHdr('상품상세', '상세조회')),
+      order:   (id) => boApi.get(`/bo/ec/od/order/${id}`, coUtil.apiHdr('주문상세', '상세조회')),
+      claim:   (id) => boApi.get(`/bo/ec/od/claim/${id}`, coUtil.apiHdr('클레임상세', '상세조회')),
+      coupon:  (id) => boApi.get(`/bo/ec/pm/coupon/${id}`, coUtil.apiHdr('쿠폰상세', '상세조회')),
     };
     const DATA_MAP = { member, product, order, claim, coupon };
 

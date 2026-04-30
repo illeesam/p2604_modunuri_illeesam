@@ -321,7 +321,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       });
       if (isNewSet) { uiState.dtlMode = 'edit'; uiState.editSetId = newProdId; }
       try {
-        const res = await (isNewSet ? boApi.post('/bo/ec/pd/prod-set', { prod: { ...newForm, prodTypeCd: 'SET' }, items: dtlItems }, { headers: { 'X-UI-Nm': '세트상품관리', 'X-Cmd-Nm': '등록' } }) : boApi.put(`/bo/ec/pd/prod-set/${setProdId}/items`, { items: dtlItems }, { headers: { 'X-UI-Nm': '세트상품관리', 'X-Cmd-Nm': '저장' } }));
+        const res = await (isNewSet ? boApi.post('/bo/ec/pd/prod-set', { prod: { ...newForm, prodTypeCd: 'SET' }, items: dtlItems }, coUtil.apiHdr('세트상품관리', '등록')) : boApi.put(`/bo/ec/pd/prod-set/${setProdId}/items`, { items: dtlItems }, coUtil.apiHdr('세트상품관리', '저장')));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewSet ? '등록되었습니다.' : '저장되었습니다.', 'success');
       } catch (err) {
@@ -340,7 +340,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       sets.splice(0, sets.length, ...remaining);
       if (uiState.editSetId === setProdId) closeDtl();
       try {
-        const res = await boApi.delete(`/bo/ec/pd/prod-set/${setProdId}`, { headers: { 'X-UI-Nm': '세트상품관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await boApi.delete(`/bo/ec/pd/prod-set/${setProdId}`, coUtil.apiHdr('세트상품관리', '삭제'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

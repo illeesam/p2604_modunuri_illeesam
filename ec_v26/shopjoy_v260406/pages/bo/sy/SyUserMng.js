@@ -19,7 +19,7 @@ window.SyUserMng = {
         };
         if (uiState.selectedDeptId != null) params.deptId = uiState.selectedDeptId;
         const [resUsers] = await Promise.all([
-          boApi.get('bo/sy/user/page', { params, headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '조회' } }),
+          boApi.get('bo/sy/user/page', { params, ...coUtil.apiHdr('사용자관리', '목록조회') }),
         ]);
         const data = resUsers.data?.data;
         users.splice(0, users.length, ...(data?.pageList || []));
@@ -160,7 +160,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       if (idx !== -1) users.splice(idx, 1);
       if (uiStateDetail.selectedId === u.userId) uiStateDetail.selectedId = null;
       try {
-        const res = await boApi.delete(`bo/sy/user/${u.userId}`, { headers: { 'X-UI-Nm': '사용자관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await boApi.delete(`bo/sy/user/${u.userId}`, coUtil.apiHdr('사용자관리', '삭제'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

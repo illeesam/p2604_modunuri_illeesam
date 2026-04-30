@@ -61,7 +61,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       if (!ok) return;
       r.sendStatus = '전송완료'; r.erpRef = 'ERP-JE-RESEND-' + Date.now();
       try {
-        const res = await boApi.post(`/bo/ec/st/erp/resend/${r.slipId}`, {}, { headers: { 'X-UI-Nm': 'ERP전표조회', 'X-Cmd-Nm': '전송' } });
+        const res = await boApi.post(`/bo/ec/st/erp/resend/${r.slipId}`, {}, coUtil.apiHdr('ERP전표조회', '전송'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('재전송이 완료되었습니다.', 'success');
       } catch (err) {

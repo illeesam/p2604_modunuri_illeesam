@@ -103,8 +103,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       }
       try {
         const res = await (isNewPost
-          ? boApi.post(`/bo/ec/cm/blog/${detailModal.form.blogId}`, { ...detailModal.form }, { headers: { 'X-UI-Nm': '블로그관리', 'X-Cmd-Nm': '등록' } })
-          : boApi.put(`/bo/ec/cm/blog/${detailModal.form.blogId}`, { ...detailModal.form }, { headers: { 'X-UI-Nm': '블로그관리', 'X-Cmd-Nm': '저장' } }));
+          ? boApi.post(`/bo/ec/cm/blog/${detailModal.form.blogId}`, { ...detailModal.form }, coUtil.apiHdr('블로그관리', '등록'))
+          : boApi.put(`/bo/ec/cm/blog/${detailModal.form.blogId}`, { ...detailModal.form }, coUtil.apiHdr('블로그관리', '저장')));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {
@@ -123,7 +123,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       if (si !== -1) blogs.splice(si, 1);
       closeDetail();
       try {
-        const res = await boApi.delete(`/bo/ec/cm/blog/${cfSelectedRow.value.blogId}`, { headers: { 'X-UI-Nm': '블로그관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await boApi.delete(`/bo/ec/cm/blog/${cfSelectedRow.value.blogId}`, coUtil.apiHdr('블로그관리', '삭제'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -141,7 +141,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       row.useYn = newYn;
       if (detailModal.form.blogId === row.blogId) detailModal.form.useYn = newYn;
       try {
-        const res = await boApi.put(`/bo/ec/cm/blog/${row.blogId}/use`, { useYn: newYn }, { headers: { 'X-UI-Nm': '블로그관리', 'X-Cmd-Nm': '상태변경' } });
+        const res = await boApi.put(`/bo/ec/cm/blog/${row.blogId}/use`, { useYn: newYn }, coUtil.apiHdr('블로그관리', '상태변경'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('처리되었습니다.', 'success');
       } catch (err) {

@@ -378,7 +378,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       categoryProds.splice(0, categoryProds.length, ...newCategoryProds);
       if (isNewBundle) { uiState.dtlMode = 'edit'; uiState.editBundleId = newProdId; }
       try {
-        const res = await (isNewBundle ? boApi.post('/bo/ec/pd/prod-bundle', { prod: { ...newForm, prodTypeCd: 'BUNDLE' }, items: dtlItems }, { headers: { 'X-UI-Nm': '묶음상품관리', 'X-Cmd-Nm': '등록' } }) : boApi.put(`/bo/ec/pd/prod-bundle/${bundleProdId}/items`, { items: dtlItems }, { headers: { 'X-UI-Nm': '묶음상품관리', 'X-Cmd-Nm': '저장' } }));
+        const res = await (isNewBundle ? boApi.post('/bo/ec/pd/prod-bundle', { prod: { ...newForm, prodTypeCd: 'BUNDLE' }, items: dtlItems }, coUtil.apiHdr('묶음상품관리', '등록')) : boApi.put(`/bo/ec/pd/prod-bundle/${bundleProdId}/items`, { items: dtlItems }, coUtil.apiHdr('묶음상품관리', '저장')));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewBundle ? '등록되었습니다.' : '저장되었습니다.', 'success');
       } catch (err) {
@@ -396,7 +396,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       bundles = (bundles).filter(b => b.bundleProdId !== bundleProdId);
       if (uiState.editBundleId === bundleProdId) closeDtl();
       try {
-        const res = await boApi.delete(`/bo/ec/pd/prod-bundle/${bundleProdId}`, { headers: { 'X-UI-Nm': '묶음상품관리', 'X-Cmd-Nm': '삭제' } });
+        const res = await boApi.delete(`/bo/ec/pd/prod-bundle/${bundleProdId}`, coUtil.apiHdr('묶음상품관리', '삭제'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

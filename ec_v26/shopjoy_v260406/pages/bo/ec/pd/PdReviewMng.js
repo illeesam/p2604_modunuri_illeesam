@@ -93,7 +93,7 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
       if (!ok) return;
       row.reviewStatusCd = newStatus; if (cfSelectedRow.value) cfSelectedRow.value.reviewStatusCd = newStatus;
       try {
-        const res = await boApi.put(`/bo/ec/pd/review/${row.reviewId}/status`, { reviewStatusCd: newStatus }, { headers: { 'X-UI-Nm': '리뷰관리', 'X-Cmd-Nm': '상태변경' } });
+        const res = await boApi.put(`/bo/ec/pd/review/${row.reviewId}/status`, { reviewStatusCd: newStatus }, coUtil.apiHdr('리뷰관리', '상태변경'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
         console.error('[catch-info]', err);
