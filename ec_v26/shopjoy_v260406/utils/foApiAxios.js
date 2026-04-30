@@ -116,7 +116,11 @@
       var pathMatch = displayUrl.match(/\/api(\/.*)?$/);
       if (pathMatch) displayUrl = pathMatch[0];
     }
-    console.log(TAG + ' → ' + (cfg.method || 'GET').toUpperCase() + uiTag, displayUrl, cfg.data || cfg.params || '');
+    var fileNm  = cfg.headers['X-File-Nm']  || cfg.headers['x-file-nm']  || '';
+    var funcNm  = cfg.headers['X-Func-Nm']  || cfg.headers['x-func-nm']  || '';
+    var lineNo  = cfg.headers['X-Line-No']  || cfg.headers['x-line-no']  || '';
+    var callerTag = fileNm ? (' | ' + fileNm + (funcNm ? ' ' + funcNm + (lineNo ? '(' + lineNo + ')' : '') : (lineNo ? '(' + lineNo + ')' : ''))) : '';
+    console.log(TAG + ' → ' + (cfg.method || 'GET').toUpperCase() + uiTag, displayUrl + callerTag, cfg.data || cfg.params || '');
     return cfg;
   }, function (err) {
     console.error(TAG + ' ✗ REQUEST ERROR', err && err.message);
@@ -149,7 +153,19 @@
       var resPathMatch = resDisplayUrl.match(/\/api(\/.*)?$/);
       if (resPathMatch) resDisplayUrl = resPathMatch[0];
     }
-    console.log(TAG + ' ← ' + res.status + resUiTag, resDisplayUrl);
+    var resLogData = (function(d) {
+      try {
+        var inner = d?.data?.data ?? d?.data ?? d;
+        var tot = function(x){ return x.pageTotalCount ?? x.totalCount ?? x.total ?? '?'; };
+        if (inner == null) return null;
+        if (Array.isArray(inner)) return { count: inner.length, list: inner };
+        if (inner.pageList) return { count: inner.pageList.length, total: tot(inner), list: inner.pageList };
+        if (inner.list)     return { count: inner.list.length,     total: tot(inner), list: inner.list };
+        return inner;
+      } catch(_){ return null; }
+    })(res.data);
+    if (resLogData) console.log(TAG + ' ← ' + res.status + resUiTag, resDisplayUrl, resLogData);
+    else            console.log(TAG + ' ← ' + res.status + resUiTag, resDisplayUrl);
     try {
       var cfg = res.config || {};
       var method = (cfg.method || 'get').toUpperCase();
@@ -175,6 +191,8 @@
             if (v) reqHeaderInfo.push(k.toLowerCase() + ': ' + v);
           }
         });
+        var auth = getHdr(h, 'Authorization') || getHdr(h, 'authorization');
+        if (auth) reqHeaderInfo.push('authorization: ' + auth.slice(0, 7) + auth.slice(7, 12) + '...(' + auth.length + ')');
       })(reqHeaders);
 
       // 응답 헤더에서 X- 정보 수집 (받은 정보)
@@ -243,6 +261,8 @@
               if (v) errReqHeaderInfo.push(k.toLowerCase() + ': ' + v);
             }
           });
+          var auth = getHdr(h, 'Authorization') || getHdr(h, 'authorization');
+          if (auth) errReqHeaderInfo.push('authorization: ' + auth.slice(0, 7) + auth.slice(7, 12) + '...(' + auth.length + ')');
         })(errReqHeaders);
 
         // 응답 헤더에서 X- 정보 수집
@@ -287,6 +307,8 @@
               if (v) errReqHeaderInfoE.push(k.toLowerCase() + ': ' + v);
             }
           });
+          var auth = getHdr(h, 'Authorization') || getHdr(h, 'authorization');
+          if (auth) errReqHeaderInfoE.push('authorization: ' + auth.slice(0, 7) + auth.slice(7, 12) + '...(' + auth.length + ')');
         })(errReqHeadersE);
 
         // 응답 헤더에서 X- 정보 수집

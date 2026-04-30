@@ -196,16 +196,16 @@
           if (idx > -1) map[h.slice(0, idx).toLowerCase()] = h.slice(idx + 2);
         });
         const truncate = (v) => v && v.length > 10 ? v.slice(0, 5) + '...' + v.slice(-5) : (v || '');
-        const NO_TRUNCATE = ['x-trace-id', 'x-line-no', 'x-site-type', 'x-site-id', 'x-site-no', 'x-func-nm', 'x-file-nm'];
+        const NO_TRUNCATE = ['x-trace-id', 'x-line-no', 'x-site-type', 'x-site-id', 'x-site-no', 'x-func-nm', 'x-file-nm', 'authorization'];
         const fmtVal = (k, v) => k === 'x-func-nm' ? v + '()' : NO_TRUNCATE.includes(k) ? v : truncate(v);
         const row = (keys) => keys.filter(k => map[k]).map(k => `${k}: ${fmtVal(k, map[k])}`).join(' | ');
         const lines = [
           row(['x-site-type', 'x-ui-nm', 'x-cmd-nm']),
           row(['x-file-nm', 'x-func-nm', 'x-line-no']),
-          row(['x-trace-id', 'x-site-id', 'x-buyer-id', 'x-license-code', 'x-user-agent']),
+          row(['x-trace-id', 'x-site-id', 'x-buyer-id', 'x-license-code', 'x-user-agent', 'authorization']),
         ].filter(Boolean);
         // 위 그룹에 포함되지 않은 나머지 x- 헤더
-        const known = ['x-site-type','x-ui-nm','x-cmd-nm','x-file-nm','x-func-nm','x-line-no','x-trace-id','x-site-id','x-buyer-id','x-license-code','x-user-agent'];
+        const known = ['x-site-type','x-ui-nm','x-cmd-nm','x-file-nm','x-func-nm','x-line-no','x-trace-id','x-site-id','x-buyer-id','x-license-code','x-user-agent','authorization'];
         const rest = Object.entries(map).filter(([k]) => !known.includes(k)).map(([k,v]) => `${k}: ${truncate(v)}`).join(' | ');
         if (rest) lines.push(rest);
         return lines.join('\n');
@@ -792,7 +792,8 @@
           let roles = window.getBoRoleStore?.()?.svRoles || [];
           if (!roles.length) {
             try {
-              const res = await boApi.get('/bo/sy/role/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('역할관리', '목록조회') });
+              const _roleHdr = coUtil.apiHdr('역할관리', '목록조회'); _roleHdr.headers['X-Skip-Error-Toast'] = 'true';
+              const res = await boApi.get('/bo/sy/role/page', { params: { pageNo: 1, pageSize: 10000 }, ..._roleHdr });
               roles = res.data?.data?.list || [];
             } catch (_) {}
           }
@@ -1566,6 +1567,18 @@
                 <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: log.hasError ? '#ef4444' : '#374151';">{{ log.url }}</div>
                 <div :style="{ color: getApiStatusColor(log.status), fontWeight: '600', textAlign: 'center', fontSize: '10px' }">{{ log.status }}</div>
                 <div @click.stop="toggleApiLogLock(log)" style="text-align: center; cursor: pointer; font-size: 12px; color: #6b7280; user-select: none; padding: 2px;">{{ apiLogLockedDetail === log ? '🔒' : '🔓' }}</div>
+              </div>
+              <div v-if="!log.hasError && log.resData" style="grid-column: 1 / -1; font-size: 9px; color: #6b7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 2px 2px 20px; line-height: 1.3;">
+                ▶ {{ (function(d){ try{
+                  const o=JSON.parse(d);
+                  const inner = o?.data?.data ?? o?.data ?? o;
+                  const totalCnt = (x) => x.pageTotalCount ?? x.totalCount ?? x.total ?? '?';
+                  if(inner==null) return '';
+                  if(Array.isArray(inner)) return '[' + inner.length + '건] ' + JSON.stringify(inner[0]||{}).slice(0,100);
+                  if(inner.pageList) return '[' + (inner.pageList.length||0) + '건/' + totalCnt(inner) + '] ' + JSON.stringify(inner.pageList[0]||{}).slice(0,100);
+                  if(inner.list) return '[' + (inner.list.length||0) + '건/' + totalCnt(inner) + '] ' + JSON.stringify(inner.list[0]||{}).slice(0,100);
+                  return JSON.stringify(inner).slice(0,120);
+                }catch(_){ return ''; } })(log.resData) }}
               </div>
             </div>
           </div>

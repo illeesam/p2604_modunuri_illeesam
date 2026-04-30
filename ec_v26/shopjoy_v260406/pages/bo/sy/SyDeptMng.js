@@ -122,14 +122,6 @@ window.SyDeptMng = {
     const EDIT_FIELDS = ['deptCode', 'deptNm', 'parentDeptId', 'deptTypeCd', 'sortOrd', 'useYn', 'deptRemark'];
     const DEPT_TYPES  = ['경영', '운영', '기술', '마케팅', 'CS', '물류', '재무', '인사', '법무', '기타'];
 
-    /* ── 페이징 ── */
-    const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageSize; return gridRows.slice(s, s + pager.pageSize); });
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.pageSize)));
-    const cfPageNums   = computed(() => { const c = pager.pageNo, l = pager.pageTotalPage; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setPage    = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
-    const onSizeChange = () => { pager.pageNo = 1; };
-    const getRealIdx   = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
 
     /* ── 트리 정렬 ── */
     const buildTreeRows = (items) => {
@@ -159,7 +151,6 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
     const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
     const onSearch = async () => {
-      pager.pageNo = 1;
       await handleSearchList('DEFAULT');
     };
     const onReset = () => {
@@ -187,7 +178,6 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
       const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(insertAt, 0, newRow);
       uiState.focusedIdx = insertAt;
-      pager.pageNo = Math.ceil((insertAt + 1) / pager.pageSize);
     };
 
     const deleteRow = (realIdx) => {
@@ -289,7 +279,7 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
     return { depts, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, searchParamOrg, cfTypeOptions, DEPT_TYPES,
       cfSiteNm,
-      gridRows, cfPagedRows, cfTotal, pager, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfTotal,
       setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       toggleCheckAll, parentNm,
@@ -344,6 +334,7 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
       </div>
     </div>
 
+    <div style="max-height:480px;overflow-y:auto;">
     <table class="bo-table crud-grid">
       <thead>
         <tr>
@@ -366,9 +357,9 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
         <tr v-if="gridRows.length===0">
           <td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <tr v-for="(row, idx) in cfPagedRows" :key="row.deptId"
-          class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '']"
-          @click="setFocused(getRealIdx(idx))">
+        <tr v-for="(row, idx) in gridRows" :key="row.deptId"
+          class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
+          @click="setFocused(idx)">
 
           <td class="col-id-val">{{ row.deptId > 0 ? row.deptId : 'NEW' }}</td>
           <td class="col-status-val"><span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span></td>
@@ -414,30 +405,15 @@ const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageS
           <td style="font-size:11px;color:#2563eb;text-align:center;">{{ cfSiteNm }}</td>
           <td class="col-act-cancel-val">
             <button v-if="['U','I','D'].includes(row._row_status)"
-              class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>
+              class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
           </td>
           <td class="col-act-delete-val">
             <button v-if="row._row_status == null || ['N','U'].includes(row._row_status)"
-              class="btn btn-danger btn-xs" @click.stop="deleteRow(getRealIdx(idx))">삭제</button>
+              class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
           </td>
         </tr>
       </tbody>
     </table>
-
-    <div class="pagination">
-      <div></div>
-      <div class="pager">
-        <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
-        <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
-        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
-      </div>
-      <div class="pager-right">
-        <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
-          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
-        </select>
-      </div>
     </div>
   </div>
 

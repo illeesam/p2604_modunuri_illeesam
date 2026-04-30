@@ -74,9 +74,6 @@ window.SyBrandMng = {
     const gridRows   = reactive([]);
     let   _tempId    = -1;
     
-    /* ── 페이징 ── */
-const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const getRealIdx = (localIdx) => (pager.pageNo - 1) * pager.pageSize + localIdx;
 
     const EDIT_FIELDS = ['brandCode', 'brandNm', 'brandEnNm', 'dispPath', 'logoUrl', 'sortOrd', 'useYn', 'remark'];
 
@@ -116,7 +113,6 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
     const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
     const onSearch = async () => {
-      pager.pageNo = 1;
       await handleSearchList('DEFAULT');
     };
     const onReset = () => {
@@ -142,7 +138,6 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
       const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(insertAt, 0, newRow);
       uiState.focusedIdx = insertAt;
-      pager.pageNo = Math.ceil((insertAt + 1) / pager.pageSize);
     };
 
     const deleteRow = (idx) => {
@@ -253,11 +248,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
     const fnStatusClass  = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
-    const cfPagedRows    = computed(() => { const s = (pager.pageNo - 1) * pager.pageSize; return gridRows.slice(s, s + pager.pageSize); });
-    const cfTotalPages   = computed(() => Math.max(1, Math.ceil(gridRows.length / pager.pageSize)));
-    const cfPageNums     = computed(() => { const c = pager.pageNo, l = pager.pageTotalPage; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
-    const onSizeChange = () => { pager.pageNo = 1; };
+;
 
     const exportExcel = () => boUtil.exportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
@@ -299,7 +290,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
 
     return { brands, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange,
-      gridRows, cfPagedRows, cfTotal, pager, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfTotal,
       setFocused, onSearch, onReset, onCellChange, cfIsLocalMode,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       onDragStart, onDragOver, onDragEnd,
@@ -369,6 +360,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
       </div>
     </div>
 
+    <div style="max-height:480px;overflow-y:auto;">
     <table class="bo-table crud-grid">
       <thead>
         <tr>
@@ -391,12 +383,12 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
         <tr v-if="gridRows.length===0">
           <td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <tr v-for="(row, idx) in cfPagedRows" :key="row.brandId"
-          class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '']"
+        <tr v-for="(row, idx) in gridRows" :key="row.brandId"
+          class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
           draggable="true"
-          @click="setFocused(getRealIdx(idx))"
-          @dragstart="onDragStart(getRealIdx(idx))"
-          @dragover="onDragOver($event, getRealIdx(idx))"
+          @click="setFocused(idx)"
+          @dragstart="onDragStart(idx)"
+          @dragover="onDragOver($event, idx)"
           @dragend="onDragEnd">
 
           <td class="drag-handle" title="드래그로 순서 변경">⠿</td>
@@ -455,30 +447,15 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
           </td>
           <td class="col-act-cancel-val">
             <button v-if="['U','I','D'].includes(row._row_status)"
-              class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>
+              class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
           </td>
           <td class="col-act-delete-val">
             <button v-if="['N','U'].includes(row._row_status)"
-              class="btn btn-danger btn-xs" @click.stop="deleteRow(getRealIdx(idx))">삭제</button>
+              class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
           </td>
         </tr>
       </tbody>
     </table>
-
-    <div class="pagination">
-      <div></div>
-      <div class="pager">
-        <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
-        <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
-        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
-      </div>
-      <div class="pager-right">
-        <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
-          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
-        </select>
-      </div>
     </div>
   </div>
   </div><!-- ── /grid 25/75 ────────────────────────────────────────────────────── -->

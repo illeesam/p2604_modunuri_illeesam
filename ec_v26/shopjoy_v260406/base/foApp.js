@@ -70,15 +70,15 @@
         if (idx > -1) map[h.slice(0, idx).toLowerCase()] = h.slice(idx + 2);
       });
       const truncate = (v) => v && v.length > 10 ? v.slice(0, 5) + '...' + v.slice(-5) : (v || '');
-      const NO_TRUNCATE = ['x-trace-id', 'x-line-no', 'x-site-type', 'x-site-id', 'x-site-no', 'x-func-nm', 'x-file-nm'];
+      const NO_TRUNCATE = ['x-trace-id', 'x-line-no', 'x-site-type', 'x-site-id', 'x-site-no', 'x-func-nm', 'x-file-nm', 'authorization'];
       const fmtVal = (k, v) => k === 'x-func-nm' ? v + '()' : NO_TRUNCATE.includes(k) ? v : truncate(v);
       const row = (keys) => keys.filter(k => map[k]).map(k => `${k}: ${fmtVal(k, map[k])}`).join(' | ');
       const lines = [
         row(['x-site-type', 'x-ui-nm', 'x-cmd-nm']),
         row(['x-file-nm', 'x-func-nm', 'x-line-no']),
-        row(['x-trace-id', 'x-site-id', 'x-buyer-id', 'x-license-code', 'x-user-agent']),
+        row(['x-trace-id', 'x-site-id', 'x-buyer-id', 'x-license-code', 'x-user-agent', 'authorization']),
       ].filter(Boolean);
-      const known = ['x-site-type','x-ui-nm','x-cmd-nm','x-file-nm','x-func-nm','x-line-no','x-trace-id','x-site-id','x-buyer-id','x-license-code','x-user-agent'];
+      const known = ['x-site-type','x-ui-nm','x-cmd-nm','x-file-nm','x-func-nm','x-line-no','x-trace-id','x-site-id','x-buyer-id','x-license-code','x-user-agent','authorization'];
       const rest = Object.entries(map).filter(([k]) => !known.includes(k)).map(([k,v]) => `${k}: ${truncate(v)}`).join(' | ');
       if (rest) lines.push(rest);
       return lines.join('\n');
