@@ -184,7 +184,7 @@ const applied      = reactive({ kw: '', method: '', use: '' });
       </div>
       <table class="bo-table">
         <thead><tr>
-          <th>템플릿명</th>
+          <th style="width:36px;text-align:center;">번호</th><th>템플릿명</th>
           <th style="width:90px">배송방법</th>
           <th style="width:80px">결제유형</th>
           <th style="width:100px;text-align:right">기본배송비</th>
@@ -194,7 +194,8 @@ const applied      = reactive({ kw: '', method: '', use: '' });
           <th style="width:60px;text-align:center">사용</th>
         </tr></thead>
         <tbody>
-          <tr v-for="row in dlivTmplts" :key="row?.dlivTmpltId" :class="{active:uiState.selectedId===row.dlivTmpltId}" @click="openDetail(row)" style="cursor:pointer">
+          <tr v-for="(row, idx) in dlivTmplts" :key="row?.dlivTmpltId" :class="{active:uiState.selectedId===row.dlivTmpltId}" @click="openDetail(row)" style="cursor:pointer">
+            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td><span class="title-link">{{ row.dlivTmpltNm }}</span></td>
             <td><span :class="['badge',fnMethodBadge(row.dlivMethodCd)]">{{ row.dlivMethodCd }}</span></td>
             <td><span class="badge badge-gray">{{ row.dlivPayTypeCd }}</span></td>
@@ -204,7 +205,7 @@ const applied      = reactive({ kw: '', method: '', use: '' });
             <td style="text-align:center"><span :class="['badge',row.baseDlivYn==='Y'?'badge-orange':'badge-gray']">{{ row.baseDlivYn }}</span></td>
             <td style="text-align:center"><span :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span></td>
           </tr>
-          <tr v-if="!dlivTmplts.length"><td colspan="8" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
+          <tr v-if="!dlivTmplts.length"><td colspan="9" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
       <div class="pagination">

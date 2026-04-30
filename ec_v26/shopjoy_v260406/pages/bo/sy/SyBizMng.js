@@ -197,12 +197,14 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         </div>
         <table class="bo-table">
           <thead><tr>
+            <th style="width:36px;text-align:center;">번호</th>
             <th style="min-width:120px;">표시경로</th>
             <th>업체유형</th><th>역할구분</th><th>사업자번호</th><th>상호</th><th>대표자</th><th>구분</th><th>업태/종목</th><th>전화</th><th>상태</th><th>등록일</th><th style="text-align:right;">관리</th>
           </tr></thead>
           <tbody>
-            <tr v-if="bizs.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-            <tr v-for="b in bizs" :key="b.vendorId">
+            <tr v-if="bizs.length===0"><td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+            <tr v-for="(b, idx) in bizs" :key="b.vendorId">
+              <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
               <td><span style="font-family:monospace;font-size:11.5px;color:#374151;">{{ pathLabel(b.dispPath) || '-' }}</span></td>
               <td><span class="badge" :class="fnVendorTypeBadge(b.vendorType)" style="font-size:10px;">{{ fnVendorTypeLabel(b.vendorType) }}</span></td>
               <td><span :style="{background:fnRoleCatColor(b.vendorType),color:'#fff',fontSize:'10px',fontWeight:700,padding:'2px 7px',borderRadius:'9px'}">{{ fnRoleCatLabel(b.vendorType) }}</span></td>

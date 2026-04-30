@@ -118,9 +118,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <div class="card" style="margin-top:12px">
     <div class="toolbar"><span class="list-count">총 {{ pager.pageTotalCount }}건</span></div>
     <table class="bo-table">
-      <thead><tr><th>전표ID</th><th>전표일자</th><th>유형</th><th>차변계정</th><th>대변계정</th><th>금액</th><th>적요</th><th>ERP전표번호</th><th>전송상태</th><th>액션</th></tr></thead>
+      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>전표ID</th><th>전표일자</th><th>유형</th><th>차변계정</th><th>대변계정</th><th>금액</th><th>적요</th><th>ERP전표번호</th><th>전송상태</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="r in slips" :key="r?.slipId">
+        <tr v-for="(r, idx) in slips" :key="r?.slipId">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td style="font-size:11px">{{ r.slipId }}</td>
           <td>{{ r.slipDate }}</td>
           <td><span class="badge" :class="fnTypeBadge(r.slipType)">{{ r.slipType }}</span></td>
@@ -134,7 +135,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
             <button v-if="r.sendStatus!=='전송완료'" class="btn btn-sm btn-blue" @click="doResend(r)">재전송</button>
           </td>
         </tr>
-        <tr v-if="!slips.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!slips.length"><td colspan="11" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">

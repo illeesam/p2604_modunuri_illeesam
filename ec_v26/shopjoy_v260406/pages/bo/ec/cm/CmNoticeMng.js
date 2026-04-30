@@ -252,16 +252,17 @@ window.CmNoticeMng = {
     <table class="bo-table">
       <thead>
         <tr>
-          <th>ID</th><th>유형</th><th>제목</th><th>고정</th>
+          <th style="width:36px;text-align:center;">번호</th><th>ID</th><th>유형</th><th>제목</th><th>고정</th>
           <th>시작일</th><th>종료일</th><th>상태</th><th>사이트명</th><th>등록일</th>
           <th style="text-align:right">관리</th>
         </tr>
       </thead>
       <tbody>
         <tr v-if="notices.length===0">
-          <td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <tr v-for="n in notices" :key="n?.noticeId" :style="selectedId===n.noticeId?'background:#fff8f9;':''">
+        <tr v-for="(n, idx) in notices" :key="n?.noticeId" :style="selectedId===n.noticeId?'background:#fff8f9;':''">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td>{{ n.noticeId }}</td>
           <td><span class="badge" :class="fnTypeBadge(n.noticeTypeCd)">{{ n.noticeTypeCd }}</span></td>
           <td>

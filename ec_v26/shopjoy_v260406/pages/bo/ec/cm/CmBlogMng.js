@@ -191,7 +191,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       </div>
       <table class="bo-table">
         <thead><tr>
-          <th>제목</th><th style="width:80px">작성자</th>
+          <th style="width:36px;text-align:center;">번호</th><th>제목</th><th style="width:80px">작성자</th>
           <th style="width:80px;text-align:right">조회수</th>
           <th style="width:70px;text-align:center">공지</th>
           <th style="width:70px;text-align:center">공개</th>
@@ -199,7 +199,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
           <th style="width:80px;text-align:center">공개전환</th>
         </tr></thead>
         <tbody>
-          <tr v-for="row in blogs" :key="row?.blogId" :class="{active:selectedId===row.blogId}" @click="openDetail(row)" style="cursor:pointer">
+          <tr v-for="(row, idx) in blogs" :key="row?.blogId" :class="{active:selectedId===row.blogId}" @click="openDetail(row)" style="cursor:pointer">
+            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td>
               <span v-if="row.isNotice==='Y'" class="badge badge-orange" style="margin-right:4px;font-size:10px">공지</span>
               <span class="title-link">{{ row.blogTitle }}</span>
@@ -214,7 +215,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
               <button :class="['btn','btn-xs',row.useYn==='Y'?'btn-secondary':'btn-green']" @click="toggleUse(row)">{{ row.useYn==='Y'?'비공개':'공개' }}</button>
             </td>
           </tr>
-          <tr v-if="!blogs.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
+          <tr v-if="!blogs.length"><td colspan="8" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
       <div class="pagination">

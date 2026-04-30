@@ -352,13 +352,14 @@ const isAppReady = computed(() => {
     <table class="bo-table">
       <thead><tr>
         <th style="width:36px;text-align:center;"><input type="checkbox" :checked="cfAllChecked" @change="toggleCheckAll" /></th>
-        <th>배송ID</th><th>주문ID</th><th>회원</th><th>수령인</th><th>택배사</th><th>운송장번호</th><th>배송지</th><th>상태</th><th>사이트명</th><th style="text-align:right">관리</th>
+        <th style="width:36px;text-align:center;">번호</th><th>배송ID</th><th>주문ID</th><th>회원</th><th>수령인</th><th>택배사</th><th>운송장번호</th><th>배송지</th><th>상태</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="deliveries.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="d in deliveries" :key="d?.dlivId"
+        <tr v-if="deliveries.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="(d, idx) in deliveries" :key="d?.dlivId"
           :style="(selectedId===d.dlivId?'background:#fff8f9;':'') + (isChecked(d.dlivId)?'background:#eef6fd;':'')">
           <td style="text-align:center;"><input type="checkbox" :checked="isChecked(d.dlivId)" @change="toggleCheck(d.dlivId)" /></td>
+          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td>
             <span class="title-link" @click="handleLoadDetail(d.dlivId)" :style="selectedId===d.dlivId?'color:#e8587a;font-weight:700;':''">
               {{ d.dlivId }}<span v-if="selectedId===d.dlivId" style="font-size:10px;margin-left:3px;">▼</span>

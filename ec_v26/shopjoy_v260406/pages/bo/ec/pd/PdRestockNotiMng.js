@@ -149,14 +149,15 @@ const searchParam = reactive({
       <table class="bo-table">
         <thead><tr>
           <th style="width:36px"><input type="checkbox" :checked="allChecked" @change="toggleAll"></th>
-          <th>상품명</th><th style="width:100px">SKU</th><th style="width:100px">신청회원</th>
+          <th style="width:36px;text-align:center;">번호</th><th>상품명</th><th style="width:100px">SKU</th><th style="width:100px">신청회원</th>
           <th style="width:80px;text-align:center">발송여부</th>
           <th style="width:140px">발송일시</th>
           <th style="width:140px">신청일</th>
         </tr></thead>
         <tbody>
-          <tr v-for="row in restockNotis" :key="row?.restockNotiId">
+          <tr v-for="(row, idx) in restockNotis" :key="row?.restockNotiId">
             <td><input type="checkbox" :checked="checkedIds.has(row.restockNotiId)" @change="toggleOne(row.restockNotiId)"></td>
+            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td>{{ getProdNm(row.prodId) }}</td>
             <td style="font-size:12px;color:#888">{{ row.skuId || '-' }}</td>
             <td style="font-size:12px">{{ getMemNm(row.memberId) }}</td>
@@ -164,7 +165,7 @@ const searchParam = reactive({
             <td style="font-size:12px;color:#888">{{ row.notiDate || '-' }}</td>
             <td style="font-size:12px">{{ row.regDate }}</td>
           </tr>
-          <tr v-if="!restockNotis.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
+          <tr v-if="!restockNotis.length"><td colspan="8" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
       <div class="pagination">

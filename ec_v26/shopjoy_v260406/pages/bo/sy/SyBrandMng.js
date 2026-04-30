@@ -365,6 +365,7 @@ window.SyBrandMng = {
       <thead>
         <tr>
           <th class="col-drag"></th>
+          <th style="width:36px;text-align:center;">번호</th>
           <th class="col-id" :title="cfIsLocalMode ? 'ID' : ''">ID</th>
           <th class="col-status" :title="cfIsLocalMode ? '상태' : ''">상태</th>
           <th class="col-check" :title="cfIsLocalMode ? '체크' : ''"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
@@ -381,7 +382,7 @@ window.SyBrandMng = {
       </thead>
       <tbody>
         <tr v-if="gridRows.length===0">
-          <td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <td colspan="14" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in gridRows" :key="row.brandId"
           class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
@@ -392,6 +393,7 @@ window.SyBrandMng = {
           @dragend="onDragEnd">
 
           <td class="drag-handle" title="드래그로 순서 변경">⠿</td>
+          <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
           <td class="col-id-val">{{ row.brandId > 0 ? row.brandId : 'NEW' }}</td>
           <td class="col-status-val">
             <span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span>

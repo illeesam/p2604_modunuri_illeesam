@@ -568,6 +568,7 @@ window.DpDispPanelMng = {
     <table class="bo-table">
       <thead>
         <tr>
+          <th style="width:36px;text-align:center;">번호</th>
           <th style="width:24px;"></th>
           <th style="width:28px;"></th>
           <th style="width:44px;">ID</th>
@@ -576,7 +577,7 @@ window.DpDispPanelMng = {
         </tr>
       </thead>
       <tbody>
-        <tr v-if="cfPageList.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-if="cfPageList.length===0"><td colspan="6" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <template v-for="(d, pageIdx) in cfPageList" :key="d?.dispId">
           <tr draggable="true"
             @dragstart="onPanelDragStart($event, pageIdx)"
@@ -585,6 +586,7 @@ window.DpDispPanelMng = {
             @drop="onPanelDrop($event, pageIdx)"
             @dragend="onPanelDragEnd"
             :style="(uiStateDetail.selectedId===d.dispId?'background:#fff8f9;':'') + (uiState.panelDragOverIdx===pageIdx?'outline:2px solid #1d4ed8;background:#e3f2fd;':'')">
+            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + pageIdx + 1 }}</td>
             <td style="text-align:center;padding:0;cursor:grab;color:#bbb;font-size:16px;user-select:none;">⠿</td>
             <td style="text-align:center;padding:0;">
               <button @click="toggleExpand(d.dispId)"

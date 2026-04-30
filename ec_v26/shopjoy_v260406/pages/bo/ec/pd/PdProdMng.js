@@ -210,11 +210,12 @@ const isAppReady = computed(() => {
     </div>
     <table class="bo-table">
       <thead><tr>
-        <th>ID</th><th>상품명</th><th>카테고리</th><th>가격</th><th>재고</th><th>브랜드</th><th>상태</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th>
+        <th style="width:36px;text-align:center;">번호</th><th>ID</th><th>상품명</th><th>카테고리</th><th>가격</th><th>재고</th><th>브랜드</th><th>상태</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="products.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="p in products" :key="p?.prodId" :style="selectedId===p.prodId?'background:#fff8f9;':''">
+        <tr v-if="products.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="(p, idx) in products" :key="p?.prodId" :style="selectedId===p.prodId?'background:#fff8f9;':''">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td>{{ p.prodId }}</td>
           <td><span class="title-link" @click="handleLoadDetail(p.prodId)" :style="selectedId===p.prodId?'color:#e8587a;font-weight:700;':''">{{ p.prodNm }}<span v-if="selectedId===p.prodId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td>{{ p.cateNm }}</td>

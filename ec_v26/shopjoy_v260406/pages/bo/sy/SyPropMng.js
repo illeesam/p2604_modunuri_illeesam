@@ -121,15 +121,6 @@ window.SyPropMng = {
       return arr.filter(r => r._status !== 'D');
     });
 
-    /* ── 페이징 ── */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfGridRows.value.length / pager.pageSize)));
-    const cfPageNums   = computed(() => { const c = pager.pageNo, l = cfTotalPages.value; const s = Math.max(1, c - 2), e = Math.min(l, s + 4); return Array.from({ length: e - s + 1 }, (_, i) => s + i); });
-    const setPage    = n => { if (n >= 1 && n <= cfTotalPages.value) pager.pageNo = n; };
-    const onSizeChange = () => { pager.pageNo = 1; };
-    const cfPagedRows  = computed(() => { const s = (pager.pageNo - 1) * pager.pageSize; return cfGridRows.value.slice(s, s + pager.pageSize); });
-
-    watch(() => cfGridRows.value.length, () => { if (pager.pageNo > cfTotalPages.value) pager.pageNo = Math.max(1, cfTotalPages.value); });
 
     /* ── 행 변경 추적 ── */
     const onChange = (row, field, val) => {
@@ -228,8 +219,8 @@ window.SyPropMng = {
       uiState, codes,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchParam, TYPES, cfTree, expanded, toggleNode, expandAll, collapseAll,
-      selectNode, cfGridRows, cfPagedRows, cfDirtyRows,
-      pager, cfTotalPages, cfPageNums, setPage, onSizeChange, fetchData,
+      selectNode, cfGridRows, cfDirtyRows,
+      fetchData,
       onChange, addRow, delRow, cancelRow, handleSave, onReset, exportCsv,
     };
   },
@@ -290,9 +281,11 @@ window.SyPropMng = {
           </button>
         </div>
       </div>
+      <div style="max-height:480px;overflow-y:auto;">
       <table class="bo-table crud-grid">
         <thead>
           <tr>
+            <th style="width:36px;text-align:center;">번호</th>
             <th class="col-status">상태</th>
             <th>표시경로</th>
             <th>키</th>
@@ -306,10 +299,11 @@ window.SyPropMng = {
           </tr>
         </thead>
         <tbody>
-          <tr v-if="cfPagedRows.length===0">
-            <td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <tr v-if="cfGridRows.length===0">
+            <td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
           </tr>
-          <tr v-for="r in cfPagedRows" :key="r.propId" class="crud-row" :class="'status-' + (r._status || '')">
+          <tr v-for="(r, idx) in cfGridRows" :key="r.propId" class="crud-row" :class="'status-' + (r._status || '')">
+            <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
             <td class="col-status-val">
               <span v-if="r._status==='I'" class="badge badge-green badge-xs">신규</span>
               <span v-else-if="r._status==='U'" class="badge badge-orange badge-xs">수정</span>
@@ -347,21 +341,6 @@ window.SyPropMng = {
           </tr>
         </tbody>
       </table>
-
-      <div class="pagination">
-        <div></div>
-        <div class="pager">
-          <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
-          <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-          <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-          <button :disabled="pager.pageNo===cfTotalPages.value" @click="setPage(pager.pageNo+1)">›</button>
-          <button :disabled="pager.pageNo===cfTotalPages.value" @click="setPage(cfTotalPages.value)">»</button>
-        </div>
-        <div class="pager-right">
-          <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
-            <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
-          </select>
-        </div>
       </div>
     </div>
   </div>

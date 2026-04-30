@@ -149,7 +149,7 @@ const searchParam = reactive({ kw: '', scope: '', use: '' });
       </div>
       <table class="bo-table">
         <thead><tr>
-          <th>키 (i18n_key)</th><th>설명</th>
+          <th style="width:36px;text-align:center;">번호</th><th>키 (i18n_key)</th><th>설명</th>
           <th style="width:80px;text-align:center">범위</th>
           <th style="width:80px">카테고리</th>
           <th style="width:70px;text-align:center">ko</th>
@@ -158,7 +158,8 @@ const searchParam = reactive({ kw: '', scope: '', use: '' });
           <th style="width:60px;text-align:center">사용</th>
         </tr></thead>
         <tbody>
-          <tr v-for="row in cfPageList" :key="row.i18nId" :class="{active:selectedId===row.i18nId}" @click="openDetail(row)" style="cursor:pointer">
+          <tr v-for="(row, idx) in cfPageList" :key="row.i18nId" :class="{active:selectedId===row.i18nId}" @click="openDetail(row)" style="cursor:pointer">
+            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td><code style="font-size:12px;color:#7c3aed">{{ row.i18nKey }}</code></td>
             <td style="color:#666;font-size:12px">{{ row.i18nDesc }}</td>
             <td style="text-align:center"><span :class="['badge',fnScopeBadge(row.i18nScopeCd)]">{{ row.i18nScopeCd }}</span></td>
@@ -168,7 +169,7 @@ const searchParam = reactive({ kw: '', scope: '', use: '' });
             <td style="text-align:center;font-size:11px;color:#555">{{ getLangMsg(row.i18nId,'ja') }}</td>
             <td style="text-align:center"><span :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span></td>
           </tr>
-          <tr v-if="!cfPageList.length"><td colspan="8" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
+          <tr v-if="!cfPageList.length"><td colspan="9" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
       <div class="pagination">

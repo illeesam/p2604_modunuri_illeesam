@@ -129,9 +129,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
     <div class="toolbar"><span class="list-count">총 {{ pager.pageTotalCount }}건</span></div>
     <table class="bo-table">
-      <thead><tr><th>대사ID</th><th>대사일자</th><th>전표ID</th><th>유형</th><th>시스템금액</th><th>ERP금액</th><th>차이금액</th><th>대사결과</th><th>비고</th><th>액션</th></tr></thead>
+      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>대사ID</th><th>대사일자</th><th>전표ID</th><th>유형</th><th>시스템금액</th><th>ERP금액</th><th>차이금액</th><th>대사결과</th><th>비고</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="r in reconList" :key="r?.reconId">
+        <tr v-for="(r, idx) in reconList" :key="r?.reconId">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td>{{ r.reconId }}</td>
           <td>{{ r.reconDate }}</td>
           <td style="font-size:11px">{{ r.slipId }}</td>
@@ -145,7 +146,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
             <button v-if="r.diffStatus!=='일치'" class="btn btn-sm btn-primary" @click="doFix(r)">조정</button>
           </td>
         </tr>
-        <tr v-if="!reconList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!reconList.length"><td colspan="11" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">

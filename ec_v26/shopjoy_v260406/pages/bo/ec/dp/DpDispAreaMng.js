@@ -169,12 +169,13 @@ const searchParam = reactive({
     </div>
     <table class="admin-table">
       <thead><tr>
-        <th>영역코드</th><th>영역명</th><th>유형</th><th>사용여부</th><th>등록일</th><th>액션</th>
+        <th style="width:36px;text-align:center;">번호</th><th>영역코드</th><th>영역명</th><th>유형</th><th>사용여부</th><th>등록일</th><th>액션</th>
       </tr></thead>
       <tbody>
-        <tr v-if="uiState.loading"><td colspan="6" style="text-align:center;padding:30px;color:#aaa;">로딩 중...</td></tr>
-        <tr v-else-if="!cfPageList.length"><td colspan="6" style="text-align:center;padding:30px;color:#aaa;">조회된 데이터가 없습니다.</td></tr>
-        <tr v-for="a in cfPageList" :key="a?.codeId">
+        <tr v-if="uiState.loading"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">로딩 중...</td></tr>
+        <tr v-else-if="!cfPageList.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">조회된 데이터가 없습니다.</td></tr>
+        <tr v-for="(a, idx) in cfPageList" :key="a?.codeId">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><code style="font-size:11px;">{{ a.codeValue }}</code></td>
           <td class="title-link" @click="loadView(a.codeId)">{{ a.codeLabel }}</td>
           <td>{{ a.areaType }}</td>

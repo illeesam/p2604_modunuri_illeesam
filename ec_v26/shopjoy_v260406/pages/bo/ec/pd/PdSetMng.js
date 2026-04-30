@@ -405,6 +405,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     </div>
     <table class="bo-table">
       <thead><tr>
+        <th style="width:36px;text-align:center;">번호</th>
         <th>세트상품</th>
         <th style="width:70px;text-align:center">구성품수</th>
         <th style="width:110px;text-align:right">판매가</th>
@@ -413,8 +414,9 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         <th style="width:110px;text-align:center">관리</th>
       </tr></thead>
       <tbody>
-        <template v-for="g in cfPageList" :key="g?.setProdId">
+        <template v-for="(g, idx) in cfPageList" :key="g?.setProdId">
           <tr :style="(uiState.dtlMode==='edit' && uiState.editSetId===g.setProdId) ? 'background:#e6f4ff' : ''">
+            <td style="text-align:center;font-size:11px;color:#999;vertical-align:top;padding-top:12px;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td>
               <div style="display:flex;align-items:flex-start;gap:6px">
                 <span class="badge badge-orange" style="flex-shrink:0;margin-top:1px">세트</span>
@@ -453,7 +455,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           </tr>
         </template>
         <tr v-if="!cfPageList.length">
-          <td colspan="6" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td>
+          <td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td>
         </tr>
       </tbody>
     </table>

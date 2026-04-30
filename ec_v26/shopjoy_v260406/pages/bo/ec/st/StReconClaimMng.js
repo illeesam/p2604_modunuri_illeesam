@@ -123,9 +123,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
     <div class="toolbar"><span class="list-count">총 {{ pager.pageTotalCount }}건</span></div>
     <table class="bo-table">
-      <thead><tr><th>클레임ID</th><th>요청일</th><th>유형</th><th>환불액</th><th>정산조정기준</th><th>실반영액</th><th>차이</th><th>처리상태</th><th>대사결과</th></tr></thead>
+      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>클레임ID</th><th>요청일</th><th>유형</th><th>환불액</th><th>정산조정기준</th><th>실반영액</th><th>차이</th><th>처리상태</th><th>대사결과</th></tr></thead>
       <tbody>
-        <tr v-for="r in rows" :key="r?.claimId">
+        <tr v-for="(r, idx) in rows" :key="r?.claimId">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td>{{ r.claimId }}</td><td>{{ r.reqDate }}</td>
           <td><span class="badge" :class="fnTypeBadge(r.type)">{{ r.type }}</span></td>
           <td>{{ r.refundAmt > 0 ? fmtW(r.refundAmt) : '-' }}</td>
@@ -135,7 +136,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
           <td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td>
           <td><span class="badge" :class="fnDiffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td>
         </tr>
-        <tr v-if="!rows.length"><td colspan="9" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!rows.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">

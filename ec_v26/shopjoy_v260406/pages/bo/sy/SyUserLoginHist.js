@@ -290,13 +290,15 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
       <table class="bo-table">
         <thead>
           <tr>
+            <th style="width:36px;text-align:center;">번호</th>
             <th style="width:24px"></th><th>로그ID</th><th>로그인일시</th><th>사용자</th><th>부서/역할</th>
             <th>로그인ID</th><th>결과</th><th>실패</th><th>IP</th><th>OS / 브라우저</th><th>토큰</th>
           </tr>
         </thead>
         <tbody>
-          <template v-for="r in cfPageList" :key="r.logId">
+          <template v-for="(r, idx) in cfPageList" :key="r.logId">
             <tr style="cursor:pointer" :style="isExpanded(r.logId)?'background:#fafbff':''" @click="toggleRow(r.logId)">
+              <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
               <td style="text-align:center;color:#bbb;font-size:11px;user-select:none">{{ isExpanded(r.logId)?'▲':'▼' }}</td>
               <td style="font-size:11px;color:#888;font-family:monospace">{{ r.logId }}</td>
               <td style="white-space:nowrap">{{ r.loginDate }}</td>
@@ -350,7 +352,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
               </td>
             </tr>
           </template>
-          <tr v-if="!cfPageList.length"><td colspan="11" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+          <tr v-if="!cfPageList.length"><td colspan="12" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
     </div>
@@ -358,9 +360,10 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
     <!-- ── 로그인 이력 탭 ── -->
     <div v-if="uiState.activeTab==='hist'">
       <table class="bo-table">
-        <thead><tr><th>이력ID</th><th>로그인일시</th><th>사용자</th><th>부서</th><th>IP</th><th>디바이스</th><th>결과</th></tr></thead>
+        <thead><tr><th style="width:36px;text-align:center;">번호</th><th>이력ID</th><th>로그인일시</th><th>사용자</th><th>부서</th><th>IP</th><th>디바이스</th><th>결과</th></tr></thead>
         <tbody>
-          <tr v-for="r in cfPageList" :key="r.histId">
+          <tr v-for="(r, idx) in cfPageList" :key="r.histId">
+            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td style="font-size:11px;color:#888;font-family:monospace">{{ r.histId }}</td>
             <td style="white-space:nowrap">{{ r.loginDate }}</td>
             <td><div style="font-weight:600">{{ r.userNm }}</div><div style="font-size:11px;color:#aaa">{{ r.userId }}</div></td>
@@ -369,7 +372,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
             <td style="font-size:12px;color:#666;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.device }}</td>
             <td><span class="badge" :class="fnResultBadge(r.resultCd)">{{ fnResultLabel(r.resultCd) }}</span></td>
           </tr>
-          <tr v-if="!cfPageList.length"><td colspan="7" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+          <tr v-if="!cfPageList.length"><td colspan="8" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
     </div>
@@ -379,13 +382,15 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
       <table class="bo-table">
         <thead>
           <tr>
+            <th style="width:36px;text-align:center;">번호</th>
             <th style="width:24px"></th><th>토큰로그ID</th><th>일시</th><th>사용자</th>
             <th>액션</th><th>토큰유형</th><th>토큰(해시)</th><th>만료일시</th><th>IP</th><th>폐기사유</th>
           </tr>
         </thead>
         <tbody>
-          <template v-for="r in cfPageList" :key="r.tokenLogId">
+          <template v-for="(r, idx) in cfPageList" :key="r.tokenLogId">
             <tr style="cursor:pointer" :style="isExpanded(r.tokenLogId)?'background:#fafbff':''" @click="toggleRow(r.tokenLogId)">
+              <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
               <td style="text-align:center;color:#bbb;font-size:11px;user-select:none">{{ isExpanded(r.tokenLogId)?'▲':'▼' }}</td>
               <td style="font-size:11px;color:#888;font-family:monospace">{{ r.tokenLogId }}</td>
               <td style="white-space:nowrap">{{ r.regDate }}</td>
@@ -424,7 +429,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
               </td>
             </tr>
           </template>
-          <tr v-if="!cfPageList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+          <tr v-if="!cfPageList.length"><td colspan="11" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
     </div>

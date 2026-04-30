@@ -121,9 +121,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
     <div class="toolbar"><span class="list-count">총 {{ pager.pageTotalCount }}개 업체</span></div>
     <table class="bo-table">
-      <thead><tr><th>업체명</th><th>주문건수</th><th>시스템 정산액</th><th>업체 청구액</th><th>차이금액</th><th>대사결과</th></tr></thead>
+      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>업체명</th><th>주문건수</th><th>시스템 정산액</th><th>업체 청구액</th><th>차이금액</th><th>대사결과</th></tr></thead>
       <tbody>
-        <tr v-for="r in rows" :key="r?.vendorId">
+        <tr v-for="(r, idx) in rows" :key="r?.vendorId">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><strong>{{ r.vendorNm }}</strong></td>
           <td>{{ r.orderCnt }}건</td>
           <td>{{ fmtW(r.sysAmt) }}</td>
@@ -131,7 +132,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
           <td :style="Math.abs(r.diff)>0?'color:#e74c3c;font-weight:700':''">{{ r.diff !== 0 ? (r.diff > 0 ? '+' : '') + Number(r.diff).toLocaleString() + '원' : '-' }}</td>
           <td><span class="badge" :class="fnDiffBadge(r.diffStatus)">{{ r.diffStatus }}</span></td>
         </tr>
-        <tr v-if="!rows.length"><td colspan="6" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!rows.length"><td colspan="7" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">

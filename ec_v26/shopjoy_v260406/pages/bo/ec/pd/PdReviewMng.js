@@ -156,7 +156,7 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
       </div>
       <table class="bo-table">
         <thead><tr>
-          <th>리뷰 제목</th><th style="width:120px">상품</th><th style="width:80px">작성자</th>
+          <th style="width:36px;text-align:center;">번호</th><th>리뷰 제목</th><th style="width:120px">상품</th><th style="width:80px">작성자</th>
           <th style="width:90px;text-align:center">평점</th>
           <th style="width:60px;text-align:right">도움</th>
           <th style="width:80px;text-align:center">상태</th>
@@ -164,7 +164,8 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
           <th style="width:80px;text-align:center">상태변경</th>
         </tr></thead>
         <tbody>
-          <tr v-for="row in reviews" :key="row?.reviewId" :class="{active:selectedId===row.reviewId}" @click="openDetail(row)" style="cursor:pointer">
+          <tr v-for="(row, idx) in reviews" :key="row?.reviewId" :class="{active:selectedId===row.reviewId}" @click="openDetail(row)" style="cursor:pointer">
+            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td><span class="title-link">{{ row.reviewTitle }}</span></td>
             <td style="font-size:12px;color:#666">{{ getProdNm(row.prodId) }}</td>
             <td style="font-size:12px">{{ getMemNm(row.memberId) }}</td>
@@ -178,7 +179,7 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
               </select>
             </td>
           </tr>
-          <tr v-if="!reviews.length"><td colspan="8" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
+          <tr v-if="!reviews.length"><td colspan="9" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
       <div class="pagination">

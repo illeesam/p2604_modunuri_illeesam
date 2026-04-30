@@ -175,10 +175,11 @@ window.PmCacheMng = {
       </div>
     </div>
     <table class="bo-table" v-if="viewMode==='list'">
-      <thead><tr><th>ID</th><th>회원</th><th>일시</th><th>유형</th><th>금액</th><th>잔액</th><th>내용</th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
+      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>ID</th><th>회원</th><th>일시</th><th>유형</th><th>금액</th><th>잔액</th><th>내용</th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
-        <tr v-if="caches.length===0"><td colspan="8" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="c in caches" :key="c?.cacheId" :style="selectedId===c.cacheId?'background:#fff8f9;':''">
+        <tr v-if="caches.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="(c, idx) in caches" :key="c?.cacheId" :style="selectedId===c.cacheId?'background:#fff8f9;':''">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td>{{ c.cacheId }}</td>
           <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
           <td>{{ c.date }}</td>

@@ -176,10 +176,11 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
       </div>
     </div>
     <table class="bo-table" v-if="viewMode==='list'">
-      <thead><tr><th>ID</th><th>마일리지명</th><th>유형</th><th>적립값</th><th>단위</th><th>유효기간</th><th>시작일</th><th>종료일</th><th>상태</th><th>사이트</th><th style="text-align:right">관리</th></tr></thead>
+      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>ID</th><th>마일리지명</th><th>유형</th><th>적립값</th><th>단위</th><th>유효기간</th><th>시작일</th><th>종료일</th><th>상태</th><th>사이트</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
-        <tr v-if="saves.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="s in saves" :key="s?.saveId" :style="selectedId===s.saveId?'background:#fff8f9;':''">
+        <tr v-if="saves.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="(s, idx) in saves" :key="s?.saveId" :style="selectedId===s.saveId?'background:#fff8f9;':''">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td>{{ s.saveId }}</td>
           <td><span class="title-link" @click="handleLoadDetail(s.saveId)" :style="selectedId===s.saveId?'color:#e8587a;font-weight:700;':''">{{ s.saveNm }}<span v-if="selectedId===s.saveId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><span class="badge" :class="fnTypeBadge(s.saveType)">{{ s.saveType }}</span></td>

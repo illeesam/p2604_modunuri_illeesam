@@ -164,9 +164,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
     <div class="toolbar"><span class="list-count">총 {{ pager.pageTotalCount }}건</span></div>
     <table class="bo-table">
-      <thead><tr><th>지급ID</th><th>지급일</th><th>업체명</th><th>정산월</th><th>정산액</th><th>지급액</th><th>은행</th><th>계좌번호</th><th>예금주</th><th>상태</th><th>담당자</th><th>액션</th></tr></thead>
+      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>지급ID</th><th>지급일</th><th>업체명</th><th>정산월</th><th>정산액</th><th>지급액</th><th>은행</th><th>계좌번호</th><th>예금주</th><th>상태</th><th>담당자</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="r in payList" :key="r?.payId">
+        <tr v-for="(r, idx) in payList" :key="r?.payId">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td>{{ r.payId }}</td>
           <td>{{ r.payDate }}</td>
           <td><strong>{{ r.vendorNm }}</strong></td>
@@ -182,7 +183,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
             <button v-if="r.payStatus==='지급대기'" class="btn btn-sm btn-green" @click="doPay(r)">지급처리</button>
           </td>
         </tr>
-        <tr v-if="!payList.length"><td colspan="12" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!payList.length"><td colspan="13" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">

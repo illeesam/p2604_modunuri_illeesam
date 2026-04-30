@@ -299,6 +299,7 @@ const rawList = reactive([]);
       <thead>
         <tr>
           <th style="width:30px"></th>
+          <th style="width:36px;text-align:center;">번호</th>
           <th>원장ID</th>
           <th>거래일자</th>
           <th>유형</th>
@@ -315,12 +316,13 @@ const rawList = reactive([]);
         </tr>
       </thead>
       <tbody>
-        <template v-for="r in rawList" :key="r?.settleRawId">
+        <template v-for="(r, idx) in rawList" :key="r?.settleRawId">
           <!-- ── 기본 행 ─────────────────────────────────────────────────── -->
           <tr :style="isExpanded(r.settleRawId) ? 'background:#fafbff' : ''" style="cursor:pointer" @click="toggleRow(r.settleRawId)">
             <td style="text-align:center;color:#aaa;font-size:11px;user-select:none">
               {{ isExpanded(r.settleRawId) ? '▲' : '▼' }}
             </td>
+            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td style="font-size:12px;color:#555">{{ r.settleRawId }}</td>
             <td>{{ r.orderDate }}</td>
             <td><span class="badge" :class="r.rawTypeCd==='ORDER'?'badge-blue':'badge-orange'">{{ r.rawTypeCd }}</span></td>
@@ -412,7 +414,7 @@ const rawList = reactive([]);
             </td>
           </tr>
         </template>
-        <tr v-if="!rawList.length"><td colspan="14" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!rawList.length"><td colspan="15" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">

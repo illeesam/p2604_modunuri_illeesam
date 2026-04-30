@@ -221,9 +221,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <div style="margin-left:auto"><button class="btn btn-primary" @click="openNew">+ 조정 추가</button></div>
     </div>
     <table class="bo-table">
-      <thead><tr><th>조정ID</th><th>조정일자</th><th>업체명</th><th>유형</th><th>조정금액</th><th>사유</th><th>승인상태</th><th>등록자</th><th>액션</th></tr></thead>
+      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>조정ID</th><th>조정일자</th><th>업체명</th><th>유형</th><th>조정금액</th><th>사유</th><th>승인상태</th><th>등록자</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="r in adjList" :key="r?.adjId" :class="{selected: uiState.selectedId===r.adjId}">
+        <tr v-for="(r, idx) in adjList" :key="r?.adjId" :class="{selected: uiState.selectedId===r.adjId}">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td>{{ r.adjId }}</td>
           <td>{{ r.adjDate }}</td>
           <td>{{ r.vendorNm }}</td>
@@ -238,7 +239,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
             <button class="btn btn-sm btn-danger"  @click="handleDelete(r)">삭제</button>
           </td>
         </tr>
-        <tr v-if="!adjList.length"><td colspan="9" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!adjList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">

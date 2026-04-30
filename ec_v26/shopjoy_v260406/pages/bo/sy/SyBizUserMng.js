@@ -500,11 +500,13 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         </div>
         <table class="bo-table">
           <thead><tr>
+            <th style="width:36px;text-align:center;">번호</th>
             <th>업체</th><th>이름</th><th>직위</th><th>부서</th><th>휴대전화</th><th>이메일</th><th>상태</th><th>대표담당자</th><th style="text-align:right;">관리</th>
           </tr></thead>
           <tbody>
-            <tr v-if="cfPagedRows.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">{{ uiState.searchVendorId == null ? '업체를 선택해주세요.' : '데이터가 없습니다.' }}</td></tr>
-            <tr v-for="u in cfPagedRows" :key="u.vendorUserId" :style="uiState.formMode&&formData.vendorUserId===u.vendorUserId?'background:#fff8f9;':''">
+            <tr v-if="cfPagedRows.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">{{ uiState.searchVendorId == null ? '업체를 선택해주세요.' : '데이터가 없습니다.' }}</td></tr>
+            <tr v-for="(u, idx) in cfPagedRows" :key="u.vendorUserId" :style="uiState.formMode&&formData.vendorUserId===u.vendorUserId?'background:#fff8f9;':''">
+              <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
               <td style="font-weight:600;color:#2563eb;font-size:12px;">{{ fnVendorNm(u.vendorId) }}</td>
               <td>{{ u.memberNm }}</td>
               <td style="font-size:11.5px;">{{ u.positionCd }}</td>

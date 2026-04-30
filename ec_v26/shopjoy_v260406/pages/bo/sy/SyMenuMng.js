@@ -319,6 +319,7 @@ window.SyMenuMng = {
     <table class="bo-table crud-grid">
       <thead>
         <tr>
+          <th style="width:36px;text-align:center;">번호</th>
           <th class="col-id">ID</th>
           <th class="col-status">상태</th>
           <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
@@ -337,12 +338,13 @@ window.SyMenuMng = {
       </thead>
       <tbody>
         <tr v-if="gridRows.length===0">
-          <td colspan="14" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <td colspan="15" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in gridRows" :key="row.menuId"
           class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
           @click="setFocused(idx)">
 
+          <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
           <td class="col-id-val">{{ row.menuId > 0 ? row.menuId : 'NEW' }}</td>
           <td class="col-status-val"><span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span></td>
           <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>

@@ -119,6 +119,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   <table class="bo-table" style="font-size:12px;">
     <thead>
       <tr>
+        <th style="width:36px;text-align:center;">번호</th>
         <th style="width:46px;">로그ID</th>
         <th style="min-width:120px;">배치명</th>
         <th style="min-width:150px;">배치코드</th>
@@ -131,12 +132,13 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </thead>
     <tbody>
       <tr v-if="cfPageList.length===0">
-        <td colspan="8" style="text-align:center;color:#aaa;padding:24px;">실행이력이 없습니다.</td>
+        <td colspan="9" style="text-align:center;color:#aaa;padding:24px;">실행이력이 없습니다.</td>
       </tr>
 
-      <template v-for="log in cfPageList" :key="log.logId">
+      <template v-for="(log, idx) in cfPageList" :key="log.logId">
         <!-- ── 데이터 행 ──────────────────────────────────────────────────── -->
         <tr :style="log.runStatus==='실패' ? 'background:#fff5f5;' : log.runStatus==='실행중' ? 'background:#f0f8ff;' : ''">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td style="color:#aaa;">{{ log.logId }}</td>
           <td style="font-weight:500;">{{ log.batchNm }}</td>
           <td><code style="font-size:11px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ log.batchCode }}</code></td>

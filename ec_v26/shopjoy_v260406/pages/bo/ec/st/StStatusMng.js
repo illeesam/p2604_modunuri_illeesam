@@ -387,10 +387,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <div class="toolbar"><span class="list-count">총 {{ cfVendorTotal }}개 업체</span></div>
     <table class="bo-table">
       <thead><tr>
-        <th>업체명</th><th>주문건수</th><th>매출액</th><th>환불액</th><th>순매출</th><th>수수료(10%)</th><th>정산예정액</th>
+        <th style="width:36px;text-align:center;">번호</th><th>업체명</th><th>주문건수</th><th>매출액</th><th>환불액</th><th>순매출</th><th>수수료(10%)</th><th>정산예정액</th>
       </tr></thead>
       <tbody>
-        <tr v-for="r in cfVendorPageList" :key="r?.vendorId">
+        <tr v-for="(r, idx) in cfVendorPageList" :key="r?.vendorId">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ (vendorPager.page - 1) * vendorPager.size + idx + 1 }}</td>
           <td><strong>{{ r.vendorNm }}</strong></td>
           <td>{{ r.orderCnt }}건</td>
           <td>{{ fmtW(r.sales) }}</td>
@@ -399,7 +400,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
           <td style="color:#e67e22">{{ fmtW(r.comm) }}</td>
           <td style="color:#27ae60;font-weight:700">{{ fmtW(r.settle) }}</td>
         </tr>
-        <tr v-if="!cfVendorPageList.length"><td colspan="7" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!cfVendorPageList.length"><td colspan="8" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">
@@ -450,10 +451,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <div class="toolbar"><span class="list-count">총 {{ cfOrderTotal }}건</span></div>
     <table class="bo-table">
       <thead><tr>
-        <th>주문ID</th><th>주문일시</th><th>고객명</th><th>업체</th><th>상품명</th><th>결제금액</th><th>수수료</th><th>정산액</th><th>상태</th>
+        <th style="width:36px;text-align:center;">번호</th><th>주문ID</th><th>주문일시</th><th>고객명</th><th>업체</th><th>상품명</th><th>결제금액</th><th>수수료</th><th>정산액</th><th>상태</th>
       </tr></thead>
       <tbody>
-        <tr v-for="r in cfOrderPageList" :key="r?.orderId" :style="r.isCancelled ? 'color:#bbb' : ''">
+        <tr v-for="(r, idx) in cfOrderPageList" :key="r?.orderId" :style="r.isCancelled ? 'color:#bbb' : ''">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ (orderPager.page - 1) * orderPager.size + idx + 1 }}</td>
           <td>{{ r.orderId }}</td>
           <td>{{ r.orderDate }}</td>
           <td>{{ r.userNm }}</td>
@@ -464,7 +466,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
           <td style="font-weight:700" :style="r.isCancelled ? 'color:#bbb' : 'color:#27ae60'">{{ r.isCancelled ? '-' : fmtW(r.settle) }}</td>
           <td><span class="badge" :class="fnStatusBadge(r.status)">{{ r.status }}</span></td>
         </tr>
-        <tr v-if="!cfOrderPageList.length"><td colspan="9" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+        <tr v-if="!cfOrderPageList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">

@@ -182,10 +182,11 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
       </div>
     </div>
     <table class="bo-table" v-if="viewMode==='list'">
-      <thead><tr><th>ID</th><th>할인명</th><th>유형</th><th>할인값</th><th>적용대상</th><th>시작일</th><th>종료일</th><th>상태</th><th>사이트</th><th style="text-align:right">관리</th></tr></thead>
+      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>ID</th><th>할인명</th><th>유형</th><th>할인값</th><th>적용대상</th><th>시작일</th><th>종료일</th><th>상태</th><th>사이트</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
-        <tr v-if="discounts.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="d in discounts" :key="d?.discntId" :style="selectedId===d.discntId?'background:#fff8f9;':''">
+        <tr v-if="discounts.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-for="(d, idx) in discounts" :key="d?.discntId" :style="selectedId===d.discntId?'background:#fff8f9;':''">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td>{{ d.discntId }}</td>
           <td><span class="title-link" @click="handleLoadDetail(d.discntId)" :style="selectedId===d.discntId?'color:#e8587a;font-weight:700;':''">{{ d.discntNm }}<span v-if="selectedId===d.discntId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><span class="badge" :class="fnTypeBadge(d.discntType)">{{ d.discntType }}</span></td>

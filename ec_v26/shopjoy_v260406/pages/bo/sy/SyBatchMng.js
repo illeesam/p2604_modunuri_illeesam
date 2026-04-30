@@ -451,6 +451,7 @@ window.SyBatchMng = {
         <tr>
           <th style="min-width:140px;">표시경로</th>
           <th class="col-drag"></th>
+          <th style="width:36px;text-align:center;">번호</th>
           <th class="col-id">ID</th>
           <th class="col-status">상태</th>
           <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
@@ -469,7 +470,7 @@ window.SyBatchMng = {
       </thead>
       <tbody>
         <tr v-if="gridRows.length===0">
-          <td colspan="16" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <td colspan="17" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in gridRows" :key="row.batchId"
           class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
@@ -488,6 +489,7 @@ window.SyBatchMng = {
               </div>
             </td>
           <td class="drag-handle" title="드래그로 순서 변경">⠿</td>
+          <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
           <td class="col-id-val">{{ row.batchId > 0 ? row.batchId : 'NEW' }}</td>
           <td class="col-status-val"><span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span></td>
           <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
