@@ -27,7 +27,7 @@ window.SyBizUserMng = {
         const [roleRes, menuRes, roleMenuRes] = await Promise.all([
           boApi.get('/bo/sy/role/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('사업자사용자관리', '조회') }),
           boApi.get('/bo/sy/menu/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('사업자사용자관리', '조회') }),
-          boApi.get('/base/sy/role-menu/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('사업자사용자관리', '조회') }),
+          boApi.get('/bo/sy/role-menu/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('사업자사용자관리', '조회') }),
         ]);
         roles.splice(0, roles.length, ...(roleRes.data?.data?.pageList || roleRes.data?.data?.list || []));
         menus.splice(0, menus.length, ...(menuRes.data?.data?.pageList || menuRes.data?.data?.list || []));
