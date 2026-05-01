@@ -205,7 +205,7 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 /* ── Top Navigation ── */
 .bo-top-nav { background: #1a1a2e; color: #fff; padding: 0 20px 0 8px; display: flex; align-items: center; height: 50px; gap: 2px; position: sticky; top: 0; z-index: 200; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
 .bo-top-nav .brand { font-size: 16px; font-weight: 700; color: #e8587a; cursor: pointer; flex-shrink: 0; padding: 0 10px 0 4px; }
-.top-nav-menus { display: flex; gap: 2px; flex: 1; overflow-x: auto; }
+.top-nav-menus { display: flex; gap: 2px; flex: 1; overflow-x: auto; justify-content: center; }
 .top-nav-item { padding: 6px 12px; border-radius: 6px; font-size: 13px; color: #ccc; cursor: pointer; white-space: nowrap; transition: background .15s, color .15s; }
 .top-nav-item:hover { background: rgba(255,255,255,.12); color: #fff; }
 .top-nav-item.active { background: #e8587a; color: #fff; font-weight: 600; }
