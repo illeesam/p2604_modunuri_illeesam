@@ -272,7 +272,7 @@ window.DpDispAreaDtl = {
         if (idx !== -1) Object.assign(codesData[idx], form);
       }
       try {
-        const res = await (isNewArea ? boApi.post('/bo/ec/dp/area', { ...form }, coUtil.apiHdr('전시영역관리', '등록')) : boApi.put(`/bo/ec/dp/area/${form.codeId}`, { ...form }, coUtil.apiHdr('전시영역관리', '저장')));
+        const res = await (isNewArea ? boApiSvc.dpArea.create({ ...form }, '전시영역관리', '등록') : boApiSvc.dpArea.update(form.codeId, { ...form }, '전시영역관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispAreaMng');

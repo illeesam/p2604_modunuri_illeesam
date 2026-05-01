@@ -99,7 +99,7 @@ const applied      = reactive({ kw: '', method: '', use: '' });
       if (isNewTmplt) { form.dlivTmpltId = 'DT' + String(Date.now()).slice(-6); src.push({ ...form }); uiState.selectedId = form.dlivTmpltId; uiState.isNew = false; }
       else { const si = src.findIndex(t => t.dlivTmpltId === form.dlivTmpltId); if (si !== -1) Object.assign(src[si], form); }
       try {
-        const res = await (isNewTmplt ? boApi.post(`/bo/ec/pd/dliv-tmplt/${form.dlivTmpltId||''}`, { ...form }, coUtil.apiHdr('배송템플릿관리', '등록')) : boApi.put(`/bo/ec/pd/dliv-tmplt/${form.dlivTmpltId||''}`, { ...form }, coUtil.apiHdr('배송템플릿관리', '저장')));
+        const res = await boApiSvc.pdDlivTmplt.save(form.dlivTmpltId || null, { ...form }, isNewTmplt ? '배송템플릿관리' : '배송템플릿관리', isNewTmplt ? '등록' : '저장');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
         console.error('[catch-info]', err);
@@ -114,7 +114,7 @@ const applied      = reactive({ kw: '', method: '', use: '' });
       if (!ok) return;
       const si = dlivTmplts.findIndex(t => t.dlivTmpltId === cfSelectedRow.value.dlivTmpltId); if (si !== -1) dlivTmplts.splice(si, 1); closeDetail();
       try {
-        const res = await boApi.delete(`/bo/ec/pd/dliv-tmplt/${cfSelectedRow.value.dlivTmpltId}`, coUtil.apiHdr('배송템플릿관리', '삭제'));
+        const res = await boApiSvc.pdDlivTmplt.remove(cfSelectedRow.value.dlivTmpltId, '배송템플릿관리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
         console.error('[catch-info]', err);

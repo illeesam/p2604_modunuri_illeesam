@@ -122,8 +122,8 @@ window.MbMemberMng = {
       }
       try {
         const res = await (isNewMember
-          ? boApi.post(`/bo/ec/mb/member`, { ...detailModal.form }, { ...coUtil.apiHdr('회원관리', '등록') })
-          : boApi.put(`/bo/ec/mb/member/${detailModal.form.memberId}`, { ...detailModal.form }, { ...coUtil.apiHdr('회원관리', '저장') }));
+          ? boApiSvc.mbMember.create({ ...detailModal.form }, '회원관리', '등록')
+          : boApiSvc.mbMember.update(detailModal.form.memberId, { ...detailModal.form }, '회원관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {
@@ -143,7 +143,7 @@ window.MbMemberMng = {
       if (si !== -1) members.splice(si, 1);
       closeDetail();
       try {
-        const res = await boApi.delete(`/bo/ec/mb/member/${memberId}`, { ...coUtil.apiHdr('회원관리', '삭제') });
+        const res = await boApiSvc.mbMember.remove(memberId, '회원관리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

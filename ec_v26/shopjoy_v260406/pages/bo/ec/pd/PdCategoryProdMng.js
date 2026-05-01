@@ -276,7 +276,7 @@ window.PdCategoryProdMng = {
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await boApi.put(`/bo/ec/pd/category-prod`, { categoryProds }, { ...coUtil.apiHdr('카테고리상품관리', '저장') });
+        const res = await boApiSvc.pdCategory.updateProds({ categoryProds }, '카테고리상품관리', '저장');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
       } catch (err) {

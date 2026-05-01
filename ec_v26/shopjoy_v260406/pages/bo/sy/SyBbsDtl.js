@@ -151,7 +151,7 @@ window.SyBbsDtl = {
         if (idx !== -1) Object.assign(bbss[idx], { ...form, bbmId: Number(form.bbmId) });
       }
       try {
-        const res = await (cfIsNew.value ? boApi.post(`/bo/sy/bbs/${form.bbsId}`, { ...form }, coUtil.apiHdr('게시판관리', '등록')) : boApi.put(`/bo/sy/bbs/${form.bbsId}`, { ...form }, coUtil.apiHdr('게시판관리', '저장')));
+        const res = await (cfIsNew.value ? boApiSvc.syBbs.create({ ...form }, '게시판관리', '등록') : boApiSvc.syBbs.update(form.bbsId, { ...form }, '게시판관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syBbsMng');

@@ -83,7 +83,7 @@ window.StErpGenMng = {
         genDate: new Date().toISOString().slice(0,10), status: '생성완료', regUserNm: '관리자',
       });
       try {
-        const res = await boApi.post('/bo/ec/st/erp/gen', { targetMon: targetMon.value, slipType: slipType.value, rows: cfPreviewRows.value }, { ...coUtil.apiHdr('정산ERP생성', '저장') });
+        const res = await boApiSvc.stErp.gen({ targetMon: targetMon.value, slipType: slipType.value, rows: cfPreviewRows.value }, '정산ERP생성', '저장');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('ERP 전표가 생성되었습니다.', 'success');
       } catch (err) {

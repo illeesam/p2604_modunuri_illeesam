@@ -147,7 +147,7 @@ const isAppReady = computed(() => {
       if (idx !== -1) claims.splice(idx, 1);
       if (uiStateDetail.selectedId === c.claimId) uiStateDetail.selectedId = null;
       try {
-        const res = await boApi.delete(`/bo/ec/od/claim/${c.claimId}`, { ...coUtil.apiHdr('클레임관리', '삭제') });
+        const res = await boApiSvc.odClaim.remove(c.claimId, '클레임관리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -262,7 +262,7 @@ const isAppReady = computed(() => {
         checked = new Set();
         uiState.bulkOpen = false;
         try {
-          const res = await boApi.put('/bo/ec/od/claim/bulk-status', { changes }, { ...coUtil.apiHdr('클레임관리', '일괄처리') });
+          const res = await boApiSvc.odClaim.bulkStatus({ changes }, '클레임관리', '일괄처리');
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${totalCnt}건 변경되었습니다.`, 'success');
         } catch (err) {
@@ -281,7 +281,7 @@ const isAppReady = computed(() => {
         checked = new Set();
         uiState.bulkOpen = false;
         try {
-          const res = await boApi.put('/bo/ec/od/claim/bulk-type', { ids, type: val }, { ...coUtil.apiHdr('클레임관리', '일괄처리') });
+          const res = await boApiSvc.odClaim.bulkType({ ids, type: val }, '클레임관리', '일괄처리');
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 변경되었습니다.`, 'success');
         } catch (err) {
@@ -298,7 +298,7 @@ const isAppReady = computed(() => {
         window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) { c.apprStatus = bulkForm.apprAction; c.apprComment = bulkForm.apprComment; } });
         checked = new Set(); uiState.bulkOpen = false;
         try {
-          const res = await boApi.put('/bo/ec/od/claim/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment }, { ...coUtil.apiHdr('클레임관리', '결재처리') });
+          const res = await boApiSvc.odClaim.bulkApproval({ ids, action: bulkForm.apprAction, comment: bulkForm.apprComment }, '클레임관리', '결재처리');
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 처리되었습니다.`, 'success');
         } catch (err) {
@@ -319,7 +319,7 @@ const isAppReady = computed(() => {
         } });
         checked = new Set(); uiState.bulkOpen = false;
         try {
-          const res = await boApi.put('/bo/ec/od/claim/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value }, { ...coUtil.apiHdr('클레임관리', '추가결재요청') });
+          const res = await boApiSvc.odClaim.bulkApprovalReq({ ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value }, '클레임관리', '추가결재요청');
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 요청되었습니다.`, 'success');
         } catch (err) {

@@ -107,7 +107,7 @@ window.PmDiscntDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (cfIsNew.value ? boApi.post(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }, { ...coUtil.apiHdr('할인관리', '등록') }) : boApi.put(`/bo/ec/pm/discnt/${form.discntId}`, { ...form }, { ...coUtil.apiHdr('할인관리', '저장') }));
+        const res = await (cfIsNew.value ? boApiSvc.pmDiscnt.create({ ...form }, '할인관리', '등록') : boApiSvc.pmDiscnt.update(form.discntId, { ...form }, '할인관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmDiscntMng');

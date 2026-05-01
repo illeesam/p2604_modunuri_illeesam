@@ -103,7 +103,7 @@ const isAppReady = computed(() => {
       if (idx !== -1) chatts.splice(idx, 1);
       if (uiStateDetail.selectedId === c.chatId) uiStateDetail.selectedId = null;
       try {
-        const res = await boApi.delete(`/bo/ec/cm/chatt/${c.chatId}`, coUtil.apiHdr('채팅관리', '삭제'));
+        const res = await boApiSvc.cmChatt.remove(c.chatId, '채팅관리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

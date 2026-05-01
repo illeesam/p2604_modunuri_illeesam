@@ -146,7 +146,7 @@ const isAppReady = computed(() => {
       if (idx !== -1) deliveries.splice(idx, 1);
       if (uiStateDetail.selectedId === d.dlivId) uiStateDetail.selectedId = null;
       try {
-        const res = await boApi.delete(`/bo/ec/od/dliv/${d.dlivId}`, { ...coUtil.apiHdr('배송관리', '삭제') });
+        const res = await boApiSvc.odDliv.remove(d.dlivId, '배송관리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -245,7 +245,7 @@ const isAppReady = computed(() => {
         window.safeArrayUtils.safeForEach(deliveries, d => { if (ids.includes(d.dlivId)) d.status = bulkForm.status; });
         checked = new Set(); uiState.bulkOpen = false;
         try {
-          const res = await boApi.put('/bo/ec/od/dliv/bulk-status', { ids, status: bulkForm.status }, { ...coUtil.apiHdr('배송관리', '일괄처리') });
+          const res = await boApiSvc.odDliv.bulkStatus({ ids, status: bulkForm.status }, '배송관리', '일괄처리');
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 변경되었습니다.`, 'success');
         } catch (err) {
@@ -266,7 +266,7 @@ const isAppReady = computed(() => {
         });
         checked = new Set(); uiState.bulkOpen = false;
         try {
-          const res = await boApi.put('/bo/ec/od/dliv/bulk-courier', { ids, courier: bulkForm.courier, trackingNo: bulkForm.trackingNo }, { ...coUtil.apiHdr('배송관리', '택배정보') });
+          const res = await boApiSvc.odDliv.bulkCourier({ ids, courier: bulkForm.courier, trackingNo: bulkForm.trackingNo }, '배송관리', '택배정보');
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 변경되었습니다.`, 'success');
         } catch (err) {
@@ -282,7 +282,7 @@ const isAppReady = computed(() => {
         window.safeArrayUtils.safeForEach(deliveries, d => { if (ids.includes(d.dlivId)) { d.apprStatus = bulkForm.apprAction; d.apprComment = bulkForm.apprComment; } });
         checked = new Set(); uiState.bulkOpen = false;
         try {
-          const res = await boApi.put('/bo/ec/od/dliv/bulk-approval', { ids, action: bulkForm.apprAction, comment: bulkForm.apprComment }, { ...coUtil.apiHdr('배송관리', '결재처리') });
+          const res = await boApiSvc.odDliv.bulkApproval({ ids, action: bulkForm.apprAction, comment: bulkForm.apprComment }, '배송관리', '결재처리');
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 처리되었습니다.`, 'success');
         } catch (err) {
@@ -302,7 +302,7 @@ const isAppReady = computed(() => {
         } });
         checked = new Set(); uiState.bulkOpen = false;
         try {
-          const res = await boApi.put('/bo/ec/od/dliv/bulk-approvalReq', { ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value }, { ...coUtil.apiHdr('배송관리', '추가결재요청') });
+          const res = await boApiSvc.odDliv.bulkApprovalReq({ ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value }, '배송관리', '추가결재요청');
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast(`${ids.length}건 요청되었습니다.`, 'success');
         } catch (err) {

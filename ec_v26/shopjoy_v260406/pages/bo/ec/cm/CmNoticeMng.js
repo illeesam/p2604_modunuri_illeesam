@@ -131,7 +131,7 @@ window.CmNoticeMng = {
       if (idx !== -1) notices.splice(idx, 1);
       if (uiStateDetail.selectedId === n.noticeId) uiStateDetail.selectedId = null;
       try {
-        const res = await boApi.delete(`/bo/ec/cm/notice/${n.noticeId}`, { ...coUtil.apiHdr('공지사항관리', '삭제') });
+        const res = await boApiSvc.cmNotice.remove(n.noticeId, '공지사항관리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
         await handleSearchList();

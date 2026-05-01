@@ -137,8 +137,8 @@ window.OdOrderDtl = {
       if (!ok) return;
       try {
         const res = await (isNewOrder
-          ? boApi.post('/bo/ec/od/order', { ...form, totalPrice: Number(form.totalPrice) }, { ...coUtil.apiHdr('주문관리', '등록') })
-          : boApi.put(`/bo/ec/od/order/${form.orderId}`, { ...form, totalPrice: Number(form.totalPrice) }, { ...coUtil.apiHdr('주문관리', '저장') }));
+          ? boApiSvc.odOrder.create({ ...form, totalPrice: Number(form.totalPrice) }, '주문관리', '등록')
+          : boApiSvc.odOrder.update(form.orderId, { ...form, totalPrice: Number(form.totalPrice) }, '주문관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewOrder ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('odOrderMng');

@@ -87,8 +87,8 @@ window.CmNoticeDtl = {
       if (!ok) return;
       try {
         const res = await (isNewNotice
-          ? boApi.post('/bo/ec/cm/notice', { ...form }, { ...coUtil.apiHdr('공지사항관리', '등록') })
-          : boApi.put(`/bo/ec/cm/notice/${props.editId}`, { ...form }, { ...coUtil.apiHdr('공지사항관리', '저장') }));
+          ? boApiSvc.cmNotice.create({ ...form }, '공지사항관리', '등록')
+          : boApiSvc.cmNotice.update(props.editId, { ...form }, '공지사항관리', '저장'));
         console.log('[handleSave] API Response:', res);
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewNotice ? '등록되었습니다.' : '저장되었습니다.', 'success');

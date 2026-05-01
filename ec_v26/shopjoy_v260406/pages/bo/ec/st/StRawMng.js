@@ -144,7 +144,7 @@ const rawList = reactive([]);
       const ok = await props.showConfirm('재수집', '해당 기간 정산 데이터를 재수집하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await boApi.post('/bo/ec/st/raw/collect', { dateStart: uiState.dateStart, dateEnd: uiState.dateEnd }, coUtil.apiHdr('원장관리', '저장'));
+        const res = await boApiSvc.stSettleRaw.collect({ dateStart: uiState.dateStart, dateEnd: uiState.dateEnd }, '원장관리', '저장');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('재수집이 완료되었습니다.', 'success');
       } catch (err) {

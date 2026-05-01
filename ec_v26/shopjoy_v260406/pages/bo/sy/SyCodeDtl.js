@@ -88,7 +88,7 @@ window.SyCodeDtl = {
         if (idx !== -1) Object.assign(codes[idx], { ...form, sortOrd: Number(form.sortOrd) || 1 });
       }
       try {
-        const res = await (cfIsNew.value ? boApi.post(`/bo/sy/code/${form.codeId}`, { ...form }, coUtil.apiHdr('코드관리', '등록')) : boApi.put(`/bo/sy/code/${form.codeId}`, { ...form }, coUtil.apiHdr('코드관리', '저장')));
+        const res = await (cfIsNew.value ? boApiSvc.syCode.create({ ...form }, '코드관리', '등록') : boApiSvc.syCode.update(form.codeId, { ...form }, '코드관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syCodeMng');

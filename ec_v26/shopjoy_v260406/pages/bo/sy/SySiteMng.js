@@ -152,7 +152,7 @@ const detailModal = reactive({
       if (idx !== -1) sites.splice(idx, 1);
       if (detailModal.editId === s.siteId) { detailModal.show = false; detailModal.editId = null; }
       try {
-        const res = await boApi.delete(`/bo/sy/site/${s.siteId}`, coUtil.apiHdr('사이트관리', '삭제'));
+        const res = await boApiSvc.sySite.remove(s.siteId, '사이트관리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

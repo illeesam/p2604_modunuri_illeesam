@@ -115,8 +115,8 @@ window.OdDlivDtl = {
       if (!ok) return;
       try {
         const res = await (isNewDliv
-          ? boApi.post('/bo/ec/od/dliv', { ...form }, { ...coUtil.apiHdr('배송관리', '등록') })
-          : boApi.put(`/bo/ec/od/dliv/${form.dlivId}`, { ...form }, { ...coUtil.apiHdr('배송관리', '저장') }));
+          ? boApiSvc.odDliv.create({ ...form }, '배송관리', '등록')
+          : boApiSvc.odDliv.update(form.dlivId, { ...form }, '배송관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewDliv ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('odDlivMng');

@@ -98,7 +98,7 @@ window.SyBatchDtl = {
         if (idx !== -1) Object.assign(batches[idx], { batchNm: form.batchNm, batchCode: form.batchCode, description: form.description, cron: form.cron, statusCd: form.statusCd });
       }
       try {
-        const res = await (cfIsNew.value ? boApi.post(`/bo/sy/batch/${form.batchId}`, { ...form }, coUtil.apiHdr('배치관리', '등록')) : boApi.put(`/bo/sy/batch/${form.batchId}`, { ...form }, coUtil.apiHdr('배치관리', '저장')));
+        const res = await (cfIsNew.value ? boApiSvc.syBatch.create({ ...form }, '배치관리', '등록') : boApiSvc.syBatch.update(form.batchId, { ...form }, '배치관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syBatchMng');

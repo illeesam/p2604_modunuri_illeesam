@@ -150,7 +150,7 @@ window.SyPathMng = {
       const ok = await props.showConfirm?.('삭제', `[${row.pathLabel}] 경로를 삭제하시겠습니까?`);
       if (!ok) return;
       try {
-        const res = await boApi.delete(`/bo/sy/path/${row.pathId}`, coUtil.apiHdr('경로관리', '삭제'));
+        const res = await boApiSvc.syPath.remove(row.pathId, '경로관리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         props.showToast?.('삭제되었습니다.', 'success');
         await handleSearchTree();
@@ -177,8 +177,8 @@ window.SyPathMng = {
         const payload = { bizCd: row.bizCd, parentPathId: row.parentPathId, pathLabel: row.pathLabel, sortOrd: row.sortOrd, useYn: row.useYn, pathRemark: row.pathRemark };
         try {
           const res = isNew
-            ? await boApi.post('/bo/sy/path', payload, coUtil.apiHdr('경로관리', '등록'))
-            : await boApi.put(`/bo/sy/path/${row.pathId}`, payload, coUtil.apiHdr('경로관리', '저장'));
+            ? await boApiSvc.syPath.create(payload, '경로관리', '등록')
+            : await boApiSvc.syPath.update(row.pathId, payload, '경로관리', '저장');
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         } catch (err) {
           const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';

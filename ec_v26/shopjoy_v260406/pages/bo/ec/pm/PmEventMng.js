@@ -123,7 +123,7 @@ window.PmEventMng = {
       if (idx !== -1) events.splice(idx, 1);
       if (uiStateDetail.selectedId === e.eventId) uiStateDetail.selectedId = null;
       try {
-        const res = await boApi.delete(`/bo/ec/pm/event/${e.eventId}`, coUtil.apiHdr('이벤트관리', '삭제'));
+        const res = await boApiSvc.pmEvent.remove(e.eventId, '이벤트관리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

@@ -280,8 +280,8 @@ window.SyRoleMng = {
           .filter(x => x.roleId === uiState.selectedRoleId)
           .map(x => ({ boUserId: x.boUserId }));
         await Promise.all([
-          boApi.post(`/bo/sy/role/${uiState.selectedRoleId}/menus`, { menus: menuPayload }, coUtil.apiHdr('역할관리', '메뉴권한저장')),
-          boApi.post(`/bo/sy/role/${uiState.selectedRoleId}/users`, { users: userPayload }, coUtil.apiHdr('역할관리', '대상사용자저장')),
+          boApiSvc.syRole.saveMenus(uiState.selectedRoleId, { menus: menuPayload }, '역할관리', '메뉴권한저장'),
+          boApiSvc.syRole.saveUsers(uiState.selectedRoleId, { users: userPayload }, '역할관리', '대상사용자저장'),
         ]);
         props.showToast('설정이 저장되었습니다.', 'success');
       } catch (err) {

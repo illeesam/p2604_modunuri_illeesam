@@ -98,7 +98,7 @@ window.StSettleCloseMng = {
         status: '마감완료', closeDate: new Date().toISOString().slice(0,10), regUserNm: '관리자',
       });
       try {
-        const res = await boApi.post('/bo/ec/st/close', { closeMon: thisMonth, sales: cfThisMonthSales.value, refund: cfThisMonthRefund.value, net: cfThisMonthNet.value, comm: cfThisMonthComm.value, promo: cfThisMonthPromo.value, settle: cfThisMonthSettle.value }, { ...coUtil.apiHdr('정산마감관리', '저장') });
+        const res = await boApiSvc.stSettleClose.create({ closeMon: thisMonth, sales: cfThisMonthSales.value, refund: cfThisMonthRefund.value, net: cfThisMonthNet.value, comm: cfThisMonthComm.value, promo: cfThisMonthPromo.value, settle: cfThisMonthSettle.value }, '정산마감관리', '저장');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('정산마감이 완료되었습니다.', 'success');
       } catch (err) {
@@ -114,7 +114,7 @@ window.StSettleCloseMng = {
       if (!ok) return;
       r.status = '마감취소';
       try {
-        const res = await boApi.put(`/bo/ec/st/close/${r.closeId}/reopen`, {}, { ...coUtil.apiHdr('정산마감관리', '상태변경') });
+        const res = await boApiSvc.stSettleClose.reopen(r.closeId, {}, '정산마감관리', '상태변경');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('마감이 취소되었습니다.', 'success');
       } catch (err) {

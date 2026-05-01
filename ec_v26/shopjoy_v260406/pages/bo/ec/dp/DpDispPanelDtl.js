@@ -526,7 +526,7 @@ window.DpDispPanelDtl = {
         if (idx !== -1) Object.assign(displays[idx], payload);
       }
       try {
-        const res = await (isNewPanel ? boApi.post(`/bo/ec/dp/panel`, { ...form, rows: rows.map(r => ({ ...r })) }, { ...coUtil.apiHdr('전시패널관리', '등록') }) : boApi.put(`/bo/ec/dp/panel/${form.dispId}`, { ...form, rows: rows.map(r => ({ ...r })) }, { ...coUtil.apiHdr('전시패널관리', '저장') }));
+        const res = await (isNewPanel ? boApiSvc.dpPanel.create({ ...form, rows: rows.map(r => ({ ...r })) }, '전시패널관리', '등록') : boApiSvc.dpPanel.update(form.dispId, { ...form, rows: rows.map(r => ({ ...r })) }, '전시패널관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewPanel ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispPanelMng');

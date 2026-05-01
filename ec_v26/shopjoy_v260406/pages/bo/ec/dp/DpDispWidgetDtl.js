@@ -423,7 +423,7 @@ window.DpDispWidgetDtl = {
         if (idx >= 0) Object.assign(list[idx], { ...form });
       }
       try {
-        const res = await (isNewWidget ? boApi.post('/bo/ec/dp/widget-lib', { ...form }, { ...coUtil.apiHdr('전시위젯관리', '등록') }) : boApi.put(`/bo/ec/dp/widget-lib/${form.libId}`, { ...form }, { ...coUtil.apiHdr('전시위젯관리', '저장') }));
+        const res = await (isNewWidget ? boApiSvc.dpWidgetLib.create({ ...form }, '전시위젯관리', '등록') : boApiSvc.dpWidgetLib.update(form.libId, { ...form }, '전시위젯관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispWidgetLibMng');
@@ -444,7 +444,7 @@ window.DpDispWidgetDtl = {
       const idx  = list.findIndex(d => d.libId == form.libId);
       if (idx >= 0) list.splice(idx, 1);
       try {
-        const res = await boApi.delete(`/bo/ec/dp/widget-lib/${form.libId}`, { ...coUtil.apiHdr('전시위젯관리', '삭제') });
+        const res = await boApiSvc.dpWidgetLib.remove(form.libId, '전시위젯관리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

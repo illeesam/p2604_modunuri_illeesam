@@ -89,7 +89,7 @@ window.StConfigMng = {
       closeForm();
       const apiData = fnMapUiToApi(form);
       try {
-        const res = await (uiState.isNew ? boApi.post('/bo/ec/st/config', apiData, coUtil.apiHdr('정산설정관리', '등록')) : boApi.put(`/bo/ec/st/config/${form.settleConfigId}`, apiData, coUtil.apiHdr('정산설정관리', '저장')));
+        const res = await (uiState.isNew ? boApiSvc.stSettleConfig.create(apiData, '정산설정관리', '등록') : boApiSvc.stSettleConfig.update(form.settleConfigId, apiData, '정산설정관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
         await handleLoadList();
@@ -107,7 +107,7 @@ window.StConfigMng = {
       if (!ok) return;
       if (uiState.selectedId === c.settleConfigId) closeForm();
       try {
-        const res = await boApi.delete(`/bo/ec/st/config/${c.settleConfigId}`, coUtil.apiHdr('정산설정관리', '삭제'));
+        const res = await boApiSvc.stSettleConfig.remove(c.settleConfigId, '정산설정관리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
         await handleLoadList();

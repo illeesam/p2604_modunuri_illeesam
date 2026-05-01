@@ -105,7 +105,7 @@ window.PdCategoryDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (cfIsNew.value ? boApi.post(`/bo/ec/pd/category/${form.categoryId}`, { ...form }, coUtil.apiHdr('카테고리관리', '등록')) : boApi.put(`/bo/ec/pd/category/${form.categoryId}`, { ...form }, coUtil.apiHdr('카테고리관리', '저장')));
+        const res = await (cfIsNew.value ? boApiSvc.pdCategory.create({ ...form }, '카테고리관리', '등록') : boApiSvc.pdCategory.update(form.categoryId, { ...form }, '카테고리관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pdCategoryMng');

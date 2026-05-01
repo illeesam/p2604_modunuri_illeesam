@@ -92,7 +92,7 @@ const isAppReady = computed(() => {
       if (si !== -1) src.splice(si, 1);
       gridRows.splice(idx, 1);
       try {
-        const res = await boApi.delete(`/bo/ec/mb/member-grade/${row.gradeId}`, { ...coUtil.apiHdr('회원등급관리', '삭제') });
+        const res = await boApiSvc.mbMemGrade.remove(row.gradeId, '회원등급관리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -115,7 +115,7 @@ const isAppReady = computed(() => {
         else { const si = src.findIndex(g => g.gradeId === row.gradeId); if (si !== -1) Object.assign(src[si], row); }
         row._row_status = null;
         try {
-          const res = await (isNewRow ? boApi.post(`/bo/ec/mb/member-grade/${row.gradeId}`, { ...row }, { ...coUtil.apiHdr('회원등급관리', '등록') }) : boApi.put(`/bo/ec/mb/member-grade/${row.gradeId}`, { ...row }, { ...coUtil.apiHdr('회원등급관리', '저장') }));
+          const res = await (isNewRow ? boApiSvc.mbMemGrade.create({ ...row }, '회원등급관리', '등록') : boApiSvc.mbMemGrade.update(row.gradeId, { ...row }, '회원등급관리', '저장'));
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast('저장되었습니다.', 'success');
         } catch (err) {

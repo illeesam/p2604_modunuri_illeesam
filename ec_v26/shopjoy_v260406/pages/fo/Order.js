@@ -193,7 +193,7 @@ window.Order = {
           cashUsed:           cfAppliedCash.value,
           finalPrice:         cfFinalPrice.value,
         };
-        if (typeof foApi !== 'undefined') await foApi.post('/fo/order/create', payload, coUtil.apiHdr('주문', '저장')).catch(() => {});
+        if (typeof foApiSvc !== 'undefined') await foApiSvc.myOrder.create(payload, '주문', '저장').catch(() => {});
         uiState.resultData = payload;
         uiState.view = 'result';
         if (!props.instantOrder) props.clearCart(); // 바로구매는 장바구니 건드리지 않음

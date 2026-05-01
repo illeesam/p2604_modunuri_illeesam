@@ -127,7 +127,7 @@ window.PmCouponMng = {
       if (idx !== -1) coupons.splice(idx, 1);
       if (uiStateDetail.selectedId === c.couponId) uiStateDetail.selectedId = null;
       try {
-        const res = await boApi.delete(`/bo/ec/pm/coupon/${c.couponId}`, coUtil.apiHdr('쿠폰관리', '삭제'));
+        const res = await boApiSvc.pmCoupon.remove(c.couponId, '쿠폰관리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {

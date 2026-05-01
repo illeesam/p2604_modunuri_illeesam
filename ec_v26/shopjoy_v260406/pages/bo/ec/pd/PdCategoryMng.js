@@ -281,7 +281,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       if (!ok) return;
       row._row_status = 'D';
       try {
-        const res = await boApi.delete(`/bo/ec/pd/category/${row.categoryId}`, { ...coUtil.apiHdr('카테고리관리', '삭제') });
+        const res = await boApiSvc.pdCategory.remove(row.categoryId, '카테고리관리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
         gridRows.splice(idx, 1);
@@ -303,7 +303,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         const row = gridRows[idx];
         if (row._row_status === 'N') { gridRows.splice(idx, 1); continue; }
         try {
-          await boApi.delete(`/bo/ec/pd/category/${row.categoryId}`, coUtil.apiHdr('카테고리관리', '삭제'));
+          await boApiSvc.pdCategory.remove(row.categoryId, '카테고리관리', '삭제');
           gridRows.splice(idx, 1);
         } catch (err) { console.error('[deleteRows]', err); }
       }
@@ -324,8 +324,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         if (isNew) delete payload.categoryId;
         try {
           const res = isNew
-            ? await boApi.post('/bo/ec/pd/category', payload, { ...coUtil.apiHdr('카테고리관리', '저장') })
-            : await boApi.put(`/bo/ec/pd/category/${row.categoryId}`, payload, { ...coUtil.apiHdr('카테고리관리', '저장') });
+            ? await boApiSvc.pdCategory.create(payload, '카테고리관리', '저장')
+            : await boApiSvc.pdCategory.update(row.categoryId, payload, '카테고리관리', '저장');
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           row._row_status = null;
         } catch (err) {

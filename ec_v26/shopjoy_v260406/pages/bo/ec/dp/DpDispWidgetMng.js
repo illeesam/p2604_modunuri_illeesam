@@ -144,7 +144,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
       const ok = await props.showConfirm('삭제', '삭제하시겠습니까?');
       if (!ok) return;
       try {
-        await boApi.delete(`/bo/ec/dp/widget/${d.libId}`, { ...coUtil.apiHdr('전시위젯관리', '삭제') });
+        await boApiSvc.dpWidget.remove(d.libId, '전시위젯관리', '삭제');
         props.showToast('삭제되었습니다.', 'success');
         handleSearchData();
       } catch (err) {

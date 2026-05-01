@@ -140,7 +140,7 @@ window.CmChattDtl = {
       const ok = await props.showConfirm('등록', '등록하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await boApi.post(`/bo/ec/cm/chatt`, { ...form }, { ...coUtil.apiHdr('채팅관리', '등록') });
+        const res = await boApiSvc.cmChatt.create({ ...form }, '채팅관리', '등록');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('등록되었습니다.', 'success');
         if (props.navigate) props.navigate('cmChattMng');

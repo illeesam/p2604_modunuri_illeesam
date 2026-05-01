@@ -139,7 +139,7 @@ window.Contact = {
     const handleSubmit = async () => {
       if (!validate()) return;
       if (typeof foApi !== 'undefined') {
-        await foApi.post('/fo/inquiry/create', {
+        await foApiSvc.myInquiry.create({
           source: 'shopjoy',
           name: form.name,
           email: form.email,
@@ -147,7 +147,7 @@ window.Contact = {
           orderNo: form.orderNo,
           inquiryType: form.inquiryType,
           desc: form.desc,
-        }, coUtil.apiHdr('문의', '저장')).catch(() => {});
+        }, '문의', '저장').catch(() => {});
       }
       props.showToast('문의가 접수되었습니다. 빠르게 답변드리겠습니다!', 'success');
       Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });

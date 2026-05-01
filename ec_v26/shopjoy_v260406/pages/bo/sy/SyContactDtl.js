@@ -149,7 +149,7 @@ window.SyContactDtl = {
         if (idx !== -1) Object.assign(contacts[idx], { ...form });
       }
       try {
-        const res = await (cfIsNew.value ? boApi.post(`/bo/sy/contact/${form.inquiryId}`, { ...form }, coUtil.apiHdr('문의관리', '등록')) : boApi.put(`/bo/sy/contact/${form.inquiryId}`, { ...form }, coUtil.apiHdr('문의관리', '저장')));
+        const res = await (cfIsNew.value ? boApiSvc.syContact.create({ ...form }, '문의관리', '등록') : boApiSvc.syContact.update(form.inquiryId, { ...form }, '문의관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syContactMng');

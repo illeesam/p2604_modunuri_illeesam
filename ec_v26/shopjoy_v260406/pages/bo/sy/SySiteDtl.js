@@ -114,7 +114,7 @@ window.SySiteDtl = {
         if (idx !== -1) Object.assign(sites[idx], { ...form });
       }
       try {
-        const res = await (cfIsNew.value ? boApi.post(`/bo/sy/site`, { ...form }, coUtil.apiHdr('사이트관리', '등록')) : boApi.put(`/bo/sy/site/${form.siteId}`, { ...form }, coUtil.apiHdr('사이트관리', '저장')));
+        const res = await (cfIsNew.value ? boApiSvc.sySite.create({ ...form }, '사이트관리', '등록') : boApiSvc.sySite.update(form.siteId, { ...form }, '사이트관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('sySiteMng');

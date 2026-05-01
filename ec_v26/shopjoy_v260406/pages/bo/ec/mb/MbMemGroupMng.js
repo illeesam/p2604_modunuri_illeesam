@@ -87,7 +87,7 @@ const isAppReady = computed(() => {
       if (si !== -1) groups.splice(si, 1);
       gridRows.splice(idx, 1);
       try {
-        const res = await boApi.delete(`/bo/ec/mb/member-group/${row.groupId}`, { ...coUtil.apiHdr('회원그룹관리', '삭제') });
+        const res = await boApiSvc.mbMemGroup.remove(row.groupId, '회원그룹관리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -110,7 +110,7 @@ const isAppReady = computed(() => {
         else { const si = src.findIndex(g => g.groupId === row.groupId); if (si !== -1) Object.assign(src[si], row); }
         row._row_status = null;
         try {
-          const res = await (isNewRow ? boApi.post(`/bo/ec/mb/member-group/${row.groupId}`, { ...row }, { ...coUtil.apiHdr('회원그룹관리', '등록') }) : boApi.put(`/bo/ec/mb/member-group/${row.groupId}`, { ...row }, { ...coUtil.apiHdr('회원그룹관리', '저장') }));
+          const res = await (isNewRow ? boApiSvc.mbMemGroup.create({ ...row }, '회원그룹관리', '등록') : boApiSvc.mbMemGroup.update(row.groupId, { ...row }, '회원그룹관리', '저장'));
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast('저장되었습니다.', 'success');
         } catch (err) {

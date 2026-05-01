@@ -1,15 +1,13 @@
 /**
  * foApiSvc.js — Front Office 전용 공통 API 서비스
  *
- * 사용 조건: GET 엔드포인트는 단독 사용이라도 모두 등록.
- * POST/PUT/DELETE 등 변경성 단건 호출은 각 페이지 파일에 직접 선언 가능.
+ * 모든 API 엔드포인트(GET/POST/PUT/DELETE)를 이 파일에 등록하여 중앙 관리한다.
  *
  * 선행 로드: utils/foApiAxios.js (foApi) + utils/coUtil.js
  *
  * 사용법:
- *   const res = await foApiSvc.pdProd.getPage({ kw: '신발', pageNo: 1 });
  *   const res = await foApiSvc.pdProd.getPage({ kw: '신발' }, '상품목록', '조회');
- *   const res = await foApiSvc.myCoupon.getList();
+ *   const res = await foApiSvc.myInquiry.create(body, '문의', '등록');
  */
 (function (global) {
   'use strict';
@@ -61,16 +59,14 @@
 
   /* ── my: 문의 ───────────────────────────────────────────────── */
   foApiSvc.myInquiry = {
-    getList(params, uiNm, cmdNm) {
-      return global.foApi.get('/fo/my/inquiry/list', { params, ...hdr(uiNm, cmdNm) });
-    },
+    getList(params, uiNm, cmdNm) { return global.foApi.get('/fo/my/inquiry/list', { params, ...hdr(uiNm, cmdNm) }); },
+    create(body, uiNm, cmdNm) { return global.foApi.post('/fo/inquiry/create', body, hdr(uiNm, cmdNm)); },
   };
 
   /* ── my: 주문 ───────────────────────────────────────────────── */
   foApiSvc.myOrder = {
-    getList(params, uiNm, cmdNm) {
-      return global.foApi.get('/fo/my/order/list', { params, ...hdr(uiNm, cmdNm) });
-    },
+    getList(params, uiNm, cmdNm) { return global.foApi.get('/fo/my/order/list', { params, ...hdr(uiNm, cmdNm) }); },
+    create(body, uiNm, cmdNm) { return global.foApi.post('/fo/order/create', body, hdr(uiNm, cmdNm)); },
   };
 
   /* ── pd: 상품 ───────────────────────────────────────────────── */

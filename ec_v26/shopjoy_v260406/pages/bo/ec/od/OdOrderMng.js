@@ -149,7 +149,7 @@ const isAppReady = computed(() => {
       if (idx !== -1) orders.splice(idx, 1);
       if (uiStateDetail.selectedId === o.orderId) uiStateDetail.selectedId = null;
       try {
-        const res = await boApi.delete(`/bo/ec/od/order/${o.orderId}`, { ...coUtil.apiHdr('주문관리', '삭제') });
+        const res = await boApiSvc.odOrder.remove(o.orderId, '주문관리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
@@ -270,7 +270,7 @@ const isAppReady = computed(() => {
       checked = new Set();
       uiState.bulkOpen = false;
       try {
-        const res = await boApi.put(cfg.path, { ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value }, { ...coUtil.apiHdr('주문관리', '목록조회') });
+        const res = await boApiSvc.odOrder.bulkAction(cfg.path, { ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value }, '주문관리', '목록조회');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(`${ids.length}건 처리되었습니다.`, 'success');
       } catch (err) {

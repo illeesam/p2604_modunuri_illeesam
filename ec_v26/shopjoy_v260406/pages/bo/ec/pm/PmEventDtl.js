@@ -179,7 +179,7 @@ window.PmEventDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (cfIsNew.value ? boApi.post(`/bo/ec/pm/event`, { ...form }, { ...coUtil.apiHdr('이벤트관리', '등록') }) : boApi.put(`/bo/ec/pm/event/${form.eventId}`, { ...form }, { ...coUtil.apiHdr('이벤트관리', '저장') }));
+        const res = await (cfIsNew.value ? boApiSvc.pmEvent.create({ ...form }, '이벤트관리', '등록') : boApiSvc.pmEvent.update(form.eventId, { ...form }, '이벤트관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmEventMng');

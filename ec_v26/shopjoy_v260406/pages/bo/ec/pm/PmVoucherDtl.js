@@ -159,7 +159,7 @@ window.PmVoucherDtl = {
       if (!ok) return;
       snsModal.show = false;
       try {
-        const res = await boApi.post(`/bo/ec/pm/voucher/${form.voucherId}/send-sns`, { channel: snsModal.channel, message: uiState.snsMsg }, { ...coUtil.apiHdr('바우처관리', '전송') });
+        const res = await boApiSvc.pmVoucher.sendSns(form.voucherId, { channel: snsModal.channel, message: uiState.snsMsg }, '바우처관리', '전송');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('SNS전송되었습니다.', 'success');
       } catch (err) {
@@ -183,7 +183,7 @@ window.PmVoucherDtl = {
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (cfIsNew.value ? boApi.post(`/bo/ec/pm/voucher`, { ...form }, { ...coUtil.apiHdr('바우처관리', '등록') }) : boApi.put(`/bo/ec/pm/voucher/${form.voucherId}`, { ...form }, { ...coUtil.apiHdr('바우처관리', '저장') }));
+        const res = await (cfIsNew.value ? boApiSvc.pmVoucher.create({ ...form }, '바우처관리', '등록') : boApiSvc.pmVoucher.update(form.voucherId, { ...form }, '바우처관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pmVoucherMng');

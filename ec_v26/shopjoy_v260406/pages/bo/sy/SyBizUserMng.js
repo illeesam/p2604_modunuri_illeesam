@@ -233,8 +233,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       if (!ok) return;
       try {
         const res = uiState.formMode === 'new'
-          ? await boApi.post('/base/sy/vendor-user', { ...formData }, coUtil.apiHdr('사업자사용자관리', '등록'))
-          : await boApi.put(`/base/sy/vendor-user/${formData.vendorUserId}`, { ...formData }, coUtil.apiHdr('사업자사용자관리', '저장'));
+          ? await boApiSvc.syVendorUser.create({ ...formData }, '사업자사용자관리', '등록')
+          : await boApiSvc.syVendorUser.update(formData.vendorUserId, { ...formData }, '사업자사용자관리', '저장');
         if (props.setApiRes) props.setApiRes({ ok:true, status:res.status, data:res.data });
         props.showToast(uiState.formMode==='new'?'등록되었습니다.':'저장되었습니다.', 'success');
         await loadVendorUsers(formData.vendorId);
@@ -256,7 +256,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       const ok = await props.showConfirm('삭제', `[${u.memberNm}] 사용자를 삭제하시겠습니까?`);
       if (!ok) return;
       try {
-        const res = await boApi.delete(`/base/sy/vendor-user/${u.vendorUserId}`, coUtil.apiHdr('사업자사용자관리', '삭제'));
+        const res = await boApiSvc.syVendorUser.remove(u.vendorUserId, '사업자사용자관리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok:true, status:res.status, data:res.data });
         props.showToast('삭제되었습니다.', 'success');
         await loadVendorUsers(u.vendorId);
@@ -339,11 +339,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         closeRoleModal(); return;
       }
       try {
-        const res = await boApi.post('/base/sy/vendor-user-role', {
+        const res = await boApiSvc.syVendorUser.addRole({
           vendorId: formData.vendorId,
           userId: formData.vendorUserId,
           roleId: rid,
-        }, coUtil.apiHdr('사업자사용자관리', '등록'));
+        }, '사업자사용자관리', '등록');
         if (props.setApiRes) props.setApiRes({ ok:true, status:res.status, data:res.data });
         props.showToast('역할이 부여되었습니다.', 'success');
         await loadUserRoles(formData.vendorUserId);
@@ -358,7 +358,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       const ok = await props.showConfirm('역할 삭제', `[${r.roleNm}] 역할을 삭제하시겠습니까?`);
       if (!ok) return;
       try {
-        const res = await boApi.delete(`/base/sy/vendor-user-role/${r.vendorUserRoleId}`, coUtil.apiHdr('사업자사용자관리', '삭제'));
+        const res = await boApiSvc.syVendorUser.removeRole(r.vendorUserRoleId, '사업자사용자관리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok:true, status:res.status, data:res.data });
         props.showToast('역할이 삭제되었습니다.', 'success');
         await loadUserRoles(formData.vendorUserId);
