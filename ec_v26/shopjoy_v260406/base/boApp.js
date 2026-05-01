@@ -1098,6 +1098,8 @@
       };
       const currentFoSiteNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-fo-siteNo')) || '01';
       const currentBoSiteNo = window.BO_SITE_NO || '01';
+      const _boAppStore = window.useBoAppStore?.();
+      const cfBoActive = computed(() => _boAppStore?.svActive || '-');
       const SITE_PAIR_MENU = [
         { fo:'01',   bo:'01' },
         { fo:'02',   bo:'02' },
@@ -1169,7 +1171,7 @@
         apiResPanel, setApiRes, closeApiResPanel,
         onRootClick,
         toggleRelatedSite, openRelatedLink,
-        goFoSite, goBoSite, currentFoSiteNo, currentBoSiteNo, SITE_PAIR_MENU, DISP_LINKS,
+        goFoSite, goBoSite, currentFoSiteNo, currentBoSiteNo, cfBoActive, SITE_PAIR_MENU, DISP_LINKS,
         safe: window.safeUtil,
       };
     },
@@ -1189,6 +1191,15 @@
         <span :style="{fontWeight:800,color: currentFoSiteNo==='03'?'#7b1fa2':currentFoSiteNo==='02'?'#2e7d6b':currentFoSiteNo==='9999'?'#bbb':'#ff8aa5'}">{{ currentFoSiteNo || '-' }}</span>
         <span :style="{fontWeight:800,color: currentBoSiteNo==='03'?'#7b1fa2':currentBoSiteNo==='02'?'#2e7d6b':currentBoSiteNo==='9999'?'#bbb':'#ff8aa5'}">{{ currentBoSiteNo || '-' }}</span>
       </span>
+      <span
+        :title="'active=' + cfBoActive"
+        :style="{
+          fontFamily:'monospace', fontSize:'10px', fontWeight:700, padding:'1px 6px',
+          borderRadius:'4px', border:'1px solid',
+          color: cfBoActive==='prod'?'#fff':cfBoActive==='dev'?'#1565c0':'#555',
+          background: cfBoActive==='prod'?'#e53935':cfBoActive==='dev'?'#e3f0fb':'#f0f0f0',
+          borderColor: cfBoActive==='prod'?'#c62828':cfBoActive==='dev'?'#90caf9':'#ccc',
+        }">{{ cfBoActive }}</span>
     </span>
     <div class="top-nav-menus">
       <span v-for="tm in TOP_MENUS" :key="tm.id"

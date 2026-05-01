@@ -121,6 +121,7 @@ window.foAppHeader = {
       cfAuthUser, cfUserFirstChar, cfIsLogin,
       foSiteNo: window.FO_SITE_NO || '01',
       boSiteNo: '01', /* BO site_no — FO localStorage 접근 금지, 기본값 고정 */
+      cfFoActive: computed(() => window.useFoAppStore?.()?.svActive || '-'),
       openQuickMenu: () => window.dispatchEvent(new CustomEvent('open-quick-menu')),
     };
   },
@@ -175,7 +176,7 @@ window.foAppHeader = {
     </svg>
     <div style="display:flex;flex-direction:column;line-height:1.1;text-align:left;">
       <span style="font-size:0.95rem;font-weight:800;color:var(--text-primary);letter-spacing:-0.3px;">{{ config.name }}</span>
-      <span style="font-size:0.6rem;color:var(--text-muted);font-weight:500;letter-spacing:0.08em;">
+      <span style="font-size:0.6rem;color:var(--text-muted);font-weight:500;letter-spacing:0.08em;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
         {{ config.tagline }}
         <span class="fo-site-badge"
           :title="'FO_SITE_NO=' + (foSiteNo || '-') + ' BO_SITE_NO=' + (boSiteNo || '-') + ' — 클릭: 메뉴 바로가기'"
@@ -185,6 +186,15 @@ window.foAppHeader = {
           <span :style="{fontWeight:800,marginLeft:'4px',color: foSiteNo==='03' ? '#7b1fa2' : foSiteNo==='02' ? '#2e7d6b' : foSiteNo==='9999' ? '#888' : '#9f2946'}">{{ foSiteNo || '-' }}</span>
           <span :style="{fontWeight:800,marginLeft:'3px',color: boSiteNo==='03' ? '#7b1fa2' : boSiteNo==='02' ? '#2e7d6b' : boSiteNo==='9999' ? '#888' : '#9f2946'}">{{ boSiteNo || '-' }}</span>
         </span>
+        <span
+          :title="'active=' + cfFoActive"
+          :style="{
+            fontFamily:'monospace', fontSize:'9px', fontWeight:700, padding:'0px 5px',
+            borderRadius:'3px', border:'1px solid',
+            color: cfFoActive==='prod'?'#fff':cfFoActive==='dev'?'#1565c0':'#555',
+            background: cfFoActive==='prod'?'#e53935':cfFoActive==='dev'?'#e3f0fb':'#f0f0f0',
+            borderColor: cfFoActive==='prod'?'#c62828':cfFoActive==='dev'?'#90caf9':'#ccc',
+          }">{{ cfFoActive }}</span>
       </span>
     </div>
   </button>
