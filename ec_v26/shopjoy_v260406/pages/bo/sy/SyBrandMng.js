@@ -326,7 +326,7 @@ window.SyBrandMng = {
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:6px;">
-        <span class="list-title" style="font-size:13px;">📂 표시경로</span>
+        <span class="list-title" style="font-size:13px;">📂 표시경로 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#sy_brand</span></span>
         <span v-if="uiState.selectedPath != null" @click="onPathSelect(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
       </div>
       <div style="max-height:65vh;overflow:auto;">

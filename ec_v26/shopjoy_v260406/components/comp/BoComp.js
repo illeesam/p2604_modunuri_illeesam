@@ -39,20 +39,21 @@ window.PathTree = {
     const expanded = reactive(new Set([null]));
     const loading  = ref(false);
 
-    const buildTree = (list) => {
+    const buildTree = (list, rootBizCd) => {
       const filtered = list.filter(p => p.useYn !== 'N');
       const byParent = {};
       filtered.forEach(p => {
         const k = p.parentPathId == null ? '__root__' : p.parentPathId;
         (byParent[k] = byParent[k] || []).push(p);
       });
-      const build = (pk) => (byParent[pk] || [])
+      const build = (pk, inheritBizCd) => (byParent[pk] || [])
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
-        .map(p => ({
-          pathId: p.pathId, pathLabel: p.pathLabel, bizCd: p.bizCd || '',
-          children: build(p.pathId), count: 0,
-        }));
-      const root = { pathId: null, pathLabel: '전체', children: build('__root__'), count: 0 };
+        .map(p => {
+          const bizCd = p.bizCd || inheritBizCd || '';
+          return { pathId: p.pathId, pathLabel: p.pathLabel, bizCd,
+            children: build(p.pathId, bizCd), count: 0 };
+        });
+      const root = { pathId: null, pathLabel: '전체', children: build('__root__', rootBizCd || ''), count: 0 };
       const recur = (n) => { n.count = (n.children || []).reduce((s, c) => s + recur(c) + 1, 0); return n.count; };
       recur(root);
       return root;
@@ -66,7 +67,7 @@ window.PathTree = {
 
     const load = async () => {
       if (_cache[props.bizCd]) {
-        tree.value = buildTree(_cache[props.bizCd]);
+        tree.value = buildTree(_cache[props.bizCd], props.bizCd);
         expanded.clear();
         initExpanded(tree.value, 0, props.expandDepth);
         return;
@@ -79,7 +80,7 @@ window.PathTree = {
         _cache[props.bizCd] = list;
         /* boUtil._boCmPaths 호환 — 기존 코드(pathLabel 등)가 읽을 수 있도록 병합 */
         window._boCmPaths = [...(window._boCmPaths || []).filter(p => p.bizCd !== props.bizCd), ...list];
-        tree.value = buildTree(list);
+        tree.value = buildTree(list, props.bizCd);
         expanded.clear();
         initExpanded(tree.value, 0, props.expandDepth);
       } catch (e) {
