@@ -91,6 +91,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
       Object.assign(searchParam, searchParamOrg);
       Object.assign(applied, { kw: '', type: '', status: '' });
       pager.pageNo = 1;
+      handleSearchList('DEFAULT');
     };
 
     /* 검색 필터만 적용한 리스트 (트리 그룹화용) */

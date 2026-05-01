@@ -241,19 +241,19 @@ window.DpDispPanelMng = {
 
     const onSearch = async () => {
     try {
-      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await boApi.get('/bo/ec/resource/page', { params, ...coUtil.apiHdr('전시패널관리', '조회') });
-      // TODO: Update items array based on response
+      Object.assign(applied, searchParam);
       pager.pageNo = 1;
       await handleSearchData();
     } catch (err) {
       console.error('[catch-info]', err);
     }
   };
-  
+
     const onReset = () => {
     Object.assign(searchParam, searchParamOrg);
-    onSearch();
+    Object.assign(applied, { kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' });
+    pager.pageNo = 1;
+    handleSearchData();
   };
   
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };

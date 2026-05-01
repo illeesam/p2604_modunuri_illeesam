@@ -50,6 +50,7 @@ window.SyPropMng = {
 
     /* ── 검색 ── */
     const searchParam = reactive({ kw: '', useFlt: '', typeFlt: '' });
+    const applied = reactive({ kw: '', useFlt: '', typeFlt: '' });
 
     /* ── 데이터 (작업 상태 포함) ── */
     const rows = reactive([]);
@@ -60,6 +61,7 @@ window.SyPropMng = {
 
     // 검색/조회 함수
     const fetchData = async (searchType = 'DEFAULT') => {
+      Object.assign(applied, searchParam);
       try {
         const res = await boApi.get('/base/sy/prop/page', {
           params: { pageNo: 1, pageSize: 10000, siteId: cfSiteId.value },
@@ -111,15 +113,15 @@ window.SyPropMng = {
       const sp = uiState.selectedPath;
       let arr = cfFilteredBySite.value;
       if (sp) arr = arr.filter(r => (r.dispPath || '').startsWith(sp));
-      const k = searchParam.kw.trim().toLowerCase();
+      const k = applied.kw.trim().toLowerCase();
       if (k) arr = arr.filter(r =>
         (r.dispPath||'').toLowerCase().includes(k) ||
         (r.propKey||'').toLowerCase().includes(k) ||
         (r.propLabel||'').toLowerCase().includes(k) ||
         (r.propValue||'').toString().toLowerCase().includes(k)
       );
-      if (searchParam.useFlt)  arr = arr.filter(r => r.useYn === searchParam.useFlt);
-      if (searchParam.typeFlt) arr = arr.filter(r => r.propType === searchParam.typeFlt);
+      if (applied.useFlt)  arr = arr.filter(r => r.useYn === applied.useFlt);
+      if (applied.typeFlt) arr = arr.filter(r => r.propType === applied.typeFlt);
       return arr.filter(r => r._status !== 'D');
     });
 
@@ -197,6 +199,7 @@ window.SyPropMng = {
 
     const onReset = () => {
       searchParam.kw = ''; searchParam.useFlt = ''; searchParam.typeFlt = '';
+      applied.kw = ''; applied.useFlt = ''; applied.typeFlt = '';
       uiState.selectedPath = '';
       reload();
     };
@@ -220,7 +223,7 @@ window.SyPropMng = {
     return {
       uiState, codes,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      searchParam, cfTree, expanded, toggleNode, expandAll, collapseAll,
+      searchParam, applied, cfTree, expanded, toggleNode, expandAll, collapseAll,
       selectNode, cfGridRows, cfDirtyRows,
       fetchData,
       onChange, addRow, delRow, cancelRow, handleSave, onReset, exportCsv,
@@ -234,7 +237,7 @@ window.SyPropMng = {
   <!-- ── 검색 바 ─────────────────────────────────────────────────────────── -->
   <div class="card" style="padding:12px;margin-bottom:12px;">
     <div class="search-bar">
-      <input class="form-control" v-model="searchParam.kw" placeholder="표시경로 / 키 / 값 / 라벨 검색" style="min-width:280px;flex:1;max-width:420px;">
+      <input class="form-control" v-model="searchParam.kw" placeholder="표시경로 / 키 / 값 / 라벨 검색" style="min-width:280px;flex:1;max-width:420px;" @keyup.enter="fetchData">
       <select class="form-control" v-model="searchParam.typeFlt" style="width:120px;">
         <option value="">전체 타입</option>
         <option v-for="t in codes.prop_types" :key="t" :value="t">{{ t }}</option>

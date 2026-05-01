@@ -105,12 +105,14 @@ const searchParam = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateE
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
 
+    const applied = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateEnd: '', dateRange: '' });
+
     const cfFiltered = computed(() => {
-      const kw = searchParam.kw.toLowerCase();
+      const kw = applied.kw.toLowerCase();
       return (displays || []).filter(d => {
         if (kw && !(d.name||'').toLowerCase().includes(kw)) return false;
-        if (searchParam.type && d.uiType !== searchParam.type) return false;
-        if (searchParam.useYn && d.useYn !== searchParam.useYn) return false;
+        if (applied.type && d.uiType !== applied.type) return false;
+        if (applied.useYn && d.useYn !== applied.useYn) return false;
         return true;
       });
     });
@@ -119,14 +121,14 @@ const searchParam = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateE
     const cfPageList   = computed(() => cfFiltered.value.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
     const cfPageNums   = computed(() => { const c=pager.pageNo,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
-    const onReset  = () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; };
+    const onSearch = async () => { Object.assign(applied, searchParam); pager.pageNo = 1; await handleSearchList('DEFAULT'); };
+    const onReset  = () => { Object.assign(searchParam, searchParamOrg); Object.assign(applied, searchParamOrg); pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { displays, uiState, codes, pager, searchParam,
+    return { displays, uiState, codes, pager, searchParam, applied,
       cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums,
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange, cfSiteNm,
       expanded, toggleNode, selectNode, cfTree, expandAll, collapseAll, pathLabel,

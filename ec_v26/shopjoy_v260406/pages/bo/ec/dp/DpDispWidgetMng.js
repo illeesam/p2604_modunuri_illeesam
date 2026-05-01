@@ -86,14 +86,17 @@ const applied = reactive({ kw: '', type: '', status: '' });
     try {
       Object.assign(applied, searchParam);
       pager.pageNo = 1;
+      await handleSearchData('DEFAULT');
     } catch (err) {
       console.error('[catch-info]', err);
     }
   };
-  
+
     const onReset = () => {
     Object.assign(searchParam, searchParamOrg);
-    onSearch();
+    Object.assign(applied, { kw: '', type: '', status: '' });
+    pager.pageNo = 1;
+    handleSearchData('DEFAULT');
   };
   
 

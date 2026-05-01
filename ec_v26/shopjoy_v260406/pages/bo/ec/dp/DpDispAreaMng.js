@@ -102,16 +102,19 @@ const searchParam = reactive({
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const onSearch = async () => {
     try {
+      Object.assign(applied, searchParam);
       pager.pageNo = 1;
       await handleSearchData();
     } catch (err) {
       console.error('[catch-info]', err);
     }
   };
-  
+
     const onReset = () => {
     Object.assign(searchParam, searchParamOrg);
-    onSearch();
+    Object.assign(applied, searchParamOrg);
+    pager.pageNo = 1;
+    handleSearchData();
   };
   
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.pageNo = n; };
@@ -129,15 +132,17 @@ const searchParam = reactive({
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
 
+    const applied = reactive({ kw: '', areaType: '', useYn: '', dateStart: '', dateEnd: '', dateRange: '' });
+
     const cfFiltered = computed(() => {
-      const kw = searchParam.kw.toLowerCase();
+      const kw = applied.kw.toLowerCase();
       return (areas || []).filter(a => {
         if (kw && !(a.codeLabel||'').toLowerCase().includes(kw) && !(a.codeValue||'').toLowerCase().includes(kw)) return false;
-        if (searchParam.areaType && a.areaType !== searchParam.areaType) return false;
-        if (searchParam.useYn && a.useYn !== searchParam.useYn) return false;
+        if (applied.areaType && a.areaType !== applied.areaType) return false;
+        if (applied.useYn && a.useYn !== applied.useYn) return false;
         const d = String(a.regDate||'').slice(0,10);
-        if (searchParam.dateStart && d < searchParam.dateStart) return false;
-        if (searchParam.dateEnd && d > searchParam.dateEnd) return false;
+        if (applied.dateStart && d < applied.dateStart) return false;
+        if (applied.dateEnd && d > applied.dateEnd) return false;
         return true;
       });
     });
@@ -148,7 +153,7 @@ const searchParam = reactive({
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { areas, uiState, codes, pager, searchParam,
+    return { areas, uiState, codes, pager, searchParam, applied,
       cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums,
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange, cfSiteNm,
       expanded, toggleNode, selectNode, cfTree, expandAll, collapseAll, fnPathLabel,

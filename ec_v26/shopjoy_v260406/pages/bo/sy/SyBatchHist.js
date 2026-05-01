@@ -59,12 +59,14 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       batches.map(b => ({ batchId: b.batchId, label: b.batchNm }))
     );
 
+    const applied = reactive({ searchBatchId: '', searchStatus: '' });
+
     const cfFiltered = computed(() => {
       const logs = [...(batchLogs || [])];
       logs.sort((a, b) => (b.runAt > a.runAt ? 1 : -1));
       return logs.filter(l => {
-        if (uiState.searchBatchId && l.batchId !== Number(uiState.searchBatchId)) return false;
-        if (uiState.searchStatus && l.runStatus !== uiState.searchStatus) return false;
+        if (applied.searchBatchId && l.batchId !== Number(applied.searchBatchId)) return false;
+        if (applied.searchStatus && l.runStatus !== applied.searchStatus) return false;
         return true;
       });
     });
@@ -79,6 +81,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     });
     const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
+    const onSearch     = () => { applied.searchBatchId = uiState.searchBatchId; applied.searchStatus = uiState.searchStatus; pager.pageNo = 1; };
     const onFilter     = () => { pager.pageNo = 1; };
 
     /* ── 메시지 상세 토글 ── */
@@ -98,9 +101,9 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { batches, uiState, cfBatchOptions,
+    return { batches, uiState, applied, cfBatchOptions,
       cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, pager,
-      setPage, onSizeChange, onFilter,
+      setPage, onSizeChange, onSearch, onFilter,
       toggleExpand,
       fnRunBadge, fnFmtDuration,
       codes,
@@ -115,14 +118,15 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       <span class="list-count" style="margin-left:4px;">{{ cfTotal }}건</span>
     </div>
     <div style="display:flex;gap:6px;align-items:center;">
-      <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:160px;" v-model="uiState.searchBatchId" @change="onFilter">
+      <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:160px;" v-model="uiState.searchBatchId">
         <option value="">배치 전체</option>
         <option v-for="b in cfBatchOptions" :key="b.batchId" :value="b.batchId">{{ b.label }}</option>
       </select>
-      <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:90px;" v-model="uiState.searchStatus" @change="onFilter">
+      <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:90px;" v-model="uiState.searchStatus">
         <option value="">상태 전체</option>
         <option v-for="c in codes.batch_run_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
+      <button class="btn btn-primary btn-sm" @click="onSearch" style="height:30px;font-size:12px;padding:2px 12px;">조회</button>
     </div>
   </div>
 
