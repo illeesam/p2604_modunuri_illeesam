@@ -191,9 +191,9 @@ window.foAppHeader = {
           :style="{
             fontFamily:'monospace', fontSize:'9px', fontWeight:700, padding:'0px 5px',
             borderRadius:'3px', border:'1px solid',
-            color: cfFoActive==='prod'?'#fff':cfFoActive==='dev'?'#1565c0':'#555',
-            background: cfFoActive==='prod'?'#e53935':cfFoActive==='dev'?'#e3f0fb':'#f0f0f0',
-            borderColor: cfFoActive==='prod'?'#c62828':cfFoActive==='dev'?'#90caf9':'#ccc',
+            color: cfFoActive==='prod'?'#fff':cfFoActive==='dev'?'#1565c0':cfFoActive==='local'?'#7a5800':'#555',
+            background: cfFoActive==='prod'?'#e53935':cfFoActive==='dev'?'#e3f0fb':cfFoActive==='local'?'#fff59d':'#f0f0f0',
+            borderColor: cfFoActive==='prod'?'#c62828':cfFoActive==='dev'?'#90caf9':cfFoActive==='local'?'#f9a825':'#ccc',
           }">{{ cfFoActive }}</span>
       </span>
     </div>

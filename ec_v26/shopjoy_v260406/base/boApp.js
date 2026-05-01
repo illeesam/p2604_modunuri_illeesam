@@ -1196,9 +1196,9 @@
         :style="{
           fontFamily:'monospace', fontSize:'10px', fontWeight:700, padding:'1px 6px',
           borderRadius:'4px', border:'1px solid',
-          color: cfBoActive==='prod'?'#fff':cfBoActive==='dev'?'#1565c0':'#555',
-          background: cfBoActive==='prod'?'#e53935':cfBoActive==='dev'?'#e3f0fb':'#f0f0f0',
-          borderColor: cfBoActive==='prod'?'#c62828':cfBoActive==='dev'?'#90caf9':'#ccc',
+          color: cfBoActive==='prod'?'#fff':cfBoActive==='dev'?'#1565c0':cfBoActive==='local'?'#7a5800':'#555',
+          background: cfBoActive==='prod'?'#e53935':cfBoActive==='dev'?'#e3f0fb':cfBoActive==='local'?'#fff59d':'#f0f0f0',
+          borderColor: cfBoActive==='prod'?'#c62828':cfBoActive==='dev'?'#90caf9':cfBoActive==='local'?'#f9a825':'#ccc',
         }">{{ cfBoActive }}</span>
     </span>
     <div class="top-nav-menus">
