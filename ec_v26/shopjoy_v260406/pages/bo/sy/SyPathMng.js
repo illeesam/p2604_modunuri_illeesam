@@ -267,8 +267,8 @@ window.SyPathMng = {
     <!-- 트리 -->
     <div class="card" style="padding:12px;position:sticky;top:0">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:13px;font-weight:600;color:#555">📂 경로 트리</span>
-        <div v-if="uiState.selectedPathId != null" style="font-size:11px;color:#1677ff;cursor:pointer" @click="uiState.selectedPathId=null">전체보기</div>
+        <span style="font-size:13px;font-weight:600;color:#555">📂 경로 트리 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#sy_path</span></span>
+        <div v-if="uiState.selectedPathId != null" style="font-size:11px;color:#1677ff;cursor:pointer" @click="selectNode(null)">전체보기</div>
       </div>
       <div style="display:flex;gap:4px;margin-bottom:8px">
         <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="expandAll">▼ 전체</button>

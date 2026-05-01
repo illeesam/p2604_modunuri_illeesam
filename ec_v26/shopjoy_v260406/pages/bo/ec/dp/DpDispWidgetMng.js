@@ -130,16 +130,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
     const onSizeChange = () => { pager.pageNo = 1; };
 
     /* ── 표시경로 트리 ── */
-    const expanded = reactive(new Set([null]));
-    const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; };
-    const cfTree = computed(() => boUtil.buildPathTree('ec_disp_widget'));
-    const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
-    const collapseAll = () => { expanded.clear(); expanded.add(null); };
-    onMounted(() => {
-      const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
-      expanded.clear(); initSet.forEach(v => expanded.add(v));
-    });
     const handleDelete = async (d) => {
       const ok = await props.showConfirm('삭제', '삭제하시겠습니까?');
       if (!ok) return;
@@ -164,7 +155,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
       handleLoadDetail, openNew, closeDetail, inlineNavigate,
       cfDetailEditId, cfDetailKey,
       cfFiltered, cfTotalCount, cfTotalPages, cfPageList, cfPageNums,
-      cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
+      selectNode,
       fnStatusCls, contentSummary, handleDelete,
     };
   },
@@ -209,13 +200,12 @@ const applied = reactive({ kw: '', type: '', status: '' });
 
   <!-- ── 좌측 표시경로 ──────────────────────────────────────────────────────── -->
   <div class="card" style="width:240px;min-width:180px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
-    <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
-    <div style="display:flex;gap:4px;margin-bottom:8px;">
-      <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
-      <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+    <div class="toolbar" style="margin-bottom:6px;">
+      <span class="list-title" style="font-size:13px;">📂 표시경로 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#ec_disp_widget</span></span>
+      <span v-if="uiState.selectedPath != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
     </div>
     <div style="max-height:65vh;overflow:auto;">
-      <path-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+      <path-tree biz-cd="ec_disp_widget" :selected="uiState.selectedPath" @select="selectNode" />
     </div>
   </div>
 

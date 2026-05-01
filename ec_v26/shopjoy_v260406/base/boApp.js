@@ -2102,6 +2102,7 @@
   .component('SyI18nMng',      window.SyI18nMng)
   .component('PathTree',            window.PathTree)
   .component('PathTreeNode',        window.PathTreeNode)
+  .component('CategoryTree',        window.CategoryTree)
   .component('PathParentSelector',  window.PathParentSelector)
   .component('PathPickModal',  window.PathPickModal)
   .component('BizPickModal',   window.BizPickModal)

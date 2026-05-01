@@ -39,19 +39,12 @@ window.SyMenuMng = {
     });
 
     /* 좌측 메뉴 트리 */
-        const expanded = reactive(new Set([null]));
-    const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
     const selectNode = (id) => { uiState.selectedTreeId = id; };
-    const cfTree = computed(() => boUtil.buildMenuTree());
-    const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
-    const collapseAll = () => { expanded.clear(); expanded.add(null); };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
-      expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
     });
 
@@ -253,7 +246,7 @@ window.SyMenuMng = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { menus, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
+    return { menus, uiState, codes, selectNode,
       searchParam, searchParamOrg,
       cfSiteNm,
       gridRows, cfTotal,
@@ -291,13 +284,12 @@ window.SyMenuMng = {
   
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
-      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 메뉴</span></div>
-      <div style="display:flex;gap:4px;margin-bottom:8px;">
-        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
-        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+      <div class="toolbar" style="margin-bottom:6px;">
+        <span class="list-title" style="font-size:13px;">📂 메뉴 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#sy_menu</span></span>
+        <span v-if="uiState.selectedTreeId != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <path-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedTreeId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <path-tree biz-cd="sy_menu" :selected="uiState.selectedTreeId" @select="selectNode" />
       </div>
     </div>
     <div>

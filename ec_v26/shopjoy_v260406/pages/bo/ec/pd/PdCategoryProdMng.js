@@ -119,23 +119,12 @@ window.PdCategoryProdMng = {
     onSearch();
   };
 
-    /* ── 트리 expanded 상태 (ref+Set 재할당으로 반응성 보장) ── */
-    const expandedSet = reactive(new Set());
-    const isExpanded  = id => expandedSet.has(id);
-    const toggleNode  = id => {
-      if (expandedSet.has(id)) expandedSet.delete(id); else expandedSet.add(id);
-    };
-    const expandAll  = () => { expandedSet.clear(); categories.forEach(c => expandedSet.add(c.categoryId)); };
-    const collapseAll = () => { expandedSet.clear(); };
-
-    /* 좌측 트리용 전체 카테고리 조회 */
+    /* 카테고리 목록 로드 (getCategoryNm 등 로컬 lookup용) */
     const handleSearchCategoriesList = async () => {
       try {
         const res = await boApiSvc.pdCategory.getPage({ pageNo: 1, pageSize: 10000 }, '카테고리관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         categories.splice(0, categories.length, ...list);
-        expandedSet.clear();
-        categories.filter(c => c.categoryDepth === 1).forEach(c => expandedSet.add(c.categoryId));
       } catch (e) {
         console.error('[handleSearchCategoriesList]', e);
       }
@@ -145,8 +134,7 @@ window.PdCategoryProdMng = {
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
       Object.assign(searchParamOrg, searchParam);
-      await handleSearchCategoriesList();
-      // handleSearchList는 선택적 - API 에러 시에도 진행
+      await handleSearchCategoriesList(); // lookup용
       try {
         await handleSearchList('DEFAULT');
       } catch (err) {
@@ -156,29 +144,13 @@ window.PdCategoryProdMng = {
 
     /* 선택된 카테고리 - selectNode 헬퍼 */
     const selectNode = id => {
+      if (id === null) { cfSelectedCatId.value = null; return; }
       cfSelectedCatId.value = (cfSelectedCatId.value === id) ? null : id;
     };
     const cfSelectedCat = computed(() => categories.find(c => c.categoryId === cfSelectedCatId.value));
     const cfIsLeafCat = computed(() => !categories.some(c => c.parentCategoryId === cfSelectedCatId.value));
 
     /* 좌측 트리 빌드 (expanded 반영) */
-    const cfCatTreeFlat = computed(() => {
-      const _ = expandedSet; // reactive dependency
-      const cats = categories;
-      const map = {};
-      window.safeArrayUtils.safeForEach(cats, c => { map[c.categoryId] = { ...c, _children: [] }; });
-      window.safeArrayUtils.safeForEach(cats, c => { if (c.parentCategoryId && map[c.parentCategoryId]) map[c.parentCategoryId]._children.push(map[c.categoryId]); });
-      const roots = window.safeArrayUtils.safeFilter(cats, c => !c.parentCategoryId).map(c => map[c.categoryId]).sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-      const result = [];
-      const traverse = (node, depth) => {
-        result.push({ ...node, _depth: depth, _hasChildren: node._children.length > 0 });
-        if (isExpanded(node.categoryId))
-          [...node._children].sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => traverse(c, depth + 1));
-      };
-      window.safeArrayUtils.safeForEach(roots, r => traverse(r, 0));
-      return result;
-    });
-
     const fnDepthColor = (d) => ({0:'#e8587a',1:'#1677ff',2:'#3ba87a'}[d] || '#999');
     const fnDepthBullet = (d) => ['●','○','▪'][d] || '·';
     const totalProdCount = (catId) => categoryProds.filter(cp => cp.categoryId === catId).length;
@@ -295,8 +267,7 @@ window.PdCategoryProdMng = {
       defaultDispStartDate, defaultDispEndDate,
       searchParam, searchParamOrg, onSearch, onReset, applied,
       pager,
-      cfCatTreeFlat, cfFilteredRows, cfPickerList,
-      expandedSet, isExpanded, toggleNode, expandAll, collapseAll,
+      cfFilteredRows, cfPickerList,
       cfSelectedCatId, cfSelectedCat, cfIsLeafCat, selectNode,
       fnDepthColor, fnDepthBullet, totalProdCount, cfTypeCountMap,
       dragoverIdx, onDragStart, onDragOver, onDrop,
@@ -330,35 +301,9 @@ window.PdCategoryProdMng = {
     <div class="card" style="padding:12px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <span style="font-size:13px;font-weight:600;color:#555">📁 카테고리</span>
-        <div v-if="cfSelectedCatId" style="font-size:11px;color:#1677ff;cursor:pointer" @click="cfSelectedCatId=null">전체</div>
+        <div v-if="cfSelectedCatId" style="font-size:11px;color:#1677ff;cursor:pointer" @click="selectNode(null)">전체</div>
       </div>
-      <div style="display:flex;gap:4px;margin-bottom:8px">
-        <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="expandAll">▼ 전체</button>
-        <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="collapseAll">▶ 닫기</button>
-      </div>
-      <div style="max-height:65vh;overflow-y:auto">
-        <div v-for="cat in cfCatTreeFlat" :key="cat?.categoryId"
-             style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:4px;padding:5px 6px"
-             :style="{ paddingLeft: (cat._depth * 14 + 6) + 'px',
-                       background: cfSelectedCatId===cat.categoryId ? '#fce4ec' : 'transparent',
-                       color: cfSelectedCatId===cat.categoryId ? '#e8587a' : '#333',
-                       borderLeft: cfSelectedCatId===cat.categoryId ? '3px solid #e8587a' : '3px solid transparent' }"
-             @click="selectNode(cat.categoryId)">
-          <span v-if="cat._hasChildren"
-                style="width:14px;text-align:center;font-size:9px;color:#aaa;flex-shrink:0"
-                @click.stop="toggleNode(cat.categoryId)">
-            {{ isExpanded(cat.categoryId) ? '▼' : '▶' }}
-          </span>
-          <span v-else style="width:14px;flex-shrink:0"></span>
-          <span :style="{ fontSize:'11px', fontWeight:700, color:fnDepthColor(cat._depth) }">{{ fnDepthBullet(cat._depth) }}</span>
-          <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ cat.categoryNm }}</span>
-          <span v-if="totalProdCount(cat.categoryId) > 0"
-                style="font-size:10px;background:#1677ff;color:#fff;border-radius:8px;padding:0 5px;flex-shrink:0">
-            {{ totalProdCount(cat.categoryId) }}
-          </span>
-        </div>
-        <div v-if="!cfCatTreeFlat.length" style="text-align:center;padding:20px;color:#aaa;font-size:12px">카테고리 없음</div>
-      </div>
+      <category-tree mode="tree" :selected="cfSelectedCatId" :show-count="totalProdCount" @select="selectNode" />
     </div>
 
     <!-- ── 우측 상품 목록 ───────────────────────────────────────────────────── -->

@@ -79,31 +79,14 @@ window.SyPropMng = {
       return rows.filter(r => r.siteId == sid || r.siteId == null);
     });
 
-    /* ── 트리 구성 (disp_path 점 분리) ── */
-    const cfTree = computed(() => boUtil.buildPathTree('sy_prop'));
-
-    /* ── 트리 펼침 상태 ── */
-    const expanded = reactive(new Set(['']));
-    const toggleNode = (path) => {
-      if (expanded.has(path)) expanded.delete(path); else expanded.add(path);
-    };
-    const expandAll = () => {
-      const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); };
-      walk(cfTree.value);
-    };
-    const collapseAll = () => { expanded.clear(); expanded.add(''); };
-    /* _expand3: 기본 3레벨 펼침 */
-
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       fetchData('DEFAULT');
-      const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
-      expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 
     /* ── 선택 노드 ── */
-        const selectNode = (path) => { uiState.selectedPath = path; };
+    const selectNode = (path) => { uiState.selectedPath = path; };
 
     /* ── 그리드에 표시할 행: 선택 노드의 path로 시작하는 모든 항목 ── */
     const cfGridRows = computed(() => {
@@ -220,7 +203,7 @@ window.SyPropMng = {
     return {
       uiState, codes,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      searchParam, applied, cfTree, expanded, toggleNode, expandAll, collapseAll,
+      searchParam, applied,
       selectNode, cfGridRows, cfDirtyRows,
       fetchData,
       onChange, addRow, delRow, cancelRow, handleSave, onReset, exportCsv,
@@ -256,13 +239,12 @@ window.SyPropMng = {
 
     <!-- ── 트리 ─────────────────────────────────────────────────────────── -->
     <div class="card" style="padding:12px;">
-      <div style="display:flex;gap:4px;margin-bottom:8px;">
-        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
-        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+      <div class="toolbar" style="margin-bottom:6px;">
+        <span class="list-title" style="font-size:13px;">📂 표시경로 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#sy_prop</span></span>
+        <span v-if="uiState.selectedPath != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <path-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath"
-          :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <path-tree biz-cd="sy_prop" :selected="uiState.selectedPath" @select="selectNode" />
       </div>
     </div>
 

@@ -50,18 +50,14 @@ window.PdCategoryMng = {
       categoryStatusCd: ''
     });
 
-    /* ── 트리 expanded 상태 (ref+Set 재할당으로 반응성 보장) ── */
-    const expandedSet = reactive(new Set());
-
-    /* depth 1 노드 기본 펼침 (2레벨 노출) */
-    /* 좌측 트리용 전체 카테고리 조회 (트리 렌더링 전용) */
+    /* 좌측 트리용 전체 카테고리 조회 (그리드/트리 캐시 갱신) */
     const handleSearchList = async () => {
       try {
         const res = await boApiSvc.pdCategory.getPage({ pageNo: 1, pageSize: 10000 }, '카테고리관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         categories.splice(0, categories.length, ...list);
-        expandedSet.clear();
-        categories.filter(c => c.categoryDepth === 1).forEach(c => expandedSet.add(c.categoryId));
+        // CategoryTree 컴포넌트 캐시 무효화 → 저장 후 트리 갱신
+        if (window._categoryTreeCache) window._categoryTreeCache.list = null;
       } catch (e) {
         console.error('[handleSearchList]', e);
       }
@@ -89,37 +85,14 @@ window.PdCategoryMng = {
       await handleSearchList();
       await handleGridSearch();
     });
-    const isExpanded  = id => expandedSet.has(id);
-    const toggleNode  = id => {
-      if (expandedSet.has(id)) expandedSet.delete(id); else expandedSet.add(id);
-    };
-    const expandAll  = () => { expandedSet.clear(); categories.forEach(c => expandedSet.add(c.categoryId)); };
-    const collapseAll = () => { expandedSet.clear(); };
 
     /* ── 선택된 카테고리 (좌측 트리 클릭) ── */
-        const selectNode = id => {
+    const selectNode = id => {
+      if (id === null) { uiState.selectedCatId = null; return; }
       uiState.selectedCatId = (uiState.selectedCatId === id) ? null : id;
     };
 
     watch(() => uiState.selectedCatId, () => handleGridSearch());
-
-    /* ── 좌측 트리 빌드 (expanded 반영) ── */
-    const cfCatTreeFlat = computed(() => {
-      const _ = expandedSet; // reactive dependency
-      const cats = categories;
-      const map = {};
-      window.safeArrayUtils.safeForEach(cats, c => { map[c.categoryId] = { ...c, _children: [] }; });
-      window.safeArrayUtils.safeForEach(cats, c => { if (c.parentCategoryId && map[c.parentCategoryId]) map[c.parentCategoryId]._children.push(map[c.categoryId]); });
-      const roots = window.safeArrayUtils.safeFilter(cats, c => !c.parentCategoryId).map(c => map[c.categoryId]).sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-      const result = [];
-      const traverse = (node, depth) => {
-        result.push({ ...node, _depth: depth, _hasChildren: node._children.length > 0 });
-        if (isExpanded(node.categoryId))
-          [...node._children].sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => traverse(c, depth + 1));
-      };
-      window.safeArrayUtils.safeForEach(roots, r => traverse(r, 0));
-      return result;
-    });
 
 
     /* ── 그리드 ── */
@@ -345,7 +318,6 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
 
     return {
       codes, uiState,
-      expandedSet, isExpanded, toggleNode, expandAll, collapseAll, cfCatTreeFlat,
       selectNode, handleGridSearch,
       searchParam, searchParamOrg,
       gridRows, cfPagedRows, cfTotal, pager, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
@@ -401,33 +373,9 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     <div class="card" style="padding:12px;position:sticky;top:0">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <span style="font-size:13px;font-weight:600;color:#555">📁 카테고리</span>
-        <div v-if="uiState.selectedCatId" style="font-size:11px;color:#1677ff;cursor:pointer" @click="uiState.selectedCatId=null">전체보기</div>
+        <div v-if="uiState.selectedCatId" style="font-size:11px;color:#1677ff;cursor:pointer" @click="selectNode(null)">전체보기</div>
       </div>
-      <div style="display:flex;gap:4px;margin-bottom:8px">
-        <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="expandAll">▼ 전체</button>
-        <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="collapseAll">▶ 닫기</button>
-      </div>
-      <div style="max-height:60vh;overflow-y:auto">
-        <div v-for="cat in cfCatTreeFlat" :key="cat?.categoryId"
-             :style="{ paddingLeft: (cat._depth * 14 + 6) + 'px', cursor:'pointer', padding:'5px 8px',
-                       borderRadius:'4px', paddingLeft: (cat._depth * 14 + 6) + 'px',
-                       background: uiState.selectedCatId===cat.categoryId ? '#fce4ec' : 'transparent',
-                       color: uiState.selectedCatId===cat.categoryId ? '#e8587a' : '#333',
-                       fontWeight: uiState.selectedCatId===cat.categoryId ? 600 : 400,
-                       borderLeft: uiState.selectedCatId===cat.categoryId ? '3px solid #e8587a' : '3px solid transparent' }"
-             @click="selectNode(cat.categoryId)">
-          <span v-if="cat._hasChildren"
-                style="display:inline-block;width:14px;text-align:center;font-size:9px;color:#aaa;cursor:pointer;margin-right:2px"
-                @click.stop="toggleNode(cat.categoryId)">
-            {{ isExpanded(cat.categoryId) ? '▼' : '▶' }}
-          </span>
-          <span v-else style="display:inline-block;width:16px"></span>
-          <span :style="{ fontSize:'11px', fontWeight:600, color:fnDepthColor(cat._depth), marginRight:'5px' }">{{ fnDepthBullet(cat._depth) }}</span>
-          <span style="font-size:12px">{{ cat.categoryNm }}</span>
-          <span v-if="cat.categoryStatusCd==='INACTIVE'" style="font-size:10px;color:#bbb;margin-left:4px">(비활성)</span>
-        </div>
-        <div v-if="!cfCatTreeFlat.length" style="text-align:center;padding:20px;color:#aaa;font-size:12px">카테고리 없음</div>
-      </div>
+      <category-tree mode="tree" :selected="uiState.selectedCatId" @select="selectNode" />
     </div>
 
     <!-- ── 우측: 카테고리 그리드 ───────────────────────────────────────────────── -->

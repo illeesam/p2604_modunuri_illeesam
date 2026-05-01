@@ -90,13 +90,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     /* ── 카테고리 N개 ── */
     const dtlCategories   = reactive([]);
-    const cfCatPickerList   = computed(() => {
-      const q    = uiState.catPickerSearch.trim().toLowerCase();
-      const used = new Set(dtlCategories.map(c => String(c.categoryId)));
-      return (categories || []).filter(c =>
-        !used.has(String(c.categoryId)) && (!q || (c.categoryNm || '').toLowerCase().includes(q))
-      );
-    });
+    const cfCatExcludeSet = computed(() => new Set(dtlCategories.map(c => String(c.categoryId))));
 
     const onCatDragStart = idx => { uiState.catDragIdx = idx; };
     const onCatDragOver  = idx => { uiState.catDragoverIdx = idx; };
@@ -112,8 +106,8 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     };
     const addCategory    = cat => {
       if (window.safeArrayUtils.safeSome(dtlCategories, c => String(c.categoryId) === String(cat.categoryId))) return;
-      dtlCategories.push({ categoryId: cat.categoryId, categoryNm: cat.categoryNm, depth: cat.depth || 1 });
-      uiState.catPickerOpen = false; uiState.catPickerSearch = '';
+      dtlCategories.push({ categoryId: cat.categoryId, categoryNm: cat.categoryNm, depth: cat.depth || cat.categoryDepth || 1 });
+      uiState.catPickerOpen = false;
     };
     const removeCategory = idx => dtlCategories.splice(idx, 1);
     const getCategoryNm  = id => { const c = (categories||[]).find(c=>c.categoryId==id); return c ? c.categoryNm : String(id); };
@@ -362,7 +356,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList,
       onSearch, onReset, getProdNm, getProd, getBrandNm,
       getCategoryNm, getCategoryDepth,
-      dtlCategories, cfCatPickerList,
+      dtlCategories, cfCatExcludeSet,
       addCategory, removeCategory, onCatDragStart, onCatDragOver, onCatDrop,
       newForm, newErrors, cfDtlProdNm,
       dtlItems, openNew, openDtl, closeDtl, handleSave, handleDelete,
@@ -575,7 +569,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
             <span style="font-size:13px;flex:1">{{ cat.categoryNm }}</span>
             <button type="button" @click="removeCategory(idx)" style="border:none;background:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0">✕</button>
           </div>
-          <button type="button" @click="uiState.catPickerOpen=true;uiState.catPickerSearch=''"
+          <button type="button" @click="uiState.catPickerOpen=true"
                   style="margin-top:4px;font-size:12px;color:#6366f1;border:1px dashed #a5b4fc;background:none;border-radius:4px;padding:2px 8px;cursor:pointer;width:100%">+ 카테고리 추가</button>
         </div>
       </div>
@@ -700,30 +694,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
   </teleport>
 
   <!-- ── 카테고리 피커 모달 ───────────────────────────────────────────────────── -->
-  <teleport to="body">
-    <div v-if="uiState.catPickerOpen"
-         style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
-         @click.self="uiState.catPickerOpen=false">
-      <div style="background:#fff;border-radius:12px;width:420px;max-height:520px;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.18)">
-        <div style="padding:16px 20px 12px;border-bottom:1px solid #f0f0f0;background:linear-gradient(135deg,#fff0f4,#ffe4ec);border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between">
-          <span style="font-weight:700;font-size:15px">카테고리 선택</span>
-          <button type="button" @click="uiState.catPickerOpen=false" style="border:none;background:none;font-size:18px;cursor:pointer;color:#888">✕</button>
-        </div>
-        <div style="padding:10px 16px">
-          <input class="form-control" v-model="uiState.catPickerSearch" placeholder="카테고리 검색..." style="font-size:13px">
-        </div>
-        <div style="overflow-y:auto;flex:1;padding:0 8px 12px">
-          <div v-if="cfCatPickerList.length===0" style="text-align:center;color:#aaa;padding:24px;font-size:13px">검색 결과 없음</div>
-          <div v-for="cat in cfCatPickerList" :key="cat?.categoryId"
-               @click="addCategory(cat)"
-               style="padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px"
-               onmouseover="this.style.background='#f5f3ff'" onmouseout="this.style.background=''">
-            <span style="font-size:10px;color:#94a3b8;width:20px;flex-shrink:0">{{ ['','대','중','소'][cat.depth||1]||'' }}</span>
-            <span>{{ cat.categoryNm }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </teleport>
+  <category-tree mode="picker" :show="uiState.catPickerOpen" :exclude-ids="cfCatExcludeSet"
+                 @select="addCategory" @close="uiState.catPickerOpen=false" />
 </div>`
 };

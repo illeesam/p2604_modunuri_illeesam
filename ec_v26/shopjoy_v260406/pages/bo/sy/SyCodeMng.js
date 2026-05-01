@@ -40,7 +40,6 @@ window.SyCodeMng = {
       pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {},
     });
     const pathPickModal     = reactive({ show: false, row: null }); // 표시경로 선택 모달
-    const grpExpanded       = reactive(new Set(['']));              // 그룹 트리 펼침 상태
     const cfCodeTreeExpanded = reactive(new Set());                 // 코드 트리 펼침 상태
 
     let _tempId    = -1;
@@ -63,7 +62,6 @@ window.SyCodeMng = {
     const cfSiteNm         = computed(() => boUtil.getSiteNm()); // 현재 사이트명
     const cfGrpOptions     = computed(() => [...new Set(codes.map(c => c.codeGrp))].sort()); // 그룹 선택 옵션
 
-    const cfGrpTree        = computed(() => boUtil.buildPathTree('sy_code_grp')); // 표시경로 트리
     const cfFilteredGrpRows = computed(() => {              // 검색조건 + 트리 경로 필터된 그룹 행
       const sp = uiState.grpSelectedPath;
       const kw = (searchParam.kw || '').toLowerCase();
@@ -241,8 +239,6 @@ window.SyCodeMng = {
       loadGrp();
       handleSearchList('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
-      const initSet = boUtil.collectExpandedToDepth(cfGrpTree.value, 2);
-      grpExpanded.clear(); initSet.forEach(v => grpExpanded.add(v));
     });
 
     // ── 이벤트 함수 모음 ──────────────────────────────────────────────────────
@@ -483,11 +479,8 @@ window.SyCodeMng = {
     const openPathPick  = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
 
-    // 그룹 트리 펼침/닫힘/선택
-    const grpToggleNode  = (path) => { if (grpExpanded.has(path)) grpExpanded.delete(path); else grpExpanded.add(path); };
+    // 그룹 트리 선택
     const grpSelectNode  = (path) => { uiState.grpSelectedPath = path; };
-    const grpExpandAll   = () => { const walk = (n) => { grpExpanded.add(n.path); n.children.forEach(walk); }; walk(cfGrpTree.value); };
-    const grpCollapseAll = () => { grpExpanded.clear(); grpExpanded.add(''); };
 
     // 코드 트리 노드 펼침 토글
     const codeToggleNode = (codeValue) => {
@@ -531,7 +524,7 @@ window.SyCodeMng = {
       fnGetCodeCountByGrp,
       codeGroups,
       grpRows, addGrp, handleDeleteGrp, cancelGrp, handleSaveGrp, onGrpChange,
-      cfGrpTree, grpExpanded, grpToggleNode, grpSelectNode, grpExpandAll, grpCollapseAll,
+      grpSelectNode,
       cfFilteredGrpRows, cfGrpPagedRows, cfGrpTotalPages, cfGrpPageNums,
       grpPager, GRP_PAGE_SIZES, setGrpPage, onGrpSizeChange, onGrpRowClick,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
@@ -577,15 +570,11 @@ window.SyCodeMng = {
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;margin-bottom:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;">
-        <span class="list-title" style="font-size:13px;">📂 표시경로 <span class="list-count">{{ cfGrpTree.count }}</span></span>
-      </div>
-      <div style="display:flex;gap:4px;margin-bottom:8px;">
-        <button class="btn btn-sm" @click="grpExpandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
-        <button class="btn btn-sm" @click="grpCollapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+        <span class="list-title" style="font-size:13px;">📂 표시경로 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#sy_code_grp</span></span>
+        <span v-if="uiState.grpSelectedPath != null" @click="grpSelectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
       </div>
       <div style="max-height:50vh;overflow:auto;">
-        <path-tree-node :node="cfGrpTree" :expanded="grpExpanded" :selected="uiState.grpSelectedPath"
-          :on-toggle="grpToggleNode" :on-select="grpSelectNode" :depth="0" />
+        <path-tree biz-cd="sy_code_grp" :selected="uiState.grpSelectedPath" @select="grpSelectNode" />
       </div>
     </div>
 

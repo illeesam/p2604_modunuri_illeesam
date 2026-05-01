@@ -154,6 +154,208 @@ window.PathTreeNode = {
 </div>`,
 };
 
+/* ── CategoryTree — 카테고리 트리 패널 & 피커 모달 ──────────────────────────
+ * mode="tree"   — 좌측 패널 트리 (PdCategoryMng, PdCategoryProdMng)
+ *   props: selected(categoryId), onSelect(id), showCount(fn)
+ *   emits: select(categoryId | null)
+ *
+ * mode="picker" — 카테고리 선택 모달 (PdProdDtl)
+ *   props: show(bool), excludeIds(Set<string>)
+ *   emits: select(cat), close
+ *
+ * 공통: API에서 카테고리 목록을 자체 조회 (boApiSvc.pdCategory.getPage)
+ *       전체펼치기/닫기, 검색(picker), depth 색상/기호 내장
+ * ──────────────────────────────────────────────────────────────────────── */
+window.CategoryTree = {
+  name: 'CategoryTree',
+  props: {
+    mode:       { type: String,   default: 'tree' },   // 'tree' | 'picker'
+    selected:   { default: null },                      // tree mode: 선택된 categoryId
+    showCount:  { type: Function, default: null },      // tree mode: 카운트 표시 fn(categoryId)→number
+    show:       { type: Boolean,  default: false },     // picker mode: 모달 표시
+    excludeIds: { type: Object,   default: () => new Set() }, // picker mode: 제외할 categoryId Set
+  },
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const { ref, reactive, computed, watch, onMounted } = Vue;
+
+    const _cache = (window._categoryTreeCache = window._categoryTreeCache || { list: null });
+
+    const categories = reactive([]);
+    const expandedSet = reactive(new Set());
+    const loading = ref(false);
+    const pickerSearch = ref('');
+
+    const DEPTH_COLOR  = d => ({0:'#e8587a', 1:'#1677ff', 2:'#3ba87a'}[d] || '#999');
+    const DEPTH_BULLET = d => ['●','○','▪'][d] || '·';
+
+    const load = async () => {
+      if (_cache.list) {
+        categories.splice(0, categories.length, ..._cache.list);
+        _initExpanded();
+        return;
+      }
+      loading.value = true;
+      try {
+        const res = await boApiSvc.pdCategory.getPage({ pageNo: 1, pageSize: 10000 }, '카테고리', '조회');
+        const list = res.data?.data?.pageList || res.data?.data?.list || [];
+        _cache.list = list;
+        categories.splice(0, categories.length, ...list);
+        _initExpanded();
+      } catch (e) {
+        console.error('[CategoryTree] load error', e);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const _initExpanded = () => {
+      expandedSet.clear();
+      categories.filter(c => c.categoryDepth === 1).forEach(c => expandedSet.add(c.categoryId));
+    };
+
+    const cfTreeFlat = computed(() => {
+      const _ = expandedSet;
+      const map = {};
+      categories.forEach(c => { map[c.categoryId] = { ...c, _children: [] }; });
+      categories.forEach(c => { if (c.parentCategoryId && map[c.parentCategoryId]) map[c.parentCategoryId]._children.push(map[c.categoryId]); });
+      const roots = categories.filter(c => !c.parentCategoryId).map(c => map[c.categoryId]).sort((a, b) => (a.sortOrd||0)-(b.sortOrd||0));
+      const result = [];
+      const traverse = (node, depth) => {
+        result.push({ ...node, _depth: depth, _hasChildren: node._children.length > 0 });
+        if (expandedSet.has(node.categoryId))
+          [...node._children].sort((a,b)=>(a.sortOrd||0)-(b.sortOrd||0)).forEach(c => traverse(c, depth+1));
+      };
+      roots.forEach(r => traverse(r, 0));
+      return result;
+    });
+
+    const cfPickerList = computed(() => {
+      const q = pickerSearch.value.trim().toLowerCase();
+      return categories.filter(c => {
+        if (props.excludeIds?.has(String(c.categoryId))) return false;
+        if (!q) return true;
+        return (c.categoryNm||'').toLowerCase().includes(q);
+      }).sort((a,b) => (a.categoryDepth||1)-(b.categoryDepth||1));
+    });
+
+    const toggleNode  = id => { if (expandedSet.has(id)) expandedSet.delete(id); else expandedSet.add(id); };
+    const expandAll   = () => { expandedSet.clear(); categories.forEach(c => expandedSet.add(c.categoryId)); };
+    const collapseAll = () => { expandedSet.clear(); };
+    const onSelect    = id => emit('select', id);
+    const onClose     = ()  => { pickerSearch.value = ''; emit('close'); };
+    const onPickerSelect = cat => { pickerSearch.value = ''; emit('select', cat); };
+
+    // picker: show 될 때마다 검색어 초기화
+    watch(() => props.show, v => { if (v) pickerSearch.value = ''; });
+
+    onMounted(load);
+
+    return { loading, categories, cfTreeFlat, cfPickerList, expandedSet, pickerSearch,
+             toggleNode, expandAll, collapseAll, onSelect, onClose, onPickerSelect,
+             DEPTH_COLOR, DEPTH_BULLET };
+  },
+  template: /* html */`
+<template v-if="mode==='tree'">
+  <div v-if="loading" style="font-size:11px;color:#aaa;padding:12px;text-align:center;">로딩중...</div>
+  <template v-else>
+    <div style="display:flex;gap:4px;margin-bottom:8px">
+      <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="expandAll">▼ 전체</button>
+      <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="collapseAll">▶ 닫기</button>
+    </div>
+    <!-- 전체 루트 항목 -->
+    <div style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px;margin-bottom:2px"
+         :style="{ background: selected===null ? '#fce4ec' : 'transparent',
+                   color:      selected===null ? '#e8587a' : '#555',
+                   fontWeight: selected===null ? 700 : 500,
+                   borderLeft: selected===null ? '3px solid #e8587a' : '3px solid transparent' }"
+         @click="onSelect(null)">
+      <span style="width:14px;flex-shrink:0"></span>
+      <span style="font-size:11px;font-weight:700;color:#e8587a;margin-right:4px">★</span>
+      <span style="font-size:12px">전체</span>
+    </div>
+    <div v-for="cat in cfTreeFlat" :key="cat.categoryId"
+         style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px"
+         :style="{ paddingLeft:(cat._depth*14+6)+'px',
+                   background: selected===cat.categoryId ? '#fce4ec' : 'transparent',
+                   color:      selected===cat.categoryId ? '#e8587a' : '#333',
+                   fontWeight: selected===cat.categoryId ? 600 : 400,
+                   borderLeft: selected===cat.categoryId ? '3px solid #e8587a' : '3px solid transparent' }"
+         @click="onSelect(cat.categoryId)">
+      <span v-if="cat._hasChildren"
+            style="width:14px;text-align:center;font-size:9px;color:#aaa;flex-shrink:0"
+            @click.stop="toggleNode(cat.categoryId)">{{ expandedSet.has(cat.categoryId) ? '▼' : '▶' }}</span>
+      <span v-else style="width:14px;flex-shrink:0"></span>
+      <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR(cat._depth), marginRight:'4px' }">{{ DEPTH_BULLET(cat._depth) }}</span>
+      <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ cat.categoryNm }}</span>
+      <span v-if="showCount && showCount(cat.categoryId) > 0"
+            style="font-size:10px;background:#1677ff;color:#fff;border-radius:8px;padding:0 5px;flex-shrink:0">
+        {{ showCount(cat.categoryId) }}
+      </span>
+      <span v-if="cat.categoryStatusCd==='INACTIVE'" style="font-size:10px;color:#bbb;margin-left:4px">(비활성)</span>
+    </div>
+    <div v-if="!cfTreeFlat.length" style="text-align:center;padding:20px;color:#aaa;font-size:12px">카테고리 없음</div>
+  </template>
+</template>
+<teleport v-else-if="mode==='picker'" to="body">
+  <div v-if="show" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center;" @click.self="onClose">
+    <div style="background:#fff;border-radius:12px;width:420px;max-height:520px;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+      <div style="padding:16px 20px 12px;border-bottom:1px solid #f0f0f0;background:linear-gradient(135deg,#fff0f4,#ffe4ec);border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-weight:700;font-size:15px;">카테고리 선택</span>
+        <button type="button" @click="onClose" style="border:none;background:none;font-size:18px;cursor:pointer;color:#888;">✕</button>
+      </div>
+      <div style="padding:8px 12px;">
+        <input class="form-control" v-model="pickerSearch" placeholder="카테고리 검색..." style="font-size:13px;" />
+      </div>
+      <div style="overflow-y:auto;flex:1;padding:4px 8px 12px;">
+        <!-- 검색어 없음: 트리 뷰 -->
+        <template v-if="!pickerSearch.trim()">
+          <div v-if="loading" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">로딩중...</div>
+          <template v-else>
+            <div style="display:flex;gap:4px;margin:0 4px 6px">
+              <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="expandAll">▼ 전체</button>
+              <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="collapseAll">▶ 닫기</button>
+            </div>
+            <div v-for="cat in cfTreeFlat" :key="cat.categoryId"
+                 style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px"
+                 :style="{ paddingLeft:(cat._depth*14+6)+'px',
+                           opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1,
+                           pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto' }"
+                 @mouseover="$event.currentTarget.style.background='#fce4ec'"
+                 @mouseout="$event.currentTarget.style.background=''"
+                 @click="onPickerSelect(cat)">
+              <span v-if="cat._hasChildren"
+                    style="width:14px;text-align:center;font-size:9px;color:#aaa;flex-shrink:0"
+                    @click.stop="toggleNode(cat.categoryId)">{{ expandedSet.has(cat.categoryId) ? '▼' : '▶' }}</span>
+              <span v-else style="width:14px;flex-shrink:0"></span>
+              <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR(cat._depth), marginRight:'4px' }">{{ DEPTH_BULLET(cat._depth) }}</span>
+              <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ cat.categoryNm }}</span>
+              <span v-if="cat.categoryStatusCd==='INACTIVE'" style="font-size:10px;color:#bbb;margin-left:4px">(비활성)</span>
+            </div>
+            <div v-if="!cfTreeFlat.length" style="text-align:center;padding:20px;color:#aaa;font-size:12px">카테고리 없음</div>
+          </template>
+        </template>
+        <!-- 검색어 있음: flat 필터 목록 -->
+        <template v-else>
+          <div v-if="cfPickerList.length===0" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">검색 결과 없음</div>
+          <div v-for="cat in cfPickerList" :key="cat.categoryId"
+               @click="onPickerSelect(cat)"
+               style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 10px;"
+               :style="{ opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1,
+                         pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto' }"
+               @mouseover="$event.currentTarget.style.background='#fce4ec'"
+               @mouseout="$event.currentTarget.style.background=''">
+            <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR((cat.categoryDepth||1)-1) }">{{ DEPTH_BULLET((cat.categoryDepth||1)-1) }}</span>
+            <span style="font-size:12px">{{ cat.categoryNm }}</span>
+            <span style="font-size:10px;color:#bbb;margin-left:auto">{{ ['','대','중','소'][cat.categoryDepth||1]||'' }}</span>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</teleport>`,
+};
+
 /* ── PathParentSelector 재귀 노드 ──────────────────────────────────────── */
 window.PathParentSelector = {
   name: 'PathParentSelector',

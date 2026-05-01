@@ -369,16 +369,7 @@ window.DpDispPanelMng = {
     const onWidgetDragEnd = () => { uiState.widgetDragPanel = null; uiState.widgetDragSrcWi = null; uiState.widgetDragOverWi = null; };
 
     /* ── 표시경로 트리 (sy_path 기반) ── */
-    const pathExpanded = reactive(new Set([null]));
-    const togglePathNode = (id) => { if (pathExpanded.has(id)) pathExpanded.delete(id); else pathExpanded.add(id); };
     const selectPathNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; };
-    const cfPathTree = computed(() => boUtil.buildPathTree('ec_disp_panel'));
-    const expandPathAll = () => { const walk = (n) => { pathExpanded.add(n.pathId); n.children.forEach(walk); }; walk(cfPathTree.value); };
-    const collapsePathAll = () => { pathExpanded.clear(); pathExpanded.add(null); };
-    onMounted(() => {
-      const initSet = boUtil.collectExpandedToDepth(cfPathTree.value, 2);
-      pathExpanded.clear(); initSet.forEach(v => pathExpanded.add(v));
-    });
 
     /* ── 표시경로 (영역별 그룹) ── */
       const searchParam = reactive({
@@ -451,7 +442,7 @@ window.DpDispPanelMng = {
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), panels, uiState, fnPathLabel, displays, codes,
       cfPanelTree, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll,
-      pathExpanded, togglePathNode, selectPathNode, cfPathTree, expandPathAll, collapsePathAll,
+      selectPathNode,
       onDateRangeChange: handleDateRangeChange, cfSiteNm, searchParam, searchParamOrg, pager, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, fnWLabel, openCardPreview, closeCardPreview, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd, setDispNow };
   },
   template: /* html */`
@@ -495,13 +486,12 @@ window.DpDispPanelMng = {
   <div style="display:flex;gap:12px;align-items:flex-start;">
   <!-- ── 좌측 표시경로 ──────────────────────────────────────────────────────── -->
   <div class="card" style="width:240px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
-    <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
-    <div style="display:flex;gap:4px;margin-bottom:8px;">
-      <button class="btn btn-sm" @click="expandPathAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
-      <button class="btn btn-sm" @click="collapsePathAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+    <div class="toolbar" style="margin-bottom:6px;">
+      <span class="list-title" style="font-size:13px;">📂 표시경로 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#ec_disp_panel</span></span>
+      <span v-if="uiState.selectedPath != null" @click="selectPathNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
     </div>
     <div style="max-height:55vh;overflow:auto;">
-      <path-tree-node :node="cfPathTree" :expanded="pathExpanded" :selected="uiState.selectedPath" :on-toggle="togglePathNode" :on-select="selectPathNode" :depth="0" />
+      <path-tree biz-cd="ec_disp_panel" :selected="uiState.selectedPath" @select="selectPathNode" />
     </div>
   </div>
 
