@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
-import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
+import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 /**
  * FO 캐쉬(충전금) 서비스 — 현재 회원의 잔액 조회

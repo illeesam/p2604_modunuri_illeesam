@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
+import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 /**
  * FO 주문 서비스 — 주문 생성 및 내 주문 조회

@@ -1,7 +1,7 @@
 package com.shopjoy.ecadminapi.common.config;
 
-import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
-import com.shopjoy.ecadminapi.auth.security.JwtAuthFilter;
+import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
+import com.shopjoy.ecadminapi.co.auth.security.JwtAuthFilter;
 import com.shopjoy.ecadminapi.common.license.LicenseFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -95,10 +95,8 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // /api/auth/bo/me, /api/auth/fo/me 는 인증 필수
-                // .requestMatchers("/api/auth/bo/me", "/api/auth/fo/me").access(BO_OR_FO)
-                // 나머지 인증 엔드포인트는 누구나 (login/join/refresh/logout)
-                .requestMatchers("/api/auth/bo/**", "/api/auth/fo/**").permitAll()
+                // /api/co/bo-auth/**, /api/co/fo-auth/** — 누구나 (login/join/refresh/logout)
+                .requestMatchers("/api/co/bo-auth/**", "/api/co/fo-auth/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 

@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.sch.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
+import com.shopjoy.ecadminapi.co.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
 import com.shopjoy.ecadminapi.base.sy.repository.SyBatchRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;

@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
+import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 /**
  * FO 장바구니 서비스 — 현재 로그인 회원의 장바구니 관리

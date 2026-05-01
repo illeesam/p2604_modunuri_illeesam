@@ -57,7 +57,8 @@ import java.util.Set;
  *          └─ 모두 통과 → chain.doFilter() → 다음 필터/컨트롤러 진행
  *
  * ── 검증 제외 경로 ────────────────────────────────────────────────
- *   /api/auth/**               로그인 API (라이선스 로드 전 호출)
+ *   /api/co/bo-auth/**         BO 로그인 API (라이선스 로드 전 호출)
+ *   /api/co/fo-auth/**         FO 로그인 API (라이선스 로드 전 호출)
  *   /api/co/cm/fo-app-store/** FO 초기화 데이터
  *   /api/co/cm/bo-app-store/** BO 초기화 데이터
  *   /actuator/**               헬스체크
@@ -91,7 +92,8 @@ public class LicenseFilter extends OncePerRequestFilter {
 
     /* 검증 제외 경로 prefix */
     private static final Set<String> SKIP_PREFIXES = Set.of(
-        "/api/auth/",
+        "/api/co/bo-auth",
+        "/api/co/fo-auth",
         "/api/co/cm/fo-app-store",
         "/api/co/cm/bo-app-store",
         "/actuator"

@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.auth.service;
+package com.shopjoy.ecadminapi.co.auth.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
 import jakarta.persistence.EntityManager;

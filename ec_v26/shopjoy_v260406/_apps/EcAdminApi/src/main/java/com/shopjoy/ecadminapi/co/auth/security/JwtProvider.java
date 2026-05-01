@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.auth.security;
+package com.shopjoy.ecadminapi.co.auth.security;
 
-import com.shopjoy.ecadminapi.auth.data.dto.AccessTokenClaims;
+import com.shopjoy.ecadminapi.co.auth.data.dto.AccessTokenClaims;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;

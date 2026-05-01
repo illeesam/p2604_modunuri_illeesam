@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.FoOnly;
+import com.shopjoy.ecadminapi.co.auth.annotation.FoOnly;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
 import com.shopjoy.ecadminapi.fo.ec.service.FoOdOrderService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;

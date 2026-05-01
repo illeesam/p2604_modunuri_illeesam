@@ -54,7 +54,7 @@
       async saLogin(loginId, loginPwd, authMethod = '메인') {
         try {
           const loginPwdHash = window.CryptoJS ? CryptoJS.SHA256(loginPwd).toString() : loginPwd;
-          const res = await boApi.post('/auth/bo/auth/login', {
+          const res = await boApi.post('/co/bo-auth/login', {
             loginId,
             loginPwd: loginPwdHash,
             authMethod,
@@ -137,7 +137,7 @@
       async saRefreshAccessToken() {
         if (!this.svRefreshToken) { this.saReset(); return false; }
         try {
-          const res = await boApi.post('/auth/bo/auth/refresh', {
+          const res = await boApi.post('/co/bo-auth/refresh', {
             refreshToken: this.svRefreshToken,
           }, coUtil.apiHdr('로그인', '토큰갱신'));
           this.svAccessToken = res.data?.accessToken || '';
@@ -159,7 +159,7 @@
       async saLogout() {
         if (this.svRefreshToken) {
           try {
-            await boApi.post('/auth/bo/auth/logout', { refreshToken: this.svRefreshToken }, coUtil.apiHdr('로그인', '로그아웃'));
+            await boApi.post('/co/bo-auth/logout', { refreshToken: this.svRefreshToken }, coUtil.apiHdr('로그인', '로그아웃'));
           } catch (_) {}
         }
         this.saReset();

@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOrFo;
+import com.shopjoy.ecadminapi.co.auth.annotation.BoOrFo;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
 import com.shopjoy.ecadminapi.fo.ec.service.FoCmBlogService;

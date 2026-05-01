@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.auth.data.vo;
+package com.shopjoy.ecadminapi.co.auth.data.vo;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

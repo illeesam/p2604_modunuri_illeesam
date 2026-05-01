@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.auth.data.vo;
+package com.shopjoy.ecadminapi.co.auth.data.vo;
 
 import lombok.Builder;
 import lombok.Data;

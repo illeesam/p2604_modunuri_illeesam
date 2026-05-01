@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.auth.annotation;
+package com.shopjoy.ecadminapi.co.auth.annotation;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 

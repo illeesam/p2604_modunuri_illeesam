@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.co.cm.service;
 
-import com.shopjoy.ecadminapi.auth.security.AuthPrincipal;
+import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.co.cm.constant.CmStoreConst;
 import com.shopjoy.ecadminapi.co.cm.data.vo.StoreAuth;

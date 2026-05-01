@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.auth.security;
+package com.shopjoy.ecadminapi.co.auth.security;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;

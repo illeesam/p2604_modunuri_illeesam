@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.auth.data.dto;
+package com.shopjoy.ecadminapi.co.auth.data.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.auth.security;
+package com.shopjoy.ecadminapi.co.auth.security;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;

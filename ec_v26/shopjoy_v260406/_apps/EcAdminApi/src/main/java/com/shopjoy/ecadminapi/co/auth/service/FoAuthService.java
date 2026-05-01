@@ -1,11 +1,11 @@
-package com.shopjoy.ecadminapi.auth.service;
+package com.shopjoy.ecadminapi.co.auth.service;
 
-import com.shopjoy.ecadminapi.auth.data.dto.AccessTokenClaims;
-import com.shopjoy.ecadminapi.auth.data.dto.TokenPair;
-import com.shopjoy.ecadminapi.auth.data.vo.FoJoinRes;
-import com.shopjoy.ecadminapi.auth.data.vo.LoginReq;
-import com.shopjoy.ecadminapi.auth.data.vo.LoginRes;
-import com.shopjoy.ecadminapi.auth.security.JwtProvider;
+import com.shopjoy.ecadminapi.co.auth.data.dto.AccessTokenClaims;
+import com.shopjoy.ecadminapi.co.auth.data.dto.TokenPair;
+import com.shopjoy.ecadminapi.co.auth.data.vo.FoJoinRes;
+import com.shopjoy.ecadminapi.co.auth.data.vo.LoginReq;
+import com.shopjoy.ecadminapi.co.auth.data.vo.LoginRes;
+import com.shopjoy.ecadminapi.co.auth.security.JwtProvider;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberLoginLog;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberTokenLog;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
