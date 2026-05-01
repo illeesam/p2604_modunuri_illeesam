@@ -1,7 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.controller;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAlarmSendHistDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyhAlarmSendHist;
 import com.shopjoy.ecadminapi.base.sy.service.SyhAlarmSendHistService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;

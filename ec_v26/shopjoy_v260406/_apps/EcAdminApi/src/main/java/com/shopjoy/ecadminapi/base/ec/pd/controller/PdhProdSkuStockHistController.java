@@ -1,7 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.controller;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdSkuStockHistDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdSkuStockHist;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdhProdSkuStockHistService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;

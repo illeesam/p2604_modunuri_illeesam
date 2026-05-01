@@ -1,14 +1,14 @@
 package com.shopjoy.ecadminapi.fo.ec.controller;
 
-import com.shopjoy.ecadminapi.co.auth.annotation.FoOnly;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 /**
  * FO 대시보드 API (로그인 회원용)
@@ -19,7 +19,6 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
  */
 @RestController
 @RequestMapping("/api/fo/ec/cm/dashboard")
-@FoOnly
 public class FoCmDashboardController {
 
     /** 내 활동 요약 */

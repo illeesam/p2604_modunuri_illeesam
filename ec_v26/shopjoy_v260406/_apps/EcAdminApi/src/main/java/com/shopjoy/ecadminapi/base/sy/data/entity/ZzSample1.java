@@ -1,13 +1,13 @@
 package com.shopjoy.ecadminapi.base.sy.data.entity;
 
-import jakarta.persistence.*;
-import java.time.LocalDate;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.*;
+
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "zz_sample1", schema = "shopjoy_2604")

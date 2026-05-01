@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.sch.controller;
 
-import com.shopjoy.ecadminapi.co.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
 import com.shopjoy.ecadminapi.base.sy.repository.SyBatchRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
@@ -54,7 +53,6 @@ public class SchBatchController {
     // 관리자 전용 API (@BoOnly)
     // ════════════════════════════════════════════════════════════════
 
-    @BoOnly
     @GetMapping("/batch")
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> list() {
         boolean jenkinsMode = properties.getJenkins().isEnabled();
@@ -80,7 +78,6 @@ public class SchBatchController {
     }
 
     /** 핸들러 직접 즉시 실행 — cron 스케줄 등록 여부·실행 모드 무관하게 강제 실행 */
-    @BoOnly
     @PostMapping("/batch/{batchCode}/run")
     public ResponseEntity<ApiResponse<Void>> run(@PathVariable String batchCode) {
         SyBatch batch = findBatch(batchCode);
@@ -90,7 +87,6 @@ public class SchBatchController {
     }
 
     /** cron 스케줄 등록 (Jenkins 모드에서는 등록이 생략됨) */
-    @BoOnly
     @PostMapping("/batch/{batchCode}/on")
     public ResponseEntity<ApiResponse<Void>> on(@PathVariable String batchCode) {
         SyBatch batch = findBatch(batchCode);
@@ -103,7 +99,6 @@ public class SchBatchController {
     }
 
     /** cron 스케줄 해제 */
-    @BoOnly
     @PostMapping("/batch/{batchCode}/off")
     public ResponseEntity<ApiResponse<Void>> off(@PathVariable String batchCode) {
         registry.unregister(batchCode);
@@ -111,7 +106,6 @@ public class SchBatchController {
     }
 
     /** DB 재로드 후 전체 배치 재등록 */
-    @BoOnly
     @PostMapping("/reload")
     public ResponseEntity<ApiResponse<Map<String, Object>>> reload() {
         registry.unregisterAll();

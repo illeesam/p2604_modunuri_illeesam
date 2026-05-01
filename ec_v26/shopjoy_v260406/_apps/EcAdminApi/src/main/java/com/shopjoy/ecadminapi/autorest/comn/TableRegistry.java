@@ -3,7 +3,10 @@ package com.shopjoy.ecadminapi.autorest.comn;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Component
 public class TableRegistry {

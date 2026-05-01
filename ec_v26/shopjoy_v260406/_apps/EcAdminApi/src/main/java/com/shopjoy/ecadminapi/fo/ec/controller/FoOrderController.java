@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.fo.ec.controller;
 
-import com.shopjoy.ecadminapi.co.auth.annotation.FoOnly;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
-import com.shopjoy.ecadminapi.fo.ec.service.FoOdOrderService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecadminapi.fo.ec.service.FoOdOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +22,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/fo/order")
 @RequiredArgsConstructor
-@FoOnly
 public class FoOrderController {
 
     private final FoOdOrderService service;

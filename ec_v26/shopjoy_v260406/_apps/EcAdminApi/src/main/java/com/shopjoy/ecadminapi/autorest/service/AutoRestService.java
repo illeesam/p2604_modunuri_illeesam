@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 @Slf4j
 @Service

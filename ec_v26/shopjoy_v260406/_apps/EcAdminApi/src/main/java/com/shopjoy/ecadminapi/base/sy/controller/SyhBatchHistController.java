@@ -1,7 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.controller;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchHistDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyhBatchHist;
 import com.shopjoy.ecadminapi.base.sy.service.SyhBatchHistService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;

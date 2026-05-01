@@ -1,7 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.od.controller;
 
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderItemStatusHistDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhOrderItemStatusHist;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdhOrderItemStatusHistService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;

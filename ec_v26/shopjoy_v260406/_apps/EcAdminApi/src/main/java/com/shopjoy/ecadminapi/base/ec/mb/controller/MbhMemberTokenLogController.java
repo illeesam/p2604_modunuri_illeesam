@@ -1,7 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.controller;
 
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbhMemberTokenLogDto;
-import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberTokenLog;
 import com.shopjoy.ecadminapi.base.ec.mb.service.MbhMemberTokenLogService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;

@@ -1,7 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.controller;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhApiLogDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyhApiLog;
 import com.shopjoy.ecadminapi.base.sy.service.SyhApiLogService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;

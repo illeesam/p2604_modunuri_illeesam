@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.fo.ec.controller;
 
-import com.shopjoy.ecadminapi.co.auth.annotation.FoOnly;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
@@ -30,7 +29,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/fo/my")
 @RequiredArgsConstructor
-@FoOnly
 public class FoMyController {
 
     private final FoMyPageService service;

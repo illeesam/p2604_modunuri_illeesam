@@ -5,8 +5,9 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProd;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.time.LocalDateTime;
+
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter @Setter @NoArgsConstructor
 public class PdProdReq {

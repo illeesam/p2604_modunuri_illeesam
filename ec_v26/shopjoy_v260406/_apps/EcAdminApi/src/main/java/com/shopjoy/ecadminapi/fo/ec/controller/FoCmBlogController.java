@@ -1,11 +1,10 @@
 package com.shopjoy.ecadminapi.fo.ec.controller;
 
-import com.shopjoy.ecadminapi.co.auth.annotation.BoOrFo;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
-import com.shopjoy.ecadminapi.fo.ec.service.FoCmBlogService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
+import com.shopjoy.ecadminapi.fo.ec.service.FoCmBlogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,14 +54,12 @@ public class FoCmBlogController {
     }
 
     @PostMapping
-    @BoOrFo
     public ResponseEntity<ApiResponse<CmBlog>> create(@RequestBody CmBlog entity) {
         CmBlog result = service.create(entity);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
     @PutMapping("/{blogId}")
-    @BoOrFo
     public ResponseEntity<ApiResponse<CmBlog>> update(
             @PathVariable String blogId, @RequestBody CmBlog entity) {
         CmBlog result = service.update(blogId, entity);
@@ -70,7 +67,6 @@ public class FoCmBlogController {
     }
 
     @DeleteMapping("/{blogId}")
-    @BoOrFo
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String blogId) {
         service.delete(blogId);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));

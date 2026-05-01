@@ -1,7 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.controller;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmhPushLogDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmhPushLog;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmhPushLogService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
