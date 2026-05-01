@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.controller;
+package com.shopjoy.ecadminapi.bo.sy.controller;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyPathDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyPath;
@@ -12,10 +12,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * BO 표시경로 API — /api/bo/sy/path
+ */
 @RestController
 @RequestMapping("/api/bo/sy/path")
 @RequiredArgsConstructor
-public class SyPathController {
+public class BoSyPathController {
 
     private final SyPathService service;
 
@@ -31,9 +34,7 @@ public class SyPathController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SyPathDto>> getById(@PathVariable Long id) {
-        SyPathDto result = service.getById(id);
-        if (result == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 
     @PostMapping
