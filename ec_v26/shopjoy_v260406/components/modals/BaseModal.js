@@ -587,10 +587,7 @@ window.SiteSelectModal = {
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const res = await boApi.get('/bo/sy/site/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined },
-          ...coUtil.apiHdr('사이트관리', '목록조회')
-        });
+        const res = await boApiSvc.sySite.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined }, '사이트관리', '목록조회');
         const data = res.data?.data;
         list.value = data?.pageList || data?.list || [];
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -654,10 +651,7 @@ window.VendorSelectModal = {
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const res = await boApi.get('/bo/sy/vendor/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined },
-          ...coUtil.apiHdr('판매자관리', '목록조회')
-        });
+        const res = await boApiSvc.syVendor.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined }, '판매자관리', '목록조회');
         const data = res.data?.data;
         list.value = data?.pageList || data?.list || [];
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -950,10 +944,7 @@ window.MemberSelectModal = {
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const res = await boApi.get('/bo/ec/mb/member/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined },
-          ...coUtil.apiHdr('회원관리', '목록조회')
-        });
+        const res = await boApiSvc.mbMember.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined }, '회원관리', '목록조회');
         const data = res.data?.data;
         list.value = data?.pageList || data?.list || [];
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -1013,10 +1004,7 @@ window.OrderSelectModal = {
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const res = await boApi.get('/bo/ec/od/order/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined },
-          ...coUtil.apiHdr('주문관리', '목록조회')
-        });
+        const res = await boApiSvc.odOrder.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined }, '주문관리', '목록조회');
         const data = res.data?.data;
         list.value = data?.pageList || data?.list || [];
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -1076,10 +1064,7 @@ window.BbmSelectModal = {
     const handleSearchList = async () => {
       loading.value = true;
       try {
-        const res = await boApi.get('/bo/sy/bbm/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined },
-          ...coUtil.apiHdr('게시판모드관리', '목록조회')
-        });
+        const res = await boApiSvc.syBbm.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, kw: searchParam.kw || undefined }, '게시판모드관리', '목록조회');
         const data = res.data?.data;
         list.value = data?.pageList || data?.list || [];
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -3470,7 +3455,7 @@ window.BizPickModal = {
     const bizs = reactive([]);
     const handleSearchList = async () => {
       try {
-        const res = await boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('판매자관리', '목록조회') });
+        const res = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '판매자관리', '목록조회');
         bizs.splice(0, bizs.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };
@@ -3573,7 +3558,7 @@ window.SimpleUserPickModal = {
     const boUsers = reactive([]);
     const handleSearchList = async () => {
       try {
-        const res = await boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 1000 }, ...coUtil.apiHdr('사용자관리', '목록조회') });
+        const res = await boApiSvc.syUser.getPage({ pageNo: 1, pageSize: 1000 }, '사용자관리', '목록조회');
         boUsers.splice(0, boUsers.length, ...(res.data?.data?.list || []));
       } catch (_) {}
     };

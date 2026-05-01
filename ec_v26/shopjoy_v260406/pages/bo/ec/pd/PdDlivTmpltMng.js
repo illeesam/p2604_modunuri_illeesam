@@ -52,10 +52,7 @@ window.PdDlivTmpltMng = {
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await boApi.get('/bo/ec/pd/dliv-tmplt/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) },
-          ...coUtil.apiHdr('배송템플릿관리', '목록조회')
-        });
+        const res = await boApiSvc.pdDlivTmplt.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '배송템플릿관리', '목록조회');
         const data = res.data?.data;
         dlivTmplts.splice(0, dlivTmplts.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;

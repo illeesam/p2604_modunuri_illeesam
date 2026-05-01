@@ -37,7 +37,7 @@ window.CmChattDtl = {
       if (!props.editId) return;
       uiState.loading = true;
       try {
-        const res = await boApi.get(`/bo/ec/cm/chatt/${props.editId}`, { ...coUtil.apiHdr('채팅관리', '상세조회') });
+        const res = await boApiSvc.cmChatt.getById(props.editId, '채팅관리', '상세조회');
         uiState.chat = res.data?.data || null;
         if (uiState.chat) uiState.chat.unread = 0;
         scrollToBottom();

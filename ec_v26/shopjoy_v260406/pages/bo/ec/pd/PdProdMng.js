@@ -12,10 +12,7 @@ window.PdProdMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/ec/pd/prod/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) },
-          ...coUtil.apiHdr('상품관리', '목록조회')
-        });
+        const res = await boApiSvc.pdProd.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '상품관리', '목록조회');
         const data = res.data?.data;
         products.splice(0, products.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;

@@ -382,7 +382,7 @@
     /* ── 상품 데이터 로드 ── */
     const handleFetchProducts = async () => {
       try {
-        const res = await foApi.get('/fo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 200 }, ...coUtil.apiHdr('상품', '목록조회') });
+        const res = await foApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 200 }, '상품', '목록조회');
         const list = res.data?.data?.pageList || [];
         list.forEach(_assignImg);
         products.splice(0, products.length, ...list);

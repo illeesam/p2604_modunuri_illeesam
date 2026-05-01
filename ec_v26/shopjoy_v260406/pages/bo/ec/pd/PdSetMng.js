@@ -48,8 +48,8 @@ window.PdSetMng = {
       try {
         // Backend mappers not implemented - use mock data
         const [prodsRes, catsRes] = await Promise.all([
-          boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('상품세트관리', '목록조회') }).catch(() => ({ data: { data: { pageList: [] } } })),
-          boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('상품세트관리', '목록조회') }).catch(() => ({ data: { data: { pageList: [] } } })),
+          boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 10000 }, '상품세트관리', '목록조회').catch(() => ({ data: { data: { pageList: [] } } })),
+          boApiSvc.pdCategory.getPage({ pageNo: 1, pageSize: 10000 }, '상품세트관리', '목록조회').catch(() => ({ data: { data: { pageList: [] } } })),
         ]);
         sets.splice(0, sets.length);
         products.splice(0, products.length, ...(prodsRes.data?.data?.pageList || prodsRes.data?.data?.list || []));

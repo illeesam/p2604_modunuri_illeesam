@@ -13,7 +13,7 @@ window.MbMemGradeMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
-        const res = await boApi.get('/bo/ec/mb/member-grade/page', { params, ...coUtil.apiHdr('회원등급관리', '조회') });
+        const res = await boApiSvc.mbMemGrade.getPage(params, '회원등급관리', '조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         grades.splice(0, grades.length, ...list);
         gridRows.splice(0);

@@ -16,8 +16,8 @@ window.OdOrderMng = {
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         const [ordersRes, membersRes] = await Promise.all([
-          boApi.get('/bo/ec/od/order/page', { params, ...coUtil.apiHdr('주문관리', '목록조회') }).catch(() => ({ data: { data: { pageList: [], pageTotalCount: 0 } } })),
-          boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('주문관리', '목록조회') }).catch(() => ({ data: { data: { pageList: [] } } })),
+          boApiSvc.odOrder.getPage(params, '주문관리', '목록조회').catch(() => ({ data: { data: { pageList: [], pageTotalCount: 0 } } })),
+          boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 10000 }, '주문관리', '목록조회').catch(() => ({ data: { data: { pageList: [] } } })),
         ]);
         orders.splice(0, orders.length, ...(ordersRes.data?.data?.pageList || ordersRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));

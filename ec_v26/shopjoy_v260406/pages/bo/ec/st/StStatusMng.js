@@ -67,11 +67,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resO, resC, resV, resCp, resCa] = await Promise.all([
-          boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('정산상태관리', '목록조회') }),
-          boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('정산상태관리', '목록조회') }),
-          boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('정산상태관리', '목록조회') }),
-          boApi.get('/bo/ec/pm/coupon/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('정산상태관리', '목록조회') }),
-          boApi.get('/bo/ec/pm/cache/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('정산상태관리', '목록조회') }),
+          boApiSvc.odOrder.getPage({ pageNo: 1, pageSize: 10000 }, '정산상태관리', '목록조회'),
+          boApiSvc.odClaim.getPage({ pageNo: 1, pageSize: 10000 }, '정산상태관리', '목록조회'),
+          boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '정산상태관리', '목록조회'),
+          boApiSvc.pmCoupon.getPage({ pageNo: 1, pageSize: 10000 }, '정산상태관리', '목록조회'),
+          boApiSvc.pmCache.getPage({ pageNo: 1, pageSize: 10000 }, '정산상태관리', '목록조회'),
         ]);
         orderList.splice(0, orderList.length, ...(resO.data?.data?.list || []));
         claimList.splice(0, claimList.length, ...(resC.data?.data?.list || []));

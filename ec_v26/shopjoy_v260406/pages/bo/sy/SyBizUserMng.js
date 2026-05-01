@@ -25,8 +25,8 @@ window.SyBizUserMng = {
     const handleLoadData = async () => {
       try {
         const [roleRes, menuRes, roleMenuRes] = await Promise.all([
-          boApi.get('/bo/sy/role/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('사업자사용자관리', '조회') }),
-          boApi.get('/bo/sy/menu/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('사업자사용자관리', '조회') }),
+          boApiSvc.syRole.getPage({ pageNo: 1, pageSize: 10000 }, '사업자사용자관리', '조회'),
+          boApiSvc.syMenu.getPage({ pageNo: 1, pageSize: 10000 }, '사업자사용자관리', '조회'),
           boApi.get('/bo/sy/role-menu/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('사업자사용자관리', '조회') }),
         ]);
         roles.splice(0, roles.length, ...(roleRes.data?.data?.pageList || roleRes.data?.data?.list || []));
@@ -75,7 +75,7 @@ window.SyBizUserMng = {
     const handleLoadDetail = async () => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('업체사용자관리', '조회') });
+        const res = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '업체사용자관리', '조회');
         const list = res.data?.data?.pageList || res.data?.data || [];
         vendors.splice(0, vendors.length, ...list);
       } catch(e) {

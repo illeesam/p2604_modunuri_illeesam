@@ -66,10 +66,7 @@ window.PmCacheMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/ec/pm/cache/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) },
-          ...coUtil.apiHdr('캐시관리', '목록조회')
-        });
+        const res = await boApiSvc.pmCache.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '캐시관리', '목록조회');
         const data = res.data?.data;
         caches.splice(0, caches.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;

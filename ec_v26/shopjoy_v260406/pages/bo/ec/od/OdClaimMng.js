@@ -15,8 +15,8 @@ window.OdClaimMng = {
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         const [claimsRes, membersRes] = await Promise.all([
-          boApi.get('/bo/ec/od/claim/page', { params, ...coUtil.apiHdr('클레임관리', '조회') }).catch(() => ({ data: { data: { pageList: [], pageTotalCount: 0 } } })),
-          boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('클레임관리', '조회') }).catch(() => ({ data: { data: { pageList: [] } } }))
+          boApiSvc.odClaim.getPage(params, '클레임관리', '조회').catch(() => ({ data: { data: { pageList: [], pageTotalCount: 0 } } })),
+          boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 10000 }, '클레임관리', '조회').catch(() => ({ data: { data: { pageList: [] } } }))
         ]);
         claims.splice(0, claims.length, ...(claimsRes.data?.data?.pageList || claimsRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));

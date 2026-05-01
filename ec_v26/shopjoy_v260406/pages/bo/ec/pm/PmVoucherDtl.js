@@ -15,7 +15,7 @@ window.PmVoucherDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApi.get(`/bo/ec/pm/voucher/${props.editId}`, { ...coUtil.apiHdr('바우처관리', '상세조회') });
+        const res = await boApiSvc.pmVoucher.getById(props.editId, '바우처관리', '상세조회');
         const v = res.data?.data || res.data;
         if (v) Object.assign(form, { ...v });
         if (!form.startDate) form.startDate = DEFAULT_START;

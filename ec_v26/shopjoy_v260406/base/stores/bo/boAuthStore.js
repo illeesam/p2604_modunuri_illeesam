@@ -99,7 +99,7 @@
 
           /* 로그인 후 초기 데이터 조회 */
           try {
-            const initRes = await boApi.get('/co/cm/bo-app-store/getInitData?names=ALL', coUtil.apiHdr('시스템', '초기화데이터조회'));
+            const initRes = await coApiSvc.cmBoAppStore.getInitData('ALL', '시스템', '초기화데이터조회');
             if (initRes?.data?.data) {
               const data = initRes.data.data;
 

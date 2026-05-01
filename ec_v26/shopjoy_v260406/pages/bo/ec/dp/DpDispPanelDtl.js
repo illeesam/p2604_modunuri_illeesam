@@ -46,9 +46,9 @@ window.DpDispPanelDtl = {
       uiState.loading = true;
       try {
         const [panelsRes, displaysRes, eventsRes] = await Promise.all([
-          boApi.get('/bo/ec/dp/panel/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시패널관리', '조회') }),
-          boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시패널관리', '조회') }),
-          boApi.get('/bo/ec/pm/event/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시패널관리', '조회') }),
+          boApiSvc.dpPanel.getPage({ pageNo: 1, pageSize: 10000 }, '전시패널관리', '조회'),
+          boApiSvc.dpUi.getPage({ pageNo: 1, pageSize: 10000 }, '전시패널관리', '조회'),
+          boApiSvc.pmEvent.getPage({ pageNo: 1, pageSize: 10000 }, '전시패널관리', '조회'),
         ]);
         panels.splice(0, panels.length, ...(panelsRes.data?.data?.pageList || panelsRes.data?.data?.list || []));
         displays.splice(0, displays.length, ...(displaysRes.data?.data?.pageList || displaysRes.data?.data?.list || []));

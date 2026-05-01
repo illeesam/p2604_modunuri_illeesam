@@ -44,7 +44,7 @@ window.PmSaveMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/ec/pm/save/page', { params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, ...coUtil.apiHdr('적립금관리', '조회') });
+        const res = await boApiSvc.pmSave.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, '적립금관리', '조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         saves.splice(0, saves.length, ...list);
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;

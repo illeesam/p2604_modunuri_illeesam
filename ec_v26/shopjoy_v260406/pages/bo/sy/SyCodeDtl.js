@@ -14,10 +14,7 @@ window.SyCodeDtl = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/sy/code/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('코드관리', '상세조회')
-        });
+        const res = await boApiSvc.syCode.getPage({ pageNo: 1, pageSize: 10000 }, '코드관리', '상세조회');
         codes = res.data?.data?.pageList || res.data?.data?.list || [];
         uiState.error = null;
       } catch (err) {

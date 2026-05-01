@@ -49,7 +49,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resV, resA] = await Promise.all([
-          boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('정산기타조정', '목록조회') }),
+          boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '정산기타조정', '목록조회'),
           boApi.get('/base/ec/st/settle-etc-adj/page', {
             params: {
               pageNo: pager.pageNo, pageSize: pager.pageSize,

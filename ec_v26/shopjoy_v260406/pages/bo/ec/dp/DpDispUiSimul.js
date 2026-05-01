@@ -23,9 +23,9 @@ window.DpDispUiSimul = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [dpRes, sitesRes, membersRes] = await Promise.all([
-          boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시UI시뮬레이션', '조회') }),
-          boApi.get('/bo/sy/site/page', { params: { pageNo: 1, pageSize: 1000 }, ...coUtil.apiHdr('전시UI시뮬레이션', '조회') }),
-          boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시UI시뮬레이션', '조회') }),
+          boApiSvc.dpUi.getPage({ pageNo: 1, pageSize: 10000 }, '전시UI시뮬레이션', '조회'),
+          boApiSvc.sySite.getPage({ pageNo: 1, pageSize: 1000 }, '전시UI시뮬레이션', '조회'),
+          boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 10000 }, '전시UI시뮬레이션', '조회'),
         ]);
         displays.splice(0, displays.length, ...(dpRes.data?.data?.pageList || dpRes.data?.data?.list || []));
         sites.splice(0, sites.length, ...(sitesRes.data?.data?.pageList || sitesRes.data?.data?.list || []));

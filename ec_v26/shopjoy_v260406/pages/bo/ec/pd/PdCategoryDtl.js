@@ -39,10 +39,7 @@ window.PdCategoryDtl = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/ec/pd/category/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('카테고리관리', '상세조회')
-        });
+        const res = await boApiSvc.pdCategory.getPage({ pageNo: 1, pageSize: 10000 }, '카테고리관리', '상세조회');
         categories.splice(0, categories.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
@@ -65,7 +62,7 @@ window.PdCategoryDtl = {
     const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       try {
-        const res = await boApi.get(`/bo/ec/pd/category/${props.editId}`, coUtil.apiHdr('카테고리상세', '상세조회'));
+        const res = await boApiSvc.pdCategory.getById(props.editId, '카테고리상세', '상세조회');
         const c = res.data?.data || res.data;
         if (c) Object.assign(form, { ...c });
       } catch (err) {

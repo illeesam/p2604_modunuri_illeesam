@@ -14,10 +14,7 @@ window.SyBatchDtl = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/sy/batch/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('배치관리', '상세조회')
-        });
+        const res = await boApiSvc.syBatch.getPage({ pageNo: 1, pageSize: 10000 }, '배치관리', '상세조회');
         batches = res.data?.data?.pageList || res.data?.data?.list || [];
         uiState.error = null;
       } catch (err) {

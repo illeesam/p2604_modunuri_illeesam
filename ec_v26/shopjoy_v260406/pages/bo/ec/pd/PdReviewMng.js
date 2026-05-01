@@ -42,10 +42,7 @@ window.PdReviewMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/ec/pd/review/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) },
-          ...coUtil.apiHdr('상품리뷰관리', '목록조회')
-        });
+        const res = await boApiSvc.pdReview.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '상품리뷰관리', '목록조회');
         const data = res.data?.data;
         reviews.splice(0, reviews.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;

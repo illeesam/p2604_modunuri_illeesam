@@ -16,10 +16,7 @@ window.SyBbmDtl = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/sy/bbm/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('게시판모드관리', '상세조회')
-        });
+        const res = await boApiSvc.syBbm.getPage({ pageNo: 1, pageSize: 10000 }, '게시판모드관리', '상세조회');
         bbms = res.data?.data?.pageList || res.data?.data?.list || [];
         uiState.error = null;
       } catch (err) {

@@ -21,7 +21,7 @@ window.Prod02View = {
       const productId = svProduct.value?.productId;
       if (!productId) return;
       try {
-        const res = await foApi.get(`/fo/ec/pd/prod/${productId}`, coUtil.apiHdr('상품상세', '상세조회'));
+        const res = await foApiSvc.pdProd.getById(productId, '상품상세', '상세조회');
         svProduct.value = res.data?.data || res.data;
       } catch (e) {
         svProduct.value = props.product;

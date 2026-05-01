@@ -17,10 +17,7 @@ window.SyContactDtl = {
     const handleLoadData = async () => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/sy/contact/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('문의관리', '상세조회')
-        });
+        const res = await boApiSvc.syContact.getPage({ pageNo: 1, pageSize: 10000 }, '문의관리', '상세조회');
         contacts = res.data?.data?.pageList || res.data?.data?.list || [];
         uiState.error = null;
       } catch (err) {

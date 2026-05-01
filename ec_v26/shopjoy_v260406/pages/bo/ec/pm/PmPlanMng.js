@@ -42,10 +42,7 @@ window.PmPlanMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/ec/pm/plan/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...(searchType === 'PAGE_CLICK' ? pager.pageCond : searchParam) },
-          ...coUtil.apiHdr('요금제관리', '목록조회')
-        });
+        const res = await boApiSvc.pmPlan.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...(searchType === 'PAGE_CLICK' ? pager.pageCond : searchParam) }, '요금제관리', '목록조회');
         const data = res.data?.data;
         plans.splice(0, plans.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;

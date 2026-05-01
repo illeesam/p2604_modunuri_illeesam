@@ -12,13 +12,7 @@ window.SySiteMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/sy/site/page', {
-          params: {
-            pageNo: pager.pageNo, pageSize: pager.pageSize,
-            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          },
-          ...coUtil.apiHdr('사이트관리', '목록조회')
-        });
+        const res = await boApiSvc.sySite.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, '사이트관리', '목록조회');
         const data = res.data?.data;
         sites.splice(0, sites.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || sites.length;

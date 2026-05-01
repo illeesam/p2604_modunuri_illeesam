@@ -192,7 +192,7 @@ window.DpDispAreaPreview = {
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시영역관리', '조회') });
+        const res = await boApiSvc.dpWidgetLib.getPage({ pageNo: 1, pageSize: 10000 }, '전시영역관리', '조회');
         widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
       } catch (_) {}
     };

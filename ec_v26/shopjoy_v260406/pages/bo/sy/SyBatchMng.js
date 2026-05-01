@@ -13,10 +13,7 @@ window.SyBatchMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/sy/batch/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('배치관리', '목록조회')
-        });
+        const res = await boApiSvc.syBatch.getPage({ pageNo: 1, pageSize: 10000 }, '배치관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         batches.splice(0, batches.length, ...list);
         gridRows.splice(0);

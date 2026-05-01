@@ -22,10 +22,10 @@ window.OdOrderDtl = {
       uiState.loading = true;
       try {
         const [orderRes, vendorsRes, deliveriesRes, claimsRes] = await Promise.all([
-          boApi.get(`/bo/ec/od/order/${props.editId}`, { ...coUtil.apiHdr('주문관리', '상세조회') }),
-          boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('주문관리', '조회') }),
-          boApi.get('/bo/ec/od/dliv/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('주문관리', '조회') }),
-          boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('주문관리', '조회') }),
+          boApiSvc.odOrder.getById(props.editId, '주문관리', '상세조회'),
+          boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '주문관리', '조회'),
+          boApiSvc.odDliv.getPage({ pageNo: 1, pageSize: 10000 }, '주문관리', '조회'),
+          boApiSvc.odClaim.getPage({ pageNo: 1, pageSize: 10000 }, '주문관리', '조회'),
         ]);
         const o = orderRes.data?.data || orderRes.data || {};
         Object.assign(form, { ...o });

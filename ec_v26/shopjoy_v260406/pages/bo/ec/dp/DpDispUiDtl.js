@@ -43,8 +43,8 @@ window.DpDispUiDtl = {
       uiState.loading = true;
       try {
         const [resUi, resArea] = await Promise.all([
-          boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시UI관리', '상세조회') }),
-          boApi.get('/bo/ec/dp/area/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시UI관리', '영역조회') }),
+          boApiSvc.dpUi.getPage({ pageNo: 1, pageSize: 10000 }, '전시UI관리', '상세조회'),
+          boApiSvc.dpArea.getPage({ pageNo: 1, pageSize: 10000 }, '전시UI관리', '영역조회'),
         ]);
         displays.splice(0, displays.length, ...(resUi.data?.data?.pageList || resUi.data?.data?.list || []));
         areas.splice(0, areas.length, ...(resArea.data?.data?.pageList || resArea.data?.data?.list || []));

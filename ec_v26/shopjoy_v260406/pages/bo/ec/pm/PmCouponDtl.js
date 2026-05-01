@@ -24,7 +24,7 @@ window.PmCouponDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApi.get(`/bo/ec/pm/coupon/${props.editId}`, { ...coUtil.apiHdr('쿠폰관리', '상세조회') });
+        const res = await boApiSvc.pmCoupon.getById(props.editId, '쿠폰관리', '상세조회');
         const c = res.data?.data || res.data;
         if (c) Object.assign(form, { ...c });
         if (!form.startDate) form.startDate = DEFAULT_START;

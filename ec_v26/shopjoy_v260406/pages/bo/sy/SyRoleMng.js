@@ -23,10 +23,7 @@ window.SyRoleMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/sy/role/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('역할관리', '목록조회')
-        });
+        const res = await boApiSvc.syRole.getPage({ pageNo: 1, pageSize: 10000 }, '역할관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         roles.splice(0, roles.length, ...list);
         gridRows.splice(0);
@@ -233,8 +230,8 @@ window.SyRoleMng = {
     const fnLoadMenusAndUsers = async () => {
       try {
         const [mRes, uRes] = await Promise.all([
-          boApi.get('/bo/sy/menu/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('역할관리', '메뉴목록') }),
-          boApi.get('/bo/sy/user/page',  { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('역할관리', '사용자목록') }),
+          boApiSvc.syMenu.getPage({ pageNo: 1, pageSize: 10000 }, '역할관리', '메뉴목록'),
+          boApiSvc.syUser.getPage({ pageNo: 1, pageSize: 10000 }, '역할관리', '사용자목록'),
         ]);
         const mList = mRes.data?.data?.pageList || mRes.data?.data?.list || [];
         const uList = uRes.data?.data?.pageList || uRes.data?.data?.list || [];

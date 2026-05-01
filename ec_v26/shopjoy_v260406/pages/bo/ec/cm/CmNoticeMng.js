@@ -109,10 +109,7 @@ window.CmNoticeMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/ec/cm/notice/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) },
-          ...coUtil.apiHdr('공지사항관리', '조회')
-        });
+        const res = await boApiSvc.cmNotice.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) }, '공지사항관리', '조회');
         notices.splice(0, notices.length, ...(res.data?.data?.pageList || []));
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage  = res.data?.data?.pageTotalPage  || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;

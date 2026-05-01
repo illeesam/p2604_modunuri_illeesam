@@ -16,8 +16,8 @@ window.PmEventDtl = {
     const handleSearchDetail = async () => {
       uiState.loading = true;
       try {
-        const calls = [boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('이벤트관리', '조회') })];
-        if (!cfIsNew.value) calls.unshift(boApi.get(`/bo/ec/pm/event/${props.editId}`, { ...coUtil.apiHdr('이벤트관리', '상세조회') }));
+        const calls = [boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 10000 }, '이벤트관리', '조회')];
+        if (!cfIsNew.value) calls.unshift(boApiSvc.pmEvent.getById(props.editId, '이벤트관리', '상세조회'));
         const results = await Promise.all(calls);
         if (!cfIsNew.value) {
           const e = results[0].data?.data || results[0].data;

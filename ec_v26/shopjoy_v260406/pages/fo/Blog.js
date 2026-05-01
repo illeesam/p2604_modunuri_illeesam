@@ -34,7 +34,7 @@ window.Blog = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const params = { ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)), pageNo: pager.pageNo, pageSize: pager.pageSize };
-        const res = await foApi.get('/fo/ec/cm/bltn/page', { params, ...coUtil.apiHdr('블로그', '목록조회') });
+        const res = await foApiSvc.cmBltn.getPage(params, '블로그', '목록조회');
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;
         posts.splice(0, posts.length, ...(res.data?.data?.pageList || []));

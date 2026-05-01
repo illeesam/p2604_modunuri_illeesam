@@ -42,7 +42,7 @@ window.DpDispWidgetMng = {
       try {
         const [res, resLibs] = await Promise.all([
           boApi.get('/bo/ec/dp/widget/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시위젯관리', '조회') }),
-          boApi.get('/bo/ec/dp/widget-lib/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시위젯관리', '조회') }),
+          boApiSvc.dpWidgetLib.getPage({ pageNo: 1, pageSize: 10000 }, '전시위젯관리', '조회'),
         ]);
         widgets.splice(0, widgets.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         widgetLibs.splice(0, widgetLibs.length, ...(resLibs.data?.data?.list || []));

@@ -117,10 +117,10 @@
       uiState.loading = true;
       try {
         const [resCust, resLogin, resCoupon, resSend] = await Promise.all([
-          boApi.get('/bo/ec/mb/cust-info/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('고객종합정보', '조회') }),
+          boApiSvc.mbCustInfo.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '조회'),
           boApi.get('/bo/sy/user-login-log/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('고객종합정보', '조회') }),
           boApi.get('/bo/ec/pm/coupon-usage/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('고객종합정보', '조회') }),
-          boApi.get('/bo/sy/alarm/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('고객종합정보', '조회') }),
+          boApiSvc.syAlarm.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '조회'),
         ]);
         custInfos.splice(0, custInfos.length, ...(resCust.data?.data?.pageList || []));
         loginHistory.splice(0, loginHistory.length, ...(resLogin.data?.data?.pageList || []));

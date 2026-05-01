@@ -12,13 +12,7 @@ window.SyTemplateMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/sy/template/page', {
-          params: {
-            pageNo: pager.pageNo, pageSize: pager.pageSize,
-            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          },
-          ...coUtil.apiHdr('템플릿관리', '목록조회')
-        });
+        const res = await boApiSvc.syTemplate.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, '템플릿관리', '목록조회');
         const data = res.data?.data;
         templates.splice(0, templates.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || templates.length;

@@ -15,7 +15,7 @@ window.PmGiftDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApi.get(`/bo/ec/pm/gift/${props.editId}`, { ...coUtil.apiHdr('선물관리', '상세조회') });
+        const res = await boApiSvc.pmGift.getById(props.editId, '선물관리', '상세조회');
         const g = res.data?.data || res.data;
         if (g) Object.assign(form, g);
         uiState.error = null;

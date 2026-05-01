@@ -19,7 +19,7 @@ window.SyUserMng = {
         };
         if (uiState.selectedDeptId != null) params.deptId = uiState.selectedDeptId;
         const [resUsers] = await Promise.all([
-          boApi.get('bo/sy/user/page', { params, ...coUtil.apiHdr('사용자관리', '목록조회') }),
+          boApiSvc.syUser.getPage(params, '사용자관리', '목록조회'),
         ]);
         const data = resUsers.data?.data;
         users.splice(0, users.length, ...(data?.pageList || []));

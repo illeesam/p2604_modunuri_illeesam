@@ -49,13 +49,10 @@ window.MbMemberMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/ec/mb/member/page', {
-          params: {
+        const res = await boApiSvc.mbMember.getPage({
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          },
-          ...coUtil.apiHdr('회원관리', '목록조회')
-        });
+          }, '회원관리', '목록조회');
         const data = res.data?.data;
         members.splice(0, members.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -86,7 +83,7 @@ window.MbMemberMng = {
       detailModal.show = true;
       fnApplyForm(row); // 목록 row 데이터로 먼저 표시
       try {
-        const res = await boApi.get(`/bo/ec/mb/member/${row.memberId}`, coUtil.apiHdr('회원관리', '상세조회'));
+        const res = await boApiSvc.mbMember.getById(row.memberId, '회원관리', '상세조회');
         const d = res.data?.data || res.data;
         if (d) fnApplyForm(d);
       } catch (err) {

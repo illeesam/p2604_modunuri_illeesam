@@ -13,13 +13,7 @@ window.SyBbsMng = {
     const handleSearchBbs = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/sy/bbs/page', {
-          params: {
-            pageNo: pager.pageNo, pageSize: pager.pageSize,
-            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          },
-          ...coUtil.apiHdr('게시판관리', '목록조회')
-        });
+        const res = await boApiSvc.syBbs.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, '게시판관리', '목록조회');
         const data = res.data?.data;
         bbss.splice(0, bbss.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || bbss.length;
@@ -37,10 +31,7 @@ window.SyBbsMng = {
     // 게시판 목록 조회 (초기 로드 시에만)
     const handleLoadBbmList = async () => {
       try {
-        const res = await boApi.get('/bo/sy/bbm/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('게시판관리', '목록조회')
-        });
+        const res = await boApiSvc.syBbm.getPage({ pageNo: 1, pageSize: 10000 }, '게시판관리', '목록조회');
         bbms.splice(0, bbms.length, ...(res.data?.data?.list || []));
       } catch (err) {
         console.error('[handleLoadBbmList]', err);

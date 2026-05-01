@@ -21,7 +21,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await boApi.get('/bo/sy/user/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('사용자로그인이력', '목록조회') });
+        const res = await boApiSvc.syUser.getPage({ pageNo: 1, pageSize: 10000 }, '사용자로그인이력', '목록조회');
         boUserList.splice(0, boUserList.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
       } catch (_) {}
     };

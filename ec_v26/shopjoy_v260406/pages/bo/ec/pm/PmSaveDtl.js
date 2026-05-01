@@ -15,7 +15,7 @@ window.PmSaveDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApi.get(`/bo/ec/pm/save/${props.editId}`, { ...coUtil.apiHdr('적립금관리', '상세조회') });
+        const res = await boApiSvc.pmSave.getById(props.editId, '적립금관리', '상세조회');
         const s = res.data?.data || res.data;
         if (s) Object.assign(form, s);
         uiState.error = null;

@@ -13,7 +13,7 @@ window.MbMemGroupMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
-        const res = await boApi.get('/bo/ec/mb/member-group/page', { params, ...coUtil.apiHdr('회원그룹관리', '조회') });
+        const res = await boApiSvc.mbMemGroup.getPage(params, '회원그룹관리', '조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         groups.splice(0, groups.length, ...list);
         gridRows.splice(0);

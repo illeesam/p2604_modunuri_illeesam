@@ -14,10 +14,7 @@ window.SyVendorDtl = {
     const handleLoadData = async () => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/sy/vendor/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('판매자관리', '상세조회')
-        });
+        const res = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '판매자관리', '상세조회');
         vendors = res.data?.data?.pageList || res.data?.data?.list || [];
         uiState.error = null;
       } catch (err) {

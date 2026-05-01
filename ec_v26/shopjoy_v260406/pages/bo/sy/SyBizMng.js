@@ -17,13 +17,7 @@ window.SyBizMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/sy/vendor/page', {
-          params: {
-            pageNo: pager.pageNo, pageSize: pager.pageSize,
-            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          },
-          ...coUtil.apiHdr('업체관리', '목록조회')
-        });
+        const res = await boApiSvc.syVendor.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, '업체관리', '목록조회');
         const data = res.data?.data;
         bizs.splice(0, bizs.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || bizs.length;

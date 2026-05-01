@@ -40,10 +40,7 @@ window.DpDispAreaMng = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/ec/dp/area/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('전시영역관리', '목록조회')
-        });
+        const res = await boApiSvc.dpArea.getPage({ pageNo: 1, pageSize: 10000 }, '전시영역관리', '목록조회');
         areas.splice(0, areas.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {

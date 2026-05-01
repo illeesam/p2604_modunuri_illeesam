@@ -33,7 +33,7 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
       this.svError = null;
 
       try {
-        const res = await boApi.get(`/co/cm/bo-app-store/getInitData?names=${encodeURIComponent(names || 'ALL')}`, coUtil.apiHdr('시스템', '초기화데이터조회'));
+        const res = await coApiSvc.cmBoAppStore.getInitData(names || 'ALL', '시스템', '초기화데이터조회');
         console.log('[boAppInitStore] API response:', res);
 
         if (res?.data?.data) {

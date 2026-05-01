@@ -14,10 +14,7 @@ window.SyAlarmDtl = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/sy/alarm/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('알람관리', '상세조회')
-        });
+        const res = await boApiSvc.syAlarm.getPage({ pageNo: 1, pageSize: 10000 }, '알람관리', '상세조회');
         alarms = res.data?.data?.pageList || res.data?.data?.list || [];
         uiState.error = null;
       } catch (err) {

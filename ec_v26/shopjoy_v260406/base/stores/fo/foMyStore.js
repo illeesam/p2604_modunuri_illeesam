@@ -38,7 +38,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const handleLoadOrders = async () => {
     if (!Array.isArray(orders) || !orders.length) {
       if (!Array.isArray(orders)) Object.assign(orders, []);
-      try { const res = await foApi.get('/fo/my/order/list', coUtil.apiHdr('마이주문', '목록조회')); orders.splice(0, orders.length, ...(res.data?.data || [])); }
+      try { const res = await foApiSvc.myOrder.getList({}, '마이주문', '목록조회'); orders.splice(0, orders.length, ...(res.data?.data || [])); }
       catch (e) { orders.splice(0, orders.length); }
     }
   };
@@ -53,7 +53,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const handleLoadClaims = async () => {
     if (!Array.isArray(claims) || !claims.length) {
       if (!Array.isArray(claims)) Object.assign(claims, []);
-      try { const res = await foApi.get('/fo/my/claim/list', coUtil.apiHdr('마이클레임', '목록조회')); claims.splice(0, claims.length, ...(res.data?.data || [])); }
+      try { const res = await foApiSvc.myClaim.getList({}, '마이클레임', '목록조회'); claims.splice(0, claims.length, ...(res.data?.data || [])); }
       catch (e) { claims.splice(0, claims.length); }
     }
   };
@@ -77,7 +77,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const handleLoadCoupons = async () => {
     if (!Array.isArray(coupons) || !coupons.length) {
       if (!Array.isArray(coupons)) Object.assign(coupons, []);
-      try { const res = await foApi.get('/fo/my/coupon/list', coUtil.apiHdr('마이쿠폰', '목록조회')); coupons.splice(0, coupons.length, ...(res.data?.data || [])); }
+      try { const res = await foApiSvc.myCoupon.getList({}, '마이쿠폰', '목록조회'); coupons.splice(0, coupons.length, ...(res.data?.data || [])); }
       catch (e) { coupons.splice(0, coupons.length); }
     }
   };
@@ -93,7 +93,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
     if (!Array.isArray(cashHistory) || !cashHistory.length) {
       if (!Array.isArray(cashHistory)) Object.assign(cashHistory, []);
       try {
-        const res = await foApi.get('/fo/my/cash/info', coUtil.apiHdr('마이캐시', '조회'));
+        const res = await foApiSvc.myCash.getInfo('마이캐시', '조회');
         cashBalance.value = res.data?.data?.balance || 0;
         cashHistory.splice(0, cashHistory.length, ...(res.data?.data?.history || []));
       } catch (e) {}
@@ -106,7 +106,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const loadInquiries = async () => {
     if (!Array.isArray(inquiries) || !inquiries.length) {
       if (!Array.isArray(inquiries)) Object.assign(inquiries, []);
-      try { const res = await foApi.get('/fo/my/inquiry/list', coUtil.apiHdr('마이문의', '목록조회')); inquiries.splice(0, inquiries.length, ...(res.data?.data || [])); }
+      try { const res = await foApiSvc.myInquiry.getList({}, '마이문의', '목록조회'); inquiries.splice(0, inquiries.length, ...(res.data?.data || [])); }
       catch (e) { inquiries.splice(0, inquiries.length); }
     }
   };
@@ -118,7 +118,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const loadChats = async () => {
     if (!Array.isArray(chats) || !chats.length) {
       if (!Array.isArray(chats)) Object.assign(chats, []);
-      try { const res = await foApi.get('/fo/my/chat/list', coUtil.apiHdr('마이채팅', '목록조회')); chats.splice(0, chats.length, ...(res.data?.data || [])); }
+      try { const res = await foApiSvc.myChat.getList({}, '마이채팅', '목록조회'); chats.splice(0, chats.length, ...(res.data?.data || [])); }
       catch (e) { chats.splice(0, chats.length); }
     }
   };

@@ -15,7 +15,7 @@ window.PmDiscntDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApi.get(`/bo/ec/pm/discnt/${props.editId}`, { ...coUtil.apiHdr('할인관리', '상세조회') });
+        const res = await boApiSvc.pmDiscnt.getById(props.editId, '할인관리', '상세조회');
         const d = res.data?.data || res.data;
         if (d) Object.assign(form, d);
         uiState.error = null;

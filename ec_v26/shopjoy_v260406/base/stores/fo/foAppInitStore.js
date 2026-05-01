@@ -34,7 +34,7 @@ window.useFoAppInitStore = Pinia.defineStore('foAppInit', {
       this.svError = null;
 
       try {
-        const res = await foApi.get(`/co/cm/fo-app-store/getInitData?names=${encodeURIComponent(names || 'ALL')}`, coUtil.apiHdr('시스템', '초기화데이터조회'));
+        const res = await coApiSvc.cmFoAppStore.getInitData(names || 'ALL', '시스템', '초기화데이터조회');
 
         if (res?.data?.data) {
           const data = res.data.data;

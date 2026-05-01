@@ -319,10 +319,7 @@ window.SyCodeMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         uiState.loading = true;
-        const res = await boApi.get('/bo/sy/code/page', {
-          params: { pageNo: 1, pageSize: 100000 },
-          ...coUtil.apiHdr('코드관리', '목록조회'),
-        });
+        const res = await boApiSvc.syCode.getPage({ pageNo: 1, pageSize: 100000 }, '코드관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         codes.splice(0, codes.length, ...list);
         updateCodeGroups();

@@ -51,7 +51,7 @@ window.CmNoticeDtl = {
     const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       try {
-        const res = await boApi.get(`/bo/ec/cm/notice/${props.editId}`, { ...coUtil.apiHdr('공지사항관리', '상세조회') });
+        const res = await boApiSvc.cmNotice.getById(props.editId, '공지사항관리', '상세조회');
         Object.assign(form, res.data?.data || {});
       } catch (err) {
         console.error('[handleSearchDetail]', err);

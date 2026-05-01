@@ -42,9 +42,9 @@ window.StSettleCloseMng = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resO, resC, resV] = await Promise.all([
-          boApi.get('/bo/ec/od/order/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('정산마감관리', '목록조회') }),
-          boApi.get('/bo/ec/od/claim/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('정산마감관리', '목록조회') }),
-          boApi.get('/bo/sy/vendor/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('정산마감관리', '목록조회') }),
+          boApiSvc.odOrder.getPage({ pageNo: 1, pageSize: 10000 }, '정산마감관리', '목록조회'),
+          boApiSvc.odClaim.getPage({ pageNo: 1, pageSize: 10000 }, '정산마감관리', '목록조회'),
+          boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '정산마감관리', '목록조회'),
         ]);
         orders.splice(0, orders.length, ...(resO.data?.data?.list || []));
         claims.splice(0, claims.length, ...(resC.data?.data?.list || []));

@@ -42,10 +42,7 @@ window.PmGiftMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/ec/pm/gift/page', {
-          params: { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) },
-          ...coUtil.apiHdr('선물관리', '목록조회')
-        });
+        const res = await boApiSvc.pmGift.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, '선물관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         gifts.splice(0, gifts.length, ...list);
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;

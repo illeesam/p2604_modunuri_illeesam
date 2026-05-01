@@ -111,11 +111,11 @@ window.PdProdDtl = {
       try {
         const isNew = !props.editId;
         const baseCalls = [
-          boApi.get('/bo/sy/user/page',          { params: { pageNo: 1, pageSize: 1000 }, ...coUtil.apiHdr('상품관리', '상세조회') }),
-          boApi.get('/bo/ec/pd/category/page',   { params: { pageNo: 1, pageSize: 1000 }, ...coUtil.apiHdr('상품관리', '상세조회') }),
+          boApiSvc.syUser.getPage({ pageNo: 1, pageSize: 1000 }, '상품관리', '상세조회'),
+          boApiSvc.pdCategory.getPage({ pageNo: 1, pageSize: 1000 }, '상품관리', '상세조회'),
         ];
         if (!isNew) baseCalls.push(
-          boApi.get(`/bo/ec/pd/prod/${props.editId}`,          HDR('기본정보조회')),
+          boApiSvc.pdProd.getById(props.editId, '상품관리', '기본정보조회'),
           boApi.get(`/bo/ec/pd/prod/${props.editId}/images`,   HDR('이미지조회')),
           boApi.get(`/bo/ec/pd/prod/${props.editId}/opts`,     HDR('옵션조회')),
           boApi.get(`/bo/ec/pd/prod/${props.editId}/skus`,     HDR('SKU조회')),

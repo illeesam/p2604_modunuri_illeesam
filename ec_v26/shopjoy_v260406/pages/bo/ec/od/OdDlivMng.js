@@ -15,8 +15,8 @@ window.OdDlivMng = {
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         const [delivRes, membersRes] = await Promise.all([
-          boApi.get('/bo/ec/od/dliv/page', { params, ...coUtil.apiHdr('배송관리', '목록조회') }),
-          boApi.get('/bo/ec/mb/member/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('배송관리', '목록조회') })
+          boApiSvc.odDliv.getPage(params, '배송관리', '목록조회'),
+          boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 10000 }, '배송관리', '목록조회')
         ]);
         deliveries.splice(0, deliveries.length, ...(delivRes.data?.data?.pageList || delivRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));

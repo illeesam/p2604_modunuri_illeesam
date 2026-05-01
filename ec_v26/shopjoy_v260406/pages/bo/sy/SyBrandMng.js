@@ -29,7 +29,7 @@ window.SyBrandMng = {
         if (searchParam.useYn)    params.useYn    = searchParam.useYn;
         if (searchParam.dateStart) params.dateStart = searchParam.dateStart;
         if (searchParam.dateEnd)   params.dateEnd   = searchParam.dateEnd;
-        const res = await boApi.get('/bo/sy/brand/page', { params, ...coUtil.apiHdr('브랜드관리', '목록조회') });
+        const res = await boApiSvc.syBrand.getPage(params, '브랜드관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         brands.splice(0, brands.length, ...list);
         gridRows.splice(0);

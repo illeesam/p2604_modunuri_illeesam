@@ -28,11 +28,11 @@ window.BoRefModal = {
     const coupon = reactive({});
 
     const API_MAP = {
-      member:  (id) => boApi.get(`/bo/ec/mb/member/${id}`, coUtil.apiHdr('회원상세', '상세조회')),
-      product: (id) => boApi.get(`/bo/ec/pd/prod/${id}`, coUtil.apiHdr('상품상세', '상세조회')),
-      order:   (id) => boApi.get(`/bo/ec/od/order/${id}`, coUtil.apiHdr('주문상세', '상세조회')),
-      claim:   (id) => boApi.get(`/bo/ec/od/claim/${id}`, coUtil.apiHdr('클레임상세', '상세조회')),
-      coupon:  (id) => boApi.get(`/bo/ec/pm/coupon/${id}`, coUtil.apiHdr('쿠폰상세', '상세조회')),
+      member:  (id) => boApiSvc.mbMember.getById(id, '회원상세', '상세조회'),
+      product: (id) => boApiSvc.pdProd.getById(id, '상품상세', '상세조회'),
+      order:   (id) => boApiSvc.odOrder.getById(id, '주문상세', '상세조회'),
+      claim:   (id) => boApiSvc.odClaim.getById(id, '클레임상세', '상세조회'),
+      coupon:  (id) => boApiSvc.pmCoupon.getById(id, '쿠폰상세', '상세조회'),
     };
     const DATA_MAP = { member, product, order, claim, coupon };
 

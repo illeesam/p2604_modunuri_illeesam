@@ -57,7 +57,7 @@ window.PdCategoryMng = {
     /* 좌측 트리용 전체 카테고리 조회 (트리 렌더링 전용) */
     const handleSearchList = async () => {
       try {
-        const res = await boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('카테고리관리', '목록조회') });
+        const res = await boApiSvc.pdCategory.getPage({ pageNo: 1, pageSize: 10000 }, '카테고리관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         categories.splice(0, categories.length, ...list);
         expandedSet.clear();
@@ -72,7 +72,7 @@ window.PdCategoryMng = {
       try {
         const params = { pageNo: 1, pageSize: 10000, ...searchParam };
         if (uiState.selectedCatId) params.parentCategoryId = uiState.selectedCatId;
-        const res = await boApi.get('/bo/ec/pd/category/page', { params, ...coUtil.apiHdr('카테고리관리', '목록조회') });
+        const res = await boApiSvc.pdCategory.getPage(params, '카테고리관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         gridRows.splice(0);
         buildTreeRows(list).forEach(c => gridRows.push(makeRow(c)));

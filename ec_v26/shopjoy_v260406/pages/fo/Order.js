@@ -45,7 +45,7 @@ window.Order = {
     const allCoupons  = reactive([]);
     const handleLoadCoupons = async () => {
       try {
-        const res = await foApi.get('/fo/my/coupon/list', coUtil.apiHdr('주문', '쿠폰조회'));
+        const res = await foApiSvc.myCoupon.getList({}, '주문', '쿠폰조회');
         allCoupons.splice(0, allCoupons.length, ...(res.data?.data || []).filter(c => !c.used));
       } catch (e) { allCoupons.length = 0; }
     };
@@ -98,7 +98,7 @@ window.Order = {
     /* ── 캐쉬 ── */
     const handleLoadCash = async () => {
       try {
-        const res = await foApi.get('/fo/my/cash/info', coUtil.apiHdr('주문', '캐시조회'));
+        const res = await foApiSvc.myCash.getInfo('주문', '캐시조회');
         uiState.cashBalance = res.data?.data?.balance || 0;
       } catch (e) {}
     };

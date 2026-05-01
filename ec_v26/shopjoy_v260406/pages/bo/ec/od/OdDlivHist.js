@@ -14,10 +14,7 @@ window.OdDlivHist = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/ec/od/dliv/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('배송관리', '이력조회')
-        });
+        const res = await boApiSvc.odDliv.getPage({ pageNo: 1, pageSize: 10000 }, '배송관리', '이력조회');
         deliveries.splice(0, deliveries.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {

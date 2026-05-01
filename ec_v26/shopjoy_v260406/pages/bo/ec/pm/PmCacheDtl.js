@@ -16,7 +16,7 @@ window.PmCacheDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApi.get(`/bo/ec/pm/cache/${props.editId}`, { ...coUtil.apiHdr('캐시관리', '상세조회') });
+        const res = await boApiSvc.pmCache.getById(props.editId, '캐시관리', '상세조회');
         const c = res.data?.data || res.data;
         if (c) Object.assign(form, { ...c });
         uiState.error = null;

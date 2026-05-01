@@ -14,10 +14,7 @@ window.SyTemplateDtl = {
     const handleLoadData = async () => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/sy/template/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('템플릿관리', '상세조회')
-        });
+        const res = await boApiSvc.syTemplate.getPage({ pageNo: 1, pageSize: 10000 }, '템플릿관리', '상세조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         templates.splice(0, templates.length, ...list);
         uiState.error = null;

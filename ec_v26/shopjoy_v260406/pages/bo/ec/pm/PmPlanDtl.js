@@ -18,8 +18,8 @@ window.PmPlanDtl = {
     const handleSearchDetail = async () => {
       uiState.loading = true;
       try {
-        const calls = [boApi.get('/bo/ec/pd/prod/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('요금제관리', '조회') })];
-        if (!cfIsNew.value) calls.unshift(boApi.get(`/bo/ec/pm/plan/${props.editId}`, { ...coUtil.apiHdr('요금제관리', '상세조회') }));
+        const calls = [boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 10000 }, '요금제관리', '조회')];
+        if (!cfIsNew.value) calls.unshift(boApiSvc.pmPlan.getById(props.editId, '요금제관리', '상세조회'));
         const results = await Promise.all(calls);
         if (!cfIsNew.value) {
           const p = results[0].data?.data || results[0].data;

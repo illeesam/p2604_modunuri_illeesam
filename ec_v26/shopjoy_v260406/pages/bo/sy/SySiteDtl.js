@@ -13,10 +13,7 @@ window.SySiteDtl = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/sy/site/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('사이트관리', '상세조회')
-        });
+        const res = await boApiSvc.sySite.getPage({ pageNo: 1, pageSize: 10000 }, '사이트관리', '상세조회');
         sites = res.data?.data?.pageList || res.data?.data?.list || [];
         uiState.error = null;
       } catch (err) {

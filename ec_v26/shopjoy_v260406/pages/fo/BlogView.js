@@ -18,7 +18,7 @@ window.BlogView = {
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
-        const res = await foApi.get(`/fo/ec/cm/bltn/${props.editId}`, coUtil.apiHdr('블로그상세', '상세조회'));
+        const res = await foApiSvc.cmBltn.getById(props.editId, '블로그상세', '상세조회');
         posts.splice(0, posts.length, ...(res.data?.data ? [res.data.data] : []));
       } catch (e) {
         posts.splice(0, posts.length, ...[

@@ -131,7 +131,7 @@ window.PdCategoryProdMng = {
     /* 좌측 트리용 전체 카테고리 조회 */
     const handleSearchCategoriesList = async () => {
       try {
-        const res = await boApi.get('/bo/ec/pd/category/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('카테고리관리', '목록조회') });
+        const res = await boApiSvc.pdCategory.getPage({ pageNo: 1, pageSize: 10000 }, '카테고리관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         categories.splice(0, categories.length, ...list);
         expandedSet.clear();
