@@ -41,13 +41,29 @@
 
   const app = createApp({
   setup() {
-    /* ── Init Data Store 초기화 (Pinia 초기화 후) ── */
-    onMounted(() => {
-      setTimeout(() => {
-        // fetchFoAppInitData는 foAuth.js init()에서 토큰 유무에 따라 호출
+    /* foInitReady: 초기화 완료 전 컴포넌트 API 호출을 막기 위한 플래그 */
+    const foInitReady = ref(false);
+    window.foInitReady = false;
+    (async () => {
+      const _foAuthStore = window.useFoAuthStore?.();
+      if (_foAuthStore?.svAccessToken) {
+        try {
+          await window.useFoAppInitStore?.()?.saFetchFoAppInitData?.();
+        } catch (e) {
+          if (e?.response?.status === 401) {
+            console.warn('[foApp] token invalid (401), reset session');
+            _foAuthStore.saClearSession?.();
+          } else {
+            console.warn('[foApp] saFetchFoAppInitData error:', e?.response?.status || e.message);
+          }
+        }
+      } else {
+        /* 토큰 없어도 storage 복원은 수행 */
         window.useFoAppInitStore?.()?.saRestoreFromStorage?.();
-      }, 0);
-    });
+      }
+      foInitReady.value = true;
+      window.foInitReady = true;
+    })();
     /* ── Theme ── */
     const theme = ref(localStorage.getItem('modu-fo-theme') || 'light');
     const applyTheme = t => {
@@ -579,6 +595,7 @@
       instantOrder, cartIds, viewEditId,
       config: window.SITE_CONFIG,
       auth, uiState, onShowLogin, onLogout,
+      foInitReady,
       foHomeComp, foProdListComp, foProdViewComp,
       notFoundPageId: computed(() => {
         try { return new URLSearchParams(String(window.location.hash || '').replace(/^#/, '')).get('page') || ''; } catch(e) { return ''; }
@@ -626,142 +643,145 @@
     <div class="sidebar-overlay" :class="{show: uiState.mobileOpen}" @click="closeMobileMenu"></div>
 
     <main class="layout-main" style="flex:1;overflow-y:auto;min-width:0;">
-      <component :is="foHomeComp"
-        v-if="page === 'home'"
-        :navigate="navigate" :config="config" :products="products" :select-product="selectProduct"
-        :toggle-like="toggleLike" :is-liked="isLiked"
-      />
-      <component :is="foProdListComp"
-        v-else-if="page === 'prodList'"
-        :navigate="navigate" :config="config" :products="products" :select-product="selectProduct"
-        :toggle-like="toggleLike" :is-liked="isLiked"
-      />
-      <component :is="foProdViewComp"
-        v-else-if="page === 'prodView'"
-        :navigate="navigate" :config="config" :product="selectedProduct"
-        :add-to-cart="addToCart" :show-toast="showToast" :show-alert="showAlert"
-        :toggle-like="toggleLike" :is-liked="isLiked"
-      />
-      <cart
-        v-else-if="page==='cart'"
-        :navigate="navigate" :config="config" :cart="cart" :cart-count="cfCartCount"
-        :remove-from-cart="removeFromCart" :update-cart-qty="updateCartQty"
-        :show-confirm="showConfirm" :clear-cart="clearCart"
-      />
-      <order
-        v-else-if="page==='order'"
-        :navigate="navigate" :config="config" :cart="cart"
-        :instant-order="instantOrder" :cart-ids="cartIds"
-        :show-toast="showToast" :show-alert="showAlert" :clear-cart="clearCart"
-      />
-      <contact
-        v-else-if="page==='contact'"
-        :navigate="navigate" :config="config" :show-toast="showToast" :show-alert="showAlert"
-      />
-      <faq
-        v-else-if="page==='faq'"
-        :navigate="navigate" :config="config"
-      />
-      <event-page
-        v-else-if="page==='event'"
-        :navigate="navigate" :config="config"
-      />
-      <event-view
-        v-else-if="page==='eventView'"
-        :navigate="navigate" :config="config" :edit-id="viewEditId"
-      />
-      <blog-page
-        v-else-if="page==='blog'"
-        :navigate="navigate" :config="config"
-      />
-      <blog-view
-        v-else-if="page==='blogView'"
-        :navigate="navigate" :config="config" :edit-id="viewEditId"
-      />
-      <blog-edit
-        v-else-if="page==='blogEdit'"
-        :navigate="navigate" :config="config" :edit-id="viewEditId" :show-toast="showToast"
-      />
-      <like-page
-        v-else-if="page==='like'"
-        :navigate="navigate" :config="config" :products="products"
-        :likes="likes" :toggle-like="toggleLike" :select-product="selectProduct"
-      />
-      <location-page
-        v-else-if="page==='location'"
-        :navigate="navigate" :config="config"
-      />
-      <about-page
-        v-else-if="page==='about'"
-        :navigate="navigate" :config="config"
-      />
-      <my-order
-        v-else-if="page==='myOrder'"
-        :navigate="navigate" :config="config"
-        :cart="cart" :cart-count="cfCartCount"
-        :show-toast="showToast" :show-confirm="showConfirm"
-        :remove-from-cart="removeFromCart" :update-cart-qty="updateCartQty"
-      />
-      <my-claim
-        v-else-if="page==='myClaim'"
-        :navigate="navigate" :config="config" :cart-count="cfCartCount"
-        :show-toast="showToast" :show-confirm="showConfirm"
-      />
-      <my-coupon
-        v-else-if="page==='myCoupon'"
-        :navigate="navigate" :cart-count="cfCartCount" :show-toast="showToast"
-      />
-      <my-cache
-        v-else-if="page==='myCache'"
-        :navigate="navigate" :cart-count="cfCartCount" :show-toast="showToast"
-      />
-      <my-contact
-        v-else-if="page==='myContact'"
-        :navigate="navigate" :cart-count="cfCartCount"
-        :show-toast="showToast" :show-confirm="showConfirm"
-      />
-      <my-chatt
-        v-else-if="page==='myChatt'"
-        :navigate="navigate" :cart-count="cfCartCount"
-      />
-      <xd-disp-ui01 v-else-if="page==='dispUi01'" />
-      <xd-disp-ui02 v-else-if="page==='dispUi02'" />
-      <xd-disp-ui03 v-else-if="page==='dispUi03'" />
-      <xd-disp-ui04 v-else-if="page==='dispUi04'" />
-      <xd-disp-ui05 v-else-if="page==='dispUi05'" />
-      <xd-disp-ui06 v-else-if="page==='dispUi06'" />
-      <xs-sample01 v-else-if="page==='sample01'" />
-      <xs-sample02 v-else-if="page==='sample02'" />
-      <xs-sample03 v-else-if="page==='sample03'" />
-      <xs-sample04 v-else-if="page==='sample04'" />
-      <xs-sample05 v-else-if="page==='sample05'" />
-      <xs-sample06 v-else-if="page==='sample06'" />
-      <xs-sample07 v-else-if="page==='sample07'" />
-      <xs-sample08 v-else-if="page==='sample08'" />
-      <xs-sample09 v-else-if="page==='sample09'" />
-      <xs-sample10 v-else-if="page==='sample10'" />
-      <xs-sample11 v-else-if="page==='sample11'" />
-      <xs-sample12 v-else-if="page==='sample12'" />
-      <xs-sample13 v-else-if="page==='sample13'" />
-      <xs-sample14 v-else-if="page==='sample14'" />
-      <xs-sample21 v-else-if="page==='sample21'" />
-      <xs-sample22 v-else-if="page==='sample22'" />
-      <xs-sample23 v-else-if="page==='sample23'" />
-      <xs-store
-        v-else-if="page==='xsStore'"
-        :navigate="navigate" :show-toast="showToast"
-      />
-      <xs-local-storage
-        v-else-if="page==='xsLocalStorage'"
-        :navigate="navigate" :show-toast="showToast"
-      />
-
-      <!-- Error Pages -->
-      <fo-error-401 v-else-if="page==='error401'" :navigate="navigate" />
-      <fo-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" />
-      <fo-error-404 v-else-if="page==='notFound' || page==='error404'" :navigate="navigate" :page-id="notFoundPageId" />
-
-      <fo-app-footer :config="config" :navigate="navigate" />
+      <div v-if="!foInitReady" style="display:flex;align-items:center;justify-content:center;height:200px;color:#aaa;font-size:14px;">초기화 중...</div>
+      <template v-else>
+        <component :is="foHomeComp"
+          v-if="page === 'home'"
+          :navigate="navigate" :config="config" :products="products" :select-product="selectProduct"
+          :toggle-like="toggleLike" :is-liked="isLiked"
+        />
+        <component :is="foProdListComp"
+          v-else-if="page === 'prodList'"
+          :navigate="navigate" :config="config" :products="products" :select-product="selectProduct"
+          :toggle-like="toggleLike" :is-liked="isLiked"
+        />
+        <component :is="foProdViewComp"
+          v-else-if="page === 'prodView'"
+          :navigate="navigate" :config="config" :product="selectedProduct"
+          :add-to-cart="addToCart" :show-toast="showToast" :show-alert="showAlert"
+          :toggle-like="toggleLike" :is-liked="isLiked"
+        />
+        <cart
+          v-else-if="page==='cart'"
+          :navigate="navigate" :config="config" :cart="cart" :cart-count="cfCartCount"
+          :remove-from-cart="removeFromCart" :update-cart-qty="updateCartQty"
+          :show-confirm="showConfirm" :clear-cart="clearCart"
+        />
+        <order
+          v-else-if="page==='order'"
+          :navigate="navigate" :config="config" :cart="cart"
+          :instant-order="instantOrder" :cart-ids="cartIds"
+          :show-toast="showToast" :show-alert="showAlert" :clear-cart="clearCart"
+        />
+        <contact
+          v-else-if="page==='contact'"
+          :navigate="navigate" :config="config" :show-toast="showToast" :show-alert="showAlert"
+        />
+        <faq
+          v-else-if="page==='faq'"
+          :navigate="navigate" :config="config"
+        />
+        <event-page
+          v-else-if="page==='event'"
+          :navigate="navigate" :config="config"
+        />
+        <event-view
+          v-else-if="page==='eventView'"
+          :navigate="navigate" :config="config" :edit-id="viewEditId"
+        />
+        <blog-page
+          v-else-if="page==='blog'"
+          :navigate="navigate" :config="config"
+        />
+        <blog-view
+          v-else-if="page==='blogView'"
+          :navigate="navigate" :config="config" :edit-id="viewEditId"
+        />
+        <blog-edit
+          v-else-if="page==='blogEdit'"
+          :navigate="navigate" :config="config" :edit-id="viewEditId" :show-toast="showToast"
+        />
+        <like-page
+          v-else-if="page==='like'"
+          :navigate="navigate" :config="config" :products="products"
+          :likes="likes" :toggle-like="toggleLike" :select-product="selectProduct"
+        />
+        <location-page
+          v-else-if="page==='location'"
+          :navigate="navigate" :config="config"
+        />
+        <about-page
+          v-else-if="page==='about'"
+          :navigate="navigate" :config="config"
+        />
+        <my-order
+          v-else-if="page==='myOrder'"
+          :navigate="navigate" :config="config"
+          :cart="cart" :cart-count="cfCartCount"
+          :show-toast="showToast" :show-confirm="showConfirm"
+          :remove-from-cart="removeFromCart" :update-cart-qty="updateCartQty"
+        />
+        <my-claim
+          v-else-if="page==='myClaim'"
+          :navigate="navigate" :config="config" :cart-count="cfCartCount"
+          :show-toast="showToast" :show-confirm="showConfirm"
+        />
+        <my-coupon
+          v-else-if="page==='myCoupon'"
+          :navigate="navigate" :cart-count="cfCartCount" :show-toast="showToast"
+        />
+        <my-cache
+          v-else-if="page==='myCache'"
+          :navigate="navigate" :cart-count="cfCartCount" :show-toast="showToast"
+        />
+        <my-contact
+          v-else-if="page==='myContact'"
+          :navigate="navigate" :cart-count="cfCartCount"
+          :show-toast="showToast" :show-confirm="showConfirm"
+        />
+        <my-chatt
+          v-else-if="page==='myChatt'"
+          :navigate="navigate" :cart-count="cfCartCount"
+        />
+        <xd-disp-ui01 v-else-if="page==='dispUi01'" />
+        <xd-disp-ui02 v-else-if="page==='dispUi02'" />
+        <xd-disp-ui03 v-else-if="page==='dispUi03'" />
+        <xd-disp-ui04 v-else-if="page==='dispUi04'" />
+        <xd-disp-ui05 v-else-if="page==='dispUi05'" />
+        <xd-disp-ui06 v-else-if="page==='dispUi06'" />
+        <xs-sample01 v-else-if="page==='sample01'" />
+        <xs-sample02 v-else-if="page==='sample02'" />
+        <xs-sample03 v-else-if="page==='sample03'" />
+        <xs-sample04 v-else-if="page==='sample04'" />
+        <xs-sample05 v-else-if="page==='sample05'" />
+        <xs-sample06 v-else-if="page==='sample06'" />
+        <xs-sample07 v-else-if="page==='sample07'" />
+        <xs-sample08 v-else-if="page==='sample08'" />
+        <xs-sample09 v-else-if="page==='sample09'" />
+        <xs-sample10 v-else-if="page==='sample10'" />
+        <xs-sample11 v-else-if="page==='sample11'" />
+        <xs-sample12 v-else-if="page==='sample12'" />
+        <xs-sample13 v-else-if="page==='sample13'" />
+        <xs-sample14 v-else-if="page==='sample14'" />
+        <xs-sample21 v-else-if="page==='sample21'" />
+        <xs-sample22 v-else-if="page==='sample22'" />
+        <xs-sample23 v-else-if="page==='sample23'" />
+        <xs-store
+          v-else-if="page==='xsStore'"
+          :navigate="navigate" :show-toast="showToast"
+        />
+        <xs-local-storage
+          v-else-if="page==='xsLocalStorage'"
+          :navigate="navigate" :show-toast="showToast"
+        />
+  
+        <!-- Error Pages -->
+        <fo-error-401 v-else-if="page==='error401'" :navigate="navigate" />
+        <fo-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" />
+        <fo-error-404 v-else-if="page==='notFound' || page==='error404'" :navigate="navigate" :page-id="notFoundPageId" />
+  
+        <fo-app-footer :config="config" :navigate="navigate" />
+      </template>
     </main>
   </div>
 
