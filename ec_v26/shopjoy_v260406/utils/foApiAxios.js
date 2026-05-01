@@ -381,14 +381,6 @@
   /* ── path → apiUrl 변환 래퍼 ── */
   global.foApi = {
     get:    function (path, cfg) {
-      // getInitData에서 names 파라미터가 없으면 ALL로 기본값 설정
-      if (path.includes('getInitData')) {
-        var sep = path.includes('?') ? '&' : '?';
-        if (!path.includes('names=') || path.match(/names=([&]|$)/)) {
-          path = path.replace(/names=([&]|$)/, '').replace(/[&]$/, '');
-          path += (path.includes('?') ? '&' : '?') + 'names=ALL';
-        }
-      }
       return inst.get(apiUrl(path), cfg);
     },
     delete: function (path, cfg)       { return inst.delete(apiUrl(path), cfg); },

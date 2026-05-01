@@ -47,14 +47,15 @@ public class CmBoAppStoreDataController {
             throw new CmBizException("names 파라미터는 필수입니다. 예: ?names=ALL");
         }
 
-        if ("ALL".equalsIgnoreCase(names)) {
-            names = CmStoreConst.SY_AUTH;
-            //names += "^" + CmStoreConst.SY_USER;
-            names += "^" + CmStoreConst.SY_ROLES;
-            names += "^" + CmStoreConst.SY_MENUS;
-            names += "^" + CmStoreConst.SY_CODES;
-            names += "^" + CmStoreConst.SY_PROPS;
-            names += "^" + CmStoreConst.SY_APP;
+        if (names.toUpperCase().contains("ALL")) {
+            names = String.join("^",
+                CmStoreConst.SY_AUTH,
+                CmStoreConst.SY_ROLES,
+                CmStoreConst.SY_MENUS,
+                CmStoreConst.SY_CODES,
+                CmStoreConst.SY_PROPS,
+                CmStoreConst.SY_APP
+            );
         }
 
         return ResponseEntity.ok(ApiResponse.ok(storeDataService.getAuthData(names, CmStoreConst.BO)));
