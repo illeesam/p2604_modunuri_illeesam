@@ -32,17 +32,17 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
     snGetGrpCodes: (s) => (grpVal) => {
       if (!Array.isArray(s.svCodes)) return [];
       return s.svCodes
-        .filter(c => c.codeGrp === grpVal)
-        .sort((a, b) => ((a.codeSortOrd || 0) - (b.codeSortOrd || 0)))
-        .map(c => ({ codeValue: c.codeVal, codeLabel: `${c.codeNm} (${c.codeGrp}:${c.codeVal})` })) || [];
+        .filter(c => c.codeGrp === grpVal && c.useYn !== 'N')
+        .sort((a, b) => (Number(a.codeSortOrd || 0) - Number(b.codeSortOrd || 0)))
+        .map(c => ({ codeValue: c.codeVal, codeLabel: c.codeNm || c.codeVal }));
     },
     // 코드 그룹을 { codeValue, codeLabel } 형식으로 + 초기 항목 추가
     snGetGrpCodesFirstOpt: (s) => (grpVal, initVal, initLabel) => {
       if (!Array.isArray(s.svCodes)) return initVal && initLabel ? [{ codeValue: initVal, codeLabel: initLabel }] : [];
       const codes = s.svCodes
-        .filter(c => c.codeGrp === grpVal)
-        .sort((a, b) => ((a.codeSortOrd || 0) - (b.codeSortOrd || 0)))
-        .map(c => ({ codeValue: c.codeVal, codeLabel: `${c.codeNm} (${c.codeGrp}:${c.codeVal})` })) || [];
+        .filter(c => c.codeGrp === grpVal && c.useYn !== 'N')
+        .sort((a, b) => (Number(a.codeSortOrd || 0) - Number(b.codeSortOrd || 0)))
+        .map(c => ({ codeValue: c.codeVal, codeLabel: c.codeNm || c.codeVal }));
       return initVal && initLabel ? [{ codeValue: initVal, codeLabel: initLabel }, ...codes] : codes;
     },
   },

@@ -41,11 +41,20 @@ window.PdProdDtl = {
         fnLoadCodes().then(() => {
           // 코드 로드 완료 후 옵션 카테고리 복원 재시도
           if (optGroups.length && !uiState.prodOptCategoryTypeCd) {
-            const firstTypeCd = optGroups[0]?.optTypeCd || optGroups[0]?.typeCd || '';
-            if (firstTypeCd) {
-              const level2 = (codes||[]).find(c => c.codeGrp === 'OPT_TYPE' && c.codeValue === firstTypeCd);
-              if (level2?.parentCodeValue) uiState.prodOptCategoryTypeCd = level2.parentCodeValue;
-            }
+            const typeCds = optGroups.map(g => g.optTypeCd || g.typeCd || '').filter(Boolean);
+            const hasColor = typeCds.includes('COLOR');
+            const hasSize  = typeCds.includes('SIZE');
+            const hasMaterial = typeCds.includes('MATERIAL');
+            const hasCustom = typeCds.includes('CUSTOM');
+            if (hasColor && hasSize) uiState.prodOptCategoryTypeCd = 'CLOTHING';
+            else if (hasSize && !hasColor) uiState.prodOptCategoryTypeCd = 'SHOES';
+            else if (hasColor && hasMaterial) uiState.prodOptCategoryTypeCd = 'BAG';
+            else if (hasColor && hasCustom) uiState.prodOptCategoryTypeCd = 'CUSTOM_GRP';
+            else if (hasColor) uiState.prodOptCategoryTypeCd = 'COLOR';
+            else if (hasSize) uiState.prodOptCategoryTypeCd = 'SIZE';
+            else if (hasMaterial) uiState.prodOptCategoryTypeCd = 'MATERIAL';
+            else if (hasCustom) uiState.prodOptCategoryTypeCd = 'CUSTOM';
+            else if (typeCds[0]) uiState.prodOptCategoryTypeCd = typeCds[0];
           }
         });
       }
@@ -201,40 +210,72 @@ window.PdProdDtl = {
         let _optSeq = 1, _itemSeq = 100;
     const optGroups = reactive([]); // [{_id, grpNm, typeCd, inputTypeCd, level, items:[{_id, nm, val, valCodeId, parentOptItemId, sortOrd, useYn}]}]
     const skus = reactive([]);      // [{_id, _optKey, _nm1, _nm2, skuCode, addPrice, stock, useYn}]
-    // ── 옵션 공통코드 ([] 기반 — OPT_TYPE 2레벨 트리)
-     // OPT_TYPE 1레벨 (의류/신발/가방/커스텀)
-    // OPT_TYPE 2레벨 트리: 1레벨 = parentCodeValue가 null/빈값, 2레벨 = parentCodeValue가 1레벨 codeValue
-    // DB에서 parentCodeValue가 null 또는 '' 둘 다 올 수 있어 양쪽 처리
-    const cfOptTypeAllCodes  = computed(() => (codes||[]).filter(c => c.codeGrp === 'OPT_TYPE' && c.useYn === 'Y'));
-    const cfOptTypeLevel1Codes = computed(() =>
-      cfOptTypeAllCodes.value
-        .filter(c => !c.parentCodeValue && c.codeValue !== 'NONE')
-        .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0))
+    // ── 옵션 공통코드 (DB: OPT_TYPE 단층 구조 — parentCodeValue 없음)
+    // 카테고리별 기본 옵션 유형 정적 매핑
+    const OPT_CATEGORY_MAP = {
+      'CLOTHING':   [{ typeCd: 'COLOR', grpNm: '색상' }, { typeCd: 'SIZE', grpNm: '사이즈' }],
+      'SHOES':      [{ typeCd: 'SIZE',  grpNm: '사이즈' }, { typeCd: 'COLOR', grpNm: '색상' }],
+      'BAG':        [{ typeCd: 'COLOR', grpNm: '색상' }, { typeCd: 'MATERIAL', grpNm: '소재' }],
+      'CUSTOM_GRP': [{ typeCd: 'COLOR', grpNm: '색상' }, { typeCd: 'CUSTOM', grpNm: '옵션2' }],
+      'COLOR':      [{ typeCd: 'COLOR', grpNm: '색상' }],
+      'SIZE':       [{ typeCd: 'SIZE',  grpNm: '사이즈' }],
+      'MATERIAL':   [{ typeCd: 'MATERIAL', grpNm: '소재' }],
+      'CUSTOM':     [{ typeCd: 'CUSTOM', grpNm: '옵션' }],
+    };
+    // svCodes 필드: codeGrp, codeId, codeNm, codeVal, codeSortOrd, useYn
+    // 편의 정규화: codeVal→codeValue, codeNm→codeLabel, codeSortOrd→sortOrd로 alias하여 사용
+    const cfOptTypeAllCodes  = computed(() =>
+      (codes||[])
+        .filter(c => c.codeGrp === 'OPT_TYPE' && c.useYn === 'Y')
+        .map(c => ({ ...c, codeValue: c.codeVal, codeLabel: c.codeNm, sortOrd: Number(c.codeSortOrd||0) }))
     );
-    const cfOptTypeCodes = computed(() => {
-      if (!uiState.prodOptCategoryTypeCd) return [];
-      return cfOptTypeAllCodes.value
-        .filter(c => c.parentCodeValue === uiState.prodOptCategoryTypeCd)
-        .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
-    });
-    const cfOptInputTypeCodes = computed(() => (codes||[]).filter(c => c.codeGrp==='OPT_INPUT_TYPE' && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd));
-    const getOptValCodes    = (typeCd) => (codes||[]).filter(c => c.codeGrp==='OPT_VAL' && c.parentCodeValue===typeCd && c.useYn==='Y').sort((a,b)=>a.sortOrd-b.sortOrd);
+    // 1레벨 = 카테고리 선택용 — OPT_CATEGORY_MAP 키 기반 정적 목록
+    const OPT_CATEGORY_LABELS = [
+      { codeValue: 'CLOTHING',   codeLabel: '의류 (색상+사이즈)' },
+      { codeValue: 'SHOES',      codeLabel: '신발 (사이즈+색상)' },
+      { codeValue: 'BAG',        codeLabel: '가방 (색상+소재)' },
+      { codeValue: 'CUSTOM_GRP', codeLabel: '색상+커스텀' },
+      { codeValue: 'COLOR',      codeLabel: '색상 단독' },
+      { codeValue: 'SIZE',       codeLabel: '사이즈 단독' },
+      { codeValue: 'MATERIAL',   codeLabel: '소재 단독' },
+      { codeValue: 'CUSTOM',     codeLabel: '직접입력 단독' },
+    ];
+    const cfOptTypeLevel1Codes = computed(() => OPT_CATEGORY_LABELS);
+    // 2레벨 = 각 차원에서 고를 수 있는 단일 옵션 유형 목록
+    const cfOptTypeCodes = computed(() =>
+      cfOptTypeAllCodes.value
+        .filter(c => ['COLOR', 'SIZE', 'MATERIAL', 'CUSTOM'].includes(c.codeValue))
+        .sort((a,b) => a.sortOrd - b.sortOrd)
+    );
+    const cfOptInputTypeCodes = computed(() =>
+      (codes||[])
+        .filter(c => c.codeGrp==='OPT_INPUT_TYPE' && c.useYn==='Y')
+        .map(c => ({ ...c, codeValue: c.codeVal, codeLabel: c.codeNm, sortOrd: Number(c.codeSortOrd||0) }))
+        .sort((a,b) => a.sortOrd - b.sortOrd)
+    );
+    const getOptValCodes = (typeCd) =>
+      (codes||[])
+        .filter(c => c.codeGrp==='OPT_VAL' && c.parentCodeValue===typeCd && c.useYn==='Y')
+        .map(c => ({ ...c, codeValue: c.codeVal, codeLabel: c.codeNm, sortOrd: Number(c.codeSortOrd||0) }))
+        .sort((a,b) => a.sortOrd - b.sortOrd);
 
     const clearOpt = () => { optGroups.length = 0; skus.length = 0; uiState.prodOptCategoryTypeCd = ''; };
 
     const onCategoryChange = () => {
       optGroups.length = 0;
       skus.length = 0;
-      cfOptTypeCodes.value.slice(0, 2).forEach((tc, i) => {
-        optGroups.push({ _id: _optSeq++, grpNm: '', typeCd: tc.codeValue, inputTypeCd: 'SELECT', level: i + 1, items: [] });
+      const defaults = OPT_CATEGORY_MAP[uiState.prodOptCategoryTypeCd] || [];
+      defaults.slice(0, 2).forEach((d, i) => {
+        optGroups.push({ _id: _optSeq++, grpNm: d.grpNm, typeCd: d.typeCd, inputTypeCd: 'SELECT', level: i + 1, items: [] });
       });
     };
 
     const addOptGroup = () => {
       if (!uiState.prodOptCategoryTypeCd) { props.showToast('옵션 카테고리를 먼저 선택해주세요.', 'error'); return; }
       if (optGroups.length >= 2) { props.showToast('옵션은 최대 2단까지 가능합니다.', 'error'); return; }
-      const defaultTypeCd = cfOptTypeCodes.value[optGroups.length]?.codeValue || '';
-      optGroups.push({ _id: _optSeq++, grpNm: '', typeCd: defaultTypeCd, inputTypeCd: 'SELECT', level: optGroups.length + 1, items: [] });
+      const defaults = OPT_CATEGORY_MAP[uiState.prodOptCategoryTypeCd] || [];
+      const d = defaults[optGroups.length] || { typeCd: 'CUSTOM', grpNm: '옵션' };
+      optGroups.push({ _id: _optSeq++, grpNm: d.grpNm, typeCd: d.typeCd, inputTypeCd: 'SELECT', level: optGroups.length + 1, items: [] });
     };
     const removeOptGroup = (idx) => {
       optGroups.splice(idx, 1);
@@ -577,13 +618,23 @@ window.PdProdDtl = {
           if (p.useOptYn !== undefined) uiState.useOpt = p.useOptYn === 'Y';
           else uiState.useOpt = true;
 
-          // 옵션 카테고리(1레벨) 복원 — optGroups의 optTypeCd로 parentCodeValue 역추적
+          // 옵션 카테고리 복원 — optGroups의 typeCd 조합으로 카테고리 역추적
           if (optGroups.length && !uiState.prodOptCategoryTypeCd) {
-            const firstTypeCd = optGroups[0]?.optTypeCd || optGroups[0]?.typeCd || '';
-            if (firstTypeCd) {
-              const level2 = (codes||[]).find(c => c.codeGrp === 'OPT_TYPE' && c.codeValue === firstTypeCd);
-              if (level2?.parentCodeValue) uiState.prodOptCategoryTypeCd = level2.parentCodeValue;
-            }
+            const typeCds = optGroups.map(g => g.optTypeCd || g.typeCd || '').filter(Boolean);
+            const hasColor = typeCds.includes('COLOR');
+            const hasSize  = typeCds.includes('SIZE');
+            const hasMaterial = typeCds.includes('MATERIAL');
+            const hasCustom = typeCds.includes('CUSTOM');
+            // 카테고리 역추적: 조합으로 판단
+            if (hasColor && hasSize) uiState.prodOptCategoryTypeCd = 'CLOTHING';
+            else if (hasSize && !hasColor) uiState.prodOptCategoryTypeCd = 'SHOES';
+            else if (hasColor && hasMaterial) uiState.prodOptCategoryTypeCd = 'BAG';
+            else if (hasColor && hasCustom) uiState.prodOptCategoryTypeCd = 'CUSTOM_GRP';
+            else if (hasColor) uiState.prodOptCategoryTypeCd = 'COLOR';
+            else if (hasSize) uiState.prodOptCategoryTypeCd = 'SIZE';
+            else if (hasMaterial) uiState.prodOptCategoryTypeCd = 'MATERIAL';
+            else if (hasCustom) uiState.prodOptCategoryTypeCd = 'CUSTOM';
+            else if (typeCds[0]) uiState.prodOptCategoryTypeCd = typeCds[0];
           }
 
           if (p.salePlans?.length) salePlans.splice(0, salePlans.length, ...p.salePlans.map(r => ({ ...r, _id: planIdSeq++, _checked: false })));
@@ -667,6 +718,7 @@ window.PdProdDtl = {
     const mdModalOpen = Vue.toRef(uiState, 'mdModalOpen');
     const previewDevice = Vue.toRef(uiState, 'previewDevice');
     const prodOptCategoryTypeCd = Vue.toRef(uiState, 'prodOptCategoryTypeCd');
+    const openHelp = (topic) => { if (window.showBoHelp) window.showBoHelp(topic); };
     const prodPickerSearch = Vue.toRef(uiState, 'prodPickerSearch');
     const skuFilter1 = Vue.toRef(uiState, 'skuFilter1');
     const skuFilter2 = Vue.toRef(uiState, 'skuFilter2');
@@ -681,7 +733,7 @@ window.PdProdDtl = {
       uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
       clearOpt, optGroups, skus, cfTotalStock, generateSkus,
       cfSkuFilter1Options, cfSkuFilter2Options, cfSkusFiltered,
-      cfOptTypeLevel1Codes, cfOptTypeCodes, cfOptInputTypeCodes, getOptValCodes,
+      cfOptTypeAllCodes, cfOptTypeLevel1Codes, cfOptTypeCodes, cfOptInputTypeCodes, getOptValCodes,
       onCategoryChange, addOptGroup, removeOptGroup, addOptItem, removeOptItem,
       onOptItemDragStart, onOptItemDragOver, onOptItemDrop,
       images, addImageByUrl, onFileChange, setMain, removeImage, fileInputRef, triggerFileInput,
@@ -697,7 +749,7 @@ window.PdProdDtl = {
       contentBlocks, addContentBlock, removeContentBlock, onBlockFileChange, fnMountQuills,
       onBlockDragStart, onBlockDragOver, onBlockDrop,
       contentSplitRef, onDividerMousedown,
-      prodOptCategoryTypeCd,
+      prodOptCategoryTypeCd, openHelp,
       safeFirst, safeGet, safeFind, safeFilter,
     };
   },
@@ -974,6 +1026,10 @@ window.PdProdDtl = {
         <input type="checkbox" :checked="!!prodOptCategoryTypeCd" disabled style="width:16px;height:16px;cursor:not-allowed;opacity:0.6;" />
         옵션 사용
       </label>
+      <!-- ── 도움말 아이콘 ─────────────────────────────────────────────── -->
+      <span @click="openHelp('prodOpt')"
+        style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1677ff;color:#fff;font-size:11px;font-weight:700;cursor:pointer;user-select:none;flex-shrink:0;"
+        title="옵션설정 도움말">?</span>
       <span style="font-size:11px;color:#ddd;flex-shrink:0;">│</span>
 
       <!-- ── STEP 1: OPT_TYPE 1레벨 (카테고리) 선택 — pd_prod_opt.opt_type_cd 레벨 1 ──── -->
@@ -982,12 +1038,12 @@ window.PdProdDtl = {
           <select class="form-control" v-model="prodOptCategoryTypeCd"
             style="width:170px;font-size:12px;"
             @change="onCategoryChange">
-            <option value="">-- OPT_TYPE 1레벨 선택 --</option>
+            <option value="">-- 옵션 카테고리 선택 --</option>
             <option v-for="c in cfOptTypeLevel1Codes" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
 
-        <!-- ── STEP 2: OPT_TYPE 2레벨 (1단/2단 유형) — 1레벨 선택 후 활성화 ─────────── -->
+        <!-- ── STEP 2: 옵션 차원별 유형 선택 — 1레벨 선택 후 활성화 ─────────── -->
         <template v-if="prodOptCategoryTypeCd && optGroups.length>0">
           <span style="font-size:11px;color:#ddd;flex-shrink:0;">│</span>
           <div v-for="(grp, gi) in optGroups" :key="'typeCd-'+grp._id"
@@ -996,8 +1052,8 @@ window.PdProdDtl = {
             <select class="form-control" v-model="grp.typeCd" style="width:140px;font-size:12px;"
               @change="grp.items.forEach(i=>{i.val='';i.valCodeId='';})"
               >
-              <option value="">-- OPT_TYPE 2레벨 --</option>
-              <option v-for="c in cfOptTypeCodes" :key="c?.codeId" :value="c.codeValue">{{ c.codeLabel }} ({{ c.codeValue }})</option>
+              <option value="">-- 유형선택 --</option>
+              <option v-for="c in cfOptTypeCodes" :key="c?.codeId" :value="c.codeValue">{{ c.codeLabel }}</option>
             </select>
             <span v-if="grp.typeCd" style="font-size:11px;color:#1677ff;">{{ getOptValCodes(grp.typeCd).length }}개 프리셋</span>
           </div>
@@ -1031,7 +1087,7 @@ window.PdProdDtl = {
         <!-- ── 차원 설정 행 (typeCd는 위 "옵션사용" 행에서 관리) ──────────────────────── -->
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
           <span class="badge badge-blue" style="flex-shrink:0;font-size:12px;">{{ grp.level }}단</span>
-          <span v-if="grp.typeCd" class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ safeFind(cfOptTypeCodes, c=>c.codeValue===grp.typeCd)?.codeLabel||grp.typeCd }}</span>
+          <span v-if="grp.typeCd" class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ safeFind(cfOptTypeAllCodes, c=>c.codeValue===grp.typeCd)?.codeLabel||grp.typeCd }}</span>
           <input class="form-control" v-model="grp.grpNm" placeholder="옵션명 (예: 색상)"
             style="flex:1;min-width:100px;font-size:13px;" />
           <select class="form-control" v-model="grp.inputTypeCd" style="width:160px;font-size:12px;">
@@ -1041,12 +1097,15 @@ window.PdProdDtl = {
         </div>
 
         <!-- ── 옵션 값 테이블 (pd_prod_opt_item) ────────────────────────────── -->
-        <div style="font-size:11px;color:#888;margin-bottom:6px;">
-          옵션 값 목록 (pd_prod_opt_item)
-          <span v-if="grp.typeCd && getOptValCodes(grp.typeCd).length>0" style="color:#1677ff;margin-left:6px;">
-            공통코드 opt_val: <strong>{{ getOptValCodes(grp.typeCd).length }}</strong>개 프리셋 사용 가능
-          </span>
-          <span v-else-if="grp.typeCd==='CUSTOM'||!grp.typeCd" style="color:#888;margin-left:6px;">직접 입력 모드 — 프리셋 없음</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <div style="font-size:11px;color:#888;">
+            옵션 값 목록 (pd_prod_opt_item)
+            <span v-if="grp.typeCd && getOptValCodes(grp.typeCd).length>0" style="color:#1677ff;margin-left:6px;">
+              공통코드 opt_val: <strong>{{ getOptValCodes(grp.typeCd).length }}</strong>개 프리셋 사용 가능
+            </span>
+            <span v-else-if="grp.typeCd==='CUSTOM'||!grp.typeCd" style="color:#888;margin-left:6px;">직접 입력 모드 — 프리셋 없음</span>
+          </div>
+          <button class="btn btn-xs btn-secondary" @click="addOptItem(grp)" style="flex-shrink:0;">+ 값 추가</button>
         </div>
         <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:6px;">
           <thead>
@@ -1127,7 +1186,6 @@ window.PdProdDtl = {
             </tr>
           </tbody>
         </table>
-        <button class="btn btn-xs btn-secondary" @click="addOptItem(grp)">+ 값 추가</button>
       </div>
 
     </template>

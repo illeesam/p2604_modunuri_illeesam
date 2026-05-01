@@ -120,7 +120,7 @@
     var funcNm  = cfg.headers['X-Func-Nm']  || cfg.headers['x-func-nm']  || '';
     var lineNo  = cfg.headers['X-Line-No']  || cfg.headers['x-line-no']  || '';
     var callerTag = fileNm ? (' | ' + fileNm + (funcNm ? ' ' + funcNm + (lineNo ? '(' + lineNo + ')' : '') : (lineNo ? '(' + lineNo + ')' : ''))) : '';
-    console.log(TAG + ' → ' + (cfg.method || 'GET').toUpperCase() + uiTag, displayUrl + callerTag, cfg.data || cfg.params || '');
+    console.log(TAG + ' ▣▶ ' + (cfg.method || 'GET').toUpperCase() + uiTag, displayUrl + callerTag, cfg.data || cfg.params || '');
     return cfg;
   }, function (err) {
     console.error(TAG + ' ✗ REQUEST ERROR', err && err.message);
@@ -164,8 +164,8 @@
         return inner;
       } catch(_){ return null; }
     })(res.data);
-    if (resLogData) console.log(TAG + ' ← ' + res.status + resUiTag, resDisplayUrl, resLogData);
-    else            console.log(TAG + ' ← ' + res.status + resUiTag, resDisplayUrl);
+    if (resLogData) console.log(TAG + ' ◀▣ ' + res.status + resUiTag, resDisplayUrl, resLogData);
+    else            console.log(TAG + ' ◀▣ ' + res.status + resUiTag, resDisplayUrl);
     try {
       var cfg = res.config || {};
       var method = (cfg.method || 'get').toUpperCase();

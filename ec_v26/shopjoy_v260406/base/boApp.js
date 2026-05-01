@@ -563,6 +563,12 @@
       const showRefModal = (type, id) => { refModal.type = type; refModal.id = id; refModal.show = true; };
       const closeRefModal = () => { refModal.show = false; };
 
+      /* ── 도움말 모달 ── */
+      const helpModal = reactive({ show: false, topic: '' });
+      const showHelp = (topic = '') => { helpModal.topic = topic; helpModal.show = true; };
+      /* 전역 노출 — 어느 컴포넌트에서든 window.showBoHelp('prodOpt') 호출 가능 */
+      window.showBoHelp = showHelp;
+
       /* ── 공통 필터 & 선택 모달 ── */
       const rightPanelOpen = ref(true);
       const commonFilter   = boCommonFilter;
@@ -1108,6 +1114,7 @@
         toasts, showToast, closeToast, closeAllToasts, toastShowDetail, toggleToastDetail,
         confirmState, showConfirm, closeConfirm,
         refModal, showRefModal, closeRefModal,
+        helpModal, showHelp,
         rightPanelOpen, commonFilter, selectModal, openSelectModal, closeSelectModal, onSelectItem, clearFilter,
         apiLogs, apiLogHoverDetail, apiLogLockedDetail, clearApiLogs, toggleApiLogLock, getApiStatusColor, formatJsonData, isWithin60Seconds, getRelativeTime,
         tabBarRef, scrollTabs,
@@ -1146,6 +1153,15 @@
         class="top-nav-item" :class="{active: activeTop===tm.id}"
         @click="setTopMenu(tm.id)">{{ tm.label }}</span>
     </div>
+
+    <!-- 도움말 버튼 -->
+    <button @click.stop="showHelp()"
+      title="도움말"
+      style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:11px;font-weight:600;color:#e8587a;background:rgba(232,88,122,0.08);border:1px solid rgba(232,88,122,0.25);border-radius:6px;cursor:pointer;transition:all .15s;flex-shrink:0;"
+      @mouseenter="$event.target.style.background='rgba(232,88,122,0.18)'"
+      @mouseleave="$event.target.style.background='rgba(232,88,122,0.08)'">
+      <span style="font-size:13px;">❓</span> 도움말
+    </button>
 
     <!-- 로그인/유저 영역 -->
     <div class="top-nav-user" @click.stop>
@@ -1658,6 +1674,9 @@
   <!-- 참조 모달 -->
   <bo-ref-modal v-if="refModal && refModal.show" :state="refModal"  @close="closeRefModal" />
 
+  <!-- 도움말 모달 -->
+  <help-bo-modal v-if="helpModal.show" :show="helpModal.show" :topic="helpModal.topic" @close="helpModal.show=false" />
+
   <!-- Confirm -->
   <div v-if="confirmState && confirmState.show" class="modal-overlay" @click.self="closeConfirm(false)">
     <div class="confirm-box">
@@ -2052,6 +2071,8 @@
   .component('SyContactMng',   window.SyContactMng)
   .component('SyContactDtl',   window.SyContactDtl)
   .component('CmBlogMng',      window.CmBlogMng)
+  /* ── components/modals/ — 도움말 모달 ── */
+  .component('HelpBoModal',          window.HelpBoModal)
   /* ── components/modals/ — 선택 모달 ── */
   .component('BoUserSelectModal', window.BoUserSelectModal)
   .component('BbmSelectModal',       window.BbmSelectModal)
