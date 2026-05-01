@@ -2,6 +2,7 @@ package com.shopjoy.ecadminapi.co.auth.controller;
 
 import com.shopjoy.ecadminapi.co.auth.data.dto.TokenPair;
 import com.shopjoy.ecadminapi.co.auth.data.vo.BoJoinRes;
+import com.shopjoy.ecadminapi.co.auth.data.vo.ChangePasswordReq;
 import com.shopjoy.ecadminapi.co.auth.data.vo.LoginReq;
 import com.shopjoy.ecadminapi.co.auth.data.vo.LoginRes;
 import com.shopjoy.ecadminapi.co.auth.service.BoAuthService;
@@ -14,10 +15,11 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * BO 관리자 인증 API (sy_user)
- * POST /api/co/bo-auth/login   — 로그인 (1세션: 기존 토큰 자동 무효화)
- * POST /api/co/bo-auth/join    — 관리자 등록
- * POST /api/co/bo-auth/refresh — 토큰 갱신 (Authorization 헤더로 만료된 accessToken 전달, refreshToken은 서버 DB 조회)
- * POST /api/co/bo-auth/logout  — 로그아웃
+ * POST /api/co/bo-auth/login           — 로그인 (1세션: 기존 토큰 자동 무효화)
+ * POST /api/co/bo-auth/join            — 관리자 등록
+ * POST /api/co/bo-auth/token-refresh   — 토큰 갱신 (Authorization 헤더로 만료된 accessToken 전달, refreshToken은 서버 DB 조회)
+ * POST /api/co/bo-auth/logout          — 로그아웃
+ * POST /api/co/bo-auth/change-password — 비밀번호 변경 (로그인 필요)
  */
 @RestController
 @RequestMapping("/api/co/bo-auth")
@@ -42,8 +44,8 @@ public class BoAuthController {
      * 토큰 갱신 — 만료된 accessToken을 Authorization 헤더로 전달
      * refreshToken은 서버 syh_user_token_log에서 조회 (클라이언트 미전달)
      */
-    @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<TokenPair>> refresh(
+    @PostMapping("/token-refresh")
+    public ResponseEntity<ApiResponse<TokenPair>> tokenRefresh(
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         String expiredAccessToken = (authHeader != null && authHeader.startsWith("Bearer "))
                 ? authHeader.substring(7) : null;
@@ -58,5 +60,12 @@ public class BoAuthController {
                 ? authHeader.substring(7) : null;
         authService.logout(accessToken, "BO");
         return ResponseEntity.ok(ApiResponse.ok(null, "로그아웃 되었습니다."));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @RequestBody @Valid ChangePasswordReq request) {
+        authService.changePassword(request, "BO");
+        return ResponseEntity.ok(ApiResponse.ok(null, "비밀번호가 변경되었습니다."));
     }
 }

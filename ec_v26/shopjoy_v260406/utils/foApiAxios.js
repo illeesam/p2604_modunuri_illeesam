@@ -32,7 +32,7 @@
   /* ── 설정 ────────────────────────────────────────────────────── */
   var TAG              = '[fo]';
   var ACCESS_TOKEN_KEY = 'modu-fo-accessToken';
-  var REFRESH_URL      = 'auth/fo/refresh';
+  var REFRESH_URL      = 'co/fo-auth/token-refresh';
   var TIMEOUT          = 15000;
 
   var inst = global.axios.create({ timeout: TIMEOUT });

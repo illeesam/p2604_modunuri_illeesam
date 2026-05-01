@@ -6,12 +6,14 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberTokenLog;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
 import com.shopjoy.ecadminapi.co.auth.data.dto.AccessTokenClaims;
 import com.shopjoy.ecadminapi.co.auth.data.dto.TokenPair;
+import com.shopjoy.ecadminapi.co.auth.data.vo.ChangePasswordReq;
 import com.shopjoy.ecadminapi.co.auth.data.vo.FoJoinRes;
 import com.shopjoy.ecadminapi.co.auth.data.vo.LoginReq;
 import com.shopjoy.ecadminapi.co.auth.data.vo.LoginRes;
 import com.shopjoy.ecadminapi.co.auth.security.JwtProvider;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -181,6 +183,21 @@ public class FoAuthService {
             LocalDateTime.now(),
             jwtProvider.getFoAccessExpiryMinutes(),
             jwtProvider.getFoRefreshExpiryMinutes());
+    }
+
+    // ── changePassword ────────────────────────────────────────────────────
+
+    @Transactional
+    public void changePassword(ChangePasswordReq request, String userTypeCd) {
+        String memberId = SecurityUtil.getAuthUser().authId();
+        MbMember member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
+        if (!passwordEncoder.matches(request.getCurrentPassword(), member.getLoginPwdHash())) {
+            throw new CmBizException("현재 비밀번호가 올바르지 않습니다.");
+        }
+        member.setLoginPwdHash(passwordEncoder.encode(request.getNewPassword()));
+        member.setUpdBy(memberId);
+        member.setUpdDate(LocalDateTime.now());
     }
 
     // ── logout ────────────────────────────────────────────────────────────

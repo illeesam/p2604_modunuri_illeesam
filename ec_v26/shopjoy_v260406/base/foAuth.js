@@ -187,7 +187,13 @@
   };
 
   /* ── 로그아웃 ── */
-  const logout = () => {
+  const logout = async () => {
+    const refreshToken = localStorage.getItem('modu-fo-refreshToken');
+    if (refreshToken) {
+      try {
+        await coApiSvc.foAuth.logout({ refreshToken }, '로그인', '로그아웃');
+      } catch (_) {}
+    }
     _store.saClearSession();
     _sync();
   };

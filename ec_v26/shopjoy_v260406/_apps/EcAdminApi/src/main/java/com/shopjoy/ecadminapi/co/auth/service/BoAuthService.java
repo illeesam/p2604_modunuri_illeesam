@@ -6,6 +6,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyhUserTokenLog;
 import com.shopjoy.ecadminapi.co.auth.data.dto.AccessTokenClaims;
 import com.shopjoy.ecadminapi.co.auth.data.dto.TokenPair;
 import com.shopjoy.ecadminapi.co.auth.data.vo.BoJoinRes;
+import com.shopjoy.ecadminapi.co.auth.data.vo.ChangePasswordReq;
 import com.shopjoy.ecadminapi.co.auth.data.vo.LoginReq;
 import com.shopjoy.ecadminapi.co.auth.data.vo.LoginRes;
 import com.shopjoy.ecadminapi.co.auth.security.JwtProvider;
@@ -187,6 +188,21 @@ public class BoAuthService {
             LocalDateTime.now(),
             jwtProvider.getBoAccessExpiryMinutes(),
             jwtProvider.getBoRefreshExpiryMinutes());
+    }
+
+    // ── changePassword ────────────────────────────────────────────────────
+
+    @Transactional
+    public void changePassword(ChangePasswordReq request, String userTypeCd) {
+        String userId = SecurityUtil.getAuthUser().authId();
+        SyUser user = em.find(SyUser.class, userId);
+        if (user == null) throw new CmBizException("사용자 정보를 찾을 수 없습니다.");
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getLoginPwdHash())) {
+            throw new CmBizException("현재 비밀번호가 올바르지 않습니다.");
+        }
+        user.setLoginPwdHash(passwordEncoder.encode(request.getNewPassword()));
+        user.setUpdBy(userId);
+        user.setUpdDate(LocalDateTime.now());
     }
 
     // ── logout ────────────────────────────────────────────────────────────

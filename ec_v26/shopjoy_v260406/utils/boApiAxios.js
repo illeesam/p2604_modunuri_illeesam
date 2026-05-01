@@ -32,7 +32,7 @@
   /* ── 설정 ────────────────────────────────────────────────────── */
   var TAG              = '[bo]';
   var ACCESS_TOKEN_KEY = 'modu-bo-accessToken';
-  var REFRESH_URL      = 'auth/bo/auth/refresh';
+  var REFRESH_URL      = 'co/bo-auth/token-refresh';
   var TIMEOUT          = 15000;
 
   var inst = global.axios.create({ timeout: TIMEOUT });

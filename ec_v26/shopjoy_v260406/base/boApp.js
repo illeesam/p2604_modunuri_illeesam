@@ -980,18 +980,23 @@
         Object.assign(pwForm, { current: '', next: '', confirm: '' });
         pwError.value = ''; uiState.pwModalShow = true; uiState.userMenuShow = false;
       };
-      const savePwChange = () => {
+      const savePwChange = async () => {
         pwError.value = '';
         if (!pwForm.current || !pwForm.next || !pwForm.confirm) { pwError.value = '모든 항목을 입력하세요.'; return; }
-        if (!currentAuthUser) {
-          pwError.value = '사용자 정보가 없습니다.'; return;
-        }
-        if ((currentAuthUser.password || '') !== pwForm.current) { pwError.value = '현재 비밀번호가 올바르지 않습니다.'; return; }
         if (pwForm.next.length < 6) { pwError.value = '새 비밀번호는 6자 이상이어야 합니다.'; return; }
         if (pwForm.next !== pwForm.confirm) { pwError.value = '새 비밀번호가 일치하지 않습니다.'; return; }
-        currentAuthUser.password = pwForm.next || '';
-        uiState.pwModalShow = false;
-        showToast('비밀번호가 변경되었습니다.');
+        try {
+          const currentPwdHash = window.CryptoJS ? CryptoJS.SHA256(pwForm.current).toString() : pwForm.current;
+          const newPwdHash     = window.CryptoJS ? CryptoJS.SHA256(pwForm.next).toString()    : pwForm.next;
+          await coApiSvc.boAuth.changePassword(
+            { currentPassword: currentPwdHash, newPassword: newPwdHash },
+            '비밀번호변경', '변경',
+          );
+          uiState.pwModalShow = false;
+          showToast('비밀번호가 변경되었습니다.');
+        } catch (e) {
+          pwError.value = e.response?.data?.message || '비밀번호 변경 실패';
+        }
       };
 
       const openLogin = (tab = 'login') => {

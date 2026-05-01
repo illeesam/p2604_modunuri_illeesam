@@ -77,18 +77,22 @@
    * foAuth.js 에서 사용. 로그인/회원가입/비밀번호변경.
    * ─────────────────────────────────────────────────────────── */
   coApiSvc.foAuth = {
-    login(body, uiNm, cmdNm)          { return global.foApi.post('/co/fo-auth/login', body, hdr(uiNm, cmdNm)); },
-    join(body, uiNm, cmdNm)           { return global.foApi.post('/co/fo-auth/join',  body, hdr(uiNm, cmdNm)); },
-    changePassword(body, uiNm, cmdNm) { return global.foApi.post('/fo/ec/my/password', body, hdr(uiNm, cmdNm)); },
+    login(body, uiNm, cmdNm)          { return global.foApi.post('/co/fo-auth/login',   body, hdr(uiNm, cmdNm)); },
+    tokenRefresh(body, uiNm, cmdNm)   { return global.foApi.post('/co/fo-auth/token-refresh', body, hdr(uiNm, cmdNm)); },
+    logout(body, uiNm, cmdNm)         { return global.foApi.post('/co/fo-auth/logout',  body, hdr(uiNm, cmdNm)); },
+    join(body, uiNm, cmdNm)           { return global.foApi.post('/co/fo-auth/join',    body, hdr(uiNm, cmdNm)); },
+    changePassword(body, uiNm, cmdNm) { return global.foApi.post('/co/fo-auth/change-password', body, hdr(uiNm, cmdNm)); },
   };
 
   /* ── bo-auth: BO 인증 (/co/bo-auth) ─────────────────────────
    * boAuthStore.js 에서 사용. 로그인/토큰갱신/로그아웃.
    * ─────────────────────────────────────────────────────────── */
   coApiSvc.boAuth = {
-    login(body, uiNm, cmdNm)   { return global.boApi.post('/co/bo-auth/login',   body, hdr(uiNm, cmdNm)); },
-    refresh(body, uiNm, cmdNm) { return global.boApi.post('/co/bo-auth/refresh', body, hdr(uiNm, cmdNm)); },
-    logout(body, uiNm, cmdNm)  { return global.boApi.post('/co/bo-auth/logout',  body, hdr(uiNm, cmdNm)); },
+    login(body, uiNm, cmdNm)          { return global.boApi.post('/co/bo-auth/login',           body, hdr(uiNm, cmdNm)); },
+    tokenRefresh(body, uiNm, cmdNm)   { return global.boApi.post('/co/bo-auth/token-refresh',   body, hdr(uiNm, cmdNm)); },
+    logout(body, uiNm, cmdNm)         { return global.boApi.post('/co/bo-auth/logout',          body, hdr(uiNm, cmdNm)); },
+    join(body, uiNm, cmdNm)           { return global.boApi.post('/co/bo-auth/join',            body, hdr(uiNm, cmdNm)); },
+    changePassword(body, uiNm, cmdNm) { return global.boApi.post('/co/bo-auth/change-password', body, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 공통코드 (FO·BO 모두 코드 조회 시 사용) ────────── */

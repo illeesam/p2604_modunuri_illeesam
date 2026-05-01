@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.co.auth.controller;
 
 import com.shopjoy.ecadminapi.co.auth.data.dto.TokenPair;
+import com.shopjoy.ecadminapi.co.auth.data.vo.ChangePasswordReq;
 import com.shopjoy.ecadminapi.co.auth.data.vo.FoJoinRes;
 import com.shopjoy.ecadminapi.co.auth.data.vo.LoginReq;
 import com.shopjoy.ecadminapi.co.auth.data.vo.LoginRes;
@@ -14,10 +15,11 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * FO 회원 인증 API (ec_member)
- * POST /api/co/fo-auth/login   — 로그인 (멀티디바이스 허용)
- * POST /api/co/fo-auth/join    — 회원가입
- * POST /api/co/fo-auth/refresh — 토큰 갱신 (Authorization 헤더로 만료된 accessToken 전달, refreshToken은 서버 DB 조회)
- * POST /api/co/fo-auth/logout  — 로그아웃
+ * POST /api/co/fo-auth/login           — 로그인 (멀티디바이스 허용)
+ * POST /api/co/fo-auth/join            — 회원가입
+ * POST /api/co/fo-auth/token-refresh   — 토큰 갱신 (Authorization 헤더로 만료된 accessToken 전달, refreshToken은 서버 DB 조회)
+ * POST /api/co/fo-auth/logout          — 로그아웃
+ * POST /api/co/fo-auth/change-password — 비밀번호 변경 (로그인 필요)
  */
 @RestController
 @RequestMapping("/api/co/fo-auth")
@@ -42,8 +44,8 @@ public class FoAuthController {
      * 토큰 갱신 — 만료된 accessToken을 Authorization 헤더로 전달
      * refreshToken은 서버 mbh_member_token_log에서 조회 (클라이언트 미전달)
      */
-    @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<TokenPair>> refresh(
+    @PostMapping("/token-refresh")
+    public ResponseEntity<ApiResponse<TokenPair>> tokenRefresh(
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
         String expiredAccessToken = (authHeader != null && authHeader.startsWith("Bearer "))
                 ? authHeader.substring(7) : null;
@@ -58,5 +60,12 @@ public class FoAuthController {
                 ? authHeader.substring(7) : null;
         authService.logout(accessToken, "FO");
         return ResponseEntity.ok(ApiResponse.ok(null, "로그아웃 되었습니다."));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @RequestBody @Valid ChangePasswordReq request) {
+        authService.changePassword(request, "FO");
+        return ResponseEntity.ok(ApiResponse.ok(null, "비밀번호가 변경되었습니다."));
     }
 }

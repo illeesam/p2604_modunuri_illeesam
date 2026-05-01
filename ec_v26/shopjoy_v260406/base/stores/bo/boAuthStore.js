@@ -133,7 +133,7 @@
       async saRefreshAccessToken() {
         if (!this.svRefreshToken) { this.saReset(); return false; }
         try {
-          const res = await coApiSvc.boAuth.refresh({ refreshToken: this.svRefreshToken }, '로그인', '토큰갱신');
+          const res = await coApiSvc.boAuth.tokenRefresh({ refreshToken: this.svRefreshToken }, '로그인', '토큰갱신');
           this.svAccessToken = res.data?.accessToken || '';
           this.svRefreshToken = res.data?.refreshToken || '';
           this.svAccessExpiresIn = res.data?.accessExpiresIn || 0;

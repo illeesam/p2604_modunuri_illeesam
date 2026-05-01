@@ -63,7 +63,7 @@ window.SyBizMng = {
         fnLoadCodes();
       }
     });
-    const cfAllowedPathIds = computed(() => uiState.selectedPath == null ? null : boUtil.getPathDescendants('sy_biz', uiState.selectedPath));
+    const cfAllowedPathIds = computed(() => uiState.selectedPath == null ? null : boUtil.getPathDescendants('sy_vendor', uiState.selectedPath));
 
     /* 검색 */
     const searchParam = reactive({ kw: '', statusFlt: '', vendorTypeFlt: '' });
@@ -327,7 +327,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </div>
   </div>
 
-  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_biz"
+  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_vendor"
     :value="formData.pathId" title="업체 표시경로 선택"
     @select="onPathPicked" @close="closePathPick" />
 </div>
