@@ -54,11 +54,7 @@
       async saLogin(loginId, loginPwd, authMethod = '메인') {
         try {
           const loginPwdHash = window.CryptoJS ? CryptoJS.SHA256(loginPwd).toString() : loginPwd;
-          const res = await boApi.post('/co/bo-auth/login', {
-            loginId,
-            loginPwd: loginPwdHash,
-            authMethod,
-          }, coUtil.apiHdr('로그인', '이메일로그인'));
+          const res = await coApiSvc.boAuth.login({ loginId, loginPwd: loginPwdHash, authMethod }, '로그인', '이메일로그인');
 
           const loginData = res.data?.data || {};
 
@@ -137,9 +133,7 @@
       async saRefreshAccessToken() {
         if (!this.svRefreshToken) { this.saReset(); return false; }
         try {
-          const res = await boApi.post('/co/bo-auth/refresh', {
-            refreshToken: this.svRefreshToken,
-          }, coUtil.apiHdr('로그인', '토큰갱신'));
+          const res = await coApiSvc.boAuth.refresh({ refreshToken: this.svRefreshToken }, '로그인', '토큰갱신');
           this.svAccessToken = res.data?.accessToken || '';
           this.svRefreshToken = res.data?.refreshToken || '';
           this.svAccessExpiresIn = res.data?.accessExpiresIn || 0;
@@ -159,7 +153,7 @@
       async saLogout() {
         if (this.svRefreshToken) {
           try {
-            await boApi.post('/co/bo-auth/logout', { refreshToken: this.svRefreshToken }, coUtil.apiHdr('로그인', '로그아웃'));
+            await coApiSvc.boAuth.logout({ refreshToken: this.svRefreshToken }, '로그인', '로그아웃');
           } catch (_) {}
         }
         this.saReset();

@@ -62,19 +62,15 @@ window.foAppHeader = {
       if (!pw.current) { pw.err = '현재 비밀번호를 입력하세요.'; return; }
       if (pw.next.length < 6) { pw.err = '새 비밀번호는 6자 이상이어야 합니다.'; return; }
       if (pw.next !== pw.next2) { pw.err = '새 비밀번호가 일치하지 않습니다.'; return; }
-      /* TODO: API 호출로 비밀번호 변경 */
-      if (typeof foApi !== 'undefined') {
-        try {
-          await foApi.post('/auth/fo/change-password', {
-            email: props.auth.user?.email,
-            currentPassword: pw.current,
-            newPassword: pw.next,
-          }, coUtil.apiHdr('비밀번호변경', '변경'));
-          pw.ok = true;
-          setTimeout(() => { uiState.pwOpen = false; }, 1400);
-        } catch (e) {
-          pw.err = e.response?.data?.message || '비밀번호 변경 실패';
-        }
+      try {
+        await coApiSvc.foAuth.changePassword({
+          currentPassword: pw.current,
+          newPassword: pw.next,
+        }, '비밀번호변경', '변경');
+        pw.ok = true;
+        setTimeout(() => { uiState.pwOpen = false; }, 1400);
+      } catch (e) {
+        pw.err = e.response?.data?.message || '비밀번호 변경 실패';
       }
     };
 

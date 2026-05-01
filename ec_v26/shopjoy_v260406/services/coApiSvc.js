@@ -65,11 +65,30 @@
     },
     getAuth(uiNm, cmdNm)  { return global.foApi.get('/co/cm/fo-app-store/getAuth',  hdr(uiNm, cmdNm)); },
     getUser(uiNm, cmdNm)  { return global.foApi.get('/co/cm/fo-app-store/getUser',  hdr(uiNm, cmdNm)); },
+    getUserPost(uiNm, cmdNm) { return global.foApi.post('/co/cm/fo-app-store/getUser', '', hdr(uiNm, cmdNm)); },
     getRoles(uiNm, cmdNm) { return global.foApi.get('/co/cm/fo-app-store/getRoles', hdr(uiNm, cmdNm)); },
     getMenus(uiNm, cmdNm) { return global.foApi.get('/co/cm/fo-app-store/getMenus', hdr(uiNm, cmdNm)); },
     getCodes(uiNm, cmdNm) { return global.foApi.get('/co/cm/fo-app-store/getCodes', hdr(uiNm, cmdNm)); },
     getProps(uiNm, cmdNm) { return global.foApi.get('/co/cm/fo-app-store/getProps', hdr(uiNm, cmdNm)); },
     getApp(uiNm, cmdNm)   { return global.foApi.get('/co/cm/fo-app-store/getApp',   hdr(uiNm, cmdNm)); },
+  };
+
+  /* ── fo-auth: FO 인증 (/co/fo-auth) ─────────────────────────
+   * foAuth.js 에서 사용. 로그인/회원가입/비밀번호변경.
+   * ─────────────────────────────────────────────────────────── */
+  coApiSvc.foAuth = {
+    login(body, uiNm, cmdNm)          { return global.foApi.post('/co/fo-auth/login', body, hdr(uiNm, cmdNm)); },
+    join(body, uiNm, cmdNm)           { return global.foApi.post('/co/fo-auth/join',  body, hdr(uiNm, cmdNm)); },
+    changePassword(body, uiNm, cmdNm) { return global.foApi.post('/fo/ec/my/password', body, hdr(uiNm, cmdNm)); },
+  };
+
+  /* ── bo-auth: BO 인증 (/co/bo-auth) ─────────────────────────
+   * boAuthStore.js 에서 사용. 로그인/토큰갱신/로그아웃.
+   * ─────────────────────────────────────────────────────────── */
+  coApiSvc.boAuth = {
+    login(body, uiNm, cmdNm)   { return global.boApi.post('/co/bo-auth/login',   body, hdr(uiNm, cmdNm)); },
+    refresh(body, uiNm, cmdNm) { return global.boApi.post('/co/bo-auth/refresh', body, hdr(uiNm, cmdNm)); },
+    logout(body, uiNm, cmdNm)  { return global.boApi.post('/co/bo-auth/logout',  body, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 공통코드 (FO·BO 모두 코드 조회 시 사용) ────────── */

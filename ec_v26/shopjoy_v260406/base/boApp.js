@@ -1058,13 +1058,13 @@
         if (!regForm.name || !regForm.email || !regForm.password) { loginError.value = '필수 항목을 입력하세요.'; return; }
         if (regForm.password !== regForm.confirmPw) { loginError.value = '비밀번호가 일치하지 않습니다.'; return; }
         try {
-          await boApi.post('/bo/sy/user', {
+          await boApiSvc.syUser.create({
             name: regForm.name,
             email: regForm.email,
             password: regForm.password,
             phone: regForm.phone,
             role: regForm.role,
-          }, coUtil.apiHdr('사용자등록', '저장'));
+          }, '사용자등록', '저장');
           Object.assign(regForm, { name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
           loginModal.tab = 'login';
           loginError.value = '';

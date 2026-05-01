@@ -93,9 +93,8 @@
   const login = async (loginId, loginPwd) => {
     state.loading = true;
     try {
-      if (typeof foApi === 'undefined') throw new Error('no api');
       const loginPwdHash = window.CryptoJS ? CryptoJS.SHA256(loginPwd).toString() : loginPwd;
-      const res = await foApi.post('/co/fo-auth/login', { loginId, loginPwd: loginPwdHash }, coUtil.apiHdr('로그인', '이메일로그인'));
+      const res = await coApiSvc.foAuth.login({ loginId, loginPwd: loginPwdHash }, '로그인', '이메일로그인');
       console.log('[foAuth.login] full response:', res);
       console.log('[foAuth.login] response.data:', res.data);
       console.log('[foAuth.login] response.data.data:', res.data?.data);
@@ -122,7 +121,7 @@
 
         /* 로그인 후 추가 사용자 정보 조회 */
         try {
-          const userRes = await foApi.post('/co/cm/fo-app-store/getUser', '', coUtil.apiHdr('시스템', '사용자정보조회'));
+          const userRes = await coApiSvc.cmFoAppStore.getUserPost('시스템', '사용자정보조회');
           if (userRes?.data?.data?.member) {
             const authStore = window.useFoAuthStore?.();
             authStore?.saSetAuthUser(userRes.data.data.member);
@@ -159,10 +158,9 @@
   const signup = async (memberNm, loginId, phone, extra = {}) => {
     state.loading = true;
     try {
-      if (typeof foApi === 'undefined') throw new Error('no api');
       const passwordHash = window.CryptoJS ? CryptoJS.SHA256(extra.password || '').toString() : extra.password;
       const body = { memberNm, loginId, loginPwdHash: passwordHash, ...extra };
-      const res = await foApi.post('/co/fo-auth/join', body, coUtil.apiHdr('회원가입', '가입'));
+      const res = await coApiSvc.foAuth.join(body, '회원가입', '가입');
       console.log('[foAuth.signup] response:', res.data);
       if (res.data?.data) {
         const d = res.data.data;
