@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdTagDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdTag;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdTagService;
@@ -19,7 +18,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/ec/pd/tag")
 @RequiredArgsConstructor
-@BoOnly
 public class BoPdTagController {
     private final BoPdTagService service;
 

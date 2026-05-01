@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyCode;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyCodeService;
@@ -21,7 +20,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/sy/code")
 @RequiredArgsConstructor
-@BoOnly
 public class BoSyCodeController {
     private final BoSyCodeService service;
 

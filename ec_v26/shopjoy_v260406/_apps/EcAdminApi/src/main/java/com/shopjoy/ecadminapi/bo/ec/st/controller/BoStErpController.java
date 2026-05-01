@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.st.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StErpVoucherDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StErpVoucher;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StErpVoucherRepository;
@@ -25,7 +24,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/ec/st/erp")
 @RequiredArgsConstructor
-@BoOnly
 public class BoStErpController {
 
     private final StErpVoucherService service;

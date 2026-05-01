@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.*;
 import com.shopjoy.ecadminapi.base.ec.pd.service.*;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -24,7 +23,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/ec/pd/prod/{prodId}")
 @RequiredArgsConstructor
-@BoOnly
 public class BoPdProdTabController {
 
     private final PdProdImgService     imgService;

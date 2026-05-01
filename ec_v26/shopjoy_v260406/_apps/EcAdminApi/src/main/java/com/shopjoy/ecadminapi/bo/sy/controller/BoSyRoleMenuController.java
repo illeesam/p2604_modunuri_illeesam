@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRoleMenu;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyRoleMenuService;
@@ -19,7 +18,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/sy/role-menu")
 @RequiredArgsConstructor
-@BoOnly
 public class BoSyRoleMenuController {
 
     private final BoSyRoleMenuService service;

@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyAlarmService;
@@ -21,7 +20,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/sy/alarm")
 @RequiredArgsConstructor
-@BoOnly
 public class BoSyAlarmController {
     private final BoSyAlarmService service;
 

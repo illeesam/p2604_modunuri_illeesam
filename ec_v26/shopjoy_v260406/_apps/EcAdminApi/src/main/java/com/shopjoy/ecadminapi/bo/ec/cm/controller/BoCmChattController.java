@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattRoomDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattRoom;
 import com.shopjoy.ecadminapi.bo.ec.cm.service.BoCmChattService;
@@ -29,7 +28,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/ec/cm/chatt")
 @RequiredArgsConstructor
-@BoOnly
 public class BoCmChattController {
     private final BoCmChattService service;
 

@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbm;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyBbmService;
@@ -21,7 +20,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/sy/bbm")
 @RequiredArgsConstructor
-@BoOnly
 public class BoSyBbmController {
     private final BoSyBbmService service;
 

@@ -42,6 +42,7 @@ import java.util.List;
  *   /api/base/**   GET              → 누구나 (permitAll)
  *   /api/base/**   POST/PUT/DELETE  → BO만
  *   /api/fo/ec/my/**               → FO만
+ *   /api/bo/**                     → BO만
  *   /api/**        GET              → BO 또는 FO
  *   /api/**        POST/PUT/PATCH/DELETE → BO만
  *   /autoRest/**   GET              → BO 또는 FO
@@ -123,12 +124,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/fo/ec/**").permitAll()
                 .requestMatchers("/api/base/cm/**").permitAll()
 
-                // /api/bo/sy/** (BO 시스템) — GET: 누구나 / 변경: BO만
-                .requestMatchers(HttpMethod.GET,    "/api/bo/sy/**").permitAll()
-                .requestMatchers(HttpMethod.POST,   "/api/bo/sy/**").access(BO_ONLY)
-                .requestMatchers(HttpMethod.PUT,    "/api/bo/sy/**").access(BO_ONLY)
-                .requestMatchers(HttpMethod.PATCH,  "/api/bo/sy/**").access(BO_ONLY)
-                .requestMatchers(HttpMethod.DELETE, "/api/bo/sy/**").access(BO_ONLY)
+                // /api/bo/** — BO만 허용
+                .requestMatchers("/api/bo/**").access(BO_ONLY)
 
                 // /api/ext/** — EXT(외부 시스템)만 허용
                 .requestMatchers("/api/ext/**").access(EXT_ONLY)

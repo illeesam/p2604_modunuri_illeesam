@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
 import com.shopjoy.ecadminapi.bo.ec.cm.service.BoCmBlogService;
@@ -28,7 +27,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/ec/cm/blog")
 @RequiredArgsConstructor
-@BoOnly
 public class BoCmBlogController {
     private final BoCmBlogService service;
 

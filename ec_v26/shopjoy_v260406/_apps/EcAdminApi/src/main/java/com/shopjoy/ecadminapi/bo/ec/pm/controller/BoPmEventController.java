@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEvent;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmEventService;
@@ -21,7 +20,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/ec/pm/event")
 @RequiredArgsConstructor
-@BoOnly
 public class BoPmEventController {
     private final BoPmEventService service;
 

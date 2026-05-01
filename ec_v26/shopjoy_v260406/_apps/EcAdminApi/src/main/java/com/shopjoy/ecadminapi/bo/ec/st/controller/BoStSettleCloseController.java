@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.st.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleCloseDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleClose;
 import com.shopjoy.ecadminapi.bo.ec.st.service.BoStSettleCloseService;
@@ -19,7 +18,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/ec/st/close")
 @RequiredArgsConstructor
-@BoOnly
 public class BoStSettleCloseController {
     private final BoStSettleCloseService service;
 

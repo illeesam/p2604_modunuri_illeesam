@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.st.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettle;
 import com.shopjoy.ecadminapi.bo.ec.st.service.BoStSettleService;
@@ -29,7 +28,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/ec/st/settle")
 @RequiredArgsConstructor
-@BoOnly
 public class BoStSettleController {
     private final BoStSettleService service;
 

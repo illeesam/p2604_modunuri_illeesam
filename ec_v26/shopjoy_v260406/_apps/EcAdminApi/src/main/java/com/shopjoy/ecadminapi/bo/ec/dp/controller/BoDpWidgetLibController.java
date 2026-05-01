@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.dp.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpWidgetLibDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidgetLib;
 import com.shopjoy.ecadminapi.bo.ec.dp.service.BoDpWidgetLibService;
@@ -28,7 +27,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/ec/dp/widget-lib")
 @RequiredArgsConstructor
-@BoOnly
 public class BoDpWidgetLibController {
     private final BoDpWidgetLibService service;
 

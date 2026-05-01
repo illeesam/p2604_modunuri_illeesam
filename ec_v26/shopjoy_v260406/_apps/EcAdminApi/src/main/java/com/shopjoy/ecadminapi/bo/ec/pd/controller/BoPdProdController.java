@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProd;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdProdService;
@@ -28,7 +27,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/ec/pd/prod")
 @RequiredArgsConstructor
-@BoOnly
 public class BoPdProdController {
     private final BoPdProdService service;
 

@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.od.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdDliv;
 import com.shopjoy.ecadminapi.bo.ec.od.service.BoOdDlivService;
@@ -29,7 +28,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/ec/od/dliv")
 @RequiredArgsConstructor
-@BoOnly
 public class BoOdDlivController {
     private final BoOdDlivService service;
 

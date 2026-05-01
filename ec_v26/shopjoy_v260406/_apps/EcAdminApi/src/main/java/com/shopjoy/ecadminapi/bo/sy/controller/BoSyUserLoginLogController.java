@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserLoginLogDto;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyUserLoginLogService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -18,7 +17,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/sy/user-login-log")
 @RequiredArgsConstructor
-@BoOnly
 public class BoSyUserLoginLogController {
 
     private final BoSyUserLoginLogService service;

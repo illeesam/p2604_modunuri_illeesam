@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyNoticeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
 import com.shopjoy.ecadminapi.bo.ec.cm.service.BoCmNoticeService;
@@ -28,7 +27,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/ec/cm/notice")
 @RequiredArgsConstructor
-@BoOnly
 public class BoCmNoticeController {
     private final BoCmNoticeService service;
 

@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucher;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmVoucherService;
@@ -21,7 +20,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/ec/pm/voucher")
 @RequiredArgsConstructor
-@BoOnly
 public class BoPmVoucherController {
     private final BoPmVoucherService service;
 

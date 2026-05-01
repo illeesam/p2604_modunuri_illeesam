@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchLogDto;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyBatchLogService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -18,7 +17,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/sy/batch-log")
 @RequiredArgsConstructor
-@BoOnly
 public class BoSyBatchLogController {
 
     private final BoSyBatchLogService service;

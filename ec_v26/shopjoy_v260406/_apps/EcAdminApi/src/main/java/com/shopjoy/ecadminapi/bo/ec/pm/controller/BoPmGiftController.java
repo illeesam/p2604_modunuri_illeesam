@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGift;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmGiftService;
@@ -21,7 +20,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/ec/pm/gift")
 @RequiredArgsConstructor
-@BoOnly
 public class BoPmGiftController {
     private final BoPmGiftService service;
 

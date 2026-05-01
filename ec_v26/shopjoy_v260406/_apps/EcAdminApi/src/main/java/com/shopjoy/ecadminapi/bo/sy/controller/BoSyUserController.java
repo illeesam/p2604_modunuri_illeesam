@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
@@ -23,7 +22,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/sy/user")
 @RequiredArgsConstructor
-@BoOnly
 public class BoSyUserController {
     private final BoSyUserService service;
     private final BoSyUserRoleService userRoleService;

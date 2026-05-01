@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.od.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaim;
 import com.shopjoy.ecadminapi.bo.ec.od.service.BoOdClaimService;
@@ -29,7 +28,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/ec/od/claim")
 @RequiredArgsConstructor
-@BoOnly
 public class BoOdClaimController {
     private final BoOdClaimService service;
 

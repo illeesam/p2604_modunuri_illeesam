@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +21,6 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/bo/ec/cm/dashboard")
-@BoOnly
 public class BoCmDashboardController {
 
     /** 주요 지표 요약 */

@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.dp.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpAreaDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpArea;
 import com.shopjoy.ecadminapi.bo.ec.dp.service.BoDpAreaService;
@@ -28,7 +27,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/ec/dp/area")
 @RequiredArgsConstructor
-@BoOnly
 public class BoDpAreaController {
     private final BoDpAreaService service;
 

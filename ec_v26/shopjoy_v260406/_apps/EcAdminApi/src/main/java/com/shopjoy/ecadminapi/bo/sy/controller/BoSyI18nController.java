@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18n;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18nMsg;
@@ -23,7 +22,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/sy/i18n")
 @RequiredArgsConstructor
-@BoOnly
 public class BoSyI18nController {
 
     private final SyI18nService service;

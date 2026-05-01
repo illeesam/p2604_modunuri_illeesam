@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.mb.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.bo.ec.mb.service.BoMbCustInfoService;
@@ -19,7 +18,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/ec/mb/cust-info")
 @RequiredArgsConstructor
-@BoOnly
 public class BoMbCustInfoController {
     private final BoMbCustInfoService service;
 

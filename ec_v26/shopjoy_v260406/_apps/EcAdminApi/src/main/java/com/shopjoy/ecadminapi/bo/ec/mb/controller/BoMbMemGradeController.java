@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.mb.controller;
 
-import com.shopjoy.ecadminapi.auth.annotation.BoOnly;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGradeDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGrade;
 import com.shopjoy.ecadminapi.bo.ec.mb.service.BoMbMemGradeService;
@@ -28,7 +27,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bo/ec/mb/member-grade")
 @RequiredArgsConstructor
-@BoOnly
 public class BoMbMemGradeController {
     private final BoMbMemGradeService service;
 
