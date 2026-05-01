@@ -5,7 +5,7 @@ window.DpDispPanelMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const panels = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cardPreviewItem: null, panelDragSrc: null, panelDragOverIdx: -1, widgetDragPanel: null, widgetDragSrcWi: null, widgetDragOverWi: null, selectedTreeKey: ''});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cardPreviewItem: null, panelDragSrc: null, panelDragOverIdx: -1, widgetDragPanel: null, widgetDragSrcWi: null, widgetDragOverWi: null, selectedTreeKey: '', selectedPath: null });
     const displays = reactive([]);
     const codes = reactive({
       layout_types: [],
@@ -365,6 +365,18 @@ window.DpDispPanelMng = {
     };
     const onWidgetDragEnd = () => { uiState.widgetDragPanel = null; uiState.widgetDragSrcWi = null; uiState.widgetDragOverWi = null; };
 
+    /* ── 표시경로 트리 (sy_path 기반) ── */
+    const pathExpanded = reactive(new Set([null]));
+    const togglePathNode = (id) => { if (pathExpanded.has(id)) pathExpanded.delete(id); else pathExpanded.add(id); };
+    const selectPathNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; };
+    const cfPathTree = computed(() => boUtil.buildPathTree('ec_disp_panel'));
+    const expandPathAll = () => { const walk = (n) => { pathExpanded.add(n.pathId); n.children.forEach(walk); }; walk(cfPathTree.value); };
+    const collapsePathAll = () => { pathExpanded.clear(); pathExpanded.add(null); };
+    onMounted(() => {
+      const initSet = boUtil.collectExpandedToDepth(cfPathTree.value, 2);
+      pathExpanded.clear(); initSet.forEach(v => pathExpanded.add(v));
+    });
+
     /* ── 표시경로 (영역별 그룹) ── */
       const searchParam = reactive({
     kw: '',
@@ -435,7 +447,9 @@ window.DpDispPanelMng = {
     // ── return ───────────────────────────────────────────────────────────────
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), panels, uiState, fnPathLabel, displays, codes,
-      cfPanelTree, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, searchParam, searchParamOrg, VISIBILITY_OPTS, pager, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, fnWLabel, openCardPreview, closeCardPreview, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd, setDispNow };
+      cfPanelTree, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll,
+      pathExpanded, togglePathNode, selectPathNode, cfPathTree, expandPathAll, collapsePathAll,
+      DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, searchParam, searchParamOrg, VISIBILITY_OPTS, pager, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, fnWLabel, openCardPreview, closeCardPreview, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd, setDispNow };
   },
   template: /* html */`
 <div>
@@ -478,80 +492,13 @@ window.DpDispPanelMng = {
   <div style="display:flex;gap:12px;align-items:flex-start;">
   <!-- ── 좌측 표시경로 ──────────────────────────────────────────────────────── -->
   <div class="card" style="width:240px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid #f0f0f0;margin-bottom:8px;">
-      <span style="font-size:12px;font-weight:700;color:#555;">표시경로</span>
-      <span style="font-size:10px;color:#aaa;">{{ cfPanelTree.length }}그룹</span>
-    </div>
+    <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
     <div style="display:flex;gap:4px;margin-bottom:8px;">
-      <button @click="expandAll" style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">▼ 전체펼치기</button>
-      <button @click="collapseAll" style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">▶ 전체닫기</button>
+      <button class="btn btn-sm" @click="expandPathAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
+      <button class="btn btn-sm" @click="collapsePathAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
     </div>
-    <!-- ── 루트 ─────────────────────────────────────────────────────────── -->
-    <div @click="selectTree('')"
-      :style="{
-        display:'flex',alignItems:'center',justifyContent:'space-between',
-        padding:'7px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',
-        background: uiState.selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',
-        color: uiState.selectedTreeKey==='' ? '#1565c0' : '#222',
-        fontWeight:700, border:'1px solid '+(uiState.selectedTreeKey==='' ? '#90caf9' : '#e4e7ec'),
-      }">
-      <span @click.stop="toggleTree('__root__')" style="cursor:pointer;">{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
-      <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ cfTotal }}</span>
-    </div>
-    <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
-      <template v-for="node in cfPanelTree" :key="node?.label">
-        <div @click="selectTree(node.label)"
-          :style="{
-            display:'flex',alignItems:'center',justifyContent:'space-between',
-            padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'2px',
-            background: uiState.selectedTreeKey===node.label ? '#e3f2fd' : 'transparent',
-            color: uiState.selectedTreeKey===node.label ? '#1565c0' : '#333',
-            fontWeight: uiState.selectedTreeKey===node.label ? 700 : 500,
-          }">
-          <span @click.stop="toggleTree('grp_'+node.label)" style="cursor:pointer;font-size:9px;transition:transform .2s;display:inline-block;width:12px;flex-shrink:0;"
-            :style="isTreeOpen('grp_'+node.label) ? 'transform:rotate(90deg);' : ''">▶</span>
-          <span @click.stop="selectTree(node.label)" style="cursor:pointer;flex:1;min-width:0;">{{ node.label }}</span>
-          <span @click.stop="selectTree(node.label)" style="cursor:pointer;font-size:10px;background:#f0f2f5;color:#666;border-radius:10px;padding:1px 7px;">{{ node.children.reduce((acc,c)=>acc+c.count,0) }}</span>
-        </div>
-        <!-- ── 서브그룹 ───────────────────────────────────────────────────── -->
-        <div v-if="isTreeOpen('grp_'+node.label)" style="padding-left:12px;border-left:1px solid #e0e0e0;margin-left:6px;margin-bottom:4px;">
-          <template v-for="sub in node.children" :key="node.label+'_'+sub.label">
-            <div @click="selectTree(node.label+'_'+sub.label)"
-              :style="{
-                display:'flex',alignItems:'center',justifyContent:'space-between',
-                padding:'5px 8px',borderRadius:'4px',cursor:'pointer',fontSize:'11px',marginBottom:'1px',
-                background: uiState.selectedTreeKey===(node.label+'_'+sub.label) ? '#f9fafb' : 'transparent',
-                color: uiState.selectedTreeKey===(node.label+'_'+sub.label) ? '#1565c0' : '#555',
-                fontWeight: uiState.selectedTreeKey===(node.label+'_'+sub.label) ? 600 : 400,
-              }">
-              <span @click.stop="toggleTree(node.label+'_'+sub.label)" style="cursor:pointer;font-size:9px;transition:transform .2s;display:inline-block;width:12px;flex-shrink:0;"
-                :style="isTreeOpen(node.label+'_'+sub.label) ? 'transform:rotate(90deg);' : ''">▶</span>
-              <span @click.stop="selectTree(node.label+'_'+sub.label)" style="cursor:pointer;flex:1;min-width:0;">{{ sub.label }}</span>
-              <span @click.stop="selectTree(node.label+'_'+sub.label)" style="cursor:pointer;font-size:10px;background:#f0f2f5;color:#666;border-radius:10px;padding:1px 7px;">{{ sub.count }}</span>
-            </div>
-            <!-- ── 패널 아이템들 ────────────────────────────────────────────── -->
-            <div v-if="isTreeOpen(node.label+'_'+sub.label)" style="padding-left:12px;border-left:1px solid #e0e0e0;margin-left:6px;margin-bottom:4px;">
-              <div v-for="panel in sub.panels" :key="panel?.panelId"
-                @click.stop="selectTree('panel_'+panel.panelId)"
-                :style="{
-                  display:'flex',alignItems:'center',justifyContent:'space-between',
-                  padding:'5px 8px',borderRadius:'4px',cursor:'pointer',fontSize:'11px',marginBottom:'1px',
-                  background: uiState.selectedTreeKey===('panel_'+panel.panelId) ? '#fff3e0' : 'transparent',
-                  color: uiState.selectedTreeKey===('panel_'+panel.panelId) ? '#e65100' : '#555',
-                  fontWeight: uiState.selectedTreeKey===('panel_'+panel.panelId) ? 600 : 400,
-                }">
-                <span style="display:flex;align-items:center;gap:4px;flex:1;min-width:0;overflow:hidden;">
-                  <span style="font-size:9px;background:#fff3e0;color:#e65100;border-radius:6px;padding:1px 6px;font-weight:600;white-space:nowrap;flex-shrink:0;">(패널)</span>
-                  <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ panel.label }}</span>
-                </span>
-                <span style="font-size:9px;background:#e8f0fe;color:#0277bd;border-radius:4px;padding:1px 6px;font-weight:600;flex-shrink:0;margin-left:4px;white-space:nowrap;">
-                  {{ (displays||[]).find(d => d.dispId===panel.panelId)?.rows?.length||0 }}
-                </span>
-              </div>
-            </div>
-          </template>
-        </div>
-      </template>
+    <div style="max-height:55vh;overflow:auto;">
+      <path-tree-node :node="cfPathTree" :expanded="pathExpanded" :selected="uiState.selectedPath" :on-toggle="togglePathNode" :on-select="selectPathNode" :depth="0" />
     </div>
   </div>
 

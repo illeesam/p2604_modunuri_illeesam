@@ -5,7 +5,7 @@ window.DpDispWidgetLibMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const widgetLibs = reactive([]);
-    const uiState = reactive({ loading: false, isPageCodeLoad: false, selectedTreeKey: ''});
+    const uiState = reactive({ loading: false, isPageCodeLoad: false, selectedPath: null });
     const codes = reactive({ disp_widget_types: [] });
 
     // App 초기화 준비 상태
@@ -103,65 +103,21 @@ const applied = reactive({ kw: '', type: '', status: '' });
       });
     });
 
-    /* ── 표시경로 ── */
-       /* '' = 전체, 'top' or 'top>sub' */
-    const cfTree = computed(() => {
-      const map = {};
-      const addToPath = (lib, pathStr) => {
-        const parts = pathStr.split('>').map(s => s.trim()).filter(Boolean);
-        if (!parts.length) return;
-        const top = window.safeArrayUtils.safeGet(parts, 0);
-        const rest = parts.slice(1).join(' > ') || '(루트)';
-        if (!map[top]) map[top] = {};
-        if (!map[top][rest]) map[top][rest] = [];
-        map[top][rest].push(lib);
-      };
-      window.safeArrayUtils.safeForEach(cfSearchedLibs, lib => {
-        if (!lib.usedPaths || !lib.usedPaths.length) addToPath(lib, '(미등록) > (미등록)');
-        else lib.usedPaths.forEach(p => addToPath(lib, p));
-      });
-      return Object.keys(map).sort().map(top => ({
-        label: top,
-        count: Object.values(map[top]).reduce((n, arr) => n + arr.length, 0),
-        children: Object.keys(map[top]).sort().map(sub => ({
-          label: sub,
-          libs: map[top][sub],
-          count: map[top][sub].length,
-        })),
-      }));
+    /* ── 표시경로 트리 ── */
+    const expanded = reactive(new Set([null]));
+    const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
+    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; };
+    const cfTree = computed(() => boUtil.buildPathTree('ec_disp_widget_lib'));
+    const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
+    const collapseAll = () => { expanded.clear(); expanded.add(null); };
+    onMounted(() => {
+      const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
+      expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
-    const openNodes = reactive(new Set(['__root__']));
-    const toggleNode = (key) => {
-      if (openNodes.has(key)) openNodes.delete(key);
-      else openNodes.add(key);
-    };
-    const isOpen = (key) => openNodes.has(key);
-    const selectTree = (key) => { uiState.selectedTreeKey = uiState.selectedTreeKey === key ? '' : key; pager.pageNo = 1; };
-    const expandAll = () => {
-      window.safeArrayUtils.safeForEach(cfTree, n => { openNodes.add(n.label); });
-    };
-    const collapseAll = () => { openNodes.clear(); };
 
-    /* 트리 선택까지 반영한 최종 리스트 */
+    /* 최종 리스트 */
     const cfFiltered = computed(() => {
-      const key = uiState.selectedTreeKey;
-      let list = cfSearchedLibs.value;
-      if (key) {
-        const [top, sub] = key.split('>').map(s => s.trim());
-        list = window.safeArrayUtils.safeFilter(list, lib => {
-          const paths = lib.usedPaths && lib.usedPaths.length
-            ? lib.usedPaths
-            : ['(미등록) > (미등록)'];
-          return window.safeArrayUtils.safeSome(paths, p => {
-            const parts = p.split('>').map(s => s.trim()).filter(Boolean);
-            if (window.safeArrayUtils.safeFirst(parts) !== top) return false;
-            if (!sub) return true;
-            const rest = parts.slice(1).join(' > ') || '(루트)';
-            return rest === sub;
-          });
-        });
-      }
-      return [...list].sort((a, b) => b.libId - a.libId);
+      return [...cfSearchedLibs.value].sort((a, b) => b.libId - a.libId);
     });
 
     const cfTotalCount  = computed(() => cfFiltered.value.length);
@@ -208,7 +164,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
 
     return { widgetLibs, uiState, codes, searchParam, pager,
       applied, onSearch, onReset, setPage, onSizeChange,
-      cfTree, openNodes, toggleNode, isOpen, selectTree, expandAll, collapseAll,
+      cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
       cfFiltered, cfTotalCount, cfPageList, cfTotalPages, cfPageNumbers,
       wIcon, wTypeLabel,
       uiStateDetail, cfDetailEditId, handleLoadDetail, openNew, closeDetail, inlineNavigate,
@@ -234,40 +190,54 @@ const applied = reactive({ kw: '', type: '', status: '' });
       </div>
     </div>
   </div>
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">위젯라이브러리 <span class="list-count">{{ cfTotalCount }}건</span></span>
-      <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
-    </div>
-    <table class="bo-table">
-      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>이름</th><th>타입</th><th>상태</th><th style="text-align:right">관리</th></tr></thead>
-      <tbody>
-        <tr v-if="cfPageList.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="(lib, idx) in cfPageList" :key="lib.libId">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><span class="title-link" @click="handleLoadDetail(lib.libId)">{{ wIcon(lib.widgetType) }} {{ lib.name }}</span></td>
-          <td><span class="tag">{{ wTypeLabel(lib.widgetType) }}</span></td>
-          <td><span class="badge" :class="lib.status==='활성'?'badge-green':'badge-gray'">{{ lib.status }}</span></td>
-          <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(lib.libId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(lib)">삭제</button>
-          </div></td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="pagination">
-      <div></div>
-      <div class="pager">
-        <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
-        <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-        <button v-for="n in cfPageNumbers" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
-        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+  <div style="display:grid;grid-template-columns:minmax(180px,22fr) 78fr;gap:16px;align-items:flex-start;">
+    <div class="card" style="padding:12px;min-width:180px;">
+      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
+      <div style="display:flex;gap:4px;margin-bottom:8px;">
+        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
+        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
-      <div class="pager-right">
-        <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
-          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
-        </select>
+      <div style="max-height:65vh;overflow:auto;">
+        <path-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="toolbar">
+          <span class="list-title">위젯라이브러리 <span class="list-count">{{ cfTotalCount }}건</span></span>
+          <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+        </div>
+        <table class="bo-table">
+          <thead><tr><th style="width:36px;text-align:center;">번호</th><th>이름</th><th>타입</th><th>상태</th><th style="text-align:right">관리</th></tr></thead>
+          <tbody>
+            <tr v-if="cfPageList.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+            <tr v-for="(lib, idx) in cfPageList" :key="lib.libId">
+              <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
+              <td><span class="title-link" @click="handleLoadDetail(lib.libId)">{{ wIcon(lib.widgetType) }} {{ lib.name }}</span></td>
+              <td><span class="tag">{{ wTypeLabel(lib.widgetType) }}</span></td>
+              <td><span class="badge" :class="lib.status==='활성'?'badge-green':'badge-gray'">{{ lib.status }}</span></td>
+              <td><div class="actions">
+                <button class="btn btn-blue btn-sm" @click="handleLoadDetail(lib.libId)">수정</button>
+                <button class="btn btn-danger btn-sm" @click="handleDelete(lib)">삭제</button>
+              </div></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pagination">
+          <div></div>
+          <div class="pager">
+            <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+            <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+            <button v-for="n in cfPageNumbers" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+            <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
+            <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+          </div>
+          <div class="pager-right">
+            <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+              <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
   </div>

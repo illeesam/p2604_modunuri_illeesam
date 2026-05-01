@@ -5,7 +5,7 @@ window.DpDispAreaMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const areas = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null });
     const codes = reactive({ layout_types: [] });
 
     // App 초기화 준비 상태
@@ -58,6 +58,18 @@ window.DpDispAreaMng = {
       handleSearchData('DEFAULT');
     });
     const fnPathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
+
+    /* ── 표시경로 트리 ── */
+    const expanded = reactive(new Set([null]));
+    const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
+    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; };
+    const cfTree = computed(() => boUtil.buildPathTree('ec_disp_area'));
+    const expandAll = () => { const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); }; walk(cfTree.value); };
+    const collapseAll = () => { expanded.clear(); expanded.add(null); };
+    onMounted(() => {
+      const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
+      expanded.clear(); initSet.forEach(v => expanded.add(v));
+    });
 
     /* ── 검색 ── */
     const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
@@ -138,6 +150,7 @@ const searchParam = reactive({
     return { areas, uiState, codes, pager, searchParam, DATE_RANGE_OPTIONS,
       cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums,
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange, cfSiteNm,
+      expanded, toggleNode, selectNode, cfTree, expandAll, collapseAll, fnPathLabel,
       uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId };
   },
   template: /* html */`
@@ -159,44 +172,56 @@ const searchParam = reactive({
       </div>
     </div>
   </div>
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-count">총 {{ cfTotal }}건</span>
-      <button class="btn btn-primary btn-sm" @click="openNew">✚ 신규등록</button>
-    </div>
-    <table class="bo-table">
-      <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th><th>영역코드</th><th>영역명</th><th>유형</th><th>사용여부</th><th>등록일</th><th>액션</th>
-      </tr></thead>
-      <tbody>
-        <tr v-if="uiState.loading"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">로딩 중...</td></tr>
-        <tr v-else-if="!cfPageList.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">조회된 데이터가 없습니다.</td></tr>
-        <tr v-for="(a, idx) in cfPageList" :key="a?.codeId">
-          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td><code style="font-size:11px;">{{ a.codeValue }}</code></td>
-          <td class="title-link" @click="loadView(a.codeId)">{{ a.codeLabel }}</td>
-          <td>{{ a.areaType }}</td>
-          <td><span :class="'badge '+(a.useYn==='Y'?'badge-green':'badge-gray')">{{ a.useYn==='Y'?'사용':'미사용' }}</span></td>
-          <td>{{ (a.regDate||'').slice(0,10) }}</td>
-          <td class="actions">
-            <button class="btn btn-sm btn-secondary" @click="loadView(a.codeId)">상세</button>
-            <button class="btn btn-sm btn-primary" @click="handleLoadDetail(a.codeId)">수정</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="pagination">
-      <div class="pager">
-        <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
-        <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
-        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+  <div style="display:grid;grid-template-columns:minmax(180px,22fr) 78fr;gap:16px;align-items:flex-start;">
+    <div class="card" style="padding:12px;min-width:180px;">
+      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 표시경로</span></div>
+      <div style="display:flex;gap:4px;margin-bottom:8px;">
+        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
+        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
-      <div class="pager-right">
-        <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
-          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}건</option>
-        </select>
+      <div style="max-height:65vh;overflow:auto;">
+        <path-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+      </div>
+    </div>
+    <div class="card">
+      <div class="toolbar">
+        <span class="list-count">총 {{ cfTotal }}건</span>
+        <button class="btn btn-primary btn-sm" @click="openNew">✚ 신규등록</button>
+      </div>
+      <table class="bo-table">
+        <thead><tr>
+          <th style="width:36px;text-align:center;">번호</th><th>영역코드</th><th>영역명</th><th>유형</th><th>사용여부</th><th>등록일</th><th>액션</th>
+        </tr></thead>
+        <tbody>
+          <tr v-if="uiState.loading"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">로딩 중...</td></tr>
+          <tr v-else-if="!cfPageList.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">조회된 데이터가 없습니다.</td></tr>
+          <tr v-for="(a, idx) in cfPageList" :key="a?.codeId">
+            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
+            <td><code style="font-size:11px;">{{ a.codeValue }}</code></td>
+            <td class="title-link" @click="loadView(a.codeId)">{{ a.codeLabel }}</td>
+            <td>{{ a.areaType }}</td>
+            <td><span :class="'badge '+(a.useYn==='Y'?'badge-green':'badge-gray')">{{ a.useYn==='Y'?'사용':'미사용' }}</span></td>
+            <td>{{ (a.regDate||'').slice(0,10) }}</td>
+            <td class="actions">
+              <button class="btn btn-sm btn-secondary" @click="loadView(a.codeId)">상세</button>
+              <button class="btn btn-sm btn-primary" @click="handleLoadDetail(a.codeId)">수정</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <div class="pager">
+          <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+          <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+          <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+          <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
+          <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        </div>
+        <div class="pager-right">
+          <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+            <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}건</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
