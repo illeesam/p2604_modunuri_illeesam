@@ -11,7 +11,7 @@ window.SyContactDtl = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._syContactDtlState.tab || 'content', viewMode2: window._syContactDtlState.viewMode || 'tab', contentEl: null, answerEl: null });
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
-    const codes = reactive({});
+    const codes = reactive({ contact_categories: [], contact_statuses: [] });
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
@@ -50,6 +50,8 @@ window.SyContactDtl = {
       try {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
+        codes.contact_categories = await codeStore.snGetGrpCodes('CONTACT_CATEGORY_KR') || [];
+        codes.contact_statuses = await codeStore.snGetGrpCodes('CONTACT_STATUS_KR') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -226,14 +228,13 @@ window.SyContactDtl = {
         <div class="form-group">
           <label class="form-label">카테고리</label>
           <select class="form-control" v-model="form.categoryCd" :disabled="viewMode">
-            <option>배송 문의</option><option>상품 문의</option><option>교환·반품 문의</option>
-            <option>주문·결제 문의</option><option>기타 문의</option>
+            <option v-for="c in codes.contact_categories" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>
           <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
-            <option>요청</option><option>처리중</option><option>답변완료</option><option>취소됨</option>
+            <option v-for="c in codes.contact_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
       </div>

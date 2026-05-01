@@ -7,7 +7,7 @@ window.SyUserMng = {
     const users = reactive([]);
     const depts = reactive([]);
         const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, boUsers: [], selectedDeptId: null});
-    const codes = reactive({ user_status: [] });
+    const codes = reactive({ user_status: [], user_roles: [] });
 
     // onMounted에서 API 로드
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -93,6 +93,7 @@ window.SyUserMng = {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
         codes.user_status = await codeStore.snGetGrpCodes('USER_STATUS') || [];
+        codes.user_roles = await codeStore.snGetGrpCodes('USER_ROLE') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -184,10 +185,12 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="이름 / 로그인ID / 이메일 검색" />
       <select v-model="searchParam.role">
-        <option value="">권한 전체</option><option>슈퍼관리자</option><option>관리자</option><option>운영자</option>
+        <option value="">권한 전체</option>
+        <option v-for="c in codes.user_roles" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <select v-model="searchParam.status">
-        <option value="">상태 전체</option><option>활성</option><option>비활성</option>
+        <option value="">상태 전체</option>
+        <option v-for="c in codes.user_status" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">

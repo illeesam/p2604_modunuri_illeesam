@@ -5,7 +5,7 @@ window.DpDispAreaDtl = {
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
-    const codes = reactive({ disp_areas: [], layout_types: [] });
+    const codes = reactive({ disp_areas: [], layout_types: [], use_yn: [] });
     const areas = reactive([]);
     const panels = reactive([]);
     const uiState = reactive({ loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, pickKw: '', activeTab: 'base', expanded: false, previewMode: 'default', previewPaneWidth: 520, htmlDescEl: null });
@@ -26,6 +26,7 @@ window.DpDispAreaDtl = {
       const codeStore = window.getBoCodeStore();
       codes.disp_areas = codeStore.snGetGrpCodes('DISP_AREA') || [];
       codes.layout_types = codeStore.snGetGrpCodes('LAYOUT_TYPE') || [];
+      codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
       uiState.isPageCodeLoad = true;
     };
 
@@ -600,8 +601,7 @@ window.DpDispAreaDtl = {
             <div class="form-group">
               <label class="form-label">사용 여부</label>
               <select class="form-control" v-model="form.useYn">
-                <option value="Y">사용</option>
-                <option value="N">미사용</option>
+                <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
               </select>
             </div>
             <div class="form-group" style="flex:2;">

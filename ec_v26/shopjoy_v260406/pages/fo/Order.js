@@ -5,7 +5,14 @@ window.Order = {
   setup(props) {
     const { reactive, computed, ref, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, view: 'order', resultData: null, selectedShipCoupon: null, cashBalance: 0, cashInput: 0 });
-    const codes = reactive({});
+    const codes = reactive({
+      dliv_req_opts: [
+        { value: '문 앞에 놔주세요',    label: '문 앞에 놔주세요' },
+        { value: '경비실에 맡겨주세요', label: '경비실에 맡겨주세요' },
+        { value: '택배함에 넣어주세요', label: '택배함에 넣어주세요' },
+        { value: '연락 후 배송해주세요', label: '연락 후 배송해주세요' },
+      ],
+    });
 
     const isAppReady = computed(() => {
       const initStore = window.useFoAppInitStore?.();
@@ -458,10 +465,7 @@ window.Order = {
             <label class="form-label">배송 요청사항</label>
             <select v-model="form.deliveryReq" class="form-input">
               <option value="">선택 없음</option>
-              <option value="문 앞에 놔주세요">문 앞에 놔주세요</option>
-              <option value="경비실에 맡겨주세요">경비실에 맡겨주세요</option>
-              <option value="택배함에 넣어주세요">택배함에 넣어주세요</option>
-              <option value="연락 후 배송해주세요">연락 후 배송해주세요</option>
+              <option v-for="o in codes.dliv_req_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
             </select>
           </div>
           <button @click="handleSubmit" :disabled="uiState.submitting"

@@ -8,6 +8,7 @@ window.PmGiftMng = {
         const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, giftList: [], viewMode: 'list'});
     const codes = reactive({
       gift_statuses: [],
+      gift_cond_types: [],
     });
 
     const isAppReady = computed(() => {
@@ -20,6 +21,7 @@ window.PmGiftMng = {
       const codeStore = window.getBoCodeStore();
       try {
         codes.gift_statuses = codeStore.snGetGrpCodes('GIFT_STATUS') || [];
+        codes.gift_cond_types = codeStore.snGetGrpCodes('GIFT_COND_KR') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -155,8 +157,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
   <div class="card">
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="사은품명 / ID 검색" />
-      <select v-model="searchParam.type"><option value="">유형 전체</option><option>구매조건</option><option>금액조건</option><option>수량조건</option><option>무조건</option></select>
-      <select v-model="searchParam.status"><option value="">상태 전체</option><option>활성</option><option>비활성</option><option>종료</option><option>품절</option></select>
+      <select v-model="searchParam.type"><option value="">유형 전체</option><option v-for="c in codes.gift_cond_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
+      <select v-model="searchParam.status"><option value="">상태 전체</option><option v-for="c in codes.gift_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
       <span class="search-label">시작일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>

@@ -7,6 +7,7 @@ window.StSettleCloseMng = {
     const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
     const codes = reactive({
       settle_statuses: [],
+      settle_close_statuses: [],
     });
 
     const isAppReady = computed(() => {
@@ -19,6 +20,7 @@ window.StSettleCloseMng = {
       const codeStore = window.getBoCodeStore();
       try {
         codes.settle_statuses = codeStore.snGetGrpCodes('SETTLE_STATUS') || [];
+        codes.settle_close_statuses = codeStore.snGetGrpCodes('SETTLE_CLOSE_STATUS_KR') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -134,7 +136,7 @@ window.StSettleCloseMng = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, closeList, cfFilteredClose, searchKw, searchStatus, onSearch, onReset, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW };
+    return { uiState, closeList, cfFilteredClose, searchKw, searchStatus, onSearch, onReset, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW, codes };
   },
   template: /* html */`
 <div>
@@ -189,7 +191,7 @@ window.StSettleCloseMng = {
       <input v-model="searchKw" placeholder="정산월 / 담당자 검색" style="width:180px" @keyup.enter="onSearch" />
       <select v-model="searchStatus" style="width:130px">
         <option value="">상태 전체</option>
-        <option>마감완료</option><option>마감취소</option><option>마감예정</option>
+        <option v-for="c in codes.settle_close_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>

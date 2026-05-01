@@ -6,7 +6,7 @@ window.SyPropMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const uiState = reactive({ isPageCodeLoad: false, _newId: -1, selectedPath: ''});
-    const codes = reactive({});
+    const codes = reactive({ use_yn: [], prop_types: ['STRING','NUMBER','BOOLEAN','JSON'] });
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -16,6 +16,9 @@ window.SyPropMng = {
 
     const fnLoadCodes = async () => {
       try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -47,7 +50,6 @@ window.SyPropMng = {
 
     /* ── 검색 ── */
     const searchParam = reactive({ kw: '', useFlt: '', typeFlt: '' });
-    const TYPES    = ['STRING','NUMBER','BOOLEAN','JSON'];
 
     /* ── 데이터 (작업 상태 포함) ── */
     const rows = reactive([]);
@@ -218,7 +220,7 @@ window.SyPropMng = {
     return {
       uiState, codes,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      searchParam, TYPES, cfTree, expanded, toggleNode, expandAll, collapseAll,
+      searchParam, cfTree, expanded, toggleNode, expandAll, collapseAll,
       selectNode, cfGridRows, cfDirtyRows,
       fetchData,
       onChange, addRow, delRow, cancelRow, handleSave, onReset, exportCsv,
@@ -235,12 +237,11 @@ window.SyPropMng = {
       <input class="form-control" v-model="searchParam.kw" placeholder="표시경로 / 키 / 값 / 라벨 검색" style="min-width:280px;flex:1;max-width:420px;">
       <select class="form-control" v-model="searchParam.typeFlt" style="width:120px;">
         <option value="">전체 타입</option>
-        <option v-for="t in TYPES" :key="t" :value="t">{{ t }}</option>
+        <option v-for="t in codes.prop_types" :key="t" :value="t">{{ t }}</option>
       </select>
       <select class="form-control" v-model="searchParam.useFlt" style="width:130px;">
         <option value="">사용여부 전체</option>
-        <option value="Y">사용</option>
-        <option value="N">미사용</option>
+        <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary btn-sm" @click="fetchData">조회</button>
@@ -324,14 +325,13 @@ window.SyPropMng = {
             <td><input class="grid-input" :value="r.propLabel" @input="onChange(r,'propLabel',$event.target.value)"></td>
             <td>
               <select class="grid-select" :value="r.propType" @change="onChange(r,'propType',$event.target.value)">
-                <option v-for="t in TYPES" :key="t" :value="t">{{ t }}</option>
+                <option v-for="t in codes.prop_types" :key="t" :value="t">{{ t }}</option>
               </select>
             </td>
             <td><input class="grid-input grid-num" type="number" :value="r.sortOrd" @input="onChange(r,'sortOrd',Number($event.target.value))"></td>
             <td>
               <select class="grid-select" :value="r.useYn" @change="onChange(r,'useYn',$event.target.value)">
-                <option value="Y">사용</option>
-                <option value="N">미사용</option>
+                <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
               </select>
             </td>
             <td><input class="grid-input" :value="r.remark" @input="onChange(r,'remark',$event.target.value)"></td>

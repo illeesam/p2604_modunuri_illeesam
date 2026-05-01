@@ -19,7 +19,7 @@ window.PmEventMng = {
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
       try {
-        codes.event_statuses = codeStore.snGetGrpCodes('EVENT_STATUS') || [];
+        codes.event_statuses = codeStore.snGetGrpCodes('EVENT_STATUS_KR') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -150,7 +150,7 @@ window.PmEventMng = {
   <div class="card">
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="이벤트 제목 검색" />
-      <select v-model="searchParam.status"><option value="">상태 전체</option><option>진행중</option><option>예정</option><option>종료</option></select>
+      <select v-model="searchParam.status"><option value="">상태 전체</option><option v-for="c in codes.event_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
       <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>

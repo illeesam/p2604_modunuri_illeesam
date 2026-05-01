@@ -5,6 +5,8 @@ window.SyPostman = {
   setup() {
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
+    const codes = reactive({ http_method_opts: ['GET','POST','PUT','PATCH','DELETE'] });
+
     /* ===== UI State ===== */
     const uiState = reactive({
       treeLoaded: false,
@@ -537,7 +539,7 @@ window.SyPostman = {
       cfResGridCols, cfResGridRows,
       addRow, removeRow, methodStyle, statusStyle, methodDot, quickRun,
       autoPopupPos, POPUP_ROWS, SECS, MINS, HOURS,
-      openAutoPopup, closeAutoPopup, selectAuto, countdown,
+      openAutoPopup, closeAutoPopup, selectAuto, countdown, codes,
     };
   },
 
@@ -764,7 +766,7 @@ window.SyPostman = {
           <select v-model="cfActiveTab.reqMethod"
             style="font-size:12px;padding:5px 6px;border:1px solid #ddd;border-radius:5px;font-weight:700;width:90px;cursor:pointer;"
             :style="methodStyle(cfActiveTab.reqMethod)">
-            <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option>
+            <option v-for="m in codes.http_method_opts" :key="m">{{ m }}</option>
           </select>
           <input v-model="cfActiveTab.reqUrl" placeholder="URL" @keyup.enter="doSend()"
             style="flex:1;font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:5px;outline:none;font-family:monospace;min-width:0;" />
@@ -950,7 +952,7 @@ window.SyPostman = {
               <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;">메서드</div>
               <select v-model="editReq.method"
                 style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;font-weight:700;color:#333;outline:none;cursor:pointer;">
-                <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option>
+                <option v-for="m in codes.http_method_opts" :key="m">{{ m }}</option>
               </select>
             </div>
             <div style="margin-bottom:7px;">

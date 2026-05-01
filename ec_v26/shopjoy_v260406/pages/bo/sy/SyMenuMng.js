@@ -7,7 +7,7 @@ window.SyMenuMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const menus = reactive([]);
     const uiState = reactive({ checkAll: false, loading: false, error: null, isPageCodeLoad: false, selectedTreeId: null, focusedIdx: null});
-    const codes = reactive({ menu_type: [], menu_status: [] });
+    const codes = reactive({ menu_type: [], menu_status: [], use_yn: [], menu_types: ['페이지','폴더','외부링크','구분선'] });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -70,6 +70,7 @@ window.SyMenuMng = {
         if (!codeStore?.snGetGrpCodes) return;
         codes.menu_type = await codeStore.snGetGrpCodes('MENU_TYPE') || [];
         codes.menu_status = await codeStore.snGetGrpCodes('MENU_STATUS') || [];
+        codes.use_yn = await codeStore.snGetGrpCodes('USE_YN') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -92,7 +93,6 @@ window.SyMenuMng = {
     watch(() => uiState.selectedTreeId, () => { handleSearchList(); });
 
 
-    const MENU_TYPES   = ['페이지', '폴더', '외부링크', '구분선'];
 
     /* ── CRUD 그리드 ── */
     const gridRows   = reactive([]);
@@ -257,7 +257,7 @@ window.SyMenuMng = {
     // ── return ───────────────────────────────────────────────────────────────
 
     return { menus, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
-      searchParam, searchParamOrg, MENU_TYPES,
+      searchParam, searchParamOrg,
       cfSiteNm,
       gridRows, cfTotal,
       setFocused, onSearch, onReset, onCellChange,
@@ -278,10 +278,11 @@ window.SyMenuMng = {
       <input v-model="searchParam.kw" placeholder="메뉴코드 / 메뉴명 검색" />
       <select v-model="searchParam.type">
         <option value="">유형 전체</option>
-        <option v-for="t in MENU_TYPES" :key="t">{{ t }}</option>
+        <option v-for="t in codes.menu_types" :key="t">{{ t }}</option>
       </select>
       <select v-model="searchParam.useYn">
-        <option value="">사용여부 전체</option><option value="Y">사용</option><option value="N">미사용</option>
+        <option value="">사용여부 전체</option>
+        <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
@@ -377,13 +378,13 @@ window.SyMenuMng = {
           <td><input class="grid-input" v-model="row.menuUrl" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="/path" /></td>
           <td>
             <select class="grid-select" v-model="row.menuType" :disabled="row._row_status==='D'" @change="onCellChange(row)">
-              <option v-for="t in MENU_TYPES" :key="t">{{ t }}</option>
+              <option v-for="t in codes.menu_types" :key="t">{{ t }}</option>
             </select>
           </td>
           <td><input class="grid-input grid-num" type="number" v-model.number="row.sortOrd" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
           <td>
             <select class="grid-select" v-model="row.useYn" :disabled="row._row_status==='D'" @change="onCellChange(row)">
-              <option value="Y">사용</option><option value="N">미사용</option>
+              <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
             </select>
           </td>
           <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>

@@ -8,7 +8,7 @@ window.PmSaveDtl = {
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmSaveDtlState.tab || 'info', viewMode2: window._pmSaveDtlState.viewMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
-    const codes = reactive({});
+    const codes = reactive({ save_issue_types: [], save_units: [], promo_statuses: [] });
 
     // 단건 조회
     const handleSearchDetail = async () => {
@@ -45,6 +45,9 @@ window.PmSaveDtl = {
       try {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
+        codes.save_issue_types = await codeStore.snGetGrpCodes('SAVE_ISSUE_TYPE') || [];
+        codes.save_units = await codeStore.snGetGrpCodes('SAVE_UNIT') || [];
+        codes.promo_statuses = await codeStore.snGetGrpCodes('PROMO_STATUS') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -163,7 +166,7 @@ window.PmSaveDtl = {
         <div class="form-group">
           <label class="form-label">적립유형</label>
           <select class="form-control" v-model="form.saveType">
-            <option>구매적립</option><option>회원가입</option><option>리뷰적립</option><option>출석체크</option>
+            <option v-for="c in codes.save_issue_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
         <div class="form-group">
@@ -176,7 +179,7 @@ window.PmSaveDtl = {
         <div class="form-group">
           <label class="form-label">적립단위</label>
           <select class="form-control" v-model="form.saveUnit">
-            <option>원</option><option>%</option>
+            <option v-for="c in codes.save_units" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
         <div class="form-group">
@@ -192,7 +195,7 @@ window.PmSaveDtl = {
         <div class="form-group">
           <label class="form-label">상태</label>
           <select class="form-control" v-model="form.saveStatus">
-            <option>활성</option><option>비활성</option><option>종료</option>
+            <option v-for="c in codes.promo_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
       </div>

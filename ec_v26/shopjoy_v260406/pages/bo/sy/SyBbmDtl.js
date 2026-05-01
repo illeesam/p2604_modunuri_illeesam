@@ -8,7 +8,9 @@ window.SyBbmDtl = {
 
     const bbms = reactive([]);
     const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false });
-    const codes = reactive({});
+    const codes = reactive({ bbm_types: [], bbm_comment_types: [], bbm_attach_types: [], bbm_content_types: [], bbm_scope_types: [], use_yn: [],
+      allow_yn_opts: [{codeValue:'Y',codeLabel:'허용'},{codeValue:'N',codeLabel:'불가'}],
+    });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -34,6 +36,19 @@ window.SyBbmDtl = {
     });
 
     const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (codeStore?.snGetGrpCodes) {
+          codes.bbm_types = await codeStore.snGetGrpCodes('BBM_TYPE') || [];
+          codes.bbm_comment_types = await codeStore.snGetGrpCodes('BBM_COMMENT_TYPE') || [];
+          codes.bbm_attach_types = await codeStore.snGetGrpCodes('BBM_ATTACH_TYPE') || [];
+          codes.bbm_content_types = await codeStore.snGetGrpCodes('BBM_CONTENT_TYPE') || [];
+          codes.bbm_scope_types = await codeStore.snGetGrpCodes('BBM_SCOPE_TYPE') || [];
+          codes.use_yn = await codeStore.snGetGrpCodes('USE_YN') || [];
+        }
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
       uiState.isPageCodeLoad = true;
       handleSearchList();
     };
@@ -132,7 +147,7 @@ window.SyBbmDtl = {
       <div class="form-group">
         <label class="form-label">유형</label>
         <select class="form-control" v-model="form.bbmType" :disabled="viewMode">
-          <option>일반</option><option>공지</option><option>갤러리</option><option>FAQ</option><option>QnA</option>
+          <option v-for="c in codes.bbm_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
     </div>
@@ -140,19 +155,19 @@ window.SyBbmDtl = {
       <div class="form-group">
         <label class="form-label">댓글허용</label>
         <select class="form-control" v-model="form.allowComment" :disabled="viewMode">
-          <option>불가</option><option>댓글허용</option><option>대댓글허용</option>
+          <option v-for="c in codes.bbm_comment_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">첨부허용</label>
         <select class="form-control" v-model="form.allowAttach" :disabled="viewMode">
-          <option>불가</option><option>1개</option><option>2개</option><option>3개</option><option>목록</option>
+          <option v-for="c in codes.bbm_attach_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">좋아요허용</label>
         <select class="form-control" v-model="form.allowLike" :disabled="viewMode">
-          <option value="Y">허용</option><option value="N">불가</option>
+          <option v-for="o in codes.allow_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
         </select>
       </div>
     </div>
@@ -160,13 +175,13 @@ window.SyBbmDtl = {
       <div class="form-group">
         <label class="form-label">내용입력</label>
         <select class="form-control" v-model="form.contentType" :disabled="viewMode">
-          <option>불가</option><option>textarea</option><option>htmleditor</option>
+          <option v-for="c in codes.bbm_content_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">공개범위</label>
         <select class="form-control" v-model="form.scopeType" :disabled="viewMode">
-          <option>공개</option><option>개인</option><option>회사</option>
+          <option v-for="c in codes.bbm_scope_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group"></div>
@@ -191,7 +206,7 @@ window.SyBbmDtl = {
       <div class="form-group">
         <label class="form-label">사용여부</label>
         <select class="form-control" v-model="form.useYn" :disabled="viewMode">
-          <option value="Y">사용</option><option value="N">미사용</option>
+          <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">

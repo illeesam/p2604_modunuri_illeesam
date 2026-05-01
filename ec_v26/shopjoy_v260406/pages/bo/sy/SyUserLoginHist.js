@@ -9,7 +9,6 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
     const activeTab = Vue.toRef(uiState, 'activeTab');
      // 'log' | 'hist' | 'token'
 
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
       if (uiState.dateRange) { const r = boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
@@ -33,8 +32,14 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
+    const codes = reactive({ login_results: [], token_actions: [], date_range_opts: [] });
+
     const fnLoadCodes = async () => {
       uiState.isPageCodeLoad = true;
+      const codeStore = window.getBoCodeStore?.();
+      codes.login_results = codeStore?.snGetGrpCodes('LOGIN_RESULT') || [];
+      codes.token_actions = codeStore?.snGetGrpCodes('TOKEN_ACTION') || [];
+      codes.date_range_opts = codeStore?.snGetGrpCodes('DATE_RANGE_OPT') || [];
       handleSearchList();
     };
 
@@ -201,7 +206,8 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
 
     return {
       uiState, onTabChange,
-      DATE_RANGE_OPTIONS, onDateRangeChange,
+      onDateRangeChange,
+      codes,
       pager, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, cfSummary,
       expandedRows, toggleRow, isExpanded,
       fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge,
@@ -226,18 +232,16 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
       <select v-model="uiState.dateRange" @change="onDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
-        <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+        <option v-for="opt in codes.date_range_opts" :key="opt.codeValue" :value="opt.codeValue">{{ opt.codeLabel }}</option>
       </select>
       <input type="date" v-model="uiState.dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="uiState.dateEnd" style="width:140px" />
       <select v-model="uiState.searchResult" style="width:130px">
         <option value="">로그인결과 전체</option>
-        <option value="SUCCESS">성공</option><option value="FAIL_PW">비밀번호오류</option>
-        <option value="FAIL_LOCKED">계정잠금</option><option value="FAIL_NOT_FOUND">없는계정</option>
+        <option v-for="c in codes.login_results" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <select v-model="uiState.searchTokenAction" style="width:110px">
         <option value="">토큰액션 전체</option>
-        <option value="ISSUE">발급</option><option value="REFRESH">갱신</option>
-        <option value="REVOKE">폐기</option><option value="EXPIRE">만료</option>
+        <option v-for="c in codes.token_actions" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <input v-model="uiState.searchIp" placeholder="IP 주소" style="width:140px" @keyup.enter="onSearch" />
       <input v-model="uiState.searchKw" placeholder="사용자ID / 이름 / 부서" style="width:190px" @keyup.enter="onSearch" />

@@ -31,7 +31,6 @@ window.SyTemplateDtl = {
     };
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
-    const TEMPLATE_TYPES = ['메일템플릿', '문자템플릿', 'MMS템플릿', 'kakao톡템플릿', 'kakao알림톡템플릿', '시스템알림', '회원알림'];
     const form = reactive({
       templateId: null, templateTypeCd: '메일템플릿', templateCode: '', templateNm: '', subject: '', content: '', useYn: 'Y', sampleParams: '{}',
     });
@@ -133,7 +132,7 @@ window.SyTemplateDtl = {
     const cfNeedSubject = computed(() => ['메일템플릿', 'MMS템플릿', '시스템알림'].includes(form.templateTypeCd));
     const cfIsLongContent = computed(() => ['MMS템플릿'].includes(form.templateTypeCd));
 
-    const codes = reactive({});
+    const codes = reactive({ use_yn: [], template_types: ['메일템플릿','문자템플릿','MMS템플릿','kakao톡템플릿','kakao알림톡템플릿','시스템알림','회원알림'] });
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -142,8 +141,18 @@ window.SyTemplateDtl = {
     });
 
     const fnLoadCodes = async () => {
-      uiState.isPageCodeLoad = true;
-      handleLoadData();
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (codeStore?.snGetGrpCodes) {
+          codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
+        }
+        uiState.isPageCodeLoad = true;
+        handleLoadData();
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+        uiState.isPageCodeLoad = true;
+        handleLoadData();
+      }
     };
 
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
@@ -152,7 +161,7 @@ window.SyTemplateDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { templates, uiState, cfIsNew, form, errors, handleSave, TEMPLATE_TYPES, cfNeedSubject, cfIsLongContent,
+    return { templates, uiState, cfIsNew, form, errors, codes, handleSave, cfNeedSubject, cfIsLongContent,
              cfUseHtmlEditor, quillEditorEl, cfSiteNm };
   },
   template: /* html */`
@@ -169,7 +178,7 @@ window.SyTemplateDtl = {
       <div class="form-group">
         <label class="form-label">템플릿유형 <span v-if="!viewMode" class="req">*</span></label>
         <select class="form-control" v-model="form.templateTypeCd" :disabled="viewMode">
-          <option v-for="t in TEMPLATE_TYPES" :key="t">{{ t }}</option>
+          <option v-for="t in codes.template_types" :key="t">{{ t }}</option>
         </select>
       </div>
       <div class="form-group">
@@ -227,7 +236,7 @@ window.SyTemplateDtl = {
       <div class="form-group">
         <label class="form-label">사용여부</label>
         <select class="form-control" v-model="form.useYn" :disabled="viewMode">
-          <option value="Y">사용</option><option value="N">미사용</option>
+          <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
         </select>
       </div>
     </div>

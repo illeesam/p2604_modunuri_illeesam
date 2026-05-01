@@ -10,7 +10,7 @@ window.PmEventDtl = {
     const uiState = reactive({ loading: false, showProdPopup: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._ecEventDtlState.tab || 'info', viewMode2: window._ecEventDtlState.viewMode || 'tab', activeContentTab: 1, prodSearch: ''});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
-    const codes = reactive({});
+    const codes = reactive({ event_statuses: [] });
 
     // 단건 조회 + 상품목록 로드
     const handleSearchDetail = async () => {
@@ -59,6 +59,7 @@ window.PmEventDtl = {
       try {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
+        codes.event_statuses = await codeStore.snGetGrpCodes('EVENT_STATUS_KR') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -282,7 +283,7 @@ window.PmEventDtl = {
         <div class="form-group">
           <label class="form-label">상태</label>
           <select class="form-control" v-model="form.status" :disabled="viewMode">
-            <option>진행중</option><option>예정</option><option>종료</option>
+            <option v-for="c in codes.event_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
         <div class="form-group" style="display:flex;align-items:flex-end;">

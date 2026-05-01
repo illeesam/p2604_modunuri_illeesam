@@ -7,6 +7,9 @@ window.StErpReconMng = {
 const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({
       erp_recon_statuses: [],
+      erp_voucher_types: [],
+      erp_recon_results: [],
+      date_range_opts: [],
     });
 
     const isAppReady = computed(() => {
@@ -19,6 +22,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       const codeStore = window.getBoCodeStore();
       try {
         codes.erp_recon_statuses = codeStore.snGetGrpCodes('ERP_RECON_STATUS') || [];
+        codes.erp_voucher_types = codeStore.snGetGrpCodes('ERP_VOUCHER_TYPE_KR') || [];
+        codes.erp_recon_results = codeStore.snGetGrpCodes('ERP_RECON_RESULT') || [];
+        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -32,7 +38,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         fnLoadCodes();
       }
     });
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
             const dateEnd   = ref('');
     const handleDateRangeChange = () => {
       if (uiState.dateRange) { const r = boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
@@ -88,7 +93,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, reconList, cfPageNums, cfSummary, doFix, fnDiffBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return { uiState, handleDateRangeChange, codes, pager, reconList, cfPageNums, cfSummary, doFix, fnDiffBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -105,14 +110,14 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
       <select v-model="uiState.dateRange" @change="handleDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
-        <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
+        <option v-for="opt in codes.date_range_opts" :key="opt.codeValue" :value="opt.codeValue">{{ opt.codeLabel }}</option>
       </select>
       <input type="date" v-model="uiState.dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="uiState.dateEnd" style="width:140px" />
       <select v-model="searchParam.type" style="width:120px">
-        <option value="">유형 전체</option><option>정산</option><option>수수료</option><option>반품조정</option>
+        <option value="">유형 전체</option><option v-for="c in codes.erp_voucher_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <select v-model="searchParam.diff" style="width:110px">
-        <option value="">결과 전체</option><option>일치</option><option>차이</option><option>미반영</option>
+        <option value="">결과 전체</option><option v-for="c in codes.erp_recon_results" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>

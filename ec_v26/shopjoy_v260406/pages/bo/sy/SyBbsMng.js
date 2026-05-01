@@ -7,7 +7,7 @@ window.SyBbsMng = {
     const bbss = reactive([]);
     const bbms = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null});
-    const codes = reactive({ bbs_status: [] });
+    const codes = reactive({ bbs_status: [], bbs_post_statuses: [] });
 
     // 게시글 목록 조회
     const handleSearchBbs = async (searchType = 'DEFAULT') => {
@@ -90,6 +90,7 @@ window.SyBbsMng = {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
         codes.bbs_status = await codeStore.snGetGrpCodes('BBS_STATUS') || [];
+        codes.bbs_post_statuses = await codeStore.snGetGrpCodes('BBS_POST_STATUS') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -186,7 +187,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <option value="">게시판 전체</option>
         <option v-for="o in cfBbmOptions" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
-      <select v-model="searchParam.status"><option value="">상태 전체</option><option>게시</option><option>임시</option><option>비공개</option><option>삭제</option></select>
+      <select v-model="searchParam.status"><option value="">상태 전체</option><option v-for="c in codes.bbs_post_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
       <span class="search-label">등록일</span>
       <input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
       <select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>

@@ -7,6 +7,7 @@ window.StErpGenMng = {
     const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
     const codes = reactive({
       erp_statuses: [],
+      erp_voucher_types: [],
     });
 
     const isAppReady = computed(() => {
@@ -19,6 +20,7 @@ window.StErpGenMng = {
       const codeStore = window.getBoCodeStore();
       try {
         codes.erp_statuses = codeStore.snGetGrpCodes('ERP_STATUS') || [];
+        codes.erp_voucher_types = codeStore.snGetGrpCodes('ERP_VOUCHER_TYPE_KR') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -99,7 +101,7 @@ window.StErpGenMng = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, targetMon, slipType, cfPreviewRows, genHistory, doGenerate, fnStatusBadge, fmtW, onSearch };
+    return { uiState, targetMon, slipType, cfPreviewRows, genHistory, doGenerate, fnStatusBadge, fmtW, onSearch, codes };
   },
   template: /* html */`
 <div>
@@ -124,7 +126,7 @@ window.StErpGenMng = {
       <div class="form-group">
         <label class="form-label">전표유형</label>
         <select class="form-control" v-model="slipType" style="width:160px">
-          <option>정산</option><option>수수료</option><option>반품조정</option>
+          <option v-for="c in codes.erp_voucher_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group" style="display:flex;align-items:flex-end;gap:8px">

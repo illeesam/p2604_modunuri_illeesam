@@ -9,6 +9,7 @@ window.PdCategoryMng = {
     const codes = reactive({
       category_depths: [],
       product_statuses: [],
+      category_statuses: [],
     });
 
     const isAppReady = computed(() => {
@@ -22,6 +23,7 @@ window.PdCategoryMng = {
       try {
         codes.category_depths = codeStore.snGetGrpCodes('CATEGORY_DEPTH') || [];
         codes.product_statuses = codeStore.snGetGrpCodes('PRODUCT_STATUS') || [];
+        codes.category_statuses = codeStore.snGetGrpCodes('CATEGORY_STATUS') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -378,15 +380,12 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       <label class="search-label">단계</label>
       <select class="form-control" v-model="searchParam.categoryDepth" style="width:120px">
         <option value="">전체</option>
-        <option value="1">1단계 (대)</option>
-        <option value="2">2단계 (중)</option>
-        <option value="3">3단계 (소)</option>
+        <option v-for="c in codes.category_depths" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <label class="search-label">상태</label>
       <select class="form-control" v-model="searchParam.categoryStatusCd" style="width:100px">
         <option value="">전체</option>
-        <option value="ACTIVE">활성</option>
-        <option value="INACTIVE">비활성</option>
+        <option v-for="c in codes.category_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
@@ -548,8 +547,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
             <td style="padding:3px 4px;text-align:center">
               <select class="grid-select" v-model="row.categoryStatusCd"
                       :disabled="row._row_status==='D'" @change="onCellChange(row)" style="width:58px">
-                <option value="ACTIVE">활성</option>
-                <option value="INACTIVE">비활성</option>
+                <option v-for="c in codes.category_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
               </select>
             </td>
 

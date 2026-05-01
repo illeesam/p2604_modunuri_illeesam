@@ -17,7 +17,7 @@ window.SyRoleMng = {
       error: null,
       userSelectOpen: false,
       isPageCodeLoad: false, loading: false, selectedPath: null, focusedIdx: null, selectedRoleId: null, menuSearchKw: ''});
-    const codes = reactive({ role_status: [] });
+    const codes = reactive({ role_status: [], use_yn: [], perm_levels: ['없음','읽기','쓰기','관리','차단'], role_cats: [['ADMIN','관리자역할'],['SITE','사이트역할'],['SALES','판매업체역할'],['DLIV','배송업체역할']] });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -109,7 +109,8 @@ window.SyRoleMng = {
       try {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
-        codes.role_status = await codeStore.snGetGrpCodes('ROLE_STATUS') || [];
+        codes.role_status = codeStore.snGetGrpCodes('ROLE_STATUS') || [];
+        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -126,8 +127,6 @@ window.SyRoleMng = {
 
     const cfSiteNm  = computed(() => boUtil.getSiteNm());
     const ROLE_TYPES  = ['시스템', '업무', '기타'];
-    const PERM_LEVELS = ['없음', '읽기', '쓰기', '관리', '차단'];
-    const ROLE_CATS   = [['ADMIN','관리자역할'],['SITE','사이트역할'],['SALES','판매업체역할'],['DLIV','배송업체역할']];
     const ROLE_CAT_COLOR = { ADMIN:'#7c3aed', SITE:'#2563eb', SALES:'#16a34a', DLIV:'#f59e0b' };
     /* 루트 역할코드 → 자동 카테고리 매핑 */
     const ROOT_CAT_MAP = { SUPER_ADMIN:'ADMIN', SITE_GROUP:'SITE', SITE_MGR_ROOT:'SALES', DLIV_ROOT:'DLIV' };
@@ -155,7 +154,7 @@ window.SyRoleMng = {
       const code = cur && ROOT_CAT_MAP[cur.roleCode];
       return code ? [code] : [];
     };
-    boUtil.__roleCatLabel = (code) => (ROLE_CATS.find(x=>x[0]===code) || [,code])[1];
+    boUtil.__roleCatLabel = (code) => (codes.role_cats.find(x=>x[0]===code) || [,code])[1];
     boUtil.__roleCatColor = (code) => ROLE_CAT_COLOR[code] || '#9ca3af';
     const PERM_COLORS = { '없음': '#9ca3af', '읽기': '#2563eb', '쓰기': '#16a34a', '관리': '#f59e0b', '차단': '#e8587a' };
     const fnPermColor   = (p) => PERM_COLORS[p] || '#9ca3af';
@@ -528,7 +527,7 @@ window.SyRoleMng = {
       uiState, codes,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
-      cfSiteNm, ROLE_TYPES, PERM_LEVELS, ROLE_CATS, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, fnPermColor, depthBullet, depthColor, fnStatusClass,
+      cfSiteNm, ROLE_TYPES, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, fnPermColor, depthBullet, depthColor, fnStatusClass,
       searchParam, searchParamOrg, onSearch, onReset,
       gridRows, cfTotal,
       setFocused, onOpenSetting, onCellChange,
@@ -550,10 +549,11 @@ window.SyRoleMng = {
       <input v-model="searchParam.kw" placeholder="역할코드 / 역할명 검색" />
       <select v-model="searchParam.cat">
         <option value="">역할구분 전체</option>
-        <option v-for="c in ROLE_CATS" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
+        <option v-for="c in codes.role_cats" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
       </select>
       <select v-model="searchParam.useYn">
-        <option value="">사용여부 전체</option><option value="Y">사용</option><option value="N">미사용</option>
+        <option value="">사용여부 전체</option>
+        <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
@@ -573,7 +573,7 @@ window.SyRoleMng = {
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 역할</span></div>
       <select v-model="searchParam.treeCatFilter" style="width:100%;padding:4px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:5px;margin-bottom:8px;">
         <option value="">역할구분 전체</option>
-        <option v-for="c in ROLE_CATS" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
+        <option v-for="c in codes.role_cats" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
       </select>
       <div style="display:flex;gap:4px;margin-bottom:8px;">
         <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
@@ -658,7 +658,7 @@ window.SyRoleMng = {
           <td><input class="grid-input grid-num" type="number" v-model.number="row.sortOrd" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
           <td>
             <select class="grid-select" v-model="row.useYn" :disabled="row._row_status==='D'" @change="onCellChange(row)">
-              <option value="Y">사용</option><option value="N">미사용</option>
+              <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
             </select>
           </td>
           <td style="padding:3px 6px;">
@@ -666,7 +666,7 @@ window.SyRoleMng = {
               @change="$event.target.value ? (row.roleCat=[$event.target.value], onCellChange(row)) : (row.roleCat=[], onCellChange(row))"
               :style="{color: ROLE_CAT_COLOR[effectiveRoleCat(row)[0]] || '#9ca3af', fontWeight: effectiveRoleCat(row).length ? 700 : 400}">
               <option value="">-</option>
-              <option v-for="c in ROLE_CATS" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
+              <option v-for="c in codes.role_cats" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
             </select>
           </td>
           <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
@@ -710,7 +710,7 @@ window.SyRoleMng = {
               <input type="checkbox" :checked="cfMenuAllChecked" @change="e => toggleAllMenus(e.target.checked)" />
               전체선택
             </label>
-            <button v-for="p in PERM_LEVELS" :key="p"
+            <button v-for="p in codes.perm_levels" :key="p"
               class="btn btn-xs"
               :style="{ background: fnPermColor(p), borderColor: fnPermColor(p), color:'#fff', fontWeight:'600', fontSize:'11px', padding:'2px 8px' }"
               @click="setAllMenuPerm(p)">{{ p }}</button>
@@ -740,7 +740,7 @@ window.SyRoleMng = {
             <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin:0 8px;flex-shrink:0;">{{ m.menuCode }}</code>
             <!-- ── 권한 레벨 토글 버튼 ────────────────────────────────────────── -->
             <div style="display:flex;gap:2px;flex-shrink:0;">
-              <button v-for="p in PERM_LEVELS" :key="p"
+              <button v-for="p in codes.perm_levels" :key="p"
                 style="font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid;cursor:pointer;font-weight:600;transition:all .1s;"
                 :style="getMenuPerm(m.menuId)===p
                   ? { background: fnPermColor(p), borderColor: fnPermColor(p), color:'#fff' }

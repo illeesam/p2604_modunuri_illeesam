@@ -6,7 +6,7 @@ window.SyBbmMng = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const bbms = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null});
-    const codes = reactive({ bbm_type: [], bbm_status: [] });
+    const codes = reactive({ bbm_type: [], bbm_status: [], use_yn: [] });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -62,6 +62,7 @@ window.SyBbmMng = {
         if (!codeStore?.snGetGrpCodes) return;
         codes.bbm_type = await codeStore.snGetGrpCodes('BBM_TYPE') || [];
         codes.bbm_status = await codeStore.snGetGrpCodes('BBM_STATUS') || [];
+        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -154,8 +155,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   <div class="card">
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="게시판명 / 코드 검색" />
-      <select v-model="searchParam.type"><option value="">유형 전체</option><option>일반</option><option>공지</option><option>갤러리</option><option>FAQ</option><option>QnA</option></select>
-      <select v-model="searchParam.useYn"><option value="">사용여부 전체</option><option value="Y">사용</option><option value="N">미사용</option></select>
+      <select v-model="searchParam.type">
+        <option value="">유형 전체</option>
+        <option v-for="c in codes.bbm_type" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+      </select>
+      <select v-model="searchParam.useYn"><option value="">사용여부 전체</option><option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

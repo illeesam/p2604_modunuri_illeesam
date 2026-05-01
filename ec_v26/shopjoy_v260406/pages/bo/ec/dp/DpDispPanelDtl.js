@@ -9,7 +9,7 @@ window.DpDispPanelDtl = {
     const uiState = reactive({ htmlSourceMode: false, libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false, isPageCodeLoad: false, error: null, tab: 'info', previewMode: 'default', previewPaneWidth: 520, libPickMode: 'copy', htmlDescEl: null, htmlContentEl: null });
     const tab = Vue.toRef(uiState, 'tab');
     const previewMode = Vue.toRef(uiState, 'previewMode');
-    const codes = reactive({ layout_types: [], disp_widget_types: [] });
+    const codes = reactive({ layout_types: [], disp_widget_types: [], active_statuses: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 호출'},{value:'modal',label:'모달 오픈'},{value:'url',label:'외부 URL'}] });
     const displays = reactive([]);
     const events = reactive([]);
 
@@ -27,6 +27,7 @@ window.DpDispPanelDtl = {
       const codeStore = window.getBoCodeStore();
       codes.layout_types = codeStore.snGetGrpCodes('LAYOUT_TYPE') || [];
       codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
+      codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
       uiState.isPageCodeLoad = true;
     };
 
@@ -851,7 +852,7 @@ window.DpDispPanelDtl = {
               <div class="form-group">
                 <label class="form-label">상태</label>
                 <select class="form-control" v-model="form.status" :disabled="viewMode">
-                  <option>활성</option><option>비활성</option>
+                  <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
                 </select>
               </div>
             </div>
@@ -1272,11 +1273,7 @@ window.DpDispPanelDtl = {
                   <td style="font-weight:500;color:#555;vertical-align:middle;">클릭 시 동작</td>
                   <td style="padding:6px 8px;">
                     <select class="form-control" v-model="cfActiveRow.clickAction" style="margin:0;max-width:220px;" :disabled="viewMode">
-                      <option value="none">없음</option>
-                      <option value="navigate">페이지 이동</option>
-                      <option value="event">이벤트 호출</option>
-                      <option value="modal">모달 오픈</option>
-                      <option value="url">외부 URL</option>
+                      <option v-for="o in codes.click_action_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
                     </select>
                   </td>
                 </tr>
@@ -1455,7 +1452,7 @@ window.DpDispPanelDtl = {
             <div class="form-group">
               <label class="form-label">상태</label>
               <select class="form-control" style="max-width:200px;" v-model="form.status" :disabled="viewMode">
-                <option>활성</option><option>비활성</option>
+                <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
               </select>
             </div>
             <!-- ── 타이틀 설정 ─────────────────────────────────────────────── -->
@@ -1621,8 +1618,7 @@ window.DpDispPanelDtl = {
                   <td style="font-weight:500;color:#555;vertical-align:middle;">클릭 시 동작</td>
                   <td style="padding:6px 8px;">
                     <select class="form-control" v-model="r.clickAction" style="margin:0;max-width:220px;" :disabled="viewMode">
-                      <option value="none">없음</option><option value="navigate">페이지 이동</option>
-                      <option value="event">이벤트 호출</option><option value="modal">모달 오픈</option><option value="url">외부 URL</option>
+                      <option v-for="o in codes.click_action_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
                     </select>
                   </td>
                 </tr>

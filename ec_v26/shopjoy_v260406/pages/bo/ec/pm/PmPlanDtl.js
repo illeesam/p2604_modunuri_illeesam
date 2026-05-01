@@ -9,7 +9,10 @@ window.PmPlanDtl = {
     const uiState = reactive({ loading: false, showProdPopup: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._ecPlanDtlState.tab || 'info', viewMode2: window._ecPlanDtlState.viewMode || 'tab', activeContentTab: 1, prodSearch: ''});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
-    const codes = reactive({});
+    const codes = reactive({
+      plan_categories: [{value:'패션',label:'패션'},{value:'스포츠',label:'스포츠'},{value:'스타일링',label:'스타일링'},{value:'직원전용',label:'직원전용'},{value:'명품',label:'명품'}],
+      plan_statuses: [{value:'활성',label:'활성'},{value:'예정',label:'예정'},{value:'비활성',label:'비활성'},{value:'종료',label:'종료'}],
+    });
 
     // 단건 조회 + 상품목록 로드
     const handleSearchDetail = async () => {
@@ -72,20 +75,6 @@ window.PmPlanDtl = {
     const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END = `${_today.getFullYear()+1}-12-31`;
 
-    const CATEGORIES = [
-      { value: '패션', label: '패션' },
-      { value: '스포츠', label: '스포츠' },
-      { value: '스타일링', label: '스타일링' },
-      { value: '직원전용', label: '직원전용' },
-      { value: '명품', label: '명품' },
-    ];
-
-    const STATUS_OPTIONS = [
-      { value: '활성', label: '활성' },
-      { value: '예정', label: '예정' },
-      { value: '비활성', label: '비활성' },
-      { value: '종료', label: '종료' },
-    ];
 
     const VISIBILITY_OPTIONS = [
       { value: 'PUBLIC',    label: '전체공개' },
@@ -239,7 +228,7 @@ window.PmPlanDtl = {
 
     return { uiState, codes, cfIsNew, tab, onTabChange, form, errors, activeContentTab, prodSearch,
       cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, handleSave,
-      CATEGORIES, STATUS_OPTIONS, VISIBILITY_OPTIONS, viewMode2, showTab, hasVisibility, toggleVisibility,
+      VISIBILITY_OPTIONS, viewMode2, showTab, hasVisibility, toggleVisibility,
       cfSelectedVendorNm, selectVendor, showProdPopup, showVendorModal,
     };
   },
@@ -291,7 +280,7 @@ window.PmPlanDtl = {
         <div class="form-group">
           <label class="form-label">카테고리 <span class="req">*</span></label>
           <select class="form-control" v-model="form.category" :class="errors.category ? 'is-invalid' : ''">
-            <option v-for="c in CATEGORIES" :key="c?.value" :value="c.value">{{ c.label }}</option>
+            <option v-for="c in codes.plan_categories" :key="c?.value" :value="c.value">{{ c.label }}</option>
           </select>
           <span v-if="errors.category" class="field-error">{{ errors.category }}</span>
         </div>
@@ -304,7 +293,7 @@ window.PmPlanDtl = {
         <div class="form-group">
           <label class="form-label">상태</label>
           <select class="form-control" v-model="form.status">
-            <option v-for="s in STATUS_OPTIONS" :key="s?.value" :value="s.value">{{ s.label }}</option>
+            <option v-for="s in codes.plan_statuses" :key="s?.value" :value="s.value">{{ s.label }}</option>
           </select>
         </div>
         <div class="form-group">

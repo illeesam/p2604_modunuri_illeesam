@@ -12,7 +12,7 @@ window.OdOrderDtl = {
     const tab = Vue.toRef(uiState, 'tab');
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
-    const codes = reactive({ claim_statuses: [] });
+    const codes = reactive({ claim_statuses: [], order_statuses: [], payment_methods: [], pay_statuses: [] });
 
     const cfIsNew = computed(() => !props.editId);
 
@@ -62,6 +62,9 @@ window.OdOrderDtl = {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
         codes.claim_statuses = await codeStore.snGetGrpCodes('CLAIM_STATUS') || [];
+        codes.order_statuses = await codeStore.snGetGrpCodes('ORDER_STATUS') || [];
+        codes.payment_methods = await codeStore.snGetGrpCodes('PAYMENT_METHOD') || [];
+        codes.pay_statuses = await codeStore.snGetGrpCodes('PAY_STATUS') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -84,7 +87,7 @@ window.OdOrderDtl = {
       payStatusCd: '결제완료', payDate: '', apprNo: '', payIssuer: '',
       memo: '',
     });
-    const PAY_STATUS_OPTIONS = ['미결제','부분결제','결제완료','결제실패','환불중','부분환불','환불완료'];
+    const PAY_STATUS_FALLBACK = ['미결제','부분결제','결제완료','결제실패','환불중','부분환불','환불완료'];
     const fnPayStatusBadge = (s) => ({
       '미결제':'badge-gray','부분결제':'badge-orange','결제완료':'badge-green',
       '결제실패':'badge-red','환불중':'badge-orange','부분환불':'badge-orange','환불완료':'badge-purple',
@@ -292,7 +295,7 @@ window.OdOrderDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { cfIsNew, form, errors, handleSave, ORDER_STEPS, cfCurrentStepIdx, cfIsCanceled, memoEl, activeTab, orderItems, fmt, cfRelatedClaim, cfRelatedDelivery, cfRelatedVendor, CLAIM_FLOWS, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, PAY_STATUS_OPTIONS, fnPayStatusBadge, viewMode2, showTab, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, codes };
+    return { cfIsNew, form, errors, handleSave, ORDER_STEPS, cfCurrentStepIdx, cfIsCanceled, memoEl, activeTab, orderItems, fmt, cfRelatedClaim, cfRelatedDelivery, cfRelatedVendor, CLAIM_FLOWS, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, PAY_STATUS_FALLBACK, fnPayStatusBadge, viewMode2, showTab, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, codes };
   },
   template: /* html */`
 <div>
@@ -480,7 +483,7 @@ window.OdOrderDtl = {
       <div class="form-group">
         <label class="form-label">결제수단</label>
         <select class="form-control" v-model="form.payMethodCd" :disabled="viewMode">
-          <option>계좌이체</option><option>카드결제</option><option>캐쉬</option><option>혼합결제</option>
+          <option v-for="c in codes.payment_methods" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
     </div>
@@ -488,7 +491,7 @@ window.OdOrderDtl = {
       <div class="form-group">
         <label class="form-label">결제상태</label>
         <select class="form-control" v-model="form.payStatusCd" :disabled="viewMode">
-          <option v-for="s in PAY_STATUS_OPTIONS" :key="Math.random()">{{ s }}</option>
+          <option v-for="c in (codes.pay_statuses.length ? codes.pay_statuses : PAY_STATUS_FALLBACK.map(v=>({codeValue:v,codeLabel:v})))" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
@@ -500,8 +503,7 @@ window.OdOrderDtl = {
       <div class="form-group">
         <label class="form-label">상태</label>
         <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
-          <option>입금대기</option><option>결제완료</option><option>상품준비중</option>
-          <option>배송중</option><option>배송완료</option><option>구매확정</option><option>취소</option><option>자동취소</option>
+          <option v-for="c in codes.order_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
     </div>

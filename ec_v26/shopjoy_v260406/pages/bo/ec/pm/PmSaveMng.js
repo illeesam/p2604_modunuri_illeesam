@@ -8,6 +8,8 @@ window.PmSaveMng = {
         const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, saveList: [], viewMode: 'list'});
     const codes = reactive({
       save_statuses: [],
+      save_issue_types: [],
+      promo_statuses: [],
     });
 
     const isAppReady = computed(() => {
@@ -20,6 +22,8 @@ window.PmSaveMng = {
       const codeStore = window.getBoCodeStore();
       try {
         codes.save_statuses = codeStore.snGetGrpCodes('SAVE_STATUS') || [];
+        codes.save_issue_types = codeStore.snGetGrpCodes('SAVE_ISSUE_TYPE') || [];
+        codes.promo_statuses = codeStore.snGetGrpCodes('PROMO_STATUS') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -152,8 +156,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
   <div class="card">
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="마일리지명 / ID 검색" />
-      <select v-model="searchParam.type"><option value="">유형 전체</option><option>구매적립</option><option>회원가입</option><option>리뷰적립</option><option>출석체크</option></select>
-      <select v-model="searchParam.status"><option value="">상태 전체</option><option>활성</option><option>비활성</option><option>종료</option></select>
+      <select v-model="searchParam.type"><option value="">유형 전체</option><option v-for="c in codes.save_issue_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
+      <select v-model="searchParam.status"><option value="">상태 전체</option><option v-for="c in codes.promo_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
       <span class="search-label">시작일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>

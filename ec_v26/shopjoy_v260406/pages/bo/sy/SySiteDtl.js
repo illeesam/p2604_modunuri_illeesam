@@ -7,7 +7,7 @@ window.SySiteDtl = {
 
     const sites = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({});
+    const codes = reactive({ site_oper_statuses: [], site_types: ['이커머스','숙박공유','전문가연결','IT매칭','부동산','교육','중고거래','영화예매','음식배달','가격비교','시각화','홈페이지','기타'] });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -33,6 +33,14 @@ window.SySiteDtl = {
     });
 
     const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (codeStore?.snGetGrpCodes) {
+          codes.site_oper_statuses = codeStore.snGetGrpCodes('SITE_OPER_STATUS') || [];
+        }
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
       uiState.isPageCodeLoad = true;
       handleSearchList();
     };
@@ -43,7 +51,6 @@ window.SySiteDtl = {
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
 
-    const SITE_TYPES = ['이커머스', '숙박공유', '전문가연결', 'IT매칭', '부동산', '교육', '중고거래', '영화예매', '음식배달', '가격비교', '시각화', '홈페이지', '기타'];
 
     const form = reactive({
       siteId: null, siteCode: '', siteType: '홈페이지', siteNm: '', domain: '',
@@ -124,7 +131,7 @@ window.SySiteDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { sites, uiState, codes, cfIsNew, form, errors, handleSave, SITE_TYPES, addrDetailRef, openKakaoPostcode };
+    return { sites, uiState, codes, cfIsNew, form, errors, handleSave, addrDetailRef, openKakaoPostcode };
   },
   template: /* html */`
 <div>
@@ -139,7 +146,7 @@ window.SySiteDtl = {
       <div class="form-group">
         <label class="form-label">사이트유형</label>
         <select class="form-control" v-model="form.siteType" :disabled="viewMode">
-          <option v-for="t in SITE_TYPES" :key="t">{{ t }}</option>
+          <option v-for="t in codes.site_types" :key="t">{{ t }}</option>
         </select>
       </div>
     </div>
@@ -211,7 +218,7 @@ window.SySiteDtl = {
       <div class="form-group">
         <label class="form-label">운영상태</label>
         <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
-          <option>운영중</option><option>점검중</option><option>비활성</option>
+          <option v-for="c in codes.site_oper_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
     </div>

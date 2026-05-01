@@ -10,6 +10,8 @@ window.PdReviewMng = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null});
     const codes = reactive({
       review_statuses: [],
+      review_rating_opts: [{value:'5',label:'5점'},{value:'4',label:'4점대'},{value:'3',label:'3점대'},{value:'2',label:'2점대'},{value:'1',label:'1점대'}],
+      review_status_list: [{value:'ACTIVE',label:'공개'},{value:'HIDDEN',label:'숨김'},{value:'DELETED',label:'삭제'}],
     });
 
     const isAppReady = computed(() => {
@@ -75,7 +77,6 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
     rating: ''
   });
 
-    const STATUS_LIST = ['ACTIVE','HIDDEN','DELETED'];
     const STATUS_LABEL = { ACTIVE:'공개', HIDDEN:'숨김', DELETED:'삭제' };
     const fnStatusBadge  = s => ({ ACTIVE:'badge-green', HIDDEN:'badge-orange', DELETED:'badge-red' }[s] || 'badge-gray');
 
@@ -119,7 +120,7 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
     // ── return ───────────────────────────────────────────────────────────────
 
     return { reviews, uiState, searchParam, searchParamOrg, pager, cfPageNums, setPage, onSearch, onReset,
-              selectedId, cfSelectedRow, openDetail, changeStatus, fnStatusBadge, STATUS_LIST, STATUS_LABEL, getProdNm, getMemNm, starStr  , onSizeChange };
+              selectedId, cfSelectedRow, openDetail, changeStatus, fnStatusBadge, STATUS_LABEL, getProdNm, getMemNm, starStr, onSizeChange, codes };
   },
   template: `
 <div>
@@ -133,14 +134,14 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
         <div style="display:flex;flex-direction:column;gap:8px">
           <label class="search-label">상태</label>
           <select class="form-control" v-model="searchParam.status">
-            <option value="">전체</option><option v-for="s in STATUS_LIST" :key="Math.random()" :value="s">{{ STATUS_LABEL[s] }}</option>
+            <option value="">전체</option><option v-for="s in codes.review_status_list" :key="s.value" :value="s.value">{{ s.label }}</option>
           </select>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <label class="search-label">평점</label>
           <select class="form-control" v-model="searchParam.rating">
-            <option value="">전체</option><option value="5">5점</option><option value="4">4점대</option>
-            <option value="3">3점대</option><option value="2">2점대</option><option value="1">1점대</option>
+            <option value="">전체</option>
+            <option v-for="o in codes.review_rating_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
           </select>
         </div>
         <div class="search-actions" style="gap:6px">
@@ -175,7 +176,7 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
             <td style="font-size:12px">{{ row.reviewDate }}</td>
             <td style="text-align:center" @click.stop>
               <select class="form-control" style="font-size:11px;padding:2px 4px" :value="row.reviewStatusCd" @change="changeStatus(row,$event.target.value)">
-                <option v-for="s in STATUS_LIST" :key="Math.random()" :value="s">{{ STATUS_LABEL[s] }}</option>
+                <option v-for="s in codes.review_status_list" :key="s.value" :value="s.value">{{ s.label }}</option>
               </select>
             </td>
           </tr>

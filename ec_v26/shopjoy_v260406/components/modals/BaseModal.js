@@ -2390,6 +2390,7 @@ window.RowPickModal = {
     const { ref, reactive, computed } = Vue;
     const searchKw = ref('');
     const searchStatus = ref('');
+    const activeStatuses = Vue.ref([]);
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
     const selectedTreeKey = ref('');
@@ -2482,8 +2483,13 @@ window.RowPickModal = {
     };
     const wLabel = (t) => WIDGET_LABEL[t] || t || '-';
 
+    Vue.onMounted(() => {
+      const codeStore = window.getBoCodeStore?.();
+      if (codeStore?.snGetGrpCodes) activeStatuses.value = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
+    });
+
     return {
-      searchKw, searchStatus, pager, PAGE_SIZES,
+      searchKw, searchStatus, activeStatuses, pager, PAGE_SIZES,
       cfTotal, cfTotalPages, cfPageList, cfPageNums,
       selectedTreeKey, toggleTree, isTreeOpen, selectTree, cfTree,
       statusCls, areaNm, wLabel,
@@ -2502,8 +2508,7 @@ window.RowPickModal = {
       <input v-model="searchKw" placeholder="위젯명·패널명·유형 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
       <select v-model="searchStatus" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
         <option value="">패널상태 전체</option>
-        <option value="활성">활성</option>
-        <option value="비활성">비활성</option>
+        <option v-for="c in activeStatuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
     </div>
     <div style="flex:1;overflow:hidden;display:flex;gap:12px;padding:12px;background:#f4f5f8;">
@@ -2605,9 +2610,16 @@ window.AreaPickModal = {
   },
   emits: ['close', 'pick'],
   setup(props, { emit }) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted } = Vue;
     const searchParam = reactive({ kw: '', useYn: '' });
     const pager = reactive({ page: 1, size: 5 });
+    const useYnOpts = ref([]);
+    onMounted(() => {
+      try {
+        const s = window.getBoCodeStore?.();
+        if (s?.snGetGrpCodes) useYnOpts.value = s.snGetGrpCodes('USE_YN') || [];
+      } catch(e) {}
+    });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
     const selectedTreeKey = ref('');
     const treeOpen = reactive(new Set(['__root__']));
@@ -2673,6 +2685,7 @@ window.AreaPickModal = {
 
     return {
       searchParam, pager, PAGE_SIZES,
+      useYnOpts,
       cfTotal, cfTotalPages, cfPageList, cfPageNums,
       selectedTreeKey, toggleTree, isTreeOpen, selectTree, cfTree,
       statusCls, onPick,
@@ -2691,8 +2704,13 @@ window.AreaPickModal = {
       <input v-model="searchParam.kw" placeholder="영역코드·영역명 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
       <select v-model="searchParam.useYn" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
         <option value="">사용 전체</option>
-        <option value="Y">사용</option>
-        <option value="N">미사용</option>
+        <template v-if="useYnOpts.length">
+          <option v-for="o in useYnOpts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
+        </template>
+        <template v-else>
+          <option value="Y">사용</option>
+          <option value="N">미사용</option>
+        </template>
       </select>
     </div>
     <div style="flex:1;overflow:hidden;display:flex;gap:12px;padding:12px;background:#f4f5f8;">
@@ -2797,6 +2815,7 @@ window.PanelPickModal = {
   setup(props, { emit }) {
     const { ref, reactive, computed } = Vue;
     const searchParam = reactive({ kw: '', status: '' });
+    const activeStatuses = Vue.ref([]);
     const pager = reactive({ page: 1, size: 5 });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
     const selectedTreeKey = ref('');
@@ -2866,8 +2885,13 @@ window.PanelPickModal = {
       checked = new Set();
     };
 
+    Vue.onMounted(() => {
+      const codeStore = window.getBoCodeStore?.();
+      if (codeStore?.snGetGrpCodes) activeStatuses.value = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
+    });
+
     return {
-      searchParam, pager, PAGE_SIZES,
+      searchParam, activeStatuses, pager, PAGE_SIZES,
       cfTotal, cfTotalPages, cfPageList, cfPageNums,
       selectedTreeKey, toggleTree, isTreeOpen, selectTree, cfTree,
       statusCls, onPick, areaNm,
@@ -2886,8 +2910,7 @@ window.PanelPickModal = {
       <input v-model="searchParam.kw" placeholder="패널명·영역코드 검색" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
       <select v-model="searchParam.status" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
         <option value="">상태 전체</option>
-        <option value="활성">활성</option>
-        <option value="비활성">비활성</option>
+        <option v-for="c in activeStatuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
     </div>
     <div style="flex:1;overflow:hidden;display:flex;gap:12px;padding:12px;background:#f4f5f8;">
@@ -3051,9 +3074,14 @@ window.WidgetLibPickModal = {
     ];
     const statusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
     const onPick = (lib) => emit('pick', lib);
+    const activeStatuses = Vue.ref([]);
+    Vue.onMounted(() => {
+      const codeStore = window.getBoCodeStore?.();
+      if (codeStore?.snGetGrpCodes) activeStatuses.value = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
+    });
 
     return {
-      searchParam, WIDGET_TYPES,
+      searchParam, WIDGET_TYPES, activeStatuses,
       pager, PAGE_SIZES, cfTotal, cfTotalPages, cfPageList, cfPageNums,
       cfTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree,
       statusCls, onPick,
@@ -3079,8 +3107,7 @@ window.WidgetLibPickModal = {
       </select>
       <select v-model="searchParam.status" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
         <option value="">상태 전체</option>
-        <option value="활성">활성</option>
-        <option value="비활성">비활성</option>
+        <option v-for="c in activeStatuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
     </div>
 

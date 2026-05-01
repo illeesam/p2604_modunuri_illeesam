@@ -8,7 +8,7 @@ window.PmGiftDtl = {
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmGiftDtlState.tab || 'info', viewMode2: window._pmGiftDtlState.viewMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
-    const codes = reactive({});
+    const codes = reactive({ gift_cond_types: [], gift_statuses: [] });
 
     // 단건 조회
     const handleSearchDetail = async () => {
@@ -45,6 +45,8 @@ window.PmGiftDtl = {
       try {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
+        codes.gift_cond_types = await codeStore.snGetGrpCodes('GIFT_COND_KR') || [];
+        codes.gift_statuses = await codeStore.snGetGrpCodes('GIFT_STATUS') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -170,7 +172,7 @@ window.PmGiftDtl = {
         <div class="form-group">
           <label class="form-label">조건유형</label>
           <select class="form-control" v-model="form.giftType">
-            <option>구매조건</option><option>금액조건</option><option>수량조건</option><option>무조건</option>
+            <option v-for="c in codes.gift_cond_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
         <div class="form-group" v-if="form.giftType !== '무조건'">
@@ -187,7 +189,7 @@ window.PmGiftDtl = {
         <div class="form-group">
           <label class="form-label">상태</label>
           <select class="form-control" v-model="form.giftStatus">
-            <option>활성</option><option>비활성</option><option>종료</option><option>품절</option>
+            <option v-for="c in codes.gift_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
       </div>

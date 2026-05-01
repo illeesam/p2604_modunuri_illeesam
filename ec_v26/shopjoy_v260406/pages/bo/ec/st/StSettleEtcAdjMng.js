@@ -7,6 +7,8 @@ window.StSettleEtcAdjMng = {
 const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '', selectedId: null, isNew: false});
     const codes = reactive({
       settle_etc_adj_types: [],
+      settle_adj_statuses: [],
+      date_range_opts: [],
     });
 
     const isAppReady = computed(() => {
@@ -19,6 +21,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       const codeStore = window.getBoCodeStore();
       try {
         codes.settle_etc_adj_types = codeStore.snGetGrpCodes('SETTLE_ETC_ADJ_TYPE') || [];
+        codes.settle_adj_statuses = codeStore.snGetGrpCodes('SETTLE_ADJ_STATUS') || [];
+        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -33,7 +37,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     });
 
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
             const dateEnd   = ref('');
     const handleDateRangeChange = () => {
       if (uiState.dateRange) { const r = boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
@@ -156,7 +159,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, etcAdjList, cfPageNums, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return { uiState, handleDateRangeChange, codes, pager, etcAdjList, cfPageNums, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -177,10 +180,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       </select>
       <input type="date" v-model="uiState.dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="uiState.dateEnd" style="width:140px" />
       <select v-model="searchParam.type" style="width:120px">
-        <option value="">유형 전체</option><option>위약금</option><option>인센티브</option><option>세금조정</option><option>기타</option>
+        <option value="">유형 전체</option><option v-for="c in codes.settle_etc_adj_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <select v-model="searchParam.status" style="width:100px">
-        <option value="">상태 전체</option><option>대기</option><option>승인</option><option>반려</option>
+        <option value="">상태 전체</option><option v-for="c in codes.settle_adj_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <input v-model="searchParam.kw" placeholder="ID / 업체명 / 사유" style="width:180px" @keyup.enter="() => onSearch?.()" />
       <div class="search-actions">
@@ -243,7 +246,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <div class="form-group">
         <label class="form-label">조정유형 <span style="color:red">*</span></label>
         <select class="form-control" :class="{'is-invalid':errors.adjType}" v-model="form.adjType">
-          <option>위약금</option><option>인센티브</option><option>세금조정</option><option>기타</option>
+          <option v-for="c in codes.settle_etc_adj_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
         <div v-if="errors.adjType" class="field-error">{{ errors.adjType }}</div>
       </div>

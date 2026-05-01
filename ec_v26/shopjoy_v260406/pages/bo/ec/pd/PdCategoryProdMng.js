@@ -11,6 +11,7 @@ window.PdCategoryProdMng = {
     const tab = Vue.toRef(uiState, 'tab');
     const codes = reactive({
       product_statuses: [],
+      disp_yn_opts: [{ codeValue: 'Y', codeLabel: '전시' }, { codeValue: 'N', codeLabel: '비전시' }],
     });
 
     const isAppReady = computed(() => {
@@ -477,8 +478,7 @@ window.PdCategoryProdMng = {
                 <select class="form-control" v-model="row.dispYn"
                         style="width:52px;padding:2px 4px;font-size:12px;text-align:center"
                         :style="row.dispYn==='Y' ? 'color:#16a34a;font-weight:600' : 'color:#9ca3af'">
-                  <option value="Y">전시</option>
-                  <option value="N">비전시</option>
+                  <option v-for="c in codes.disp_yn_opts" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
                 </select>
               </td>
               <td style="text-align:center">
@@ -563,8 +563,7 @@ window.PdCategoryProdMng = {
               <select class="form-control" v-model="row.dispYn"
                       style="width:100%;padding:2px 6px;font-size:11px"
                       :style="row.dispYn==='Y' ? 'color:#16a34a;font-weight:600' : 'color:#9ca3af'">
-                <option value="Y">전시</option>
-                <option value="N">비전시</option>
+                <option v-for="c in codes.disp_yn_opts" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
               </select>
             </template>
           </div>

@@ -6,7 +6,7 @@ window.SyContactMng = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const contacts = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({ contact_status: [] });
+    const codes = reactive({ contact_status: [], contact_categories: [] });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -51,6 +51,7 @@ window.SyContactMng = {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
         codes.contact_status = await codeStore.snGetGrpCodes('CONTACT_STATUS') || [];
+        codes.contact_categories = await codeStore.snGetGrpCodes('CONTACT_CATEGORY_KR') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -141,11 +142,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
       <input v-model="searchParam.kw" placeholder="제목 / 회원명 검색" />
       <select v-model="searchParam.category">
         <option value="">카테고리 전체</option>
-        <option>배송 문의</option><option>상품 문의</option><option>교환·반품 문의</option>
-        <option>주문·결제 문의</option><option>기타 문의</option>
+        <option v-for="c in codes.contact_categories" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <select v-model="searchParam.status">
-        <option value="">상태 전체</option><option>요청</option><option>처리중</option><option>답변완료</option><option>취소됨</option>
+        <option value="">상태 전체</option>
+        <option v-for="c in codes.contact_status" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">

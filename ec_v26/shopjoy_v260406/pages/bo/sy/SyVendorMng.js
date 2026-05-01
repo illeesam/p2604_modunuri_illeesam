@@ -6,7 +6,7 @@ window.SyVendorMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const vendors = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null});
-    const codes = reactive({ vendor_status: [] });
+    const codes = reactive({ vendor_status: [], vendor_type_kr: [] });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -75,6 +75,7 @@ window.SyVendorMng = {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
         codes.vendor_status = await codeStore.snGetGrpCodes('VENDOR_STATUS') || [];
+        codes.vendor_type_kr = await codeStore.snGetGrpCodes('VENDOR_TYPE_KR') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -175,10 +176,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="업체명 / 사업자번호 검색" />
       <select v-model="searchParam.type">
-        <option value="">유형 전체</option><option>판매업체</option><option>배송업체</option>
+        <option value="">유형 전체</option><option v-for="c in codes.vendor_type_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <select v-model="searchParam.status">
-        <option value="">상태 전체</option><option>활성</option><option>비활성</option>
+        <option value="">상태 전체</option>
+        <option v-for="c in codes.vendor_status" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">

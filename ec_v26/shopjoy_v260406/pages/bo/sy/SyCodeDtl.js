@@ -7,6 +7,7 @@ window.SyCodeDtl = {
     const { reactive, computed, watch, onMounted, ref } = Vue;
 
     const codes = reactive([]);
+    const pageCodes = reactive({ use_yn: [] });
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
 
     // onMounted에서 API 로드
@@ -33,6 +34,14 @@ window.SyCodeDtl = {
     });
 
     const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (codeStore?.snGetGrpCodes) {
+          pageCodes.use_yn = await codeStore.snGetGrpCodes('USE_YN') || [];
+        }
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
       uiState.isPageCodeLoad = true;
       handleSearchList();
     };
@@ -96,7 +105,7 @@ window.SyCodeDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { codes, uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm };
+    return { codes, uiState, pageCodes, cfIsNew, form, errors, handleSave, cfSiteNm };
   },
   template: /* html */`
 <div>
@@ -135,7 +144,7 @@ window.SyCodeDtl = {
       <div class="form-group">
         <label class="form-label">사용여부</label>
         <select class="form-control" v-model="form.useYn">
-          <option value="Y">사용</option><option value="N">미사용</option>
+          <option v-for="o in pageCodes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">

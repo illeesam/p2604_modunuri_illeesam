@@ -349,7 +349,7 @@ window.OdDlivDtl = {
         <div class="form-group">
           <label class="form-label">상태</label>
           <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
-            <option>준비중</option><option>출고완료</option><option>배송중</option><option>배송완료</option><option>배송실패</option>
+            <option v-for="c in codes.dliv_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
       </div>

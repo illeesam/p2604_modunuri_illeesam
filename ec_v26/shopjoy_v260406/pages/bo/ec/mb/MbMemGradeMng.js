@@ -6,7 +6,7 @@ window.MbMemGradeMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const grades = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, focusedIdx: null});
-    const codes = reactive({ member_grades: [] });
+    const codes = reactive({ member_grades: [], use_yn: [] });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -45,6 +45,7 @@ const isAppReady = computed(() => {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
         codes.member_grades = await codeStore.snGetGrpCodes('MEMBER_GRADE') || [];
+        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -154,7 +155,8 @@ const isAppReady = computed(() => {
         <input class="form-control" v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="등급명 또는 코드 검색">
         <label class="search-label">사용여부</label>
         <select class="form-control" v-model="searchParam.use">
-          <option value="">전체</option><option value="Y">Y</option><option value="N">N</option>
+          <option value="">전체</option>
+          <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
         <div class="search-actions">
           <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
@@ -197,7 +199,9 @@ const isAppReady = computed(() => {
             <td style="text-align:right"><input v-if="row._row_status" class="form-control" style="text-align:right" type="number" v-model.number="row.minPurchaseAmt" @input="onCellChange(idx)"><span v-else>{{ (row.minPurchaseAmt||0).toLocaleString() }}</span></td>
             <td style="text-align:right"><input v-if="row._row_status" class="form-control" style="text-align:right" type="number" step="0.01" v-model.number="row.saveRate" @input="onCellChange(idx)"><span v-else>{{ row.saveRate }}%</span></td>
             <td style="text-align:center">
-              <select v-if="row._row_status" class="form-control" v-model="row.useYn" @change="onCellChange(idx)"><option value="Y">Y</option><option value="N">N</option></select>
+              <select v-if="row._row_status" class="form-control" v-model="row.useYn" @change="onCellChange(idx)">
+                <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+              </select>
               <span v-else :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span>
             </td>
             <td style="text-align:center"><button class="btn btn-danger btn-xs" @click.stop="handleDeleteRow(idx)">삭제</button></td>

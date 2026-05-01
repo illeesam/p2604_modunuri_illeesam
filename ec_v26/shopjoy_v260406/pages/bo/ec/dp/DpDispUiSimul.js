@@ -4,7 +4,17 @@ window.DpDispUiSimul = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const codes = Vue.computed(() => window.getBoCodeStore?.()?.svCodes || []);
+    const codes = reactive({ active_statuses: [], visibility_opts: [
+      { value: '', label: '전체' },
+      { value: 'PUBLIC',    label: '전체공개' },
+      { value: 'MEMBER',    label: '회원공개' },
+      { value: 'VERIFIED',  label: '인증회원' },
+      { value: 'PREMIUM',   label: '우수회원↑' },
+      { value: 'VIP',       label: 'VIP전용' },
+      { value: 'INVITED',   label: '초대회원' },
+      { value: 'STAFF',     label: '직원' },
+      { value: 'EXECUTIVE', label: '임직원' },
+    ] });
     const displays = reactive([]);
     const sites = reactive([]);
     const members = reactive([]);
@@ -44,6 +54,12 @@ window.DpDispUiSimul = {
     });
 
     const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (codeStore?.snGetGrpCodes) {
+          codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
+        }
+      } catch (err) { console.error('[fnLoadCodes]', err); }
       uiState.isPageCodeLoad = true;
       handleSearchData();
     };
@@ -66,17 +82,6 @@ window.DpDispUiSimul = {
     });
 
     const selectedAreas = reactive(new Set());
-    const VISIBILITY_OPTS  = [
-      { value: '', label: '전체' },
-      { value: 'PUBLIC',    label: '전체공개' },
-      { value: 'MEMBER',    label: '회원공개' },
-      { value: 'VERIFIED',  label: '인증회원' },
-      { value: 'PREMIUM',   label: '우수회원↑' },
-      { value: 'VIP',       label: 'VIP전용' },
-      { value: 'INVITED',   label: '초대회원' },
-      { value: 'STAFF',     label: '직원' },
-      { value: 'EXECUTIVE', label: '임직원' },
-    ];
 
     /* ── 위젯 유형 메타 ── */
     const WIDGET_TYPE_LABELS = {
@@ -319,7 +324,7 @@ window.DpDispUiSimul = {
       lines.push({ type:'source-header', htype:'disp', data:{
         datetime:     `${searchParam.previewDate || '-'} ${searchParam.previewTime || ''}`.trim(),
         status:       searchParam.status || '전체',
-        visibility:   searchParam.visibility ? (window.safeArrayUtils.safeFind(VISIBILITY_OPTS, o => o.value === searchParam.visibility)?.label || searchParam.visibility) : '전체',
+        visibility:   searchParam.visibility ? (window.safeArrayUtils.safeFind(codes.visibility_opts, o => o.value === searchParam.visibility)?.label || searchParam.visibility) : '전체',
       }});
       lines.push({ type:'source-header', htype:'cond', data:{
         period:   '-',
@@ -808,11 +813,10 @@ window.DpDispUiSimul = {
     // ── return ───────────────────────────────────────────────────────────────
 
     return {
-      today, cfSiteNm,
+      today, cfSiteNm, codes,
       uiState, switchTab,
       searchParam, searchParamOrg,
       selectedAreas, cfAllAreaListRaw, cfAreaList,
-      VISIBILITY_OPTS,
       onReset,
       toggleArea, selectAllAreas, clearAllAreas, cfAreaBtnLabel,
       panelsForArea, cfTotalPanels, resetDate, isDateInRange,
@@ -879,9 +883,7 @@ window.DpDispUiSimul = {
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">상태</span>
         <select v-model="searchParam.status" class="form-control" style="width:90px;margin:0;font-size:12px;">
-          <option value="">전체</option>
-          <option value="활성">활성</option>
-          <option value="비활성">비활성</option>
+          <option value="">전체</option><option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
 
@@ -889,7 +891,7 @@ window.DpDispUiSimul = {
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">공개대상</span>
         <select v-model="searchParam.visibility" class="form-control" style="width:100px;margin:0;font-size:12px;">
-          <option v-for="o in VISIBILITY_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
+          <option v-for="o in codes.visibility_opts" :key="o?.value" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
       <div style="width:1px;height:28px;background:#e0e0e0;"></div>
@@ -963,7 +965,7 @@ window.DpDispUiSimul = {
       <span style="font-size:11px;color:#aaa;">조회 조건:</span>
       <span style="font-size:12px;background:#fff8e1;color:#f57c00;border-radius:10px;padding:2px 10px;">📅 {{ previewDate }} {{ previewTime }}</span>
       <span v-if="searchStatus" style="font-size:12px;background:#e8f5e9;color:#2e7d32;border-radius:10px;padding:2px 10px;">상태: {{ searchStatus }}</span>
-      <span v-if="searchVisibility" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:10px;padding:2px 10px;">공개: {{ window.safeArrayUtils.safeFind(VISIBILITY_OPTS, o => o.value === searchVisibility)?.label }}</span>
+      <span v-if="searchVisibility" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:10px;padding:2px 10px;">공개: {{ window.safeArrayUtils.safeFind(codes.visibility_opts, o => o.value === searchVisibility)?.label }}</span>
       <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
         <button @click="openDispUiLayer"
           style="font-size:11px;padding:3px 10px;border-radius:10px;cursor:pointer;font-weight:600;border:1px solid #b39ddb;white-space:nowrap;transition:all .15s;"
@@ -1040,13 +1042,13 @@ window.DpDispUiSimul = {
         <span class="search-label" style="font-size:11px;">상태</span>
         <select v-model="dispUiForm.status"
           style="font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;">
-          <option value="">전체</option><option>활성</option><option>비활성</option>
+          <option value="">전체</option><option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
         <div style="width:1px;height:20px;background:#e0e0e0;margin:0 2px;"></div>
         <span class="search-label" style="font-size:11px;">공개대상</span>
         <select v-model="dispUiForm.visibility"
           style="font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;">
-          <option v-for="o in VISIBILITY_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
+          <option v-for="o in codes.visibility_opts" :key="o?.value" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
 

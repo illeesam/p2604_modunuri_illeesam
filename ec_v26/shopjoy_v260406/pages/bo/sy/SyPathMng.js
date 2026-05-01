@@ -6,6 +6,29 @@ window.SyPathMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
+    /* ── 코드 ── */
+    const codes = reactive({ use_yn: [] });
+    const uiStateCode = reactive({ isPageCodeLoad: false });
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiStateCode.isPageCodeLoad;
+    });
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
+        uiStateCode.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
     /* ── 검색 파라미터 ── */
     const searchParam = reactive({ bizCd: '', kw: '', useYn: '' });
     const searchParamOrg = reactive({ bizCd: '', kw: '', useYn: '' });
@@ -207,8 +230,10 @@ window.SyPathMng = {
       return allPaths.find(r => r.pathId === pathId)?.pathLabel || String(pathId);
     };
 
+    if (isAppReady.value) fnLoadCodes();
+
     return {
-      uiState, searchParam,
+      uiState, searchParam, codes,
       cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
       gridRows, cfDirtyRows, pager, cfTotalPages, cfPageNums, setPage, onSizeChange,
       onSearch, onReset, onCellChange, addRow, cancelRow, deleteRow, handleSave,
@@ -230,8 +255,7 @@ window.SyPathMng = {
       <label class="search-label">사용여부</label>
       <select class="form-control" v-model="searchParam.useYn" style="width:120px">
         <option value="">전체</option>
-        <option value="Y">사용</option>
-        <option value="N">미사용</option>
+        <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
@@ -329,8 +353,7 @@ window.SyPathMng = {
             </td>
             <td style="padding:3px 4px;text-align:center">
               <select class="grid-select" :value="r.useYn" @change="onCellChange(r,'useYn',$event.target.value)" style="width:52px">
-                <option value="Y">사용</option>
-                <option value="N">미사용</option>
+                <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
               </select>
             </td>
             <td style="padding:3px 6px">

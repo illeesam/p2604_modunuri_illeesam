@@ -4,7 +4,7 @@ window.DpDispWidgetMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const codes = reactive({ disp_widget_types: [] });
+    const codes = reactive({ disp_widget_types: [], active_statuses: [] });
     const uiState = reactive({ loading: false, isPageCodeLoad: false, selectedPath: null });
     const widgetLibs = reactive([]);
     const widgets = reactive([]);
@@ -22,6 +22,7 @@ window.DpDispWidgetMng = {
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
       codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
+      codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
       uiState.isPageCodeLoad = true;
     };
 
@@ -191,8 +192,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
         <label class="form-label">상태</label>
         <select v-model="searchParam.status" class="form-control" style="margin:0;">
           <option value="">전체</option>
-          <option value="활성">활성</option>
-          <option value="비활성">비활성</option>
+          <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <button @click="onSearch" class="btn btn-primary" style="height:36px;padding:0 20px;">조회</button>

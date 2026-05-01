@@ -13,6 +13,8 @@ window.PdBundleMng = {
     const codes = reactive({
       product_statuses: [],
       bundle_types: [],
+      bundle_statuses: [],
+      use_yn: [],
     });
 
     const isAppReady = computed(() => {
@@ -26,6 +28,8 @@ window.PdBundleMng = {
       try {
         codes.product_statuses = codeStore.snGetGrpCodes('PRODUCT_STATUS') || [];
         codes.bundle_types = codeStore.snGetGrpCodes('BUNDLE_TYPE') || [];
+        codes.bundle_statuses = codeStore.snGetGrpCodes('BUNDLE_STATUS') || [];
+        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -576,9 +580,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         <div class="form-group">
           <label class="form-label">상태</label>
           <select class="form-control" v-model="newForm.prodStatusCd">
-            <option value="DRAFT">준비중 (DRAFT)</option>
-            <option value="ACTIVE">판매중 (ACTIVE)</option>
-            <option value="INACTIVE">판매중지 (INACTIVE)</option>
+            <option v-for="c in codes.bundle_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
       </div>
@@ -693,8 +695,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           </td>
           <td style="text-align:center">
             <select class="form-control" v-model="item.useYn" style="width:56px;padding:2px 4px">
-              <option value="Y">Y</option>
-              <option value="N">N</option>
+              <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
             </select>
           </td>
           <td style="text-align:center">

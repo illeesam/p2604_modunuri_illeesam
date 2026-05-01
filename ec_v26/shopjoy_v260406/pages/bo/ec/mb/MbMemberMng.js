@@ -191,11 +191,13 @@ window.MbMemberMng = {
       <input v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="이름 또는 이메일 검색" />
       <label class="search-label">등급</label>
       <select v-model="searchParam.grade">
-        <option value="">전체</option><option>일반</option><option>우수</option><option>VIP</option>
+        <option value="">전체</option>
+        <option v-for="c in codes.member_grades" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <label class="search-label">상태</label>
       <select v-model="searchParam.status">
-        <option value="">전체</option><option>활성</option><option>정지</option>
+        <option value="">전체</option>
+        <option v-for="c in codes.member_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>

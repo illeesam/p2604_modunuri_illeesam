@@ -7,6 +7,7 @@ window.SyBatchHist = {
     const batches = reactive([]);
     const batchLogs = reactive([]);
     const uiState = reactive({ loading: false, isPageCodeLoad: false, error: null, searchBatchId: '', searchStatus: '', expandedId: null });
+    const codes = reactive({ batch_run_statuses: [] });
 
     // onMounted에서 API 로드
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -33,6 +34,14 @@ window.SyBatchHist = {
     });
 
     const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (codeStore?.snGetGrpCodes) {
+          codes.batch_run_statuses = codeStore.snGetGrpCodes('BATCH_RUN_STATUS') || [];
+        }
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
       uiState.isPageCodeLoad = true;
       handleSearchData();
     };
@@ -94,6 +103,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       setPage, onSizeChange, onFilter,
       toggleExpand,
       fnRunBadge, fnFmtDuration,
+      codes,
     };
   },
   template: /* html */`
@@ -111,7 +121,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       </select>
       <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:90px;" v-model="uiState.searchStatus" @change="onFilter">
         <option value="">상태 전체</option>
-        <option>성공</option><option>실패</option><option>실행중</option><option>대기</option>
+        <option v-for="c in codes.batch_run_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
     </div>
   </div>

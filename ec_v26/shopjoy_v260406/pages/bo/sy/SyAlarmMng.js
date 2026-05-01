@@ -172,8 +172,14 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   <div class="page-title">알림관리</div>  <div class="card">
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="제목 / 메시지 검색" />
-      <select v-model="searchParam.type"><option value="">유형 전체</option><option>푸시</option><option>이메일</option><option>SMS</option><option>인앱</option></select>
-      <select v-model="searchParam.status"><option value="">상태 전체</option><option>발송완료</option><option>예약</option><option>실패</option><option>임시</option></select>
+      <select v-model="searchParam.type">
+        <option value="">유형 전체</option>
+        <option v-for="c in codes.alarm_type" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+      </select>
+      <select v-model="searchParam.status">
+        <option value="">상태 전체</option>
+        <option v-for="c in codes.alarm_status" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+      </select>
       <span class="search-label">발송일</span>
       <input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
       <select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>

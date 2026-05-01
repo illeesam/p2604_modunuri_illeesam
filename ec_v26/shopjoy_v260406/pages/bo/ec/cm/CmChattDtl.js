@@ -9,7 +9,7 @@ window.CmChattDtl = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._cmChattDtlState.tab || 'chat', viewMode2: window._cmChattDtlState.viewMode || 'tab', replyText: '', searchUserId: '', chat: null });
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
-    const codes = reactive({});
+    const codes = reactive({ chatt_statuses: [] });
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -19,6 +19,10 @@ window.CmChattDtl = {
 
     const fnLoadCodes = async () => {
       try {
+        const codeStore = window.getBoCodeStore?.();
+        if (codeStore?.snGetGrpCodes) {
+          codes.chatt_statuses = await codeStore.snGetGrpCodes('CHATT_STATUS') || [];
+        }
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -287,7 +291,7 @@ window.CmChattDtl = {
         <div class="form-group">
           <label class="form-label">상태</label>
           <select class="form-control" style="max-width:200px;" v-model="form.status">
-            <option>진행중</option><option>종료</option>
+            <option v-for="c in codes.chatt_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
         <div class="form-actions">

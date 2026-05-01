@@ -10,6 +10,8 @@ window.DpDispUiMng = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null });
     const codes = reactive({
       disp_ui_types: [],
+      use_yn: [],
+      date_range_opts: [],
     });
 
     // App 초기화 준비 상태
@@ -25,6 +27,8 @@ window.DpDispUiMng = {
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
       codes.disp_ui_types = codeStore.snGetGrpCodes('DISP_UI_TYPE') || [];
+      codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
+      codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
       uiState.isPageCodeLoad = true;
     };
 
@@ -76,7 +80,6 @@ window.DpDispUiMng = {
       expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.getDateRange(searchParam.dateRange);
@@ -123,7 +126,7 @@ const searchParam = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateE
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { displays, uiState, codes, pager, searchParam, DATE_RANGE_OPTIONS,
+    return { displays, uiState, codes, pager, searchParam,
       cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums,
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange, cfSiteNm,
       expanded, toggleNode, selectNode, cfTree, expandAll, collapseAll, pathLabel,
@@ -139,8 +142,7 @@ const searchParam = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateE
       <label class="search-label">사용여부</label>
       <select class="form-control" v-model="searchParam.useYn" style="width:100px;">
         <option value="">전체</option>
-        <option value="Y">사용</option>
-        <option value="N">미사용</option>
+        <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">🔍 조회</button>

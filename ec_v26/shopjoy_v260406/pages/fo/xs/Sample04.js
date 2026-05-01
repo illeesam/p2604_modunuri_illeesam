@@ -5,7 +5,12 @@ window.XsSample04 = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, modalType: null, modalVariant: 'info', modalData: null, nested2: false });
-    const codes = reactive({});
+    const codes = reactive({
+      grade_opts: [
+        { value: '일반', label: '일반' }, { value: '우수', label: '우수' },
+        { value: 'VIP', label: 'VIP' }, { value: 'VVIP', label: 'VVIP' },
+      ],
+    });
 
     const isAppReady = computed(() => {
       const initStore = window.useFoAppInitStore?.();
@@ -482,7 +487,7 @@ window.XsSample04 = {
             <label style="display:block;font-size:11px;font-weight:700;color:#555;margin-bottom:4px;">등급</label>
             <select v-model="form.grade"
               style="width:100%;font-size:12px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;background:#fff;outline:none;">
-              <option>일반</option><option>우수</option><option>VIP</option><option>VVIP</option>
+              <option v-for="o in codes.grade_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
             </select>
           </div>
         </div>

@@ -8,7 +8,7 @@ window.OdOrderMng = {
     const members = reactive([]);
     const claims = reactive([]);
     const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status'});
-    const codes = reactive({ order_statuses: [], payment_methods: [], dliv_statuses: [] });
+    const codes = reactive({ order_statuses: [], payment_methods: [], dliv_statuses: [], approval_actions: ['승인','반려','보류'], req_targets: ['주문','상품','배송','추가결재'], date_range_opts: [] });
 
     // onMounted에서 API 로드
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -60,7 +60,6 @@ window.OdOrderMng = {
       Object.assign(searchParamOrg, searchParam);
     });
 
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.getDateRange(searchParam.dateRange);
@@ -84,6 +83,7 @@ const isAppReady = computed(() => {
         codes.order_statuses = await codeStore.snGetGrpCodes('ORDER_STATUS') || [];
         codes.payment_methods = await codeStore.snGetGrpCodes('PAYMENT_METHOD') || [];
         codes.dliv_statuses = await codeStore.snGetGrpCodes('DLIV_STATUS') || [];
+        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -186,10 +186,6 @@ const isAppReady = computed(() => {
       else orders.forEach(o => s.add(o.orderId));
       checked = s;
     };
-    const ORDER_STATUS_OPTIONS = ['입금대기','결제완료','상품준비중','배송중','배송완료','구매확정','취소','자동취소'];
-    const PAY_METHOD_OPTIONS = ['무통장입금','가상계좌','토스페이먼츠','카카오페이','네이버페이','핸드폰결제','적립금결제','0원결제'];
-    const APPROVAL_ACTIONS = ['승인','반려','보류'];
-    const REQ_TARGETS = ['주문','상품','배송','추가결재'];
     const DEFAULT_TMPL = '[결재요청]\n요청대상: {target} - {targetNm}\n요청금액: {amount}원\n내용: {reason}\n\n위 건에 대한 추가결재 부탁드립니다.';
     /* 변경작업 모달 */
         const bulkForm = reactive({
@@ -289,7 +285,7 @@ const isAppReady = computed(() => {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), orders, members, claims, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, APPROVAL_ACTIONS, REQ_TARGETS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), orders, members, claims, uiState, codes, searchParam, searchParamOrg, handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>
@@ -299,10 +295,9 @@ const isAppReady = computed(() => {
       <input v-model="searchParam.kw" placeholder="주문ID / 회원명 / 상품명 검색" />
       <select v-model="searchParam.status">
         <option value="">상태 전체</option>
-        <option>입금대기</option><option>결제완료</option><option>상품준비중</option>
-        <option>배송중</option><option>배송완료</option><option>구매확정</option><option>취소</option><option>자동취소</option>
+        <option v-for="c in codes.order_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -421,14 +416,14 @@ const isAppReady = computed(() => {
           <label class="form-label">변경할 주문상태</label>
           <select class="form-control" v-model="bulkForm.status">
             <option value="">선택하세요</option>
-            <option v-for="s in ORDER_STATUS_OPTIONS" :key="Math.random()" :value="s">{{ s }}</option>
+            <option v-for="c in codes.order_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
         <div v-if="uiState.bulkTab==='payMethod'">
           <label class="form-label">변경할 결제수단</label>
           <select class="form-control" v-model="bulkForm.payMethod">
             <option value="">선택하세요</option>
-            <option v-for="p in PAY_METHOD_OPTIONS" :key="Math.random()" :value="p">{{ p }}</option>
+            <option v-for="c in codes.payment_methods" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
         <div v-if="uiState.bulkTab==='approval'">
@@ -436,7 +431,7 @@ const isAppReady = computed(() => {
             <label class="form-label">결재처리 구분</label>
             <select class="form-control" v-model="bulkForm.apprAction">
               <option value="">선택하세요</option>
-              <option v-for="a in APPROVAL_ACTIONS" :key="Math.random()" :value="a">{{ a }}</option>
+              <option v-for="a in codes.approval_actions" :key="Math.random()" :value="a">{{ a }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -466,7 +461,7 @@ const isAppReady = computed(() => {
             <div class="form-group">
               <label class="form-label">요청대상</label>
               <select class="form-control" v-model="bulkForm.reqTarget" @change="onReqTargetChange">
-                <option v-for="t in REQ_TARGETS" :key="Math.random()" :value="t">{{ t }}</option>
+                <option v-for="t in codes.req_targets" :key="Math.random()" :value="t">{{ t }}</option>
               </select>
             </div>
             <div class="form-group">

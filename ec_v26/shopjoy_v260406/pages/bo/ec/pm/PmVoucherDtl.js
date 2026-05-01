@@ -8,7 +8,7 @@ window.PmVoucherDtl = {
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmVoucherDtlState.tab || 'info', viewMode2: window._pmVoucherDtlState.viewMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null, snsMsg: ''});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
-    const codes = reactive({});
+    const codes = reactive({ promo_statuses: [] });
 
     // 단건 조회
     const handleSearchDetail = async () => {
@@ -47,6 +47,7 @@ window.PmVoucherDtl = {
       try {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
+        codes.promo_statuses = await codeStore.snGetGrpCodes('PROMO_STATUS') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -262,9 +263,7 @@ window.PmVoucherDtl = {
       <div class="form-group">
         <label class="form-label">상태</label>
         <select v-model="form.voucherStatus" class="form-control">
-          <option>활성</option>
-          <option>비활성</option>
-          <option>종료</option>
+          <option v-for="c in codes.promo_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
     </div>

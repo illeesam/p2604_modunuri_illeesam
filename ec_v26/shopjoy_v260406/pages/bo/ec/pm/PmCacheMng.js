@@ -8,6 +8,7 @@ window.PmCacheMng = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, viewMode: 'list'});
     const codes = reactive({
       cache_statuses: [],
+      cache_trans_types: [],
     });
 
     const isAppReady = computed(() => {
@@ -20,6 +21,7 @@ window.PmCacheMng = {
       const codeStore = window.getBoCodeStore();
       try {
         codes.cache_statuses = codeStore.snGetGrpCodes('CACHE_STATUS') || [];
+        codes.cache_trans_types = codeStore.snGetGrpCodes('CACHE_TRANS_TYPE') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -152,7 +154,7 @@ window.PmCacheMng = {
   <div class="card">
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="회원명 / 회원ID / 내용 검색" />
-      <select v-model="searchParam.type"><option value="">유형 전체</option><option>충전</option><option>사용</option><option>환불</option><option>소멸</option></select>
+      <select v-model="searchParam.type"><option value="">유형 전체</option><option v-for="c in codes.cache_trans_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
       <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>

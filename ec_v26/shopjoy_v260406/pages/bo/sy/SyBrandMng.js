@@ -7,7 +7,7 @@ window.SyBrandMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const brands = reactive([]);
     const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false, selectedPath: null, focusedIdx: null, dragSrc: null});
-    const codes = reactive({ brand_status: [] });
+    const codes = reactive({ brand_status: [], use_yn: [], date_range_opts: [] });
 
     // 현재 환경이 local인지 확인
     const cfIsLocalMode = computed(() => {
@@ -61,7 +61,6 @@ window.SyBrandMng = {
     const searchParamOrg = reactive({
       kw: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
     });
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.getDateRange(searchParam.dateRange);
@@ -88,6 +87,8 @@ window.SyBrandMng = {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
         codes.brand_status = await codeStore.snGetGrpCodes('BRAND_STATUS') || [];
+        codes.use_yn = await codeStore.snGetGrpCodes('USE_YN') || [];
+        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -289,7 +290,7 @@ window.SyBrandMng = {
     // ── return ───────────────────────────────────────────────────────────────
 
     return { brands, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange,
+      searchParam, searchParamOrg, handleDateRangeChange,
       gridRows, cfTotal,
       setFocused, onSearch, onReset, onCellChange, cfIsLocalMode,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
@@ -308,8 +309,7 @@ window.SyBrandMng = {
       <input v-model="searchParam.kw" placeholder="브랜드코드 / 브랜드명 / 영문명 검색" />
       <select v-model="searchParam.useYn">
         <option value="">사용여부 전체</option>
-        <option value="Y">사용</option>
-        <option value="N">미사용</option>
+        <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <span class="search-label">등록일</span>
       <input type="date" v-model="searchParam.dateStart" class="date-range-input" />
@@ -317,7 +317,7 @@ window.SyBrandMng = {
       <input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
       <select v-model="searchParam.dateRange" @change="handleDateRangeChange">
         <option value="">옵션선택</option>
-        <option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
+        <option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
@@ -444,7 +444,7 @@ window.SyBrandMng = {
           <td>
             <select class="grid-select" v-model="row.useYn"
               :disabled="row._row_status==='D'" @change="onCellChange(row)" :title="cfIsLocalMode ? '사용여부' : ''">
-              <option value="Y">사용</option><option value="N">미사용</option>
+              <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
             </select>
           </td>
           <td class="col-act-cancel-val">

@@ -3,14 +3,23 @@ window.MbMemberDtl = {
   name: 'MbMemberDtl',
   props: ['detailModal', 'handleSave', 'handleDelete', 'closeDetail'],
   setup(props) {
-    const { watch, ref } = Vue;
+    const { watch, ref, reactive, onMounted } = Vue;
     const currentId = ref(props.detailModal.editId);
+    const codes = reactive({ member_grades: [], member_statuses: [] });
 
     watch(() => props.detailModal.editId, (newId) => {
       if (newId) currentId.value = newId;
     }, { immediate: true });
 
-    return { currentId };
+    onMounted(() => {
+      const codeStore = window.getBoCodeStore?.();
+      if (codeStore?.snGetGrpCodes) {
+        codes.member_grades = codeStore.snGetGrpCodes('MEMBER_GRADE') || [];
+        codes.member_statuses = codeStore.snGetGrpCodes('MEMBER_STATUS') || [];
+      }
+    });
+
+    return { currentId, codes };
   },
   template: /* html */`
 <div v-if="detailModal.show">
@@ -28,8 +37,16 @@ window.MbMemberDtl = {
       <div class="form-group"><label class="form-label">이메일 <span style="color:red">*</span></label><input class="form-control" v-model="detailModal.form.email" placeholder="이메일 주소"></div>
       <div class="form-group"><label class="form-label">이름 <span style="color:red">*</span></label><input class="form-control" v-model="detailModal.form.memberNm" placeholder="이름"></div>
       <div class="form-group"><label class="form-label">연락처</label><input class="form-control" v-model="detailModal.form.phone" placeholder="010-0000-0000"></div>
-      <div class="form-group"><label class="form-label">등급</label><select class="form-control" v-model="detailModal.form.gradeCd"><option>일반</option><option>우수</option><option>VIP</option></select></div>
-      <div class="form-group"><label class="form-label">상태</label><select class="form-control" v-model="detailModal.form.statusCd"><option>활성</option><option>정지</option></select></div>
+      <div class="form-group"><label class="form-label">등급</label>
+        <select class="form-control" v-model="detailModal.form.gradeCd">
+          <option v-for="c in codes.member_grades" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">상태</label>
+        <select class="form-control" v-model="detailModal.form.statusCd">
+          <option v-for="c in codes.member_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+        </select>
+      </div>
       <div class="form-group"><label class="form-label">가입일</label><input class="form-control" type="date" v-model="detailModal.form.joinDate"></div>
       <div class="form-group" style="grid-column:1/-1"><label class="form-label">메모</label><textarea class="form-control" rows="6" v-model="detailModal.form.memo" placeholder="관리자 메모"></textarea></div>
     </div>

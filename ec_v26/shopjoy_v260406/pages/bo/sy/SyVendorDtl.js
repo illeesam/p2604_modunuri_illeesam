@@ -8,7 +8,7 @@ window.SyVendorDtl = {
 
     const vendors = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, memoEl: null });
-    const codes = reactive({});
+    const codes = reactive({ active_statuses: [], vendor_type_kr: [] });
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
@@ -34,6 +34,15 @@ window.SyVendorDtl = {
     });
 
     const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (codeStore?.snGetGrpCodes) {
+          codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
+          codes.vendor_type_kr = codeStore.snGetGrpCodes('VENDOR_TYPE_KR') || [];
+        }
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
       uiState.isPageCodeLoad = true;
       handleLoadData();
     };
@@ -155,7 +164,7 @@ window.SyVendorDtl = {
       <div class="form-group">
         <label class="form-label">업체유형 <span v-if="!viewMode" class="req">*</span></label>
         <select class="form-control" v-model="form.vendorType" :disabled="viewMode">
-          <option>판매업체</option><option>배송업체</option>
+          <option v-for="c in codes.vendor_type_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
@@ -209,7 +218,7 @@ window.SyVendorDtl = {
       <div class="form-group">
         <label class="form-label">상태</label>
         <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
-          <option>활성</option><option>비활성</option>
+          <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
     </div>

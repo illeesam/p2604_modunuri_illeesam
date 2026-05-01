@@ -9,7 +9,10 @@ window.XsSample01 = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, focusedIdx: null, dragMoved: false, checkAll: false, dragSrc: null });
-    const codes = reactive({});
+    const codes = reactive({
+      grade_opts:  [{ value: '일반', label: '일반' }, { value: '우수', label: '우수' }, { value: 'VIP', label: 'VIP' }],
+      status_opts: [{ value: '활성', label: '활성' }, { value: '비활성', label: '비활성' }],
+    });
 
     const isAppReady = computed(() => {
       const initStore = window.useFoAppInitStore?.();
@@ -222,10 +225,11 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
         style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:220px;outline:none;" />
       <select v-model="searchParam.grade" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
         <option value="">등급 전체</option>
-        <option>일반</option><option>우수</option><option>VIP</option>
+        <option v-for="o in codes.grade_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
       <select v-model="searchParam.status" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
-        <option value="">상태 전체</option><option>활성</option><option>비활성</option>
+        <option value="">상태 전체</option>
+        <option v-for="o in codes.status_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
       <button @click="onSearch" style="font-size:12px;padding:5px 14px;border:none;border-radius:6px;background:#e8587a;color:#fff;cursor:pointer;font-weight:600;">검색</button>
       <button @click="onReset"  style="font-size:12px;padding:5px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;">초기화</button>
@@ -293,13 +297,13 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
             <td style="text-align:center;">
               <select v-model="row.grade" :disabled="row._row_status==='D'" @change="onCellChange(row)"
                 style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;background:#fff;">
-                <option>일반</option><option>우수</option><option>VIP</option>
+                <option v-for="o in codes.grade_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
               </select>
             </td>
             <td style="text-align:center;">
               <select v-model="row.status" :disabled="row._row_status==='D'" @change="onCellChange(row)"
                 style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;background:#fff;">
-                <option>활성</option><option>비활성</option>
+                <option v-for="o in codes.status_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
               </select>
             </td>
             <td style="text-align:center;color:#999;font-size:11px;">{{ row.regDate }}</td>

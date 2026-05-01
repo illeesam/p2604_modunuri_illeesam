@@ -9,7 +9,10 @@ window.XsSample02 = {
     const { ref, reactive, computed, onMounted, onUnmounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dragSrc: null, focusedIdx: null, visibleCount: 10, dragMoved: false, checkAll: false });
-    const codes = reactive({});
+    const codes = reactive({
+      prod_status_opts: [{ value: '판매중', label: '판매중' }, { value: '품절', label: '품절' }, { value: '판매중지', label: '판매중지' }],
+      category_opts: ['상의', '하의', '아우터', '원피스', '신발', '가방'],
+    });
 
     const isAppReady = computed(() => {
       const initStore = window.useFoAppInitStore?.();
@@ -212,12 +215,11 @@ window.XsSample02 = {
     const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
 
     const cfTotal        = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
-    const CATEGORY_OPTS = ['상의', '하의', '아우터', '원피스', '신발', '가방'];
 
     // ── return ───────────────────────────────────────────────────────────────
 
     return {
-      toast, searchParam, CATEGORY_OPTS, onSearch, onReset,
+      toast, searchParam, onSearch, onReset,
       gridRows, cfVisibleRows, cfTotal, visibleCount, cfHasMore, loadMore: handleLoadMore, sentinelEl,
       setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
@@ -247,10 +249,11 @@ window.XsSample02 = {
         style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:180px;outline:none;" />
       <select v-model="searchParam.category" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
         <option value="">카테고리 전체</option>
-        <option v-for="c in CATEGORY_OPTS" :key="c">{{ c }}</option>
+        <option v-for="c in codes.category_opts" :key="c">{{ c }}</option>
       </select>
       <select v-model="searchParam.status" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
-        <option value="">상태 전체</option><option>판매중</option><option>품절</option><option>판매중지</option>
+        <option value="">상태 전체</option>
+        <option v-for="o in codes.prod_status_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
       <button @click="onSearch" style="font-size:12px;padding:5px 14px;border:none;border-radius:6px;background:#e8587a;color:#fff;cursor:pointer;font-weight:600;">검색</button>
       <button @click="onReset"  style="font-size:12px;padding:5px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;">초기화</button>
@@ -319,7 +322,7 @@ window.XsSample02 = {
             <td style="text-align:center;">
               <select v-model="row.category" :disabled="row._row_status==='D'" @change="onCellChange(row)"
                 style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;background:#fff;">
-                <option v-for="c in CATEGORY_OPTS" :key="c">{{ c }}</option>
+                <option v-for="c in codes.category_opts" :key="c">{{ c }}</option>
               </select>
             </td>
             <td style="text-align:right;">
@@ -335,7 +338,7 @@ window.XsSample02 = {
             <td style="text-align:center;">
               <select v-model="row.status" :disabled="row._row_status==='D'" @change="onCellChange(row)"
                 style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;background:#fff;">
-                <option>판매중</option><option>품절</option><option>판매중지</option>
+                <option v-for="o in codes.prod_status_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
               </select>
             </td>
             <td style="text-align:center;color:#999;font-size:11px;">{{ row.regDate }}</td>

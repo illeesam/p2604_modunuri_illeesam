@@ -7,7 +7,7 @@ window.SyBbsDtl = {
 
     const bbss = reactive([]);
     const uiState = reactive({ loading: false, showBbmDetail: false, error: null, isPageCodeLoad: false, selectedBbm: null, showBbmModal: false });
-    const codes = reactive({});
+    const codes = reactive({ bbs_post_statuses: [] });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -33,6 +33,14 @@ window.SyBbsDtl = {
     });
 
     const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (codeStore?.snGetGrpCodes) {
+          codes.bbs_post_statuses = codeStore.snGetGrpCodes('BBS_POST_STATUS') || [];
+        }
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
       uiState.isPageCodeLoad = true;
       handleSearchList();
     };
@@ -218,7 +226,7 @@ window.SyBbsDtl = {
       <div class="form-group">
         <label class="form-label">상태</label>
         <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
-          <option>게시</option><option>임시</option><option>비공개</option><option>삭제</option>
+          <option v-for="c in codes.bbs_post_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
     </div>

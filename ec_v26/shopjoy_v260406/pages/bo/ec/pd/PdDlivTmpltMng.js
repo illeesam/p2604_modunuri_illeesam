@@ -8,6 +8,10 @@ window.PdDlivTmpltMng = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null, descOpen: false});
     const codes = reactive({
       dliv_template_types: [],
+      use_yn: [],
+      dliv_methods: [{value:'COURIER',label:'택배'},{value:'DIRECT',label:'직접배송'},{value:'PICKUP',label:'방문수령'}],
+      dliv_pay_types: [{value:'PREPAY',label:'선결제'},{value:'COD',label:'착불'}],
+      couriers: [{value:'CJ',label:'CJ'},{value:'LOGEN',label:'LOGEN'},{value:'LOTTE',label:'LOTTE'},{value:'HANJIN',label:'HANJIN'},{value:'POST',label:'POST'},{value:'EPOST',label:'EPOST'},{value:'KGB',label:'KGB'}],
     });
 
     const isAppReady = computed(() => {
@@ -20,6 +24,7 @@ window.PdDlivTmpltMng = {
       const codeStore = window.getBoCodeStore();
       try {
         codes.dliv_template_types = codeStore.snGetGrpCodes('DLIV_TEMPLATE_TYPE') || [];
+        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -68,9 +73,6 @@ const applied      = reactive({ kw: '', method: '', use: '' });
     const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId   = ref(null);
 
-    const DLIV_METHODS   = ['COURIER','DIRECT','PICKUP'];
-    const DLIV_PAY_TYPES = ['PREPAY','COD'];
-    const COURIERS       = ['CJ','LOGEN','LOTTE','HANJIN','POST','EPOST','KGB'];
     const METHOD_LABELS  = { COURIER:'택배', DIRECT:'직접배송', PICKUP:'방문수령' };
     const PAY_LABELS     = { PREPAY:'선결제', COD:'착불' };
 
@@ -142,10 +144,10 @@ const applied      = reactive({ kw: '', method: '', use: '' });
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, searchParam, searchParamOrg,
+    return { uiState, codes, searchParam, searchParamOrg,
              pager, cfPageNums, setPage, onSearch, onReset,
              form, openDetail, openNew, closeDetail, handleSave, handleDelete,
-             fnYnBadge, fnMethodBadge, DLIV_METHODS, DLIV_PAY_TYPES, COURIERS, METHOD_LABELS, PAY_LABELS  , onSizeChange, dlivTmplts };
+             fnYnBadge, fnMethodBadge, METHOD_LABELS, PAY_LABELS, onSizeChange, dlivTmplts};
   },
   template: `
 <div>
@@ -166,10 +168,13 @@ const applied      = reactive({ kw: '', method: '', use: '' });
         <input class="form-control" v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="템플릿명 검색">
         <label class="search-label">배송방법</label>
         <select class="form-control" v-model="searchParam.method">
-          <option value="">전체</option><option v-for="m in DLIV_METHODS" :key="Math.random()" :value="m">{{ m }}</option>
+          <option value="">전체</option><option v-for="m in codes.dliv_methods" :key="m.value" :value="m.value">{{ m.label }}</option>
         </select>
         <label class="search-label">사용여부</label>
-        <select class="form-control" v-model="searchParam.use"><option value="">전체</option><option value="Y">Y</option><option value="N">N</option></select>
+        <select class="form-control" v-model="searchParam.use">
+          <option value="">전체</option>
+          <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+        </select>
         <div class="search-actions">
           <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
           <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -237,13 +242,13 @@ const applied      = reactive({ kw: '', method: '', use: '' });
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px">
         <div class="form-group"><label class="form-label">템플릿명 <span style="color:red">*</span></label><input class="form-control" v-model="form.dlivTmpltNm"></div>
         <div class="form-group"><label class="form-label">배송방법</label>
-          <select class="form-control" v-model="form.dlivMethodCd"><option v-for="m in DLIV_METHODS" :key="Math.random()" :value="m">{{ m }}</option></select>
+          <select class="form-control" v-model="form.dlivMethodCd"><option v-for="m in codes.dliv_methods" :key="m.value" :value="m.value">{{ m.label }}</option></select>
         </div>
         <div class="form-group"><label class="form-label">배송비 결제유형</label>
-          <select class="form-control" v-model="form.dlivPayTypeCd"><option v-for="p in DLIV_PAY_TYPES" :key="Math.random()" :value="p">{{ p }}</option></select>
+          <select class="form-control" v-model="form.dlivPayTypeCd"><option v-for="p in codes.dliv_pay_types" :key="p.value" :value="p.value">{{ p.label }}</option></select>
         </div>
         <div class="form-group"><label class="form-label">배송 택배사</label>
-          <select class="form-control" v-model="form.dlivCourierCd"><option value="">없음</option><option v-for="c in COURIERS" :key="Math.random()" :value="c">{{ c }}</option></select>
+          <select class="form-control" v-model="form.dlivCourierCd"><option value="">없음</option><option v-for="c in codes.couriers" :key="c.value" :value="c.value">{{ c.label }}</option></select>
         </div>
         <div class="form-group"><label class="form-label">기본 배송비 (원)</label><input class="form-control" type="number" v-model.number="form.dlivCost"></div>
         <div class="form-group"><label class="form-label">무료배송 최소금액 (원)</label><input class="form-control" type="number" v-model.number="form.freeDlivMinAmt"></div>
@@ -251,17 +256,21 @@ const applied      = reactive({ kw: '', method: '', use: '' });
         <div class="form-group"><label class="form-label">반품배송비 편도 (원)</label><input class="form-control" type="number" v-model.number="form.returnCost"></div>
         <div class="form-group"><label class="form-label">교환배송비 왕복 (원)</label><input class="form-control" type="number" v-model.number="form.exchangeCost"></div>
         <div class="form-group"><label class="form-label">반품 택배사</label>
-          <select class="form-control" v-model="form.returnCourierCd"><option value="">없음</option><option v-for="c in COURIERS" :key="Math.random()" :value="c">{{ c }}</option></select>
+          <select class="form-control" v-model="form.returnCourierCd"><option value="">없음</option><option v-for="c in codes.couriers" :key="c.value" :value="c.value">{{ c.label }}</option></select>
         </div>
         <div class="form-group"><label class="form-label">반품지 우편번호</label><input class="form-control" v-model="form.returnAddrZip"></div>
         <div class="form-group"><label class="form-label">반품지 전화번호</label><input class="form-control" v-model="form.returnTelNo"></div>
         <div class="form-group" style="grid-column:1/-1"><label class="form-label">반품지 주소</label><input class="form-control" v-model="form.returnAddr"></div>
         <div class="form-group" style="grid-column:1/-1"><label class="form-label">반품지 상세주소</label><input class="form-control" v-model="form.returnAddrDetail"></div>
         <div class="form-group"><label class="form-label">기본 배송지</label>
-          <select class="form-control" v-model="form.baseDlivYn"><option value="Y">Y</option><option value="N">N</option></select>
+          <select class="form-control" v-model="form.baseDlivYn">
+            <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+          </select>
         </div>
         <div class="form-group"><label class="form-label">사용여부</label>
-          <select class="form-control" v-model="form.useYn"><option value="Y">Y</option><option value="N">N</option></select>
+          <select class="form-control" v-model="form.useYn">
+            <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+          </select>
         </div>
       </div>
     </div>

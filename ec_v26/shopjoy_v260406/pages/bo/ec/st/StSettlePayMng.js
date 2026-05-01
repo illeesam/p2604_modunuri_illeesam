@@ -18,7 +18,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
       try {
-        codes.settle_pay_statuses = codeStore.snGetGrpCodes('SETTLE_PAY_STATUS') || [];
+        codes.settle_pay_statuses = codeStore.snGetGrpCodes('SETTLE_PAY_STATUS_KR') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -138,7 +138,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       </select>
       <input type="date" v-model="uiState.dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="uiState.dateEnd" style="width:140px" />
       <select v-model="searchParam.status" style="width:120px">
-        <option value="">상태 전체</option><option>지급대기</option><option>지급완료</option><option>지급보류</option><option>지급오류</option>
+        <option value="">상태 전체</option><option v-for="c in codes.settle_pay_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <input v-model="searchParam.kw" placeholder="지급ID / 업체명" style="width:180px" @keyup.enter="() => onSearch?.()" />
       <div class="search-actions">

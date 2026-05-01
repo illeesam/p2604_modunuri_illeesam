@@ -9,7 +9,10 @@ window.XsSample05 = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dragSrc: null, focusedIdx: null, dragMoved: false, checkAll: false });
-    const codes = reactive({});
+    const codes = reactive({
+      category_opts: [{ value: '공지', label: '공지' }, { value: '이벤트', label: '이벤트' }, { value: 'QA', label: 'QA' }, { value: '자유', label: '자유' }],
+      open_opts:     [{ value: '공개', label: '공개' }, { value: '비공개', label: '비공개' }],
+    });
 
     const isAppReady = computed(() => {
       const initStore = window.useFoAppInitStore?.();
@@ -141,10 +144,12 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <input v-model="searchKw" placeholder="제목 / 작성자 검색" @keyup.enter="onSearch" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:200px;outline:none;" />
       <select v-model="searchCategory" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
-        <option value="">카테고리 전체</option><option>공지</option><option>이벤트</option><option>QA</option><option>자유</option>
+        <option value="">카테고리 전체</option>
+        <option v-for="o in codes.category_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
       <select v-model="searchStatus" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
-        <option value="">상태 전체</option><option>공개</option><option>비공개</option>
+        <option value="">상태 전체</option>
+        <option v-for="o in codes.open_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
       <button @click="onSearch" style="font-size:12px;padding:5px 14px;border:none;border-radius:6px;background:#e8587a;color:#fff;cursor:pointer;font-weight:600;">검색</button>
       <button @click="onReset"  style="font-size:12px;padding:5px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;">초기화</button>
@@ -196,13 +201,13 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
               @focus="e=>e.target.style.border='1px solid #93c5fd'" @blur="e=>e.target.style.border='1px solid transparent'" /></td>
             <td style="text-align:center;">
               <select v-model="row.category" :disabled="row._row_status==='D'" @change="onCellChange(row)" style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;background:#fff;">
-                <option>공지</option><option>이벤트</option><option>QA</option><option>자유</option>
+                <option v-for="o in codes.category_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
               </select>
             </td>
             <td style="text-align:right;padding:3px 8px;color:#666;font-size:11px;">{{ row.viewCnt }}</td>
             <td style="text-align:center;">
               <select v-model="row.status" :disabled="row._row_status==='D'" @change="onCellChange(row)" style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;background:#fff;">
-                <option>공개</option><option>비공개</option>
+                <option v-for="o in codes.open_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
               </select>
             </td>
             <td style="text-align:center;color:#999;font-size:11px;">{{ row.regDate }}</td>

@@ -7,7 +7,7 @@ window.PdCategoryDtl = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const categories = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({});
+    const codes = reactive({ category_statuses: [] });
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -17,6 +17,10 @@ window.PdCategoryDtl = {
 
     const fnLoadCodes = async () => {
       try {
+        const codeStore = window.getBoCodeStore?.();
+        if (codeStore?.snGetGrpCodes) {
+          codes.category_statuses = codeStore.snGetGrpCodes('CATEGORY_STATUS') || [];
+        }
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -152,7 +156,7 @@ window.PdCategoryDtl = {
       <div class="form-group">
         <label class="form-label">상태</label>
         <select class="form-control" v-model="form.status">
-          <option>활성</option><option>비활성</option>
+          <option v-for="c in codes.category_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">

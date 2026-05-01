@@ -8,7 +8,7 @@ window.PmDiscntDtl = {
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmDiscntDtlState.tab || 'info', viewMode2: window._pmDiscntDtlState.viewMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
-    const codes = reactive({});
+    const codes = reactive({ discnt_types: [], promo_statuses: [], discnt_apply_targets: [] });
 
     // 단건 조회
     const handleSearchDetail = async () => {
@@ -45,6 +45,9 @@ window.PmDiscntDtl = {
       try {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
+        codes.discnt_types = await codeStore.snGetGrpCodes('DISCNT_TYPE_KR') || [];
+        codes.promo_statuses = await codeStore.snGetGrpCodes('PROMO_STATUS') || [];
+        codes.discnt_apply_targets = await codeStore.snGetGrpCodes('DISCNT_APPLY_TARGET') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -164,7 +167,7 @@ window.PmDiscntDtl = {
         <div class="form-group">
           <label class="form-label">할인유형</label>
           <select class="form-control" v-model="form.discntType">
-            <option>정률</option><option>정액</option><option>장바구니</option>
+            <option v-for="c in codes.discnt_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
         <div class="form-group">
@@ -274,7 +277,7 @@ window.PmDiscntDtl = {
         <div class="form-group">
           <label class="form-label">상태</label>
           <select class="form-control" v-model="form.discntStatus">
-            <option>활성</option><option>비활성</option><option>종료</option>
+            <option v-for="c in codes.promo_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
         <div class="form-group">
@@ -296,7 +299,7 @@ window.PmDiscntDtl = {
       <div class="form-group">
         <label class="form-label">적용 대상 선택</label>
         <select class="form-control" v-model="form.applyTarget">
-          <option>전체상품</option><option>선택상품</option><option>카테고리</option>
+          <option v-for="c in codes.discnt_apply_targets" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
 

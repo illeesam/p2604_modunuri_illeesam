@@ -7,7 +7,7 @@ window.SyI18nMng = {
     const i18nKeys = reactive([]);
     const i18nMsgs = reactive([]);
     const uiState = reactive({ isPageCodeLoad: false, selectedId: null});
-    const codes = reactive({ lang_code: [] });
+    const codes = reactive({ lang_code: [], use_yn: [], i18n_scopes: ['COMMON','FO','BO'] });
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
@@ -31,6 +31,7 @@ window.SyI18nMng = {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
         codes.lang_code = await codeStore.snGetGrpCodes('LANG_CODE') || [];
+        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -49,7 +50,6 @@ const searchParam = reactive({ kw: '', scope: '', use: '' });
     const pager       = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId  = ref(null);
 
-    const SCOPES      = ['COMMON','FO','BO'];
     const LANGS       = ['ko','en','ja','in'];
     const LANG_LABELS = { ko:'한국어', en:'English', ja:'日本語', in:'Indonesia' };
     const fnScopeBadge  = s => ({ COMMON:'badge-blue', FO:'badge-green', BO:'badge-orange' }[s] || 'badge-gray');
@@ -121,7 +121,7 @@ const searchParam = reactive({ kw: '', scope: '', use: '' });
 
     return { uiState, codes, searchParam, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
              selectedId, cfSelectedKey, cfSelectedMsgs, msgForm, openDetail, saveMsgs, getLangMsg,
-             SCOPES, LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, onSizeChange };
+             LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, onSizeChange };
   },
   template: `
 <div>
@@ -132,10 +132,10 @@ const searchParam = reactive({ kw: '', scope: '', use: '' });
         <input class="form-control" v-model="searchParam.kw" @keyup.enter="onSearch" placeholder="키 또는 설명 검색">
         <label class="search-label">범위</label>
         <select class="form-control" v-model="searchParam.scope">
-          <option value="">전체</option><option v-for="s in SCOPES" :key="s" :value="s">{{ s }}</option>
+          <option value="">전체</option><option v-for="s in codes.i18n_scopes" :key="s" :value="s">{{ s }}</option>
         </select>
         <label class="search-label">사용여부</label>
-        <select class="form-control" v-model="searchParam.use"><option value="">전체</option><option value="Y">Y</option><option value="N">N</option></select>
+        <select class="form-control" v-model="searchParam.use"><option value="">전체</option><option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
         <div class="search-actions">
           <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
           <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

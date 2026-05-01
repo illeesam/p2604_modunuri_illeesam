@@ -6,7 +6,7 @@ window.CmChattMng = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const chatts = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({ chatt_message_types: [] });
+    const codes = reactive({ chatt_message_types: [], chatt_statuses: [] });
 
     const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
@@ -26,6 +26,7 @@ const isAppReady = computed(() => {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
         codes.chatt_message_types = await codeStore.snGetGrpCodes('CHATT_MESSAGE_TYPE') || [];
+        codes.chatt_statuses = await codeStore.snGetGrpCodes('CHATT_STATUS') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -136,7 +137,10 @@ const isAppReady = computed(() => {
   <div class="card">
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="회원명 / 제목 검색" />
-      <select v-model="searchParam.status"><option value="">상태 전체</option><option>진행중</option><option>종료</option></select>
+      <select v-model="searchParam.status">
+        <option value="">상태 전체</option>
+        <option v-for="c in codes.chatt_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+      </select>
       <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="handleDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>

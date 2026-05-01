@@ -9,7 +9,7 @@ window.PmCacheDtl = {
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCacheDtlState.tab || 'info', viewMode2: window._pmCacheDtlState.viewMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
-    const codes = reactive({});
+    const codes = reactive({ cache_trans_types: [] });
 
     // 단건 조회
     const handleSearchDetail = async () => {
@@ -46,6 +46,7 @@ window.PmCacheDtl = {
       try {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
+        codes.cache_trans_types = await codeStore.snGetGrpCodes('CACHE_TRANS_TYPE') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -169,7 +170,7 @@ window.PmCacheDtl = {
         <div class="form-group">
           <label class="form-label">유형</label>
           <select class="form-control" v-model="form.type" :disabled="viewMode">
-            <option>충전</option><option>사용</option><option>환불</option><option>소멸</option>
+            <option v-for="c in codes.cache_trans_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
         <div class="form-group">

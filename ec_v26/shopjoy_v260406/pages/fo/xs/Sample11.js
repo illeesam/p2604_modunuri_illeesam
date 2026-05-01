@@ -5,7 +5,12 @@ window.XsSample11 = {
   setup() {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), viewMode: 'card', showDesc: true, previewTime: new Date().toTimeString().slice(0, 5), showAreaDrop: false, showCatModal: false });
-    const codes = reactive({});
+    const codes = reactive({
+      active_status_opts: [{value:'활성',label:'활성'},{value:'비활성',label:'비활성'}],
+      need_yn_opts:       [{value:'Y',label:'필요'},{value:'N',label:'불필요'}],
+      condition_opts:     ['항상 표시', '로그인 필요', '로그인+VIP', '로그인+우수', '비로그인 전용'],
+      auth_grade_opts:    ['일반', '우수', 'VIP'],
+    });
 
     const isAppReady = computed(() => {
       const initStore = window.useFoAppInitStore?.();
@@ -48,8 +53,6 @@ window.XsSample11 = {
     const userGrade  = (auth && auth.svAuthUser) ? (auth.svAuthUser.grade  || '일반') : '';
     const userNm     = (auth && auth.svAuthUser) ? (auth.svAuthUser.authNm || auth.svAuthUser.memberNm || auth.svAuthUser.email || '') : '';
     /* 검색 필터 (기본값: 현재 사용자 상태 반영) */
-    const CONDITION_OPTS  = ['항상 표시', '로그인 필요', '로그인+VIP', '로그인+우수', '비로그인 전용'];
-    const AUTH_GRADE_OPTS = ['일반', '우수', 'VIP'];
     /* 현재 사용자가 접근 가능한 조건 목록 */
     const cfAccessibleConds = computed(() => {
       const c = ['항상 표시'];
@@ -133,7 +136,7 @@ window.XsSample11 = {
       selectedAreas, cfAllAreas, cfAreaList, cfAreaBtnLabel,
       toggleArea, selectAllAreas, clearAllAreas, resetDate,
       searchStatus, searchCondition, searchAuthRequired, searchAuthGrade,
-      CONDITION_OPTS, AUTH_GRADE_OPTS,
+      AUTH_GRADE_OPTS, codes,
       isLoggedIn, userGrade, userNm, cfAccessibleConds,
       selectedCatIds, cfCatBtnLabel, onCatApply, cfSelectedCatNames,
       panelsForArea, cfTotalPanels,
@@ -163,8 +166,7 @@ window.XsSample11 = {
         <span style="font-size:12px;font-weight:600;color:#555;">상태</span>
         <select v-model="searchParam.status" style="font-size:12px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;width:76px;">
           <option value="">전체</option>
-          <option value="활성">활성</option>
-          <option value="비활성">비활성</option>
+          <option v-for="o in codes.active_status_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
       <!-- ── 노출조건 ─────────────────────────────────────────────────────── -->
@@ -172,7 +174,7 @@ window.XsSample11 = {
         <span style="font-size:12px;font-weight:600;color:#555;">노출조건</span>
         <select v-model="searchParam.condition" style="font-size:12px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;width:112px;">
           <option value="">전체</option>
-          <option v-for="c in CONDITION_OPTS" :key="c" :value="c">{{ c }}</option>
+          <option v-for="c in codes.condition_opts" :key="c" :value="c">{{ c }}</option>
         </select>
       </div>
       <!-- ── 인증필요 ─────────────────────────────────────────────────────── -->
@@ -180,8 +182,7 @@ window.XsSample11 = {
         <span style="font-size:12px;font-weight:600;color:#555;">인증필요</span>
         <select v-model="searchParam.authrequired" style="font-size:12px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;width:72px;">
           <option value="">전체</option>
-          <option value="Y">필요</option>
-          <option value="N">불필요</option>
+          <option v-for="o in codes.need_yn_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
       <!-- ── 등급제한 ─────────────────────────────────────────────────────── -->
@@ -189,7 +190,7 @@ window.XsSample11 = {
         <span style="font-size:12px;font-weight:600;color:#555;">등급제한</span>
         <select v-model="searchParam.authgrade" style="font-size:12px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;width:72px;">
           <option value="">전체</option>
-          <option v-for="g in AUTH_GRADE_OPTS" :key="g" :value="g">{{ g }}↑</option>
+          <option v-for="g in codes.auth_grade_opts" :key="g" :value="g">{{ g }}↑</option>
         </select>
       </div>
       <!-- ── 카테고리 ─────────────────────────────────────────────────────── -->

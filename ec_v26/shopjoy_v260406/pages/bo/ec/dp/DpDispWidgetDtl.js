@@ -5,7 +5,7 @@ window.DpDispWidgetDtl = {
   emits: ['close'],
   setup(props, { emit }) {
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
-    const codes = reactive({ disp_widget_types: [] });
+    const codes = reactive({ disp_widget_types: [], active_statuses: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 실행'},{value:'modal',label:'모달 열기'}] });
     const uiState = reactive({ isPageCodeLoad: false, error: null, previewMode: 'default', previewPaneWidth: 460, libPickMode: 'copy', htmlContentEl: null});
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
@@ -22,6 +22,7 @@ window.DpDispWidgetDtl = {
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
       codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
+      codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
       uiState.isPageCodeLoad = true;
     };
 
@@ -584,8 +585,7 @@ window.DpDispWidgetDtl = {
           <div class="form-group" style="margin:0;">
             <label class="form-label">상태</label>
             <select v-model="form.status" class="form-control" style="margin:0;">
-              <option value="활성">활성</option>
-              <option value="비활성">비활성</option>
+              <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
             </select>
           </div>
           <div class="form-group" style="margin:0;grid-column:1/-1;">
@@ -671,10 +671,7 @@ window.DpDispWidgetDtl = {
             <div class="form-group" style="margin:0;">
               <label class="form-label">클릭 동작</label>
               <select v-model="form.clickAction" class="form-control" style="margin:0;">
-                <option value="none">없음</option>
-                <option value="navigate">페이지 이동</option>
-                <option value="event">이벤트 실행</option>
-                <option value="modal">모달 열기</option>
+                <option v-for="o in codes.click_action_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
               </select>
             </div>
             <div class="form-group" style="margin:0;">

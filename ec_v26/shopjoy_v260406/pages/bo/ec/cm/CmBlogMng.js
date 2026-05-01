@@ -6,7 +6,11 @@ window.CmBlogMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const blogs = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null});
-    const codes = reactive({ blog_display_statuses: [] });
+    const codes = reactive({
+      blog_display_statuses: [],
+      open_yn_opts: [{ codeValue: 'Y', codeLabel: '공개' }, { codeValue: 'N', codeLabel: '비공개' }],
+      notice_yn_opts: [{ codeValue: 'Y', codeLabel: '공지' }, { codeValue: 'N', codeLabel: '일반' }],
+    });
 
 const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId = ref(null);
@@ -163,7 +167,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       selectedId: computed(() => detailModal.editId), blogs, uiState, codes,
       searchParam, searchParamOrg, pager, cfPageNums, setPage,
       onSearch, onReset, cfSelectedRow, detailModal, openDetail, openNew, closeDetail,
-      handleSave, handleDelete, toggleUse, fnYnBadge, onSizeChange
+      handleSave, handleDelete, toggleUse, fnYnBadge, onSizeChange,
     };
   },
   template: `
@@ -174,9 +178,15 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
         <label class="search-label">제목/작성자</label>
         <input class="form-control" v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="제목 또는 작성자 검색">
         <label class="search-label">공개여부</label>
-        <select class="form-control" v-model="searchParam.use"><option value="">전체</option><option value="Y">공개</option><option value="N">비공개</option></select>
+        <select class="form-control" v-model="searchParam.use">
+          <option value="">전체</option>
+          <option v-for="o in codes.open_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
+        </select>
         <label class="search-label">공지여부</label>
-        <select class="form-control" v-model="searchParam.notice"><option value="">전체</option><option value="Y">공지</option><option value="N">일반</option></select>
+        <select class="form-control" v-model="searchParam.notice">
+          <option value="">전체</option>
+          <option v-for="o in codes.notice_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
+        </select>
         <div class="search-actions">
           <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
           <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -247,10 +257,14 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
         <div class="form-group" style="grid-column:1/-1"><label class="form-label">제목 <span style="color:red">*</span></label><input class="form-control" v-model="detailModal.form.blogTitle"></div>
         <div class="form-group"><label class="form-label">작성자</label><input class="form-control" v-model="detailModal.form.blogAuthor"></div>
         <div class="form-group"><label class="form-label">공지여부</label>
-          <select class="form-control" v-model="detailModal.form.isNotice"><option value="Y">Y (공지)</option><option value="N">N (일반)</option></select>
+          <select class="form-control" v-model="detailModal.form.isNotice">
+            <option v-for="o in codes.notice_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeValue }} ({{ o.codeLabel }})</option>
+          </select>
         </div>
         <div class="form-group"><label class="form-label">공개여부</label>
-          <select class="form-control" v-model="detailModal.form.useYn"><option value="Y">Y (공개)</option><option value="N">N (비공개)</option></select>
+          <select class="form-control" v-model="detailModal.form.useYn">
+            <option v-for="o in codes.open_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeValue }} ({{ o.codeLabel }})</option>
+          </select>
         </div>
         <div class="form-group" style="grid-column:1/-1"><label class="form-label">요약</label><input class="form-control" v-model="detailModal.form.blogSummary" placeholder="목록에 표시될 요약 내용"></div>
         <div class="form-group" style="grid-column:1/-1"><label class="form-label">본문</label><textarea class="form-control" rows="8" v-model="detailModal.form.blogContent"></textarea></div>

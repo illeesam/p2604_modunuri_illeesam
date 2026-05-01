@@ -21,7 +21,7 @@ window.PmPlanMng = {
       const codeStore = window.getBoCodeStore();
       try {
         codes.subscription_periods = codeStore.snGetGrpCodes('SUBSCRIPTION_PERIOD') || [];
-        codes.plan_statuses = codeStore.snGetGrpCodes('PLAN_STATUS') || [];
+        codes.plan_statuses = codeStore.snGetGrpCodes('PLAN_STATUS_KR') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -164,7 +164,7 @@ const CATEGORIES = [
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="기획전명 검색" />
       <select v-model="searchParam.category"><option value="">카테고리 전체</option><option v-for="c in CATEGORIES.slice(1)" :key="c?.value" :value="c.value">{{ c.label }}</option></select>
-      <select v-model="searchParam.status"><option value="">상태 전체</option><option>활성</option><option>예정</option><option>비활성</option><option>종료</option></select>
+      <select v-model="searchParam.status"><option value="">상태 전체</option><option v-for="c in codes.plan_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
       <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>

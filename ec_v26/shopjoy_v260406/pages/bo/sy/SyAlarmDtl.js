@@ -8,7 +8,7 @@ window.SyAlarmDtl = {
 
     const alarms = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({});
+    const codes = reactive({ alarm_types: [], alarm_statuses: [], alarm_target_types: [] });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -34,6 +34,16 @@ window.SyAlarmDtl = {
     });
 
     const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (codeStore?.snGetGrpCodes) {
+          codes.alarm_types = codeStore.snGetGrpCodes('ALARM_TYPE') || [];
+          codes.alarm_statuses = codeStore.snGetGrpCodes('ALARM_STATUS') || [];
+          codes.alarm_target_types = codeStore.snGetGrpCodes('ALARM_TARGET_TYPE') || [];
+        }
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
       uiState.isPageCodeLoad = true;
       handleSearchList();
     };
@@ -118,13 +128,13 @@ window.SyAlarmDtl = {
       <div class="form-group">
         <label class="form-label">유형</label>
         <select class="form-control" v-model="form.alarmTypeCd" :disabled="viewMode">
-          <option>푸시</option><option>이메일</option><option>SMS</option><option>인앱</option>
+          <option v-for="c in codes.alarm_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
         <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
-          <option>임시</option><option>예약</option><option>발송완료</option><option>실패</option>
+          <option v-for="c in codes.alarm_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
     </div>
@@ -132,7 +142,7 @@ window.SyAlarmDtl = {
       <div class="form-group">
         <label class="form-label">대상 유형</label>
         <select class="form-control" v-model="form.targetTypeCd" :disabled="viewMode">
-          <option>전체</option><option>VIP</option><option>우수</option><option>일반</option><option>특정회원</option>
+          <option v-for="c in codes.alarm_target_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">

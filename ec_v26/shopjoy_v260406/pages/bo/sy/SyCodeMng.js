@@ -10,6 +10,7 @@ window.SyCodeMng = {
     const codes          = reactive([]);                    // 전체 코드 목록 (DB 기준)
     const codeGroups     = reactive([]);                    // 코드그룹 목록 (codes 에서 추출)
     const pageCodeGroups = reactive({});                    // 페이지 전용 코드 캐시
+    const pageCodes      = reactive({ use_yn: [], date_range_opts: [] });        // 페이지 전용 코드 (USE_YN 등)
     const uiState        = reactive({                       // UI 상태
       checkAll: false, dragMoved: false, loading: false, error: null,
       isPageCodeLoad: false, selectedGrp: '', grpSelectedPath: '',
@@ -22,8 +23,6 @@ window.SyCodeMng = {
     const searchParamOrg = reactive({                       // 검색 초기값 (리셋용)
       kw: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: '',
     });
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
-
     const gridRows  = reactive([]);                         // 코드 CRUD 그리드 행
     const grpRows   = reactive([]);                         // 코드그룹 CRUD 그리드 행
     const dragSrc   = ref(null);                            // 드래그 소스 인덱스
@@ -213,8 +212,14 @@ window.SyCodeMng = {
 
     // 페이지 진입 시 코드 로드 상태 플래그 설정
     const fnLoadCodes = async () => {
-      try { uiState.isPageCodeLoad = true; }
-      catch (err) { console.error('[fnLoadCodes]', err); }
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (codeStore?.snGetGrpCodes) {
+          pageCodes.use_yn = await codeStore.snGetGrpCodes('USE_YN') || [];
+          pageCodes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
+        }
+        uiState.isPageCodeLoad = true;
+      } catch (err) { console.error('[fnLoadCodes]', err); }
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
@@ -498,9 +503,9 @@ window.SyCodeMng = {
     // ── return ────────────────────────────────────────────────────────────────
 
     return {
-      uiState, pageCodeGroups,
+      uiState, pageCodeGroups, pageCodes,
       cfSiteNm, cfGrpOptions, cfTotal, cfGrpDirty,
-      searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange,
+      searchParam, searchParamOrg, handleDateRangeChange,
       gridRows, cfFilteredRows, cfPagedRows, cfTotalPages, cfPageNums, setPage, onSizeChange, getRealIdx,
       pager, setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
@@ -532,7 +537,8 @@ window.SyCodeMng = {
         <option v-for="g in cfGrpOptions" :key="g">{{ g }}</option>
       </select>
       <select v-model="searchParam.useYn">
-        <option value="">사용여부 전체</option><option value="Y">사용</option><option value="N">미사용</option>
+        <option value="">사용여부 전체</option>
+        <option v-for="o in pageCodes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <span class="search-label">등록일</span>
       <input type="date" v-model="searchParam.dateStart" class="date-range-input" />
@@ -540,7 +546,7 @@ window.SyCodeMng = {
       <input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
       <select v-model="searchParam.dateRange" @change="handleDateRangeChange">
         <option value="">옵션선택</option>
-        <option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
+        <option v-for="o in pageCodes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
@@ -635,7 +641,7 @@ window.SyCodeMng = {
             <td><input class="grid-input" v-model="g.description" :disabled="g._row_status==='D'" @input="onGrpChange(g)" /></td>
             <td>
               <select class="grid-select" v-model="g.useYn" :disabled="g._row_status==='D'" @change="onGrpChange(g)">
-                <option value="Y">사용</option><option value="N">미사용</option>
+                <option v-for="o in pageCodes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
               </select>
             </td>
             <td class="col-act-cancel-val">
@@ -756,7 +762,7 @@ window.SyCodeMng = {
             <td><input class="grid-input grid-num" type="number" v-model.number="row.sortOrd" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
             <td>
               <select class="grid-select" v-model="row.useYn" :disabled="row._row_status==='D'" @change="onCellChange(row)">
-                <option value="Y">사용</option><option value="N">미사용</option>
+                <option v-for="o in pageCodes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
               </select>
             </td>
             <td><input class="grid-input" v-model="row.remark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
@@ -837,7 +843,7 @@ window.SyCodeMng = {
             <td><input class="grid-input grid-num" type="number" v-model.number="row.node.code.sortOrd" :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" /></td>
             <td>
               <select class="grid-select" v-model="row.node.code.useYn" :disabled="row.node.code._row_status==='D'" @change="onCellChange(row.node.code)">
-                <option value="Y">사용</option><option value="N">미사용</option>
+                <option v-for="o in pageCodes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
               </select>
             </td>
             <td><input class="grid-input" v-model="row.node.code.remark" :disabled="row.node.code._row_status==='D'" @input="onCellChange(row.node.code)" /></td>

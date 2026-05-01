@@ -6,7 +6,7 @@ window.DpDispWidgetLibMng = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const widgetLibs = reactive([]);
     const uiState = reactive({ loading: false, isPageCodeLoad: false, selectedPath: null });
-    const codes = reactive({ disp_widget_types: [] });
+    const codes = reactive({ disp_widget_types: [], active_statuses: [] });
 
     // App 초기화 준비 상태
     const isAppReady = computed(() => {
@@ -21,6 +21,7 @@ window.DpDispWidgetLibMng = {
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
       codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
+      codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
       uiState.isPageCodeLoad = true;
     };
 
@@ -182,7 +183,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
       </select>
       <select v-model="searchParam.status">
         <option value="">상태 전체</option>
-        <option>활성</option><option>비활성</option>
+        <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>

@@ -6,7 +6,7 @@ window.PdTagMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const tags = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({});
+    const codes = reactive({ use_yn: [] });
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -17,6 +17,7 @@ window.PdTagMng = {
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
       try {
+        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -137,8 +138,8 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { tags, uiState, searchParam, searchParamOrg, pager, cfPageNums, setPage, onSearch, onReset,
-             gridRows, addRow, onCellChange, deleteRow, saveAll, fnYnBadge  , onSizeChange };
+    return { tags, uiState, codes, searchParam, searchParamOrg, pager, cfPageNums, setPage, onSearch, onReset,
+             gridRows, addRow, onCellChange, deleteRow, saveAll, fnYnBadge, onSizeChange };
   },
   template: `
 <div>
@@ -148,7 +149,10 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
         <label class="search-label">태그명</label>
         <input class="form-control" v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="태그명 검색">
         <label class="search-label">사용여부</label>
-        <select class="form-control" v-model="searchParam.use"><option value="">전체</option><option value="Y">Y</option><option value="N">N</option></select>
+        <select class="form-control" v-model="searchParam.use">
+          <option value="">전체</option>
+          <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+        </select>
         <div class="search-actions">
           <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
           <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -181,7 +185,9 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
             <td style="text-align:right">{{ (row.useCount||0) }}</td>
             <td style="text-align:right"><input v-if="row._row_status" class="form-control" style="text-align:right" type="number" v-model.number="row.sortOrd" @input="onCellChange(idx)"><span v-else>{{ row.sortOrd }}</span></td>
             <td style="text-align:center">
-              <select v-if="row._row_status" class="form-control" v-model="row.useYn" @change="onCellChange(idx)"><option value="Y">Y</option><option value="N">N</option></select>
+              <select v-if="row._row_status" class="form-control" v-model="row.useYn" @change="onCellChange(idx)">
+                <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+              </select>
               <span v-else :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span>
             </td>
             <td style="text-align:center"><button class="btn btn-danger btn-xs" @click="deleteRow(idx)">삭제</button></td>

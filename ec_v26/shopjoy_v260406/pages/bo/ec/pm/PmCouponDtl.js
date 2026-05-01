@@ -8,7 +8,16 @@ window.PmCouponDtl = {
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCouponDtlState.tab || 'info', viewMode2: window._pmCouponDtlState.viewMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null, memoEl: null});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
-    const codes = reactive({});
+    const codes = reactive({
+      coupon_statuses_dtl: [],
+      coupon_use_limit_opts: [{value:'unlimited',label:'무제한'},{value:'once',label:'1회만'},{value:'month',label:'월 1회'}],
+      coupon_issue_type_opts: [{value:'auto',label:'자동 발급'},{value:'manual',label:'수동 발급'},{value:'event',label:'이벤트 발급'}],
+      coupon_target_opts: [{value:'all',label:'전체 회원'},{value:'newMember',label:'신규 회원'},{value:'subscribe',label:'구독자'},{value:'purchase',label:'구매 고객'}],
+      coupon_apply_opts: [{value:'all',label:'모든 상품'},{value:'category',label:'카테고리 제한'},{value:'product',label:'특정 상품만'},{value:'exclude',label:'제외 상품'}],
+      coupon_types: ['배송비할인쿠폰','회원가입축하쿠폰','상품할인쿠폰','주문할인쿠폰','클레임관리자지급쿠폰','VIP쿠폰'],
+      issue_targets: ['상품','판매업체','브랜드','카테고리'],
+      discount_types: [{value:'amount',label:'정액'},{value:'percent',label:'정률'}],
+    });
 
     // 단건 조회
     const handleSearchDetail = async () => {
@@ -47,6 +56,7 @@ window.PmCouponDtl = {
       try {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
+        codes.coupon_statuses_dtl = await codeStore.snGetGrpCodes('COUPON_STATUS_DTL') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -59,9 +69,6 @@ window.PmCouponDtl = {
       }
     });
 
-    const COUPON_TYPES = ['배송비할인쿠폰', '회원가입축하쿠폰', '상품할인쿠폰', '주문할인쿠폰', '클레임관리자지급쿠폰', 'VIP쿠폰'];
-    const ISSUE_TARGETS = ['상품', '판매업체', '브랜드', '카테고리'];
-    const DISCOUNT_TYPES = [{ value: 'amount', label: '정액' }, { value: 'percent', label: '정률' }];
 
     const form = reactive({
       couponId: null, couponType: '상품할인쿠폰', couponCode: '', couponNm: '',
@@ -233,7 +240,6 @@ window.PmCouponDtl = {
     // ── return ───────────────────────────────────────────────────────────────
 
     return { uiState, codes, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, memoEl, onTabChange,
-      COUPON_TYPES, ISSUE_TARGETS, DISCOUNT_TYPES,
       cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer,
       cfSelectedVendorNm, selectVendor,
     };
@@ -266,7 +272,7 @@ window.PmCouponDtl = {
         <div class="form-group">
           <label class="form-label">쿠폰 타입</label>
           <select class="form-control" v-model="form.couponType">
-            <option v-for="t in COUPON_TYPES" :key="Math.random()">{{ t }}</option>
+            <option v-for="t in codes.coupon_types" :key="Math.random()">{{ t }}</option>
           </select>
         </div>
         <div class="form-group">
@@ -284,7 +290,7 @@ window.PmCouponDtl = {
         <div class="form-group">
           <label class="form-label">상태</label>
           <select class="form-control" v-model="form.status">
-            <option>활성</option><option>비활성</option><option>중지</option>
+            <option v-for="c in codes.coupon_statuses_dtl" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
       </div>
@@ -292,7 +298,7 @@ window.PmCouponDtl = {
         <div class="form-group">
           <label class="form-label">할인 유형</label>
           <select class="form-control" v-model="form.discountType">
-            <option v-for="o in DISCOUNT_TYPES" :key="o?.value" :value="o.value">{{ o.label }}</option>
+            <option v-for="o in codes.discount_types" :key="o?.value" :value="o.value">{{ o.label }}</option>
           </select>
         </div>
         <div class="form-group">
@@ -330,7 +336,7 @@ window.PmCouponDtl = {
         <div class="form-group">
           <label class="form-label">사용 제한</label>
           <select class="form-control" v-model="form.useLimit">
-            <option value="unlimited">무제한</option><option value="once">1회만</option><option value="month">월 1회</option>
+            <option v-for="o in codes.coupon_use_limit_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
           </select>
         </div>
       </div>
@@ -497,7 +503,7 @@ window.PmCouponDtl = {
         <div class="form-group">
           <label class="form-label">발급 대상 종류</label>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <label v-for="t in ISSUE_TARGETS" :key="Math.random()" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;cursor:pointer;background:form.issueTo===t?'#e3f2fd':'#fff';">
+            <label v-for="t in codes.issue_targets" :key="Math.random()" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;cursor:pointer;background:form.issueTo===t?'#e3f2fd':'#fff';">
               <input type="radio" :value="t" v-model="form.issueTo" />
               {{ t }}
             </label>
@@ -528,13 +534,13 @@ window.PmCouponDtl = {
         <div class="form-group">
           <label class="form-label">지급 방법</label>
           <select class="form-control" v-model="form.issueMethods">
-            <option value="auto">자동 발급</option><option value="manual">수동 발급</option><option value="event">이벤트 발급</option>
+            <option v-for="o in codes.coupon_issue_type_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">지급 조건</label>
           <select class="form-control" v-model="form.issueCondition">
-            <option value="all">전체 회원</option><option value="newMember">신규 회원</option><option value="subscribe">구독자</option><option value="purchase">구매 고객</option>
+            <option v-for="o in codes.coupon_target_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
           </select>
         </div>
         <div class="form-group">
@@ -555,7 +561,7 @@ window.PmCouponDtl = {
         <div class="form-group">
           <label class="form-label">사용 범위</label>
           <select class="form-control" v-model="form.useScope">
-            <option value="all">모든 상품</option><option value="category">카테고리 제한</option><option value="product">특정 상품만</option><option value="exclude">제외 상품</option>
+            <option v-for="o in codes.coupon_apply_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
           </select>
         </div>
         <div class="form-group">

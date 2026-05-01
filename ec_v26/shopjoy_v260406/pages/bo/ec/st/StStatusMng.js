@@ -6,7 +6,7 @@ window.StStatusMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
 const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, activeTab: 'vendor', dateRange: '이번달', dateStart: '', dateEnd: '', vendorSearchKw: '', orderSearchKw: '', orderSearchStatus: '', claimSearchType: '', claimSearchStatus: '', promoSearchKw: '', promoSearchType: '', settleSearchMonth: ''});;
     const activeTab = Vue.toRef(uiState, 'activeTab');
-    const codes = reactive({});
+    const codes = reactive({ st_order_statuses: [], claim_types_kr: [], claim_statuses_kr: [], promo_types_kr: [], date_range_opts: [] });
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -17,6 +17,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
       try {
+        codes.st_order_statuses = codeStore.snGetGrpCodes('ST_STATUS_ORDER') || [];
+        codes.claim_types_kr = codeStore.snGetGrpCodes('CLAIM_TYPE_KR') || [];
+        codes.claim_statuses_kr = codeStore.snGetGrpCodes('CLAIM_STATUS_KR') || [];
+        codes.promo_types_kr = codeStore.snGetGrpCodes('PROMO_TYPE_KR') || [];
+        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -41,7 +46,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     ];
 
     /* ── 공통 날짜 필터 ── */
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
             const dateEnd   = ref('');
     const onDateRangeChange = () => {
       if (uiState.dateRange) {
@@ -307,13 +311,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     return {
       uiState, TABS,
-      DATE_RANGE_OPTIONS, onDateRangeChange,
+      onDateRangeChange,
       /* vendor */ vendorPager, cfVendorRows, cfVendorTotal, cfVendorPages, cfVendorPageList, cfVendorSummary,
       /* order  */ orderPager, cfOrderRows, cfOrderTotal, cfOrderPages, cfOrderPageList, cfOrderSummary,
       /* claim  */ claimPager, cfClaimRows, cfClaimTotal, cfClaimPages, cfClaimPageList, cfClaimSummary,
       /* promo  */ promoPager, cfPromoRows, cfPromoTotal, cfPromoPages, cfPromoPageList, cfPromoSummary,
       /* settle */ settlePager, cfSettleRows, cfSettleTotal, cfSettlePages, cfSettlePageList, cfSettleSummary,
-      fmt, fmtW, fnStatusBadge, fnTypeBadge, onSearch, onReset, pageNums, exportTab, COMM_RATE,
+      fmt, fmtW, fnStatusBadge, fnTypeBadge, onSearch, onReset, pageNums, exportTab, COMM_RATE, codes,
       setVendorPage, onVendorSizeChange,
       setOrderPage, onOrderSizeChange,
       setClaimPage, onClaimSizeChange,
@@ -338,7 +342,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
       <select v-model="uiState.dateRange" @change="onDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
-        <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
+        <option v-for="opt in codes.date_range_opts" :key="opt.codeValue" :value="opt.codeValue">{{ opt.codeLabel }}</option>
       </select>
       <input type="date" v-model="uiState.dateStart" style="width:140px" />
       <span style="line-height:32px">~</span>
@@ -444,8 +448,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <input v-model="uiState.orderSearchKw" placeholder="주문ID / 고객명 / 상품명" style="width:220px" @keyup.enter="() => onSearch?.()" />
       <select v-model="uiState.orderSearchStatus" style="width:130px">
         <option value="">상태 전체</option>
-        <option>주문완료</option><option>결제완료</option><option>배송준비중</option>
-        <option>배송중</option><option>배송완료</option><option>완료</option><option>취소됨</option>
+        <option v-for="c in codes.st_order_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
     </div>
     <div class="toolbar"><span class="list-count">총 {{ cfOrderTotal }}건</span></div>
@@ -509,13 +512,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
     <div class="search-bar" style="margin-bottom:12px">
       <select v-model="uiState.claimSearchType" style="width:120px">
-        <option value="">유형 전체</option><option>취소</option><option>반품</option><option>교환</option>
+        <option value="">유형 전체</option><option v-for="c in codes.claim_types_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <select v-model="uiState.claimSearchStatus" style="width:140px">
         <option value="">상태 전체</option>
-        <option>취소요청</option><option>취소처리중</option><option>취소완료</option>
-        <option>반품요청</option><option>수거예정</option><option>수거중</option><option>수거완료</option><option>환불처리중</option><option>환불완료</option>
-        <option>교환요청</option><option>발송완료</option><option>교환완료</option>
+        <option v-for="c in codes.claim_statuses_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
     </div>
     <div class="toolbar"><span class="list-count">총 {{ cfClaimTotal }}건</span></div>
@@ -575,8 +576,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <div class="search-bar" style="margin-bottom:12px">
       <select v-model="uiState.promoSearchType" style="width:110px">
         <option value="">유형 전체</option>
-        <option>쿠폰</option>
-        <option>캐쉬</option>
+        <option v-for="c in codes.promo_types_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <input v-model="uiState.promoSearchKw" placeholder="프로모션명 검색" style="width:180px" @keyup.enter="() => onSearch?.()" />
     </div>

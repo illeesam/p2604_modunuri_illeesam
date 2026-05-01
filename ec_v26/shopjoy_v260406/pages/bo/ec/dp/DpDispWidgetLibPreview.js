@@ -150,7 +150,7 @@ window.DpDispWidgetLibPreview = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, watchEffect, onMounted } = Vue;
-    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
+    const codes = reactive({ widget_status_opts: [{value:'활성',label:'활성'},{value:'비활성',label:'비활성'}], need_yn_opts: [{codeValue:'Y',codeLabel:'필요'},{codeValue:'N',codeLabel:'불필요'}], condition_opts: ['항상 표시','로그인 필요','로그인+VIP','로그인+우수','비로그인 전용'], auth_grade_opts: ['일반','우수','VIP'] });
     const cfDispWidgetTypes = computed(() => {
       const codeStore = window.getBoCodeStore();
       return codeStore?.snGetGrpCodes?.('DISP_WIDGET_TYPE') || [];
@@ -182,8 +182,6 @@ window.DpDispWidgetLibPreview = {
       'barcode_qrcode':'🔖','video_player':'▶️',   'countdown':'⏱',
       'payment_widget':'💳','approval_widget':'✅', 'map_widget':'🗺',
     };
-    const CONDITION_OPTS  = ['항상 표시','로그인 필요','로그인+VIP','로그인+우수','비로그인 전용'];
-    const AUTH_GRADE_OPTS = ['일반','우수','VIP'];
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
     const wTypeLabel = (v) => cfDispWidgetTypes.value.find(t => t.codeValue === v)?.codeLabel || v;
 
@@ -506,7 +504,7 @@ window.DpDispWidgetLibPreview = {
 
     return {
       cfSiteNm, today,
-      CONDITION_OPTS, AUTH_GRADE_OPTS, VIEWPORT,
+      VIEWPORT, codes,
       wIcon, wTypeLabel,
       searchParam, cfDispWidgetTypes,
       onReset, cfFilteredLibs,
@@ -522,6 +520,7 @@ window.DpDispWidgetLibPreview = {
       onDashDragOver, onDashDragLeave, onDashDrop,
       removeDashItem, startItemMove, startItemResize,
       cfPlacedCount, resetCurrent,
+      codes,
     };
   },
   template: /* html */`
@@ -551,27 +550,27 @@ window.DpDispWidgetLibPreview = {
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">상태</span>
         <select v-model="searchParam.filterStatus" class="form-control" style="width:76px;margin:0;font-size:12px;">
-          <option value="">전체</option><option value="활성">활성</option><option value="비활성">비활성</option>
+          <option value="">전체</option><option v-for="o in codes.widget_status_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">노출조건</span>
         <select v-model="searchParam.filterCondition" class="form-control" style="width:105px;margin:0;font-size:12px;">
           <option value="">전체</option>
-          <option v-for="c in CONDITION_OPTS" :key="Math.random()" :value="c">{{ c }}</option>
+          <option v-for="c in codes.condition_opts" :key="c" :value="c">{{ c }}</option>
         </select>
       </div>
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">인증필요</span>
         <select v-model="searchParam.filterAuthReq" class="form-control" style="width:70px;margin:0;font-size:12px;">
-          <option value="">전체</option><option value="Y">필요</option><option value="N">불필요</option>
+          <option value="">전체</option><option v-for="o in codes.need_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
         </select>
       </div>
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">등급제한</span>
         <select v-model="searchParam.filterAuthGrade" class="form-control" style="width:72px;margin:0;font-size:12px;">
           <option value="">전체</option>
-          <option v-for="g in AUTH_GRADE_OPTS" :key="Math.random()" :value="g">{{ g }}↑</option>
+          <option v-for="g in codes.auth_grade_opts" :key="Math.random()" :value="g">{{ g }}↑</option>
         </select>
       </div>
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>

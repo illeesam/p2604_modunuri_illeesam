@@ -8,7 +8,7 @@ window.SyUserDtl = {
 
     const users = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({});
+    const codes = reactive({ active_statuses: [], user_roles: [] });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -34,6 +34,15 @@ window.SyUserDtl = {
     });
 
     const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (codeStore?.snGetGrpCodes) {
+          codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
+          codes.user_roles = codeStore.snGetGrpCodes('USER_ROLE') || [];
+        }
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
       uiState.isPageCodeLoad = true;
       handleSearchList();
     };
@@ -205,13 +214,13 @@ window.SyUserDtl = {
       <div class="form-group">
         <label class="form-label">역할</label>
         <select class="form-control" v-model="form.role" :disabled="viewMode">
-          <option>슈퍼관리자</option><option>운영자</option><option>MD</option><option>CS</option><option>배송관리</option>
+          <option v-for="c in codes.user_roles" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
         <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
-          <option>활성</option><option>비활성</option>
+          <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
     </div>

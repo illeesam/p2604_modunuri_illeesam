@@ -144,7 +144,17 @@ window.DpDispAreaPreview = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, watchEffect, onMounted } = Vue;
-    const codes = reactive({ disp_widget_types: [], disp_area: [] });
+    const codes = reactive({ disp_widget_types: [], disp_area: [], active_statuses: [], disp_envs: [], visibility_opts: [
+      { value: '', label: '전체' },
+      { value: 'PUBLIC',    label: '전체공개' },
+      { value: 'MEMBER',    label: '회원공개' },
+      { value: 'VERIFIED',  label: '인증회원' },
+      { value: 'PREMIUM',   label: '우수회원↑' },
+      { value: 'VIP',       label: 'VIP전용' },
+      { value: 'INVITED',   label: '초대회원' },
+      { value: 'STAFF',     label: '직원' },
+      { value: 'EXECUTIVE', label: '임직원' },
+    ] });
     const widgetLibs = reactive([]);
     const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null});
     const tab = Vue.toRef(uiState, 'tab');
@@ -163,6 +173,8 @@ window.DpDispAreaPreview = {
       const codeStore = window.getBoCodeStore();
       codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
       codes.disp_area = codeStore.snGetGrpCodes('DISP_AREA') || [];
+      codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
+      codes.disp_envs = codeStore.snGetGrpCodes('DISP_ENV') || [];
       uiState.isPageCodeLoad = true;
     };
 
@@ -205,17 +217,6 @@ window.DpDispAreaPreview = {
       'barcode_qrcode':'🔖','video_player':'▶️',   'countdown':'⏱',
       'payment_widget':'💳','approval_widget':'✅', 'map_widget':'🗺',
     };
-    const VISIBILITY_OPTS = [
-      { value: '', label: '전체' },
-      { value: 'PUBLIC',    label: '전체공개' },
-      { value: 'MEMBER',    label: '회원공개' },
-      { value: 'VERIFIED',  label: '인증회원' },
-      { value: 'PREMIUM',   label: '우수회원↑' },
-      { value: 'VIP',       label: 'VIP전용' },
-      { value: 'INVITED',   label: '초대회원' },
-      { value: 'STAFF',     label: '직원' },
-      { value: 'EXECUTIVE', label: '임직원' },
-    ];
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
     const wTypeLabel = (v) => codes.disp_widget_types.find(t => t.codeValue === v)?.codeLabel || v;
 
@@ -553,7 +554,7 @@ window.DpDispAreaPreview = {
 
     return {
       cfSiteNm, today,
-      VISIBILITY_OPTS, VIEWPORT,
+      VIEWPORT,
       wIcon, wTypeLabel,
       searchParam, searchParamOrg,
       applied, onSearch, onReset,
@@ -599,19 +600,19 @@ window.DpDispAreaPreview = {
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">상태</span>
         <select v-model="searchParam.filterStatus" class="form-control" style="width:76px;margin:0;font-size:12px;">
-          <option value="">전체</option><option value="활성">활성</option><option value="비활성">비활성</option>
+          <option value="">전체</option><option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">환경</span>
         <select v-model="searchParam.filterDispEnv" class="form-control" style="width:76px;margin:0;font-size:12px;">
-          <option value="">전체</option><option value="PLAN">준비/계획</option><option value="DEV">DEV</option><option value="TEST">TEST</option><option value="PROD">PROD</option>
+          <option value="">전체</option><option v-for="c in codes.disp_envs" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">공개대상</span>
         <select v-model="searchParam.filterVisibility" class="form-control" style="width:100px;margin:0;font-size:12px;">
-          <option v-for="o in VISIBILITY_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
+          <option v-for="o in codes.visibility_opts" :key="o?.value" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>

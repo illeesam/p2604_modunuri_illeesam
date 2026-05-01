@@ -7,6 +7,7 @@ window.StSettleAdjMng = {
 const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '', selectedId: null, isNew: false});
     const codes = reactive({
       settle_adj_types: [],
+      settle_adj_statuses: [],
     });
 
     const isAppReady = computed(() => {
@@ -18,7 +19,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
       try {
-        codes.settle_adj_types = codeStore.snGetGrpCodes('SETTLE_ADJ_TYPE') || [];
+        codes.settle_adj_types = codeStore.snGetGrpCodes('SETTLE_ADJ_TYPE_KR') || [];
+        codes.settle_adj_statuses = codeStore.snGetGrpCodes('SETTLE_ADJ_STATUS') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -203,10 +205,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <span style="line-height:32px">~</span>
       <input type="date" v-model="uiState.dateEnd" style="width:140px" />
       <select v-model="searchParam.type" style="width:120px">
-        <option value="">유형 전체</option><option>매출조정</option><option>수수료조정</option><option>반품조정</option>
+        <option value="">유형 전체</option><option v-for="c in codes.settle_adj_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <select v-model="searchParam.status" style="width:100px">
-        <option value="">상태 전체</option><option>대기</option><option>승인</option><option>반려</option>
+        <option value="">상태 전체</option><option v-for="c in codes.settle_adj_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <input v-model="searchParam.kw" placeholder="조정ID / 업체명 / 사유" style="width:200px" @keyup.enter="() => onSearch?.()" />
       <div class="search-actions">
@@ -274,7 +276,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       <div class="form-group">
         <label class="form-label">조정유형 <span style="color:red">*</span></label>
         <select class="form-control" :class="{'is-invalid':errors.adjType}" v-model="form.adjType">
-          <option>매출조정</option><option>수수료조정</option><option>반품조정</option>
+          <option v-for="c in codes.settle_adj_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
         <div v-if="errors.adjType" class="field-error">{{ errors.adjType }}</div>
       </div>

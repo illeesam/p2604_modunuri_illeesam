@@ -7,7 +7,7 @@ window.SyDeptMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const depts = reactive([]);
     const uiState = reactive({ checkAll: false, loading: false, error: null, isPageCodeLoad: false, selectedTreeId: null, focusedIdx: null});
-    const codes = reactive({ dept_status: [] });
+    const codes = reactive({ dept_status: [], use_yn: [], dept_types: ['경영','운영','기술','마케팅','CS','물류','재무','인사','법무','기타'] });
 
     // 트리용 전체 로드 (dept_id, parent_dept_id, dept_nm 만)
     const handleSearchTree = async () => {
@@ -104,6 +104,7 @@ window.SyDeptMng = {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
         codes.dept_status = await codeStore.snGetGrpCodes('DEPT_STATUS') || [];
+        codes.use_yn = await codeStore.snGetGrpCodes('USE_YN') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -120,7 +121,6 @@ window.SyDeptMng = {
     let   _tempId    = -1;
     
     const EDIT_FIELDS = ['deptCode', 'deptNm', 'parentDeptId', 'deptTypeCd', 'sortOrd', 'useYn', 'deptRemark'];
-    const DEPT_TYPES  = ['경영', '운영', '기술', '마케팅', 'CS', '물류', '재무', '인사', '법무', '기타'];
 
 
     /* ── 트리 정렬 ── */
@@ -277,7 +277,7 @@ window.SyDeptMng = {
     // ── return ───────────────────────────────────────────────────────────────
 
     return { depts, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
-      searchParam, searchParamOrg, cfTypeOptions, DEPT_TYPES,
+      searchParam, searchParamOrg, cfTypeOptions,
       cfSiteNm,
       gridRows, cfTotal,
       setFocused, onSearch, onReset, onCellChange,
@@ -300,7 +300,8 @@ window.SyDeptMng = {
         <option v-for="t in cfTypeOptions" :key="t">{{ t }}</option>
       </select>
       <select v-model="searchParam.useYn">
-        <option value="">사용여부 전체</option><option value="Y">사용</option><option value="N">미사용</option>
+        <option value="">사용여부 전체</option>
+        <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
@@ -394,13 +395,13 @@ window.SyDeptMng = {
 
           <td>
             <select class="grid-select" v-model="row.deptTypeCd" :disabled="row._row_status==='D'" @change="onCellChange(row)">
-              <option v-for="t in DEPT_TYPES" :key="t">{{ t }}</option>
+              <option v-for="t in codes.dept_types" :key="t">{{ t }}</option>
             </select>
           </td>
           <td><input class="grid-input grid-num" type="number" v-model.number="row.sortOrd" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
           <td>
             <select class="grid-select" v-model="row.useYn" :disabled="row._row_status==='D'" @change="onCellChange(row)">
-              <option value="Y">사용</option><option value="N">미사용</option>
+              <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
             </select>
           </td>
           <td><input class="grid-input" v-model="row.deptRemark" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>

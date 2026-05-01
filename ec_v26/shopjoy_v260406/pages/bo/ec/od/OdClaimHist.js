@@ -15,7 +15,17 @@ window.OdClaimHist = {
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
+    const codes = reactive({ refund_methods: [] });
+
     const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (codeStore?.snGetGrpCodes) {
+          codes.refund_methods = codeStore.snGetGrpCodes('REFUND_METHOD_KR') || [];
+        }
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
       uiState.isPageCodeLoad = true;
     };
 
@@ -99,7 +109,7 @@ window.OdClaimHist = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { botTab, claimItems, addClaimItem, removeClaimItem, processForm, handleSaveProcess, cfStatusOptions, relatedOrder, relatedDliv, viewMode2, showTab };
+    return { botTab, claimItems, addClaimItem, removeClaimItem, processForm, handleSaveProcess, cfStatusOptions, relatedOrder, relatedDliv, viewMode2, showTab, codes };
   },
   template: /* html */`
 <div>
@@ -202,7 +212,7 @@ window.OdClaimHist = {
       <div class="form-group">
         <label class="form-label">환불방법</label>
         <select class="form-control" v-model="processForm.refundMethodCd">
-          <option>계좌환불</option><option>카드취소</option><option>캐쉬환불</option>
+          <option v-for="c in codes.refund_methods" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
     </div>

@@ -9,6 +9,8 @@ window.PmDiscntMng = {
     const codes = reactive({
       discount_types: [],
       discount_statuses: [],
+      discnt_types: [],
+      promo_statuses: [],
     });
 
     const isAppReady = computed(() => {
@@ -22,6 +24,8 @@ window.PmDiscntMng = {
       try {
         codes.discount_types = codeStore.snGetGrpCodes('DISCOUNT_TYPE') || [];
         codes.discount_statuses = codeStore.snGetGrpCodes('DISCOUNT_STATUS') || [];
+        codes.discnt_types = codeStore.snGetGrpCodes('DISCNT_TYPE_KR') || [];
+        codes.promo_statuses = codeStore.snGetGrpCodes('PROMO_STATUS') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -158,8 +162,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
   <div class="card">
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="할인명 / ID 검색" />
-      <select v-model="searchParam.type"><option value="">유형 전체</option><option>정률</option><option>정액</option><option>장바구니</option></select>
-      <select v-model="searchParam.status"><option value="">상태 전체</option><option>활성</option><option>비활성</option><option>종료</option></select>
+      <select v-model="searchParam.type"><option value="">유형 전체</option><option v-for="c in codes.discnt_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
+      <select v-model="searchParam.status"><option value="">상태 전체</option><option v-for="c in codes.promo_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
       <span class="search-label">시작일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>

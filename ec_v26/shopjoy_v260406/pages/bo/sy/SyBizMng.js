@@ -6,7 +6,12 @@ window.SyBizMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const bizs = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, formMode: ''});
-    const codes = reactive({ vendor_status: [] });
+    const codes = reactive({
+      vendor_status: [],
+      vendor_types: [['SALES','판매업체'],['DELIVERY','배송업체'],['CS','콜센터업체'],['SITE','사이트운영업체'],['PROG','유지보수업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']],
+      biz_status: [['ACTIVE','운영중'],['SUSPENDED','중지'],['TERMINATED','종료']],
+      biz_class: ['법인','개인','면세','간이','공공'],
+    });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -75,9 +80,6 @@ window.SyBizMng = {
 
     /* 검색 */
     const searchParam = reactive({ kw: '', statusFlt: '', vendorTypeFlt: '' });
-    const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['CS','콜센터업체'],['SITE','사이트운영업체'],['PROG','유지보수업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
-    const STATUS = [['ACTIVE','운영중'],['SUSPENDED','중지'],['TERMINATED','종료']];
-    const BIZ_CLASS = ['법인','개인','면세','간이','공공'];
 
     /* 페이징 */
 const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -97,7 +99,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     };
 
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : '#'+id);
-    const fnVendorTypeLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
+    const fnVendorTypeLabel = (cd) => (codes.vendor_types.find(v=>v[0]===cd) || [,cd])[1];
     const fnVendorTypeBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', CS:'badge-orange', SITE:'badge-purple', PROG:'badge-red', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
     /* 업체유형 → 역할구분 매핑 */
     const ROLE_CAT_BY_VENDOR = { SALES:['판매업체역할','#16a34a'], DELIVERY:['배송업체역할','#f59e0b'], CS:['콜센터업체역할','#0891b2'], SITE:['사이트운영역할','#7c3aed'], PROG:['유지보수역할','#dc2626'], PARTNER:['사이트역할','#2563eb'], INTERNAL:['사이트역할','#2563eb'] };
@@ -145,7 +147,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     // ── return ───────────────────────────────────────────────────────────────
 
     return { bizs, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
-      searchParam, STATUS, BIZ_CLASS, VENDOR_TYPES,
+      searchParam,
       pager, cfPageNums, setPage, onSizeChange,
       pathLabel, fnVendorTypeLabel, fnVendorTypeBadge, fnRoleCatLabel, fnRoleCatColor, fnStatusBadge, fnStatusLabel,
       onSearch, onReset,
@@ -162,11 +164,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       <input class="form-control" v-model="searchParam.kw" placeholder="사업자번호 / 상호 / 대표자 검색" style="min-width:240px;flex:1;max-width:380px;" />
       <select class="form-control" v-model="searchParam.vendorTypeFlt" style="width:140px;">
         <option value="">업체유형 전체</option>
-        <option v-for="v in VENDOR_TYPES" :key="v[0]" :value="v[0]">{{ v[1] }}</option>
+        <option v-for="v in codes.vendor_types" :key="v[0]" :value="v[0]">{{ v[1] }}</option>
       </select>
       <select class="form-control" v-model="searchParam.statusFlt" style="width:120px;">
         <option value="">상태 전체</option>
-        <option v-for="s in STATUS" :key="s[0]" :value="s[0]">{{ s[1] }}</option>
+        <option v-for="s in codes.biz_status" :key="s[0]" :value="s[0]">{{ s[1] }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
@@ -252,7 +254,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <div style="padding:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
           <div class="form-group"><label class="form-label">업체유형 <span class="req">*</span></label>
             <select class="form-control" v-model="formData.vendorType">
-              <option v-for="v in VENDOR_TYPES" :key="v[0]" :value="v[0]">{{ v[1] }}</option>
+              <option v-for="v in codes.vendor_types" :key="v[0]" :value="v[0]">{{ v[1] }}</option>
             </select>
           </div>
           <div class="form-group"><label class="form-label">역할구분</label>
@@ -266,7 +268,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           </div>
           <div class="form-group"><label class="form-label">사업자구분</label>
             <select class="form-control" v-model="formData.vendorClassCd">
-              <option v-for="c in BIZ_CLASS" :key="c" :value="c">{{ c }}</option>
+              <option v-for="c in codes.biz_class" :key="c" :value="c">{{ c }}</option>
             </select>
           </div>
           <div class="form-group"><label class="form-label">업체명 <span class="req">*</span></label>
@@ -328,7 +330,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           </div>
           <div class="form-group"><label class="form-label">상태</label>
             <select class="form-control" v-model="formData.vendorStatusCd">
-              <option v-for="s in STATUS" :key="s[0]" :value="s[0]">{{ s[1] }}</option>
+              <option v-for="s in codes.biz_status" :key="s[0]" :value="s[0]">{{ s[1] }}</option>
             </select>
           </div>
           <div class="form-group" style="grid-column:span 3;"><label class="form-label">비고</label>

@@ -7,7 +7,7 @@ window.OdDlivMng = {
     const deliveries = reactive([]);
     const members = reactive([]);
     const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status'});
-    const codes = reactive({ order_statuses: [], dliv_statuses: [], dliv_types: [], payment_methods: [] });
+    const codes = reactive({ order_statuses: [], dliv_statuses: [], dliv_types: [], payment_methods: [], courier_codes: [], approval_actions: ['승인','반려','보류'], req_targets: ['주문','상품','배송','추가결재'], date_range_opts: [] });
 
     // onMounted에서 API 로드
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -55,7 +55,6 @@ window.OdDlivMng = {
       Object.assign(searchParamOrg, searchParam);
     });
 
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.getDateRange(searchParam.dateRange);
@@ -80,6 +79,8 @@ const isAppReady = computed(() => {
         codes.dliv_statuses = await codeStore.snGetGrpCodes('DLIV_STATUS') || [];
         codes.dliv_types = await codeStore.snGetGrpCodes('DLIV_TYPE') || [];
         codes.payment_methods = await codeStore.snGetGrpCodes('PAYMENT_METHOD') || [];
+        codes.courier_codes = await codeStore.snGetGrpCodes('COURIER') || [];
+        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -169,10 +170,7 @@ const isAppReady = computed(() => {
       else deliveries.forEach(d => s.add(d.dlivId));
       checked = s;
     };
-    const DLIV_STATUS_OPTIONS = ['준비중','출고완료','배송중','배송완료','배송실패'];
     const COURIER_OPTIONS = ['CJ대한통운','롯데택배','한진택배','우체국택배','로젠택배'];
-    const APPROVAL_ACTIONS = ['승인','반려','보류'];
-    const REQ_TARGETS = ['주문','상품','배송','추가결재'];
     const DEFAULT_TMPL = '[결재요청]\n요청대상: {target} - {targetNm}\n요청금액: {amount}원\n내용: {reason}\n\n위 건에 대한 추가결재 부탁드립니다.';
         const bulkForm = reactive({
       status:'', courier:'', trackingNo:'', apprAction:'', apprComment:'',
@@ -320,7 +318,7 @@ const isAppReady = computed(() => {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), deliveries, members, uiState, codes, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, APPROVAL_ACTIONS, REQ_TARGETS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), deliveries, members, uiState, codes, searchParam, searchParamOrg, handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>
@@ -329,9 +327,10 @@ const isAppReady = computed(() => {
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="배송ID / 주문ID / 회원명 / 수령인 검색" />
       <select v-model="searchParam.status">
-        <option value="">상태 전체</option><option>준비중</option><option>출고완료</option><option>배송중</option><option>배송완료</option><option>배송실패</option>
+        <option value="">상태 전체</option>
+        <option v-for="c in codes.dliv_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -429,7 +428,7 @@ const isAppReady = computed(() => {
           <label class="form-label">변경할 배송상태</label>
           <select class="form-control" v-model="bulkForm.status">
             <option value="">선택하세요</option>
-            <option v-for="s in DLIV_STATUS_OPTIONS" :key="Math.random()" :value="s">{{ s }}</option>
+            <option v-for="c in codes.dliv_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
         <div v-if="uiState.bulkTab==='courier'">
@@ -437,7 +436,7 @@ const isAppReady = computed(() => {
             <label class="form-label">택배사</label>
             <select class="form-control" v-model="bulkForm.courier">
               <option value="">선택하세요</option>
-              <option v-for="c in COURIER_OPTIONS" :key="Math.random()" :value="c">{{ c }}</option>
+              <option v-for="c in (codes.courier_codes.length ? codes.courier_codes : COURIER_OPTIONS.map(v=>({codeValue:v,codeLabel:v})))" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -450,7 +449,7 @@ const isAppReady = computed(() => {
             <label class="form-label">결재처리 구분</label>
             <select class="form-control" v-model="bulkForm.apprAction">
               <option value="">선택하세요</option>
-              <option v-for="a in APPROVAL_ACTIONS" :key="Math.random()" :value="a">{{ a }}</option>
+              <option v-for="a in codes.approval_actions" :key="Math.random()" :value="a">{{ a }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -480,7 +479,7 @@ const isAppReady = computed(() => {
             <div class="form-group">
               <label class="form-label">요청대상</label>
               <select class="form-control" v-model="bulkForm.reqTarget" @change="onReqTargetChange">
-                <option v-for="t in REQ_TARGETS" :key="Math.random()" :value="t">{{ t }}</option>
+                <option v-for="t in codes.req_targets" :key="Math.random()" :value="t">{{ t }}</option>
               </select>
             </div>
             <div class="form-group">

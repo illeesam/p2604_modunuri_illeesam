@@ -15,6 +15,7 @@ window.PdProdDtl = {
     const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, isPageCodeLoad: false, topTab: window._pdProdDtlState.tab || 'info', viewMode2: window._pdProdDtlState.viewMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearch: '' });
     const tab = Vue.toRef(uiState, 'tab');
     const codes = reactive([]);
+    const grpCodes = reactive({ product_statuses: [], prod_types: [], prod_plan_statuses: [], opt_stock_statuses: [], stock_filter_opts: [{value:'in',label:'재고있음'},{value:'out',label:'품절(0)'}] });
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -28,6 +29,12 @@ window.PdProdDtl = {
         if (!codeStore?.svCodes) return;
         codes.length = 0;
         codes.push(...codeStore.svCodes);
+        if (codeStore.snGetGrpCodes) {
+          grpCodes.product_statuses = codeStore.snGetGrpCodes('PRODUCT_STATUS') || [];
+          grpCodes.prod_types = codeStore.snGetGrpCodes('PROD_TYPE') || [];
+          grpCodes.prod_plan_statuses = codeStore.snGetGrpCodes('PROD_PLAN_STATUS') || [];
+          grpCodes.opt_stock_statuses = codeStore.snGetGrpCodes('OPT_STOCK_STATUS') || [];
+        }
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -751,6 +758,7 @@ window.PdProdDtl = {
       contentSplitRef, onDividerMousedown,
       prodOptCategoryTypeCd, openHelp,
       safeFirst, safeGet, safeFind, safeFilter,
+      grpCodes,
     };
   },
   template: /* html */`
@@ -865,9 +873,7 @@ window.PdProdDtl = {
       <div class="form-group">
         <label class="form-label">상품유형 (prod_type_cd)</label>
         <select class="form-control" v-model="form.prodTypeCd">
-          <option value="SINGLE">단일상품 (SINGLE)</option>
-          <option value="GROUP">묶음상품 (GROUP)</option>
-          <option value="SET">세트상품 (SET)</option>
+          <option v-for="c in grpCodes.prod_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
     </div>
@@ -946,10 +952,7 @@ window.PdProdDtl = {
       <div class="form-group">
         <label class="form-label">상태 (prod_status_cd)</label>
         <select class="form-control" v-model="form.prodStatusCd">
-          <option value="DRAFT">준비중 (DRAFT)</option>
-          <option value="ACTIVE">판매중 (ACTIVE)</option>
-          <option value="INACTIVE">판매중지 (INACTIVE)</option>
-          <option value="DELETED">삭제 (DELETED)</option>
+          <option v-for="c in grpCodes.product_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
@@ -1682,8 +1685,7 @@ window.PdProdDtl = {
             <span style="font-size:11px;color:#555;flex-shrink:0;">재고</span>
             <select v-model="skuFilterStock" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;">
               <option value="">전체</option>
-              <option value="in">재고있음</option>
-              <option value="out">품절(0)</option>
+              <option v-for="o in grpCodes.stock_filter_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
             </select>
           </div>
           <!-- ── 필터 초기화 ───────────────────────────────────────────────── -->
@@ -1734,10 +1736,7 @@ window.PdProdDtl = {
                 <select v-model="sku.statusCd"
                   style="width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:28px;"
                   :style="sku.statusCd==='ON_SALE'?'color:#389e0d;':sku.statusCd==='SOLD_OUT'?'color:#f5a623;':sku.statusCd==='SUSPENDED'?'color:#cf1322;':'color:#555;'">
-                  <option value="PREPARING">준비중</option>
-                  <option value="ON_SALE">판매중</option>
-                  <option value="SOLD_OUT">재고없음</option>
-                  <option value="SUSPENDED">판매중지</option>
+                  <option v-for="c in grpCodes.opt_stock_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
                 </select>
               </td>
               <td style="text-align:right;padding-right:8px;font-size:12px;color:#555;">
@@ -1927,7 +1926,7 @@ window.PdProdDtl = {
               </td>
               <td>
                 <select v-model="row.planStatus" @change="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;">
-                  <option>준비중</option><option>판매예정</option><option>판매중</option><option>판매중지</option><option>판매종료</option>
+                  <option v-for="c in grpCodes.prod_plan_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
                 </select>
               </td>
               <td><input type="number" v-model.number="row.listPrice"     @input="onPlanChange(row)" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;width:100%;text-align:right;" /></td>

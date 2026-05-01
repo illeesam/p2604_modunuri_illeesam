@@ -122,9 +122,33 @@ window.StConfigMng = {
     const fnCycleCdToLabel = (cd) => ({ 'DAILY': '일정산', 'WEEKLY': '주정산', 'MONTHLY': '월정산' }[cd] || cd);
     const fnCycleBadge = (cd) => ({ 'DAILY': 'badge-orange', 'WEEKLY': 'badge-green', 'MONTHLY': 'badge-blue' }[cd] || 'badge-gray');
 
+    // ── 공통코드 ─────────────────────────────────────────────────────────────
+    const codes = reactive({ settle_cycles: [], use_yn: [] });
+
+    const fnLoadCodes = () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.settle_cycles = codeStore.snGetGrpCodes('SETTLE_CYCLE') || [];
+        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.getBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0;
+    });
+
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, configs, form, errors, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge, fnCycleCdToLabel, handleLoadList, fnMapUiToApi, fnMapApiToUi };
+    return { uiState, configs, codes, form, errors, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge, fnCycleCdToLabel, handleLoadList, fnMapUiToApi, fnMapApiToUi };
   },
   template: /* html */`
 <div>
@@ -181,7 +205,7 @@ window.StConfigMng = {
       <div class="form-group">
         <label class="form-label">정산주기 <span style="color:red">*</span></label>
         <select class="form-control" :class="{'is-invalid':errors.settleCycleCd}" v-model="form.settleCycleCd">
-          <option value="">선택</option><option value="DAILY">일정산</option><option value="WEEKLY">주정산</option><option value="MONTHLY">월정산</option>
+          <option value="">선택</option><option v-for="c in codes.settle_cycles" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
         <div v-if="errors.settleCycleCd" class="field-error">{{ errors.settleCycleCd }}</div>
       </div>
@@ -198,7 +222,9 @@ window.StConfigMng = {
       </div>
       <div class="form-group">
         <label class="form-label">사용여부</label>
-        <select class="form-control" v-model="form.useYn"><option value="Y">사용</option><option value="N">미사용</option></select>
+        <select class="form-control" v-model="form.useYn">
+          <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+        </select>
       </div>
     </div>
     <div class="form-group">

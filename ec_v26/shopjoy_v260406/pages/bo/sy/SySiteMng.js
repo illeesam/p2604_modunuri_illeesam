@@ -6,7 +6,7 @@ window.SySiteMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const sites = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null});
-    const codes = reactive({});
+    const codes = reactive({ site_oper_statuses: [], date_range_opts: [] });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -72,6 +72,11 @@ window.SySiteMng = {
 
     const fnLoadCodes = async () => {
       try {
+        const codeStore = window.getBoCodeStore?.();
+        if (codeStore?.snGetGrpCodes) {
+          codes.site_oper_statuses = codeStore.snGetGrpCodes('SITE_OPER_STATUS') || [];
+          codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
+        }
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -85,7 +90,6 @@ window.SySiteMng = {
         fnLoadCodes();
       }
     });
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
   const searchParam = reactive({
     kw: '',
     type: '',
@@ -175,7 +179,7 @@ const detailModal = reactive({
 
     return { sites, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
-      searchParam, DATE_RANGE_OPTIONS, onDateRangeChange,
+      searchParam, onDateRangeChange,
       cfTypeOptions,
       pager, cfPageNums,
       onSearch, onReset, setPage, onSizeChange,
@@ -194,9 +198,10 @@ const detailModal = reactive({
         <option v-for="t in cfTypeOptions" :key="t">{{ t }}</option>
       </select>
       <select v-model="searchParam.status">
-        <option value="">상태 전체</option><option>운영중</option><option>점검중</option><option>비활성</option>
+        <option value="">상태 전체</option>
+        <option v-for="c in codes.site_oper_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

@@ -9,7 +9,10 @@ window.XsSample06 = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dragSrc: null, focusedIdx: null, dragMoved: false, checkAll: false });
-    const codes = reactive({});
+    const codes = reactive({
+      discnt_type_opts: [{ value: '정액', label: '정액' }, { value: '정률', label: '정률' }],
+      use_yn_opts:      [{ value: 'Y', label: 'Y 사용' }, { value: 'N', label: 'N 미사용' }],
+    });
 
     const isAppReady = computed(() => {
       const initStore = window.useFoAppInitStore?.();
@@ -141,10 +144,12 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <input v-model="searchParam.kw" placeholder="쿠폰명 검색" @keyup.enter="onSearch" style="font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:6px;width:180px;outline:none;" />
       <select v-model="searchParam.discounttype" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
-        <option value="">할인유형 전체</option><option>정액</option><option>정률</option>
+        <option value="">할인유형 전체</option>
+        <option v-for="o in codes.discnt_type_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
       <select v-model="searchParam.useyn" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;">
-        <option value="">사용여부 전체</option><option value="Y">Y 사용</option><option value="N">N 미사용</option>
+        <option value="">사용여부 전체</option>
+        <option v-for="o in codes.use_yn_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
       <button @click="onSearch" style="font-size:12px;padding:5px 14px;border:none;border-radius:6px;background:#e8587a;color:#fff;cursor:pointer;font-weight:600;">검색</button>
       <button @click="onReset"  style="font-size:12px;padding:5px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;">초기화</button>
@@ -193,7 +198,7 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
               @focus="e=>e.target.style.border='1px solid #93c5fd'" @blur="e=>e.target.style.border='1px solid transparent'" /></td>
             <td style="text-align:center;">
               <select v-model="row.discountType" :disabled="row._row_status==='D'" @change="onCellChange(row)" style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;background:#fff;">
-                <option>정액</option><option>정률</option>
+                <option v-for="o in codes.discnt_type_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
               </select>
             </td>
             <td style="text-align:right;">
@@ -208,7 +213,7 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
             </td>
             <td style="text-align:center;">
               <select v-model="row.useYn" :disabled="row._row_status==='D'" @change="onCellChange(row)" style="font-size:11px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;background:#fff;">
-                <option value="Y">Y</option><option value="N">N</option>
+                <option v-for="o in codes.use_yn_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
               </select>
             </td>
             <td style="text-align:center;">

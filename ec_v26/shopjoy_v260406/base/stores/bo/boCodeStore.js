@@ -34,7 +34,7 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
       return s.svCodes
         .filter(c => c.codeGrp === grpVal && c.useYn !== 'N')
         .sort((a, b) => (Number(a.codeSortOrd || 0) - Number(b.codeSortOrd || 0)))
-        .map(c => ({ codeValue: c.codeVal, codeLabel: c.codeNm || c.codeVal }));
+        .map(c => ({ codeValue: c.codeVal, codeLabel: (c.codeNm || c.codeVal) + ' (' + grpVal + ':' + c.codeVal + ')' }));
     },
     // 코드 그룹을 { codeValue, codeLabel } 형식으로 + 초기 항목 추가
     snGetGrpCodesFirstOpt: (s) => (grpVal, initVal, initLabel) => {
@@ -42,7 +42,7 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
       const codes = s.svCodes
         .filter(c => c.codeGrp === grpVal && c.useYn !== 'N')
         .sort((a, b) => (Number(a.codeSortOrd || 0) - Number(b.codeSortOrd || 0)))
-        .map(c => ({ codeValue: c.codeVal, codeLabel: c.codeNm || c.codeVal }));
+        .map(c => ({ codeValue: c.codeVal, codeLabel: (c.codeNm || c.codeVal) + ' (' + grpVal + ':' + c.codeVal + ')' }));
       return initVal && initLabel ? [{ codeValue: initVal, codeLabel: initLabel }, ...codes] : codes;
     },
   },

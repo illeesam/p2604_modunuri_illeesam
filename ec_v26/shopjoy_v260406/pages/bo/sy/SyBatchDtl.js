@@ -8,7 +8,7 @@ window.SyBatchDtl = {
 
     const batches = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({});
+    const codes = reactive({ active_statuses: [] });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -34,6 +34,14 @@ window.SyBatchDtl = {
     });
 
     const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.getBoCodeStore?.();
+        if (codeStore?.snGetGrpCodes) {
+          codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
+        }
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
       uiState.isPageCodeLoad = true;
       handleSearchList();
     };
@@ -159,7 +167,7 @@ window.SyBatchDtl = {
       <div class="form-group">
         <label class="form-label">활성여부</label>
         <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
-          <option>활성</option><option>비활성</option>
+          <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
     </div>

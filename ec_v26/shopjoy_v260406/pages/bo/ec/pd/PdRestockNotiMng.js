@@ -10,6 +10,7 @@ window.PdRestockNotiMng = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({
       product_statuses: [],
+      send_yn_opts: [{codeValue:'Y',codeLabel:'발송완료'},{codeValue:'N',codeLabel:'미발송'}],
     });
 
     const isAppReady = computed(() => {
@@ -119,7 +120,8 @@ const searchParam = reactive({
     // ── return ───────────────────────────────────────────────────────────────
 
     return { restockNotis, uiState, searchParam, searchParamOrg, pager, cfPageNums, setPage, onSearch, onReset,
-             checkedIds, checkedCount, allChecked, toggleAll, toggleOne, handleSend, fnYnBadge, getProdNm, getMemNm  , onSizeChange };
+             checkedIds, checkedCount, allChecked, toggleAll, toggleOne, handleSend, fnYnBadge, getProdNm, getMemNm, onSizeChange,
+             codes };
   },
   template: `
 <div>
@@ -130,7 +132,7 @@ const searchParam = reactive({
         <input class="form-control" v-model="searchParam.prod" @keyup.enter="() => onSearch?.()" placeholder="상품명 검색">
         <label class="search-label">알림발송</label>
         <select class="form-control" v-model="searchParam.noti">
-          <option value="">전체</option><option value="N">미발송</option><option value="Y">발송완료</option>
+          <option value="">전체</option><option v-for="o in codes.send_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
         </select>
         <div class="search-actions">
           <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>

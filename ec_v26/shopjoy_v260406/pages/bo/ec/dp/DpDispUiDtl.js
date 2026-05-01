@@ -5,7 +5,7 @@ window.DpDispUiDtl = {
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
-    const codes = reactive({ disp_ui_types: [] });
+    const codes = reactive({ disp_ui_types: [], use_yn: [] });
     const displays = reactive([]);
     const uiState = reactive({ expanded: false, loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, activeTab: 'base', previewMode: 'default', previewPaneWidth: 520, pickKw: '', htmlDescEl: null });
     const activeTab = Vue.toRef(uiState, 'activeTab');
@@ -24,6 +24,7 @@ window.DpDispUiDtl = {
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
       codes.disp_ui_types = codeStore.snGetGrpCodes('DISP_UI_TYPE') || [];
+      codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
       uiState.isPageCodeLoad = true;
     };
 
@@ -63,9 +64,6 @@ window.DpDispUiDtl = {
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfIsNew = computed(() => !props.editId);
-    const UI_TYPE_OPTS = computed(() => codes.disp_ui_types.length
-      ? codes.disp_ui_types.map(c => ({ value: c.codeValue, label: c.codeLabel }))
-      : [{ value: 'FO', label: 'FO(사용자)' }, { value: 'BO', label: 'BO(관리자)' }]);
 
     /* ── 기본 기간: 오늘 ~ +10년 ── */
     const _today = new Date();
@@ -354,7 +352,7 @@ window.DpDispUiDtl = {
     // ── return ───────────────────────────────────────────────────────────────
 
     return { codes, displays, areas, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      form, errors, cfIsNew, UI_TYPE_OPTS,
+      form, errors, cfIsNew,
       handleSave, doCancel, cfRelatedAreas, panelsOfArea,
       activeTab, selectTab, cfActiveArea, uiState, moveArea,
       previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag, uiState, codes, pickKw, pickSel, cfAvailableAreas, openPick, closePick, togglePick, confirmPick, removeArea, onAreaPicked,
@@ -471,7 +469,7 @@ window.DpDispUiDtl = {
             <div class="form-group">
               <label class="form-label">UI유형</label>
               <select class="form-control" v-model="form.uiType">
-                <option v-for="o in UI_TYPE_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
+                <option v-for="o in codes.disp_ui_types" :key="o?.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
               </select>
             </div>
           </div>
@@ -495,8 +493,7 @@ window.DpDispUiDtl = {
             <div class="form-group">
               <label class="form-label">사용 여부</label>
               <select class="form-control" v-model="form.useYn">
-                <option value="Y">사용</option>
-                <option value="N">미사용</option>
+                <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
               </select>
             </div>
             <div class="form-group" style="flex:2;">

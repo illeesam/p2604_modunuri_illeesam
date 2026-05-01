@@ -7,7 +7,13 @@ window.SyBizUserMng = {
 
     const vendorUsers = reactive([]);
     const uiState = reactive({ loading: false, roleLoading: false, roleModalOpen: false, vendorPickOpen: false, error: null, isPageCodeLoad: false, selectedPath: null, searchVendorId: null, bizKw: '', bizVendorFlt: '', bizStatusFlt: '', treeRoleCat: '', formMode: '', roleModalTemp: null});
-    const codes = reactive({ user_status: [] });
+    const codes = reactive({
+      user_status: [],
+      bool_opts: [{codeValue:'Y',codeLabel:'예'},{codeValue:'N',codeLabel:'아니오'}],
+      vendor_types: [['SALES','판매업체'],['DELIVERY','배송업체'],['CS','콜센터업체'],['SITE','사이트운영업체'],['PROG','유지보수업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']],
+      biz_status: [['ACTIVE','운영중'],['SUSPENDED','중지'],['TERMINATED','종료']],
+      user_employ_status: [['ACTIVE','재직'],['LEFT','퇴직'],['SUSPENDED','중지']],
+    });
 
     /* ── 역할 트리 (좌측 패널) ── */
         const expanded = reactive(new Set([null]));
@@ -64,9 +70,6 @@ window.SyBizUserMng = {
     const expandAll = () => { expanded.add(null); roles.forEach(r => expanded.add(r.roleCode)); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     /* ── 업체 목록 (상단 검색/선택) ── */
-    const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['CS','콜센터업체'],['SITE','사이트운영업체'],['PROG','유지보수업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
-    const BIZ_STATUS  = [['ACTIVE','운영중'],['SUSPENDED','중지'],['TERMINATED','종료']];
-    const STATUS      = [['ACTIVE','재직'],['LEFT','퇴직'],['SUSPENDED','중지']];
 
     const vendors = reactive([]);
     const handleLoadDetail = async () => {
@@ -121,7 +124,7 @@ window.SyBizUserMng = {
     const fnVendorSummary = (id) => {
       const v = cfVendorMap.value[id];
       if (!v) return '';
-      const vt = (VENDOR_TYPES.find(x=>x[0]===v.vendorTypeCd)||[,'?'])[1];
+      const vt = (codes.vendor_types.find(x=>x[0]===v.vendorTypeCd)||[,'?'])[1];
       return '['+vt+'] '+v.vendorNm;
     };
 
@@ -142,7 +145,7 @@ window.SyBizUserMng = {
     const fnVendorStatusBadge = (s) => ({ ACTIVE:'badge-green', SUSPENDED:'badge-orange', TERMINATED:'badge-red' }[s] || 'badge-gray');
     const fnVendorStatusLabel = (s) => ({ ACTIVE:'운영중', SUSPENDED:'중지', TERMINATED:'종료' }[s] || s);
     const fnVendorTypeBadge   = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
-    const fnVendorTypeLabel   = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd)||[,'?'])[1];
+    const fnVendorTypeLabel   = (cd) => (codes.vendor_types.find(v=>v[0]===cd)||[,'?'])[1];
     const fnStatusBadge = (s) => ({ ACTIVE:'badge-green', LEFT:'badge-gray', SUSPENDED:'badge-orange' }[s]||'badge-gray');
     const fnStatusLabel = (s) => ({ ACTIVE:'재직', LEFT:'퇴직', SUSPENDED:'중지' }[s]||s);
 
@@ -395,11 +398,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       vendorUsers, cfVendorMap, fnVendorNm, fnVendorTypeCd, fnVendorSummary,
       vendors, cfVendorList, bizPager, cfBizTotalPages, cfBizPageNums, cfBizPagedRows, setBizPage,
       onSearch, onReset,
-      BIZ_STATUS, applied,
+      applied,
       pickVendorRow, fnVendorStatusBadge, fnVendorStatusLabel, fnVendorTypeBadge, fnVendorTypeLabel,
-      onVendorPicked, VENDOR_TYPES,
+      onVendorPicked,
       cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
-      STATUS, fnStatusBadge, fnStatusLabel,
+      fnStatusBadge, fnStatusLabel,
       cfFiltered, cfPagedRows, pager, cfTotalPages, cfPageNums, setPage, onSizeChange,
       formData, openNew, openEdit, closeForm, handleSaveForm, handleDeleteRow,
       userRoles, roleTreeExpanded,
@@ -432,7 +435,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       <input v-model="uiState.bizKw" placeholder="업체명 / 사업자번호 검색" style="margin-left:12px;min-width:200px;" />
       <select class="form-control" v-model="uiState.bizVendorFlt" style="width:140px;">
         <option value="">업체유형 전체</option>
-        <option v-for="v in VENDOR_TYPES" :key="v[0]" :value="v[0]">{{ v[1] }}</option>
+        <option v-for="v in codes.vendor_types" :key="v[0]" :value="v[0]">{{ v[1] }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
@@ -581,17 +584,17 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           </div>
           <div class="form-group"><label class="form-label">대표 담당자</label>
             <select class="form-control" v-model="formData.isMain">
-              <option value="N">아니오</option><option value="Y">예</option>
+              <option v-for="o in codes.bool_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
             </select>
           </div>
           <div class="form-group"><label class="form-label">관리권한</label>
             <select class="form-control" v-model="formData.authYn">
-              <option value="N">아니오</option><option value="Y">예</option>
+              <option v-for="o in codes.bool_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
             </select>
           </div>
           <div class="form-group"><label class="form-label">상태</label>
             <select class="form-control" v-model="formData.vendorUserStatusCd">
-              <option v-for="s in STATUS" :key="s[0]" :value="s[0]">{{ s[1] }}</option>
+              <option v-for="s in codes.user_employ_status" :key="s[0]" :value="s[0]">{{ s[1] }}</option>
             </select>
           </div>
           <div class="form-group"><label class="form-label">등록일</label>

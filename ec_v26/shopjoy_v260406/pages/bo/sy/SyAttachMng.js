@@ -7,7 +7,7 @@ window.SyAttachMng = {
     const attaches = reactive([]);
     const attachGrps = reactive([]);
     const uiState = reactive({ fileEditMode: false, grpEditMode: false, loading: false, error: null, isPageCodeLoad: false, selectedGrpId: null, grpEditId: null, fileEditId: null});
-    const codes = reactive({ attach_type: [] });
+    const codes = reactive({ attach_type: [], active_statuses: [] });
 
     // onMounted에서 API 로드
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -43,6 +43,7 @@ window.SyAttachMng = {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
         codes.attach_type = await codeStore.snGetGrpCodes('ATTACH_TYPE') || [];
+        codes.active_statuses = await codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -233,7 +234,7 @@ window.SyAttachMng = {
           <div class="form-group" style="margin-bottom:8px;">
             <label class="form-label" style="font-size:12px;">상태</label>
             <select class="form-control" style="font-size:12px;padding:4px 8px;" v-model="grpForm.status">
-              <option>활성</option><option>비활성</option>
+              <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
             </select>
           </div>
           <div style="display:flex;gap:6px;">

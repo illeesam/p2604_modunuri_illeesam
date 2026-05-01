@@ -10,6 +10,19 @@ window.DpDispPanelMng = {
     const codes = reactive({
       layout_types: [],
       disp_area: [],
+      active_statuses: [],
+      visibility_opts: [
+        { value: '', label: '전체' },
+        { value: 'PUBLIC',    label: '전체공개' },
+        { value: 'MEMBER',    label: '회원공개' },
+        { value: 'VERIFIED',  label: '인증회원' },
+        { value: 'PREMIUM',   label: '우수회원↑' },
+        { value: 'VIP',       label: 'VIP전용' },
+        { value: 'INVITED',   label: '초대회원' },
+        { value: 'STAFF',     label: '직원' },
+        { value: 'EXECUTIVE', label: '임직원' },
+      ],
+      date_range_opts: [],
     });
 
     // App 초기화 준비 상태
@@ -26,6 +39,8 @@ window.DpDispPanelMng = {
       const codeStore = window.getBoCodeStore();
       codes.layout_types = codeStore.snGetGrpCodes('LAYOUT_TYPE') || [];
       codes.disp_area = codeStore.snGetGrpCodes('DISP_AREA') || [];
+      codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
+      codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
       uiState.isPageCodeLoad = true;
     };
 
@@ -68,24 +83,12 @@ window.DpDispPanelMng = {
     });
     const fnPathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
     };
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
-    const VISIBILITY_OPTS  = [
-      { value: '', label: '전체' },
-      { value: 'PUBLIC',    label: '전체공개' },
-      { value: 'MEMBER',    label: '회원공개' },
-      { value: 'VERIFIED',  label: '인증회원' },
-      { value: 'PREMIUM',   label: '우수회원↑' },
-      { value: 'VIP',       label: 'VIP전용' },
-      { value: 'INVITED',   label: '초대회원' },
-      { value: 'STAFF',     label: '직원' },
-      { value: 'EXECUTIVE', label: '임직원' },
-    ];
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 /* 하단 상세 */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
@@ -449,7 +452,7 @@ window.DpDispPanelMng = {
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), panels, uiState, fnPathLabel, displays, codes,
       cfPanelTree, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll,
       pathExpanded, togglePathNode, selectPathNode, cfPathTree, expandPathAll, collapsePathAll,
-      DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, searchParam, searchParamOrg, VISIBILITY_OPTS, pager, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, fnWLabel, openCardPreview, closeCardPreview, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd, setDispNow };
+      onDateRangeChange: handleDateRangeChange, cfSiteNm, searchParam, searchParamOrg, pager, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, fnWLabel, openCardPreview, closeCardPreview, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd, setDispNow };
   },
   template: /* html */`
 <div>
@@ -462,8 +465,8 @@ window.DpDispPanelMng = {
         <option value="">전체 영역</option>
         <option v-for="a in cfAreas" :key="a?.codeValue" :value="a.codeValue">{{ a.codeValue }} {{ a.codeLabel }}</option>
       </select>
-      <select v-model="searchParam.status"><option value="">상태 전체</option><option>활성</option><option>비활성</option></select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
+      <select v-model="searchParam.status"><option value="">상태 전체</option><option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
@@ -478,7 +481,7 @@ window.DpDispPanelMng = {
       <div style="width:1px;height:24px;background:#e8e8e8;margin:0 4px;"></div>
       <span class="search-label">공개대상</span>
       <select v-model="searchParam.visibility" style="min-width:100px;">
-        <option v-for="o in VISIBILITY_OPTS" :key="o?.value" :value="o.value">{{ o.label }}</option>
+        <option v-for="o in codes.visibility_opts" :key="o?.value" :value="o.value">{{ o.label }}</option>
       </select>
       <div style="width:1px;height:24px;background:#e8e8e8;margin:0 4px;"></div>
       <span class="search-label">표시방식</span>

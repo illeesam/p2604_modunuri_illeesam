@@ -8,7 +8,7 @@ window.OdClaimDtl = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: window._odClaimDtlState.activeTab || 'info', viewMode2: window._odClaimDtlState.viewMode || 'tab'});
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
-    const codes = reactive({ claim_statuses: [] });
+    const codes = reactive({ claim_statuses: [], claim_types: [] });
 
     const cfIsNew = computed(() => !props.editId);
 
@@ -23,6 +23,7 @@ window.OdClaimDtl = {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
         codes.claim_statuses = await codeStore.snGetGrpCodes('CLAIM_STATUS') || [];
+        codes.claim_types = await codeStore.snGetGrpCodes('CLAIM_TYPE') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -342,7 +343,7 @@ window.OdClaimDtl = {
       <div class="form-group">
         <label class="form-label">클레임 유형</label>
         <select class="form-control" v-model="form.type" :disabled="viewMode">
-          <option>취소</option><option>반품</option><option>교환</option>
+          <option v-for="c in codes.claim_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">

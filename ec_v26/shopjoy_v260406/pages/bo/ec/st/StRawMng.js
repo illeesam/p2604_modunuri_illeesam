@@ -5,7 +5,12 @@ window.StRawMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '', searchMoreOpen: false, loading: false });
-    const codes = reactive({});
+    const codes = reactive({ raw_types: [], raw_collect_statuses: [], raw_vendor_divs: [], pay_methods: [], order_statuses_kr: [],
+      confirm_yn_opts: [{ codeValue: 'Y', codeLabel: '확정' }, { codeValue: 'N', codeLabel: '미확정' }],
+      close_yn_opts: [{ codeValue: 'Y', codeLabel: '마감완료' }, { codeValue: 'N', codeLabel: '미마감' }],
+      send_yn_opts: [{ codeValue: 'Y', codeLabel: '전송완료' }, { codeValue: 'N', codeLabel: '미전송' }],
+      date_range_opts: [],
+    });
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -16,6 +21,12 @@ window.StRawMng = {
     const fnLoadCodes = () => {
       const codeStore = window.getBoCodeStore();
       try {
+        codes.raw_types = codeStore.snGetGrpCodes('RAW_TYPE_KR') || [];
+        codes.raw_collect_statuses = codeStore.snGetGrpCodes('RAW_COLLECT_STATUS') || [];
+        codes.raw_vendor_divs = codeStore.snGetGrpCodes('RAW_VENDOR_DIV') || [];
+        codes.pay_methods = codeStore.snGetGrpCodes('PAY_METHOD_KR') || [];
+        codes.order_statuses_kr = codeStore.snGetGrpCodes('ORDER_STATUS_KR') || [];
+        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -31,7 +42,6 @@ window.StRawMng = {
       }
     });
 
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
             const dateEnd   = ref('');
     const handleDateRangeChange = () => {
       if (uiState.dateRange) { const r = boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
@@ -150,12 +160,12 @@ const rawList = reactive([]);
 
   return {
       uiState, handleDateRangeChange,
-      DATE_RANGE_OPTIONS, searchParam,
+      searchParam,
       pager, rawList, cfPageNums, cfSummary,
       setPage, onSizeChange, onSearch, onReset,
       expandedRows, toggleRow, isExpanded,
       fnStatusBadge, rawStatusLabel, fnRawStatusBadge, vendorTypeLabel, orderStatusLabel,
-      fmtW, fmtPct, doCollect,
+      fmtW, fmtPct, doCollect, codes,
     };
   },
   template: /* html */`
@@ -176,20 +186,17 @@ const rawList = reactive([]);
     <div class="search-bar" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">
       <select v-model="uiState.dateRange" @change="handleDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
-        <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
+        <option v-for="opt in codes.date_range_opts" :key="opt.codeValue" :value="opt.codeValue">{{ opt.codeLabel }}</option>
       </select>
       <input type="date" v-model="uiState.dateStart" style="width:140px" />
       <span style="line-height:32px">~</span>
       <input type="date" v-model="uiState.dateEnd" style="width:140px" />
       <select v-model="searchParam.type" style="width:100px">
-        <option value="">유형 전체</option><option>주문</option><option>클레임</option>
+        <option value="">유형 전체</option><option v-for="c in codes.raw_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <select v-model="searchParam.status" style="width:110px">
         <option value="">수집상태 전체</option>
-        <option value="COLLECTED">수집완료</option>
-        <option value="EXCLUDED">제외</option>
-        <option value="SETTLED">정산완료</option>
-        <option value="PENDING">대기</option>
+        <option v-for="c in codes.raw_collect_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <input v-model="searchParam.kw" placeholder="원장ID / 소스ID / 업체명 / 상품명 / 브랜드" style="width:230px" @keyup.enter="() => onSearch?.()" />
     </div>
@@ -197,33 +204,23 @@ const rawList = reactive([]);
     <div class="search-bar" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">
       <select v-model="searchParam.vendorType" style="width:110px">
         <option value="">업체구분 전체</option>
-        <option value="SALE">판매업체</option>
-        <option value="DLIV">배송업체</option>
-        <option value="EXTERNAL">외부업체</option>
+        <option v-for="c in codes.raw_vendor_divs" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <select v-model="searchParam.payMethod" style="width:120px">
         <option value="">결제수단 전체</option>
-        <option value="무통장입금">무통장입금</option>
-        <option value="가상계좌">가상계좌</option>
-        <option value="토스페이">토스페이</option>
-        <option value="카카오페이">카카오페이</option>
-        <option value="네이버페이">네이버페이</option>
-        <option value="핸드폰결제">핸드폰결제</option>
+        <option v-for="c in codes.pay_methods" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <select v-model="searchParam.buyConfirm" style="width:110px">
         <option value="">구매확정 전체</option>
-        <option value="Y">확정</option>
-        <option value="N">미확정</option>
+        <option v-for="o in codes.confirm_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <select v-model="searchParam.closeYn" style="width:110px">
         <option value="">마감여부 전체</option>
-        <option value="Y">마감완료</option>
-        <option value="N">미마감</option>
+        <option v-for="o in codes.close_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <select v-model="searchParam.erpSend" style="width:110px">
         <option value="">ERP전송 전체</option>
-        <option value="Y">전송완료</option>
-        <option value="N">미전송</option>
+        <option v-for="o in codes.send_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <input v-model="searchParam.period" placeholder="정산기간(YYYY-MM)" style="width:150px" maxlength="7" />
       <div class="search-actions" style="margin-left:auto">
@@ -238,13 +235,7 @@ const rawList = reactive([]);
     <div v-if="uiState.searchMoreOpen" class="search-bar" style="flex-wrap:wrap;gap:8px;padding-top:8px;border-top:1px solid #f0f0f0">
       <select v-model="searchParam.orderStatus" style="width:120px">
         <option value="">주문상태 전체</option>
-        <option value="ORDERED">주문완료</option>
-        <option value="PAID">결제완료</option>
-        <option value="PREPARING">준비중</option>
-        <option value="SHIPPING">배송중</option>
-        <option value="DELIVERED">배송완료</option>
-        <option value="CONFIRMED">구매확정</option>
-        <option value="CANCELLED">취소</option>
+        <option v-for="c in codes.order_statuses_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <span style="line-height:32px;font-size:12px;color:#888">수집금액</span>
       <input v-model="searchParam.amtFrom" type="number" placeholder="최솟값(원)" style="width:120px" />

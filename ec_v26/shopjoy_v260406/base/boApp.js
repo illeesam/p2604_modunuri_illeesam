@@ -890,6 +890,8 @@
           }
         }, 100);
         checkWidth(); window.addEventListener('resize', checkWidth);
+        const codeStore = window.getBoCodeStore?.();
+        if (codeStore?.snGetGrpCodes) userRoles.value = codeStore.snGetGrpCodes('USER_ROLE') || [];
       });
       watch(currentAuthUser, (u) => {
         try {
@@ -909,6 +911,7 @@
       const loginModal  = reactive({ show: false, tab: 'login' });
       const loginForm   = reactive({ loginId: 'admin2', loginPwd: 'demo1234', authMethod: '메인' });
       const regForm     = reactive({ name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
+      const userRoles   = ref([]);
       const loginError  = ref('');
       const uiState = reactive({ userMenuShow: false, profileModalShow: false, pwModalShow: false, relatedSiteOpen: false });
 
@@ -1119,7 +1122,7 @@
         apiLogs, apiLogHoverDetail, apiLogLockedDetail, clearApiLogs, toggleApiLogLock, getApiStatusColor, formatJsonData, isWithin60Seconds, getRelativeTime,
         tabBarRef, scrollTabs,
         cfIsLoggedIn, currentAuthUser, currentAuthUserRoles, activeRoleId, rolePath, onRoleChange, rolesOfUser, bizInfoOfUser,
-        loginModal, loginForm, regForm, loginError, uiState,
+        loginModal, loginForm, regForm, loginError, uiState, userRoles,
         openLogin, closeLogin, doLogin, doLogout, doRegister,
         profileForm, openProfile, saveProfile,
         pwForm, pwError, openPwChange, savePwChange,
@@ -1902,7 +1905,7 @@
         <div class="form-group">
           <label class="form-label">역할</label>
           <select class="form-control" v-model="regForm.role">
-            <option>슈퍼관리자</option><option>관리자</option><option>운영자</option><option>영업관리자</option><option>일반사용자</option>
+            <option v-for="c in userRoles" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
         <div v-if="loginError" class="login-error">{{ loginError }}</div>

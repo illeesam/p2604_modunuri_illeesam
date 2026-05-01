@@ -7,7 +7,7 @@ window.SyBatchMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const batches = reactive([]);
     const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false, selectedPath: null, focusedIdx: null});
-    const codes = reactive({ batch_status: [] });
+    const codes = reactive({ batch_status: [], active_statuses: [], batch_run_statuses: [] });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -72,6 +72,8 @@ window.SyBatchMng = {
         const codeStore = window.getBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
         codes.batch_status = await codeStore.snGetGrpCodes('BATCH_STATUS') || [];
+        codes.active_statuses = await codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
+        codes.batch_run_statuses = await codeStore.snGetGrpCodes('BATCH_RUN_STATUS') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -394,10 +396,12 @@ window.SyBatchMng = {
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="배치명 / 배치코드 검색" />
       <select v-model="searchParam.status">
-        <option value="">활성여부 전체</option><option>활성</option><option>비활성</option>
+        <option value="">활성여부 전체</option>
+        <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <select v-model="searchParam.runStatus">
-        <option value="">실행상태 전체</option><option>성공</option><option>실패</option><option>실행중</option><option>대기</option>
+        <option value="">실행상태 전체</option>
+        <option v-for="c in codes.batch_run_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <span class="search-label">등록일</span>
       <input type="date" v-model="searchParam.dateStart" class="date-range-input" />
@@ -503,7 +507,7 @@ window.SyBatchMng = {
           </td>
           <td>
             <select class="grid-select" v-model="row.statusCd" :disabled="row._row_status==='D'" @change="onCellChange(row)" style="width:58px;">
-              <option>활성</option><option>비활성</option>
+              <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
             </select>
           </td>
           <td><input class="grid-input" v-model="row.description" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="설명" /></td>
