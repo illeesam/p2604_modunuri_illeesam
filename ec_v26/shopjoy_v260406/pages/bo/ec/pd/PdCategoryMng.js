@@ -451,6 +451,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
 
       <table class="bo-table" style="table-layout:fixed">
         <colgroup>
+          <col style="width:36px"><!-- ── 번호 -->
           <col style="width:28px"><!-- ── 드래그 핸들 ─────────────────────────────────────────────────────────── -->
           <col style="width:36px"><!-- ── 상태 ─────────────────────────────────────────────────────────────── -->
           <col style="width:32px"><!-- ── 체크 ─────────────────────────────────────────────────────────────── -->
@@ -464,6 +465,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
           <col style="width:44px"><!-- ── 삭제 ─────────────────────────────────────────────────────────────── -->
         </colgroup>
         <thead><tr>
+          <th style="width:36px;text-align:center;">번호</th>
           <th></th>
           <th>상태</th>
           <th><input type="checkbox" v-model="checkAll" @change="toggleCheckAll"></th>
@@ -478,7 +480,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         </tr></thead>
         <tbody>
           <tr v-if="!gridRows.length">
-            <td colspan="11" style="text-align:center;color:#aaa;padding:30px">
+            <td colspan="12" style="text-align:center;color:#aaa;padding:30px">
               {{ uiState.selectedCatId ? '하위 카테고리가 없습니다. [+ 행추가]로 추가하세요.' : '데이터가 없습니다.' }}
             </td>
           </tr>
@@ -490,6 +492,9 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
               @drop="onRowDrop()"
               :style="dragoverRowIdx===getRealIdx(idx) ? 'background:#e6f4ff' : ''"
               @click="setFocused(getRealIdx(idx))">
+
+            <!-- ── 번호 ───────────────────────────────────────────────────── -->
+            <td style="text-align:center;font-size:11px;color:#999;">{{ getRealIdx(idx) + 1 }}</td>
 
             <!-- ── 드래그 핸들 ─────────────────────────────────────────────── -->
             <td style="text-align:center;cursor:grab;color:#ccc;font-size:16px;user-select:none">≡</td>

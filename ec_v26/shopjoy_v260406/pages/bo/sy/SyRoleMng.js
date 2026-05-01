@@ -93,6 +93,7 @@ window.SyRoleMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
+      fnLoadMenusAndUsers();
       const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
@@ -229,10 +230,77 @@ window.SyRoleMng = {
       handleSearchList();
     };
 
+    /* ── 메뉴·사용자 초기 로드 ── */
+    const fnLoadMenusAndUsers = async () => {
+      try {
+        const [mRes, uRes] = await Promise.all([
+          boApi.get('/bo/sy/menu/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('역할관리', '메뉴목록') }),
+          boApi.get('/bo/sy/user/page',  { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('역할관리', '사용자목록') }),
+        ]);
+        const mList = mRes.data?.data?.pageList || mRes.data?.data?.list || [];
+        const uList = uRes.data?.data?.pageList || uRes.data?.data?.list || [];
+        menus.splice(0, menus.length, ...mList);
+        boUsers.splice(0, boUsers.length, ...uList);
+      } catch (err) {
+        console.error('[fnLoadMenusAndUsers]', err);
+      }
+    };
+
+    /* ── 역할 선택 시 메뉴권한·사용자 조회 ── */
+    const handleLoadRoleDetail = async (roleId) => {
+      if (!roleId || roleId <= 0) { roleMenus.splice(0); roleUsers.splice(0); return; }
+      uiState.detailLoading = true;
+      try {
+        const [rmRes, ruRes] = await Promise.all([
+          boApi.get(`/bo/sy/role/${roleId}/menus`,  coUtil.apiHdr('역할관리', '메뉴권한조회')),
+          boApi.get(`/bo/sy/role/${roleId}/users`,  coUtil.apiHdr('역할관리', '대상사용자조회')),
+        ]);
+        const rmList = rmRes.data?.data?.list || rmRes.data?.data || [];
+        const ruList = ruRes.data?.data?.list || ruRes.data?.data || [];
+        roleMenus.splice(0, roleMenus.length, ...rmList);
+        roleUsers.splice(0, roleUsers.length, ...ruList.map(u => ({ roleId, boUserId: u.userId || u.boUserId || u.userId })));
+        // boUsers에 없는 사용자 보완
+        ruList.forEach(u => {
+          const uid = u.userId || u.boUserId;
+          if (!boUsers.find(x => x.boUserId === uid || x.userId === uid)) boUsers.push({ ...u, boUserId: uid });
+        });
+      } catch (err) {
+        console.error('[handleLoadRoleDetail]', err);
+      } finally {
+        uiState.detailLoading = false;
+      }
+    };
+
+    /* ── 메뉴권한·대상사용자 설정 저장 ── */
+    const handleSaveRoleConfig = async () => {
+      if (!uiState.selectedRoleId) return;
+      const ok = await props.showConfirm('설정 저장', '메뉴 접근권한과 대상사용자를 저장하시겠습니까?');
+      if (!ok) return;
+      try {
+        const menuPayload = roleMenus
+          .filter(x => x.roleId === uiState.selectedRoleId)
+          .map(x => ({ menuId: x.menuId, permLevel: x.permLevel || '읽기' }));
+        const userPayload = roleUsers
+          .filter(x => x.roleId === uiState.selectedRoleId)
+          .map(x => ({ boUserId: x.boUserId }));
+        await Promise.all([
+          boApi.post(`/bo/sy/role/${uiState.selectedRoleId}/menus`, { menus: menuPayload }, coUtil.apiHdr('역할관리', '메뉴권한저장')),
+          boApi.post(`/bo/sy/role/${uiState.selectedRoleId}/users`, { users: userPayload }, coUtil.apiHdr('역할관리', '대상사용자저장')),
+        ]);
+        props.showToast('설정이 저장되었습니다.', 'success');
+      } catch (err) {
+        props.showToast(err.response?.data?.message || err.message || '저장 중 오류가 발생했습니다.', 'error', 0);
+      }
+    };
+
     const setFocused = (realIdx) => {
       uiState.focusedIdx = realIdx;
       const row = gridRows[realIdx];
-      uiState.selectedRoleId = row && row.roleId > 0 ? row.roleId : null;
+      const newRoleId = row && row.roleId > 0 ? row.roleId : null;
+      if (newRoleId !== uiState.selectedRoleId) {
+        uiState.selectedRoleId = newRoleId;
+        handleLoadRoleDetail(newRoleId);
+      }
     };
 
     const onCellChange = (row) => {
@@ -462,6 +530,7 @@ window.SyRoleMng = {
       cfSelectedRoleNm,
       cfMenuTree, getMenuPerm, setMenuPerm, setAllMenuPerm, isMenuChecked, toggleAllMenus, cfMenuAllChecked,
       cfRoleUsersList, onUserSelect, removeUser,
+      handleSaveRoleConfig,
       exportExcel,
     };
   },
@@ -628,6 +697,7 @@ window.SyRoleMng = {
               class="btn btn-xs"
               :style="{ background: fnPermColor(p), borderColor: fnPermColor(p), color:'#fff', fontWeight:'600', fontSize:'11px', padding:'2px 8px' }"
               @click="setAllMenuPerm(p)">{{ p }}</button>
+            <button class="btn btn-primary btn-sm" style="margin-left:8px;" @click="handleSaveRoleConfig">💾 설정 저장</button>
           </div>
         </div>
 

@@ -449,9 +449,9 @@ window.SyBatchMng = {
     <table class="bo-table crud-grid" style="min-width:1000px;">
       <thead>
         <tr>
+          <th style="width:36px;text-align:center;">번호</th>
           <th style="min-width:140px;">표시경로</th>
           <th class="col-drag"></th>
-          <th style="width:36px;text-align:center;">번호</th>
           <th class="col-id">ID</th>
           <th class="col-status">상태</th>
           <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
@@ -479,6 +479,7 @@ window.SyBatchMng = {
           @dragstart="onDragStart(idx)"
           @dragover="onDragOver($event, idx)"
           @dragend="onDragEnd">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
           <td>
               <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color: row.pathId != null ? '#374151' : '#9ca3af',fontWeight: row.pathId != null ? 600 : 400,display:'flex',alignItems:'center',gap:'6px'}">
                 <span style="flex:1;">{{ pathLabel(row.pathId) || '경로 선택...' }}</span>
@@ -489,7 +490,6 @@ window.SyBatchMng = {
               </div>
             </td>
           <td class="drag-handle" title="드래그로 순서 변경">⠿</td>
-          <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
           <td class="col-id-val">{{ row.batchId > 0 ? row.batchId : 'NEW' }}</td>
           <td class="col-status-val"><span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span></td>
           <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>

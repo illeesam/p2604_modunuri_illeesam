@@ -330,12 +330,12 @@ window.SyAttachMng = {
 
         <table class="bo-table">
           <thead><tr>
-            <th>ID</th><th>그룹</th><th>파일명</th><th>크기</th><th>확장자</th><th>참조ID</th><th>메모</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th>
+            <th style="width:36px;text-align:center;">번호</th><th>그룹</th><th>파일명</th><th>크기</th><th>확장자</th><th>참조ID</th><th>메모</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th>
           </tr></thead>
           <tbody>
             <tr v-if="cfFilteredFiles.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-            <tr v-for="a in cfFilteredFiles" :key="a.attachId">
-              <td>{{ a.attachId }}</td>
+            <tr v-for="(a, idx) in cfFilteredFiles" :key="a.attachId">
+              <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
               <td><span style="font-size:11px;color:#666;">{{ a.attachGrpNm }}</span></td>
               <td style="font-size:12px;word-break:break-all;">{{ a.fileNm }}</td>
               <td style="font-size:12px;">{{ fnFmtSize(a.fileSize) }}</td>

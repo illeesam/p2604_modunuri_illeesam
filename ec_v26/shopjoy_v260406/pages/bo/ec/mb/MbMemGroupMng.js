@@ -166,6 +166,7 @@ const isAppReady = computed(() => {
       </div>
       <table class="bo-table">
         <thead><tr>
+          <th style="width:36px;text-align:center;">번호</th>
           <th>그룹명</th><th>메모</th>
           <th style="width:80px;text-align:right">회원수</th>
           <th style="width:70px;text-align:center">사용</th>
@@ -173,6 +174,7 @@ const isAppReady = computed(() => {
         </tr></thead>
         <tbody>
           <tr v-for="(row,idx) in gridRows" :key="row?.groupId" :class="{'table-row-new':row._row_status==='N','table-row-mod':row._row_status==='U'}">
+            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td><input v-if="row._row_status" class="form-control" v-model="row.groupNm" @input="onCellChange(idx)"><span v-else>{{ row.groupNm }}</span></td>
             <td><input v-if="row._row_status" class="form-control" v-model="row.groupMemo" @input="onCellChange(idx)"><span v-else>{{ row.groupMemo }}</span></td>
             <td style="text-align:right">{{ (row.memberCnt||0).toLocaleString() }}</td>
@@ -182,7 +184,7 @@ const isAppReady = computed(() => {
             </td>
             <td style="text-align:center"><button class="btn btn-danger btn-xs" @click="handleDeleteRow(idx)">삭제</button></td>
           </tr>
-          <tr v-if="!gridRows.length"><td colspan="5" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
+          <tr v-if="!gridRows.length"><td colspan="6" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
       <div class="pagination">

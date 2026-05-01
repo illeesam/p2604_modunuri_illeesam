@@ -155,10 +155,10 @@ window.StErpGenMng = {
   <div class="card" style="margin-top:12px">
     <div class="toolbar"><span class="list-title">전표생성 이력</span><span class="list-count">총 {{ genHistory.length }}건</span></div>
     <table class="bo-table">
-      <thead><tr><th>생성ID</th><th>정산월</th><th>전표유형</th><th>전표수</th><th>총금액</th><th>생성일</th><th>상태</th><th>담당자</th></tr></thead>
+      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>정산월</th><th>전표유형</th><th>전표수</th><th>총금액</th><th>생성일</th><th>상태</th><th>담당자</th></tr></thead>
       <tbody>
-        <tr v-for="r in genHistory" :key="r?.genId">
-          <td>{{ r.genId }}</td><td><strong>{{ r.genMon }}</strong></td>
+        <tr v-for="(r, idx) in genHistory" :key="r?.genId">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td><td><strong>{{ r.genMon }}</strong></td>
           <td><span class="badge badge-blue">{{ r.slipType }}</span></td>
           <td>{{ r.slipCnt }}건</td>
           <td style="font-weight:700">{{ fmtW(r.totalAmt) }}</td>

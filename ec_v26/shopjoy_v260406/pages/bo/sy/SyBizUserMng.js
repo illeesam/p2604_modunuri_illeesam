@@ -448,13 +448,14 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </div>
     <table class="bo-table">
       <thead><tr>
-        <th>업체유형</th><th>업체명</th><th>사업자번호</th><th>대표자</th><th>전화</th><th style="text-align:right;">선택</th>
+        <th style="width:36px;text-align:center;">번호</th><th>업체유형</th><th>업체명</th><th>사업자번호</th><th>대표자</th><th>전화</th><th style="text-align:right;">선택</th>
       </tr></thead>
       <tbody>
-        <tr v-if="cfBizPagedRows.length===0"><td colspan="6" style="text-align:center;color:#999;padding:20px;">데이터가 없습니다.</td></tr>
-        <tr v-for="v in cfBizPagedRows" :key="v.vendorId"
+        <tr v-if="cfBizPagedRows.length===0"><td colspan="7" style="text-align:center;color:#999;padding:20px;">데이터가 없습니다.</td></tr>
+        <tr v-for="(v, bidx) in cfBizPagedRows" :key="v.vendorId"
           :style="{cursor:'pointer',background:uiState.searchVendorId===v.vendorId?'#fff0f4':'transparent'}"
           @click="pickVendorRow(v)">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ (bizPager.pageNo - 1) * bizPager.pageSize + bidx + 1 }}</td>
           <td><span class="badge" :class="fnVendorTypeBadge(v.vendorTypeCd)" style="font-size:10px;">{{ fnVendorTypeLabel(v.vendorTypeCd) }}</span></td>
           <td style="font-weight:600;">{{ v.vendorNm }}</td>
           <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;">{{ v.bizNo }}</code></td>

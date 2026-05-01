@@ -173,6 +173,7 @@ const isAppReady = computed(() => {
       </div>
       <table class="bo-table">
         <thead><tr>
+          <th style="width:36px;text-align:center;">번호</th>
           <th style="width:120px">등급코드</th>
           <th>등급명</th>
           <th style="width:80px;text-align:right">순위</th>
@@ -183,6 +184,7 @@ const isAppReady = computed(() => {
         </tr></thead>
         <tbody>
           <tr v-for="(row,idx) in gridRows" :key="row?.gradeId" :class="{'table-row-new':row._row_status==='N','table-row-mod':row._row_status==='U'}" @click="uiState.focusedIdx=idx">
+            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td>
               <select v-if="row._row_status" class="form-control" v-model="row.gradeCd" @change="onCellChange(idx)">
                 <option value="">선택</option>
@@ -200,7 +202,7 @@ const isAppReady = computed(() => {
             </td>
             <td style="text-align:center"><button class="btn btn-danger btn-xs" @click.stop="handleDeleteRow(idx)">삭제</button></td>
           </tr>
-          <tr v-if="!gridRows.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
+          <tr v-if="!gridRows.length"><td colspan="8" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
       <div class="pagination">

@@ -581,6 +581,7 @@ window.SyCodeMng = {
       <table class="bo-table crud-grid">
         <thead>
           <tr>
+            <th style="width:36px;text-align:center;">번호</th>
             <th class="col-status">상태</th>
             <th>표시경로 <span style="font-size:10px;color:#aaa;font-weight:400;">(예: aa.bb.cc)</span></th>
             <th>코드그룹</th>
@@ -594,13 +595,14 @@ window.SyCodeMng = {
         </thead>
         <tbody>
           <tr v-if="cfGrpPagedRows.length===0">
-            <td colspan="8" style="text-align:center;color:#999;padding:20px;">데이터가 없습니다.</td>
+            <td colspan="9" style="text-align:center;color:#999;padding:20px;">데이터가 없습니다.</td>
           </tr>
           <tr v-for="(g, idx) in cfGrpPagedRows" :key="g.codeGrp + (g._tempId || '')"
             class="crud-row"
             :class="['status-'+g._row_status, uiState.selectedGrp===g.codeGrp ? 'focused' : '']"
             style="cursor:pointer;"
             @click="onGrpRowClick(g)">
+            <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
             <td class="col-status-val"><span class="badge badge-xs" :class="fnStatusClass(g._row_status)">{{ g._row_status }}</span></td>
             <td>
               <div :style="{padding:'5px 6px 5px 10px', border:'1px solid #e5e7eb', borderRadius:'5px', fontSize:'12px', minHeight:'26px',
@@ -701,7 +703,6 @@ window.SyCodeMng = {
         <thead style="position:sticky;top:0;background:#fff;z-index:10;">
           <tr>
             <th class="col-drag"></th>
-            <th class="col-id">ID</th>
             <th class="col-status">상태</th>
             <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll" /></th>
             <th>코드그룹</th>
@@ -719,7 +720,7 @@ window.SyCodeMng = {
         </thead>
         <tbody>
           <tr v-if="cfFilteredRows.length===0">
-            <td :colspan="cfIsTreeTypeGrp ? 13 : 12" style="text-align:center;color:#999;padding:30px;">{{ uiState.selectedGrp ? '데이터가 없습니다.' : '그룹을 선택해주세요.' }}</td>
+            <td :colspan="cfIsTreeTypeGrp ? 12 : 11" style="text-align:center;color:#999;padding:30px;">{{ uiState.selectedGrp ? '데이터가 없습니다.' : '그룹을 선택해주세요.' }}</td>
           </tr>
           <tr v-for="(row, idx) in cfPagedRows" :key="row.codeId"
             class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '']"
@@ -730,7 +731,6 @@ window.SyCodeMng = {
             @dragover="onDragOver($event, getRealIdx(idx))"
             @dragend="onDragEnd">
             <td class="drag-handle" title="드래그로 순서 변경">⠿</td>
-            <td class="col-id-val">{{ row.codeId > 0 ? row.codeId : 'NEW' }}</td>
             <td class="col-status-val">
               <span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span>
             </td>

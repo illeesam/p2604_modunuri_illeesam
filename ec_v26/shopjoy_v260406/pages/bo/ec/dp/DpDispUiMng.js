@@ -105,11 +105,11 @@ const searchParam = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateE
     const cfTotal      = computed(() => cfFiltered.value.length);
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.pageSize)));
     const cfPageList   = computed(() => cfFiltered.value.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
-    const cfPageNums   = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfPageNums   = computed(() => { const c=pager.pageNo,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
     const onReset  = () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; };
-    const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
 
     // ── return ───────────────────────────────────────────────────────────────
@@ -142,20 +142,16 @@ const searchParam = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateE
     <div class="toolbar">
       <span class="list-count">총 {{ cfTotal }}건</span>
       <button class="btn btn-primary btn-sm" @click="openNew">✚ 신규등록</button>
-      <select class="form-control" v-model.number="pager.pageSize" @change="onSizeChange" style="width:80px;">
-        <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}건</option>
-      </select>
     </div>
-    <table class="admin-table">
+    <table class="bo-table">
       <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th><th>ID</th><th>UI명</th><th>유형</th><th>사용여부</th><th>등록일</th><th>액션</th>
+        <th style="width:36px;text-align:center;">번호</th><th>UI명</th><th>유형</th><th>사용여부</th><th>등록일</th><th>액션</th>
       </tr></thead>
       <tbody>
-        <tr v-if="uiState.loading"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">로딩 중...</td></tr>
-        <tr v-else-if="!cfPageList.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">조회된 데이터가 없습니다.</td></tr>
+        <tr v-if="uiState.loading"><td colspan="6" style="text-align:center;padding:30px;color:#aaa;">로딩 중...</td></tr>
+        <tr v-else-if="!cfPageList.length"><td colspan="6" style="text-align:center;padding:30px;color:#aaa;">조회된 데이터가 없습니다.</td></tr>
         <tr v-for="(d, idx) in cfPageList" :key="d?.dispId">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td>{{ d.dispId }}</td>
           <td class="title-link" @click="loadView(d.dispId)">{{ d.name }}</td>
           <td>{{ d.uiType }}</td>
           <td><span :class="'badge '+(d.useYn==='Y'?'badge-green':'badge-gray')">{{ d.useYn==='Y'?'사용':'미사용' }}</span></td>
@@ -168,9 +164,18 @@ const searchParam = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateE
       </tbody>
     </table>
     <div class="pagination">
-      <button class="pager" @click="setPage(pager.pageNo-1)" :disabled="pager.pageNo===1">◀</button>
-      <button v-for="n in cfPageNums" :key="n" class="pager" :class="{active:n===pager.pageNo}" @click="setPage(n)">{{ n }}</button>
-      <button class="pager" @click="setPage(pager.pageNo+1)" :disabled="pager.pageNo===cfTotalPages">▶</button>
+      <div class="pager">
+        <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
+        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+      </div>
+      <div class="pager-right">
+        <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}건</option>
+        </select>
+      </div>
     </div>
   </div>
   <div v-if="uiStateDetail.selectedId" class="card" style="margin-top:10px;">

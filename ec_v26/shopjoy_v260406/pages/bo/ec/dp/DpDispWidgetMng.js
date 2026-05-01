@@ -118,7 +118,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
     const cfTotalCount = computed(() => cfFiltered.value.length);
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotalCount.value / pager.pageSize)));
     const cfPageList = computed(() => cfFiltered.value.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
-    const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfPageNums = computed(() => { const c=pager.pageNo,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const cfTree = computed(() => []);
     const selectedTreeKey = ref('');
     const fnStatusCls = (v) => ({ '활성':'badge-green', '비활성':'badge-gray' }[v] || 'badge-gray');
@@ -342,20 +342,19 @@ const applied = reactive({ kw: '', type: '', status: '' });
 
     <!-- ── 페이저 ────────────────────────────────────────────────────────── -->
     <div class="pagination">
-         <div></div>
-         <div class="pager">
-           <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
-           <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
-           <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
-         </div>
-         <div class="pager-right">
-           <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
-             <option v-for="s in pager.pageSizes" :key="Math.random()" :value="s">{{ s }}개</option>
-           </select>
-         </div>
-       </div>
+      <div class="pager">
+        <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
+        <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
+        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
+        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+      </div>
+      <div class="pager-right">
+        <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
+        </select>
+      </div>
+    </div>
   </div>
 
   </div><!-- ── /우측 목록 ─────────────────────────────────────────────────────────── -->

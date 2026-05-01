@@ -144,9 +144,10 @@ window.StConfigMng = {
       <div style="margin-left:auto"><button class="btn btn-primary" @click="openNew">+ 기준 추가</button></div>
     </div>
     <table class="bo-table">
-      <thead><tr><th>사이트</th><th>카테고리</th><th>수수료율</th><th>정산주기</th><th>정산일</th><th>최소정산금</th><th>사용여부</th><th>비고</th><th>액션</th></tr></thead>
+      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>사이트</th><th>카테고리</th><th>수수료율</th><th>정산주기</th><th>정산일</th><th>최소정산금</th><th>사용여부</th><th>비고</th><th>액션</th></tr></thead>
       <tbody>
-        <tr v-for="c in configs" :key="c?.settleConfigId" :class="{selected: uiState.selectedId===c.settleConfigId}">
+        <tr v-for="(c, idx) in configs" :key="c?.settleConfigId" :class="{selected: uiState.selectedId===c.settleConfigId}">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
           <td>{{ c.siteNm }}</td>
           <td><strong>{{ c.categoryNm || c.vendorNm || '-' }}</strong></td>
           <td><strong>{{ c.commissionRate }}%</strong></td>

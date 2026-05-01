@@ -211,12 +211,11 @@ window.MbMemberMng = {
     </div>
     <table class="bo-table">
       <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th><th>ID</th><th>이름</th><th>이메일</th><th>연락처</th><th>등급</th><th>상태</th><th>가입일</th><th style="width:80px;text-align:right">주문수</th><th style="width:100px;text-align:right">총구매액</th><th style="text-align:center;width:80px">관리</th>
+        <th style="width:36px;text-align:center;">번호</th><th>이름</th><th>이메일</th><th>연락처</th><th>등급</th><th>상태</th><th>가입일</th><th style="width:80px;text-align:right">주문수</th><th style="width:100px;text-align:right">총구매액</th><th style="text-align:center;width:80px">관리</th>
       </tr></thead>
       <tbody>
         <tr v-for="(row, idx) in members" :key="row?.memberId" :class="{active:selectedId===row.memberId}" style="cursor:pointer">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td style="font-size:12px">{{ row.memberId }}</td>
           <td><span class="title-link" @click="openDetail(row)">{{ row.memberNm }}</span></td>
           <td style="font-size:12px">{{ row.email }}</td>
           <td style="font-size:12px">{{ row.phone }}</td>
@@ -227,7 +226,7 @@ window.MbMemberMng = {
           <td style="text-align:right;font-size:12px">{{ (row.totalPurchase||0).toLocaleString() }}원</td>
           <td style="text-align:center"><button class="btn btn-blue btn-sm" @click.stop="openDetail(row)">수정</button></td>
         </tr>
-        <tr v-if="!members.length"><td colspan="11" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
+        <tr v-if="!members.length"><td colspan="10" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
     <div class="pagination">

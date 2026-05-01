@@ -164,13 +164,12 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
     </div>
     <table class="bo-table">
       <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th><th>ID</th><th>회원</th><th>카테고리</th><th>제목</th><th>상태</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th>
+        <th style="width:36px;text-align:center;">번호</th><th>회원</th><th>카테고리</th><th>제목</th><th>상태</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
-        <tr v-if="contacts.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <tr v-if="contacts.length===0"><td colspan="8" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-for="(c, idx) in contacts" :key="c.inquiryId" :style="detailModal.editId===c.inquiryId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-          <td>{{ c.inquiryId }}</td>
           <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
           <td><span class="tag">{{ c.categoryCd }}</span></td>
           <td><span class="title-link" @click="handleLoadDetail(c.inquiryId)" :style="detailModal.editId===c.inquiryId?'color:#e8587a;font-weight:700;':''">{{ c.title }}<span v-if="detailModal.editId===c.inquiryId" style="font-size:10px;margin-left:3px;">▼</span></span></td>

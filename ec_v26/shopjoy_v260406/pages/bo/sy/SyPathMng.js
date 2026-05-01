@@ -288,6 +288,7 @@ window.SyPathMng = {
           <col style="width:50px">
         </colgroup>
         <thead><tr>
+          <th style="width:36px;text-align:center;">번호</th>
           <th>상태</th>
           <th>ID</th>
           <th>업무코드</th>
@@ -300,9 +301,10 @@ window.SyPathMng = {
         </tr></thead>
         <tbody>
           <tr v-if="!gridRows.length">
-            <td colspan="9" style="text-align:center;color:#aaa;padding:30px">데이터가 없습니다.</td>
+            <td colspan="10" style="text-align:center;color:#aaa;padding:30px">데이터가 없습니다.</td>
           </tr>
-          <tr v-for="r in gridRows" :key="r.pathId" :class="'status-' + (r._status || '')">
+          <tr v-for="(r, idx) in gridRows" :key="r.pathId" :class="'status-' + (r._status || '')">
+            <td style="text-align:center;font-size:11px;color:#999">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td style="text-align:center">
               <span class="badge badge-xs"
                 :class="{ 'badge-green': r._status==='N', 'badge-orange': r._status==='U', 'badge-gray': !r._status }">

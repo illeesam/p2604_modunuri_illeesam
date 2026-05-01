@@ -166,6 +166,7 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
       </div>
       <table class="bo-table">
         <thead><tr>
+          <th style="width:36px;text-align:center;">번호</th>
           <th>태그명</th><th>설명</th>
           <th style="width:80px;text-align:right">사용수</th>
           <th style="width:80px;text-align:right">정렬</th>
@@ -174,6 +175,7 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
         </tr></thead>
         <tbody>
           <tr v-for="(row,idx) in gridRows" :key="row?.tagId" :class="{'table-row-new':row._row_status==='N','table-row-mod':row._row_status==='U'}">
+            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td><input v-if="row._row_status" class="form-control" v-model="row.tagNm" @input="onCellChange(idx)"><span v-else><span class="badge badge-blue">#</span> {{ row.tagNm }}</span></td>
             <td><input v-if="row._row_status" class="form-control" v-model="row.tagDesc" @input="onCellChange(idx)"><span v-else style="color:#888;font-size:12px">{{ row.tagDesc }}</span></td>
             <td style="text-align:right">{{ (row.useCount||0) }}</td>
@@ -184,7 +186,7 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
             </td>
             <td style="text-align:center"><button class="btn btn-danger btn-xs" @click="deleteRow(idx)">삭제</button></td>
           </tr>
-          <tr v-if="!gridRows.length"><td colspan="6" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
+          <tr v-if="!gridRows.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
       <div class="pagination">
