@@ -27,7 +27,7 @@ window.SyBizUserMng = {
         const [roleRes, menuRes, roleMenuRes] = await Promise.all([
           boApiSvc.syRole.getPage({ pageNo: 1, pageSize: 10000 }, '사업자사용자관리', '조회'),
           boApiSvc.syMenu.getPage({ pageNo: 1, pageSize: 10000 }, '사업자사용자관리', '조회'),
-          boApi.get('/bo/sy/role-menu/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('사업자사용자관리', '조회') }),
+          boApiSvc.syRoleMenu.getPage({ pageNo: 1, pageSize: 10000 }, '사업자사용자관리', '조회'),
         ]);
         roles.splice(0, roles.length, ...(roleRes.data?.data?.pageList || roleRes.data?.data?.list || []));
         menus.splice(0, menus.length, ...(menuRes.data?.data?.pageList || menuRes.data?.data?.list || []));
@@ -172,7 +172,7 @@ window.SyBizUserMng = {
     const loadVendorUsers = async (vendorId) => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/base/sy/vendor-user', { params: { vendorId, pageSize:10000 }, ...coUtil.apiHdr('사업자사용자관리', '조회') });
+        const res = await boApiSvc.syVendorUser.getList({ vendorId, pageSize: 10000 }, '사업자사용자관리', '조회');
         const list = res.data?.data || [];
         vendorUsers.splice(0, vendorUsers.length, ...list);
       } catch(e) {
@@ -275,7 +275,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       if (!vendorUserId) return;
       uiState.roleLoading = true;
       try {
-        const res = await boApi.get('/base/sy/vendor-user-role', { params: { userId: vendorUserId }, ...coUtil.apiHdr('사업자사용자관리', '조회') });
+        const res = await boApiSvc.syVendorUser.getRoles({ userId: vendorUserId }, '사업자사용자관리', '조회');
         userRoles.splice(0, userRoles.length, ...(res.data?.data || []));
       } catch(e) {
       } finally {

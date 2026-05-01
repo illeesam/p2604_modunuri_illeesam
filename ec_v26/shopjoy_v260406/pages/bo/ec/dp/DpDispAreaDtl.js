@@ -45,14 +45,8 @@ window.DpDispAreaDtl = {
       uiState.loading = true;
       try {
         const [areaRes, panelRes] = await Promise.all([
-          boApi.get('/base/ec/dp/area/page', {
-            params: { pageNo: 1, pageSize: 10000 },
-            ...coUtil.apiHdr('전시영역관리', '상세조회')
-          }),
-          boApi.get('/base/ec/dp/panel/page', {
-            params: { pageNo: 1, pageSize: 10000 },
-            ...coUtil.apiHdr('전시영역관리', '패널조회')
-          })
+          boApiSvc.dpArea.getBasePage({ pageNo: 1, pageSize: 10000 }, '전시영역관리', '상세조회'),
+          boApiSvc.dpPanel.getBasePage({ pageNo: 1, pageSize: 10000 }, '전시영역관리', '패널조회')
         ]);
         areas.splice(0, areas.length, ...(areaRes.data?.data?.pageList || areaRes.data?.data?.list || []));
         panels.splice(0, panels.length, ...(panelRes.data?.data?.pageList || panelRes.data?.data?.list || []));

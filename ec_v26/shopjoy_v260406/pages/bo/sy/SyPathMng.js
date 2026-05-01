@@ -77,10 +77,7 @@ window.SyPathMng = {
     /* ── 트리 전체 조회 (path_id / parent_path_id 기반) ── */
     const handleSearchTree = async () => {
       try {
-        const res = await boApi.get('/bo/sy/path/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('경로관리', '트리조회')
-        });
+        const res = await boApiSvc.syPath.getPage({ pageNo: 1, pageSize: 10000 }, '경로관리', '트리조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         allPaths.splice(0, allPaths.length, ...list);
         expanded.clear(); expanded.add(null);
@@ -93,7 +90,7 @@ window.SyPathMng = {
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...searchParam };
         if (uiState.selectedPathId != null) params.parentPathId = uiState.selectedPathId;
-        const res = await boApi.get('/bo/sy/path/page', { params, ...coUtil.apiHdr('경로관리', '목록조회') });
+        const res = await boApiSvc.syPath.getPage(params, '경로관리', '목록조회');
         const data = res.data?.data || {};
         const list = data.pageList || data.list || [];
         gridRows.splice(0, gridRows.length, ...list.map(r => ({ ...r, _status: null, _orig: { ...r } })));

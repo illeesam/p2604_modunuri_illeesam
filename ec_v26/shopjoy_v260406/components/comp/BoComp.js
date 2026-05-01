@@ -73,10 +73,7 @@ window.PathTree = {
       }
       loading.value = true;
       try {
-        const res = await boApi.get('/bo/sy/path/page', {
-          params: { pageNo: 1, pageSize: 10000, bizCd: props.bizCd },
-          ...coUtil.apiHdr('경로트리', '조회'),
-        });
+        const res = await boApiSvc.syPath.getPage({ pageNo: 1, pageSize: 10000, bizCd: props.bizCd }, '경로트리', '조회');
         const d = res.data?.data || {};
         const list = d.pageList || d.list || [];
         _cache[props.bizCd] = list;

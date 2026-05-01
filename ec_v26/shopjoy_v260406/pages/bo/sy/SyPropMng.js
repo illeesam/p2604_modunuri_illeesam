@@ -63,10 +63,7 @@ window.SyPropMng = {
     const fetchData = async (searchType = 'DEFAULT') => {
       Object.assign(applied, searchParam);
       try {
-        const res = await boApi.get('/base/sy/prop/page', {
-          params: { pageNo: 1, pageSize: 10000, siteId: cfSiteId.value },
-          ...coUtil.apiHdr('속성관리', '목록조회')
-        });
+        const res = await boApiSvc.syProp.getPage({ pageNo: 1, pageSize: 10000, siteId: cfSiteId.value }, '속성관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         _rawProps.splice(0, _rawProps.length, ...list);
         reload();

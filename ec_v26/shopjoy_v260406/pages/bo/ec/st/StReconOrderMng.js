@@ -58,13 +58,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await boApi.get('/base/ec/st/recon/page', {
-          params: {
+        const res = await boApiSvc.stRecon.getPage({
             pageNo: pager.pageNo, pageSize: pager.pageSize, typeCd: 'ORDER',
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          },
-          ...coUtil.apiHdr('주문-정산 대사', '목록조회')
-        });
+          }, '주문-정산 대사', '목록조회');
         const data = res.data?.data;
         rows.splice(0, rows.length, ...(data?.list || rows));
         pager.pageTotalCount = data?.pageTotalCount || rows.length;

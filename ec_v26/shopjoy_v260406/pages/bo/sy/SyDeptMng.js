@@ -12,7 +12,7 @@ window.SyDeptMng = {
     // 트리용 전체 로드 (dept_id, parent_dept_id, dept_nm 만)
     const handleSearchTree = async () => {
       try {
-        const res = await boApi.get('bo/sy/dept/tree', coUtil.apiHdr('부서관리', '트리조회'));
+        const res = await boApiSvc.syDept.getTree('부서관리', '트리조회');
         const list = res.data?.data || [];
         depts.splice(0, depts.length, ...list);
       } catch (err) {
@@ -29,10 +29,7 @@ window.SyDeptMng = {
         if (searchParam.type) params.typeCd = searchParam.type;
         if (searchParam.useYn) params.useYn = searchParam.useYn;
         if (uiState.selectedTreeId != null) params.parentDeptId = uiState.selectedTreeId;
-        const res = await boApi.get('bo/sy/dept/page', {
-          params,
-          ...coUtil.apiHdr('부서관리', '목록조회')
-        });
+        const res = await boApiSvc.syDept.getPage(params, '부서관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         gridRows.splice(0);
         buildTreeRows(list).forEach(d => gridRows.push(makeRow(d)));

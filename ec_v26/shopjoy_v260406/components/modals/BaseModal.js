@@ -717,8 +717,8 @@ window.BoUserSelectModal = {
       modalState.loading = true;
       try {
         const [deptRes, userRes] = await Promise.all([
-          boApi.get('/bo/sy/dept', { params: { pageSize: 10000 }, ...coUtil.apiHdr('부서관리', '목록조회') }),
-          boApi.get('/bo/sy/user', { params: { pageSize: 10000 }, ...coUtil.apiHdr('사용자관리', '목록조회') }),
+          boApiSvc.syDept.getList({ pageSize: 10000 }, '부서관리', '목록조회'),
+          boApiSvc.syUser.getList({ pageSize: 10000 }, '사용자관리', '목록조회'),
         ]);
         modalState.depts = deptRes.data?.data || [];
         modalState.users = userRes.data?.data || [];
@@ -1238,9 +1238,9 @@ window.TemplateSendModal = {
     const handleSearchList = async () => {
       try {
         const [deptRes, memberRes, userRes] = await Promise.all([
-          boApi.get('/bo/sy/dept', { params: { pageSize: 10000 }, ...coUtil.apiHdr('부서관리', '목록조회') }),
-          boApi.get('/bo/ec/mb/member', { params: { pageSize: 10000 }, ...coUtil.apiHdr('회원관리', '목록조회') }),
-          boApi.get('/bo/sy/user', { params: { pageSize: 10000 }, ...coUtil.apiHdr('사용자관리', '목록조회') }),
+          boApiSvc.syDept.getList({ pageSize: 10000 }, '부서관리', '목록조회'),
+          boApiSvc.mbMember.getList({ pageSize: 10000 }, '회원관리', '목록조회'),
+          boApiSvc.syUser.getList({ pageSize: 10000 }, '사용자관리', '목록조회'),
         ]);
         allDepts.value = deptRes.data?.data || [];
         allMembers.value = memberRes.data?.data || [];
@@ -1530,7 +1530,7 @@ window.RoleTreeModal = {
     const allRoles = ref([]);
     const handleSearchList = async () => {
       try {
-        const res = await boApi.get('/bo/sy/role', { params: { pageSize: 10000 }, ...coUtil.apiHdr('역할관리', '목록조회') });
+        const res = await boApiSvc.syRole.getList({ pageSize: 10000 }, '역할관리', '목록조회');
         allRoles.value = res.data?.data || [];
       } catch (e) { allRoles.value = []; }
     };
@@ -1624,7 +1624,7 @@ window.MenuTreeModal = {
     const allMenus = ref([]);
     const handleSearchList = async () => {
       try {
-        const res = await boApi.get('/bo/sy/menu', { params: { pageSize: 10000 }, ...coUtil.apiHdr('메뉴관리', '목록조회') });
+        const res = await boApiSvc.syMenu.getList({ pageSize: 10000 }, '메뉴관리', '목록조회');
         allMenus.value = res.data?.data || [];
       } catch (e) { allMenus.value = []; }
     };
@@ -1758,7 +1758,7 @@ window.DeptTreeModal = {
     const allDepts = ref([]);
     const handleSearchList = async () => {
       try {
-        const res = await boApi.get('/bo/sy/dept', { params: { pageSize: 10000 }, ...coUtil.apiHdr('부서관리', '목록조회') });
+        const res = await boApiSvc.syDept.getList({ pageSize: 10000 }, '부서관리', '목록조회');
         allDepts.value = res.data?.data || [];
       } catch (e) { allDepts.value = []; }
     };
@@ -1902,7 +1902,7 @@ window.CategoryTreeModal = {
     const allCategories = ref([]);
     const handleSearchList = async () => {
       try {
-        const res = await boApi.get('/bo/ec/pd/category', { params: { pageSize: 10000 }, ...coUtil.apiHdr('카테고리관리', '목록조회') });
+        const res = await boApiSvc.pdCategory.getList({ pageSize: 10000 }, '카테고리관리', '목록조회');
         allCategories.value = res.data?.data || [];
       } catch (e) { allCategories.value = []; }
     };
@@ -3208,7 +3208,7 @@ window.PathPickModal = {
     /* 모달 마운트 시 최신 경로 목록 API 재조회 → window._boCmPaths 갱신 */
     Vue.onMounted(async () => {
       try {
-        const res = await boApi.get('/bo/sy/path/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('표시경로', '목록조회') });
+        const res = await boApiSvc.syPath.getPage({ pageNo: 1, pageSize: 10000 }, '표시경로', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         if (list.length > 0) window._boCmPaths = list;
       } catch (e) {

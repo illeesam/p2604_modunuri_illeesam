@@ -36,13 +36,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     });
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await boApi.get('/base/ec/st/settle-pay/page', {
-          params: {
+        const res = await boApiSvc.stSettlePay.getPage({
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          },
-          ...coUtil.apiHdr('정산지급관리', '목록조회')
-        });
+          }, '정산지급관리', '목록조회');
         const data = res.data?.data;
         payList.splice(0, payList.length, ...(data?.list || payList));
         pager.pageTotalCount = data?.pageTotalCount || payList.length;

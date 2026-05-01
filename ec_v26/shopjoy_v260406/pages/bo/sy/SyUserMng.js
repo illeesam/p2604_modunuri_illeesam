@@ -59,7 +59,7 @@ window.SyUserMng = {
 
     const handleSearchTree = async () => {
       try {
-        const res = await boApi.get('bo/sy/dept/tree', coUtil.apiHdr('사용자관리', '트리조회'));
+        const res = await boApiSvc.syDept.getTree('사용자관리', '트리조회');
         depts.splice(0, depts.length, ...(res.data?.data || []));
       } catch (err) {
         console.error('[handleSearchTree]', err);

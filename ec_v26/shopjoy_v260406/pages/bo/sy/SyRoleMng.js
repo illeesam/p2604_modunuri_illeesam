@@ -248,8 +248,8 @@ window.SyRoleMng = {
       uiState.detailLoading = true;
       try {
         const [rmRes, ruRes] = await Promise.all([
-          boApi.get(`/bo/sy/role/${roleId}/menus`,  coUtil.apiHdr('역할관리', '메뉴권한조회')),
-          boApi.get(`/bo/sy/role/${roleId}/users`,  coUtil.apiHdr('역할관리', '대상사용자조회')),
+          boApiSvc.syRole.getMenus(roleId, '역할관리', '메뉴권한조회'),
+          boApiSvc.syRole.getUsers(roleId, '역할관리', '대상사용자조회'),
         ]);
         const rmList = rmRes.data?.data?.list || rmRes.data?.data || [];
         const ruList = ruRes.data?.data?.list || ruRes.data?.data || [];

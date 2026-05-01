@@ -50,13 +50,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       try {
         const [resV, resA] = await Promise.all([
           boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '정산조정관리', '목록조회'),
-          boApi.get('/base/ec/st/settle-adj/page', {
-            params: {
+          boApiSvc.stSettleAdj.getPage({
               pageNo: pager.pageNo, pageSize: pager.pageSize,
               ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-            },
-            ...coUtil.apiHdr('정산조정관리', '목록조회')
-          })
+            }, '정산조정관리', '목록조회')
         ]);
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
         const data = resA.data?.data;

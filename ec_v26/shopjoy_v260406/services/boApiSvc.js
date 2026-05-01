@@ -53,12 +53,32 @@
     getPage(params, uiNm, cmdNm) {
       return global.boApi.get('/bo/ec/dp/area/page', { params, ...hdr(uiNm, cmdNm) });
     },
+    getBasePage(params, uiNm, cmdNm) {
+      return global.boApi.get('/base/ec/dp/area/page', { params, ...hdr(uiNm, cmdNm) });
+    },
   };
 
   /* ── dp: 전시패널 ───────────────────────────────────────────── */
   boApiSvc.dpPanel = {
     getPage(params, uiNm, cmdNm) {
       return global.boApi.get('/bo/ec/dp/panel/page', { params, ...hdr(uiNm, cmdNm) });
+    },
+    getBasePage(params, uiNm, cmdNm) {
+      return global.boApi.get('/base/ec/dp/panel/page', { params, ...hdr(uiNm, cmdNm) });
+    },
+  };
+
+  /* ── dp: 전시위젯 ───────────────────────────────────────────── */
+  boApiSvc.dpWidget = {
+    getPage(params, uiNm, cmdNm) {
+      return global.boApi.get('/bo/ec/dp/widget/page', { params, ...hdr(uiNm, cmdNm) });
+    },
+  };
+
+  /* ── dp: 전시연관자원 ───────────────────────────────────────── */
+  boApiSvc.dpResource = {
+    getPage(params, uiNm, cmdNm) {
+      return global.boApi.get('/bo/ec/resource/page', { params, ...hdr(uiNm, cmdNm) });
     },
   };
 
@@ -101,6 +121,9 @@
   boApiSvc.mbMember = {
     getPage(params, uiNm, cmdNm) {
       return global.boApi.get('/bo/ec/mb/member/page', { params, ...hdr(uiNm, cmdNm) });
+    },
+    getList(params, uiNm, cmdNm) {
+      return global.boApi.get('/bo/ec/mb/member', { params, ...hdr(uiNm, cmdNm) });
     },
     getById(memberId, uiNm, cmdNm) {
       return global.boApi.get(`/bo/ec/mb/member/${memberId}`, hdr(uiNm, cmdNm));
@@ -149,6 +172,9 @@
     getPage(params, uiNm, cmdNm) {
       return global.boApi.get('/bo/ec/pd/category/page', { params, ...hdr(uiNm, cmdNm) });
     },
+    getList(params, uiNm, cmdNm) {
+      return global.boApi.get('/bo/ec/pd/category', { params, ...hdr(uiNm, cmdNm) });
+    },
     getById(categoryId, uiNm, cmdNm) {
       return global.boApi.get(`/bo/ec/pd/category/${categoryId}`, hdr(uiNm, cmdNm));
     },
@@ -169,6 +195,11 @@
     getById(prodId, uiNm, cmdNm) {
       return global.boApi.get(`/bo/ec/pd/prod/${prodId}`, hdr(uiNm, cmdNm));
     },
+    getImages(prodId, uiNm, cmdNm)   { return global.boApi.get(`/bo/ec/pd/prod/${prodId}/images`,   hdr(uiNm, cmdNm)); },
+    getOpts(prodId, uiNm, cmdNm)     { return global.boApi.get(`/bo/ec/pd/prod/${prodId}/opts`,     hdr(uiNm, cmdNm)); },
+    getSkus(prodId, uiNm, cmdNm)     { return global.boApi.get(`/bo/ec/pd/prod/${prodId}/skus`,     hdr(uiNm, cmdNm)); },
+    getContents(prodId, uiNm, cmdNm) { return global.boApi.get(`/bo/ec/pd/prod/${prodId}/contents`, hdr(uiNm, cmdNm)); },
+    getRels(prodId, uiNm, cmdNm)     { return global.boApi.get(`/bo/ec/pd/prod/${prodId}/rels`,     hdr(uiNm, cmdNm)); },
   };
 
   /* ── pd: Q&A ────────────────────────────────────────────────── */
@@ -216,6 +247,13 @@
     },
     getById(couponId, uiNm, cmdNm) {
       return global.boApi.get(`/bo/ec/pm/coupon/${couponId}`, hdr(uiNm, cmdNm));
+    },
+  };
+
+  /* ── pm: 쿠폰사용내역 ───────────────────────────────────────── */
+  boApiSvc.pmCouponUsage = {
+    getPage(params, uiNm, cmdNm) {
+      return global.boApi.get('/bo/ec/pm/coupon-usage/page', { params, ...hdr(uiNm, cmdNm) });
     },
   };
 
@@ -279,6 +317,48 @@
     },
   };
 
+  /* ── st: 정산설정 ───────────────────────────────────────────── */
+  boApiSvc.stSettleConfig = {
+    getPage(params, uiNm, cmdNm) {
+      return global.boApi.get('/base/ec/st/settle-config/page', { params, ...hdr(uiNm, cmdNm) });
+    },
+  };
+
+  /* ── st: 정산원장 ───────────────────────────────────────────── */
+  boApiSvc.stSettleRaw = {
+    getPage(params, uiNm, cmdNm) {
+      return global.boApi.get('/base/ec/st/settle-raw/page', { params, ...hdr(uiNm, cmdNm) });
+    },
+  };
+
+  /* ── st: 정산조정 ───────────────────────────────────────────── */
+  boApiSvc.stSettleAdj = {
+    getPage(params, uiNm, cmdNm) {
+      return global.boApi.get('/base/ec/st/settle-adj/page', { params, ...hdr(uiNm, cmdNm) });
+    },
+  };
+
+  /* ── st: 정산기타조정 ───────────────────────────────────────── */
+  boApiSvc.stSettleEtcAdj = {
+    getPage(params, uiNm, cmdNm) {
+      return global.boApi.get('/base/ec/st/settle-etc-adj/page', { params, ...hdr(uiNm, cmdNm) });
+    },
+  };
+
+  /* ── st: 정산지급 ───────────────────────────────────────────── */
+  boApiSvc.stSettlePay = {
+    getPage(params, uiNm, cmdNm) {
+      return global.boApi.get('/base/ec/st/settle-pay/page', { params, ...hdr(uiNm, cmdNm) });
+    },
+  };
+
+  /* ── st: 정산대사 ───────────────────────────────────────────── */
+  boApiSvc.stRecon = {
+    getPage(params, uiNm, cmdNm) {
+      return global.boApi.get('/base/ec/st/recon/page', { params, ...hdr(uiNm, cmdNm) });
+    },
+  };
+
   /* ── sy: 알람 ───────────────────────────────────────────────── */
   boApiSvc.syAlarm = {
     getPage(params, uiNm, cmdNm) {
@@ -304,6 +384,13 @@
   boApiSvc.syBatch = {
     getPage(params, uiNm, cmdNm) {
       return global.boApi.get('/bo/sy/batch/page', { params, ...hdr(uiNm, cmdNm) });
+    },
+  };
+
+  /* ── sy: 배치이력 ───────────────────────────────────────────── */
+  boApiSvc.syBatchLog = {
+    getPage(params, uiNm, cmdNm) {
+      return global.boApi.get('/bo/sy/batch-log/page', { params, ...hdr(uiNm, cmdNm) });
     },
   };
 
@@ -333,11 +420,27 @@
 
   /* ── sy: 공통코드 ───────────────────────────────────────────── */
   boApiSvc.syCode = {
+    getAll(params, uiNm, cmdNm) {
+      return global.boApi.get('/bo/sy/code', { params, ...hdr(uiNm, cmdNm) });
+    },
     getPage(params, uiNm, cmdNm) {
       return global.boApi.get('/bo/sy/code/page', { params, ...hdr(uiNm, cmdNm) });
     },
     getById(codeId, uiNm, cmdNm) {
       return global.boApi.get(`/bo/sy/code/${codeId}`, hdr(uiNm, cmdNm));
+    },
+  };
+
+  /* ── sy: 부서 ───────────────────────────────────────────────── */
+  boApiSvc.syDept = {
+    getPage(params, uiNm, cmdNm) {
+      return global.boApi.get('/bo/sy/dept/page', { params, ...hdr(uiNm, cmdNm) });
+    },
+    getList(params, uiNm, cmdNm) {
+      return global.boApi.get('/bo/sy/dept', { params, ...hdr(uiNm, cmdNm) });
+    },
+    getTree(uiNm, cmdNm) {
+      return global.boApi.get('/bo/sy/dept/tree', hdr(uiNm, cmdNm));
     },
   };
 
@@ -356,12 +459,45 @@
     getPage(params, uiNm, cmdNm) {
       return global.boApi.get('/bo/sy/menu/page', { params, ...hdr(uiNm, cmdNm) });
     },
+    getList(params, uiNm, cmdNm) {
+      return global.boApi.get('/bo/sy/menu', { params, ...hdr(uiNm, cmdNm) });
+    },
+  };
+
+  /* ── sy: 표시경로 ───────────────────────────────────────────── */
+  boApiSvc.syPath = {
+    getPage(params, uiNm, cmdNm) {
+      return global.boApi.get('/bo/sy/path/page', { params, ...hdr(uiNm, cmdNm) });
+    },
+  };
+
+  /* ── sy: 시스템속성 ─────────────────────────────────────────── */
+  boApiSvc.syProp = {
+    getPage(params, uiNm, cmdNm) {
+      return global.boApi.get('/base/sy/prop/page', { params, ...hdr(uiNm, cmdNm) });
+    },
   };
 
   /* ── sy: 역할 ───────────────────────────────────────────────── */
   boApiSvc.syRole = {
     getPage(params, uiNm, cmdNm) {
       return global.boApi.get('/bo/sy/role/page', { params, ...hdr(uiNm, cmdNm) });
+    },
+    getList(params, uiNm, cmdNm) {
+      return global.boApi.get('/bo/sy/role', { params, ...hdr(uiNm, cmdNm) });
+    },
+    getMenus(roleId, uiNm, cmdNm) {
+      return global.boApi.get(`/bo/sy/role/${roleId}/menus`, hdr(uiNm, cmdNm));
+    },
+    getUsers(roleId, uiNm, cmdNm) {
+      return global.boApi.get(`/bo/sy/role/${roleId}/users`, hdr(uiNm, cmdNm));
+    },
+  };
+
+  /* ── sy: 역할메뉴 ───────────────────────────────────────────── */
+  boApiSvc.syRoleMenu = {
+    getPage(params, uiNm, cmdNm) {
+      return global.boApi.get('/bo/sy/role-menu/page', { params, ...hdr(uiNm, cmdNm) });
     },
   };
 
@@ -387,8 +523,21 @@
     getPage(params, uiNm, cmdNm) {
       return global.boApi.get('/bo/sy/user/page', { params, ...hdr(uiNm, cmdNm) });
     },
+    getList(params, uiNm, cmdNm) {
+      return global.boApi.get('/bo/sy/user', { params, ...hdr(uiNm, cmdNm) });
+    },
     getById(userId, uiNm, cmdNm) {
       return global.boApi.get(`/bo/sy/user/${userId}`, hdr(uiNm, cmdNm));
+    },
+    getRoles(userId, uiNm, cmdNm) {
+      return global.boApi.get(`/bo/sy/user/${userId}/roles`, hdr(uiNm, cmdNm));
+    },
+  };
+
+  /* ── sy: 사용자 로그인이력 ─────────────────────────────────── */
+  boApiSvc.syUserLoginLog = {
+    getPage(params, uiNm, cmdNm) {
+      return global.boApi.get('/bo/sy/user-login-log/page', { params, ...hdr(uiNm, cmdNm) });
     },
   };
 
@@ -396,6 +545,16 @@
   boApiSvc.syVendor = {
     getPage(params, uiNm, cmdNm) {
       return global.boApi.get('/bo/sy/vendor/page', { params, ...hdr(uiNm, cmdNm) });
+    },
+  };
+
+  /* ── sy: 업체사용자 ─────────────────────────────────────────── */
+  boApiSvc.syVendorUser = {
+    getList(params, uiNm, cmdNm) {
+      return global.boApi.get('/base/sy/vendor-user', { params, ...hdr(uiNm, cmdNm) });
+    },
+    getRoles(params, uiNm, cmdNm) {
+      return global.boApi.get('/base/sy/vendor-user-role', { params, ...hdr(uiNm, cmdNm) });
     },
   };
 

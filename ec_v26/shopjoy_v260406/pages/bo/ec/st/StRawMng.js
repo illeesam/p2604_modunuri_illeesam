@@ -85,13 +85,10 @@ const rawList = reactive([]);
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         uiState.loading = true;
-        const res = await boApi.get('/base/ec/st/settle-raw/page', {
-          params: {
+        const res = await boApiSvc.stSettleRaw.getPage({
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
-          },
-          ...coUtil.apiHdr('정산데이터관리', '목록조회')
-        });
+          }, '정산데이터관리', '목록조회');
         const data = res.data?.data;
         rawList.splice(0, rawList.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || rawList.length;

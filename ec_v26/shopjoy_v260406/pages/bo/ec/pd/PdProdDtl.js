@@ -116,11 +116,11 @@ window.PdProdDtl = {
         ];
         if (!isNew) baseCalls.push(
           boApiSvc.pdProd.getById(props.editId, '상품관리', '기본정보조회'),
-          boApi.get(`/bo/ec/pd/prod/${props.editId}/images`,   HDR('이미지조회')),
-          boApi.get(`/bo/ec/pd/prod/${props.editId}/opts`,     HDR('옵션조회')),
-          boApi.get(`/bo/ec/pd/prod/${props.editId}/skus`,     HDR('SKU조회')),
-          boApi.get(`/bo/ec/pd/prod/${props.editId}/contents`, HDR('상품설명조회')),
-          boApi.get(`/bo/ec/pd/prod/${props.editId}/rels`,     HDR('연관상품조회')),
+          boApiSvc.pdProd.getImages(props.editId,   '상품관리', '이미지조회'),
+          boApiSvc.pdProd.getOpts(props.editId,     '상품관리', '옵션조회'),
+          boApiSvc.pdProd.getSkus(props.editId,     '상품관리', 'SKU조회'),
+          boApiSvc.pdProd.getContents(props.editId, '상품관리', '상품설명조회'),
+          boApiSvc.pdProd.getRels(props.editId,     '상품관리', '연관상품조회'),
         );
         const r = await Promise.all(baseCalls);
 
