@@ -118,7 +118,7 @@
       try {
         const [resCust, resLogin, resCoupon, resSend] = await Promise.all([
           boApi.get('/bo/ec/mb/cust-info/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('고객종합정보', '조회') }),
-          boApi.get('/bo/sy/user/login-hist/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('고객종합정보', '조회') }),
+          boApi.get('/base/sy/user-login-log/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('고객종합정보', '조회') }),
           boApi.get('/bo/ec/pm/coupon-usage/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('고객종합정보', '조회') }),
           boApi.get('/bo/sy/alarm/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('고객종합정보', '조회') }),
         ]);

@@ -15,7 +15,7 @@ window.SyBatchHist = {
       try {
         const [resBatch, resLogs] = await Promise.all([
           boApi.get('/bo/sy/batch/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('배치이력', '목록조회') }),
-          boApi.get('/bo/sy/batch/log/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('배치이력', '목록조회') }),
+          boApi.get('/base/sy/batch-log/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('배치이력', '목록조회') }),
         ]);
         batches.splice(0, batches.length, ...(resBatch.data?.data?.list || []));
         batchLogs.splice(0, batchLogs.length, ...(resLogs.data?.data?.list || []));

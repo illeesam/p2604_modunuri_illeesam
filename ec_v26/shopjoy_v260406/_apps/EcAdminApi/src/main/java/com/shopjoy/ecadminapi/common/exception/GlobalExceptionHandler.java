@@ -15,6 +15,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -105,6 +106,16 @@ public class GlobalExceptionHandler {
                 .withDebug(buildStack(ex), buildUserInfo(req)));
     }
 
+    /** API 경로 없음 — 404 (NoResourceFoundException: No static resource ...) */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoResource(NoResourceFoundException ex, HttpServletRequest req) {
+        String msg = "API 경로를 찾을 수 없습니다: " + req.getMethod() + " " + req.getRequestURI();
+        log.warn("NoResourceFoundException: {}", msg);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(ApiResponse.<Void>error(404, msg)
+                .withDebug(ex.getMessage(), buildUserInfo(req)));
+    }
+
     /** 그 외 처리되지 않은 예외 — 500 (스택 트레이스 포함 ERROR 로깅) */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneral(Exception ex, HttpServletRequest req) {
@@ -116,14 +127,18 @@ public class GlobalExceptionHandler {
 
     // ── Private helpers ──────────────────────────────────────────
 
-    /** 예외 스택 추적 문자열 생성 (app 패키지만 필터링) */
+    /** 예외 스택 추적 문자열 생성 — 첫 줄에 예외 메시지 포함, app 패키지만 필터링 */
     private String buildStack(Exception ex) {
         StringWriter sw = new StringWriter();
         ex.printStackTrace(new PrintWriter(sw));
         String fullStack = sw.toString();
 
         StringBuilder filtered = new StringBuilder();
-        for (String line : fullStack.split("\n")) {
+        // 첫 줄(예외 클래스 + 메시지)은 항상 포함
+        String[] lines = fullStack.split("\n");
+        if (lines.length > 0) filtered.append(lines[0]).append("\n");
+        for (int i = 1; i < lines.length; i++) {
+            String line = lines[i];
             if (!line.contains("org.apache") && !line.contains("org.springframework") &&
                 !line.contains("jakarta.servlet") && !line.contains("java.base") && !line.contains("com.fasterxml")) {
                 filtered.append(line).append("\n");

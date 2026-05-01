@@ -773,6 +773,9 @@
       _syncCurrentAuthUser();
 
       // F5 새로고침 시 토큰 유효성 검증 (FO: foAuth.init() 내 fetchFoAppInitData())
+      // boInitReady: 초기화 완료 전 컴포넌트 API 호출을 막기 위한 플래그
+      const boInitReady = ref(false);
+      window.boInitReady = false;
       (async () => {
         const store = _boAuthStore;
         if (store?.svAccessToken) {
@@ -789,6 +792,8 @@
             }
           }
         }
+        boInitReady.value = true;
+        window.boInitReady = true;
       })();
       const activeRoleId = ref(null);
       const cfIsLoggedIn = computed(() => !!(currentAuthUser?.authId));
@@ -1121,7 +1126,7 @@
         rightPanelOpen, commonFilter, selectModal, openSelectModal, closeSelectModal, onSelectItem, clearFilter,
         apiLogs, apiLogHoverDetail, apiLogLockedDetail, clearApiLogs, toggleApiLogLock, getApiStatusColor, formatJsonData, isWithin60Seconds, getRelativeTime,
         tabBarRef, scrollTabs,
-        cfIsLoggedIn, currentAuthUser, currentAuthUserRoles, activeRoleId, rolePath, onRoleChange, rolesOfUser, bizInfoOfUser,
+        boInitReady, cfIsLoggedIn, currentAuthUser, currentAuthUserRoles, activeRoleId, rolePath, onRoleChange, rolesOfUser, bizInfoOfUser,
         loginModal, loginForm, regForm, loginError, uiState, userRoles,
         openLogin, closeLogin, doLogin, doLogout, doRegister,
         profileForm, openProfile, saveProfile,
@@ -1367,18 +1372,23 @@
     <!-- Main Content -->
     <div class="bo-main">
       <div class="bo-wrap">
+        <!-- 초기화 중 로딩 표시 -->
+        <div v-if="!boInitReady" style="display:flex;align-items:center;justify-content:center;height:200px;color:#aaa;font-size:14px;">
+          <span>초기화 중...</span>
+        </div>
         <!-- 고정된 탭: v-show로 항상 마운트 유지, 전환 시 상태 보존 -->
         <component
+          v-if="boInitReady"
           v-for="keptId in keptTabIds" :key="'kept_' + keptId"
           :is="PAGE_COMP_MAP[keptId]"
           v-show="page === keptId"
-          :navigate="navigate" 
+          :navigate="navigate"
           :show-ref-modal="showRefModal" :show-toast="showToast"
           :show-confirm="showConfirm" :set-api-res="setApiRes"
           :edit-id="editId"
         />
         <!-- 비고정 현재 탭: 전환 시 재마운트 -->
-        <div v-if="!keptTabIds.has(page)" :key="page + '_' + (refreshKeys[page] || 0)" style="display:contents;">
+        <div v-if="boInitReady && !keptTabIds.has(page)" :key="page + '_' + (refreshKeys[page] || 0)" style="display:contents;">
         <component v-if="page==='dashboard'" :is="cfDashboardComp" :navigate="navigate"  :show-toast="showToast" />
         <mb-member-mng  v-else-if="page==='mbMemberMng'"  :navigate="navigate"  :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
         <mb-member-dtl  v-else-if="page==='mbMemberDtl'"  :navigate="navigate"  :show-ref-modal="showRefModal" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
