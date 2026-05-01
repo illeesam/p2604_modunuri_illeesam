@@ -456,7 +456,7 @@ body {
 .toast-wrap:hover .toast-expand-icon { color: #4a9b7e; }
 .toast-error-preview { margin-top: 4px; }
 .toast-error-preview-content { margin: 0; padding: 0; font-size: 0.75rem; color: #666; font-family: 'Courier New', monospace; white-space: pre-wrap; word-wrap: break-word; line-height: 1.4; }
-.toast-error-details { margin-top: 6px; padding: 8px 10px; background: rgba(0,0,0,.04); border-radius: 4px; max-height: 200px; overflow-y: auto; }
+.toast-error-details { margin-top: 6px; padding: 8px 10px; background: rgba(0,0,0,.04); border-radius: 4px; max-height: 250px; overflow-y: auto; }
 .toast-error-content { margin: 0; padding: 0; font-size: 0.75rem; color: #666; font-family: 'Courier New', monospace; white-space: pre-wrap; word-wrap: break-word; line-height: 1.4; }
 .toast-wrap.toast-expanded { max-width: 700px; }
 [data-theme="dark"] .toast-expand-icon { color: #666; }

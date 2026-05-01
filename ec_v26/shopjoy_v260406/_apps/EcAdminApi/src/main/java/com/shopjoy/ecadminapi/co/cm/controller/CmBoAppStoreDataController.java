@@ -40,7 +40,7 @@ public class CmBoAppStoreDataController {
      * @return 요청된 초기화 데이터
      */
     @GetMapping("/getInitData")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getInitData(@RequestParam(required = false) String names) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getInitData(@RequestParam(name = "names", required = false) String names) {
         if (names == null || names.trim().isEmpty()) {
             throw new CmBizException("names 파라미터는 필수입니다. 예: ?names=ALL");
         }

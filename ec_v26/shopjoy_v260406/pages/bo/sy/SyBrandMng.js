@@ -23,10 +23,7 @@ window.SyBrandMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/sy/brand/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('브랜드관리', '목록조회')
-        });
+        const res = await boApi.get('/bo/sy/brand/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('브랜드관리', '목록조회') });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         brands.splice(0, brands.length, ...list);
         gridRows.splice(0);
@@ -37,6 +34,16 @@ window.SyBrandMng = {
         uiState.error = err.message;
       } finally {
         uiState.loading = false;
+      }
+    };
+
+    const handleLoadPaths = async () => {
+      try {
+        const res = await boApi.get('/bo/sy/path', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('브랜드관리', '경로조회') });
+        window._boCmPaths = res.data?.data?.list || [];
+        refreshTree();
+      } catch (err) {
+        console.error('[handleLoadPaths]', err);
       }
     };
     /* ── 표시경로 선택 모달 (sy_path) ── */
@@ -100,6 +107,7 @@ window.SyBrandMng = {
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
+        refreshTree();
       }
     });
 
@@ -271,17 +279,20 @@ window.SyBrandMng = {
     const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { uiState.selectedPath = path; };
-    const cfTree = computed(() => boUtil.buildPathTree('sy_brand'));
+    const cfTree = ref(boUtil.buildPathTree('sy_brand'));
+    const refreshTree = () => {
+      cfTree.value = boUtil.buildPathTree('sy_brand');
+      const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
+      expanded.clear(); initSet.forEach(v => expanded.add(v));
+    };
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
-    /* _expand3: 기본 3레벨 펼침 */
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
+      handleLoadPaths();
       handleSearchList('DEFAULT');
-      const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
-      expanded.clear(); initSet.forEach(v => expanded.add(v));
       Object.assign(searchParamOrg, searchParam);
     });
 

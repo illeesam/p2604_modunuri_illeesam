@@ -26,14 +26,14 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
      * @param {string} names - 조회할 항목 ('^' 구분자, 예: "auth^user^role^menu^code^props^app")
      *                        빈 값이면 모든 항목 조회
      */
-    async saFetchBoAppInitData(names = '') {
+    async saFetchBoAppInitData(names = 'ALL') {
       if (this.svIsLoading) return;
 
       this.svIsLoading = true;
       this.svError = null;
 
       try {
-        const res = await boApi.get(`/co/cm/bo-app-store/getInitData?names=${encodeURIComponent(names || '')}`, coUtil.apiHdr('시스템', '초기화데이터조회'));
+        const res = await boApi.get(`/co/cm/bo-app-store/getInitData?names=${encodeURIComponent(names || 'ALL')}`, coUtil.apiHdr('시스템', '초기화데이터조회'));
         console.log('[boAppInitStore] API response:', res);
 
         if (res?.data?.data) {
