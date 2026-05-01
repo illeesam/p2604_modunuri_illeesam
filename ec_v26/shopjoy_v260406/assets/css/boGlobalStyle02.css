@@ -141,6 +141,7 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .toast-header-row { display: flex; align-items: center; gap: 6px; }
 .toast-msg-title { flex: 1; font-size: 13px; font-weight: 500; line-height: 1.4; }
 .toast-msg-detail { font-size: 11px; color: #999; font-weight: 400; margin-top: 3px; }
+.toast-status-hint { font-size: 11px; color: #c0392b; font-weight: 500; margin-top: 4px; padding: 3px 7px; background: rgba(192,57,43,.08); border-radius: 4px; line-height: 1.4; }
 .toast-expand-icon { font-size: 10px; color: #bbb; flex-shrink: 0; transition: color .12s; cursor: pointer; padding: 2px 4px; line-height: 1; user-select: none; }
 .toast-item:hover .toast-expand-icon { color: #cf1322; }
 .toast-close-x { font-size: 11px; color: #bbb; flex-shrink: 0; transition: color .12s; cursor: pointer; padding: 2px 4px; }

@@ -114,7 +114,8 @@
       const resFmt = _fmtXHeaders(d.resHeaders);
       if (reqFmt || resFmt) {
         let headerInfo = '';
-        if (reqFmt) headerInfo += '━━ 요청 헤더 ━━\n' + reqFmt;
+        const _nd = new Date(); const _nts = _nd.getFullYear()+'-'+String(_nd.getMonth()+1).padStart(2,'0')+'-'+String(_nd.getDate()).padStart(2,'0')+' '+String(_nd.getHours()).padStart(2,'0')+':'+String(_nd.getMinutes()).padStart(2,'0')+':'+String(_nd.getSeconds()).padStart(2,'0');
+        if (reqFmt) headerInfo += '━━ 요청 헤더 ━━  ' + _nts + '\n' + reqFmt;
         if (resFmt) headerInfo += (headerInfo ? '\n\n' : '') + '━━ 응답 헤더 ━━\n' + resFmt;
         details = details ? headerInfo + '\n\n' + details : headerInfo;
       }
@@ -143,7 +144,8 @@
         const resFmt = _fmtXHeaders(d.resHeaders);
         if (reqFmt || resFmt) {
           let headerInfo = '';
-          if (reqFmt) headerInfo += '━━ 요청 헤더 ━━\n' + reqFmt;
+          const _nd = new Date(); const _nts = _nd.getFullYear()+'-'+String(_nd.getMonth()+1).padStart(2,'0')+'-'+String(_nd.getDate()).padStart(2,'0')+' '+String(_nd.getHours()).padStart(2,'0')+':'+String(_nd.getMinutes()).padStart(2,'0')+':'+String(_nd.getSeconds()).padStart(2,'0');
+          if (reqFmt) headerInfo += '━━ 요청 헤더 ━━  ' + _nts + '\n' + reqFmt;
           if (resFmt) headerInfo += (headerInfo ? '\n\n' : '') + '━━ 응답 헤더 ━━\n' + resFmt;
           details = details ? headerInfo + '\n\n' + details : headerInfo;
         }

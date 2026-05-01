@@ -226,7 +226,8 @@
         const resFmt = _fmtXHeaders(d.resHeaders);
         if (reqFmt || resFmt) {
           let headerInfo = '';
-          if (reqFmt) headerInfo += '━━ 요청 헤더 ━━\n' + reqFmt;
+          const _nd = new Date(); const _nts = _nd.getFullYear()+'-'+String(_nd.getMonth()+1).padStart(2,'0')+'-'+String(_nd.getDate()).padStart(2,'0')+' '+String(_nd.getHours()).padStart(2,'0')+':'+String(_nd.getMinutes()).padStart(2,'0')+':'+String(_nd.getSeconds()).padStart(2,'0');
+          if (reqFmt) headerInfo += '━━ 요청 헤더 ━━  ' + _nts + '\n' + reqFmt;
           if (resFmt) headerInfo += (headerInfo ? '\n\n' : '') + '━━ 응답 헤더 ━━\n' + resFmt;
           details = details ? headerInfo + '\n\n' + details : headerInfo;
         }
@@ -253,7 +254,8 @@
           const resFmt = _fmtXHeaders(d.resHeaders);
           if (reqFmt || resFmt) {
             let headerInfo = '';
-            if (reqFmt) headerInfo += '━━ 요청 헤더 ━━\n' + reqFmt;
+            const _nd = new Date(); const _nts = _nd.getFullYear()+'-'+String(_nd.getMonth()+1).padStart(2,'0')+'-'+String(_nd.getDate()).padStart(2,'0')+' '+String(_nd.getHours()).padStart(2,'0')+':'+String(_nd.getMinutes()).padStart(2,'0')+':'+String(_nd.getSeconds()).padStart(2,'0');
+            if (reqFmt) headerInfo += '━━ 요청 헤더 ━━  ' + _nts + '\n' + reqFmt;
             if (resFmt) headerInfo += (headerInfo ? '\n\n' : '') + '━━ 응답 헤더 ━━\n' + resFmt;
             details = details ? headerInfo + '\n\n' + details : headerInfo;
           }
@@ -503,20 +505,36 @@
 
       let _toastId  = 0;
       const TOAST_DURATION = 3500;
+      const STATUS_HINT = {
+        400: '잘못된 요청 — 파라미터를 확인하세요.',
+        401: '인증 만료 — 다시 로그인하세요.',
+        403: '접근 거부 — 권한이 없거나 라이선스가 유효하지 않습니다.',
+        404: '리소스를 찾을 수 없습니다.',
+        405: '허용되지 않는 HTTP 메서드입니다.',
+        409: '데이터 충돌 — 이미 존재하는 항목입니다.',
+        422: '입력값 검증 실패 — 필드를 확인하세요.',
+        429: '요청이 너무 많습니다. 잠시 후 다시 시도하세요.',
+        500: '서버 내부 오류 — 관리자에게 문의하세요.',
+        502: '게이트웨이 오류 — 서버가 응답하지 않습니다.',
+        503: '서비스 일시 중단 — 잠시 후 다시 시도하세요.',
+      };
       const showToast = (msg, type = 'success', duration = TOAST_DURATION, errorDetails = '') => {
         if (type === 'error') duration = 0;
         const id = ++_toastId;
         let msgTitle = msg;
         let msgDetail = '';
+        let statusHint = '';
 
         // 에러 메시지에서 METHOD URL STATUS를 분리
         if (type === 'error' && msg.includes('\n')) {
           const parts = msg.split('\n');
           msgDetail = parts[0]; // METHOD URL STATUS
           msgTitle = parts.slice(1).join('\n'); // 나머지 메시지
+          const stMatch = msgDetail.match(/\b([45]\d{2})\b/);
+          if (stMatch) statusHint = STATUS_HINT[parseInt(stMatch[1])] || ('HTTP ' + stMatch[1] + ' 오류');
         }
 
-        toasts.push({ id, msgTitle, msgDetail, msg, type, persistent: duration === 0, errorDetails, expanded: type === 'error' && toastShowDetail.value });
+        toasts.push({ id, msgTitle, msgDetail, statusHint, msg, type, persistent: duration === 0, errorDetails, expanded: type === 'error' && toastShowDetail.value });
         if (duration !== 0) {
           setTimeout(() => {
             const idx = toasts.findIndex(t => t.id === id);
@@ -630,26 +648,37 @@
         const mm = String(now.getMinutes()).padStart(2, '0');
         const ss = String(now.getSeconds()).padStart(2, '0');
         const time = `${hh}:${mm}:${ss}s`;
-        let reqStr = '', resStr = '', headerStr = '';
+        let reqStr = '', resStr = '', headerStr = '', uiLabel = '';
         try {
           if (reqData) reqStr = JSON.stringify(typeof reqData === 'string' ? JSON.parse(reqData) : reqData, null, 2);
           if (resData) resStr = JSON.stringify(typeof resData === 'string' ? JSON.parse(resData) : resData, null, 2);
           if (reqHeaders) {
-            const uiNm  = reqHeaders['X-UI-Nm']  || reqHeaders['x-ui-nm']  || '';
-            const cmdNm = reqHeaders['X-Cmd-Nm'] || reqHeaders['x-cmd-nm'] || '';
-            const headers = {
-              'X-UI-Nm':      uiNm  ? (function(v){ try{ return decodeURIComponent(v); }catch(_){ return v; } })(uiNm)  : '',
-              'X-Cmd-Nm':     cmdNm ? (function(v){ try{ return decodeURIComponent(v); }catch(_){ return v; } })(cmdNm) : '',
-              'Content-Type': reqHeaders['Content-Type'] || '',
-              'Authorization': reqHeaders['Authorization'] || ''
-            };
-            headerStr = JSON.stringify(headers, null, 2);
+            const dec = (v) => { try{ return v ? decodeURIComponent(v) : ''; }catch(_){ return v||''; } };
+            const get = (h, k) => h[k] || h[k.toLowerCase()] || '';
+            const decUiNm  = dec(get(reqHeaders, 'X-UI-Nm'));
+            const decCmdNm = dec(get(reqHeaders, 'X-Cmd-Nm'));
+            if (decUiNm || decCmdNm) uiLabel = decCmdNm ? (decUiNm + ' > ' + decCmdNm) : decUiNm;
+            const trunc = (v, n=60) => v && v.length > n ? v.slice(0,8)+'...'+v.slice(-6) : (v||'');
+            const row = (...keys) => keys.map(k => { const v = dec(get(reqHeaders,k)); return v ? k.toLowerCase()+': '+v : ''; }).filter(Boolean).join(' | ');
+            const lines = [
+              row('x-site-type','X-UI-Nm','X-Cmd-Nm'),
+              row('X-File-Nm','X-Func-Nm','X-Line-No'),
+              [
+                dec(get(reqHeaders,'X-Trace-Id'))   ? 'x-trace-id: '+dec(get(reqHeaders,'X-Trace-Id'))   : '',
+                dec(get(reqHeaders,'X-Site-Id'))     ? 'x-site-id: '+dec(get(reqHeaders,'X-Site-Id'))     : '',
+                dec(get(reqHeaders,'X-Buyer-Id'))    ? 'x-buyer-id: '+dec(get(reqHeaders,'X-Buyer-Id'))   : '',
+                dec(get(reqHeaders,'X-License-Code'))? 'x-license-code: '+trunc(dec(get(reqHeaders,'X-License-Code')),16) : '',
+                dec(get(reqHeaders,'X-User-Agent'))  ? 'x-user-agent: '+trunc(dec(get(reqHeaders,'X-User-Agent')),18) : '',
+                get(reqHeaders,'Authorization')      ? 'authorization: '+trunc(get(reqHeaders,'Authorization'),20) : '',
+              ].filter(Boolean).join(' | '),
+            ].filter(Boolean);
+            headerStr = lines.join('\n');
           }
         } catch (_) {
           reqStr = String(reqData || '');
           resStr = String(resData || '');
         }
-        apiLogs.unshift({ method, url, status, duration, time, hasError, reqData: reqStr, resData: resStr, headers: headerStr });
+        apiLogs.unshift({ method, url, status, duration, time, hasError, uiLabel, reqData: reqStr, resData: resStr, headers: headerStr });
         if (apiLogs.length > maxApiLogs) apiLogs.pop();
         _saveApiLogsToStorage();
       };
@@ -1590,6 +1619,7 @@
               @mouseleave="apiLogLockedDetail !== log ? (apiLogHoverDetail = null) : null"
               style="padding: 6px 8px; border-bottom: 1px solid #f3f4f6; font-size: 10px; font-family: monospace; cursor: pointer; position: relative;"
               :style="{ background: (apiLogHoverDetail === log || apiLogLockedDetail === log) ? '#f9fafb' : 'white' }">
+              <div v-if="log.uiLabel" style="font-size: 9px; font-weight: 700; color: #7c3aed; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -0.2px;">{{ log.uiLabel }}</div>
               <div style="display: grid; grid-template-columns: 18px 50px 32px 1fr 28px 18px; gap: 2px; align-items: center;">
                 <div :style="{ color: isWithin60Seconds(log.time) ? '#000000' : '#8C8C8C', textAlign: 'center', fontSize: '9px', fontWeight: isWithin60Seconds(log.time) ? '700' : '400' }">{{ apiLogs.length - idx }}</div>
                 <div :style="{ color: isWithin60Seconds(log.time) ? '#000000' : '#8C8C8C', whiteSpace: 'nowrap', fontWeight: isWithin60Seconds(log.time) ? '700' : '400', fontSize: '9px' }">{{ getRelativeTime(log.time) }}</div>
@@ -1652,11 +1682,9 @@
             <div style="display: flex; flex-direction: column; overflow: hidden; border: 1px solid #8b5cf6; border-radius: 2px;">
               <div style="padding: 4px 6px; background: #ede9fe; border-bottom: 1px solid #8b5cf6; font-weight: 600; color: #5b21b6; font-size: 10px; display: flex; align-items: center; justify-content: space-between;">
                 <span>📋 Headers</span>
-                <span style="color: #7c3aed; font-size: 11px; font-weight: 700;">
-                  {{ (function(h){ try{ const o=JSON.parse(h||'{}'); const ui=o['X-UI-Nm']||''; const cmd=o['X-Cmd-Nm']||''; return ui ? (ui + (cmd ? ' > ' + cmd : '')) : ''; }catch(_){ return ''; } })((apiLogLockedDetail || apiLogHoverDetail).headers) }}
-                </span>
+                <span v-if="(apiLogLockedDetail || apiLogHoverDetail).uiLabel" style="color: #7c3aed; font-size: 11px; font-weight: 700;">{{ (apiLogLockedDetail || apiLogHoverDetail).uiLabel }}</span>
               </div>
-              <div style="flex: 1; overflow-y: auto; padding: 6px; background: #fafbfc; color: #374151; white-space: pre-wrap; word-break: break-word; line-height: 1.4; font-size: 10px;">{{ formatJsonData((apiLogLockedDetail || apiLogHoverDetail).headers) || '{}' }}</div>
+              <div style="flex: 1; overflow-y: auto; padding: 6px 8px; background: #fafbfc; color: #374151; white-space: pre-wrap; word-break: break-word; line-height: 1.8; font-size: 10px; font-family: 'Courier New', monospace;">{{ (apiLogLockedDetail || apiLogHoverDetail).headers || '-' }}</div>
             </div>
 
             <!-- Request -->
@@ -1740,6 +1768,8 @@
       </div>
       <!-- 서브 정보: URL/status 줄 -->
       <div v-if="t.msgDetail" class="toast-msg-detail">{{ t.msgDetail }}</div>
+      <!-- 상태코드 한글 안내 -->
+      <div v-if="t.statusHint" class="toast-status-hint">💡 {{ t.statusHint }}</div>
       <!-- 펼쳐진 상세 내용 -->
       <div v-if="t.expanded" class="toast-error-details">
         <pre class="toast-error-content">{{ t.errorDetails || (t.msgTitle || t.msg) }}</pre>
@@ -2070,8 +2100,9 @@
   .component('SyPropMng',      window.SyPropMng)
   .component('SyPathMng',      window.SyPathMng)
   .component('SyI18nMng',      window.SyI18nMng)
-  .component('PathTreeNode',   window.PathTreeNode)
-  .component('PathParentSelector', window.PathParentSelector)
+  .component('PathTree',            window.PathTree)
+  .component('PathTreeNode',        window.PathTreeNode)
+  .component('PathParentSelector',  window.PathParentSelector)
   .component('PathPickModal',  window.PathPickModal)
   .component('BizPickModal',   window.BizPickModal)
   .component('SimpleUserPickModal', window.SimpleUserPickModal)

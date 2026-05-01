@@ -172,6 +172,7 @@
       .map(p => ({
         pathId: p.pathId, path: p.pathId,
         name: p.pathLabel, pathLabel: p.pathLabel,
+        bizCd: p.bizCd || '',
         userAdded: !!p._userAdded,
         children: build(p.pathId), count: 0,
       }));

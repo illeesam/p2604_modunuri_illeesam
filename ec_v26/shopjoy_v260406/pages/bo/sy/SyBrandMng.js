@@ -23,7 +23,13 @@ window.SyBrandMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/sy/brand/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('브랜드관리', '목록조회') });
+        const params = { pageNo: 1, pageSize: 10000 };
+        if (searchParam.bizCd)    params.bizCd    = searchParam.bizCd;
+        if (searchParam.kw)       params.kw       = searchParam.kw;
+        if (searchParam.useYn)    params.useYn    = searchParam.useYn;
+        if (searchParam.dateStart) params.dateStart = searchParam.dateStart;
+        if (searchParam.dateEnd)   params.dateEnd   = searchParam.dateEnd;
+        const res = await boApi.get('/bo/sy/brand/page', { params, ...coUtil.apiHdr('브랜드관리', '목록조회') });
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         brands.splice(0, brands.length, ...list);
         gridRows.splice(0);
@@ -37,15 +43,6 @@ window.SyBrandMng = {
       }
     };
 
-    const handleLoadPaths = async () => {
-      try {
-        const res = await boApi.get('/bo/sy/path', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('브랜드관리', '경로조회') });
-        window._boCmPaths = res.data?.data?.list || [];
-        refreshTree();
-      } catch (err) {
-        console.error('[handleLoadPaths]', err);
-      }
-    };
     /* ── 표시경로 선택 모달 (sy_path) ── */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -64,9 +61,9 @@ window.SyBrandMng = {
     
     /* ── 검색 ── */
     const searchParam = reactive({
-      kw: '', useYn: '', dateRange: '', dateStart: '', dateEnd: '', dragSrc: null});;
+      bizCd: '', kw: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''});
     const searchParamOrg = reactive({
-      kw: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
+      bizCd: '', kw: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
     });
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
@@ -107,7 +104,6 @@ window.SyBrandMng = {
     watch(isAppReady, (newVal) => {
       if (newVal) {
         fnLoadCodes();
-        refreshTree();
       }
     });
 
@@ -275,23 +271,11 @@ window.SyBrandMng = {
       '브랜드목록.csv'
     );
 
-    /* ── 좌측 표시경로 트리 (브랜드의 dispPath 기반) ── */
-    const expanded = reactive(new Set(['']));
-    const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
-    const selectNode = (path) => { uiState.selectedPath = path; };
-    const cfTree = ref(boUtil.buildPathTree('sy_brand'));
-    const refreshTree = () => {
-      cfTree.value = boUtil.buildPathTree('sy_brand');
-      const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
-      expanded.clear(); initSet.forEach(v => expanded.add(v));
-    };
-    const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
-    const collapseAll = () => { expanded.clear(); expanded.add(''); };
+    const onPathSelect = (pathId) => { uiState.selectedPath = pathId; };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleLoadPaths();
       handleSearchList('DEFAULT');
       Object.assign(searchParamOrg, searchParam);
     });
@@ -306,8 +290,7 @@ window.SyBrandMng = {
       setFocused, onSearch, onReset, onCellChange, cfIsLocalMode,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       onDragStart, onDragOver, onDragEnd,
-      uiState, toggleCheckAll, fnStatusClass, exportExcel,
-      expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
+      uiState, toggleCheckAll, fnStatusClass, exportExcel, onPathSelect,
     };
   },
   template: /* html */`
@@ -317,7 +300,9 @@ window.SyBrandMng = {
   <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="브랜드코드 / 브랜드명 / 영문명 검색" />
+      <label class="search-label">업무코드</label>
+      <input class="form-control" v-model="searchParam.bizCd" placeholder="biz_cd 검색" style="width:160px" @keyup.enter="onSearch">
+      <input v-model="searchParam.kw" placeholder="브랜드코드 / 브랜드명 / 영문명 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.useYn">
         <option value="">사용여부 전체</option>
         <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
@@ -340,16 +325,12 @@ window.SyBrandMng = {
   <!-- ── 좌 트리 + 우 그리드 ─────────────────────────────────────────────────── -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
-      <div class="toolbar" style="margin-bottom:8px;">
+      <div class="toolbar" style="margin-bottom:6px;">
         <span class="list-title" style="font-size:13px;">📂 표시경로</span>
-      </div>
-      <div style="display:flex;gap:4px;margin-bottom:8px;">
-        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
-        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+        <span v-if="uiState.selectedPath != null" @click="onPathSelect(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <path-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath"
-          :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <path-tree biz-cd="sy_brand" :show-biz-cd="true" :selected="uiState.selectedPath" @select="onPathSelect" />
       </div>
     </div>
 
@@ -479,3 +460,5 @@ window.SyBrandMng = {
 </div>
 `,
 };
+
+/* PathTreeNode, PathParentSelector, BrandPathTreeNode → components/comp/BoComp.js */
