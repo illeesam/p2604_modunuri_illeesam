@@ -7,7 +7,7 @@ window.SyBatchMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const batches = reactive([]);
     const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false, selectedPath: null, focusedIdx: null});
-    const codes = reactive({ batch_status: [], active_statuses: [], batch_run_statuses: [] });
+    const codes = reactive({ batch_status: [], active_statuses: [], batch_run_statuses: [], date_range_opts: [] });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -74,6 +74,7 @@ window.SyBatchMng = {
         codes.batch_status = await codeStore.snGetGrpCodes('BATCH_STATUS') || [];
         codes.active_statuses = await codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
         codes.batch_run_statuses = await codeStore.snGetGrpCodes('BATCH_RUN_STATUS') || [];
+        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -96,7 +97,6 @@ window.SyBatchMng = {
     const searchParamOrg = reactive({
       kw: '', status: '', runStatus: '', dateRange: '', dateStart: '', dateEnd: ''
     });
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.getDateRange(searchParam.dateRange);
@@ -379,7 +379,7 @@ window.SyBatchMng = {
 
     return { batches, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
-      cfSiteNm, searchParam, DATE_RANGE_OPTIONS, handleDateRangeChange,
+      cfSiteNm, searchParam, handleDateRangeChange,
       gridRows, cfTotal,
       setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave, runNow,
@@ -409,7 +409,7 @@ window.SyBatchMng = {
       <input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
       <select v-model="searchParam.dateRange" @change="handleDateRangeChange">
         <option value="">옵션선택</option>
-        <option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
+        <option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>

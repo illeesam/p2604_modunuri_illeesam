@@ -9,6 +9,7 @@ window.PmCouponMng = {
     const codes = reactive({
       coupon_types: [],
       coupon_statuses: [],
+      date_range_opts: [],
     });
 
     const isAppReady = computed(() => {
@@ -22,6 +23,7 @@ window.PmCouponMng = {
       try {
         codes.coupon_types = codeStore.snGetGrpCodes('COUPON_TYPE') || [];
         codes.coupon_statuses = codeStore.snGetGrpCodes('COUPON_STATUS_KR') || [];
+        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -36,7 +38,6 @@ window.PmCouponMng = {
       }
     });
 
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 /* 하단 상세 */
@@ -146,7 +147,7 @@ window.PmCouponMng = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), coupons, uiState, searchParam, searchParamOrg, DATE_RANGE_OPTIONS, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, cfPageNums, discountLabel, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), coupons, uiState, codes, searchParam, searchParamOrg, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, cfPageNums, discountLabel, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
       get viewMode() { return uiState.viewMode; }, set viewMode(v) { uiState.viewMode = v; },
       get selectedId() { return uiStateDetail.selectedId; } };
   },
@@ -157,7 +158,7 @@ window.PmCouponMng = {
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="쿠폰명 / 코드 검색" />
       <select v-model="searchParam.status"><option value="">상태 전체</option><option v-for="c in codes.coupon_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
-      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option></select>
+      <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

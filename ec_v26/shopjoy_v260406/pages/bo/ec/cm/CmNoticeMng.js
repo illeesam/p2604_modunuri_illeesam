@@ -10,7 +10,7 @@ window.CmNoticeMng = {
     const notices       = reactive([]);                                              // 공지사항 목록
     const uiState       = reactive({ loading: false, error: null, isPageCodeLoad: false }); // 로딩·에러·코드로드 상태
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });         // 하단 상세 패널 상태 (선택ID, view|edit)
-    const codes         = reactive({ noticeTypes: [], noticeStatuses: [] });         // 공통코드 (유형·상태)
+    const codes         = reactive({ noticeTypes: [], noticeStatuses: [], date_range_opts: [] });         // 공통코드 (유형·상태)
     const pager         = reactive({
       pageType: 'PAGE', pageNo: 1, pageSize: 10,
       pageTotalCount: 0, pageTotalPage: 1,
@@ -23,7 +23,7 @@ window.CmNoticeMng = {
       kw: '', type: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
     });                                                                              // 초기화용 검색 조건 스냅샷
 
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;                  // 날짜범위 옵션 (오늘·이번주 등)
+    // 날짜범위 옵션은 codes.date_range_opts에서 로드
 
     // ── computed ──────────────────────────────────────────────────────────────
 
@@ -57,6 +57,7 @@ window.CmNoticeMng = {
         if (!codeStore?.snGetGrpCodes) return;
         codes.noticeTypes    = await codeStore.snGetGrpCodes('NOTICE_TYPE')   || [];
         codes.noticeStatuses = await codeStore.snGetGrpCodes('NOTICE_STATUS') || [];
+        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -196,7 +197,7 @@ window.CmNoticeMng = {
 
     return {
       uiStateDetail, notices, uiState, codes, pager,
-      searchParam, searchParamOrg, DATE_RANGE_OPTIONS,
+      searchParam, searchParamOrg,
       selectedId: computed(() => uiStateDetail.selectedId),
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey, cfPageNums,
       onSearch, onReset, onDateRangeChange, onSizeChange, setPage,
@@ -227,7 +228,7 @@ window.CmNoticeMng = {
       <input type="date" v-model="searchParam.dateEnd" class="date-range-input" />
       <select v-model="searchParam.dateRange" @change="onDateRangeChange">
         <option value="">옵션선택</option>
-        <option v-for="o in DATE_RANGE_OPTIONS" :key="o?.value" :value="o.value">{{ o.label }}</option>
+        <option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>

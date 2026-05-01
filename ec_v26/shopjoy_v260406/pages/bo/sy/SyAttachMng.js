@@ -7,7 +7,7 @@ window.SyAttachMng = {
     const attaches = reactive([]);
     const attachGrps = reactive([]);
     const uiState = reactive({ fileEditMode: false, grpEditMode: false, loading: false, error: null, isPageCodeLoad: false, selectedGrpId: null, grpEditId: null, fileEditId: null});
-    const codes = reactive({ attach_type: [], active_statuses: [] });
+    const codes = reactive({ attach_type: [], active_statuses: [], date_range_opts: [] });
 
     // onMounted에서 API 로드
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -44,6 +44,7 @@ window.SyAttachMng = {
         if (!codeStore?.snGetGrpCodes) return;
         codes.attach_type = await codeStore.snGetGrpCodes('ATTACH_TYPE') || [];
         codes.active_statuses = await codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
+        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -58,7 +59,6 @@ window.SyAttachMng = {
       }
     });
     const searchParam = reactive({ dateRange: '', dateStart: '', dateEnd: '' });
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const onDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
     };
@@ -186,7 +186,7 @@ window.SyAttachMng = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { attaches, uiState, codes, searchParam, DATE_RANGE_OPTIONS, onDateRangeChange, cfSiteNm,
+    return { attaches, uiState, codes, searchParam, onDateRangeChange, cfSiteNm,
       attachGrps, grpForm, cfTotal,
       selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
       fileForm, applied, cfFilteredFiles, onSearch, onReset, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
@@ -279,7 +279,7 @@ window.SyAttachMng = {
           </b>
           <div style="display:flex;gap:8px;align-items:center;">
             <input v-model="searchParam.kw" placeholder="파일명 / RefID 검색" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:160px;" />
-            <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" /><select v-model="searchParam.dateRange" @change="onDateRangeChange" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;"><option value="">옵션선택</option><option v-for="o in DATE_RANGE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
+            <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" /><select v-model="searchParam.dateRange" @change="onDateRangeChange" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
             <div class="search-actions">
               <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
               <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>

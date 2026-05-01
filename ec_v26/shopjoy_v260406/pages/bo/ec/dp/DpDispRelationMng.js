@@ -7,6 +7,7 @@ window.DpDispRelationMng = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({
       disp_relation_types: [],
+      date_range_opts: [],
     });
 
     const isAppReady = computed(() => {
@@ -19,6 +20,7 @@ window.DpDispRelationMng = {
       const codeStore = window.getBoCodeStore();
       try {
         codes.disp_relation_types = codeStore.snGetGrpCodes('DISP_RELATION_TYPE') || [];
+        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -57,7 +59,6 @@ window.DpDispRelationMng = {
     dateStart: '',
     dateEnd: ''
   });
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
     const onSearch = async () => {
     try {
       const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
@@ -143,7 +144,7 @@ window.DpDispRelationMng = {
     // ── return ───────────────────────────────────────────────────────────────
 
     return {
-      searchParam, searchParamOrg, DATE_RANGE_OPTIONS,
+      codes, searchParam, searchParamOrg,
       onSearch, onReset,
       expandedNodes, toggleNode, isNodeExpanded,
       cfTreeData, fnGetVisibilityBadges, fnGetBadgeColor, fnGetUseYnBadge,

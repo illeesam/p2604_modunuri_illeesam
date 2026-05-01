@@ -7,6 +7,7 @@ window.StSettlePayMng = {
 const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({
       settle_pay_statuses: [],
+      date_range_opts: [],
     });
 
     const isAppReady = computed(() => {
@@ -19,6 +20,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       const codeStore = window.getBoCodeStore();
       try {
         codes.settle_pay_statuses = codeStore.snGetGrpCodes('SETTLE_PAY_STATUS_KR') || [];
+        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -58,7 +60,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       Object.assign(searchParamOrg, searchParam);
     });
 
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
             const dateEnd   = ref('');
     const handleDateRangeChange = () => {
       if (uiState.dateRange) { const r = boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
@@ -117,7 +118,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, payList, cfPageNums, cfSummary, doPay, fnStatusBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return { uiState, codes, handleDateRangeChange, pager, payList, cfPageNums, cfSummary, doPay, fnStatusBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -134,7 +135,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
       <select v-model="uiState.dateRange" @change="handleDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
-        <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
+        <option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <input type="date" v-model="uiState.dateStart" style="width:140px" /><span style="line-height:32px">~</span><input type="date" v-model="uiState.dateEnd" style="width:140px" />
       <select v-model="searchParam.status" style="width:120px">

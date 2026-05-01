@@ -8,6 +8,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const codes = reactive({
       settle_adj_types: [],
       settle_adj_statuses: [],
+      date_range_opts: [],
     });
 
     const isAppReady = computed(() => {
@@ -21,6 +22,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       try {
         codes.settle_adj_types = codeStore.snGetGrpCodes('SETTLE_ADJ_TYPE_KR') || [];
         codes.settle_adj_statuses = codeStore.snGetGrpCodes('SETTLE_ADJ_STATUS') || [];
+        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -35,7 +37,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     });
 
-    const DATE_RANGE_OPTIONS = boUtil.DATE_RANGE_OPTIONS;
             const dateEnd   = ref('');
     const handleDateRangeChange = () => {
       if (uiState.dateRange) { const r = boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
@@ -182,7 +183,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, handleDateRangeChange, DATE_RANGE_OPTIONS, pager, adjList, cfPageNums, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, doApprove, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return { uiState, codes, handleDateRangeChange, pager, adjList, cfPageNums, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, doApprove, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -199,7 +200,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
       <select v-model="uiState.dateRange" @change="handleDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
-        <option v-for="opt in DATE_RANGE_OPTIONS" :key="opt?.value" :value="opt.value">{{ opt.label }}</option>
+        <option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
       </select>
       <input type="date" v-model="uiState.dateStart" style="width:140px" />
       <span style="line-height:32px">~</span>
