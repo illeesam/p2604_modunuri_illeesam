@@ -12,7 +12,7 @@ window.MbMemberDtl = {
     }, { immediate: true });
 
     onMounted(() => {
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       if (codeStore?.snGetGrpCodes) {
         codes.member_grades = codeStore.snGetGrpCodes('MEMBER_GRADE') || [];
         codes.member_statuses = codeStore.snGetGrpCodes('MEMBER_STATUS') || [];

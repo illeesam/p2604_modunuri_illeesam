@@ -11,17 +11,17 @@ window.useBoAppStore = Pinia.defineStore('boApp', {
   }),
 
   getters: {
-    svGetAppVersion: (s) => s.svAppVersion, // 앱 버전
-    svGetBoSiteNo: (s) => s.svBoSiteNo, // BO 사이트 번호
-    svGetLastUpdateDate: (s) => s.svLastUpdateDate, // 마지막 업데이트 날짜
-    svGetActive: (s) => s.svActive, // 활성 환경 (local/dev/prod)
+    sgGetAppVersion: (s) => s.svAppVersion, // 앱 버전
+    sgGetBoSiteNo: (s) => s.svBoSiteNo, // BO 사이트 번호
+    sgGetLastUpdateDate: (s) => s.svLastUpdateDate, // 마지막 업데이트 날짜
+    sgGetActive: (s) => s.svActive, // 활성 환경 (local/dev/prod)
   },
 
   actions: {
     /**
      * 앱 정보 설정
      */
-    sfSetApp(appData) {
+    saSetApp(appData) {
       if (appData) {
         this.svBoSiteNo = appData.boSiteNo || '01';
         this.svAppVersion = appData.appVersion || '2.6.0';
@@ -33,7 +33,7 @@ window.useBoAppStore = Pinia.defineStore('boApp', {
     /**
      * 앱 버전 업데이트
      */
-    sfSetAppVersion(version) {
+    saSetAppVersion(version) {
       if (version) {
         this.svAppVersion = version;
       }
@@ -42,7 +42,7 @@ window.useBoAppStore = Pinia.defineStore('boApp', {
     /**
      * BO 사이트 번호 업데이트
      */
-    sfSetBoSiteNo(siteNo) {
+    saSetBoSiteNo(siteNo) {
       if (siteNo) {
         this.svBoSiteNo = siteNo;
       }
@@ -51,7 +51,7 @@ window.useBoAppStore = Pinia.defineStore('boApp', {
     /**
      * 마지막 업데이트 날짜 업데이트
      */
-    sfSetLastUpdateDate(date) {
+    saSetLastUpdateDate(date) {
       if (date) {
         this.svLastUpdateDate = date;
       }
@@ -60,7 +60,7 @@ window.useBoAppStore = Pinia.defineStore('boApp', {
     /**
      * 초기화 (로그아웃 시)
      */
-    sfClear() {
+    saClear() {
       this.svBoSiteNo = '01';
       this.svAppVersion = '2.6.0';
       this.svLastUpdateDate = '';
@@ -70,7 +70,7 @@ window.useBoAppStore = Pinia.defineStore('boApp', {
 });
 
 // 함수형 유틸리티 제공
-window.getBoAppStore = () => {
+window.sfGetBoAppStore = () => {
   try {
     return window.useBoAppStore?.() || {
       svBoSiteNo: '01',
@@ -79,7 +79,7 @@ window.getBoAppStore = () => {
       svActive: '-',
     };
   } catch (e) {
-    console.error('[getBoAppStore] error:', e);
+    console.error('[sfGetBoAppStore] error:', e);
     return {
       svBoSiteNo: '01',
       svAppVersion: '2.6.0',

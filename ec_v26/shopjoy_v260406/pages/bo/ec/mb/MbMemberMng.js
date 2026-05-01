@@ -22,7 +22,7 @@ window.MbMemberMng = {
     // 2️⃣ computed 선언
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
@@ -36,7 +36,7 @@ window.MbMemberMng = {
     // 3️⃣ 함수 정의
     const fnLoadCodes = async () => {
       try {
-        const codeStore = window.getBoCodeStore?.();
+        const codeStore = window.sfGetBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
         codes.member_statuses = await codeStore.snGetGrpCodes('MEMBER_STATUS') || [];
         codes.member_grades = await codeStore.snGetGrpCodes('MEMBER_GRADE') || [];

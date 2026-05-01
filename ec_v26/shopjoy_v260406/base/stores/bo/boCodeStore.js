@@ -11,19 +11,19 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
   },
 
   getters: {
-    svIsEmpty: (s) => !Array.isArray(s.svCodes) || s.svCodes.length === 0,
+    sgIsEmpty: (s) => !Array.isArray(s.svCodes) || s.svCodes.length === 0,
     // 코드 그룹별 조회
-    svGetCodesByGroup: (s) => (grpVal) => {
+    sgGetCodesByGroup: (s) => (grpVal) => {
       if (!Array.isArray(s.svCodes)) return [];
       return s.svCodes.filter(c => c.codeGrp === grpVal);
     },
     // 특정 코드 값 조회
-    svGetCodeByVal: (s) => (grpVal, codeVal) => {
+    sgGetCodeByVal: (s) => (grpVal, codeVal) => {
       if (!Array.isArray(s.svCodes)) return null;
       return s.svCodes.find(c => c.codeGrp === grpVal && c.codeVal === codeVal);
     },
     // 특정 코드명 조회
-    svGetCodeNmByVal: (s) => (grpVal, codeVal) => {
+    sgGetCodeNmByVal: (s) => (grpVal, codeVal) => {
       if (!Array.isArray(s.svCodes)) return codeVal;
       const code = s.svCodes.find(c => c.codeGrp === grpVal && c.codeVal === codeVal);
       return code?.codeNm || codeVal;
@@ -51,7 +51,7 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
     /**
      * 공통 코드 설정 (전체 교체, 그리드 형식)
      */
-    sfSetCodes(codesData) {
+    saSetCodes(codesData) {
       if (codesData) {
         this.svCodes = Array.isArray(codesData) ? codesData : [];
       }
@@ -60,7 +60,7 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
     /**
      * 코드 항목 추가
      */
-    sfAddCode(code) {
+    saAddCode(code) {
       if (code) {
         if (!this.svCodes.find(c => c.codeId === code.codeId)) {
           this.svCodes.push(code);
@@ -71,7 +71,7 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
     /**
      * 코드 항목 업데이트
      */
-    sfUpdateCode(codeId, codeData) {
+    saUpdateCode(codeId, codeData) {
       if (codeId) {
         const idx = this.svCodes.findIndex(c => c.codeId === codeId);
         if (idx !== -1) {
@@ -83,7 +83,7 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
     /**
      * 코드 항목 삭제
      */
-    sfRemoveCode(codeId) {
+    saRemoveCode(codeId) {
       if (codeId) {
         const idx = this.svCodes.findIndex(c => c.codeId === codeId);
         if (idx !== -1) {
@@ -95,7 +95,7 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
     /**
      * 초기화 (로그아웃 시)
      */
-    sfClear() {
+    saClear() {
       this.svCodes = [];
       this.svIsLoading = false;
     },
@@ -103,18 +103,18 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
 });
 
 // 함수형 유틸리티 제공
-window.getBoCodeStore = () => {
+window.sfGetBoCodeStore = () => {
   try {
     return window.useBoCodeStore?.() || {
       svCodes: [],
-      svIsEmpty: true,
+      sgIsEmpty: true,
       svIsLoading: false,
     };
   } catch (e) {
-    console.error('[getBoCodeStore] error:', e);
+    console.error('[sfGetBoCodeStore] error:', e);
     return {
       svCodes: [],
-      svIsEmpty: true,
+      sgIsEmpty: true,
       svIsLoading: false,
     };
   }

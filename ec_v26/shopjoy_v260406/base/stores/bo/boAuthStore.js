@@ -44,14 +44,14 @@
     }),
 
     getters: {
-      svIsLoggedIn: (state) => !!(state.svAuthUser?.authId) && !!state.svAccessToken,
-      svCurrentUser: (state) => state.svAuthUser || _defaultAuthUser(),
-      svAuthHeader: (state) => (state.svAccessToken ? { Authorization: `Bearer ${state.svAccessToken}` } : {}),
+      sgIsLoggedIn: (state) => !!(state.svAuthUser?.authId) && !!state.svAccessToken,
+      sgCurrentUser: (state) => state.svAuthUser || _defaultAuthUser(),
+      sgAuthHeader: (state) => (state.svAccessToken ? { Authorization: `Bearer ${state.svAccessToken}` } : {}),
     },
 
     actions: {
       // 로그인
-      async sfLogin(loginId, loginPwd, authMethod = '메인') {
+      async saLogin(loginId, loginPwd, authMethod = '메인') {
         try {
           const loginPwdHash = window.CryptoJS ? CryptoJS.SHA256(loginPwd).toString() : loginPwd;
           const res = await boApi.post('/auth/bo/auth/login', {
@@ -103,39 +103,39 @@
             if (initRes?.data?.data) {
               const data = initRes.data.data;
 
-              if (data.syAuth) this.sfSetAuth(data.syAuth);
-              if (data.syUser) this.sfSetAuthUser(data.syUser);
+              if (data.syAuth) this.saSetAuth(data.syAuth);
+              if (data.syUser) this.saSetAuthUser(data.syUser);
 
               const roleStore = window.useBoRoleStore?.();
-              if (data.syRoles) roleStore?.sfSetRoles(data.syRoles);
+              if (data.syRoles) roleStore?.saSetRoles(data.syRoles);
 
               const menuStore = window.useBoMenuStore?.();
-              if (data.syMenus) menuStore?.sfSetMenus(data.syMenus);
+              if (data.syMenus) menuStore?.saSetMenus(data.syMenus);
 
               const codeStore = window.useBoCodeStore?.();
-              if (data.syCodes?.codes) codeStore?.sfSetCodes(data.syCodes.codes);
+              if (data.syCodes?.codes) codeStore?.saSetCodes(data.syCodes.codes);
 
               const propStore = window.useBoPropStore?.();
-              if (data.syProps) propStore?.sfSetProps(data.syProps);
+              if (data.syProps) propStore?.saSetProps(data.syProps);
 
               const appStore = window.useBoAppStore?.();
-              if (data.syApp) appStore?.sfSetApp(data.syApp);
+              if (data.syApp) appStore?.saSetApp(data.syApp);
 
             }
           } catch (e) {
-            console.warn('[boAuthStore.sfLogin] getInitData failed:', e);
+            console.warn('[boAuthStore.saLogin] getInitData failed:', e);
           }
 
           return this.svAuthUser || {};
         } catch (err) {
-          this.sfReset();
+          this.saReset();
           throw err;
         }
       },
 
       // 토큰 갱신
-      async sfRefreshAccessToken() {
-        if (!this.svRefreshToken) { this.sfReset(); return false; }
+      async saRefreshAccessToken() {
+        if (!this.svRefreshToken) { this.saReset(); return false; }
         try {
           const res = await boApi.post('/auth/bo/auth/refresh', {
             refreshToken: this.svRefreshToken,
@@ -150,23 +150,23 @@
           } catch (_) {}
           return true;
         } catch (err) {
-          this.sfReset();
+          this.saReset();
           return false;
         }
       },
 
       // 로그아웃
-      async sfLogout() {
+      async saLogout() {
         if (this.svRefreshToken) {
           try {
             await boApi.post('/auth/bo/auth/logout', { refreshToken: this.svRefreshToken }, coUtil.apiHdr('로그인', '로그아웃'));
           } catch (_) {}
         }
-        this.sfReset();
+        this.saReset();
       },
 
       // 초기화
-      sfReset() {
+      saReset() {
         this.svAuthUser = _defaultAuthUser();
         this.svAccessToken = '';
         this.svRefreshToken = '';
@@ -180,14 +180,14 @@
       },
 
       // 인증 정보 설정 (토큰 + 사용자 정보)
-      sfSetAuth(authData) {
+      saSetAuth(authData) {
         if (!authData) return;
         if (authData.accessToken) this.svAccessToken = authData.accessToken;
         if (authData.refreshToken) this.svRefreshToken = authData.refreshToken;
         if (authData.accessExpiresIn) this.svAccessExpiresIn = authData.accessExpiresIn;
         if (authData.refreshExpiresIn) this.svRefreshExpiresIn = authData.refreshExpiresIn;
         if (authData.authUser) this.svAuthUser = authData.authUser;
-        else if (authData.user) this.sfSetAuthUser(authData.user); // StoreAuth.user 필드 호환
+        else if (authData.user) this.saSetAuthUser(authData.user); // StoreAuth.user 필드 호환
         if (authData.tempAuthInfo !== undefined) this.svTempAuthInfo = authData.tempAuthInfo;
         try {
           if (this.svAccessToken) localStorage.setItem('modu-bo-accessToken', this.svAccessToken);
@@ -200,7 +200,7 @@
       },
 
       // 사용자 정보 설정 (StoreUser → 프론트 authUser 형식으로 정규화)
-      sfSetAuthUser(authUserData) {
+      saSetAuthUser(authUserData) {
         if (!authUserData) return;
         const authId = authUserData.authId || authUserData.userId || '';
         this.svAuthUser = {
@@ -219,7 +219,7 @@
       },
 
       // localStorage에서 복원
-      sfRestoreFromStorage() {
+      saRestoreFromStorage() {
         try {
           // 구 key 마이그레이션: modu-bo-user → modu-bo-authUser
           const _oldUser = localStorage.getItem('modu-bo-user');
@@ -248,7 +248,7 @@
       },
 
       // FO syncFromStorage와 동일: 토큰 없으면 리셋, 있으면 복원
-      sfSyncFromStorage() {
+      saSyncFromStorage() {
         try {
           const token        = localStorage.getItem('modu-bo-accessToken');
           const refreshToken = localStorage.getItem('modu-bo-refreshToken');
@@ -265,13 +265,13 @@
           }
           return !!token;
         } catch (e) {
-          console.error('[boAuthStore] sfSyncFromStorage error:', e);
+          console.error('[boAuthStore] saSyncFromStorage error:', e);
           return false;
         }
       },
 
       // clear (ZdStore에서 호출)
-      sfClear() { this.sfReset(); },
+      saClear() { this.saReset(); },
     },
   });
 
@@ -280,49 +280,49 @@
     window.addEventListener('storage', (e) => {
       if (e.key === 'modu-bo-accessToken' || e.key === 'modu-bo-authUser' || e.key === 'modu-bo-refreshToken') {
         const store = window.useBoAuthStore?.();
-        if (store) store.sfSyncFromStorage();
+        if (store) store.saSyncFromStorage();
       }
     });
   }
 
   // 함수형 유틸리티
-  window.getBoAuthStore = () => {
+  window.sfGetBoAuthStore = () => {
     try {
       return window.useBoAuthStore?.() || {
         svAuthUser: _defaultAuthUser(), svAccessToken: '', svRefreshToken: '',
-        svIsLoggedIn: false, svAccessExpiresIn: 0, svRefreshExpiresIn: 0,
-        svCurrentUser: _defaultAuthUser(), svAuthHeader: {},
+        sgIsLoggedIn: false, svAccessExpiresIn: 0, svRefreshExpiresIn: 0,
+        sgCurrentUser: _defaultAuthUser(), sgAuthHeader: {},
       };
     } catch (e) {
-      console.error('getBoAuthStore error:', e);
+      console.error('sfGetBoAuthStore error:', e);
       return {
         svAuthUser: _defaultAuthUser(), svAccessToken: '', svRefreshToken: '',
-        svAccessExpiresIn: 0, svRefreshExpiresIn: 0, svIsLoggedIn: false,
-        svCurrentUser: _defaultAuthUser(), svAuthHeader: {},
+        svAccessExpiresIn: 0, svRefreshExpiresIn: 0, sgIsLoggedIn: false,
+        sgCurrentUser: _defaultAuthUser(), sgAuthHeader: {},
       };
     }
   };
 
-  window.getBoAuthUser = () => {
+  window.sfGetBoAuthUser = () => {
     try {
       const store = window.useBoAuthStore?.();
       return (store?.svAuthUser?.authId) ? store.svAuthUser : _defaultAuthUser();
     } catch (e) { return _defaultAuthUser(); }
   };
 
-  window.getBoAuthToken = () => {
+  window.sfGetBoAuthToken = () => {
     try { return window.useBoAuthStore?.()?.svAccessToken || ''; }
     catch (e) { return ''; }
   };
 
-  window.isBoAuthLoggedIn = () => {
+  window.sfIsBoAuthLoggedIn = () => {
     try {
       const store = window.useBoAuthStore?.();
       return !!(store?.svAuthUser?.authId && store?.svAccessToken);
     } catch (e) { return false; }
   };
 
-  window.isBoLogin = () => {
+  window.sfIsBoLogin = () => {
     try {
       const store = window.useBoAuthStore?.();
       if (!store?.svAuthUser) return false;

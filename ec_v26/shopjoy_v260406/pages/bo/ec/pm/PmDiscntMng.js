@@ -16,12 +16,12 @@ window.PmDiscntMng = {
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = () => {
-      const codeStore = window.getBoCodeStore();
+      const codeStore = window.sfGetBoCodeStore();
       try {
         codes.discount_types = codeStore.snGetGrpCodes('DISCOUNT_TYPE') || [];
         codes.discount_statuses = codeStore.snGetGrpCodes('DISCOUNT_STATUS') || [];

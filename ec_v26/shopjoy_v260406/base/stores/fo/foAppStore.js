@@ -13,17 +13,17 @@ window.useFoAppStore = Pinia.defineStore('foApp', {
   },
 
   getters: {
-    svGetAppVersion: (s) => s.svAppVersion,
-    svGetFoSiteNo: (s) => s.svFoSiteNo,
-    svGetLastUpdateDate: (s) => s.svLastUpdateDate,
-    svGetActive: (s) => s.svActive,
+    sgGetAppVersion: (s) => s.svAppVersion,
+    sgGetFoSiteNo: (s) => s.svFoSiteNo,
+    sgGetLastUpdateDate: (s) => s.svLastUpdateDate,
+    sgGetActive: (s) => s.svActive,
   },
 
   actions: {
     /**
      * 앱 정보 설정
      */
-    sfSetApp(appData) {
+    saSetApp(appData) {
       if (appData) {
         this.svFoSiteNo = appData.foSiteNo || '01';
         this.svAppVersion = appData.appVersion || '2.6.0';
@@ -35,7 +35,7 @@ window.useFoAppStore = Pinia.defineStore('foApp', {
     /**
      * 앱 버전 업데이트
      */
-    sfSetAppVersion(version) {
+    saSetAppVersion(version) {
       if (version) {
         this.svAppVersion = version;
       }
@@ -44,7 +44,7 @@ window.useFoAppStore = Pinia.defineStore('foApp', {
     /**
      * FO 사이트 번호 업데이트
      */
-    sfSetFoSiteNo(siteNo) {
+    saSetFoSiteNo(siteNo) {
       if (siteNo) {
         this.svFoSiteNo = siteNo;
       }
@@ -53,7 +53,7 @@ window.useFoAppStore = Pinia.defineStore('foApp', {
     /**
      * 마지막 업데이트 날짜 업데이트
      */
-    sfSetLastUpdateDate(date) {
+    saSetLastUpdateDate(date) {
       if (date) {
         this.svLastUpdateDate = date;
       }
@@ -62,7 +62,7 @@ window.useFoAppStore = Pinia.defineStore('foApp', {
     /**
      * 초기화 (로그아웃 시)
      */
-    sfClear() {
+    saClear() {
       this.svFoSiteNo = '01';
       this.svAppVersion = '2.6.0';
       this.svLastUpdateDate = '';

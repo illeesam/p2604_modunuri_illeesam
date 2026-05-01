@@ -42,13 +42,13 @@ window.SyContactMng = {
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
       try {
-        const codeStore = window.getBoCodeStore?.();
+        const codeStore = window.sfGetBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
         codes.contact_status = await codeStore.snGetGrpCodes('CONTACT_STATUS') || [];
         codes.contact_categories = await codeStore.snGetGrpCodes('CONTACT_CATEGORY_KR') || [];

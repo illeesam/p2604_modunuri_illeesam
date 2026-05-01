@@ -2484,7 +2484,7 @@ window.RowPickModal = {
     const wLabel = (t) => WIDGET_LABEL[t] || t || '-';
 
     Vue.onMounted(() => {
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       if (codeStore?.snGetGrpCodes) activeStatuses.value = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
     });
 
@@ -2616,7 +2616,7 @@ window.AreaPickModal = {
     const useYnOpts = ref([]);
     onMounted(() => {
       try {
-        const s = window.getBoCodeStore?.();
+        const s = window.sfGetBoCodeStore?.();
         if (s?.snGetGrpCodes) useYnOpts.value = s.snGetGrpCodes('USE_YN') || [];
       } catch(e) {}
     });
@@ -2886,7 +2886,7 @@ window.PanelPickModal = {
     };
 
     Vue.onMounted(() => {
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       if (codeStore?.snGetGrpCodes) activeStatuses.value = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
     });
 
@@ -3076,7 +3076,7 @@ window.WidgetLibPickModal = {
     const onPick = (lib) => emit('pick', lib);
     const activeStatuses = Vue.ref([]);
     Vue.onMounted(() => {
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       if (codeStore?.snGetGrpCodes) activeStatuses.value = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
     });
 

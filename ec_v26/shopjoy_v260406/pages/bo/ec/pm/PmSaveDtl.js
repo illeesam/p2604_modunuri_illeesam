@@ -37,13 +37,13 @@ window.PmSaveDtl = {
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
       try {
-        const codeStore = window.getBoCodeStore?.();
+        const codeStore = window.sfGetBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
         codes.save_issue_types = await codeStore.snGetGrpCodes('SAVE_ISSUE_TYPE') || [];
         codes.save_units = await codeStore.snGetGrpCodes('SAVE_UNIT') || [];

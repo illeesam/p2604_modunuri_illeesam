@@ -28,7 +28,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
@@ -36,7 +36,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
 
     const fnLoadCodes = async () => {
       uiState.isPageCodeLoad = true;
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       codes.login_results = codeStore?.snGetGrpCodes('LOGIN_RESULT') || [];
       codes.token_actions = codeStore?.snGetGrpCodes('TOKEN_ACTION') || [];
       codes.date_range_opts = codeStore?.snGetGrpCodes('DATE_RANGE_OPT') || [];

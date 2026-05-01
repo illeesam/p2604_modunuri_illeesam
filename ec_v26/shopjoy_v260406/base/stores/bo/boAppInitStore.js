@@ -14,7 +14,7 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
   },
 
   getters: {
-    svIsInitialized: (s) => {
+    sgIsInitialized: (s) => {
       const authStore = window.useBoAuthStore?.();
       return !!(authStore && authStore.svAuthUser && authStore.svAuthUser.authId);
     },
@@ -26,7 +26,7 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
      * @param {string} names - 조회할 항목 ('^' 구분자, 예: "auth^user^role^menu^code^props^app")
      *                        빈 값이면 모든 항목 조회
      */
-    async sfFetchBoAppInitData(names = '') {
+    async saFetchBoAppInitData(names = '') {
       if (this.svIsLoading) return;
 
       this.svIsLoading = true;
@@ -44,32 +44,32 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
           try {
             if (data.syAuth) {
               const authStore = window.useBoAuthStore?.();
-              authStore?.sfSetAuth(data.syAuth);
+              authStore?.saSetAuth(data.syAuth);
             }
 
             if (data.syRoles) {
               const roleStore = window.useBoRoleStore?.();
-              roleStore?.sfSetRoles(data.syRoles);
+              roleStore?.saSetRoles(data.syRoles);
             }
 
             if (data.syMenus) {
               const menuStore = window.useBoMenuStore?.();
-              menuStore?.sfSetMenus(data.syMenus);
+              menuStore?.saSetMenus(data.syMenus);
             }
 
             if (data.syCodes) {
               const codeStore = window.useBoCodeStore?.();
-              codeStore?.sfSetCodes(data.syCodes?.codes);
+              codeStore?.saSetCodes(data.syCodes?.codes);
             }
 
             if (data.syProps) {
               const propStore = window.useBoPropStore?.();
-              propStore?.sfSetProps(data.syProps);
+              propStore?.saSetProps(data.syProps);
             }
 
             if (data.syApp) {
               const appStore = window.useBoAppStore?.();
-              appStore?.sfSetApp(data.syApp);
+              appStore?.saSetApp(data.syApp);
             }
 
             if (data.syPaths) {
@@ -78,7 +78,7 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
 
             if (data.syMenus) {
               const menuStore = window.useBoMenuStore?.();
-              menuStore?.sfSetMenus(data.syMenus);
+              menuStore?.saSetMenus(data.syMenus);
               window._boCmMenus = data.syMenus?.menus || data.syMenus || [];
             }
 
@@ -103,7 +103,7 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
           console.warn('[boAppInitStore] No data in response:', res);
         }
       } catch (err) {
-        console.error('[boAppInitStore] sfFetchBoAppInitData error:', err);
+        console.error('[boAppInitStore] saFetchBoAppInitData error:', err);
         this.svError = err.message || 'Failed to fetch init data';
         throw err;
       } finally {
@@ -114,14 +114,14 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
     /**
      * 특정 항목만 조회
      */
-    async sfFetchBoAppInitDataPartial(names) {
-      return this.sfFetchBoAppInitData(names);
+    async saFetchBoAppInitDataPartial(names) {
+      return this.saFetchBoAppInitData(names);
     },
 
     /**
      * 전체 초기화 (로그아웃 시)
      */
-    sfClearAll() {
+    saClearAll() {
       const authStore = window.useBoAuthStore?.();
       const roleStore = window.useBoRoleStore?.();
       const menuStore = window.useBoMenuStore?.();
@@ -129,12 +129,12 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
       const propStore = window.useBoPropStore?.();
       const appStore = window.useBoAppStore?.();
 
-      authStore?.sfClear();
-      roleStore?.sfClear();
-      menuStore?.sfClear();
-      codeStore?.sfClear();
-      propStore?.sfClear();
-      appStore?.sfClear();
+      authStore?.saClear();
+      roleStore?.saClear();
+      menuStore?.saClear();
+      codeStore?.saClear();
+      propStore?.saClear();
+      appStore?.saClear();
 
       this.svLastFetchTime = null;
       this.svError = null;
@@ -144,29 +144,29 @@ window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
     /**
      * localStorage에서 복원
      */
-    sfRestoreFromStorage() {
+    saRestoreFromStorage() {
       const authStore = window.useBoAuthStore?.();
-      return authStore?.sfRestoreFromStorage() || false;
+      return authStore?.saRestoreFromStorage() || false;
     },
   },
 });
 
 // 함수형 유틸리티 제공
-window.getBoAppInitStore = () => {
+window.sfGetBoAppInitStore = () => {
   try {
     return window.useBoAppInitStore?.() || {
       svIsLoading: false,
       svLastFetchTime: null,
       svError: null,
-      svIsInitialized: false,
+      sgIsInitialized: false,
     };
   } catch (e) {
-    console.error('[getBoAppInitStore] error:', e);
+    console.error('[sfGetBoAppInitStore] error:', e);
     return {
       svIsLoading: false,
       svLastFetchTime: null,
       svError: null,
-      svIsInitialized: false,
+      sgIsInitialized: false,
     };
   }
 };

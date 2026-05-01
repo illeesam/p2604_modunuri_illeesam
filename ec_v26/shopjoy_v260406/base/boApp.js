@@ -767,8 +767,8 @@
       // 초기 복원 — 토큰 없으면 reset, 있으면 syncFromStorage (FO foAuth.init() 동일 패턴)
       try {
         const _initToken = localStorage.getItem('modu-bo-accessToken');
-        if (!_initToken) _boAuthStore?.sfReset?.();
-        else _boAuthStore?.sfSyncFromStorage?.();
+        if (!_initToken) _boAuthStore?.saReset?.();
+        else _boAuthStore?.saSyncFromStorage?.();
       } catch(_) {}
       _syncCurrentAuthUser();
 
@@ -777,12 +777,12 @@
         const store = _boAuthStore;
         if (store?.svAccessToken) {
           try {
-            await window.useBoAppInitStore?.()?.sfFetchBoAppInitData?.();
+            await window.useBoAppInitStore?.()?.saFetchBoAppInitData?.();
             _syncCurrentAuthUser();
           } catch (e) {
             if (e?.response?.status === 401) {
               console.warn('[boApp] token invalid (401), reset session');
-              store.sfReset();
+              store.saReset();
               _syncCurrentAuthUser();
             } else {
               console.warn('[boApp] fetchBoAppInitData error:', e?.response?.status || e.message);
@@ -795,7 +795,7 @@
       const currentAuthUserRoles = reactive([]);
       const updateCurrentUserRoles = async () => {
         try {
-          let roles = window.getBoRoleStore?.()?.svRoles || [];
+          let roles = window.sfGetBoRoleStore?.()?.svRoles || [];
           if (!roles.length) {
             try {
               const _roleHdr = coUtil.apiHdr('역할관리', '목록조회'); _roleHdr.headers['X-Skip-Error-Toast'] = 'true';
@@ -825,7 +825,7 @@
       const rolePath = (r, uid) => {
         try {
           if (!r) return '';
-          const roles = window.getBoRoleStore?.()?.svRoles || [];
+          const roles = window.sfGetBoRoleStore?.()?.svRoles || [];
           const m = Object.fromEntries((roles || []).map(x => [x?.roleId, x]));
           const seg = []; let cur = r; let root = r;
           while (cur) {
@@ -842,7 +842,7 @@
       const onRoleChange = () => { location.reload(); };
       const rolesOfUser = (uid) => {
         try {
-          const roles = window.getBoRoleStore?.()?.svRoles || [];
+          const roles = window.sfGetBoRoleStore?.()?.svRoles || [];
           const m = Object.fromEntries((roles || []).map(r => [r?.roleId, r]));
           const userRoles = (currentAuthUserRoles || []).filter(ur => ur?.userId === uid || !uid);
           const result = (userRoles || []).map(ur => m[ur?.roleId]).filter(Boolean);
@@ -855,7 +855,7 @@
       const bizInfoOfUser = () => '';
 
       onMounted(() => {
-        setTimeout(() => { window.useBoAppInitStore?.()?.sfRestoreFromStorage?.(); }, 0);
+        setTimeout(() => { window.useBoAppInitStore?.()?.saRestoreFromStorage?.(); }, 0);
         _loadApiLogsFromStorage();
         setTimeout(() => {
           if (typeof boApi !== 'undefined' && boApi.raw) {
@@ -890,7 +890,7 @@
           }
         }, 100);
         checkWidth(); window.addEventListener('resize', checkWidth);
-        const codeStore = window.getBoCodeStore?.();
+        const codeStore = window.sfGetBoCodeStore?.();
         if (codeStore?.snGetGrpCodes) userRoles.value = codeStore.snGetGrpCodes('USER_ROLE') || [];
       });
       watch(currentAuthUser, (u) => {
@@ -971,7 +971,7 @@
         try {
           if (!_boAuthStore) { loginError.value = '스토어 초기화 실패'; return; }
 
-          await _boAuthStore.sfLogin(loginForm.loginId, loginForm.loginPwd, loginForm.authMethod);
+          await _boAuthStore.saLogin(loginForm.loginId, loginForm.loginPwd, loginForm.authMethod);
           _syncCurrentAuthUser();
 
           openTabs.splice(0);
@@ -991,10 +991,10 @@
           const configStore = window.useBoConfigStore?.();
 
           if (authStore) {
-            await authStore.sfLogout();
+            await authStore.saLogout();
           }
           if (configStore) {
-            configStore.sfReset();
+            configStore.saReset();
           }
 
           uiState.userMenuShow = false;
@@ -1009,13 +1009,13 @@
       /* 다른 탭 로그인/로그아웃 동기화 */
       window.addEventListener('storage', (e) => {
         if (e.key === 'modu-bo-accessToken' || e.key === 'modu-bo-authUser') {
-          _boAuthStore?.sfSyncFromStorage?.();
+          _boAuthStore?.saSyncFromStorage?.();
           _syncCurrentAuthUser();
         }
       });
       /* 같은 탭 DevTools 변경 감지 — FO의 syncFromStorage + _sync() 패턴 동일 적용 */
       setInterval(() => {
-        _boAuthStore?.sfSyncFromStorage?.();
+        _boAuthStore?.saSyncFromStorage?.();
         _syncCurrentAuthUser();
       }, 1000);
 

@@ -14,12 +14,12 @@ window.PmGiftMng = {
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = () => {
-      const codeStore = window.getBoCodeStore();
+      const codeStore = window.sfGetBoCodeStore();
       try {
         codes.gift_statuses = codeStore.snGetGrpCodes('GIFT_STATUS') || [];
         codes.gift_cond_types = codeStore.snGetGrpCodes('GIFT_COND_KR') || [];

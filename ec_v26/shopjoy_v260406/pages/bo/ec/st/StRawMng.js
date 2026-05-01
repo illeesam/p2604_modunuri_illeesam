@@ -14,12 +14,12 @@ window.StRawMng = {
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = () => {
-      const codeStore = window.getBoCodeStore();
+      const codeStore = window.sfGetBoCodeStore();
       try {
         codes.raw_types = codeStore.snGetGrpCodes('RAW_TYPE_KR') || [];
         codes.raw_collect_statuses = codeStore.snGetGrpCodes('RAW_COLLECT_STATUS') || [];

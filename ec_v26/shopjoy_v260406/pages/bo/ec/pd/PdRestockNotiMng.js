@@ -15,12 +15,12 @@ window.PdRestockNotiMng = {
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = () => {
-      const codeStore = window.getBoCodeStore();
+      const codeStore = window.sfGetBoCodeStore();
       try {
         codes.product_statuses = codeStore.snGetGrpCodes('PRODUCT_STATUS') || [];
         uiState.isPageCodeLoad = true;

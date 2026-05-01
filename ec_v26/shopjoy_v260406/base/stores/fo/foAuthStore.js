@@ -38,19 +38,19 @@
     },
 
     getters: {
-      svIsLoggedIn: (s) => !!(s.svAuthUser?.authId) && !!s.svAccessToken,
-      svIsTokenValid: (s) => !!(s.svAccessToken),
+      sgIsLoggedIn: (s) => !!(s.svAuthUser?.authId) && !!s.svAccessToken,
+      sgIsTokenValid: (s) => !!(s.svAccessToken),
     },
 
     actions: {
-      sfSetAuth(authData) {
+      saSetAuth(authData) {
         if (!authData) return;
         if (authData.accessToken) this.svAccessToken = authData.accessToken;
         if (authData.refreshToken) this.svRefreshToken = authData.refreshToken;
         if (authData.accessExpiresIn) this.svAccessExpiresIn = authData.accessExpiresIn;
         if (authData.refreshExpiresIn) this.svRefreshExpiresIn = authData.refreshExpiresIn;
         if (authData.authUser) this.svAuthUser = authData.authUser;
-        else if (authData.user) this.sfSetAuthUser(authData.user); // StoreAuth.user 필드 호환
+        else if (authData.user) this.saSetAuthUser(authData.user); // StoreAuth.user 필드 호환
         if (authData.tempAuthInfo !== undefined) this.svTempAuthInfo = authData.tempAuthInfo;
         try {
           if (this.svAccessToken) localStorage.setItem('modu-fo-accessToken', this.svAccessToken);
@@ -58,11 +58,11 @@
           if (this.svAuthUser) localStorage.setItem('modu-fo-authUser', JSON.stringify(this.svAuthUser));
           if (this.svTempAuthInfo) localStorage.setItem('modu-fo-tempAuthInfo', JSON.stringify(this.svTempAuthInfo));
         } catch (e) {
-          console.error('[foAuthStore] sfSetAuth localStorage error:', e);
+          console.error('[foAuthStore] saSetAuth localStorage error:', e);
         }
       },
 
-      sfUpdateAuth(authData) {
+      saUpdateAuth(authData) {
         if (!authData) return;
         this.svAccessToken = authData.accessToken || this.svAccessToken;
         this.svRefreshToken = authData.refreshToken || this.svRefreshToken;
@@ -72,32 +72,32 @@
           if (this.svAccessToken) localStorage.setItem('modu-fo-accessToken', this.svAccessToken);
           if (this.svRefreshToken) localStorage.setItem('modu-fo-refreshToken', this.svRefreshToken);
         } catch (e) {
-          console.error('[foAuthStore] sfUpdateAuth localStorage error:', e);
+          console.error('[foAuthStore] saUpdateAuth localStorage error:', e);
         }
       },
 
-      sfSetAuthUser(authUserData) {
+      saSetAuthUser(authUserData) {
         if (!authUserData) return;
         this.svAuthUser = authUserData;
         try {
           localStorage.setItem('modu-fo-authUser', JSON.stringify(authUserData));
         } catch (e) {
-          console.error('[foAuthStore] sfSetAuthUser localStorage error:', e);
+          console.error('[foAuthStore] saSetAuthUser localStorage error:', e);
         }
       },
 
-      sfSetSession(authUser, accessToken) {
+      saSetSession(authUser, accessToken) {
         this.svAuthUser = authUser || _defaultAuthUser();
         this.svAccessToken = accessToken || '';
         try {
           if (this.svAccessToken) localStorage.setItem('modu-fo-accessToken', this.svAccessToken);
           if (authUser) localStorage.setItem('modu-fo-authUser', JSON.stringify(authUser));
         } catch (e) {
-          console.error('[foAuthStore] sfSetSession localStorage error:', e);
+          console.error('[foAuthStore] saSetSession localStorage error:', e);
         }
       },
 
-      sfClearSession() {
+      saClearSession() {
         this.svAuthUser = _defaultAuthUser();
         this.svAccessToken = '';
         this.svRefreshToken = '';
@@ -110,11 +110,11 @@
           localStorage.removeItem('modu-fo-authUser');
           localStorage.removeItem('modu-fo-tempAuthInfo');
         } catch (e) {
-          console.error('[foAuthStore] sfClearSession localStorage error:', e);
+          console.error('[foAuthStore] saClearSession localStorage error:', e);
         }
       },
 
-      sfClear() {
+      saClear() {
         this.svAuthUser = _defaultAuthUser();
         this.svAccessToken = '';
         this.svRefreshToken = '';
@@ -126,11 +126,11 @@
           localStorage.removeItem('modu-fo-refreshToken');
           localStorage.removeItem('modu-fo-tempAuthInfo');
         } catch (e) {
-          console.error('[foAuthStore] sfClear localStorage error:', e);
+          console.error('[foAuthStore] saClear localStorage error:', e);
         }
       },
 
-      sfSyncFromStorage() {
+      saSyncFromStorage() {
         try {
           const token        = localStorage.getItem('modu-fo-accessToken');
           const refreshToken = localStorage.getItem('modu-fo-refreshToken');
@@ -147,12 +147,12 @@
           }
           return !!token;
         } catch (e) {
-          console.error('[foAuthStore] sfSyncFromStorage error:', e);
+          console.error('[foAuthStore] saSyncFromStorage error:', e);
           return false;
         }
       },
 
-      sfRestoreFromStorage() {
+      saRestoreFromStorage() {
         try {
           const token         = localStorage.getItem('modu-fo-accessToken');
           const refreshToken  = localStorage.getItem('modu-fo-refreshToken');
@@ -164,7 +164,7 @@
           }
           return !!(token && refreshToken);
         } catch (e) {
-          console.error('[foAuthStore] sfRestoreFromStorage error:', e);
+          console.error('[foAuthStore] saRestoreFromStorage error:', e);
           return false;
         }
       },
@@ -172,24 +172,24 @@
   });
 
   // 함수형 유틸리티
-  window.getFoAuthStore = () => {
-    try { return window.useFoAuthStore?.() || { svAuthUser: _defaultAuthUser(), svAccessToken: '', svIsLoggedIn: false }; }
-    catch (e) { return { svAuthUser: _defaultAuthUser(), svAccessToken: '', svIsLoggedIn: false }; }
+  window.sfGetFoAuthStore = () => {
+    try { return window.useFoAuthStore?.() || { svAuthUser: _defaultAuthUser(), svAccessToken: '', sgIsLoggedIn: false }; }
+    catch (e) { return { svAuthUser: _defaultAuthUser(), svAccessToken: '', sgIsLoggedIn: false }; }
   };
 
-  window.getFoAuthUser = () => {
+  window.sfGetFoAuthUser = () => {
     try {
       const store = window.useFoAuthStore?.();
       return (store?.svAuthUser?.authId) ? store.svAuthUser : _defaultAuthUser();
     } catch (e) { return _defaultAuthUser(); }
   };
 
-  window.isFoLogin = () => {
+  window.sfIsFoLogin = () => {
     try {
       const store = window.useFoAuthStore?.();
       return !!(store?.svAuthUser?.authId && store?.svAccessToken);
     } catch (e) { return false; }
   };
 
-  window.isFoLogin = window.isFoLogin;
+  window.sfIsFoLogin = window.sfIsFoLogin;
 })();

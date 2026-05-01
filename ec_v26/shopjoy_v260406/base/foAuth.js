@@ -59,16 +59,16 @@
       (async () => {
         try {
           const initStore = window.useFoAppInitStore?.();
-          if (initStore) await initStore.sfFetchFoAppInitData();
+          if (initStore) await initStore.saFetchFoAppInitData();
           _sync();
           console.log('[foAuth.init] init data loaded OK');
         } catch (e) {
           if (e?.response?.status === 401) {
             console.warn('[foAuth.init] token invalid (401), clearing session');
-            _store.sfClearSession();
+            _store.saClearSession();
             _sync();
           } else {
-            console.warn('[foAuth.init] sfFetchFoAppInitData error:', e?.response?.status || e.message);
+            console.warn('[foAuth.init] saFetchFoAppInitData error:', e?.response?.status || e.message);
           }
         }
       })();
@@ -76,14 +76,14 @@
 
     /* 1초마다 localStorage 폴링 → DevTools에서 토큰 삭제 시 즉시 로그아웃 */
     setInterval(() => {
-      _store.sfSyncFromStorage();
+      _store.saSyncFromStorage();
       _sync();
     }, 1000);
 
     /* 다른 탭에서 localStorage 변경 시 즉시 동기화 */
     window.addEventListener('storage', e => {
       if (e.key === 'modu-fo-accessToken' || e.key === 'modu-fo-authUser') {
-        _store.sfSyncFromStorage();
+        _store.saSyncFromStorage();
         _sync();
       }
     });
@@ -116,7 +116,7 @@
         const token = d.accessToken;
         console.log('[foAuth.login] user object:', user);
         console.log('[foAuth.login] token:', token);
-        _store.sfSetSession(user, token);
+        _store.saSetSession(user, token);
         _sync();
         console.log('[foAuth.login] state.user after sync:', state.user);
 
@@ -125,7 +125,7 @@
           const userRes = await foApi.post('/co/cm/fo-app-store/getUser', '', coUtil.apiHdr('시스템', '사용자정보조회'));
           if (userRes?.data?.data?.member) {
             const authStore = window.useFoAuthStore?.();
-            authStore?.sfSetAuthUser(userRes.data.data.member);
+            authStore?.saSetAuthUser(userRes.data.data.member);
             console.log('[foAuth.login] user info updated from getUser');
           }
         } catch (e) {
@@ -150,7 +150,7 @@
     };
     const user = demos[provider];
     if (!user) return { ok: false };
-    _store.sfSetSession(user, _mkToken());
+    _store.saSetSession(user, _mkToken());
     _sync();
     return { ok: true };
   };
@@ -177,7 +177,7 @@
           siteId: d.siteId || '',
         };
         const token = d.accessToken;
-        _store.sfSetSession(user, token);
+        _store.saSetSession(user, token);
         _sync();
         return { ok: true };
       }
@@ -190,13 +190,13 @@
 
   /* ── 로그아웃 ── */
   const logout = () => {
-    _store.sfClearSession();
+    _store.saClearSession();
     _sync();
   };
 
   /* ── 로그인 상태 체크 ── */
-  const isFoLogin = () => !!(state.user?.authId) && !!localStorage.getItem('modu-fo-accessToken');
+  const sfIsFoLogin = () => !!(state.user?.authId) && !!localStorage.getItem('modu-fo-accessToken');
 
-  window.foAuth = { state, init, login, loginSocial, signup, logout, isFoLogin };
-  window.isFoLogin = isFoLogin;
+  window.foAuth = { state, init, login, loginSocial, signup, logout, sfIsFoLogin };
+  window.sfIsFoLogin = sfIsFoLogin;
 })();

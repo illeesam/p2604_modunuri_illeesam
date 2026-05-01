@@ -29,13 +29,13 @@ window.SyAlarmDtl = {
     };
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = async () => {
       try {
-        const codeStore = window.getBoCodeStore?.();
+        const codeStore = window.sfGetBoCodeStore?.();
         if (codeStore?.snGetGrpCodes) {
           codes.alarm_types = codeStore.snGetGrpCodes('ALARM_TYPE') || [];
           codes.alarm_statuses = codeStore.snGetGrpCodes('ALARM_STATUS') || [];

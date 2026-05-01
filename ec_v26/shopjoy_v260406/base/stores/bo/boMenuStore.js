@@ -11,22 +11,22 @@ window.useBoMenuStore = Pinia.defineStore('boMenu', {
   },
 
   getters: {
-    svIsEmpty: (s) => !Array.isArray(s.svMenus) || s.svMenus.length === 0,
-    svGetMenuById: (s) => (menuId) => s.svMenus.find(m => m.id === menuId),
+    sgIsEmpty: (s) => !Array.isArray(s.svMenus) || s.svMenus.length === 0,
+    sgGetMenuById: (s) => (menuId) => s.svMenus.find(m => m.id === menuId),
   },
 
   actions: {
     /**
      * 메뉴 정보 설정
      */
-    sfSetMenus(menusData) {
+    saSetMenus(menusData) {
       this.svMenus = menusData || [];
     },
 
     /**
      * 메뉴 추가
      */
-    sfAddMenu(menu) {
+    saAddMenu(menu) {
       if (menu && !this.svMenus.find(m => m.id === menu.id)) {
         this.svMenus.push(menu);
       }
@@ -35,7 +35,7 @@ window.useBoMenuStore = Pinia.defineStore('boMenu', {
     /**
      * 메뉴 업데이트
      */
-    sfUpdateMenu(menuId, menuData) {
+    saUpdateMenu(menuId, menuData) {
       const idx = this.svMenus.findIndex(m => m.id === menuId);
       if (idx !== -1) {
         this.svMenus[idx] = { ...this.svMenus[idx], ...menuData };
@@ -45,7 +45,7 @@ window.useBoMenuStore = Pinia.defineStore('boMenu', {
     /**
      * 메뉴 삭제
      */
-    sfRemoveMenu(menuId) {
+    saRemoveMenu(menuId) {
       const idx = this.svMenus.findIndex(m => m.id === menuId);
       if (idx !== -1) {
         this.svMenus.splice(idx, 1);
@@ -55,7 +55,7 @@ window.useBoMenuStore = Pinia.defineStore('boMenu', {
     /**
      * 초기화 (로그아웃 시)
      */
-    sfClear() {
+    saClear() {
       this.svMenus = [];
       this.svIsLoading = false;
     },
@@ -63,18 +63,18 @@ window.useBoMenuStore = Pinia.defineStore('boMenu', {
 });
 
 // 함수형 유틸리티 제공
-window.getBoMenuStore = () => {
+window.sfGetBoMenuStore = () => {
   try {
     return window.useBoMenuStore?.() || {
       svMenus: [],
-      svIsEmpty: true,
+      sgIsEmpty: true,
       svIsLoading: false,
     };
   } catch (e) {
-    console.error('[getBoMenuStore] error:', e);
+    console.error('[sfGetBoMenuStore] error:', e);
     return {
       svMenus: [],
-      svIsEmpty: true,
+      sgIsEmpty: true,
       svIsLoading: false,
     };
   }

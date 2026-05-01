@@ -29,10 +29,10 @@
 
     getters: {
       // 특정 코드 그룹 조회
-      svGetCodesByGroup: (state) => (codeGrp) => (state.svCodes?.[codeGrp] || []),
+      sgGetCodesByGroup: (state) => (codeGrp) => (state.svCodes?.[codeGrp] || []),
 
       // 특정 코드값 조회
-      svGetCodeLabel:
+      sgGetCodeLabel:
         (state) =>
         (codeGrp, codeVal) => {
           const group = state.svCodes?.[codeGrp];
@@ -42,7 +42,7 @@
         },
 
       // 특정 메뉴 확인
-      svCanAccessMenu: (state) => (menuId) => {
+      sgCanAccessMenu: (state) => (menuId) => {
         const menus = state.svMenus || [];
         return Array.isArray(menus) && menus.some((m) => m?.menuId === menuId);
       },
@@ -50,7 +50,7 @@
 
     actions: {
       // 공통 코드 로드
-      async sfLoadCodes() {
+      async saLoadCodes() {
         this.svLoading = true;
         try {
           const res = await boApi.get('/bo/sy/code', coUtil.apiHdr('코드관리', '목록조회'));
@@ -72,7 +72,7 @@
           this.svError = null;
         } catch (err) {
           this.svError = err?.message || '코드 로드 실패';
-          console.error('[BoConfigStore] sfLoadCodes error:', err);
+          console.error('[BoConfigStore] saLoadCodes error:', err);
           this.svCodes = {};
         } finally {
           this.svLoading = false;
@@ -81,7 +81,7 @@
 
 
       // 초기화
-      sfReset() {
+      saReset() {
         this.svCodes = {};
         this.svMenus = [];
         this.svUserInfo = null;
@@ -92,17 +92,17 @@
   });
 
   // 함수형 유틸리티 제공
-  window.getBoConfigStore = () => {
+  window.sfGetBoConfigStore = () => {
     try {
       const store = window.useBoConfigStore?.();
       return store || { svCodes: {}, svMenus: [], svUserInfo: null, svLoading: false, svError: null };
     } catch (e) {
-      console.error('getBoConfigStore error:', e);
+      console.error('sfGetBoConfigStore error:', e);
       return { svCodes: {}, svMenus: [], svUserInfo: null, svLoading: false, svError: null };
     }
   };
 
-  window.getBoCodeLabel = (codeGrp, codeVal) => {
+  window.sfGetBoCodeLabel = (codeGrp, codeVal) => {
     try {
       const store = window.useBoConfigStore?.();
       if (!store?.svCodes) return '';
@@ -111,49 +111,49 @@
       const item = group.find((c) => c?.codeVal === codeVal);
       return item?.codeLbl || '';
     } catch (e) {
-      console.error('getBoCodeLabel error:', e);
+      console.error('sfGetBoCodeLabel error:', e);
       return '';
     }
   };
 
-  window.getBoCodesByGroup = (codeGrp) => {
+  window.sfGetBoCodesByGroup = (codeGrp) => {
     try {
       const store = window.useBoConfigStore?.();
       if (!store?.svCodes) return [];
       return store.svCodes[codeGrp] || [];
     } catch (e) {
-      console.error('getBoCodesByGroup error:', e);
+      console.error('sfGetBoCodesByGroup error:', e);
       return [];
     }
   };
 
-  window.getBoMenus = () => {
+  window.sfGetBoMenus = () => {
     try {
       const store = window.useBoConfigStore?.();
       return store?.svMenus || [];
     } catch (e) {
-      console.error('getBoMenus error:', e);
+      console.error('sfGetBoMenus error:', e);
       return [];
     }
   };
 
-  window.getBoUserInfo = () => {
+  window.sfGetBoUserInfo = () => {
     try {
       const store = window.useBoConfigStore?.();
       return store?.svUserInfo || { boUserId: 0, name: '', email: '' };
     } catch (e) {
-      console.error('getBoUserInfo error:', e);
+      console.error('sfGetBoUserInfo error:', e);
       return { boUserId: 0, name: '', email: '' };
     }
   };
 
-  window.canBoAccessMenu = (menuId) => {
+  window.sfCanBoAccessMenu = (menuId) => {
     try {
       const store = window.useBoConfigStore?.();
       if (!store?.svMenus) return false;
       return Array.isArray(store.svMenus) && store.svMenus.some((m) => m?.menuId === menuId);
     } catch (e) {
-      console.error('canBoAccessMenu error:', e);
+      console.error('sfCanBoAccessMenu error:', e);
       return false;
     }
   };

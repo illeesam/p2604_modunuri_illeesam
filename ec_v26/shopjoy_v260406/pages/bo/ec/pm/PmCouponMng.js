@@ -14,12 +14,12 @@ window.PmCouponMng = {
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = () => {
-      const codeStore = window.getBoCodeStore();
+      const codeStore = window.sfGetBoCodeStore();
       try {
         codes.coupon_types = codeStore.snGetGrpCodes('COUPON_TYPE') || [];
         codes.coupon_statuses = codeStore.snGetGrpCodes('COUPON_STATUS_KR') || [];

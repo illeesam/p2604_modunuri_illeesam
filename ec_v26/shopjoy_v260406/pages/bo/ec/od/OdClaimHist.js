@@ -11,7 +11,7 @@ window.OdClaimHist = {
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
@@ -19,7 +19,7 @@ window.OdClaimHist = {
 
     const fnLoadCodes = async () => {
       try {
-        const codeStore = window.getBoCodeStore?.();
+        const codeStore = window.sfGetBoCodeStore?.();
         if (codeStore?.snGetGrpCodes) {
           codes.refund_methods = codeStore.snGetGrpCodes('REFUND_METHOD_KR') || [];
         }
@@ -34,7 +34,7 @@ window.OdClaimHist = {
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
         watch(botTab, v => { window._odClaimHistState.tab = v; });
-        const cfCodes = Vue.computed(() => window.getBoCodeStore?.()?.svCodes || []);
+        const cfCodes = Vue.computed(() => window.sfGetBoCodeStore?.()?.svCodes || []);
 
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.botTab === id;
 

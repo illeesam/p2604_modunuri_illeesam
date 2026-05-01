@@ -12,12 +12,12 @@ window.StSettleCloseMng = {
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = () => {
-      const codeStore = window.getBoCodeStore();
+      const codeStore = window.sfGetBoCodeStore();
       try {
         codes.settle_statuses = codeStore.snGetGrpCodes('SETTLE_STATUS') || [];
         codes.settle_close_statuses = codeStore.snGetGrpCodes('SETTLE_CLOSE_STATUS_KR') || [];

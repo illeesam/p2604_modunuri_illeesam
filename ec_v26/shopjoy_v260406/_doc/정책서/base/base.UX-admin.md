@@ -446,9 +446,31 @@ Vue.onMounted(() => {
 - Enter 키 → 검색 실행 (`@keyup.enter="onSearch"`)
 - "초기화" → 화면 검색 필드만 초기화 (공통 필터 값 유지)
 - 검색 실행 시 `pager.page = 1` 리셋 필수
-- `applied` reactive 객체를 통해 filter computed 참조 (`searchKw` 직접 참조 금지)
 - 화면 오픈 시 공통 필터 자동 적용 후 즉시 검색 (§8.3)
 - 버튼: "조회" (btn-primary) + "초기화" (btn-secondary btn-sm)
+
+### 9.4 검색 방식 정책 ⭐ (2026-05-01 확정)
+
+**검색 조건 변경은 절대 클라이언트 filter를 실행하지 않는다.**  
+반드시 **[조회] 버튼 클릭** 또는 **Enter 키** 입력 시에만 API를 호출한다.
+
+```
+❌ 금지 — v-model 입력 즉시 computed filter 반응
+const cfFilteredRows = computed(() => rows.filter(r => r.name.includes(searchParam.kw)));
+
+❌ 금지 — watch로 searchParam 변경 시 자동 조회
+watch(() => searchParam.kw, () => handleSearchList());
+
+✅ 올바른 패턴 — 조회 버튼 / Enter 에서만 API 호출
+const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };
+// 입력 필드: @keyup.enter="onSearch"
+// select: @change 연결 없음 — 조회 버튼으로만 실행
+```
+
+**예외 (클라이언트 filter 허용)**:
+- CRUD 그리드 내 **상위/하위 연동 필터** (예: 코드그룹 선택 → 코드목록 변경)
+- 모달 내 **picker 검색** (목록 즉시 좁히기 용도)
+- FO 마이페이지 등 **API 없는 로컬 데이터** 화면
 
 ---
 

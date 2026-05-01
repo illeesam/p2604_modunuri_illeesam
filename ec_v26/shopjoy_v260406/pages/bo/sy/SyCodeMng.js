@@ -56,7 +56,7 @@ window.SyCodeMng = {
 
     const isAppReady = computed(() => {                     // 앱 초기화 완료 여부
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
@@ -64,10 +64,22 @@ window.SyCodeMng = {
     const cfGrpOptions     = computed(() => [...new Set(codes.map(c => c.codeGrp))].sort()); // 그룹 선택 옵션
 
     const cfGrpTree        = computed(() => boUtil.buildPathTree('sy_code_grp')); // 표시경로 트리
-    const cfFilteredGrpRows = computed(() => {              // 트리 선택 경로로 필터된 그룹 행
+    const cfFilteredGrpRows = computed(() => {              // 검색조건 + 트리 경로 필터된 그룹 행
       const sp = uiState.grpSelectedPath;
-      if (!sp) return grpRows;
-      return grpRows.filter(r => (r.dispPath || '').startsWith(sp));
+      const kw = (searchParam.kw || '').toLowerCase();
+      const grp = (searchParam.grp || '').toLowerCase();
+      const useYn = searchParam.useYn || '';
+      const dateStart = searchParam.dateStart || '';
+      const dateEnd = searchParam.dateEnd || '';
+      return grpRows.filter(r => {
+        if (sp && !(r.dispPath || '').startsWith(sp)) return false;
+        if (kw && !((r.codeGrp || '').toLowerCase().includes(kw) || (r.grpNm || '').toLowerCase().includes(kw) || (r.description || '').toLowerCase().includes(kw))) return false;
+        if (grp && !(r.codeGrp || '').toLowerCase().includes(grp)) return false;
+        if (useYn && r.useYn !== useYn) return false;
+        if (dateStart && r.regDate && r.regDate < dateStart) return false;
+        if (dateEnd && r.regDate && r.regDate > dateEnd) return false;
+        return true;
+      });
     });
 
     const cfGrpTotalPages  = computed(() => Math.max(1, Math.ceil(cfFilteredGrpRows.value.length / grpPager.size)));
@@ -82,7 +94,7 @@ window.SyCodeMng = {
     });
 
     const cfFilteredRows   = computed(() => {               // 선택된 그룹으로 필터된 행
-      if (!uiState.selectedGrp) return gridRows;
+      if (!uiState.selectedGrp) return [];
       return gridRows.filter(r => r.codeGrp === uiState.selectedGrp && r._row_status !== 'D');
     });
     const cfTotal          = computed(() => cfFilteredRows.value.length); // 코드 유효 건수
@@ -213,7 +225,7 @@ window.SyCodeMng = {
     // 페이지 진입 시 코드 로드 상태 플래그 설정
     const fnLoadCodes = async () => {
       try {
-        const codeStore = window.getBoCodeStore?.();
+        const codeStore = window.sfGetBoCodeStore?.();
         if (codeStore?.snGetGrpCodes) {
           pageCodes.use_yn = await codeStore.snGetGrpCodes('USE_YN') || [];
           pageCodes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
@@ -346,19 +358,28 @@ window.SyCodeMng = {
     // 포커스 행 설정
     const setFocused = (idx) => { uiState.focusedIdx = idx; };
 
-    // 행 추가 — 포커스 행 아래 삽입, 없으면 끝에 추가
+    // 행 추가 — 포커스 행 아래 삽입, 없으면 현재 그룹 마지막 행 뒤에 추가
     const addRow = () => {
+      const grp = uiState.selectedGrp;
       const ref = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
+      const grpRows_cur = gridRows.filter(r => r.codeGrp === grp && r._row_status !== 'D');
+      const maxSort = grpRows_cur.reduce((m, r) => Math.max(m, r.sortOrd || 0), 0);
       const newRow = {
-        codeId: _tempId--, codeGrp: ref ? ref.codeGrp : '', codeLabel: '', codeValue: '',
-        sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1, useYn: 'Y', remark: '', parentCodeValue: null,
+        codeId: _tempId--, codeGrp: grp || (ref ? ref.codeGrp : ''), codeLabel: '', codeValue: '',
+        sortOrd: ref ? (ref.sortOrd || 0) + 1 : maxSort + 1, useYn: 'Y', remark: '', parentCodeValue: null,
         _row_status: 'I', _row_check: false,
-        _orig: { codeGrp: ref ? ref.codeGrp : '', codeLabel: '', codeValue: '', sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1, useYn: 'Y', remark: '', parentCodeValue: null },
+        _orig: { codeGrp: grp || (ref ? ref.codeGrp : ''), codeLabel: '', codeValue: '', sortOrd: ref ? (ref.sortOrd || 0) + 1 : maxSort + 1, useYn: 'Y', remark: '', parentCodeValue: null },
       };
-      const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
+      // 포커스 행이 현재 그룹 내 행이면 그 아래, 아니면 현재 그룹 마지막 행 뒤
+      let insertAt;
+      if (uiState.focusedIdx !== null && gridRows[uiState.focusedIdx]?.codeGrp === grp) {
+        insertAt = uiState.focusedIdx + 1;
+      } else {
+        const lastIdx = gridRows.reduce((m, r, i) => r.codeGrp === grp ? i : m, -1);
+        insertAt = lastIdx >= 0 ? lastIdx + 1 : gridRows.length;
+      }
       gridRows.splice(insertAt, 0, newRow);
       uiState.focusedIdx = insertAt;
-      pager.pageNo = Math.ceil((insertAt + 1) / pager.pageSize);
     };
 
     // 행 단건 삭제 — I면 제거, 나머지는 D 표시
@@ -584,8 +605,9 @@ window.SyCodeMng = {
           <button class="btn btn-primary btn-sm" @click="handleSaveGrp" :disabled="!cfGrpDirty">저장 <span v-if="cfGrpDirty">({{ cfGrpDirty }})</span></button>
         </div>
       </div>
+      <div style="max-height:480px;overflow-y:auto;">
       <table class="bo-table crud-grid">
-        <thead>
+        <thead style="position:sticky;top:0;background:#fff;z-index:10;">
           <tr>
             <th style="width:36px;text-align:center;">번호</th>
             <th class="col-status">상태</th>
@@ -600,10 +622,10 @@ window.SyCodeMng = {
           </tr>
         </thead>
         <tbody>
-          <tr v-if="cfGrpPagedRows.length===0">
+          <tr v-if="cfFilteredGrpRows.length===0">
             <td colspan="9" style="text-align:center;color:#999;padding:20px;">데이터가 없습니다.</td>
           </tr>
-          <tr v-for="(g, idx) in cfGrpPagedRows" :key="g.codeGrp + (g._tempId || '')"
+          <tr v-for="(g, idx) in cfFilteredGrpRows" :key="g.codeGrp + (g._tempId || '')"
             class="crud-row"
             :class="['status-'+g._row_status, uiState.selectedGrp===g.codeGrp ? 'focused' : '']"
             style="cursor:pointer;"
@@ -653,22 +675,6 @@ window.SyCodeMng = {
           </tr>
         </tbody>
       </table>
-
-      <!-- ── 그룹 페이징 ───────────────────────────────────────────────── -->
-      <div class="pagination">
-        <div></div>
-        <div class="pager">
-          <button :disabled="grpPager.page===1" @click="setGrpPage(1)">«</button>
-          <button :disabled="grpPager.page===1" @click="setGrpPage(grpPager.page-1)">‹</button>
-          <button v-for="n in cfGrpPageNums" :key="n" :class="{active:grpPager.page===n}" @click="setGrpPage(n)">{{ n }}</button>
-          <button :disabled="grpPager.page===cfGrpTotalPages" @click="setGrpPage(grpPager.page+1)">›</button>
-          <button :disabled="grpPager.page===cfGrpTotalPages" @click="setGrpPage(cfGrpTotalPages)">»</button>
-        </div>
-        <div class="pager-right">
-          <select class="size-select" v-model.number="grpPager.size" @change="onGrpSizeChange">
-            <option v-for="s in GRP_PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
-          </select>
-        </div>
       </div>
     </div>
   </div>

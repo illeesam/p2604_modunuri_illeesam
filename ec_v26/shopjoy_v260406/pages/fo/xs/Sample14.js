@@ -51,7 +51,7 @@ window.XsSample14 = {
     const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
     /* 현재 사용자 인증 상태 */
     const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
-    const isLoggedIn = auth ? auth.svIsLoggedIn : false;
+    const isLoggedIn = auth ? auth.sgIsLoggedIn : false;
     const userGrade  = (auth && auth.svAuthUser) ? (auth.svAuthUser.grade  || '일반') : '';
     const userNm     = (auth && auth.svAuthUser) ? (auth.svAuthUser.authNm || auth.svAuthUser.memberNm || auth.svAuthUser.email || '') : '';
     /* 검색 필터 */
@@ -82,7 +82,7 @@ window.XsSample14 = {
     const wLabel = (t) => WIDGET_LABELS[t] || t || '-';
     const wIcon  = (t) => WIDGET_ICONS[t] || '▪';
     const cfAllAreas = computed(() =>
-      window.getBoCodeStore?.()?.codes||[]
+      window.sfGetBoCodeStore?.()?.codes||[]
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );

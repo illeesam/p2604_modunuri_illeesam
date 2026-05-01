@@ -127,7 +127,7 @@ window.StConfigMng = {
 
     const fnLoadCodes = () => {
       try {
-        const codeStore = window.getBoCodeStore?.();
+        const codeStore = window.sfGetBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
         codes.settle_cycles = codeStore.snGetGrpCodes('SETTLE_CYCLE') || [];
         codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
@@ -138,7 +138,7 @@ window.StConfigMng = {
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0;
     });
 

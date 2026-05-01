@@ -11,7 +11,7 @@ window.DpDispAreaMng = {
     // App 초기화 준비 상태
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading
           && codeStore?.svCodes?.length > 0
           && !uiState.isPageCodeLoad;
@@ -19,7 +19,7 @@ window.DpDispAreaMng = {
 
     // 코드 주입
     const fnLoadCodes = () => {
-      const codeStore = window.getBoCodeStore();
+      const codeStore = window.sfGetBoCodeStore();
       codes.layout_types = codeStore.snGetGrpCodes('LAYOUT_TYPE') || [];
       codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
       codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];

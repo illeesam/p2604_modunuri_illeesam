@@ -11,7 +11,7 @@ window.useFoDispStore = Pinia.defineStore('foDisp', {
   },
 
   actions: {
-    sfSetDispData(dispData) {
+    saSetDispData(dispData) {
       if (dispData) {
         if (dispData.dispStruc) {
           this.svDispStruc = dispData.dispStruc;
@@ -22,19 +22,19 @@ window.useFoDispStore = Pinia.defineStore('foDisp', {
       }
     },
 
-    sfSetDispStruc(dispStruc) {
+    saSetDispStruc(dispStruc) {
       if (dispStruc) {
         this.svDispStruc = dispStruc;
       }
     },
 
-    sfSetDispDataContent(dispData) {
+    saSetDispDataContent(dispData) {
       if (dispData) {
         this.svDispData = dispData;
       }
     },
 
-    sfClear() {
+    saClear() {
       this.svDispStruc = {};
       this.svDispData = {};
     },

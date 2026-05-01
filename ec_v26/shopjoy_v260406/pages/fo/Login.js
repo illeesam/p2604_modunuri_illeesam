@@ -52,7 +52,7 @@ window.Login = {
         try {
           const initStore = window.useFoAppInitStore?.();
           if (initStore) {
-            await initStore.sfFetchFoAppInitData();
+            await initStore.saFetchFoAppInitData();
           }
         } catch (e) {
           console.warn('[Login] fetchFoAppInitData error:', e);

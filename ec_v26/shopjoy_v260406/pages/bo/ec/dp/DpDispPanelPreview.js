@@ -6,7 +6,7 @@ const _WP_DispPanelPreview = {
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
     const { ref, reactive, computed, watchEffect, watch, onMounted } = Vue;
-    const codes = Vue.computed(() => window.getBoCodeStore().svCodes);
+    const codes = Vue.computed(() => window.sfGetBoCodeStore().svCodes);
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
     const cfChartBars = computed(() => {
       const w = props.lib;
@@ -165,7 +165,7 @@ window.DpDispPanelPreview = {
     // App 초기화 준비 상태
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading
           && codeStore?.svCodes?.length > 0
           && !uiState.isPageCodeLoad;
@@ -173,7 +173,7 @@ window.DpDispPanelPreview = {
 
     // 코드 주입
     const fnLoadCodes = () => {
-      const codeStore = window.getBoCodeStore();
+      const codeStore = window.sfGetBoCodeStore();
       codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
       codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
       codes.disp_envs = codeStore.snGetGrpCodes('DISP_ENV') || [];

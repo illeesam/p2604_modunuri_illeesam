@@ -12,12 +12,12 @@ window.DpDispRelationMng = {
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = () => {
-      const codeStore = window.getBoCodeStore();
+      const codeStore = window.sfGetBoCodeStore();
       try {
         codes.disp_relation_types = codeStore.snGetGrpCodes('DISP_RELATION_TYPE') || [];
         codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];

@@ -119,12 +119,12 @@
     },
     /* 라벨 조회용 */
     label(code) {
-      const c = (window.getBoCodeStore?.()?.svCodes || [])
+      const c = (window.sfGetBoCodeStore?.()?.svCodes || [])
         .find(x => x.codeGrp === 'VISIBILITY_TARGET' && x.codeValue === code);
       return c?.codeLabel || code;
     },
     allOptions() {
-      return (window.getBoCodeStore?.()?.svCodes || [])
+      return (window.sfGetBoCodeStore?.()?.svCodes || [])
         .filter(x => x.codeGrp === 'VISIBILITY_TARGET' && x.useYn === 'Y')
         .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
     },
@@ -231,7 +231,7 @@
     return boUtil.buildGenericTree(menus, 'menuId', 'parentId', 'menuNm', 'sortOrd');
   };
   boUtil.buildRoleTree = function () {
-    const roles = window.getBoRoleStore?.()?.svRoles || [];
+    const roles = window.sfGetBoRoleStore?.()?.svRoles || [];
     return boUtil.buildGenericTree(roles, 'roleId', 'parentId', 'roleNm', 'sortOrd');
   };
   /* 일반 트리 후손 ID Set */

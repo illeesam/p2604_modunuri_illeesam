@@ -38,7 +38,7 @@ window.CmNoticeMng = {
     });
     const isAppReady     = computed(() => {                                         // 앱 초기화 + 코드 로드 완료 여부
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
@@ -53,7 +53,7 @@ window.CmNoticeMng = {
     // 공통코드 스토어에서 유형·상태 코드 로드
     const fnLoadCodes = async () => {
       try {
-        const codeStore = window.getBoCodeStore?.();
+        const codeStore = window.sfGetBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
         codes.noticeTypes    = await codeStore.snGetGrpCodes('NOTICE_TYPE')   || [];
         codes.noticeStatuses = await codeStore.snGetGrpCodes('NOTICE_STATUS') || [];

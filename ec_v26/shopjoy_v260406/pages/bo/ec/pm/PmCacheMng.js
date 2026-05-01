@@ -14,12 +14,12 @@ window.PmCacheMng = {
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
     const fnLoadCodes = () => {
-      const codeStore = window.getBoCodeStore();
+      const codeStore = window.sfGetBoCodeStore();
       try {
         codes.cache_statuses = codeStore.snGetGrpCodes('CACHE_STATUS') || [];
         codes.cache_trans_types = codeStore.snGetGrpCodes('CACHE_TRANS_TYPE') || [];

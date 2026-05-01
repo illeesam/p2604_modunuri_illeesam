@@ -9,33 +9,33 @@ window.useFoMenuStore = Pinia.defineStore('foMenu', {
   },
 
   actions: {
-    sfSetMenus(menusData) {
+    saSetMenus(menusData) {
       if (menusData) {
         this.svMenus = menusData;
       }
     },
 
-    sfAddMenu(menu) {
+    saAddMenu(menu) {
       if (menu) {
         this.svMenus.push(menu);
       }
     },
 
-    sfUpdateMenu(menuId, menu) {
+    saUpdateMenu(menuId, menu) {
       const idx = this.svMenus.findIndex(m => m.id === menuId);
       if (idx >= 0) {
         this.svMenus[idx] = { ...this.svMenus[idx], ...menu };
       }
     },
 
-    sfRemoveMenu(menuId) {
+    saRemoveMenu(menuId) {
       const idx = this.svMenus.findIndex(m => m.id === menuId);
       if (idx >= 0) {
         this.svMenus.splice(idx, 1);
       }
     },
 
-    sfClear() {
+    saClear() {
       this.svMenus = [];
     },
   },

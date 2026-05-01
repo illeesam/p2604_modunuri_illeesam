@@ -11,7 +11,7 @@ window.DpDispWidgetLibMng = {
     // App 초기화 준비 상태
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.getBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading
           && codeStore?.svCodes?.length > 0
           && !uiState.isPageCodeLoad;
@@ -19,7 +19,7 @@ window.DpDispWidgetLibMng = {
 
     // 코드 주입
     const fnLoadCodes = () => {
-      const codeStore = window.getBoCodeStore();
+      const codeStore = window.sfGetBoCodeStore();
       codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
       codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
       uiState.isPageCodeLoad = true;
