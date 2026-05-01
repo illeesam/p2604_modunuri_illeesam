@@ -200,7 +200,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <path-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
     <div>

@@ -85,8 +85,14 @@ public class GlobalExceptionHandler {
     /** 권한 부족 (인증은 됐으나 접근 불가) — 403 */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Void>> handleAccess(AccessDeniedException ex, HttpServletRequest req) {
+        String uri = CmUtil.nvl(req.getRequestURI(), "");
+        String required;
+        if (uri.contains("/api/bo/"))  required = "BO";   // BO 전용 API에 접근 시도
+        else if (uri.contains("/api/fo/")) required = "FO"; // FO 전용 API에 접근 시도
+        else required = "-";
+        String msg = "접근 권한이 없습니다. (" + required + ")";
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-            .body(ApiResponse.<Void>error(403, "접근 권한이 없습니다.")
+            .body(ApiResponse.<Void>error(403, msg)
                 .withDebug(buildStack(ex), buildUserInfo(req)));
     }
 

@@ -39,7 +39,7 @@
             LEFT JOIN sy_site ste ON ste.site_id = a.site_id
             LEFT JOIN sy_code cd_seat ON cd_seat.code_grp = 'SETTLE_ETC_ADJ_TYPE' AND cd_seat.code_value = a.etc_adj_type_cd
             LEFT JOIN sy_code cd_ad ON cd_ad.code_grp = 'ADJ_DIR' AND cd_ad.code_value = a.etc_adj_dir_cd
-            <include refid="stSettleEtcAdjCond"/>
+        <include refid="stSettleEtcAdjCond"/>
         <choose>
             <when test="sort == 'id_asc'">ORDER BY a.settle_etc_adj_id ASC</when>
             <when test="sort == 'id_desc'">ORDER BY a.settle_etc_adj_id DESC</when>
@@ -61,7 +61,7 @@
             LEFT JOIN sy_site ste ON ste.site_id = a.site_id
             LEFT JOIN sy_code cd_seat ON cd_seat.code_grp = 'SETTLE_ETC_ADJ_TYPE' AND cd_seat.code_value = a.etc_adj_type_cd
             LEFT JOIN sy_code cd_ad ON cd_ad.code_grp = 'ADJ_DIR' AND cd_ad.code_value = a.etc_adj_dir_cd
-            <include refid="stSettleEtcAdjCond"/>
+        <include refid="stSettleEtcAdjCond"/>
         <choose>
             <when test="sort == 'id_asc'">ORDER BY a.settle_etc_adj_id ASC</when>
             <when test="sort == 'id_desc'">ORDER BY a.settle_etc_adj_id DESC</when>
@@ -76,7 +76,7 @@
     <select id="selectPageCount" resultType="long">
         SELECT COUNT(a.*)  /* base.ec.st :: StSettleEtcAdj :: selectPageCount */
         FROM st_settle_etc_adj a
-            <include refid="stSettleEtcAdjCond"/>
+        <include refid="stSettleEtcAdjCond"/>
     </select>
 
     <!-- 정산 기타 조정 선택 필드 수정 -->

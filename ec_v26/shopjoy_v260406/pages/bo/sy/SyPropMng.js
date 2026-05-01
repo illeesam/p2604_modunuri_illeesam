@@ -260,7 +260,7 @@ window.SyPropMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath"
+        <path-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath"
           :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
@@ -370,7 +370,7 @@ window.PropTreeNode = {
     <span style="font-size:10px;color:#999;background:#f5f5f5;padding:1px 6px;border-radius:8px;">{{ node.count }}</span>
   </div>
   <div v-if="expanded.has(node.path) && node.children.length>0">
-    <prop-tree-node v-for="ch in node.children" :key="ch.path"
+    <path-tree-node v-for="ch in node.children" :key="ch.path"
       :node="ch" :expanded="expanded" :selected="selected"
       :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" />
   </div>

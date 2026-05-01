@@ -46,6 +46,8 @@ import com.shopjoy.ecadminapi.base.ec.dp.repository.DpPanelRepository;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpPanelItemRepository;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpWidgetRepository;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpWidgetLibRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyPath;
+import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -88,6 +90,7 @@ public class CmAppStoreDataService {
     private final DpPanelItemRepository dpPanelItemRepository;
     private final DpWidgetRepository dpWidgetRepository;
     private final DpWidgetLibRepository dpWidgetLibRepository;
+    private final SyPathRepository syPathRepository;
 
     // ════════════════════════════════════════════════════════════════════
     // 통합 메서드
@@ -152,6 +155,10 @@ public class CmAppStoreDataService {
         if (requestedItems.contains(CmStoreConst.SY_APP)) {
             StoreApp app = getApp(authUser, userTypeCd);
             resultMap.put(CmStoreConst.SY_APP, app != null ? app : StoreApp.builder().build());
+        }
+        if (requestedItems.contains(CmStoreConst.SY_PATHS) || requestedItems.isEmpty()) {
+            List<Map<String, Object>> paths = getPaths();
+            resultMap.put(CmStoreConst.SY_PATHS, Map.of("paths", paths));
         }
 
         return resultMap;
@@ -688,6 +695,27 @@ public class CmAppStoreDataService {
         }
 
         return StoreDispData.builder().dataByArea(dataByArea).build();
+    }
+
+    /**
+     * 표시경로 목록 조회 - sy_path (useYn=Y 전체)
+     */
+    private List<Map<String, Object>> getPaths() {
+        return syPathRepository.findAll().stream()
+                .filter(p -> "Y".equals(p.getUseYn()))
+                .sorted(java.util.Comparator.comparing(SyPath::getSortOrd, java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder())))
+                .map(p -> {
+                    Map<String, Object> m = new java.util.LinkedHashMap<>();
+                    m.put("pathId", p.getPathId());
+                    m.put("bizCd", p.getBizCd());
+                    m.put("parentPathId", p.getParentPathId());
+                    m.put("pathLabel", p.getPathLabel());
+                    m.put("sortOrd", p.getSortOrd());
+                    m.put("useYn", p.getUseYn());
+                    m.put("pathRemark", p.getPathRemark());
+                    return m;
+                })
+                .collect(Collectors.toList());
     }
 
     /**

@@ -75,7 +75,7 @@ const rawList = reactive([]);
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         uiState.loading = true;
-        const res = await boApi.get('/bo/ec/st/raw/page', {
+        const res = await boApi.get('/base/ec/st/settle-raw/page', {
           params: {
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
@@ -422,13 +422,13 @@ const rawList = reactive([]);
       <div class="pager">
         <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
         <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
         <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
         <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
-          <option v-for="s in pager.pageSizes" :key="Math.random()" :value="s">{{ s }}개</option>
+          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
         </select>
       </div>
     </div>

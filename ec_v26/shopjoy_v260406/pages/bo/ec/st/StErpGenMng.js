@@ -139,7 +139,7 @@ window.StErpGenMng = {
       <table class="bo-table">
         <thead><tr><th>차변계정</th><th>대변계정</th><th>차변금액</th><th>대변금액</th><th>적요</th></tr></thead>
         <tbody>
-          <tr v-for="(r, idx) in cfPreviewRows" :key="Math.random()">
+          <tr v-for="(r, idx) in cfPreviewRows" :key="idx">
             <td>{{ r.debit }}</td><td>{{ r.credit }}</td>
             <td style="font-weight:700;color:#3498db">{{ fmtW(r.debitAmt) }}</td>
             <td style="font-weight:700;color:#27ae60">{{ fmtW(r.creditAmt) }}</td>

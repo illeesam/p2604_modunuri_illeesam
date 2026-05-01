@@ -41,11 +41,12 @@ window.DpDispUiDtl = {
     const handleLoadData = async () => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/ec/dp/ui/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('전시UI관리', '상세조회')
-        });
-        displays.splice(0, displays.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
+        const [resUi, resArea] = await Promise.all([
+          boApi.get('/bo/ec/dp/ui/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시UI관리', '상세조회') }),
+          boApi.get('/bo/ec/dp/area/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('전시UI관리', '영역조회') }),
+        ]);
+        displays.splice(0, displays.length, ...(resUi.data?.data?.pageList || resUi.data?.data?.list || []));
+        areas.splice(0, areas.length, ...(resArea.data?.data?.pageList || resArea.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -62,6 +63,9 @@ window.DpDispUiDtl = {
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfIsNew = computed(() => !props.editId);
+    const UI_TYPE_OPTS = computed(() => codes.disp_ui_types.length
+      ? codes.disp_ui_types.map(c => ({ value: c.codeValue, label: c.codeLabel }))
+      : [{ value: 'FO', label: 'FO(사용자)' }, { value: 'BO', label: 'BO(관리자)' }]);
 
     /* ── 기본 기간: 오늘 ~ +10년 ── */
     const _today = new Date();
@@ -116,10 +120,10 @@ window.DpDispUiDtl = {
       handleInitForm();
     });
 
+    const areas = reactive([]);
     const cfRelatedAreas = computed(() =>
-      (codes || [])
-        .filter(c => c.codeGrp === 'DISP_AREA' && c.uiCode === form.codeValue)
-        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
+      areas.filter(c => c.codeGrp === 'DISP_AREA' && c.uiCode === form.codeValue)
+           .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
     );
 
         const selectTab = (k) => { uiState.activeTab = k; };
@@ -349,7 +353,7 @@ window.DpDispUiDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { codes, displays, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
+    return { codes, displays, areas, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       form, errors, cfIsNew, UI_TYPE_OPTS,
       handleSave, doCancel, cfRelatedAreas, panelsOfArea,
       activeTab, selectTab, cfActiveArea, uiState, moveArea,

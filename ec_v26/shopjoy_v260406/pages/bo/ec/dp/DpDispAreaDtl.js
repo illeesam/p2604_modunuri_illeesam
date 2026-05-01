@@ -7,6 +7,7 @@ window.DpDispAreaDtl = {
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const codes = reactive({ disp_areas: [], layout_types: [] });
     const areas = reactive([]);
+    const panels = reactive([]);
     const uiState = reactive({ loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, pickKw: '', activeTab: 'base', expanded: false, previewMode: 'default', previewPaneWidth: 520, htmlDescEl: null });
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const previewMode = Vue.toRef(uiState, 'previewMode');
@@ -42,11 +43,18 @@ window.DpDispAreaDtl = {
     const handleLoadData = async () => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/ec/dp/area/page', {
-          params: { pageNo: 1, pageSize: 10000 },
-          ...coUtil.apiHdr('전시영역관리', '상세조회')
-        });
-        areas.splice(0, areas.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
+        const [areaRes, panelRes] = await Promise.all([
+          boApi.get('/base/ec/dp/area/page', {
+            params: { pageNo: 1, pageSize: 10000 },
+            ...coUtil.apiHdr('전시영역관리', '상세조회')
+          }),
+          boApi.get('/base/ec/dp/panel/page', {
+            params: { pageNo: 1, pageSize: 10000 },
+            ...coUtil.apiHdr('전시영역관리', '패널조회')
+          })
+        ]);
+        areas.splice(0, areas.length, ...(areaRes.data?.data?.pageList || areaRes.data?.data?.list || []));
+        panels.splice(0, panels.length, ...(panelRes.data?.data?.pageList || panelRes.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -96,7 +104,7 @@ window.DpDispAreaDtl = {
     /* ── 로드 ── */
     const handleInitForm = async () => {
       if (!cfIsNew.value) {
-        const a = (codes || []).find(c => c.codeId === props.editId && c.codeGrp === 'DISP_AREA');
+        const a = areas.find(c => c.codeId === props.editId && c.codeGrp === 'DISP_AREA');
         if (a) {
           Object.assign(form, {
             codeId: a.codeId, codeGrp: a.codeGrp,
@@ -135,7 +143,7 @@ window.DpDispAreaDtl = {
 
     /* ── 연결된 패널 ── */
     const cfRelatedPanels = computed(() =>
-      (displays || [])
+      (panels || [])
         .filter(p => p.area === form.codeValue)
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
     );
@@ -144,7 +152,7 @@ window.DpDispAreaDtl = {
     const pickKw   = ref('');
     const pickSel  = reactive(new Set());
     const cfAvailablePanels = computed(() => {
-      const all = (displays || []);
+      const all = (panels || []);
       const kw  = uiState.pickKw.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(all, p => {
         if (p.area === form.codeValue) return false; /* 이미 포함된 것 제외 */
@@ -164,7 +172,7 @@ window.DpDispAreaDtl = {
     const onPanelPicked = (p) => {
       if (!form.codeValue) { props.showToast && props.showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
       p.area = form.codeValue;
-      const list = (displays || []).filter(x => x.area === form.codeValue);
+      const list = (panels || []).filter(x => x.area === form.codeValue);
       window.safeArrayUtils.safeForEach(list, (x, i) => { x.sortOrder = i + 1; });
       props.showToast && props.showToast(`[${p.name}] 패널을 추가했습니다.`, 'info');
       uiState.pickOpen = false;
@@ -179,7 +187,7 @@ window.DpDispAreaDtl = {
       const ids = Array.from(pickSel);
       if (!ids.length) { closePick(); return; }
       if (!form.codeValue) { props.showToast && props.showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
-      const list = displays || [];
+      const list = panels || [];
       window.safeArrayUtils.safeForEach(ids, id => {
         const p = window.safeArrayUtils.safeFind(list, x => x.dispId === id);
         if (p) p.area = form.codeValue;
@@ -411,7 +419,7 @@ window.DpDispAreaDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { codes, areas, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
+    return { codes, areas, panels, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
       form, errors, cfIsNew, codes, uiState, fnAreaTypeLabel,
       handleSave, onCancel, cfRelatedPanels,
       uiState, pickKw, pickSel, cfAvailablePanels, openPick, closePick, togglePick, confirmPick, removePanel, onPanelPicked, movePanel,
@@ -837,8 +845,8 @@ window.DpDispAreaDtl = {
   <!-- ── 패널 선택 팝업 ─────────────────────────────────────────────────────── -->
   <panel-pick-modal v-if="pickOpen"
     :title="'전시패널 추가 [' + form.codeValue + ']'"
-    :displays="[] || []"
-    :areas="([]||[]).filter(c => c.codeGrp==='DISP_AREA')"
+    :panels="panels"
+    :areas="areas"
     :exclude-area="form.codeValue"
     @close="closePick"
     @pick="onPanelPicked" />

@@ -10,7 +10,7 @@ window.StConfigMng = {
     const handleLoadList = async () => {
       uiState.loading = true;
       try {
-        const res = await boApi.get('/bo/ec/st/config/page', { params: { pageNo: 1, pageSize: 100 }, ...coUtil.apiHdr('정산설정관리', '목록조회') });
+        const res = await boApi.get('/base/ec/st/settle-config/page', { params: { pageNo: 1, pageSize: 100 }, ...coUtil.apiHdr('정산설정관리', '목록조회') });
         const pageResult = res.data?.data;
         const pageList = pageResult?.pageList || [];
         configs.splice(0, configs.length, ...pageList);

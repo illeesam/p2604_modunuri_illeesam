@@ -7,7 +7,9 @@ window.SyTemplateDtl = {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, watch, nextTick } = Vue;
 
     const templates = reactive([]);
-    
+    /* 미리보기 / 발송 모달 — handleLoadData에서 참조하므로 먼저 선언 */
+    const uiState = reactive({ previewOpen: false, sendOpen: false, error: null, isPageCodeLoad: false, loading: false, quillEditorEl: null});
+
     // onMounted에서 API 로드
     const handleLoadData = async () => {
       uiState.loading = true;
@@ -16,8 +18,10 @@ window.SyTemplateDtl = {
           params: { pageNo: 1, pageSize: 10000 },
           ...coUtil.apiHdr('템플릿관리', '상세조회')
         });
-        templates = res.data?.data?.pageList || res.data?.data?.list || [];
+        const list = res.data?.data?.pageList || res.data?.data?.list || [];
+        templates.splice(0, templates.length, ...list);
         uiState.error = null;
+        await handleInitForm();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -80,7 +84,7 @@ window.SyTemplateDtl = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleInitForm();
+      else handleLoadData();
     });
 
     onBeforeUnmount(() => destroyQuill());
@@ -129,8 +133,6 @@ window.SyTemplateDtl = {
     const cfNeedSubject = computed(() => ['메일템플릿', 'MMS템플릿', '시스템알림'].includes(form.templateTypeCd));
     const cfIsLongContent = computed(() => ['MMS템플릿'].includes(form.templateTypeCd));
 
-    /* 미리보기 / 발송 모달 */
-    const uiState = reactive({ previewOpen: false, sendOpen: false, error: null, isPageCodeLoad: false, loading: false, quillEditorEl: null});
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -150,8 +152,8 @@ window.SyTemplateDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { templates, loading, uiState, cfIsNew, form, errors, handleSave, TEMPLATE_TYPES, cfNeedSubject, cfIsLongContent,
-             cfUseHtmlEditor, quillEditorEl, uiState, cfSiteNm };
+    return { templates, uiState, cfIsNew, form, errors, handleSave, TEMPLATE_TYPES, cfNeedSubject, cfIsLongContent,
+             cfUseHtmlEditor, quillEditorEl, cfSiteNm };
   },
   template: /* html */`
 <div>

@@ -303,6 +303,14 @@ window.SyRoleMng = {
       }
     };
 
+    const onOpenSetting = (idx) => {
+      setFocused(idx);
+      Vue.nextTick(() => {
+        const el = document.getElementById('role-config-panel');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    };
+
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
       const changed = EDIT_FIELDS.some(f => {
@@ -523,7 +531,7 @@ window.SyRoleMng = {
       cfSiteNm, ROLE_TYPES, PERM_LEVELS, ROLE_CATS, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, fnPermColor, depthBullet, depthColor, fnStatusClass,
       searchParam, searchParamOrg, onSearch, onReset,
       gridRows, cfTotal,
-      setFocused, onCellChange,
+      setFocused, onOpenSetting, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       toggleCheckAll, parentNm,
       roleTreeModal, openParentModal, onParentSelect,
@@ -572,7 +580,7 @@ window.SyRoleMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <path-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
     <div>
@@ -606,12 +614,13 @@ window.SyRoleMng = {
           <th>비고</th>
           <th style="width:80px;">사이트명</th>
           <th class="col-act-cancel"></th>
+          <th class="col-act-setting" style="width:48px;"></th>
           <th class="col-act-delete"></th>
         </tr>
       </thead>
       <tbody>
         <tr v-if="gridRows.length===0">
-          <td colspan="14" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+          <td colspan="15" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
         <tr v-for="(row, idx) in gridRows" :key="row.roleId"
           class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
@@ -666,6 +675,14 @@ window.SyRoleMng = {
             <button v-if="['U','I','D'].includes(row._row_status)"
               class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
           </td>
+          <td style="text-align:center;">
+            <button v-if="row.roleId > 0 && row._row_status !== 'D'"
+              class="btn btn-blue btn-xs"
+              :style="{ fontWeight: uiState.selectedRoleId === row.roleId ? '700' : '400',
+                        outline: uiState.selectedRoleId === row.roleId ? '2px solid #2563eb' : 'none' }"
+              @click.stop="onOpenSetting(idx)"
+              title="하단 메뉴접근권한 / 대상사용자 설정">설정</button>
+          </td>
           <td class="col-act-delete-val">
             <button v-if="['N','U'].includes(row._row_status)"
               class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
@@ -677,7 +694,7 @@ window.SyRoleMng = {
   </div>
 
   <!-- ── 하단: 메뉴 배분 + 사용자 배분 ───────────────────────────────────────────── -->
-  <div style="display:flex;gap:16px;align-items:flex-start;">
+  <div id="role-config-panel" style="display:flex;gap:16px;align-items:flex-start;">
 
     <!-- ── 좌: 메뉴목록 ────────────────────────────────────────────────────── -->
     <div style="flex:1;">
@@ -686,7 +703,7 @@ window.SyRoleMng = {
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
             <b style="font-size:13px;">메뉴 접근권한</b>
             <span v-if="cfSelectedRoleNm" style="font-size:12px;color:#e8587a;">— {{ cfSelectedRoleNm }}</span>
-            <span v-else style="font-size:12px;color:#bbb;">역할을 선택하면 메뉴를 배분할 수 있습니다</span>
+            <span v-else style="font-size:12px;color:#bbb;">위 목록에서 역할의 [설정] 버튼을 클릭하세요</span>
           </div>
           <div v-if="uiState.selectedRoleId" style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
             <label style="font-size:12px;color:#555;cursor:pointer;display:flex;align-items:center;gap:4px;margin-right:4px;white-space:nowrap;">
@@ -733,7 +750,7 @@ window.SyRoleMng = {
           </div>
         </div>
         <div v-else style="text-align:center;color:#bbb;padding:40px 0;font-size:13px;">
-          위 목록에서 역할을 선택하세요.
+          위 목록에서 역할의 [설정] 버튼을 클릭하세요.
         </div>
       </div>
     </div>
@@ -745,7 +762,7 @@ window.SyRoleMng = {
           <div>
             <b style="font-size:13px;">대상사용자</b>
             <span v-if="cfSelectedRoleNm" style="font-size:12px;color:#e8587a;margin-left:8px;">— {{ cfSelectedRoleNm }}</span>
-            <span v-else style="font-size:12px;color:#bbb;margin-left:8px;">역할을 선택하면 사용자를 추가할 수 있습니다</span>
+            <span v-else style="font-size:12px;color:#bbb;margin-left:8px;">위 목록에서 역할의 [설정] 버튼을 클릭하세요</span>
           </div>
           <button v-if="uiState.selectedRoleId" class="btn btn-primary btn-sm"
             @click="uiState.userSelectOpen=true">+ 사용자 추가</button>

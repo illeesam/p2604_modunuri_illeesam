@@ -560,7 +560,7 @@ window.SyCodeMng = {
         <button class="btn btn-sm" @click="grpCollapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:50vh;overflow:auto;">
-        <prop-tree-node :node="cfGrpTree" :expanded="grpExpanded" :selected="uiState.grpSelectedPath"
+        <path-tree-node :node="cfGrpTree" :expanded="grpExpanded" :selected="uiState.grpSelectedPath"
           :on-toggle="grpToggleNode" :on-select="grpSelectNode" :depth="0" />
       </div>
     </div>
