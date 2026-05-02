@@ -1,4 +1,4 @@
-/* ShopJoy - Prod01List (API 로드 + 고급 필터 + PC 페이지네이션 + 모바일 무한스크롤) */
+/* ShopJoy - Prod03List (API 로드 + 고급 필터 + PC 페이지네이션 + 모바일 무한스크롤) */
 window.Prod03List = {
   name: "Prod03List",
   props: ['navigate', 'config', 'products', 'selectProduct', 'toggleLike', 'isLiked'],
@@ -6,10 +6,9 @@ window.Prod03List = {
 
     const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
 
-    const PAGE_SIZE   = 12;
     const pager = reactive({ pageNo: 1, pageSize: 12, pageTotalCount: 0, pageTotalPage: 1, pageType: 'INFINITE_SCROLL', pageSizes: [12, 24, 48], pageCond: {} });
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, searchText: '', priceMin: '', priceMax: '', currentPage: 1, mobileCount: PAGE_SIZE, isMobile: window.innerWidth < 768 });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, searchText: '', priceMin: '', priceMax: '', isMobile: window.innerWidth < 768 });
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -60,10 +59,13 @@ window.Prod03List = {
     const allProducts = reactive([]);
 
     const fnBuildPagerNums = () => {
-      const t = Math.max(1, Math.ceil(allProducts.length / PAGE_SIZE));
+      const t = Math.max(1, Math.ceil(allProducts.length / pager.pageSize));
       pager.pageTotalPage = t;
       pager.pageTotalCount = allProducts.length;
-      const c = uiState.currentPage;
+      const c = pager.pageNo;
+      pager.pageList = uiState.isMobile
+        ? allProducts.slice(0, c * pager.pageSize)
+        : allProducts.slice((c - 1) * pager.pageSize, c * pager.pageSize);
       if (t <= 7) { pager.pageNums = Array.from({ length: t }, (_, i) => i + 1); return; }
       const set = new Set([1, t, c-2, c-1, c, c+1, c+2].filter(n => n >= 1 && n <= t));
       const sorted = [...set].sort((a, b) => a - b);
@@ -157,22 +159,11 @@ window.Prod03List = {
       uiState.searchText = ''; uiState.priceMin = ''; uiState.priceMax = '';
       selColors.clear(); selSizes.clear(); selCats.clear();
     };
-    /* ── PC 페이지네이션 ── */
-    const cfPagedProducts = computed(() => {
-      const s = (uiState.currentPage - 1) * PAGE_SIZE;
-      return allProducts.slice(s, s + PAGE_SIZE);
-    });
-
-    /* ── 모바일 무한스크롤 ── */
-    const cfMobileProducts = computed(() => allProducts.slice(0, uiState.mobileCount));
-    const cfHasMore       = computed(() => uiState.mobileCount < allProducts.length);
-
     /* ── 모바일 판별 ── */
-        const onResize = () => { uiState.isMobile = window.innerWidth < 768; };
+    const onResize = () => { uiState.isMobile = window.innerWidth < 768; fnBuildPagerNums(); };
     window.addEventListener('resize', onResize);
 
     /* ── 필터 변경 시 페이지 리셋 ── */
-
     watch([
       () => uiState.searchText,
       () => uiState.priceMin,
@@ -181,8 +172,7 @@ window.Prod03List = {
       selSizes,
       selCats
     ], () => {
-      uiState.currentPage = 1;
-      uiState.mobileCount = PAGE_SIZE;
+      pager.pageNo = 1;
       handleLoadProducts();
     });
 
@@ -193,16 +183,16 @@ window.Prod03List = {
       const el = document.getElementById('sj-sentinel');
       if (!el || !('IntersectionObserver' in window)) return;
       observer = new IntersectionObserver(entries => {
-        if (entries[0].isIntersecting && cfHasMore.value && uiState.isMobile) {
-          uiState.mobileCount = Math.min(allProducts.length, uiState.mobileCount + PAGE_SIZE);
+        if (entries[0].isIntersecting && uiState.isMobile && pager.pageNo < pager.pageTotalPage) {
+          pager.pageNo++;
+          fnBuildPagerNums();
         }
       }, { rootMargin: '300px' });
       observer.observe(el);
     };
 
     const onSearch = async () => {
-      uiState.currentPage = 1;
-      uiState.mobileCount = PAGE_SIZE;
+      pager.pageNo = 1;
       await handleLoadProducts();
       setupObserver();
     };
@@ -228,8 +218,7 @@ window.Prod03List = {
       cfAllColors, cfAllSizes, cfAllCats,
       toggleColor, toggleSize, toggleCat, cfHasFilter, clearFilters,
       fnDiscountRate, fnFmtPrice, fnCategoryLabel,
-      cfPagedProducts, PAGE_SIZE,
-      cfMobileProducts, cfHasMore,
+      fnBuildPagerNums,
       codes, onSearch,
       onResize,
       setupObserver,
@@ -409,7 +398,7 @@ window.Prod03List = {
 
   <!-- ── 상품 그리드 ── -->
   <div v-else class="grid-3">
-    <div v-for="p in (uiState.isMobile ? cfMobileProducts : cfPagedProducts)" :key="p.productId"
+    <div v-for="p in pager.pageList" :key="p.productId"
       class="product-card" style="cursor:pointer;" @click="selectProduct(p)">
 
       <!-- ── 썸네일 ──────────────────────────────────────────────────────── -->
@@ -488,28 +477,28 @@ window.Prod03List = {
   <!-- ── PC 페이지네이션 ── -->
   <div v-if="!uiState.loading && !uiState.isMobile && pager.pageTotalPage > 1"
     style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:32px;flex-wrap:wrap;">
-    <button @click="uiState.currentPage=Math.max(1,uiState.currentPage-1)" :disabled="uiState.currentPage===1"
+    <button @click="pager.pageNo=Math.max(1,pager.pageNo-1);fnBuildPagerNums()" :disabled="pager.pageNo===1"
       style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.85rem;"
-      :style="uiState.currentPage===1?'opacity:0.4;cursor:not-allowed;':''">‹</button>
+      :style="pager.pageNo===1?'opacity:0.4;cursor:not-allowed;':''">‹</button>
     <template v-for="n in pager.pageNums" :key="n">
       <span v-if="n==='…'" style="padding:8px 4px;color:var(--text-muted);font-size:0.85rem;">…</span>
-      <button v-else @click="uiState.currentPage=n;$el.scrollIntoView({behavior:'smooth',block:'start'})"
+      <button v-else @click="pager.pageNo=n;fnBuildPagerNums();$el.scrollIntoView({behavior:'smooth',block:'start'})"
         style="min-width:38px;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;transition:all 0.15s;"
-        :style="uiState.currentPage===n
+        :style="pager.pageNo===n
           ? 'background:var(--blue);color:#fff;border:1px solid var(--blue);'
           : 'background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border);'">
         {{ n }}
       </button>
     </template>
-    <button @click="uiState.currentPage=Math.min(pager.pageTotalPage,uiState.currentPage+1)" :disabled="uiState.currentPage===pager.pageTotalPage"
+    <button @click="pager.pageNo=Math.min(pager.pageTotalPage,pager.pageNo+1);fnBuildPagerNums()" :disabled="pager.pageNo===pager.pageTotalPage"
       style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.85rem;"
-      :style="uiState.currentPage===pager.pageTotalPage?'opacity:0.4;cursor:not-allowed;':''">›</button>
-    <span style="font-size:0.78rem;color:var(--text-muted);margin-left:8px;">{{ uiState.currentPage }} / {{ pager.pageTotalPage }}</span>
+      :style="pager.pageNo===pager.pageTotalPage?'opacity:0.4;cursor:not-allowed;':''">›</button>
+    <span style="font-size:0.78rem;color:var(--text-muted);margin-left:8px;">{{ pager.pageNo }} / {{ pager.pageTotalPage }}</span>
   </div>
 
   <!-- ── 모바일 무한스크롤 센티넬 ── -->
   <div v-if="!uiState.loading && uiState.isMobile" id="sj-sentinel" style="height:1px;"></div>
-  <div v-if="!uiState.loading && uiState.isMobile && cfHasMore"
+  <div v-if="!uiState.loading && uiState.isMobile && pager.pageNo < pager.pageTotalPage"
     style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.85rem;">
     스크롤하면 더 불러옵니다…
   </div>

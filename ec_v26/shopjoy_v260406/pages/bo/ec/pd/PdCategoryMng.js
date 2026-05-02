@@ -131,10 +131,9 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     });
 
 
-    const cfPagedRows = computed(() => (gridRows || []).slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-    const setPage       = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
-    const onSizeChange  = () => { pager.pageNo = 1; pager.pageTotalPage = Math.max(1, Math.ceil(gridRows.length / pager.pageSize)); fnBuildPagerNums(); };
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); pager.pageList=gridRows.slice((c-1)*pager.pageSize,c*pager.pageSize); };
+    const setPage       = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; fnBuildPagerNums(); } };
+    const onSizeChange  = () => { pager.pageNo = 1; pager.pageTotalCount = gridRows.length; pager.pageTotalPage = Math.max(1, Math.ceil(gridRows.length / pager.pageSize)); fnBuildPagerNums(); };
     const getRealIdx    = localIdx => (pager.pageNo - 1) * pager.pageSize + localIdx;
 
     const onSearch = async () => {
@@ -321,7 +320,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       codes, uiState,
       selectNode, handleGridSearch,
       searchParam, searchParamOrg,
-      gridRows, cfPagedRows, pager, setPage, onSizeChange, getRealIdx,
+      gridRows, pager, setPage, onSizeChange, getRealIdx,
       onSearch, onReset,
       catPickerModal, cfCatPickerList, onParentSelect, openParentModal, fnDepthColor, fnDepthBullet, parentNm,
       focusedIdx, setFocused, addRow, addChildRow, cancelRow, cancelChecked, deleteRow, deleteRows, handleSave,
@@ -432,7 +431,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
               {{ uiState.selectedCatId ? '하위 카테고리가 없습니다. [+ 행추가]로 추가하세요.' : '데이터가 없습니다.' }}
             </td>
           </tr>
-          <tr v-for="(row, idx) in cfPagedRows" :key="row?.categoryId"
+          <tr v-for="(row, idx) in pager.pageList" :key="row?.categoryId"
               :class="[uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '', 'status-'+row._row_status]"
               draggable="true"
               @dragstart="onRowDragStart(getRealIdx(idx))"

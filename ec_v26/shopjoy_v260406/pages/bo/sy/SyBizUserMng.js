@@ -73,7 +73,7 @@ window.SyBizUserMng = {
 
     const vendors = reactive([]);
     const bizPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const fnBuildBizPagerNums = () => { bizPager.pageTotalCount=vendors.length; bizPager.pageTotalPage=Math.max(1,Math.ceil(vendors.length/bizPager.pageSize)); const c=bizPager.pageNo,l=bizPager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); bizPager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+    const fnBuildBizPagerNums = () => { bizPager.pageTotalCount=vendors.length; bizPager.pageTotalPage=Math.max(1,Math.ceil(vendors.length/bizPager.pageSize)); bizPager.pageList=vendors.slice((bizPager.pageNo-1)*bizPager.pageSize,bizPager.pageNo*bizPager.pageSize); const c=bizPager.pageNo,l=bizPager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); bizPager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const handleLoadDetail = async () => {
       uiState.loading = true;
       try {
@@ -136,8 +136,7 @@ window.SyBizUserMng = {
       return '['+vt+'] '+v.vendorNm;
     };
 
-    const cfBizPagedRows  = computed(() => vendors.slice((bizPager.pageNo-1)*bizPager.pageSize, bizPager.pageNo*bizPager.pageSize));
-    const setBizPage    = n => { if(n>=1&&n<=bizPager.pageTotalPage) bizPager.pageNo=n; };
+    const setBizPage    = n => { if(n>=1&&n<=bizPager.pageTotalPage) { bizPager.pageNo=n; fnBuildBizPagerNums(); } };
 
     const fnVendorStatusBadge = (s) => ({ ACTIVE:'badge-green', SUSPENDED:'badge-orange', TERMINATED:'badge-red' }[s] || 'badge-gray');
     const fnVendorStatusLabel = (s) => ({ ACTIVE:'운영중', SUSPENDED:'중지', TERMINATED:'종료' }[s] || s);
@@ -191,10 +190,9 @@ window.SyBizUserMng = {
     });
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const fnBuildPagerNums = () => { pager.pageTotalCount=vendorUsers.length; pager.pageTotalPage=Math.max(1,Math.ceil(vendorUsers.length/pager.pageSize)); const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-    const setPage    = n => { if(n>=1&&n<=pager.pageTotalPage) pager.pageNo=n; };
-    const onSizeChange = () => { pager.pageNo=1; };
-    const cfPagedRows  = computed(() => vendorUsers.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize));
+    const fnBuildPagerNums = () => { pager.pageTotalCount=vendorUsers.length; pager.pageTotalPage=Math.max(1,Math.ceil(vendorUsers.length/pager.pageSize)); pager.pageList=vendorUsers.slice((pager.pageNo-1)*pager.pageSize,pager.pageNo*pager.pageSize); const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+    const setPage    = n => { if(n>=1&&n<=pager.pageTotalPage) { pager.pageNo=n; fnBuildPagerNums(); } };
+    const onSizeChange = () => { pager.pageNo=1; fnBuildPagerNums(); };
 
     /* ── 인라인 폼 (사용자 등록/수정) ── */
         const formData = reactive({});
@@ -388,13 +386,13 @@ window.SyBizUserMng = {
     return {
       uiState, codes,
       vendorUsers, cfVendorMap, fnVendorNm, fnVendorTypeCd, fnVendorSummary,
-      vendors, bizPager, cfBizPagedRows, setBizPage,
+      vendors, bizPager, setBizPage,
       onSearch, onReset,
       pickVendorRow, fnVendorStatusBadge, fnVendorStatusLabel, fnVendorTypeBadge, fnVendorTypeLabel,
       onVendorPicked,
       cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
       fnStatusBadge, fnStatusLabel,
-      cfPagedRows, pager, setPage, onSizeChange,
+      pager, setPage, onSizeChange,
       formData, openNew, openEdit, closeForm, handleSaveForm, handleDeleteRow,
       userRoles, roleTreeExpanded,
       openRoleModal, closeRoleModal, confirmRoleModal, handleDeleteRole,
@@ -445,8 +443,8 @@ window.SyBizUserMng = {
         <th style="width:36px;text-align:center;">번호</th><th>업체유형</th><th>업체명</th><th>사업자번호</th><th>대표자</th><th>전화</th><th style="text-align:right;">선택</th>
       </tr></thead>
       <tbody>
-        <tr v-if="cfBizPagedRows.length===0"><td colspan="7" style="text-align:center;color:#999;padding:20px;">데이터가 없습니다.</td></tr>
-        <tr v-for="(v, bidx) in cfBizPagedRows" :key="v.vendorId"
+        <tr v-if="!(bizPager.pageList||[]).length"><td colspan="7" style="text-align:center;color:#999;padding:20px;">데이터가 없습니다.</td></tr>
+        <tr v-for="(v, bidx) in bizPager.pageList" :key="v.vendorId"
           :style="{cursor:'pointer',background:uiState.searchVendorId===v.vendorId?'#fff0f4':'transparent'}"
           @click="pickVendorRow(v)">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (bizPager.pageNo - 1) * bizPager.pageSize + bidx + 1 }}</td>
@@ -499,8 +497,8 @@ window.SyBizUserMng = {
             <th>업체</th><th>이름</th><th>직위</th><th>부서</th><th>휴대전화</th><th>이메일</th><th>상태</th><th>대표담당자</th><th style="text-align:right;">관리</th>
           </tr></thead>
           <tbody>
-            <tr v-if="cfPagedRows.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">{{ uiState.searchVendorId == null ? '업체를 선택해주세요.' : '데이터가 없습니다.' }}</td></tr>
-            <tr v-for="(u, idx) in cfPagedRows" :key="u.vendorUserId" :style="uiState.formMode&&formData.vendorUserId===u.vendorUserId?'background:#fff8f9;':''">
+            <tr v-if="!(pager.pageList||[]).length"><td colspan="10" style="text-align:center;color:#999;padding:30px;">{{ uiState.searchVendorId == null ? '업체를 선택해주세요.' : '데이터가 없습니다.' }}</td></tr>
+            <tr v-for="(u, idx) in pager.pageList" :key="u.vendorUserId" :style="uiState.formMode&&formData.vendorUserId===u.vendorUserId?'background:#fff8f9;':''">
               <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
               <td style="font-weight:600;color:#2563eb;font-size:12px;">{{ fnVendorNm(u.vendorId) }}</td>
               <td>{{ u.memberNm }}</td>

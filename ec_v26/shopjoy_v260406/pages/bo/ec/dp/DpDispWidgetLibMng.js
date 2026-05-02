@@ -57,6 +57,7 @@ window.DpDispWidgetLibMng = {
         widgetLibs.splice(0, widgetLibs.length, ...(d?.pageList || d?.list || []));
         pager.pageTotalCount = d?.pageTotalCount || 0;
         pager.pageTotalPage  = d?.pageTotalPage  || 1;
+        fnBuildPagerNums();
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -103,7 +104,7 @@ window.DpDispWidgetLibMng = {
     /* ── 표시경로 트리 ── */
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    const cfPageNumbers = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* ── 하단 인라인 Dtl ── */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
@@ -138,7 +139,7 @@ window.DpDispWidgetLibMng = {
     return { widgetLibs, uiState, codes, searchParam, pager,
       onSearch, onReset, setPage, onSizeChange,
       selectNode,
-      cfPageNumbers,
+      fnBuildPagerNums,
       wIcon, wTypeLabel,
       uiStateDetail, cfDetailEditId, handleLoadDetail, openNew, closeDetail, inlineNavigate,
       cfSiteNm, handleDelete };
@@ -200,7 +201,7 @@ window.DpDispWidgetLibMng = {
           <div class="pager">
             <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
             <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-            <button v-for="n in cfPageNumbers" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+            <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
             <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
             <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
           </div>
