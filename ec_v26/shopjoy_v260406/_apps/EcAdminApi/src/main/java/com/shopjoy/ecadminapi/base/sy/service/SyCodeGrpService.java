@@ -9,6 +9,7 @@ import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Map;
 
 @Service
@@ -94,6 +96,32 @@ public class SyCodeGrpService {
         em.flush();
         if (repository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
+    }
+
+    @Transactional
+    public void saveList(List<SyCodeGrp> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (SyCodeGrp row : rows) {
+            String rs = row.getRowStatus();
+            if ("I".equals(rs)) {
+                row.setCodeGrpId(CmUtil.generateId("sy_code_grp"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                repository.save(row);
+            } else if ("U".equals(rs)) {
+                String id = Objects.requireNonNull(row.getCodeGrpId(), "codeGrpId must not be null");
+                SyCodeGrp entity = repository.findById(id)
+                    .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+                VoUtil.voCopyExclude(row, entity, "codeGrpId^regBy^regDate^rowStatus");
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                repository.save(entity);
+            } else if ("D".equals(rs)) {
+                String id = Objects.requireNonNull(row.getCodeGrpId(), "codeGrpId must not be null");
+                if (repository.existsById(id)) repository.deleteById(id);
+            }
+        }
+        em.flush();
     }
 
 }

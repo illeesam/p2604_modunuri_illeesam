@@ -422,6 +422,12 @@
     saveList(rows, uiNm, cmdNm) { return global.boApi.post('/bo/sy/brand/save-list', rows, hdr(uiNm, cmdNm)); },
   };
 
+  /* ── sy: 공통코드그룹 ──────────────────────────────────────── */
+  boApiSvc.syCodeGrp = {
+    getAll(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/code-grp', { params, ...hdr(uiNm, cmdNm) }); },
+    saveList(rows, uiNm, cmdNm) { return global.boApi.post('/bo/sy/code-grp/save-list', rows, hdr(uiNm, cmdNm)); },
+  };
+
   /* ── sy: 공통코드 ───────────────────────────────────────────── */
   boApiSvc.syCode = {
     getAll(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/code', { params, ...hdr(uiNm, cmdNm) }); },

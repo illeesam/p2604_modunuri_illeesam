@@ -185,22 +185,26 @@ window.SyCodeMng = {
 
     const handleLoadAllGroups = async () => {
       try {
-        const res = await boApiSvc.syCode.getPage({ pageNo: 1, pageSize: 100000 }, '코드관리', '그룹목록조회');
-        const list = res.data?.data?.pageList || res.data?.data?.list || [];
-        // countMap 집계 + 그룹 유니크 추출 (codes 배열 없이 직접 처리)
+        const [grpRes, codeRes] = await Promise.all([
+          boApiSvc.syCodeGrp.getAll({}, '코드관리', '그룹목록조회'),
+          boApiSvc.syCode.getPage({ pageNo: 1, pageSize: 100000 }, '코드관리', '코드수집계'),
+        ]);
+        const grpList  = grpRes.data?.data  || [];
+        const codeList = codeRes.data?.data?.pageList || codeRes.data?.data?.list || [];
         const countMap = new Map();
-        const grpMeta  = new Map();
-        list.forEach(c => {
-          countMap.set(c.codeGrp, (countMap.get(c.codeGrp) || 0) + 1);
-          if (c.codeGrp && !grpMeta.has(c.codeGrp))
-            grpMeta.set(c.codeGrp, { codeGrp: c.codeGrp, grpNm: c.codeGrp, type: '일반', useYn: 'Y', pathId: null });
-        });
+        codeList.forEach(c => countMap.set(c.codeGrp, (countMap.get(c.codeGrp) || 0) + 1));
         grpRows.splice(0);
-        grpMeta.forEach(g => grpRows.push({
-          ...g,
+        grpList.forEach(g => grpRows.push({
+          codeGrpId:   g.codeGrpId,
+          siteId:      g.siteId    || null,
+          codeGrp:     g.codeGrp,
+          grpNm:       g.grpNm,
+          pathId:      g.pathId    || null,
+          description: g.codeGrpDesc || '',
+          useYn:       g.useYn || 'Y',
           _row_status: 'N',
           codeCount: countMap.get(g.codeGrp) ?? 0,
-          _row_org: { codeGrp: g.codeGrp, grpNm: g.grpNm, pathId: null, description: g.description || '', type: g.type || '일반', useYn: g.useYn || 'Y' },
+          _row_org: { codeGrp: g.codeGrp, grpNm: g.grpNm, pathId: g.pathId || null, description: g.codeGrpDesc || '', useYn: g.useYn || 'Y' },
         }));
         syncGrpDirty();
         applyGrpFilter();
@@ -339,8 +343,25 @@ window.SyCodeMng = {
       if (!uiState.grpDirtyCount) { props.showToast('변경된 행이 없습니다.', 'warning'); return; }
       const ok = await props.showConfirm('저장', `${uiState.grpDirtyCount}건 저장하시겠습니까?`);
       if (!ok) return;
-      props.showToast('저장되었습니다.', 'success');
-      await handleLoadAllGroups();   // 그룹 목록 전체 재조회
+      const saveRows = grpRows
+        .filter(r => r._row_status !== 'N')
+        .map(r => ({
+          codeGrpId: r.codeGrpId || null,
+          siteId:    r.siteId    || null,
+          codeGrp:   r.codeGrp,
+          grpNm:     r.grpNm,
+          pathId:    r.pathId    || null,
+          codeGrpDesc: r.description || null,
+          useYn:     r.useYn,
+          rowStatus: r._row_status,
+        }));
+      try {
+        await boApiSvc.syCodeGrp.saveList(saveRows, '공통코드그룹관리', '저장');
+        props.showToast('저장되었습니다.', 'success');
+        await handleLoadAllGroups();
+      } catch (err) {
+        props.showToast(err.response?.data?.message || err.message || '저장 중 오류가 발생했습니다.', 'error', 0);
+      }
     };
 
     const openPathPick  = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
