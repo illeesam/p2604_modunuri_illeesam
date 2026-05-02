@@ -145,7 +145,7 @@ window.ZdLocalStorage = {
     </div>
 
     <div style="overflow-x: auto; position: relative; user-select: none;" :style="{ cursor: isResizing ? 'col-resize' : 'auto' }">
-      <table class="admin-table" style="width: 100%;">
+      <table class="bo-table" style="width: 100%;">
         <thead>
           <tr>
             <th style="width: 25%; text-align: left;">Key</th>

@@ -183,7 +183,7 @@ window.SyPropMng = {
   },
 
   template: /* html */`
-<div class="bo-wrap">
+<div>
   <div class="page-title">프로퍼티관리</div>
 
   <!-- ── 검색 바 ─────────────────────────────────────────────────────────── -->
