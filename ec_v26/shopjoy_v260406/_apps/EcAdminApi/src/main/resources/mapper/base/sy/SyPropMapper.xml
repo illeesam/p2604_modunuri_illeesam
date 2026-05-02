@@ -10,7 +10,7 @@
             <if test="pathId != null and pathId != ''">
                 AND p.path_id IN (
                     WITH RECURSIVE sub AS (
-                        SELECT path_id FROM shopjoy_2604.sy_path WHERE path_id = #{pathId}::BIGINT
+                        SELECT path_id FROM shopjoy_2604.sy_path WHERE path_id = #{pathId}
                         UNION ALL
                         SELECT pp.path_id FROM shopjoy_2604.sy_path pp JOIN sub s ON pp.parent_path_id = s.path_id
                     ) SELECT path_id FROM sub

@@ -16,8 +16,19 @@ window.SyCodeMng = {
       grpDirtyCount: 0,
     });
 
-    const searchParam    = reactive({ kw: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: '' });
-    const searchParamOrg = reactive({ kw: '', grp: '', useYn: '', dateRange: '', dateStart: '', dateEnd: '' });
+    const _initSearchParam = () => {
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      const threeYearsAgo = thisYear - 3;
+      return {
+        kw: '', grp: '', useYn: 'Y', dateRange: '',
+        dateStart: `${threeYearsAgo}-01-01`,
+        dateEnd:   `${thisYear}-12-31`,
+      };
+    };
+
+    const searchParam    = reactive(_initSearchParam());
+    const searchParamOrg = reactive(_initSearchParam());
     const gridRows       = reactive([]);    // 현재 선택 그룹 코드 행
     const grpRows        = reactive([]);    // 코드그룹 CRUD 그리드 전체 행
     const visibleGrpRows = reactive([]);    // 필터 적용된 그룹 행 (템플릿 직접 바인딩)
@@ -112,7 +123,7 @@ window.SyCodeMng = {
     // ── 이벤트 함수 ──────────────────────────────────────────────────────────
 
     const onSearch = () => handleLoadAllGroups();
-    const onReset  = () => { Object.assign(searchParam, searchParamOrg); handleLoadAllGroups(); };
+    const onReset  = () => { Object.assign(searchParam, _initSearchParam()); handleLoadAllGroups(); };
 
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
@@ -402,7 +413,7 @@ window.SyCodeMng = {
   <!-- ── 검색 영역 ──────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="코드그룹 / 라벨 / 코드값 검색" />
+      <input v-model="searchParam.kw" placeholder="코드그룹 / 라벨 / 코드값 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.useYn">
         <option value="">사용여부 전체</option>
         <option v-for="o in pageCodes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
@@ -439,7 +450,7 @@ window.SyCodeMng = {
         <span class="list-title">
           <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
           공통코드그룹관리
-          <span v-if="uiState.grpSelectedPath" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ uiState.grpSelectedPath }}</span>
+          <span v-if="uiState.grpSelectedPath" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.grpSelectedPath }}</span>
           <span class="list-count">{{ grpCount() }}건</span>
         </span>
         <div style="display:flex;gap:6px;">

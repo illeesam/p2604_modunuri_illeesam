@@ -11,14 +11,15 @@
             <if test="pathId != null and pathId != ''">
                 AND g.path_id IN (
                     WITH RECURSIVE sub AS (
-                        SELECT path_id FROM shopjoy_2604.sy_path WHERE path_id = #{pathId}::BIGINT
+                        SELECT path_id FROM shopjoy_2604.sy_path WHERE path_id = #{pathId}
                         UNION ALL
                         SELECT p.path_id FROM shopjoy_2604.sy_path p JOIN sub s ON p.parent_path_id = s.path_id
                     ) SELECT path_id FROM sub
                 )
             </if>
             <if test="kw != null and kw != ''">
-                AND (g.grp_nm ILIKE '%' || #{kw} || '%')
+                AND (g.grp_nm ILIKE '%' || #{kw} || '%'
+                  OR g.code_grp ILIKE '%' || #{kw} || '%')
             </if>
             <if test="dateStart != null and dateStart != ''">AND g.reg_date &gt;= #{dateStart}::DATE</if>
             <if test="dateEnd   != null and dateEnd   != ''">AND g.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
