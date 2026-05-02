@@ -57,7 +57,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         ]);
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
         const data = resA.data?.data;
-        adjList.splice(0, adjList.length, ...(data?.list || adjList));
+        adjList.splice(0, adjList.length, ...(data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || adjList.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
@@ -73,13 +73,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       Object.assign(searchParamOrg, searchParam);
     });
 
-    const adjList = reactive([
-      { adjId: 'ADJ-2026-001', adjDate: '2026-04-10', vendorId: 1, vendorNm: '패션스타일 주식회사', adjType: '수수료조정', adjAmt: -5000,  reason: '4월 프로모션 참여 수수료 감면', aprvStatus: '승인', regUserNm: '이관리자' },
-      { adjId: 'ADJ-2026-002', adjDate: '2026-04-08', vendorId: 2, vendorNm: '트렌드웨어 LLC',     adjType: '매출조정',  adjAmt: 12000,  reason: '3월 정산 누락분 추가', aprvStatus: '대기', regUserNm: '이관리자' },
-      { adjId: 'ADJ-2026-003', adjDate: '2026-04-05', vendorId: 3, vendorNm: '에코패션 Co.',       adjType: '반품조정',  adjAmt: -22000, reason: '반품 정산 재처리', aprvStatus: '승인', regUserNm: '김담당자' },
-      { adjId: 'ADJ-2026-004', adjDate: '2026-03-28', vendorId: 4, vendorNm: '럭셔리브랜드 Inc.',  adjType: '수수료조정', adjAmt: -8000, reason: '계약 조건 변경 소급 적용', aprvStatus: '반려', regUserNm: '이관리자' },
-      { adjId: 'ADJ-2026-005', adjDate: '2026-03-15', vendorId: 1, vendorNm: '패션스타일 주식회사', adjType: '매출조정', adjAmt: 30000, reason: '오주문 처리 수기 조정', aprvStatus: '승인', regUserNm: '김담당자' },
-    ]);
+    const adjList = reactive([]);
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 

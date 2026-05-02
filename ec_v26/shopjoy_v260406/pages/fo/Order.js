@@ -119,8 +119,6 @@ window.Order = {
       cfOrderItems.value.reduce((s, item, idx) =>
         s + calcCouponDiscount(selectedCoupons[idx], item), 0)
     );
-    /* 배송비: 기본 0원, 배송비 쿠폰은 표시용 */
-    const cfShippingFee = computed(() => 0);
     const cfAppliedCash = computed(() => {
       const v = parseInt(String(uiState.cashInput).replace(/[^0-9]/g, ''), 10) || 0;
       return Math.min(v, uiState.cashBalance, Math.max(0, cfCartTotal.value - cfTotalCouponDiscount.value));
@@ -207,7 +205,7 @@ window.Order = {
       cfOrderItems,
       form, errors, clearErr, handleSubmit, openKakaoAddr,
       parsePrice, fmt,
-      cfCartTotal, cfTotalCouponDiscount, cfShippingFee, cfAppliedCash, cfFinalPrice,
+      cfCartTotal, cfTotalCouponDiscount, cfAppliedCash, cfFinalPrice,
       allCoupons, productCoupons, cfShippingCoupons, discountLabel, calcCouponDiscount,
       couponPopup, selectedCoupons, openCouponPopup, closeCouponPopup, applyCoupon, removeCoupon,
       applyShipCoupon, removeShipCoupon,

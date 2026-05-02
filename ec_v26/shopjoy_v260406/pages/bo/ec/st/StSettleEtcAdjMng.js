@@ -57,7 +57,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         ]);
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
         const data = resA.data?.data;
-        etcAdjList.splice(0, etcAdjList.length, ...(data?.list || etcAdjList));
+        etcAdjList.splice(0, etcAdjList.length, ...(data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || etcAdjList.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
@@ -73,13 +73,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       Object.assign(searchParamOrg, searchParam);
     });
 
-    const etcAdjList = reactive([
-      { adjId: 'ETCADJ-001', adjDate: '2026-04-12', vendorId: 1, vendorNm: '패션스타일 주식회사', adjType: '위약금', adjAmt: -50000, reason: '납품 지연 위약금', aprvStatus: '승인', regUserNm: '이관리자' },
-      { adjId: 'ETCADJ-002', adjDate: '2026-04-09', vendorId: 2, vendorNm: '트렌드웨어 LLC',     adjType: '인센티브', adjAmt: 100000, reason: '4월 목표 달성 인센티브', aprvStatus: '대기', regUserNm: '김담당자' },
-      { adjId: 'ETCADJ-003', adjDate: '2026-04-03', vendorId: 3, vendorNm: '에코패션 Co.',       adjType: '세금조정', adjAmt: -15000, reason: '원천세 조정', aprvStatus: '승인', regUserNm: '이관리자' },
-      { adjId: 'ETCADJ-004', adjDate: '2026-03-25', vendorId: 4, vendorNm: '럭셔리브랜드 Inc.',  adjType: '기타', adjAmt: 20000, reason: '마케팅 분담금 반환', aprvStatus: '승인', regUserNm: '박회계' },
-      { adjId: 'ETCADJ-005', adjDate: '2026-03-20', vendorId: 1, vendorNm: '패션스타일 주식회사', adjType: '위약금', adjAmt: -30000, reason: '반품율 초과 페널티', aprvStatus: '반려', regUserNm: '이관리자' },
-    ]);
+    const etcAdjList = reactive([]);
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });

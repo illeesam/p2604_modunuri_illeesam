@@ -44,9 +44,15 @@ window.StErpGenMng = {
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
-        orderList.splice(0, orderList.length);
-        vendorList.splice(0, vendorList.length);
-      } catch (_) {}
+        const [resO, resV, resH] = await Promise.all([
+          boApiSvc.odOrder.getPage({ pageNo: 1, pageSize: 10000 }, 'ERP전표생성', '목록조회'),
+          boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, 'ERP전표생성', '목록조회'),
+          boApiSvc.stErp.getGenPage({ targetMon: targetMon.value, pageNo: 1, pageSize: 100 }, 'ERP전표생성', '이력조회'),
+        ]);
+        orderList.splice(0, orderList.length, ...(resO.data?.data?.list || []));
+        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
+        genHistory.splice(0, genHistory.length, ...(resH.data?.data?.list || []));
+      } catch (_) { console.error('[catch-info]', _); }
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
@@ -66,10 +72,7 @@ window.StErpGenMng = {
       }).filter(r => r.debitAmt > 0);
     });
 
-    const genHistory = reactive([
-      { genId: 'GEN-2026-03', genMon: '2026-03', slipType: '정산', slipCnt: 4, totalAmt: 332862, genDate: '2026-04-11', status: '전송완료', regUserNm: '이관리자' },
-      { genId: 'GEN-2026-02', genMon: '2026-02', slipType: '정산', slipCnt: 4, totalAmt: 308589, genDate: '2026-03-11', status: '전송완료', regUserNm: '이관리자' },
-    ]);
+    const genHistory = reactive([]);
 
     const doGenerate = async () => {
       if (!cfPreviewRows.value.length) { props.showToast('생성할 전표 데이터가 없습니다.', 'error'); return; }

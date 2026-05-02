@@ -41,7 +41,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           }, '정산지급관리', '목록조회');
         const data = res.data?.data;
-        payList.splice(0, payList.length, ...(data?.list || payList));
+        payList.splice(0, payList.length, ...(data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || payList.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
@@ -63,16 +63,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
     (() => { const r = boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
-    const payList = reactive([
-      { payId: 'PAY-2026-009', payDate: '2026-04-10', vendorId: 1, vendorNm: '패션스타일 주식회사', closeMon: '2026-03', settleAmt: 300000, payAmt: 300000, bankNm: '국민은행', bankAccount: '123-45-678901', bankHolder: '패션스타일', payStatus: '지급완료', regUserNm: '이관리자' },
-      { payId: 'PAY-2026-008', payDate: '2026-04-10', vendorId: 2, vendorNm: '트렌드웨어 LLC',     closeMon: '2026-03', settleAmt: 81000,  payAmt: 81000,  bankNm: '신한은행', bankAccount: '987-65-432100', bankHolder: '트렌드웨어',  payStatus: '지급완료', regUserNm: '이관리자' },
-      { payId: 'PAY-2026-007', payDate: '2026-04-10', vendorId: 3, vendorNm: '에코패션 Co.',       closeMon: '2026-03', settleAmt: 54000,  payAmt: 54000,  bankNm: '하나은행', bankAccount: '321-65-987654', bankHolder: '에코패션',    payStatus: '지급완료', regUserNm: '이관리자' },
-      { payId: 'PAY-2026-006', payDate: '2026-04-10', vendorId: 4, vendorNm: '럭셔리브랜드 Inc.',  closeMon: '2026-03', settleAmt: 45000,  payAmt: 0,      bankNm: '우리은행', bankAccount: '111-22-333444', bankHolder: '럭셔리브랜드', payStatus: '지급대기', regUserNm: '이관리자' },
-      { payId: 'PAY-2026-005', payDate: '2026-03-10', vendorId: 1, vendorNm: '패션스타일 주식회사', closeMon: '2026-02', settleAmt: 280000, payAmt: 280000, bankNm: '국민은행', bankAccount: '123-45-678901', bankHolder: '패션스타일', payStatus: '지급완료', regUserNm: '이관리자' },
-      { payId: 'PAY-2026-004', payDate: '2026-03-10', vendorId: 2, vendorNm: '트렌드웨어 LLC',     closeMon: '2026-02', settleAmt: 73000,  payAmt: 73000,  bankNm: '신한은행', bankAccount: '987-65-432100', bankHolder: '트렌드웨어',  payStatus: '지급완료', regUserNm: '이관리자' },
-      { payId: 'PAY-2026-003', payDate: '2026-03-10', vendorId: 3, vendorNm: '에코패션 Co.',       closeMon: '2026-02', settleAmt: 49000,  payAmt: 49000,  bankNm: '하나은행', bankAccount: '321-65-987654', bankHolder: '에코패션',    payStatus: '지급완료', regUserNm: '이관리자' },
-      { payId: 'PAY-2026-002', payDate: '2026-03-10', vendorId: 4, vendorNm: '럭셔리브랜드 Inc.',  closeMon: '2026-02', settleAmt: 38000,  payAmt: 38000,  bankNm: '우리은행', bankAccount: '111-22-333444', bankHolder: '럭셔리브랜드', payStatus: '지급완료', regUserNm: '이관리자' },
-    ]);
+    const payList = reactive([]);
 
   const searchParam = reactive({
     kw: '',

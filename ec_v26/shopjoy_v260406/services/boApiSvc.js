@@ -353,6 +353,7 @@
 
   /* ── st: 정산마감 ───────────────────────────────────────────── */
   boApiSvc.stSettleClose = {
+    getPage(params, uiNm, cmdNm) { return global.boApi.get('/base/ec/st/settle-close/page', { params, ...hdr(uiNm, cmdNm) }); },
     create(body, uiNm, cmdNm) { return global.boApi.post('/bo/ec/st/close', body, hdr(uiNm, cmdNm)); },
     reopen(closeId, body, uiNm, cmdNm) { return global.boApi.put(`/bo/ec/st/close/${closeId}/reopen`, body, hdr(uiNm, cmdNm)); },
   };
@@ -364,6 +365,8 @@
 
   /* ── st: ERP 정산 ───────────────────────────────────────────── */
   boApiSvc.stErp = {
+    getGenPage(params, uiNm, cmdNm) { return global.boApi.get('/base/ec/st/erp-gen/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getReconPage(params, uiNm, cmdNm) { return global.boApi.get('/base/ec/st/erp-recon/page', { params, ...hdr(uiNm, cmdNm) }); },
     gen(body, uiNm, cmdNm) { return global.boApi.post('/bo/ec/st/erp/gen', body, hdr(uiNm, cmdNm)); },
     resend(slipId, body, uiNm, cmdNm) { return global.boApi.post(`/bo/ec/st/erp/resend/${slipId}`, body, hdr(uiNm, cmdNm)); },
     fixRecon(reconId, body, uiNm, cmdNm) { return global.boApi.put(`/bo/ec/st/erp/recon/${reconId}/fix`, body, hdr(uiNm, cmdNm)); },

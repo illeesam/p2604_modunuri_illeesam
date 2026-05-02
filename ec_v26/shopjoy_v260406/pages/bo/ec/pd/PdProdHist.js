@@ -46,17 +46,21 @@ window.PdProdHist = {
       if (!props.prodId || uiState.loadedTabs.has(tab)) return;
       uiState.loading = true;
       try {
-        // 목업 데이터 사용 (API 500 오류 회피)
         if (tab === 'orders') {
-          relatedOrders.splice(0, relatedOrders.length);
+          const res = await boApiSvc.odOrder.getPage({ prodId: props.prodId, pageNo: 1, pageSize: 200 }, '상품관리', '연관주문');
+          relatedOrders.splice(0, relatedOrders.length, ...(res.data?.data?.list || []));
         } else if (tab === 'stock') {
-          stockHistory.splice(0, stockHistory.length);
+          const res = await boApi.get(BASE('stock'), HDR('재고이력'));
+          stockHistory.splice(0, stockHistory.length, ...(res.data?.data || []));
         } else if (tab === 'price') {
-          priceHistory.splice(0, priceHistory.length);
+          const res = await boApi.get(BASE('price'), HDR('가격변경이력'));
+          priceHistory.splice(0, priceHistory.length, ...(res.data?.data || []));
         } else if (tab === 'status') {
-          statusHistory.splice(0, statusHistory.length);
+          const res = await boApi.get(BASE('status'), HDR('상태이력'));
+          statusHistory.splice(0, statusHistory.length, ...(res.data?.data || []));
         } else if (tab === 'changes') {
-          changeHistory.splice(0, changeHistory.length);
+          const res = await boApi.get(BASE('changes'), HDR('정보변경이력'));
+          changeHistory.splice(0, changeHistory.length, ...(res.data?.data || []));
         }
         uiState.loadedTabs.add(tab);
       } catch (err) {

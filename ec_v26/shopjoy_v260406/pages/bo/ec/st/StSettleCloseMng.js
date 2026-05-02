@@ -41,15 +41,19 @@ window.StSettleCloseMng = {
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
-        const [resO, resC, resV] = await Promise.all([
+        const [resO, resC, resV, resCL] = await Promise.all([
           boApiSvc.odOrder.getPage({ pageNo: 1, pageSize: 10000 }, '정산마감관리', '목록조회'),
           boApiSvc.odClaim.getPage({ pageNo: 1, pageSize: 10000 }, '정산마감관리', '목록조회'),
           boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '정산마감관리', '목록조회'),
+          boApiSvc.stSettleClose.getPage({
+            kw: searchKw.value, status: searchStatus.value, pageNo: 1, pageSize: 100
+          }, '정산마감관리', '이력조회'),
         ]);
         orders.splice(0, orders.length, ...(resO.data?.data?.list || []));
         claims.splice(0, claims.length, ...(resC.data?.data?.list || []));
         vendorList.splice(0, vendorList.length, ...(resV.data?.data?.list || []));
-      } catch (_) {}
+        closeList.splice(0, closeList.length, ...(resCL.data?.data?.list || []));
+      } catch (_) { console.error('[catch-info]', _); }
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
@@ -69,11 +73,7 @@ window.StSettleCloseMng = {
       onSearch();
     };
 
-    const closeList = reactive([
-      { closeId: 'CLS-2026-03', closeMon: '2026-03', sales: 556600, refund: 174000, net: 382600, comm: 38260, promo: 11478, settle: 332862, status: '마감완료', closeDate: '2026-04-10', regUserNm: '이관리자' },
-      { closeId: 'CLS-2026-02', closeMon: '2026-02', sales: 442700, refund: 88000,  net: 354700, comm: 35470, promo: 10641, settle: 308589, status: '마감완료', closeDate: '2026-03-10', regUserNm: '이관리자' },
-      { closeId: 'CLS-2026-01', closeMon: '2026-01', sales: 310000, refund: 0,      net: 310000, comm: 31000, promo: 9300,  settle: 269700, status: '마감완료', closeDate: '2026-02-10', regUserNm: '이관리자' },
-    ]);
+    const closeList = reactive([]);
 
     // 이번달 집계
     const thisMonth = new Date().toISOString().slice(0, 7);

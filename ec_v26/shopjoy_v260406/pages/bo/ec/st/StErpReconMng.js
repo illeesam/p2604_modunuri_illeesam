@@ -58,9 +58,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        reconList.splice(0, reconList.length);
-        pager.pageTotalCount = 0;
-        pager.pageTotalPage = 1;
+        const res = await boApiSvc.stErp.getReconPage({
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          dateStart: uiState.dateStart, dateEnd: uiState.dateEnd,
+          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+        }, 'ERP전표대사', '목록조회');
+        const data = res.data?.data;
+        reconList.splice(0, reconList.length, ...(data?.list || []));
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || 1;
+        Object.assign(pager.pageCond, data?.pageCond || {});
       } catch (_) { console.error('[catch-info]', _); }
     };
 
