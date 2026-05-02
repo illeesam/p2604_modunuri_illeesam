@@ -91,7 +91,6 @@ window.DpDispWidgetLibMng = {
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
     const WIDGET_ICONS = {
       'image_banner':'🖼', 'product_slider':'🛒', 'product':'📦',
       'cond_product':'🔍', 'chart_bar':'📊',      'chart_line':'📈',
@@ -159,7 +158,7 @@ window.DpDispWidgetLibMng = {
       fnBuildPagerNums,
       wIcon, wTypeLabel,
       uiStateDetail, cfDetailEditId, handleLoadDetail, openNew, closeDetail, inlineNavigate,
-      cfSiteNm, handleDelete, onSort, sortIcon };
+      handleDelete, onSort, sortIcon };
   },
   template: /* html */`
 <div>

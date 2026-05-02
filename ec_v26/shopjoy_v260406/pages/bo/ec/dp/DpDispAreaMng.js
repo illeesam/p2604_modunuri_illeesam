@@ -102,7 +102,6 @@ const searchParam = reactive(_initSearchParam());
         searchParam.dateEnd   = r ? r.to   : '';
       }
     };
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData(); };
 
     const onReset = () => {
@@ -132,7 +131,7 @@ const searchParam = reactive(_initSearchParam());
     // ── return ───────────────────────────────────────────────────────────────
 
     return { areas, uiState, codes, pager, searchParam,
-      onSearch, onReset, setPage, onSizeChange, handleDateRangeChange, cfSiteNm,
+      onSearch, onReset, setPage, onSizeChange, handleDateRangeChange,
       selectNode, fnPathLabel,
       uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
       onSort, sortIcon };

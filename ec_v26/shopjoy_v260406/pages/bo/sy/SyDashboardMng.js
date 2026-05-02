@@ -30,8 +30,6 @@ window.SyDashboardMng = {
       if (isAppReady.value) fnLoadCodes();
     });
 
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
-
     const cfStats = computed(() => [
       { label: '전체 회원',   value: members.value?.length || 0,
         color: '#e8587a', icon: '👥',
@@ -72,7 +70,7 @@ window.SyDashboardMng = {
       { id: 'syUserMng',     label: '사용자관리', icon: '🔑', color: '#c41d7f' },
     ];
 
-    return { uiState, codes, cfSiteNm, cfStats, shortcuts };
+    return { uiState, codes, cfStats, shortcuts };
   },
   template: /* html */`
 <div>

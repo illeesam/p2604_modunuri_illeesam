@@ -109,7 +109,6 @@ window.DpDispUiMng = {
         searchParam.dateEnd   = r ? r.to   : '';
       }
     };
-    const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
@@ -135,7 +134,7 @@ window.DpDispUiMng = {
     // ── return ───────────────────────────────────────────────────────────────
 
     return { displays, uiState, codes, pager, searchParam,
-      onSearch, onReset, setPage, onSizeChange, handleDateRangeChange, cfSiteNm,
+      onSearch, onReset, setPage, onSizeChange, handleDateRangeChange,
       selectNode, pathLabel,
       uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
       onSort, sortIcon };
