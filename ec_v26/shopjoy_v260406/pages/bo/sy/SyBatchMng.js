@@ -106,8 +106,6 @@ window.SyBatchMng = {
     });
 
 
-    const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
-
     const onSearch = async () => {
       await handleSearchList('DEFAULT');
     };
@@ -365,7 +363,7 @@ window.SyBatchMng = {
     return { batches, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectNode,
       cfSiteNm, searchParam, handleDateRangeChange,
-      gridRows, cfTotal,
+      gridRows,
       setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave, runNow,
       CRON_PRESETS, CRON_FIELDS, cronPicker, openCronPicker, applyCronPreset, applyCron, updateCronPreview, cfCronPresetLabel, cfCronDesc,
@@ -423,7 +421,7 @@ window.SyBatchMng = {
 <!-- ── CRUD 그리드 ───────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>배치목록 <span class="list-count">{{ cfTotal }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>배치목록 <span class="list-count">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>

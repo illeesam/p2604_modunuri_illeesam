@@ -162,15 +162,13 @@ window.SyAttachMng = {
     };
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
 
-    const cfTotal = computed(() => attaches.length);
-
     const fileEditMode = Vue.toRef(uiState, 'fileEditMode');
     const grpEditMode = Vue.toRef(uiState, 'grpEditMode');
 
     // ── return ───────────────────────────────────────────────────────────────
 
     return { attaches, uiState, codes, searchParam, onDateRangeChange, cfSiteNm,
-      attachGrps, grpForm, cfTotal,
+      attachGrps, grpForm,
       selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
       fileForm, onSearch, onReset, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
       fnFmtSize, fnStatusBadge,
@@ -270,7 +268,7 @@ window.SyAttachMng = {
             <button class="btn btn-primary btn-sm" @click="openFileNew">+ 신규</button>
           </div>
         </div>
-        <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>첨부파일목록 <span class="list-count">{{ cfTotal }}건</span></span>
+        <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>첨부파일목록 <span class="list-count">{{ attaches.length }}건</span></span>
 
         <!-- ── 파일 폼 ───────────────────────────────────────────────────── -->
         <div v-if="uiState.fileEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:12px;">

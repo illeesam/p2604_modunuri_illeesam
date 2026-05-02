@@ -113,8 +113,6 @@ window.SyBrandMng = {
     });
 
 
-    const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
-
     const onSearch = async () => {
       await handleSearchList('DEFAULT');
     };
@@ -266,7 +264,7 @@ window.SyBrandMng = {
 
     return { brands, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchParam, searchParamOrg, handleDateRangeChange,
-      gridRows, cfTotal,
+      gridRows,
       setFocused, onSearch, onReset, onCellChange, cfIsLocalMode,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       onDragStart, onDragOver, onDragEnd,
@@ -321,7 +319,7 @@ window.SyBrandMng = {
         <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
         브랜드목록
         <span v-if="uiState.selectedPath" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ uiState.selectedPath }}</span>
-        <span class="list-count">{{ cfTotal }}건</span>
+        <span class="list-count">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span>
       </span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>

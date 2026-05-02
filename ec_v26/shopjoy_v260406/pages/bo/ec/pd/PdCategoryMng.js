@@ -131,7 +131,6 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     });
 
 
-    const cfTotal     = computed(() => window.safeArrayUtils.safeFilter((gridRows || []), r => r._row_status !== 'D').length);
     const cfPagedRows = computed(() => (gridRows || []).slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const setPage       = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
@@ -322,7 +321,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       codes, uiState,
       selectNode, handleGridSearch,
       searchParam, searchParamOrg,
-      gridRows, cfPagedRows, cfTotal, pager, setPage, onSizeChange, getRealIdx,
+      gridRows, cfPagedRows, pager, setPage, onSizeChange, getRealIdx,
       onSearch, onReset,
       catPickerModal, cfCatPickerList, onParentSelect, openParentModal, fnDepthColor, fnDepthBullet, parentNm,
       focusedIdx, setFocused, addRow, addChildRow, cancelRow, cancelChecked, deleteRow, deleteRows, handleSave,
@@ -388,7 +387,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
           <span v-if="uiState.selectedCatId" style="font-size:12px;color:#1677ff;margin-left:6px">
             — {{ [].find(c=>c.categoryId===uiState.selectedCatId)&&[].find(c=>c.categoryId===uiState.selectedCatId).categoryNm }} 하위
           </span>
-          <span class="list-count">{{ cfTotal }}건</span>
+          <span class="list-count">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span>
         </span>
         <div style="display:flex;gap:6px">
           <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>

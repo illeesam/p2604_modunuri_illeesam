@@ -217,7 +217,6 @@ window.SyRoleMng = {
     };
 
 
-    const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
     const onSearch = async () => {
       await handleSearchList('DEFAULT');
     };
@@ -519,7 +518,7 @@ window.SyRoleMng = {
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       cfSiteNm, ROLE_TYPES, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, fnPermColor, depthBullet, depthColor, fnStatusClass,
       searchParam, searchParamOrg, onSearch, onReset,
-      gridRows, cfTotal,
+      gridRows,
       setFocused, onOpenSetting, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       toggleCheckAll, parentNm,
@@ -577,7 +576,7 @@ window.SyRoleMng = {
 <!-- ── CRUD 그리드 ───────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>역할목록 <span class="list-count">{{ cfTotal }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>역할목록 <span class="list-count">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>

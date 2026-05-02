@@ -116,8 +116,6 @@ window.SyMenuMng = {
     });
 
 
-    const cfTotal = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
-
     const onSearch = async () => {
       await handleSearchList('DEFAULT');
     };
@@ -247,7 +245,7 @@ window.SyMenuMng = {
     return { menus, uiState, codes, selectNode,
       searchParam, searchParamOrg,
       cfSiteNm,
-      gridRows, cfTotal,
+      gridRows,
       setFocused, onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       toggleCheckAll, parentNm,
@@ -293,7 +291,7 @@ window.SyMenuMng = {
     <div>
 <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>메뉴목록 <span class="list-count">{{ cfTotal }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>메뉴목록 <span class="list-count">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
