@@ -18,7 +18,8 @@
             </if>
             <if test="typeCd != null and typeCd != ''">AND t.template_type_cd = #{typeCd}</if>
             <if test="kw != null and kw != ''">
-                AND (t.template_nm ILIKE '%' || #{kw} || '%')
+                AND (t.template_nm ILIKE '%' || #{kw} || '%'
+                  OR t.template_code ILIKE '%' || #{kw} || '%')
             </if>
             <if test="dateStart != null and dateStart != ''">AND t.reg_date &gt;= #{dateStart}::DATE</if>
             <if test="dateEnd   != null and dateEnd   != ''">AND t.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>

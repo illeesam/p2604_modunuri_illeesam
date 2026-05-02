@@ -19,7 +19,8 @@
             </if>
             <if test="typeCd != null and typeCd != ''">AND l.widget_type_cd = #{typeCd}</if>
             <if test="kw != null and kw != ''">
-                AND (l.widget_nm ILIKE '%' || #{kw} || '%')
+                AND (l.widget_nm ILIKE '%' || #{kw} || '%'
+                  OR l.widget_code ILIKE '%' || #{kw} || '%')
             </if>
             <if test="dateStart != null and dateStart != ''">AND l.reg_date &gt;= #{dateStart}::DATE</if>
             <if test="dateEnd   != null and dateEnd   != ''">AND l.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>

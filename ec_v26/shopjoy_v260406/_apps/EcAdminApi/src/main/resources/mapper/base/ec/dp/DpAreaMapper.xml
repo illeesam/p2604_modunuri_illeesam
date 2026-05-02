@@ -19,7 +19,8 @@
             </if>
             <if test="typeCd != null and typeCd != ''">AND a.area_type_cd = #{typeCd}</if>
             <if test="kw != null and kw != ''">
-                AND (a.area_nm ILIKE '%' || #{kw} || '%')
+                AND (a.area_nm ILIKE '%' || #{kw} || '%'
+                  OR a.area_cd ILIKE '%' || #{kw} || '%')
             </if>
             <if test="dateStart != null and dateStart != ''">AND a.reg_date &gt;= #{dateStart}::DATE</if>
             <if test="dateEnd   != null and dateEnd   != ''">AND a.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>

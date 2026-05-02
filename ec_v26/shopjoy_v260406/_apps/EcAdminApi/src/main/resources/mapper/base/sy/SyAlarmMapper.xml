@@ -20,7 +20,8 @@
             <if test="status != null and status != ''">AND a.alarm_status_cd = #{status}</if>
             <if test="typeCd != null and typeCd != ''">AND a.alarm_type_cd = #{typeCd}</if>
             <if test="kw != null and kw != ''">
-                AND (a.alarm_title ILIKE '%' || #{kw} || '%')
+                AND (a.alarm_title ILIKE '%' || #{kw} || '%'
+                  OR a.alarm_type_cd ILIKE '%' || #{kw} || '%')
             </if>
             <if test="dateStart != null and dateStart != ''">AND a.alarm_send_date &gt;= #{dateStart}::DATE</if>
             <if test="dateEnd   != null and dateEnd   != ''">AND a.alarm_send_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>

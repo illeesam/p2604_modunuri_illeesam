@@ -18,7 +18,8 @@
             </if>
             <if test="typeCd != null and typeCd != ''">AND r.role_type_cd = #{typeCd}</if>
             <if test="kw != null and kw != ''">
-                AND (r.role_nm ILIKE '%' || #{kw} || '%')
+                AND (r.role_nm ILIKE '%' || #{kw} || '%'
+                  OR r.role_code ILIKE '%' || #{kw} || '%')
             </if>
             <if test="dateStart != null and dateStart != ''">AND r.reg_date &gt;= #{dateStart}::DATE</if>
             <if test="dateEnd   != null and dateEnd   != ''">AND r.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>

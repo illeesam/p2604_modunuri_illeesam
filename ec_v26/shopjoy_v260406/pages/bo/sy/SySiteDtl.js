@@ -5,16 +5,40 @@ window.SySiteDtl = {
   setup(props) {
     const { reactive, computed, watch, onMounted, ref } = Vue;
 
-    const sites = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ site_oper_statuses: [], site_types: ['이커머스','숙박공유','전문가연결','IT매칭','부동산','교육','중고거래','영화예매','음식배달','가격비교','시각화','홈페이지','기타'] });
 
-    // onMounted에서 API 로드
-    const handleSearchList = async (searchType = 'DEFAULT') => {
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
+
+    const form = reactive({
+      siteId: null, siteCode: '', siteTypeCd: '홈페이지', siteNm: '', siteDomain: '',
+      logoUrl: '', faviconUrl: '', siteDesc: '',
+      siteEmail: '', sitePhone: '',
+      siteZipCode: '', siteAddress: '',
+      siteBusinessNo: '', siteCeo: '', siteStatusCd: 'ACTIVE',
+    });
+    const errors = reactive({});
+    const addrDetailRef = ref(null);
+
+    const schema = yup.object({
+      siteCode: yup.string().required('사이트코드를 입력해주세요.'),
+      siteNm: yup.string().required('사이트명을 입력해주세요.'),
+      siteDomain: yup.string().required('도메인을 입력해주세요.'),
+    });
+
+    const handleLoadDetail = async () => {
+      if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApiSvc.sySite.getPage({ pageNo: 1, pageSize: 10000 }, '사이트관리', '상세조회');
-        sites = res.data?.data?.pageList || res.data?.data?.list || [];
+        const res = await boApiSvc.sySite.getById(props.editId, '사이트관리', '상세조회');
+        const data = res.data?.data;
+        if (data) Object.assign(form, data);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -23,11 +47,6 @@ window.SySiteDtl = {
         uiState.loading = false;
       }
     };
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
 
     const fnLoadCodes = async () => {
       try {
@@ -39,41 +58,17 @@ window.SySiteDtl = {
         console.error('[fnLoadCodes]', err);
       }
       uiState.isPageCodeLoad = true;
-      handleSearchList();
     };
 
     // ── watch ────────────────────────────────────────────────────────────────
 
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
-    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
-
-
-    const form = reactive({
-      siteId: null, siteCode: '', siteType: '홈페이지', siteNm: '', domain: '',
-      logoUrl: '', favicon: '', description: '',
-      email: '', phone: '',
-      zipcode: '', address: '', addressDetail: '',
-      businessNo: '', ceo: '', statusCd: '운영중',
-    });
-    const errors = reactive({});
-    const addrDetailRef = ref(null);
-
-    const schema = yup.object({
-      siteCode: yup.string().required('사이트코드를 입력해주세요.'),
-      siteNm: yup.string().required('사이트명을 입력해주세요.'),
-      domain: yup.string().required('도메인을 입력해주세요.'),
-    });
-
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
+    // ★ onMounted — 코드 로드 + 상세 조회
+    onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) {
-        const s = sites.find(x => x.siteId === props.editId);
-        if (s) Object.assign(form, { ...s });
-      } else {
-        const nextNum = ((sites.reduce((m, x) => Math.max(m, Number(x.siteId) || 0), 0) || 0) + 1);
-        form.siteCode = 'ST' + String(nextNum).padStart(4, '0');
+        await handleLoadDetail();
       }
     });
 
@@ -82,8 +77,8 @@ window.SySiteDtl = {
       const run = () => {
         new window.daum.Postcode({
           oncomplete(data) {
-            form.zipcode = data.zonecode;
-            form.address = data.roadAddress || data.jibunAddress;
+            form.siteZipCode = data.zonecode;
+            form.siteAddress = data.roadAddress || data.jibunAddress;
             if (addrDetailRef.value) addrDetailRef.value.focus();
           },
         }).open();
@@ -107,17 +102,11 @@ window.SySiteDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (cfIsNew.value) {
-        sites.push({ ...form, siteId: ((sites.reduce((m, x) => Math.max(m, Number(x.siteId) || 0), 0) || 0) + 1), regDate: new Date().toISOString().slice(0, 10) });
-      } else {
-        const idx = sites.findIndex(x => x.siteId === props.editId);
-        if (idx !== -1) Object.assign(sites[idx], { ...form });
-      }
       try {
         const res = await (cfIsNew.value ? boApiSvc.sySite.create({ ...form }, '사이트관리', '등록') : boApiSvc.sySite.update(form.siteId, { ...form }, '사이트관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('sySiteMng');
+        if (props.navigate) props.navigate('sySiteMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -128,11 +117,14 @@ window.SySiteDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { sites, uiState, codes, cfIsNew, form, errors, handleSave, addrDetailRef, openKakaoPostcode };
+    return { uiState, codes, cfIsNew, form, errors, handleSave, addrDetailRef, openKakaoPostcode };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '사이트 등록' : (viewMode ? '사이트 상세' : '사이트 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.siteId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <div class="page-title">{{ cfIsNew ? '사이트 등록' : (viewMode ? '사이트 상세' : '사이트 수정') }}</div>
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.siteId }}</span>
+  </div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
@@ -142,7 +134,7 @@ window.SySiteDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">사이트유형</label>
-        <select class="form-control" v-model="form.siteType" :disabled="viewMode">
+        <select class="form-control" v-model="form.siteTypeCd" :disabled="viewMode">
           <option v-for="t in codes.site_types" :key="t">{{ t }}</option>
         </select>
       </div>
@@ -155,34 +147,34 @@ window.SySiteDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">도메인 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.domain" placeholder="shopjoy.com" :readonly="viewMode" :class="errors.domain ? 'is-invalid' : ''" />
-        <span v-if="errors.domain" class="field-error">{{ errors.domain }}</span>
+        <input class="form-control" v-model="form.siteDomain" placeholder="shopjoy.com" :readonly="viewMode" :class="errors.siteDomain ? 'is-invalid' : ''" />
+        <span v-if="errors.siteDomain" class="field-error">{{ errors.siteDomain }}</span>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group" style="flex:1">
         <label class="form-label">사이트 설명</label>
-        <input class="form-control" v-model="form.description" placeholder="사이트 한줄 설명" :readonly="viewMode" />
+        <input class="form-control" v-model="form.siteDesc" placeholder="사이트 한줄 설명" :readonly="viewMode" />
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">대표이메일</label>
-        <input class="form-control" v-model="form.email" placeholder="help@shopjoy.com" :readonly="viewMode" />
+        <input class="form-control" v-model="form.siteEmail" placeholder="help@shopjoy.com" :readonly="viewMode" />
       </div>
       <div class="form-group">
         <label class="form-label">대표전화</label>
-        <input class="form-control" v-model="form.phone" placeholder="02-1234-5678" :readonly="viewMode" />
+        <input class="form-control" v-model="form.sitePhone" placeholder="02-1234-5678" :readonly="viewMode" />
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">대표자명</label>
-        <input class="form-control" v-model="form.ceo" :readonly="viewMode" />
+        <input class="form-control" v-model="form.siteCeo" :readonly="viewMode" />
       </div>
       <div class="form-group">
         <label class="form-label">사업자등록번호</label>
-        <input class="form-control" v-model="form.businessNo" placeholder="000-00-00000" :readonly="viewMode" />
+        <input class="form-control" v-model="form.siteBusinessNo" placeholder="000-00-00000" :readonly="viewMode" />
       </div>
     </div>
 
@@ -190,15 +182,13 @@ window.SySiteDtl = {
     <div class="form-group">
       <label class="form-label">주소</label>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
-        <input class="form-control" v-model="form.zipcode" placeholder="우편번호"
+        <input class="form-control" v-model="form.siteZipCode" placeholder="우편번호"
           style="width:110px;flex-shrink:0;" readonly />
         <button v-if="!viewMode" type="button" class="btn btn-blue btn-sm" @click="openKakaoPostcode"
           style="white-space:nowrap;">🔍 주소 검색</button>
       </div>
-      <input class="form-control" v-model="form.address"
-        placeholder="기본주소 (주소 검색 후 자동 입력)" style="margin-bottom:6px;" readonly />
-      <input class="form-control" v-model="form.addressDetail" ref="addrDetailRef"
-        placeholder="상세주소 (동/호수 등)" :readonly="viewMode" />
+      <input class="form-control" v-model="form.siteAddress"
+        placeholder="기본주소 (주소 검색 후 자동 입력)" readonly />
     </div>
 
     <div class="form-row">
@@ -208,13 +198,13 @@ window.SySiteDtl = {
       </div>
       <div class="form-group">
         <label class="form-label">파비콘 URL</label>
-        <input class="form-control" v-model="form.favicon" placeholder="/favicon.ico" :readonly="viewMode" />
+        <input class="form-control" v-model="form.faviconUrl" placeholder="/favicon.ico" :readonly="viewMode" />
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">운영상태</label>
-        <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
+        <select class="form-control" v-model="form.siteStatusCd" :disabled="viewMode">
           <option v-for="c in codes.site_oper_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>

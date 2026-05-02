@@ -9,7 +9,8 @@
         <where>
             <if test="siteId != null and siteId != ''">AND g.site_id = #{siteId}</if>
             <if test="kw != null and kw != ''">
-                AND (g.grade_nm ILIKE '%' || #{kw} || '%')
+                AND (g.grade_nm ILIKE '%' || #{kw} || '%'
+                  OR g.grade_cd ILIKE '%' || #{kw} || '%')
             </if>
             <if test="dateStart != null and dateStart != ''">AND g.reg_date &gt;= #{dateStart}::DATE</if>
             <if test="dateEnd   != null and dateEnd   != ''">AND g.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>

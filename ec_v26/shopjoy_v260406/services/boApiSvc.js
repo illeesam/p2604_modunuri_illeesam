@@ -505,6 +505,7 @@
   /* ── sy: 사이트 ─────────────────────────────────────────────── */
   boApiSvc.sySite = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/site/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(siteId, uiNm, cmdNm) { return global.boApi.get(`/bo/sy/site/${siteId}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm) { return global.boApi.post('/bo/sy/site', body, hdr(uiNm, cmdNm)); },
     update(siteId, body, uiNm, cmdNm) { return global.boApi.put(`/bo/sy/site/${siteId}`, body, hdr(uiNm, cmdNm)); },
     remove(siteId, uiNm, cmdNm) { return global.boApi.delete(`/bo/sy/site/${siteId}`, hdr(uiNm, cmdNm)); },

@@ -19,7 +19,8 @@
             </if>
             <if test="typeCd != null and typeCd != ''">AND b.bbm_type_cd = #{typeCd}</if>
             <if test="kw != null and kw != ''">
-                AND (b.bbm_nm ILIKE '%' || #{kw} || '%')
+                AND (b.bbm_nm ILIKE '%' || #{kw} || '%'
+                  OR b.bbm_code ILIKE '%' || #{kw} || '%')
             </if>
             <if test="dateStart != null and dateStart != ''">AND b.reg_date &gt;= #{dateStart}::DATE</if>
             <if test="dateEnd   != null and dateEnd   != ''">AND b.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>

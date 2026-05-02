@@ -19,7 +19,8 @@
             </if>
             <if test="typeCd != null and typeCd != ''">AND u.device_type_cd = #{typeCd}</if>
             <if test="kw != null and kw != ''">
-                AND (u.ui_nm ILIKE '%' || #{kw} || '%')
+                AND (u.ui_nm ILIKE '%' || #{kw} || '%'
+                  OR u.ui_cd ILIKE '%' || #{kw} || '%')
             </if>
             <if test="dateStart != null and dateStart != ''">AND u.reg_date &gt;= #{dateStart}::DATE</if>
             <if test="dateEnd   != null and dateEnd   != ''">AND u.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>

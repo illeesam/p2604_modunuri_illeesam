@@ -9,7 +9,8 @@
         <where>
             <if test="siteId != null and siteId != ''">AND b.site_id = #{siteId}</if>
             <if test="kw != null and kw != ''">
-                AND (b.blog_title ILIKE '%' || #{kw} || '%')
+                AND (b.blog_title ILIKE '%' || #{kw} || '%'
+                  OR b.blog_author ILIKE '%' || #{kw} || '%')
             </if>
             <if test="dateStart != null and dateStart != ''">AND b.reg_date &gt;= #{dateStart}::DATE</if>
             <if test="dateEnd   != null and dateEnd   != ''">AND b.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
