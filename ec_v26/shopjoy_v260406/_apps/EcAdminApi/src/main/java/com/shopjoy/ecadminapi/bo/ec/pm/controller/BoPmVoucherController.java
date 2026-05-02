@@ -80,4 +80,9 @@ public class BoPmVoucherController {
         service.sendSns(id, body);
         return ResponseEntity.ok(ApiResponse.ok(null, "발송되었습니다."));
     }
+    @PostMapping("/save-list")
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmVoucher> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
 }

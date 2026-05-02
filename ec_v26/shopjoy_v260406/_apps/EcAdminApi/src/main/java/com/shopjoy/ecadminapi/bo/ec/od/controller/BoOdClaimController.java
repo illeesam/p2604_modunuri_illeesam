@@ -105,4 +105,9 @@ public class BoOdClaimController {
         service.bulkApprovalReq(body);
         return ResponseEntity.ok(ApiResponse.ok(null, "추가결재가 요청되었습니다."));
     }
+    @PostMapping("/save-list")
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<OdClaim> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
 }

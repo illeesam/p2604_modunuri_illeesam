@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 @Service
@@ -80,5 +82,28 @@ public class OdOrderItemService {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 OdOrderItem입니다: " + id);
         repository.deleteById(id);
+    }
+    @Transactional
+    public void saveList(List<OdOrderItem> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (OdOrderItem row : rows) {
+            String rs = row.getRowStatus();
+            if ("I".equals(rs)) {
+                row.setOrderItemId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("od_order_item"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                repository.save(row);
+            } else if ("U".equals(rs)) {
+                String id = Objects.requireNonNull(row.getOrderItemId(), "orderItemId must not be null");
+                OdOrderItem entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                VoUtil.voCopyExclude(row, entity, "orderItemId^regBy^regDate^rowStatus");
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                repository.save(entity);
+            } else if ("D".equals(rs)) {
+                String id = Objects.requireNonNull(row.getOrderItemId(), "orderItemId must not be null");
+                if (repository.existsById(id)) repository.deleteById(id);
+            }
+        }
     }
 }

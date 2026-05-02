@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -96,4 +98,28 @@ public class SyBatchService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
 
+    @Transactional
+    public void saveList(List<SyBatch> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (SyBatch row : rows) {
+            String rs = row.getRowStatus();
+            if ("I".equals(rs)) {
+                row.setBatchId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_batch"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                repository.save(row);
+            } else if ("U".equals(rs)) {
+                String id = Objects.requireNonNull(row.getBatchId(), "batchId must not be null");
+                SyBatch entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                VoUtil.voCopyExclude(row, entity, "batchId^regBy^regDate^rowStatus");
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                repository.save(entity);
+            } else if ("D".equals(rs)) {
+                String id = Objects.requireNonNull(row.getBatchId(), "batchId must not be null");
+                if (repository.existsById(id)) repository.deleteById(id);
+            }
+        }
+        em.flush();
+    }
 }

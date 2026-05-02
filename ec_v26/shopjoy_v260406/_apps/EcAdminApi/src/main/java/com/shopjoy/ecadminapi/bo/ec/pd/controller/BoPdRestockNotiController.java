@@ -63,4 +63,9 @@ public class BoPdRestockNotiController {
         service.send(body);
         return ResponseEntity.ok(ApiResponse.ok(null, "발송되었습니다."));
     }
+    @PostMapping("/save-list")
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdRestockNoti> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
 }

@@ -79,4 +79,9 @@ public class BoPdReviewController {
             @PathVariable String id, @RequestBody Map<String, String> body) {
         return ResponseEntity.ok(ApiResponse.ok(service.changeStatus(id, body.get("reviewStatusCd"))));
     }
+    @PostMapping("/save-list")
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdReview> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
 }

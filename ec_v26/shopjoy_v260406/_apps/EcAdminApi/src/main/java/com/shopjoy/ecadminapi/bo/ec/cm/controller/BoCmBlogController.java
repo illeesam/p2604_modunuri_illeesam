@@ -78,4 +78,9 @@ public class BoCmBlogController {
     public ResponseEntity<ApiResponse<CmBlogDto>> toggleUse(@PathVariable String id, @RequestBody Map<String, Object> body) {
         return ResponseEntity.ok(ApiResponse.ok(service.toggleUse(id, body)));
     }
+    @PostMapping("/save-list")
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<CmBlog> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
 }

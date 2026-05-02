@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 
 @Service
@@ -80,5 +82,28 @@ public class OdRefundMethodService {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 OdRefundMethod입니다: " + id);
         repository.deleteById(id);
+    }
+    @Transactional
+    public void saveList(List<OdRefundMethod> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (OdRefundMethod row : rows) {
+            String rs = row.getRowStatus();
+            if ("I".equals(rs)) {
+                row.setRefundMethodId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("od_refund_method"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                repository.save(row);
+            } else if ("U".equals(rs)) {
+                String id = Objects.requireNonNull(row.getRefundMethodId(), "refundMethodId must not be null");
+                OdRefundMethod entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                VoUtil.voCopyExclude(row, entity, "refundMethodId^regBy^regDate^rowStatus");
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                repository.save(entity);
+            } else if ("D".equals(rs)) {
+                String id = Objects.requireNonNull(row.getRefundMethodId(), "refundMethodId must not be null");
+                if (repository.existsById(id)) repository.deleteById(id);
+            }
+        }
     }
 }

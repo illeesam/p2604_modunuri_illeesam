@@ -74,4 +74,9 @@ public class BoSyUserController {
     public ResponseEntity<ApiResponse<List<SyUserRoleDto>>> getRoles(@PathVariable String userId) {
         return ResponseEntity.ok(ApiResponse.ok(userRoleService.getRolesByUserId(userId)));
     }
+    @PostMapping("/save-list")
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyUser> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
 }

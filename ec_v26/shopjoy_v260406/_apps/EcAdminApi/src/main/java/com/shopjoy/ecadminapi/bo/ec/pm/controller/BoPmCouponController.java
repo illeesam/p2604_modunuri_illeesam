@@ -73,4 +73,9 @@ public class BoPmCouponController {
         PmCouponDto result = service.changeStatus(id, body.get("statusCd"));
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
+    @PostMapping("/save-list")
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmCoupon> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
 }

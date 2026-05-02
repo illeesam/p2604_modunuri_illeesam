@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -90,5 +91,29 @@ public class BoMbMemberService {
         repository.save(entity);
         em.flush();
         return getById(id);
+    }
+    @Transactional
+    public void saveList(List<MbMember> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (MbMember row : rows) {
+            String rs = row.getRowStatus();
+            if ("I".equals(rs)) {
+                row.setMemberId("MB" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                repository.save(row);
+            } else if ("U".equals(rs)) {
+                String id = Objects.requireNonNull(row.getMemberId(), "memberId must not be null");
+                MbMember entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+                VoUtil.voCopyExclude(row, entity, "memberId^regBy^regDate^rowStatus");
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                repository.save(entity);
+            } else if ("D".equals(rs)) {
+                String id = Objects.requireNonNull(row.getMemberId(), "memberId must not be null");
+                if (repository.existsById(id)) repository.deleteById(id);
+            }
+        }
+        em.flush();
     }
 }

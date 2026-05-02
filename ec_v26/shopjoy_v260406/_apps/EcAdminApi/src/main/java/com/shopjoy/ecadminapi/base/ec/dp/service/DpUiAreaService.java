@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -88,4 +90,27 @@ public class DpUiAreaService {
         repository.deleteById(id);
     }
 
+    @Transactional
+    public void saveList(List<DpUiArea> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (DpUiArea row : rows) {
+            String rs = row.getRowStatus();
+            if ("I".equals(rs)) {
+                row.setUiAreaId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("dp_area"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                repository.save(row);
+            } else if ("U".equals(rs)) {
+                String id = Objects.requireNonNull(row.getUiAreaId(), "uiAreaId must not be null");
+                DpUiArea entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                VoUtil.voCopyExclude(row, entity, "uiAreaId^regBy^regDate^rowStatus");
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                repository.save(entity);
+            } else if ("D".equals(rs)) {
+                String id = Objects.requireNonNull(row.getUiAreaId(), "uiAreaId must not be null");
+                if (repository.existsById(id)) repository.deleteById(id);
+            }
+        }
+    }
 }

@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -79,5 +81,28 @@ public class OdClaimItemService {
         if (!repository.existsById(id))
             throw new CmBizException("존재하지 않는 OdClaimItem입니다: " + id);
         repository.deleteById(id);
+    }
+    @Transactional
+    public void saveList(List<OdClaimItem> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (OdClaimItem row : rows) {
+            String rs = row.getRowStatus();
+            if ("I".equals(rs)) {
+                row.setClaimItemId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("od_claim_item"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                repository.save(row);
+            } else if ("U".equals(rs)) {
+                String id = Objects.requireNonNull(row.getClaimItemId(), "claimItemId must not be null");
+                OdClaimItem entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                VoUtil.voCopyExclude(row, entity, "claimItemId^regBy^regDate^rowStatus");
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                repository.save(entity);
+            } else if ("D".equals(rs)) {
+                String id = Objects.requireNonNull(row.getClaimItemId(), "claimItemId must not be null");
+                if (repository.existsById(id)) repository.deleteById(id);
+            }
+        }
     }
 }

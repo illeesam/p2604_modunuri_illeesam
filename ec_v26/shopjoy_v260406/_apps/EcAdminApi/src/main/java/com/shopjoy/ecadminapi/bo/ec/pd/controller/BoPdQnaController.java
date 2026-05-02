@@ -79,4 +79,9 @@ public class BoPdQnaController {
             @PathVariable String id, @RequestBody Map<String, Object> body) {
         return ResponseEntity.ok(ApiResponse.ok(service.saveAnswer(id, body)));
     }
+    @PostMapping("/save-list")
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdProdQna> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
 }

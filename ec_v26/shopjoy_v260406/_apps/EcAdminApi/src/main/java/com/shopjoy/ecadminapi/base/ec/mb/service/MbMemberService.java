@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -81,4 +83,27 @@ public class MbMemberService {
         repository.deleteById(id);
     }
 
+    @Transactional
+    public void saveList(List<MbMember> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (MbMember row : rows) {
+            String rs = row.getRowStatus();
+            if ("I".equals(rs)) {
+                row.setMemberId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("mb_member"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                repository.save(row);
+            } else if ("U".equals(rs)) {
+                String id = Objects.requireNonNull(row.getMemberId(), "memberId must not be null");
+                MbMember entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                VoUtil.voCopyExclude(row, entity, "memberId^regBy^regDate^rowStatus");
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                repository.save(entity);
+            } else if ("D".equals(rs)) {
+                String id = Objects.requireNonNull(row.getMemberId(), "memberId must not be null");
+                if (repository.existsById(id)) repository.deleteById(id);
+            }
+        }
+    }
 }

@@ -10,6 +10,7 @@ import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Map;
 
 @Service
@@ -92,5 +94,29 @@ public class BoSyRoleMenuService {
 
     private void evictIfPresent(String roleId) {
         if (roleId != null) roleMenuCache.evict(roleId);
+    }
+    @Transactional
+    public void saveList(List<SyRoleMenu> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (SyRoleMenu row : rows) {
+            String rs = row.getRowStatus();
+            if ("I".equals(rs)) {
+                row.setRoleMenuId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_role_menu"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                repository.save(row);
+            } else if ("U".equals(rs)) {
+                String id = Objects.requireNonNull(row.getRoleMenuId(), "RoleMenuId must not be null");
+                SyRoleMenu entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
+                VoUtil.voCopyExclude(row, entity, "RoleMenuId^regBy^regDate^rowStatus");
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                repository.save(entity);
+            } else if ("D".equals(rs)) {
+                String id = Objects.requireNonNull(row.getRoleMenuId(), "RoleMenuId must not be null");
+                if (repository.existsById(id)) repository.deleteById(id);
+            }
+        }
+        em.flush();
     }
 }
