@@ -49,6 +49,10 @@
             <when test="sort == 'id_desc'">ORDER BY g.code_grp_id DESC</when>
             <when test="sort == 'nm_asc'">ORDER BY g.grp_nm ASC</when>
             <when test="sort == 'nm_desc'">ORDER BY g.grp_nm DESC</when>
+            <when test="sort == 'code_grp_asc'">ORDER BY g.code_grp ASC</when>
+            <when test="sort == 'code_grp_desc'">ORDER BY g.code_grp DESC</when>
+            <when test="sort == 'desc_asc'">ORDER BY g.code_grp_desc ASC NULLS LAST</when>
+            <when test="sort == 'desc_desc'">ORDER BY g.code_grp_desc DESC NULLS LAST</when>
             <when test="sort == 'reg_asc'">ORDER BY g.reg_date ASC</when>
             <when test="sort == 'reg_desc'">ORDER BY g.reg_date DESC</when>
             <otherwise>ORDER BY g.reg_date DESC</otherwise>
@@ -69,6 +73,10 @@
             <when test="sort == 'id_desc'">ORDER BY g.code_grp_id DESC</when>
             <when test="sort == 'nm_asc'">ORDER BY g.grp_nm ASC</when>
             <when test="sort == 'nm_desc'">ORDER BY g.grp_nm DESC</when>
+            <when test="sort == 'code_grp_asc'">ORDER BY g.code_grp ASC</when>
+            <when test="sort == 'code_grp_desc'">ORDER BY g.code_grp DESC</when>
+            <when test="sort == 'desc_asc'">ORDER BY g.code_grp_desc ASC NULLS LAST</when>
+            <when test="sort == 'desc_desc'">ORDER BY g.code_grp_desc DESC NULLS LAST</when>
             <when test="sort == 'reg_asc'">ORDER BY g.reg_date ASC</when>
             <when test="sort == 'reg_desc'">ORDER BY g.reg_date DESC</when>
             <otherwise>ORDER BY g.reg_date DESC</otherwise>

@@ -115,7 +115,7 @@
 
         <logger name="com.shopjoy.ecadminapi"                                level="DEBUG"/>
         <logger name="com.shopjoy.ecadminapi.config.MyBatisQueryInterceptor" level="DEBUG"/>
-        <logger name="p6spy"                  level="INFO"/>
+        <logger name="p6spy"                  level="OFF"/>  <!-- StdoutLogger 직접 출력, logback 중복 방지 -->
         <!-- 프레임워크 노이즈 억제 -->
         <logger name="org.springframework"    level="WARN"/>
         <logger name="org.springframework.boot.logging" level="WARN"/>

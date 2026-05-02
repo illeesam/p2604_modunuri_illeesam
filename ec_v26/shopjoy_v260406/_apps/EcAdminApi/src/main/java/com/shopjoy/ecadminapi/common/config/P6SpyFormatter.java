@@ -23,7 +23,9 @@ public class P6SpyFormatter implements MessageFormattingStrategy {
     @Override
     public String formatMessage(int connectionId, String now, long elapsed,
                                 String category, String prepared, String sql, String url) {
-        if (sql == null || sql.isBlank()) return "";
+        String effectiveSql = (sql != null && !sql.isBlank()) ? sql : prepared;
+        if (effectiveSql == null || effectiveSql.isBlank()) return "";
+        sql = effectiveSql;
 
         String mapperInfo    = MyBatisQueryInterceptor.getCurrentMapperInfo();
         String resultSummary = MyBatisQueryInterceptor.pollResultSummary();

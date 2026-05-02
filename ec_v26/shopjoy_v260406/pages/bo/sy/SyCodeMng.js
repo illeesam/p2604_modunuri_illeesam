@@ -14,6 +14,7 @@ window.SyCodeMng = {
       focusedIdx: null, selectedCodeId: null, dragSrc: null, activeCodeTab: '일반',
       isTreeType: false,
       grpDirtyCount: 0,
+      grpSortKey: '', grpSortDir: 'asc',
     });
 
     const _initSearchParam = () => {
@@ -123,7 +124,12 @@ window.SyCodeMng = {
     // ── 이벤트 함수 ──────────────────────────────────────────────────────────
 
     const onSearch = () => handleLoadAllGroups();
-    const onReset  = () => { Object.assign(searchParam, _initSearchParam()); handleLoadAllGroups(); };
+    const onReset  = () => {
+      Object.assign(searchParam, _initSearchParam());
+      uiState.grpSortKey = '';
+      uiState.grpSortDir = 'asc';
+      handleLoadAllGroups();
+    };
 
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
@@ -176,11 +182,45 @@ window.SyCodeMng = {
 
     // ── 일반 함수 ─────────────────────────────────────────────────────────────
 
+    // grpSortKey → API sort 파라미터 매핑
+    const GRP_SORT_MAP = {
+      codeGrp:     { asc: 'code_grp_asc',  desc: 'code_grp_desc'  },
+      grpNm:       { asc: 'nm_asc',         desc: 'nm_desc'         },
+      description: { asc: 'desc_asc',        desc: 'desc_desc'       },
+    };
+
+    const cfGrpSortParam = () => {
+      const { grpSortKey, grpSortDir } = uiState;
+      if (!grpSortKey || !GRP_SORT_MAP[grpSortKey]) return {};
+      return { sort: GRP_SORT_MAP[grpSortKey][grpSortDir] };
+    };
+
+    const applyGrpSort = () => {
+      visibleGrpRows.splice(0, visibleGrpRows.length, ...grpRows);
+    };
+
+    const onGrpSort = (key) => {
+      if (uiState.grpSortKey === key) {
+        uiState.grpSortDir = uiState.grpSortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        uiState.grpSortKey = key;
+        uiState.grpSortDir = 'asc';
+      }
+      handleLoadAllGroups();
+    };
+
+    const grpSortIcon = (key) => {
+      if (uiState.grpSortKey !== key) return '⇅';
+      return uiState.grpSortDir === 'asc' ? '↑' : '↓';
+    };
+
     const handleLoadAllGroups = async () => {
       try {
         const grpParams = {
           ...Object.fromEntries(Object.entries(searchParam).filter(([k, v]) => k !== 'dateRange' && v !== '' && v !== null && v !== undefined)),
           ...(uiState.grpSelectedPath ? { pathId: uiState.grpSelectedPath } : {}),
+          ...cfGrpSortParam(),
+          _t: Date.now(),
         };
 
         const [grpRes, codeRes] = await Promise.all([
@@ -205,7 +245,7 @@ window.SyCodeMng = {
           _row_org: { codeGrp: g.codeGrp, grpNm: g.grpNm, pathId: g.pathId || null, description: g.codeGrpDesc || '', useYn: g.useYn || 'Y' },
         }));
         syncGrpDirty();
-        visibleGrpRows.splice(0, visibleGrpRows.length, ...grpRows);
+        applyGrpSort();
         gridRows.splice(0); uiState.focusedIdx = null;
       } catch (_) {}
     };
@@ -318,7 +358,7 @@ window.SyCodeMng = {
         _row_status: 'I', _tempId: _grpTempId--, _row_org: {},
       });
       syncGrpDirty();
-      visibleGrpRows.splice(0, visibleGrpRows.length, ...grpRows);
+      applyGrpSort();
     };
 
     const handleDeleteGrp = (idx) => {
@@ -326,7 +366,7 @@ window.SyCodeMng = {
       if (r._row_status === 'I') { grpRows.splice(grpRows.indexOf(r), 1); }
       else { r._row_status = r._row_status === 'D' ? 'N' : 'D'; }
       syncGrpDirty();
-      visibleGrpRows.splice(0, visibleGrpRows.length, ...grpRows);
+      applyGrpSort();
     };
 
     const cancelGrp = (idx) => {
@@ -334,7 +374,7 @@ window.SyCodeMng = {
       if (r._row_status === 'I') { grpRows.splice(grpRows.indexOf(r), 1); }
       else { Object.assign(r, r._row_org); r._row_status = 'N'; }
       syncGrpDirty();
-      visibleGrpRows.splice(0, visibleGrpRows.length, ...grpRows);
+      applyGrpSort();
     };
 
     const handleSaveGrp = async () => {
@@ -399,7 +439,7 @@ window.SyCodeMng = {
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       onDragStart, onDragOver, onDragEnd, toggleCheckAll, statusBadgeCls, exportExcel,
       addGrp, handleDeleteGrp, cancelGrp, handleSaveGrp, onGrpChange,
-      grpSelectNode, onGrpRowClick,
+      grpSelectNode, onGrpRowClick, onGrpSort, grpSortIcon,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       openGrpSetting,
       treeExpanded, codeToggleNode, flatTree, parentOpts,
@@ -465,10 +505,16 @@ window.SyCodeMng = {
             <th style="width:36px;text-align:center;">번호</th>
             <th class="col-status">상태</th>
             <th>표시경로 <span style="font-size:10px;color:#aaa;font-weight:400;">(예: aa.bb.cc)</span></th>
-            <th>코드그룹</th>
-            <th>그룹명</th>
+            <th @click="onGrpSort('codeGrp')" style="cursor:pointer;user-select:none;white-space:nowrap;">
+              코드그룹 <span :style="uiState.grpSortKey==='codeGrp' ? {color:'#e8587a',fontWeight:'bold'} : {color:'#bbb'}">{{ grpSortIcon('codeGrp') }}</span>
+            </th>
+            <th @click="onGrpSort('grpNm')" style="cursor:pointer;user-select:none;white-space:nowrap;">
+              그룹명 <span :style="uiState.grpSortKey==='grpNm' ? {color:'#e8587a',fontWeight:'bold'} : {color:'#bbb'}">{{ grpSortIcon('grpNm') }}</span>
+            </th>
             <th style="width:70px;">유형</th>
-            <th>설명</th>
+            <th @click="onGrpSort('description')" style="cursor:pointer;user-select:none;white-space:nowrap;">
+              설명 <span :style="uiState.grpSortKey==='description' ? {color:'#e8587a',fontWeight:'bold'} : {color:'#bbb'}">{{ grpSortIcon('description') }}</span>
+            </th>
             <th class="col-use">사용</th>
             <th class="col-act-cancel"></th>
             <th style="width:44px;"></th>
