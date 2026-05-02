@@ -594,15 +594,13 @@ window.SiteSelectModal = {
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
-    onMounted(() => { handleSearchList(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
-    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchList(); });
-    const cfPageNums = computed(() => {
-      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
-      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    });
-    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
-    return { cfSiteNm, searchParam, list, loading, pager, cfPageNums, onSetPage };
+    const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+    const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
+    onMounted(() => { handleSearchListWrap(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
+    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchListWrap(); });
+    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
+    return { cfSiteNm, searchParam, list, loading, pager, onSetPage };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -627,7 +625,7 @@ window.SiteSelectModal = {
     <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
       <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(1)">«</button>
       <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">‹</button>
-      <button v-for="n in cfPageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
+      <button v-for="n in pager.pageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
       <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
       <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
     </div>
@@ -658,15 +656,13 @@ window.VendorSelectModal = {
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
-    onMounted(() => { handleSearchList(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
-    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchList(); });
-    const cfPageNums = computed(() => {
-      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
-      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    });
-    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
-    return { cfSiteNm, searchParam, list, loading, pager, cfPageNums, onSetPage };
+    const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+    const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
+    onMounted(() => { handleSearchListWrap(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
+    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchListWrap(); });
+    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
+    return { cfSiteNm, searchParam, list, loading, pager, onSetPage };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -687,7 +683,7 @@ window.VendorSelectModal = {
     <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
       <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(1)">«</button>
       <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">‹</button>
-      <button v-for="n in cfPageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
+      <button v-for="n in pager.pageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
       <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
       <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
     </div>
@@ -951,15 +947,13 @@ window.MemberSelectModal = {
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
-    onMounted(() => { handleSearchList(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
-    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchList(); });
-    const cfPageNums = computed(() => {
-      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
-      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    });
-    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
-    return { cfSiteNm, searchParam, list, loading, pager, cfPageNums, onSetPage };
+    const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+    const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
+    onMounted(() => { handleSearchListWrap(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
+    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchListWrap(); });
+    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
+    return { cfSiteNm, searchParam, list, loading, pager, onSetPage };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -980,7 +974,7 @@ window.MemberSelectModal = {
     <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
       <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(1)">«</button>
       <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">‹</button>
-      <button v-for="n in cfPageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
+      <button v-for="n in pager.pageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
       <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
       <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
     </div>
@@ -1011,15 +1005,13 @@ window.OrderSelectModal = {
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
-    onMounted(() => { handleSearchList(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
-    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchList(); });
-    const cfPageNums = computed(() => {
-      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
-      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    });
-    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
-    return { cfSiteNm, searchParam, list, loading, pager, cfPageNums, onSetPage };
+    const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+    const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
+    onMounted(() => { handleSearchListWrap(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
+    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchListWrap(); });
+    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
+    return { cfSiteNm, searchParam, list, loading, pager, onSetPage };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -1040,7 +1032,7 @@ window.OrderSelectModal = {
     <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
       <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(1)">«</button>
       <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">‹</button>
-      <button v-for="n in cfPageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
+      <button v-for="n in pager.pageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
       <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
       <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
     </div>
@@ -1071,17 +1063,15 @@ window.BbmSelectModal = {
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
       } catch (e) { list.value = []; } finally { loading.value = false; }
     };
-    onMounted(() => { handleSearchList(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
-    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchList(); });
-    const cfPageNums = computed(() => {
-      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
-      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    });
-    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
+    const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+    const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
+    onMounted(() => { handleSearchListWrap(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
+    watch(() => searchParam.kw, () => { pager.pageNo = 1; handleSearchListWrap(); });
+    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
     const fnTypeBadge = t => ({ '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' }[t] || 'badge-gray');
     const fnScopeBadge = s => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[s] || 'badge-gray');
-    return { cfSiteNm, searchParam, list, loading, pager, cfPageNums, onSetPage, fnTypeBadge, fnScopeBadge };
+    return { cfSiteNm, searchParam, list, loading, pager, onSetPage, fnTypeBadge, fnScopeBadge };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -1107,7 +1097,7 @@ window.BbmSelectModal = {
     <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
       <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(1)">«</button>
       <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">‹</button>
-      <button v-for="n in cfPageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
+      <button v-for="n in pager.pageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
       <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
       <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
     </div>
@@ -2420,14 +2410,15 @@ window.RowPickModal = {
       }
       return true;
     }));
-    const cfTotal = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    const cfPageNums = computed(() => {
-      const cur = pager.page, last = cfTotalPages.value;
-      const s = Math.max(1, cur-2), e = Math.min(last, s+4);
-      return Array.from({ length: e-s+1 }, (_, i) => s+i);
-    });
+    const fnBuildPagerNums = () => {
+      const total = cfFiltered.value.length;
+      pager.pageTotalCount = total;
+      pager.pageTotalPage = Math.max(1, Math.ceil(total / pager.size));
+      pager.pageList = cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size);
+      const cur=pager.page, last=pager.pageTotalPage, s=Math.max(1,cur-2), e=Math.min(last,s+4);
+      pager.pageNums = Array.from({length:e-s+1},(_,i)=>s+i);
+    };
+    Vue.watch(cfFiltered, () => { pager.page = 1; fnBuildPagerNums(); }, { immediate: true });
     const cfTree = computed(() => {
       const g = {};
       cfAllRows.value.forEach(o => {
@@ -2444,11 +2435,11 @@ window.RowPickModal = {
       if (s.has(id)) s.delete(id); else s.add(id);
       checked = s;
     };
-    const cfAllChecked = computed(() => cfPageList.value.length > 0 && cfPageList.value.every(o => checked.has(o.__rowId)));
+    const cfAllChecked = computed(() => (pager.pageList||[]).length > 0 && (pager.pageList||[]).every(o => checked.has(o.__rowId)));
     const toggleCheckAll = () => {
       const s = new Set(checked);
-      if (cfAllChecked.value) cfPageList.value.forEach(o => s.delete(o.__rowId));
-      else cfPageList.value.forEach(o => s.add(o.__rowId));
+      if (cfAllChecked.value) (pager.pageList||[]).forEach(o => s.delete(o.__rowId));
+      else (pager.pageList||[]).forEach(o => s.add(o.__rowId));
       checked = s;
     };
     const pickMulti = () => {
@@ -2475,7 +2466,6 @@ window.RowPickModal = {
 
     return {
       searchKw, searchStatus, activeStatuses, pager, PAGE_SIZES,
-      cfTotal, cfTotalPages, cfPageList, cfPageNums,
       selectedTreeKey, toggleTree, isTreeOpen, selectTree, cfTree,
       statusCls, areaNm, wLabel,
       checked, isChecked, toggleCheck, cfAllChecked, toggleCheckAll, pickMulti, pickOne,
@@ -2502,7 +2492,7 @@ window.RowPickModal = {
         <div @click="toggleTree('__root__'); selectTree('')"
           :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',color: selectedTreeKey==='' ? '#1565c0' : '#222',fontWeight:700,border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec') }">
           <span>{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
-          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ cfTotal }}</span>
+          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ pager.pageTotalCount }}</span>
         </div>
         <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
           <div v-for="node in cfTree" :key="node.label"
@@ -2515,7 +2505,7 @@ window.RowPickModal = {
       </div>
       <div style="flex:1;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
         <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;display:flex;justify-content:space-between;align-items:center;">
-          <span>총 <b>{{ cfTotal }}</b>건 <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span></span>
+          <span>총 <b>{{ pager.pageTotalCount }}</b>건 <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span></span>
           <button v-if="checked.size" @click="pickMulti" class="btn btn-primary btn-sm" style="font-size:11px;">선택한 {{ checked.size }}개 일괄 복사</button>
         </div>
         <div style="flex:1;overflow-y:auto;">
@@ -2530,8 +2520,8 @@ window.RowPickModal = {
               </tr>
             </thead>
             <tbody>
-              <tr v-if="!cfPageList.length"><td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 전시항목이 없습니다.</td></tr>
-              <tr v-for="o in cfPageList" :key="o.__rowId"
+              <tr v-if="!(pager.pageList||[]).length"><td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 전시항목이 없습니다.</td></tr>
+              <tr v-for="o in pager.pageList" :key="o.__rowId"
                 :style="isChecked(o.__rowId)?'background:#eef6fd;':''">
                 <td style="text-align:center;vertical-align:top;padding-top:14px;">
                   <input type="checkbox" :checked="isChecked(o.__rowId)" @change="toggleCheck(o.__rowId)" />
@@ -2566,12 +2556,12 @@ window.RowPickModal = {
           <div class="pager">
             <button :disabled="pager.page===1" @click="pager.page=1">«</button>
             <button :disabled="pager.page===1" @click="pager.page--">‹</button>
-            <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
-            <button :disabled="pager.page===cfTotalPages" @click="pager.page++">›</button>
-            <button :disabled="pager.page===cfTotalPages" @click="pager.page=cfTotalPages">»</button>
+            <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
+            <button :disabled="pager.page===pager.pageTotalPage" @click="pager.page++">›</button>
+            <button :disabled="pager.page===pager.pageTotalPage" @click="pager.page=pager.pageTotalPage">»</button>
           </div>
           <div class="pager-right">
-            <select class="size-select" v-model.number="pager.size" @change="pager.page=1">
+            <select class="size-select" v-model.number="pager.size" @change="pager.page=1;fnBuildPagerNums()">
               <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
             </select>
           </div>
@@ -2623,14 +2613,15 @@ window.AreaPickModal = {
       }
       return true;
     }).sort((a,b) => (a.codeLabel||'').localeCompare(b.codeLabel||'')));
-    const cfTotal = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    const cfPageNums = computed(() => {
-      const cur = pager.page, last = cfTotalPages.value;
-      const s = Math.max(1, cur-2), e = Math.min(last, s+4);
-      return Array.from({ length: e-s+1 }, (_, i) => s+i);
-    });
+    const fnBuildPagerNums = () => {
+      const total = cfFiltered.value.length;
+      pager.pageTotalCount = total;
+      pager.pageTotalPage = Math.max(1, Math.ceil(total / pager.size));
+      pager.pageList = cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size);
+      const cur=pager.page, last=pager.pageTotalPage, s=Math.max(1,cur-2), e=Math.min(last,s+4);
+      pager.pageNums = Array.from({length:e-s+1},(_,i)=>s+i);
+    };
+    Vue.watch(cfFiltered, () => { pager.page = 1; fnBuildPagerNums(); }, { immediate: true });
     const cfTree = computed(() => {
       const g = {};
       (props.areas || []).forEach(a => {
@@ -2651,11 +2642,11 @@ window.AreaPickModal = {
       if (s.has(id)) s.delete(id); else s.add(id);
       checked = s;
     };
-    const cfAllChecked = computed(() => cfPageList.value.length > 0 && cfPageList.value.every(a => checked.has(a.codeId)));
+    const cfAllChecked = computed(() => (pager.pageList||[]).length > 0 && (pager.pageList||[]).every(a => checked.has(a.codeId)));
     const toggleCheckAll = () => {
       const s = new Set(checked);
-      if (cfAllChecked.value) cfPageList.value.forEach(a => s.delete(a.codeId));
-      else cfPageList.value.forEach(a => s.add(a.codeId));
+      if (cfAllChecked.value) (pager.pageList||[]).forEach(a => s.delete(a.codeId));
+      else (pager.pageList||[]).forEach(a => s.add(a.codeId));
       checked = s;
     };
     const pickMulti = () => {
@@ -2671,10 +2662,9 @@ window.AreaPickModal = {
     return {
       searchParam, pager, PAGE_SIZES,
       useYnOpts,
-      cfTotal, cfTotalPages, cfPageList, cfPageNums,
       selectedTreeKey, toggleTree, isTreeOpen, selectTree, cfTree,
       statusCls, onPick,
-      checked, isChecked, toggleCheck, cfAllChecked, toggleCheckAll, pickMulti,
+      checked, isChecked, toggleCheck, cfAllChecked, toggleCheckAll, pickMulti, fnBuildPagerNums,
     };
   },
   template: /* html */`
@@ -2704,7 +2694,7 @@ window.AreaPickModal = {
         <div @click="toggleTree('__root__'); selectTree('')"
           :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',color: selectedTreeKey==='' ? '#1565c0' : '#222',fontWeight:700,border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec') }">
           <span>{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
-          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ cfTotal }}</span>
+          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ pager.pageTotalCount }}</span>
         </div>
         <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
           <div v-for="node in cfTree" :key="node.label"
@@ -2717,7 +2707,7 @@ window.AreaPickModal = {
       </div>
       <div style="flex:1;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
         <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;display:flex;justify-content:space-between;align-items:center;">
-          <span>총 <b>{{ cfTotal }}</b>건 <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span></span>
+          <span>총 <b>{{ pager.pageTotalCount }}</b>건 <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span></span>
           <button v-if="checked.size" @click="pickMulti" class="btn btn-primary btn-sm" style="font-size:11px;">선택한 {{ checked.size }}개 일괄 추가</button>
         </div>
         <div style="flex:1;overflow-y:auto;">
@@ -2732,8 +2722,8 @@ window.AreaPickModal = {
               </tr>
             </thead>
             <tbody>
-              <tr v-if="!cfPageList.length"><td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 영역이 없습니다.</td></tr>
-              <tr v-for="a in cfPageList" :key="a.codeId"
+              <tr v-if="!(pager.pageList||[]).length"><td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 영역이 없습니다.</td></tr>
+              <tr v-for="a in pager.pageList" :key="a.codeId"
                 :style="isChecked(a.codeId)?'background:#eef6fd;':''">
                 <td style="text-align:center;vertical-align:top;padding-top:14px;">
                   <input type="checkbox" :checked="isChecked(a.codeId)" @change="toggleCheck(a.codeId)" />
@@ -2768,12 +2758,12 @@ window.AreaPickModal = {
           <div class="pager">
             <button :disabled="pager.page===1" @click="pager.page=1">«</button>
             <button :disabled="pager.page===1" @click="pager.page--">‹</button>
-            <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
-            <button :disabled="pager.page===cfTotalPages" @click="pager.page++">›</button>
-            <button :disabled="pager.page===cfTotalPages" @click="pager.page=cfTotalPages">»</button>
+            <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
+            <button :disabled="pager.page===pager.pageTotalPage" @click="pager.page++">›</button>
+            <button :disabled="pager.page===pager.pageTotalPage" @click="pager.page=pager.pageTotalPage">»</button>
           </div>
           <div class="pager-right">
-            <select class="size-select" v-model.number="pager.size" @change="pager.page=1">
+            <select class="size-select" v-model.number="pager.size" @change="pager.page=1;fnBuildPagerNums()">
               <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
             </select>
           </div>
@@ -2825,14 +2815,15 @@ window.PanelPickModal = {
       }
       return true;
     }).sort((a,b) => (a.name||'').localeCompare(b.name||'')));
-    const cfTotal = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size));
-    const cfPageNums = computed(() => {
-      const cur = pager.page, last = cfTotalPages.value;
-      const s = Math.max(1, cur-2), e = Math.min(last, s+4);
-      return Array.from({ length: e-s+1 }, (_, i) => s+i);
-    });
+    const fnBuildPagerNums = () => {
+      const total = cfFiltered.value.length;
+      pager.pageTotalCount = total;
+      pager.pageTotalPage = Math.max(1, Math.ceil(total / pager.size));
+      pager.pageList = cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size);
+      const cur=pager.page, last=pager.pageTotalPage, s=Math.max(1,cur-2), e=Math.min(last,s+4);
+      pager.pageNums = Array.from({length:e-s+1},(_,i)=>s+i);
+    };
+    Vue.watch(cfFiltered, () => { pager.page = 1; fnBuildPagerNums(); }, { immediate: true });
     const cfTree = computed(() => {
       const g = {};
       (props.displays || []).forEach(p => {
@@ -2853,11 +2844,11 @@ window.PanelPickModal = {
       if (s.has(id)) s.delete(id); else s.add(id);
       checked = s;
     };
-    const cfAllChecked = computed(() => cfPageList.value.length > 0 && cfPageList.value.every(p => checked.has(p.dispId)));
+    const cfAllChecked = computed(() => (pager.pageList||[]).length > 0 && (pager.pageList||[]).every(p => checked.has(p.dispId)));
     const toggleCheckAll = () => {
       const s = new Set(checked);
-      if (cfAllChecked.value) cfPageList.value.forEach(p => s.delete(p.dispId));
-      else cfPageList.value.forEach(p => s.add(p.dispId));
+      if (cfAllChecked.value) (pager.pageList||[]).forEach(p => s.delete(p.dispId));
+      else (pager.pageList||[]).forEach(p => s.add(p.dispId));
       checked = s;
     };
     const pickMulti = () => {
@@ -2877,10 +2868,9 @@ window.PanelPickModal = {
 
     return {
       searchParam, activeStatuses, pager, PAGE_SIZES,
-      cfTotal, cfTotalPages, cfPageList, cfPageNums,
       selectedTreeKey, toggleTree, isTreeOpen, selectTree, cfTree,
       statusCls, onPick, areaNm,
-      checked, isChecked, toggleCheck, cfAllChecked, toggleCheckAll, pickMulti,
+      checked, isChecked, toggleCheck, cfAllChecked, toggleCheckAll, pickMulti, fnBuildPagerNums,
     };
   },
   template: /* html */`
@@ -2905,7 +2895,7 @@ window.PanelPickModal = {
         <div @click="toggleTree('__root__'); selectTree('')"
           :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',color: selectedTreeKey==='' ? '#1565c0' : '#222',fontWeight:700,border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec') }">
           <span>{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
-          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ cfTotal }}</span>
+          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ pager.pageTotalCount }}</span>
         </div>
         <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
           <div v-for="node in cfTree" :key="node.label"
@@ -2919,7 +2909,7 @@ window.PanelPickModal = {
       <!-- 목록 -->
       <div style="flex:1;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
         <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;display:flex;justify-content:space-between;align-items:center;">
-          <span>총 <b>{{ cfTotal }}</b>건 <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span></span>
+          <span>총 <b>{{ pager.pageTotalCount }}</b>건 <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span></span>
           <button v-if="checked.size" @click="pickMulti" class="btn btn-primary btn-sm" style="font-size:11px;">선택한 {{ checked.size }}개 일괄 추가</button>
         </div>
         <div style="flex:1;overflow-y:auto;">
@@ -2936,8 +2926,8 @@ window.PanelPickModal = {
               </tr>
             </thead>
             <tbody>
-              <tr v-if="!cfPageList.length"><td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 패널이 없습니다.</td></tr>
-              <tr v-for="p in cfPageList" :key="p.dispId"
+              <tr v-if="!(pager.pageList||[]).length"><td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 패널이 없습니다.</td></tr>
+              <tr v-for="p in pager.pageList" :key="p.dispId"
                 :style="isChecked(p.dispId)?'background:#eef6fd;':''">
                 <td style="text-align:center;vertical-align:top;padding-top:14px;">
                   <input type="checkbox" :checked="isChecked(p.dispId)" @change="toggleCheck(p.dispId)" />
@@ -2971,12 +2961,12 @@ window.PanelPickModal = {
           <div class="pager">
             <button :disabled="pager.page===1" @click="pager.page=1">«</button>
             <button :disabled="pager.page===1" @click="pager.page--">‹</button>
-            <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
-            <button :disabled="pager.page===cfTotalPages" @click="pager.page++">›</button>
-            <button :disabled="pager.page===cfTotalPages" @click="pager.page=cfTotalPages">»</button>
+            <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
+            <button :disabled="pager.page===pager.pageTotalPage" @click="pager.page++">›</button>
+            <button :disabled="pager.page===pager.pageTotalPage" @click="pager.page=pager.pageTotalPage">»</button>
           </div>
           <div class="pager-right">
-            <select class="size-select" v-model.number="pager.size" @change="pager.page=1">
+            <select class="size-select" v-model.number="pager.size" @change="pager.page=1;fnBuildPagerNums()">
               <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
             </select>
           </div>
@@ -3011,16 +3001,15 @@ window.WidgetLibPickModal = {
       if (searchParam.status && d.status !== searchParam.status) return false;
       return true;
     }).sort((a,b) => b.libId - a.libId));
-    const cfTotal = computed(() => cfFiltered.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
-    const cfPageList = computed(() =>
-      cfFiltered.value.slice((pager.page-1) * pager.size, pager.page * pager.size)
-    );
-    const cfPageNums = computed(() => {
-      const cur = pager.page, last = cfTotalPages.value;
-      const s = Math.max(1, cur-2), e = Math.min(last, s+4);
-      return Array.from({ length: e-s+1 }, (_, i) => s+i);
-    });
+    const fnBuildPagerNums = () => {
+      const total = cfFiltered.value.length;
+      pager.pageTotalCount = total;
+      pager.pageTotalPage = Math.max(1, Math.ceil(total / pager.size));
+      pager.pageList = cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size);
+      const cur=pager.page, last=pager.pageTotalPage, s=Math.max(1,cur-2), e=Math.min(last,s+4);
+      pager.pageNums = Array.from({length:e-s+1},(_,i)=>s+i);
+    };
+    Vue.watch(cfFiltered, () => { pager.page = 1; fnBuildPagerNums(); }, { immediate: true });
 
     /* 사용위치 트리 */
     const selectedTreeKey = ref('');
@@ -3067,7 +3056,7 @@ window.WidgetLibPickModal = {
 
     return {
       searchParam, WIDGET_TYPES, activeStatuses,
-      pager, PAGE_SIZES, cfTotal, cfTotalPages, cfPageList, cfPageNums,
+      pager, PAGE_SIZES, fnBuildPagerNums,
       cfTree, selectedTreeKey, toggleTree, isTreeOpen, selectTree,
       statusCls, onPick,
     };
@@ -3104,7 +3093,7 @@ window.WidgetLibPickModal = {
         <div @click="toggleTree('__root__'); selectTree('')"
           :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',color: selectedTreeKey==='' ? '#1565c0' : '#222',fontWeight:700,border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec') }">
           <span>{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
-          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ cfTotal }}</span>
+          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ pager.pageTotalCount }}</span>
         </div>
         <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
           <div v-for="node in cfTree" :key="node.label">
@@ -3119,7 +3108,7 @@ window.WidgetLibPickModal = {
 
       <!-- 목록 -->
       <div style="flex:1;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
-        <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;">총 <b>{{ cfTotal }}</b>건</div>
+        <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;">총 <b>{{ pager.pageTotalCount }}</b>건</div>
         <div style="flex:1;overflow-y:auto;">
           <table class="bo-table" style="margin:0;">
             <thead>
@@ -3130,8 +3119,8 @@ window.WidgetLibPickModal = {
               </tr>
             </thead>
             <tbody>
-              <tr v-if="!cfPageList.length"><td colspan="3" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 데이터가 없습니다.</td></tr>
-              <tr v-for="d in cfPageList" :key="d.libId">
+              <tr v-if="!(pager.pageList||[]).length"><td colspan="3" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 데이터가 없습니다.</td></tr>
+              <tr v-for="d in pager.pageList" :key="d.libId">
                 <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">#{{ String(d.libId).padStart(4,'0') }}</td>
                 <td style="padding:10px 12px;">
                   <div style="margin-bottom:4px;">
@@ -3163,12 +3152,12 @@ window.WidgetLibPickModal = {
           <div class="pager">
             <button :disabled="pager.page===1" @click="pager.page=1">«</button>
             <button :disabled="pager.page===1" @click="pager.page--">‹</button>
-            <button v-for="n in cfPageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
-            <button :disabled="pager.page===cfTotalPages" @click="pager.page++">›</button>
-            <button :disabled="pager.page===cfTotalPages" @click="pager.page=cfTotalPages">»</button>
+            <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.page===n}" @click="pager.page=n">{{ n }}</button>
+            <button :disabled="pager.page===pager.pageTotalPage" @click="pager.page++">›</button>
+            <button :disabled="pager.page===pager.pageTotalPage" @click="pager.page=pager.pageTotalPage">»</button>
           </div>
           <div class="pager-right">
-            <select class="size-select" v-model.number="pager.size" @change="pager.page=1">
+            <select class="size-select" v-model.number="pager.size" @change="pager.page=1;fnBuildPagerNums()">
               <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
             </select>
           </div>
