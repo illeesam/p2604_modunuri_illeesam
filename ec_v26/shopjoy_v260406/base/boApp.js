@@ -2103,7 +2103,6 @@
   .component('SyTemplateMng',  window.SyTemplateMng)
   .component('SyTemplateDtl',  window.SyTemplateDtl)
   .component('SyVendorMng',    window.SyVendorMng)
-  .component('SyBizMng',       window.SyBizMng)
   .component('SyBizUserMng',   window.SyBizUserMng)
   .component('SyVendorDtl',    window.SyVendorDtl)
   .component('SyAttachMng',    window.SyAttachMng)
