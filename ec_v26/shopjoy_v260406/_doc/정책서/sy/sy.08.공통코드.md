@@ -1323,6 +1323,65 @@ OPT_TYPE 하위 사전정의 옵션값. `parentCodeValue`로 OPT_TYPE 값을 참
 
 ---
 
+## 관련 화면
+
+| pageId | 라벨 |
+|--------|------|
+| `syCodeMng` | 시스템 > 공통코드관리 |
+
+## 화면 UX 정책 (syCodeMng)
+
+### 검색 영역 기본값
+
+| 필드 | 기본값 | 이유 |
+|------|--------|------|
+| 사용여부(useYn) | `Y` (사용) | 운영 중인 코드 위주로 조회하는 것이 일반적 |
+| 등록일 시작(dateStart) | 3년 전 1월 1일 (`YYYY-01-01`) | 최근 운영 데이터 범위 확보 |
+| 등록일 종료(dateEnd) | 올해 12월 31일 (`YYYY-12-31`) | 올해 등록된 코드까지 포함 |
+| 키워드(kw) | 빈값 | - |
+
+- 초기화 버튼 클릭 시 위 기본값으로 리셋
+- `_initSearchParam()` 함수로 기본값 일원화 관리 (페이지 진입·초기화 모두 동일 함수 사용)
+
+### 검색 방식
+
+- 키워드 입력(`kw`): **코드그룹값(`code_grp`) + 그룹명(`grp_nm`) 동시 ILIKE 검색**
+  ```sql
+  AND (g.grp_nm ILIKE '%' || #{kw} || '%'
+    OR g.code_grp ILIKE '%' || #{kw} || '%')
+  ```
+- Enter 키 입력 → [조회] 버튼과 동일하게 `onSearch()` 호출
+- 드롭다운·날짜 변경은 [조회] 버튼 클릭 시에만 API 호출 (자동 조회 금지)
+
+### 목록 렌더링 규칙
+
+- 빈 행(`데이터가 없습니다.`)과 데이터 행은 반드시 `v-if` / `v-else`로 분리
+  - `v-if` 단독 + 별도 `v-for` 구조는 두 행이 동시 렌더될 수 있음 (Vue 렌더 타이밍 이슈)
+  ```html
+  <!-- ✅ 올바른 패턴 -->
+  <tr v-if="rows.length === 0"><td>데이터가 없습니다.</td></tr>
+  <tr v-else v-for="r in rows" :key="r.id">...</tr>
+
+  <!-- ❌ 잘못된 패턴 — 동시 렌더 가능 -->
+  <tr v-if="rows.length === 0"><td>데이터가 없습니다.</td></tr>
+  <tr v-for="r in rows" :key="r.id">...</tr>
+  ```
+
+### 모달 목록 초기화 규칙
+
+- API 호출 전 즉시 목록(`pageList`) + 페이징 카운트 초기화 필수
+- 이전 결과가 잠깐 보이는 현상(stale data flash) 방지
+  ```js
+  // ✅ 올바른 패턴
+  const handleSearchUsers = async () => {
+    uiState.loading = true;
+    pager.pageList = [];          // 즉시 초기화
+    pager.pageTotalCount = 0;
+    pager.pageTotalPage = 1;
+    try { ... } catch (e) { ... }
+  };
+  ```
+
 ## 관련 테이블
 - `sy_code_grp`: 코드 그룹
 - `sy_code`: 공통코드 항목
@@ -1344,6 +1403,12 @@ OPT_TYPE 하위 사전정의 옵션값. `parentCodeValue`로 OPT_TYPE 값을 참
 - 코드그룹명은 DDL에서 대표 사용하는 컬럼명에서 `_cd` 제거 후 대문자화
 
 ## 변경이력
+- 2026-05-02: 공통코드관리 화면(syCodeMng) UX 정책 추가
+  - 검색 영역 기본값: useYn=Y, dateStart=3년전 1월1일, dateEnd=올해 12월31일
+  - kw 검색: code_grp + grp_nm 동시 ILIKE (단일 필드 검색에서 확장)
+  - Enter 키 → 조회 버튼 동일 동작
+  - v-if/v-else 목록 렌더링 규칙 (동시 렌더 버그 방지)
+  - 모달 목록 API 호출 전 pageList 즉시 초기화 규칙
 - 2026-04-19: DDL 전수조사 기반 코드값 불일치 수정 및 신규 코드그룹 추가 (전체 116개 `_cd` 컬럼 완전 반영)
   - **수정** (DDL 기준 재정의): AUTH_METHOD(소셜로그인 방법으로), SITE_TYPE(EC/ADMIN/API), USER_STATUS(DORMANT/DELETED 추가), VENDOR_STATUS(PENDING/APPROVED/CLOSED), VENDOR_CLASS(사업자유형으로), BBM_TYPE(팝업유형으로), SCOPE_TYPE(BBM_SCOPE_TYPE 개명+값 변경), MENU_TYPE(FOLDER로 통일), ROLE_TYPE(역할별 5종으로)
   - **추가**: VENDOR_USER_STATUS, POSITION, ALARM_STATUS, CONTACT_CATEGORY, BBS_STATUS, REFUND_TYPE, FAULT_TYPE

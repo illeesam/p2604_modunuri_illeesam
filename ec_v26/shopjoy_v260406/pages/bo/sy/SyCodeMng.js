@@ -479,7 +479,7 @@ window.SyCodeMng = {
           <tr v-if="visibleGrpRows.length===0">
             <td colspan="11" style="text-align:center;color:#999;padding:20px;">데이터가 없습니다.</td>
           </tr>
-          <tr v-for="(g, idx) in visibleGrpRows" :key="g.codeGrp + (g._tempId || '')"
+          <tr v-else v-for="(g, idx) in visibleGrpRows" :key="g.codeGrp + (g._tempId || '')"
             class="crud-row"
             :class="['status-'+g._row_status, uiState.selectedGrp===g.codeGrp ? 'focused' : '']"
             style="cursor:pointer;"

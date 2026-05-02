@@ -66,6 +66,37 @@ UI/영역/패널 추가 시:
 | 시작시간(startTime) | 00:00 | 날짜의 시작 |
 | 종료시간(endTime) | 23:59 | 날짜의 마지막 |
 
+#### 2.3 검색 영역 기본값 표준
+
+목록 조회 화면의 검색 파라미터 초기값:
+
+| 필드 | 기본값 | 이유 |
+|------|--------|------|
+| 사용여부(useYn) | `Y` | 운영 중인 데이터 위주로 조회하는 것이 일반적 |
+| 등록일 시작(dateStart) | 3년 전 1월 1일 | 최근 운영 데이터 범위 확보 |
+| 등록일 종료(dateEnd) | 올해 12월 31일 | 올해 등록 데이터까지 포함 |
+| 키워드(kw) | 빈값 | 전체 조회가 기본 |
+
+**구현 패턴**: 기본값 함수를 별도로 분리하여 페이지 진입·초기화 버튼 모두에서 동일하게 사용
+
+```js
+// ✅ 올바른 패턴 — 기본값 함수 분리
+const _initSearchParam = () => {
+  const today = new Date();
+  const thisYear = today.getFullYear();
+  return {
+    kw: '', useYn: 'Y', dateRange: '',
+    dateStart: `${thisYear - 3}-01-01`,
+    dateEnd:   `${thisYear}-12-31`,
+  };
+};
+const searchParam    = reactive(_initSearchParam());
+const onReset = () => { Object.assign(searchParam, _initSearchParam()); handleSearchList(); };
+
+// ❌ 잘못된 패턴 — 초기화 시 searchParamOrg 복사 (진입 시 기본값이 달라질 경우 불일치)
+const onReset = () => { Object.assign(searchParam, searchParamOrg); handleSearchList(); };
+```
+
 ### 3. 입력 필드 제약사항
 
 **최소 필수 입력**:

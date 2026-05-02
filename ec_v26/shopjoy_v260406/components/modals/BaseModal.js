@@ -730,6 +730,9 @@ window.BoUserSelectModal = {
     };
     const handleSearchUsers = async () => {
       uiState.loading = true;
+      pager.pageList = [];
+      pager.pageTotalCount = 0;
+      pager.pageTotalPage = 1;
       try {
         const params = { pageNo: pager.page, pageSize: pager.size };
         if (pager.userKw.trim()) params.kw = pager.userKw.trim();
