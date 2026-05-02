@@ -403,21 +403,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <tr v-if="!cfVendorPageList.length"><td colspan="8" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
-    <div class="pagination">
-         <div></div>
-         <div class="pager">
-           <button :disabled="vendorPager.page===1" @click="setVendorPage(1)">«</button>
-           <button :disabled="vendorPager.page===1" @click="setVendorPage(vendorPager.page-1)">‹</button>
-           <button v-for="n in pageNums(vendorPager.page,cfVendorPages)" :key="n" :class="{active:vendorPager.page===n}" @click="setVendorPage(n)">{{ n }}</button>
-           <button :disabled="vendorPager.page===cfVendorPages" @click="setVendorPage(vendorPager.page+1)">›</button>
-           <button :disabled="vendorPager.page===cfVendorPages" @click="setVendorPage(cfVendorPages)">»</button>
-         </div>
-         <div class="pager-right">
-           <select class="size-select" v-model.number="vendorPager.size" @change="onVendorSizeChange">
-             <option v-for="s in vendorPager.pageSizes" :key="s" :value="s">{{ s }}개</option>
-           </select>
-         </div>
-       </div>
+    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
   <!-- ── ══ 2. 주문별현황 ══ ───────────────────────────────────────────────── -->
@@ -468,21 +454,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <tr v-if="!cfOrderPageList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
-    <div class="pagination">
-         <div></div>
-         <div class="pager">
-           <button :disabled="orderPager.page===1" @click="setOrderPage(1)">«</button>
-           <button :disabled="orderPager.page===1" @click="setOrderPage(orderPager.page-1)">‹</button>
-           <button v-for="n in pageNums(orderPager.page,cfOrderPages)" :key="n" :class="{active:orderPager.page===n}" @click="setOrderPage(n)">{{ n }}</button>
-           <button :disabled="orderPager.page===cfOrderPages" @click="setOrderPage(orderPager.page+1)">›</button>
-           <button :disabled="orderPager.page===cfOrderPages" @click="setOrderPage(cfOrderPages)">»</button>
-         </div>
-         <div class="pager-right">
-           <select class="size-select" v-model.number="orderPager.size" @change="onOrderSizeChange">
-             <option v-for="s in orderPager.pageSizes" :key="s" :value="s">{{ s }}개</option>
-           </select>
-         </div>
-       </div>
+    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
   <!-- ── ══ 3. 클레임별현황 ══ ──────────────────────────────────────────────── -->
@@ -536,21 +508,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <tr v-if="!cfClaimPageList.length"><td colspan="10" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
-    <div class="pagination">
-         <div></div>
-         <div class="pager">
-           <button :disabled="claimPager.page===1" @click="setClaimPage(1)">«</button>
-           <button :disabled="claimPager.page===1" @click="setClaimPage(claimPager.page-1)">‹</button>
-           <button v-for="n in pageNums(claimPager.page,cfClaimPages)" :key="n" :class="{active:claimPager.page===n}" @click="setClaimPage(n)">{{ n }}</button>
-           <button :disabled="claimPager.page===cfClaimPages" @click="setClaimPage(claimPager.page+1)">›</button>
-           <button :disabled="claimPager.page===cfClaimPages" @click="setClaimPage(cfClaimPages)">»</button>
-         </div>
-         <div class="pager-right">
-           <select class="size-select" v-model.number="claimPager.size" @change="onClaimSizeChange">
-             <option v-for="s in claimPager.pageSizes" :key="s" :value="s">{{ s }}개</option>
-           </select>
-         </div>
-       </div>
+    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
   <!-- ── ══ 4. 프로모션별현황 ══ ─────────────────────────────────────────────── -->
@@ -595,21 +553,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <tr v-if="!cfPromoPageList.length"><td colspan="8" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
-    <div class="pagination">
-         <div></div>
-         <div class="pager">
-           <button :disabled="promoPager.page===1" @click="setPromoPage(1)">«</button>
-           <button :disabled="promoPager.page===1" @click="setPromoPage(promoPager.page-1)">‹</button>
-           <button v-for="n in pageNums(promoPager.page,cfPromoPages)" :key="n" :class="{active:promoPager.page===n}" @click="setPromoPage(n)">{{ n }}</button>
-           <button :disabled="promoPager.page===cfPromoPages" @click="setPromoPage(promoPager.page+1)">›</button>
-           <button :disabled="promoPager.page===cfPromoPages" @click="setPromoPage(cfPromoPages)">»</button>
-         </div>
-         <div class="pager-right">
-           <select class="size-select" v-model.number="promoPager.size" @change="onPromoSizeChange">
-             <option v-for="s in promoPager.pageSizes" :key="s" :value="s">{{ s }}개</option>
-           </select>
-         </div>
-       </div>
+    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
   <!-- ── ══ 5. 정산별현황 ══ ───────────────────────────────────────────────── -->
@@ -655,21 +599,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <tr v-if="!cfSettlePageList.length"><td colspan="9" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
       </tbody>
     </table>
-    <div class="pagination">
-         <div></div>
-         <div class="pager">
-           <button :disabled="settlePager.page===1" @click="setSettlePage(1)">«</button>
-           <button :disabled="settlePager.page===1" @click="setSettlePage(settlePager.page-1)">‹</button>
-           <button v-for="n in pageNums(settlePager.page,cfSettlePages)" :key="n" :class="{active:settlePager.page===n}" @click="setSettlePage(n)">{{ n }}</button>
-           <button :disabled="settlePager.page===cfSettlePages" @click="setSettlePage(settlePager.page+1)">›</button>
-           <button :disabled="settlePager.page===cfSettlePages" @click="setSettlePage(cfSettlePages)">»</button>
-         </div>
-         <div class="pager-right">
-           <select class="size-select" v-model.number="settlePager.size" @change="onSettleSizeChange">
-             <option v-for="s in settlePager.pageSizes" :key="s" :value="s">{{ s }}개</option>
-           </select>
-         </div>
-       </div>
+    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 </div>
 `,

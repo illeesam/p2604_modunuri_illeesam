@@ -2115,6 +2115,7 @@
   .component('SyPropMng',      window.SyPropMng)
   .component('SyPathMng',      window.SyPathMng)
   .component('SyI18nMng',      window.SyI18nMng)
+  .component('BoPager',             window.BoPager)
   .component('PathTree',            window.PathTree)
   .component('PathTreeNode',        window.PathTreeNode)
   .component('CategoryTree',        window.CategoryTree)

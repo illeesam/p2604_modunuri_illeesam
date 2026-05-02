@@ -459,77 +459,7 @@ window.SyBizUserMng = {
         </tr>
       </tbody>
     </table>
-    <div class="pagination">
-      <div></div>
-      <div class="pager">
-        <button :disabled="bizPager.pageNo===1" @click="setBizPage(1)">«</button>
-        <button :disabled="bizPager.pageNo===1" @click="setBizPage(bizPager.pageNo-1)">‹</button>
-        <button v-for="n in bizPager.pageNums" :key="n" :class="{active:bizPager.pageNo===n}" @click="setBizPage(n)">{{ n }}</button>
-        <button :disabled="bizPager.pageNo===bizPager.pageTotalPage" @click="setBizPage(bizPager.pageNo+1)">›</button>
-        <button :disabled="bizPager.pageNo===bizPager.pageTotalPage" @click="setBizPage(bizPager.pageTotalPage)">»</button>
-      </div>
-      <div></div>
-    </div>
-  </div>
-
-  <!-- ── 역할트리 + 사용자목록 ─────────────────────────────────────────────────── -->
-  <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
-    <div class="card" style="padding:12px;">
-      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 역할정보</span></div>
-      <div style="display:flex;gap:4px;margin-bottom:8px;">
-        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
-        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
-      </div>
-      <div style="max-height:40vh;overflow:auto;">
-        <path-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
-      </div>
-    </div>
-
-    <div>
-      <div class="card">
-        <div class="toolbar">
-          <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사용자목록 <span class="list-count">{{ vendorUsers.length }}건</span></span>
-          <button class="btn btn-blue btn-sm" @click="openNew">+ 신규</button>
-        </div>
-        <table class="bo-table">
-          <thead><tr>
-            <th style="width:36px;text-align:center;">번호</th>
-            <th>업체</th><th>이름</th><th>직위</th><th>부서</th><th>휴대전화</th><th>이메일</th><th>상태</th><th>대표담당자</th><th style="text-align:right;">관리</th>
-          </tr></thead>
-          <tbody>
-            <tr v-if="!(pager.pageList||[]).length"><td colspan="10" style="text-align:center;color:#999;padding:30px;">{{ uiState.searchVendorId == null ? '업체를 선택해주세요.' : '데이터가 없습니다.' }}</td></tr>
-            <tr v-for="(u, idx) in pager.pageList" :key="u.vendorUserId" :style="uiState.formMode&&formData.vendorUserId===u.vendorUserId?'background:#fff8f9;':''">
-              <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-              <td style="font-weight:600;color:#2563eb;font-size:12px;">{{ fnVendorNm(u.vendorId) }}</td>
-              <td>{{ u.memberNm }}</td>
-              <td style="font-size:11.5px;">{{ u.positionCd }}</td>
-              <td style="font-size:11.5px;color:#666;">{{ u.vendorUserDeptNm }}</td>
-              <td style="font-size:11.5px;">{{ u.vendorUserMobile }}</td>
-              <td style="font-size:11.5px;">{{ u.vendorUserEmail }}</td>
-              <td><span class="badge" :class="fnStatusBadge(u.vendorUserStatusCd)" style="font-size:10px;">{{ fnStatusLabel(u.vendorUserStatusCd) }}</span></td>
-              <td style="text-align:center;font-size:12px;">{{ u.isMain==='Y' ? '✅' : '-' }}</td>
-              <td style="text-align:right;white-space:nowrap;">
-                <button class="btn btn-primary btn-xs" @click="openEdit(u)">수정</button>
-                <button class="btn btn-danger btn-xs" style="margin-left:4px;" @click="handleDeleteRow(u)">삭제</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="pagination">
-          <div></div>
-          <div class="pager">
-            <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
-            <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-            <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-            <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
-            <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
-          </div>
-          <div class="pager-right">
-            <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
-              <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
-            </select>
-          </div>
-        </div>
+    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
       </div>
 
       <!-- ── 인라인 폼 ────────────────────────────────────────────────────── -->

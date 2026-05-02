@@ -356,6 +356,39 @@ window.CategoryTree = {
 </teleport>`,
 };
 
+/* ── BoPager — 관리자 공통 페이지네이션 ────────────────────────────────────
+ * props:
+ *   pager        — { pageNo, pageTotalPage, pageNums, pageSize, pageSizes } (reactive)
+ *   onSetPage    — (n) => void  페이지 이동
+ *   onSizeChange — () => void   pageSize 변경
+ * 사용:
+ *   <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+ * ──────────────────────────────────────────────────────────────────────── */
+window.BoPager = {
+  name: 'BoPager',
+  props: {
+    pager:        { type: Object,   required: true },
+    onSetPage:    { type: Function, required: true },
+    onSizeChange: { type: Function, required: true },
+  },
+  template: /* html */`
+<div class="pagination">
+  <div></div>
+  <div class="pager">
+    <button :disabled="pager.pageNo===1" @click="onSetPage(1)">«</button>
+    <button :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">‹</button>
+    <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
+    <button :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
+    <button :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
+  </div>
+  <div class="pager-right">
+    <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
+      <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
+    </select>
+  </div>
+</div>`,
+};
+
 /* ── PathParentSelector 재귀 노드 ──────────────────────────────────────── */
 window.PathParentSelector = {
   name: 'PathParentSelector',
