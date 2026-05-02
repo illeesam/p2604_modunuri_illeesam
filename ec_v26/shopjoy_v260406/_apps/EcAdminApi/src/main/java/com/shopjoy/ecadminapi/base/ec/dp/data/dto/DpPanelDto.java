@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.ec.dp.data.dto;
+﻿package com.shopjoy.ecadminapi.base.ec.dp.data.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +15,7 @@ public class DpPanelDto {
     private String siteId;
     private String panelNm;
     private String panelTypeCd;
-    private String dispPath;
+    private String pathId;
     private String visibilityTargets;
     private String useYn;
     private LocalDate useStartDate;

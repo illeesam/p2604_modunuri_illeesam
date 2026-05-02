@@ -87,6 +87,34 @@ public class BoSyRoleService {
         if (repository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
         roleCache.evictAll();
-        roleMenuCache.evict(id);  // 역할 삭제 시 해당 역할의 메뉴 매핑 캐시도 제거
+        roleMenuCache.evict(id);
+    }
+
+    @Transactional
+    public void saveList(List<SyRole> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (SyRole row : rows) {
+            String rs = row.getRowStatus();
+            if ("I".equals(rs)) {
+                row.setRoleId("RL" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                repository.save(row);
+            } else if ("U".equals(rs)) {
+                SyRole entity = repository.findById(row.getRoleId())
+                    .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getRoleId()));
+                VoUtil.voCopyExclude(row, entity, "roleId^regBy^regDate");
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                repository.save(entity);
+            } else if ("D".equals(rs)) {
+                if (repository.existsById(row.getRoleId())) {
+                    repository.deleteById(row.getRoleId());
+                    roleMenuCache.evict(row.getRoleId());
+                }
+            }
+        }
+        em.flush();
+        roleCache.evictAll();
     }
 }

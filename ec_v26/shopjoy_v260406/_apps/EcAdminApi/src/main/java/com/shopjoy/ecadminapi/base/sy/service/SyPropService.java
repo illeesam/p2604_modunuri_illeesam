@@ -23,7 +23,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SyPropService {
 
-
     private final SyPropMapper mapper;
     private final SyPropRepository repository;
 
@@ -34,56 +33,45 @@ public class SyPropService {
 
     @Transactional(readOnly = true)
     public SyPropDto getById(String id) {
-        // sy_prop :: select one :: id [orm:mybatis]
-        SyPropDto result = mapper.selectById(id);
-        return result;
+        return mapper.selectById(id);
     }
 
     @Transactional(readOnly = true)
     public List<SyPropDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
-        // sy_prop :: select list :: p [orm:mybatis]
-        List<SyPropDto> result = mapper.selectList(p);
-        return result;
+        return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
     public PageResult<SyPropDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
-        // sy_prop :: select page :: p [orm:mybatis]
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional
     public int update(SyProp entity) {
-        // sy_prop :: update :: entity [orm:mybatis]
-        int result = mapper.updateSelective(entity);
-        return result;
+        return mapper.updateSelective(entity);
     }
 
     // ── JPA 저장/삭제 ────────────────────────────────────────────
 
     @Transactional
     public SyProp create(SyProp entity) {
-        entity.setSiteId(CmUtil.generateId("sy_prop"));
+        entity.setPropId(CmUtil.generateId("sy_prop"));
         entity.setRegBy(SecurityUtil.getAuthUser().authId());
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // sy_prop :: insert or update :: [orm:jpa]
-        SyProp result = repository.save(entity);
-        return result;
+        return repository.save(entity);
     }
 
     @Transactional
     public SyProp save(SyProp entity) {
-        if (!repository.existsById(entity.getSiteId()))
-            throw new CmBizException("존재하지 않는 SyProp입니다: " + entity.getSiteId());
+        if (!repository.existsById(entity.getPropId()))
+            throw new CmBizException("존재하지 않는 SyProp입니다: " + entity.getPropId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
-        // sy_prop :: insert or update :: [orm:jpa]
-        SyProp result = repository.save(entity);
-        return result;
+        return repository.save(entity);
     }
 
     @Transactional
@@ -94,6 +82,38 @@ public class SyPropService {
         em.flush();
         if (repository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
+    }
+
+    @Transactional
+    public void saveList(List<SyProp> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (SyProp row : rows) {
+            String rs = row.getRowStatus();
+            if ("I".equals(rs)) {
+                row.setPropId(CmUtil.generateId("sy_prop"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                repository.save(row);
+            } else if ("U".equals(rs)) {
+                SyProp entity = repository.findById(row.getPropId())
+                    .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getPropId()));
+                entity.setSiteId(row.getSiteId());
+                entity.setPathId(row.getPathId());
+                entity.setPropKey(row.getPropKey());
+                entity.setPropValue(row.getPropValue());
+                entity.setPropLabel(row.getPropLabel());
+                entity.setPropTypeCd(row.getPropTypeCd());
+                entity.setSortOrd(row.getSortOrd());
+                entity.setUseYn(row.getUseYn());
+                entity.setPropRemark(row.getPropRemark());
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                repository.save(entity);
+            } else if ("D".equals(rs)) {
+                if (repository.existsById(row.getPropId())) repository.deleteById(row.getPropId());
+            }
+        }
+        em.flush();
     }
 
 }

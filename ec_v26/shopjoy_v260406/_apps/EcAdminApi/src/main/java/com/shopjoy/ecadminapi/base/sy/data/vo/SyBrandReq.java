@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.vo;
+﻿package com.shopjoy.ecadminapi.base.sy.data.vo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBrand;
@@ -19,7 +19,7 @@ public class SyBrandReq {
     private String brandCode;
     private String brandNm;
     private String brandEnNm;
-    private String dispPath;
+    private String pathId;
     private String logoUrl;
     private String vendorId;
     private Integer sortOrd;
@@ -37,7 +37,7 @@ public class SyBrandReq {
                 .brandCode(brandCode)
                 .brandNm(brandNm)
                 .brandEnNm(brandEnNm)
-                .dispPath(dispPath)
+                .pathId(pathId)
                 .logoUrl(logoUrl)
                 .vendorId(vendorId)
                 .sortOrd(sortOrd)

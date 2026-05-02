@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.dto;
+﻿package com.shopjoy.ecadminapi.base.sy.data.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,7 +35,7 @@ public class SyVendorDto {
     private LocalDate openDate;
     private LocalDate contractDate;
     private String vendorStatusCd;
-    private String dispPath;
+    private String pathId;
     private String vendorRemark;
     private String regBy;
     private LocalDateTime regDate;

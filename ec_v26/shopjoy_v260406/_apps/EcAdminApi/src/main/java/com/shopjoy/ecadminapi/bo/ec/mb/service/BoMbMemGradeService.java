@@ -82,4 +82,29 @@ public class BoMbMemGradeService {
         if (repository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
+
+    @Transactional
+    public void saveList(List<MbMemberGrade> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (MbMemberGrade row : rows) {
+            String rs = row.getRowStatus();
+            if ("I".equals(rs)) {
+                if (row.getUseYn() == null) row.setUseYn("Y");
+                row.setMemberGradeId("GR" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                repository.save(row);
+            } else if ("U".equals(rs)) {
+                MbMemberGrade entity = repository.findById(row.getMemberGradeId())
+                    .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getMemberGradeId()));
+                VoUtil.voCopyExclude(row, entity, "memberGradeId^regBy^regDate");
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                repository.save(entity);
+            } else if ("D".equals(rs)) {
+                if (repository.existsById(row.getMemberGradeId())) repository.deleteById(row.getMemberGradeId());
+            }
+        }
+        em.flush();
+    }
 }

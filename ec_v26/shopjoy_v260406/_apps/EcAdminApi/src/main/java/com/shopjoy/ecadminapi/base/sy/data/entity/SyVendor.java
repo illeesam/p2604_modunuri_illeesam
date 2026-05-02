@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.entity;
+﻿package com.shopjoy.ecadminapi.base.sy.data.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -90,8 +90,8 @@ public class SyVendor extends BaseEntity {
     @Column(name = "vendor_status_cd", length = 20)
     private String vendorStatusCd;
 
-    @Column(name = "disp_path", length = 200)
-    private String dispPath;
+    @Column(name = "path_id", length = 21)
+    private String pathId;
 
     @Column(name = "vendor_remark", length = 500)
     private String vendorRemark;

@@ -103,29 +103,21 @@ const isAppReady = computed(() => {
       }
     };
     const handleSaveAll = async () => {
-      const changed = window.safeArrayUtils.safeFilter(gridRows, r => r._row_status === 'N' || r._row_status === 'U');
+      const changed = window.safeArrayUtils.safeFilter(gridRows, r => ['N','I','U','D'].includes(r._row_status));
       if (!changed.length) { props.showToast('변경된 내용이 없습니다.', 'info'); return; }
-      for (const row of changed) {
+      for (const row of changed.filter(r => r._row_status !== 'D')) {
         if (!row.gradeCd || !row.gradeNm) { props.showToast('등급코드와 등급명은 필수입니다.', 'error'); return; }
-        const ok = await props.showConfirm('저장', '변경 내용을 저장하시겠습니까?');
-        if (!ok) return;
-        const isNewRow = row._row_status === 'N';
-        const src = grades;
-        if (isNewRow) { row.gradeId = 'G' + String(Date.now()).slice(-6); src.push({ ...row }); }
-        else { const si = src.findIndex(g => g.gradeId === row.gradeId); if (si !== -1) Object.assign(src[si], row); }
-        row._row_status = null;
-        try {
-          const res = await (isNewRow ? boApiSvc.mbMemGrade.create({ ...row }, '회원등급관리', '등록') : boApiSvc.mbMemGrade.update(row.gradeId, { ...row }, '회원등급관리', '저장'));
-          if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-          if (props.showToast) props.showToast('저장되었습니다.', 'success');
-          await handleSearchList();
-        } catch (err) {
-          console.error('[catch-info]', err);
-          const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-          if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-          if (props.showToast) props.showToast(errMsg, 'error', 0);
-        }
-        break;
+      }
+      const ok = await props.showConfirm('저장', '변경 내용을 저장하시겠습니까?');
+      if (!ok) return;
+      const saveRows = changed.map(r => ({ ...r, rowStatus: r._row_status === 'N' ? 'I' : r._row_status }));
+      try {
+        await boApiSvc.mbMemGrade.saveList(saveRows, '회원등급관리', '저장');
+        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+        await handleSearchList();
+      } catch (err) {
+        const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
     const onSearch = async () => {

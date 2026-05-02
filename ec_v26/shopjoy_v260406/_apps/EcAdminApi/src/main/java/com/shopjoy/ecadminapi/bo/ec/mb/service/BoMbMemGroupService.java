@@ -82,4 +82,29 @@ public class BoMbMemGroupService {
         if (repository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
+
+    @Transactional
+    public void saveList(List<MbMemberGroup> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (MbMemberGroup row : rows) {
+            String rs = row.getRowStatus();
+            if ("I".equals(rs)) {
+                if (row.getUseYn() == null) row.setUseYn("Y");
+                row.setMemberGroupId("MG" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                repository.save(row);
+            } else if ("U".equals(rs)) {
+                MbMemberGroup entity = repository.findById(row.getMemberGroupId())
+                    .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getMemberGroupId()));
+                VoUtil.voCopyExclude(row, entity, "memberGroupId^regBy^regDate");
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                repository.save(entity);
+            } else if ("D".equals(rs)) {
+                if (repository.existsById(row.getMemberGroupId())) repository.deleteById(row.getMemberGroupId());
+            }
+        }
+        em.flush();
+    }
 }

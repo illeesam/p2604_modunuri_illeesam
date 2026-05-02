@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.entity;
+﻿package com.shopjoy.ecadminapi.base.sy.data.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,8 +29,8 @@ public class SyBbm extends BaseEntity {
     @Column(name = "bbm_nm", length = 100, nullable = false)
     private String bbmNm;
 
-    @Column(name = "disp_path", length = 200)
-    private String dispPath;
+    @Column(name = "path_id", length = 21)
+    private String pathId;
 
     @Column(name = "bbm_type_cd", length = 20)
     private String bbmTypeCd;

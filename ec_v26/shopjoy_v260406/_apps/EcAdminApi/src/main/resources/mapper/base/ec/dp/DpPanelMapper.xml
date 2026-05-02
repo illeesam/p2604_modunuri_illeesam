@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -94,7 +94,7 @@
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="panelNm != null">panel_nm = #{panelNm},</if>
             <if test="panelTypeCd != null">panel_type_cd = #{panelTypeCd},</if>
-            <if test="dispPath != null">disp_path = #{dispPath},</if>
+            <if test="pathId != null">path_id = #{pathId},</if>
             <if test="visibilityTargets != null">visibility_targets = #{visibilityTargets},</if>
             <if test="useYn != null">use_yn = #{useYn},</if>
             <if test="useStartDate != null">use_start_date = #{useStartDate},</if>

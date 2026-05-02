@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.vo;
+﻿package com.shopjoy.ecadminapi.base.sy.data.vo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm;
@@ -40,7 +40,7 @@ public class SyAlarmReq {
     private LocalDateTime regDate;
     private String updBy;
     private LocalDateTime updDate;
-    private String dispPath;
+    private String pathId;
 
     public SyAlarm toEntity() {
         return SyAlarm.builder()
@@ -61,7 +61,7 @@ public class SyAlarmReq {
                 .regDate(regDate)
                 .updBy(updBy)
                 .updDate(updDate)
-                .dispPath(dispPath)
+                .pathId(pathId)
                 .build();
     }
 }

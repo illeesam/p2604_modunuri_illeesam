@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.dto;
+﻿package com.shopjoy.ecadminapi.base.sy.data.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,7 +27,7 @@ public class SyAlarmDto {
     private LocalDateTime regDate;
     private String updBy;
     private LocalDateTime updDate;
-    private String dispPath;
+    private String pathId;
 
     // ── JOIN: sy_site / sy_code ───────────────────────────────────
     private String siteNm;

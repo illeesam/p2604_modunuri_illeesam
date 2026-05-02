@@ -86,4 +86,29 @@ public class BoSyMenuService {
             throw new CmBizException("데이터 삭제에 실패했습니다.");
         menuCache.evictAll();
     }
+
+    @Transactional
+    public void saveList(List<SyMenu> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (SyMenu row : rows) {
+            String rs = row.getRowStatus();
+            if ("I".equals(rs)) {
+                row.setMenuId("MN" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                repository.save(row);
+            } else if ("U".equals(rs)) {
+                SyMenu entity = repository.findById(row.getMenuId())
+                    .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getMenuId()));
+                VoUtil.voCopyExclude(row, entity, "menuId^regBy^regDate");
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                repository.save(entity);
+            } else if ("D".equals(rs)) {
+                if (repository.existsById(row.getMenuId())) repository.deleteById(row.getMenuId());
+            }
+        }
+        em.flush();
+        menuCache.evictAll();
+    }
 }

@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.dto;
+﻿package com.shopjoy.ecadminapi.base.sy.data.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +14,7 @@ public class SyCodeGrpDto {
     private String siteId;
     private String codeGrp;
     private String grpNm;
-    private String dispPath;
+    private String pathId;
     private String codeGrpDesc;
     private String useYn;
     private String regBy;

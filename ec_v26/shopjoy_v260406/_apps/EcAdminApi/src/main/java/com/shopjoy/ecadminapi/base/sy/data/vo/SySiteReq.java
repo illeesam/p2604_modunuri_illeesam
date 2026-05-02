@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.vo;
+﻿package com.shopjoy.ecadminapi.base.sy.data.vo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SySite;
@@ -34,7 +34,7 @@ public class SySiteReq {
     private LocalDateTime regDate;
     private String updBy;
     private LocalDateTime updDate;
-    private String dispPath;
+    private String pathId;
 
     public SySite toEntity() {
         return SySite.builder()
@@ -58,7 +58,7 @@ public class SySiteReq {
                 .regDate(regDate)
                 .updBy(updBy)
                 .updDate(updDate)
-                .dispPath(dispPath)
+                .pathId(pathId)
                 .build();
     }
 }

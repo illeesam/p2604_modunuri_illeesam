@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.ec.dp.data.dto;
+﻿package com.shopjoy.ecadminapi.base.ec.dp.data.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +18,7 @@ public class DpAreaDto {
     private String areaNm;
     private String areaTypeCd;
     private String areaDesc;
-    private String dispPath;
+    private String pathId;
     private String useYn;
     private LocalDate useStartDate;
     private LocalDate useEndDate;

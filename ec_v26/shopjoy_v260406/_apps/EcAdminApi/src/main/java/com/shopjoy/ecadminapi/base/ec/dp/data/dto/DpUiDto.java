@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.ec.dp.data.dto;
+﻿package com.shopjoy.ecadminapi.base.ec.dp.data.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +17,7 @@ public class DpUiDto {
     private String uiNm;
     private String uiDesc;
     private String deviceTypeCd;
-    private String uiPath;
+    private String pathId;
     private Integer sortOrd;
     private String useYn;
     private LocalDate useStartDate;

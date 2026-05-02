@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 공통코드관리 (CRUD 그리드) */
+﻿/* ShopJoy Admin - 공통코드관리 (CRUD 그리드) */
 window.SyCodeMng = {
   name: 'SyCodeMng',
   props: ['navigate', 'showToast', 'showConfirm'],
@@ -48,7 +48,7 @@ window.SyCodeMng = {
       const dateStart = searchParam.dateStart || '';
       const dateEnd = searchParam.dateEnd || '';
       visibleGrpRows.splice(0, visibleGrpRows.length, ...grpRows.filter(r => {
-        if (sp && !(r.dispPath || '').startsWith(sp)) return false;
+        if (sp && !(r.pathId || '').startsWith(sp)) return false;
         if (kw && !((r.codeGrp || '').toLowerCase().includes(kw) || (r.grpNm || '').toLowerCase().includes(kw) || (r.description || '').toLowerCase().includes(kw))) return false;
         if (useYn && r.useYn !== useYn) return false;
         if (dateStart && r.regDate && r.regDate < dateStart) return false;
@@ -312,7 +312,7 @@ window.SyCodeMng = {
 
     const addGrp = () => {
       grpRows.push({
-        codeGrp: 'NEW_GRP', grpNm: '신규 그룹', pathId: null, dispPath: 'new.path', description: '', type: '일반', useYn: 'Y',
+        codeGrp: 'NEW_GRP', grpNm: '신규 그룹', pathId: 'new.path', description: '', type: '일반', useYn: 'Y',
         _row_status: 'I', _tempId: _grpTempId--, _row_org: {},
       });
       syncGrpDirty();

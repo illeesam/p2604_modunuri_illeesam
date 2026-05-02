@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -83,7 +83,7 @@
             <if test="uiNm != null">ui_nm = #{uiNm},</if>
             <if test="uiDesc != null">ui_desc = #{uiDesc},</if>
             <if test="deviceTypeCd != null">device_type_cd = #{deviceTypeCd},</if>
-            <if test="uiPath != null">ui_path = #{uiPath},</if>
+            <if test="pathId != null">path_id = #{pathId},</if>
             <if test="sortOrd != null">sort_ord = #{sortOrd},</if>
             <if test="useYn != null">use_yn = #{useYn},</if>
             <if test="useStartDate != null">use_start_date = #{useStartDate},</if>

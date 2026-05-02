@@ -189,18 +189,14 @@ window.SyBatchMng = {
       if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
-
-      dRows.forEach(r => { const i = batches.findIndex(b => b.batchId === r.batchId); if (i !== -1) batches.splice(i, 1); });
-      uRows.forEach(r => { const i = batches.findIndex(b => b.batchId === r.batchId); if (i !== -1) Object.assign(batches[i], { batchNm: r.batchNm, batchCode: r.batchCode, cron: r.cron, statusCd: r.statusCd, description: r.description }); });
-      let nextId = Math.max(...batches.map(b => b.batchId), 0);
-      iRows.forEach(r => { batches.push({ batchId: ++nextId, batchNm: r.batchNm, batchCode: r.batchCode, cron: r.cron, statusCd: r.statusCd, description: r.description, lastRun: '-', nextRun: '-', runCount: 0, runStatus: '대기', regDate: new Date().toISOString().slice(0, 10) }); });
-
-      const parts = [];
-      if (iRows.length) parts.push(`등록 ${iRows.length}건`);
-      if (uRows.length) parts.push(`수정 ${uRows.length}건`);
-      if (dRows.length) parts.push(`삭제 ${dRows.length}건`);
-      props.showToast(`${parts.join(', ')} 저장되었습니다.`);
-      handleSearchList();
+      const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
+      try {
+        await boApiSvc.syBatch.saveList(saveRows, '배치관리', '저장');
+        props.showToast('저장되었습니다.');
+        await handleSearchList();
+      } catch (err) {
+        props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+      }
     };
 
     /* ── 즉시 실행 ── */

@@ -14,8 +14,9 @@ public class SyPropReq {
     @JsonProperty("_row_status")
     private String rowStatus;   // I: insert, U: update, D: delete
 
+    private String propId;
     private String siteId;
-    private String dispPath;
+    private String pathId;
     private String propKey;
     private String propValue;
     private String propLabel;
@@ -30,8 +31,9 @@ public class SyPropReq {
 
     public SyProp toEntity() {
         return SyProp.builder()
+                .propId(propId)
                 .siteId(siteId)
-                .dispPath(dispPath)
+                .pathId(pathId)
                 .propKey(propKey)
                 .propValue(propValue)
                 .propLabel(propLabel)

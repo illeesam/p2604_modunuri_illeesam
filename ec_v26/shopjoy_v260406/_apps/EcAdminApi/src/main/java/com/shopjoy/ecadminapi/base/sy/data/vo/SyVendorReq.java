@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.vo;
+﻿package com.shopjoy.ecadminapi.base.sy.data.vo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendor;
@@ -39,7 +39,7 @@ public class SyVendorReq {
     private LocalDate openDate;
     private LocalDate contractDate;
     private String vendorStatusCd;
-    private String dispPath;
+    private String pathId;
     private String vendorRemark;
     private String regBy;
     private LocalDateTime regDate;
@@ -72,7 +72,7 @@ public class SyVendorReq {
                 .openDate(openDate)
                 .contractDate(contractDate)
                 .vendorStatusCd(vendorStatusCd)
-                .dispPath(dispPath)
+                .pathId(pathId)
                 .vendorRemark(vendorRemark)
                 .regBy(regBy)
                 .regDate(regDate)

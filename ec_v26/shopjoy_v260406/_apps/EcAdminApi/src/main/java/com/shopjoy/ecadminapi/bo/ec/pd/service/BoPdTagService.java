@@ -81,4 +81,28 @@ public class BoPdTagService {
         if (repository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
+
+    @Transactional
+    public void saveList(List<PdTag> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (PdTag row : rows) {
+            String rs = row.getRowStatus();
+            if ("I".equals(rs)) {
+                row.setTagId("TG" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                repository.save(row);
+            } else if ("U".equals(rs)) {
+                PdTag entity = repository.findById(row.getTagId())
+                    .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getTagId()));
+                VoUtil.voCopyExclude(row, entity, "tagId^regBy^regDate");
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                repository.save(entity);
+            } else if ("D".equals(rs)) {
+                if (repository.existsById(row.getTagId())) repository.deleteById(row.getTagId());
+            }
+        }
+        em.flush();
+    }
 }

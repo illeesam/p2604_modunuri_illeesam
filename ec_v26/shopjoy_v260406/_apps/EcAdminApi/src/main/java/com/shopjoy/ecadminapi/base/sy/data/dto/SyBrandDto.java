@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.dto;
+﻿package com.shopjoy.ecadminapi.base.sy.data.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +15,7 @@ public class SyBrandDto {
     private String brandCode;
     private String brandNm;
     private String brandEnNm;
-    private String dispPath;
+    private String pathId;
     private String logoUrl;
     private String vendorId;
     private Integer sortOrd;

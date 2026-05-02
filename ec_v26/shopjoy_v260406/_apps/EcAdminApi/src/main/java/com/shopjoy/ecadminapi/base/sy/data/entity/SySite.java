@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.entity;
+﻿package com.shopjoy.ecadminapi.base.sy.data.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -64,7 +64,7 @@ public class SySite extends BaseEntity {
     @Column(name = "config_json", columnDefinition = "TEXT")
     private String configJson;
 
-    @Column(name = "disp_path", length = 200)
-    private String dispPath;
+    @Column(name = "path_id", length = 21)
+    private String pathId;
 
 }

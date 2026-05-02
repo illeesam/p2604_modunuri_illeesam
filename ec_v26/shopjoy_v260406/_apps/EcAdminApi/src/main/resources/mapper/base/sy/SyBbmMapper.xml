@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -99,7 +99,7 @@
             <if test="siteId != null">site_id = #{siteId},</if>
             <if test="bbmCode != null">bbm_code = #{bbmCode},</if>
             <if test="bbmNm != null">bbm_nm = #{bbmNm},</if>
-            <if test="dispPath != null">disp_path = #{dispPath},</if>
+            <if test="pathId != null">path_id = #{pathId},</if>
             <if test="bbmTypeCd != null">bbm_type_cd = #{bbmTypeCd},</if>
             <if test="allowComment != null">allow_comment = #{allowComment},</if>
             <if test="allowAttach != null">allow_attach = #{allowAttach},</if>

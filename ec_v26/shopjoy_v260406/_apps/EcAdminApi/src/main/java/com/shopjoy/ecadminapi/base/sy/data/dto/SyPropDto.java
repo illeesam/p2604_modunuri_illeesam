@@ -10,8 +10,9 @@ import java.time.LocalDateTime;
 public class SyPropDto {
 
     // ── sy_prop ──────────────────────────────────────────
+    private String propId;
     private String siteId;
-    private String dispPath;
+    private String pathId;
     private String propKey;
     private String propValue;
     private String propLabel;

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -83,7 +83,7 @@
             <if test="brandCode != null">brand_code = #{brandCode},</if>
             <if test="brandNm != null">brand_nm = #{brandNm},</if>
             <if test="brandEnNm != null">brand_en_nm = #{brandEnNm},</if>
-            <if test="dispPath != null">disp_path = #{dispPath},</if>
+            <if test="pathId != null">path_id = #{pathId},</if>
             <if test="logoUrl != null">logo_url = #{logoUrl},</if>
             <if test="vendorId != null">vendor_id = #{vendorId},</if>
             <if test="sortOrd != null">sort_ord = #{sortOrd},</if>

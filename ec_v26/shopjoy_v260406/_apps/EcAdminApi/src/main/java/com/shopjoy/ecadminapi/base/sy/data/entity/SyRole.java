@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.entity;
+﻿package com.shopjoy.ecadminapi.base.sy.data.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -46,7 +46,7 @@ public class SyRole extends BaseEntity {
     @Column(name = "role_remark", length = 300)
     private String roleRemark;
 
-    @Column(name = "disp_path", length = 200)
-    private String dispPath;
+    @Column(name = "path_id", length = 21)
+    private String pathId;
 
 }

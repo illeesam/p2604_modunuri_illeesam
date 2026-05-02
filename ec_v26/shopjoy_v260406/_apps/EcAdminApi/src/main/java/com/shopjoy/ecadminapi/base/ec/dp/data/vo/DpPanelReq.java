@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.ec.dp.data.vo;
+﻿package com.shopjoy.ecadminapi.base.ec.dp.data.vo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpPanel;
@@ -19,7 +19,7 @@ public class DpPanelReq {
     private String siteId;
     private String panelNm;
     private String panelTypeCd;
-    private String dispPath;
+    private String pathId;
     private String visibilityTargets;
     private String useYn;
     private LocalDate useStartDate;
@@ -38,7 +38,7 @@ public class DpPanelReq {
                 .siteId(siteId)
                 .panelNm(panelNm)
                 .panelTypeCd(panelTypeCd)
-                .dispPath(dispPath)
+                .pathId(pathId)
                 .visibilityTargets(visibilityTargets)
                 .useYn(useYn)
                 .useStartDate(useStartDate)

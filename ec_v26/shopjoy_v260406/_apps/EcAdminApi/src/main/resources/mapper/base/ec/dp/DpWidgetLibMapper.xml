@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -89,7 +89,7 @@
             <if test="widgetNm != null">widget_nm = #{widgetNm},</if>
             <if test="widgetTypeCd != null">widget_type_cd = #{widgetTypeCd},</if>
             <if test="widgetLibDesc != null">widget_lib_desc = #{widgetLibDesc},</if>
-            <if test="dispPath != null">disp_path = #{dispPath},</if>
+            <if test="pathId != null">path_id = #{pathId},</if>
             <if test="thumbnailUrl != null">thumbnail_url = #{thumbnailUrl},</if>
             <if test="templateHtml != null">template_html = #{templateHtml},</if>
             <if test="configSchema != null">config_schema = #{configSchema},</if>

@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.entity;
+﻿package com.shopjoy.ecadminapi.base.sy.data.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,8 +29,8 @@ public class SyCodeGrp extends BaseEntity {
     @Column(name = "grp_nm", length = 100, nullable = false)
     private String grpNm;
 
-    @Column(name = "disp_path", length = 200)
-    private String dispPath;
+    @Column(name = "path_id", length = 21)
+    private String pathId;
 
     @Column(name = "code_grp_desc", length = 300)
     private String codeGrpDesc;

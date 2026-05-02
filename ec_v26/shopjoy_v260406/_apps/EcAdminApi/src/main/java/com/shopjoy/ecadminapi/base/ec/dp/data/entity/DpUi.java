@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.ec.dp.data.entity;
+﻿package com.shopjoy.ecadminapi.base.ec.dp.data.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,8 +36,8 @@ public class DpUi extends BaseEntity {
     @Column(name = "device_type_cd", length = 30)
     private String deviceTypeCd;
 
-    @Column(name = "ui_path", length = 200)
-    private String uiPath;
+    @Column(name = "path_id", length = 21)
+    private String pathId;
 
     @Column(name = "sort_ord")
     private Integer sortOrd;

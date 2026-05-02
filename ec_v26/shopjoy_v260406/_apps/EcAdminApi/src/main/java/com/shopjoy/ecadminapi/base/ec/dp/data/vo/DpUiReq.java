@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.ec.dp.data.vo;
+﻿package com.shopjoy.ecadminapi.base.ec.dp.data.vo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpUi;
@@ -21,7 +21,7 @@ public class DpUiReq {
     private String uiNm;
     private String uiDesc;
     private String deviceTypeCd;
-    private String uiPath;
+    private String pathId;
     private Integer sortOrd;
     private String useYn;
     private LocalDate useStartDate;
@@ -39,7 +39,7 @@ public class DpUiReq {
                 .uiNm(uiNm)
                 .uiDesc(uiDesc)
                 .deviceTypeCd(deviceTypeCd)
-                .uiPath(uiPath)
+                .pathId(pathId)
                 .sortOrd(sortOrd)
                 .useYn(useYn)
                 .useStartDate(useStartDate)

@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 사업자 (sy_biz) */
+﻿/* ShopJoy Admin - 사업자 (sy_biz) */
 window.SyBizMng = {
   name: 'SyBizMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
@@ -104,7 +104,7 @@ window.SyBizMng = {
     const blankForm = () => ({
       vendorId: null, corpNo: '', vendorNm: '', vendorNmEn: '', ceoNm: '',
       vendorType: 'SALES', vendorClassCd: '법인', vendorItem: '', vendorItem: '',
-      dispPath: null, vendorZipCode: '', vendorAddr: '', vendorAddrDetail: '',
+      pathId: null, vendorZipCode: '', vendorAddr: '', vendorAddrDetail: '',
       vendorPhone: '', vendorFax: '', vendorEmail: '', vendorHomepage: '',
       vendorBankNm: '', vendorBankAccount: '', vendorBankHolder: '',
       openDate: '', contractDate: '', vendorStatusCd: 'ACTIVE', vendorRemark: '',
@@ -196,7 +196,7 @@ window.SyBizMng = {
             <tr v-if="bizs.length===0"><td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
             <tr v-for="(b, idx) in bizs" :key="b.vendorId">
               <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-              <td><span style="font-family:monospace;font-size:11.5px;color:#374151;">{{ pathLabel(b.dispPath) || '-' }}</span></td>
+              <td><span style="font-family:monospace;font-size:11.5px;color:#374151;">{{ pathLabel(b.pathId) || '-' }}</span></td>
               <td><span class="badge" :class="fnVendorTypeBadge(b.vendorType)" style="font-size:10px;">{{ fnVendorTypeLabel(b.vendorType) }}</span></td>
               <td><span :style="{background:fnRoleCatColor(b.vendorType),color:'#fff',fontSize:'10px',fontWeight:700,padding:'2px 7px',borderRadius:'9px'}">{{ fnRoleCatLabel(b.vendorType) }}</span></td>
               <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;">{{ b.corpNo }}</code></td>
@@ -276,8 +276,8 @@ window.SyBizMng = {
             <input class="form-control" v-model="formData.vendorItem" />
           </div>
           <div class="form-group"><label class="form-label">표시경로</label>
-            <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:formData.dispPath!=null?'#374151':'#9ca3af',display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
-              <span style="flex:1;">{{ pathLabel(formData.dispPath) || '경로 선택...' }}</span>
+            <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:formData.pathId!=null?'#374151':'#9ca3af',display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
+              <span style="flex:1;">{{ pathLabel(formData.pathId) || '경로 선택...' }}</span>
               <button type="button" @click="openPathPick" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}">🔍</button>
             </div>
           </div>

@@ -12,15 +12,14 @@ import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 public class SyPath extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "path_id")
-    private Long pathId;
+    @Column(name = "path_id", length = 21)
+    private String pathId;
 
     @Column(name = "biz_cd", length = 50, nullable = false)
     private String bizCd;
 
-    @Column(name = "parent_path_id")
-    private Long parentPathId;
+    @Column(name = "parent_path_id", length = 21)
+    private String parentPathId;
 
     @Column(name = "path_label", length = 200, nullable = false)
     private String pathLabel;

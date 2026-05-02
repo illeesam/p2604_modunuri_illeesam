@@ -16,11 +16,14 @@ import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 public class SyProp extends BaseEntity {
 
     @Id
+    @Column(name = "prop_id", length = 21)
+    private String propId;
+
     @Column(name = "site_id", length = 21)
     private String siteId;
 
-    @Column(name = "disp_path", length = 200, nullable = false)
-    private String dispPath;
+    @Column(name = "path_id", length = 21)
+    private String pathId;
 
     @Column(name = "prop_key", length = 100, nullable = false)
     private String propKey;

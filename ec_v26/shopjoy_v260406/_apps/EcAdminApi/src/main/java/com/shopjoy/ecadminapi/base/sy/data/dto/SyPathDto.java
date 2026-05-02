@@ -9,9 +9,9 @@ import java.time.LocalDateTime;
 @Getter @Setter @NoArgsConstructor
 public class SyPathDto {
 
-    private Long pathId;
+    private String pathId;
     private String bizCd;
-    private Long parentPathId;
+    private String parentPathId;
     private String pathLabel;
     private Integer sortOrd;
     private String useYn;

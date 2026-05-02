@@ -203,16 +203,14 @@ window.SyMenuMng = {
       if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
-      dRows.forEach(r => { const i = menus.findIndex(m => m.menuId === r.menuId); if (i !== -1) menus.splice(i, 1); });
-      uRows.forEach(r => { const i = menus.findIndex(m => m.menuId === r.menuId); if (i !== -1) Object.assign(menus[i], { menuCode: r.menuCode, menuNm: r.menuNm, parentId: r.parentId || null, menuUrl: r.menuUrl, menuType: r.menuType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark }); });
-      let nextId = Math.max(...menus.map(m => m.menuId), 0);
-      iRows.forEach(r => { menus.push({ menuId: ++nextId, menuCode: r.menuCode, menuNm: r.menuNm, parentId: r.parentId || null, menuUrl: r.menuUrl, menuType: r.menuType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
-      const toastParts = [];
-      if (iRows.length) toastParts.push(`등록 ${iRows.length}건`);
-      if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
-      if (dRows.length) toastParts.push(`삭제 ${dRows.length}건`);
-      props.showToast(`${toastParts.join(', ')} 저장되었습니다.`);
-      handleSearchList();
+      const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
+      try {
+        await boApiSvc.syMenu.saveList(saveRows, '메뉴관리', '저장');
+        props.showToast('저장되었습니다.');
+        await handleSearchList();
+      } catch (err) {
+        props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+      }
     };
 
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };

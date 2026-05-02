@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
@@ -72,7 +72,7 @@
         UPDATE shopjoy_2604.sy_prop  /* base.sy :: SyProp :: updateSelective */
         <set>
             <if test="siteId != null">site_id = #{siteId},</if>
-            <if test="dispPath != null">disp_path = #{dispPath},</if>
+            <if test="pathId != null">path_id = #{pathId},</if>
             <if test="propKey != null">prop_key = #{propKey},</if>
             <if test="propValue != null">prop_value = #{propValue},</if>
             <if test="propLabel != null">prop_label = #{propLabel},</if>

@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.ec.dp.data.dto;
+﻿package com.shopjoy.ecadminapi.base.ec.dp.data.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +16,7 @@ public class DpWidgetLibDto {
     private String widgetNm;
     private String widgetTypeCd;
     private String widgetLibDesc;
-    private String dispPath;
+    private String pathId;
     private String thumbnailUrl;
     private String templateHtml;
     private String configSchema;

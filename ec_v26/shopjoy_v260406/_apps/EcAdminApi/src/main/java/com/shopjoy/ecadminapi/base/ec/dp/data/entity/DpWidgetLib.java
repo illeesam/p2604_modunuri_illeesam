@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.ec.dp.data.entity;
+﻿package com.shopjoy.ecadminapi.base.ec.dp.data.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,8 +35,8 @@ public class DpWidgetLib extends BaseEntity {
     @Column(name = "widget_lib_desc", columnDefinition = "TEXT")
     private String widgetLibDesc;
 
-    @Column(name = "disp_path", length = 500)
-    private String dispPath;
+    @Column(name = "path_id", length = 21)
+    private String pathId;
 
     @Column(name = "thumbnail_url", length = 500)
     private String thumbnailUrl;

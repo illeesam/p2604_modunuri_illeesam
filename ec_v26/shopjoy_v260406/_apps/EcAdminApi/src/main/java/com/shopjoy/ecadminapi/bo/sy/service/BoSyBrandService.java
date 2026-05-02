@@ -81,4 +81,28 @@ public class BoSyBrandService {
         if (repository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
+
+    @Transactional
+    public void saveList(List<SyBrand> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (SyBrand row : rows) {
+            String rs = row.getRowStatus();
+            if ("I".equals(rs)) {
+                row.setBrandId("BR" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                repository.save(row);
+            } else if ("U".equals(rs)) {
+                SyBrand entity = repository.findById(row.getBrandId())
+                    .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getBrandId()));
+                VoUtil.voCopyExclude(row, entity, "brandId^regBy^regDate");
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                repository.save(entity);
+            } else if ("D".equals(rs)) {
+                if (repository.existsById(row.getBrandId())) repository.deleteById(row.getBrandId());
+            }
+        }
+        em.flush();
+    }
 }

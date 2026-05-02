@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.vo;
+﻿package com.shopjoy.ecadminapi.base.sy.data.vo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbm;
@@ -18,7 +18,7 @@ public class SyBbmReq {
     private String siteId;
     private String bbmCode;
     private String bbmNm;
-    private String dispPath;
+    private String pathId;
     private String bbmTypeCd;
     private String allowComment;
     private String allowAttach;
@@ -39,7 +39,7 @@ public class SyBbmReq {
                 .siteId(siteId)
                 .bbmCode(bbmCode)
                 .bbmNm(bbmNm)
-                .dispPath(dispPath)
+                .pathId(pathId)
                 .bbmTypeCd(bbmTypeCd)
                 .allowComment(allowComment)
                 .allowAttach(allowAttach)

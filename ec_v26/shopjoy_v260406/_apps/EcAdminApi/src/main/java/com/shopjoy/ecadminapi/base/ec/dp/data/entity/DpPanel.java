@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.ec.dp.data.entity;
+﻿package com.shopjoy.ecadminapi.base.ec.dp.data.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -30,8 +30,8 @@ public class DpPanel extends BaseEntity {
     @Column(name = "panel_type_cd", length = 30)
     private String panelTypeCd;
 
-    @Column(name = "disp_path", length = 200)
-    private String dispPath;
+    @Column(name = "path_id", length = 21)
+    private String pathId;
 
     @Column(name = "visibility_targets", length = 200)
     private String visibilityTargets;

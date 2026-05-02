@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.dto;
+﻿package com.shopjoy.ecadminapi.base.sy.data.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,7 +30,7 @@ public class SySiteDto {
     private LocalDateTime regDate;
     private String updBy;
     private LocalDateTime updDate;
-    private String dispPath;
+    private String pathId;
 
     // ── JOIN: 필요 시 추가 ────────────────────────────────────────
 }

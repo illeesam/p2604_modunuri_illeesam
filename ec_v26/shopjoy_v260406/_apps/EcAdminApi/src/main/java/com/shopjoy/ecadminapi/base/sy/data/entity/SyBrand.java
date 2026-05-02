@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.entity;
+﻿package com.shopjoy.ecadminapi.base.sy.data.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,8 +32,8 @@ public class SyBrand extends BaseEntity {
     @Column(name = "brand_en_nm", length = 100)
     private String brandEnNm;
 
-    @Column(name = "disp_path", length = 200)
-    private String dispPath;
+    @Column(name = "path_id", length = 21)
+    private String pathId;
 
     @Column(name = "logo_url", length = 500)
     private String logoUrl;

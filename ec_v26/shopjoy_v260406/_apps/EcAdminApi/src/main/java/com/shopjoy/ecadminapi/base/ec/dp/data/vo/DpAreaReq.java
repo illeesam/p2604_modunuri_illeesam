@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.ec.dp.data.vo;
+﻿package com.shopjoy.ecadminapi.base.ec.dp.data.vo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpArea;
@@ -22,7 +22,7 @@ public class DpAreaReq {
     private String areaNm;
     private String areaTypeCd;
     private String areaDesc;
-    private String dispPath;
+    private String pathId;
     private String useYn;
     private LocalDate useStartDate;
     private LocalDate useEndDate;
@@ -40,7 +40,7 @@ public class DpAreaReq {
                 .areaNm(areaNm)
                 .areaTypeCd(areaTypeCd)
                 .areaDesc(areaDesc)
-                .dispPath(dispPath)
+                .pathId(pathId)
                 .useYn(useYn)
                 .useStartDate(useStartDate)
                 .useEndDate(useEndDate)

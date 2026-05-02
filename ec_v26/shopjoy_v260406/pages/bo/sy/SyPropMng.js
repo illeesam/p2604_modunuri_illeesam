@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 프로퍼티 관리 (좌측 트리 + 우측 CRUD 그리드) */
+﻿/* ShopJoy Admin - 프로퍼티 관리 (좌측 트리 + 우측 CRUD 그리드) */
 window.SyPropMng = {
   name: 'SyPropMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
@@ -92,10 +92,10 @@ window.SyPropMng = {
     const cfGridRows = computed(() => {
       const sp = uiState.selectedPath;
       let arr = cfFilteredBySite.value;
-      if (sp) arr = arr.filter(r => (r.dispPath || '').startsWith(sp));
+      if (sp) arr = arr.filter(r => (r.pathId || '').startsWith(sp));
       const k = applied.kw.trim().toLowerCase();
       if (k) arr = arr.filter(r =>
-        (r.dispPath||'').toLowerCase().includes(k) ||
+        (r.pathId||'').toLowerCase().includes(k) ||
         (r.propKey||'').toLowerCase().includes(k) ||
         (r.propLabel||'').toLowerCase().includes(k) ||
         (r.propValue||'').toString().toLowerCase().includes(k)
@@ -115,7 +115,7 @@ window.SyPropMng = {
       const newRow = reactive({
         propId: uiState._newId--,
         siteId: cfSiteId.value || 1,
-        dispPath: uiState.selectedPath || 'new.prop',
+        pathId: uiState.selectedPath || 'new.prop',
         propKey: 'new_key',
         propLabel: '신규 프로퍼티',
         propValue: '',
@@ -154,27 +154,14 @@ window.SyPropMng = {
       }
       const ok = await props.showConfirm('저장', `${cfDirtyRows.value.length}건의 변경사항을 저장하시겠습니까?`);
       if (!ok) return;
-      // 로컬 원본 데이터 반영
-      const list = _rawProps;
-      cfDirtyRows.value.forEach(r => {
-        if (r._status === 'I') {
-          const newId = (list.reduce((m,x) => Math.max(m, x.propId), 0) || 0) + 1;
-          const { _status, ...rest } = r;
-          list.push({ ...rest, propId: newId });
-          r.propId = newId;
-        } else if (r._status === 'U') {
-          const idx = list.findIndex(x => x.propId === r.propId);
-          if (idx >= 0) {
-            const { _status, ...rest } = r;
-            list[idx] = { ...rest };
-          }
-        } else if (r._status === 'D') {
-          const idx = list.findIndex(x => x.propId === r.propId);
-          if (idx >= 0) list.splice(idx, 1);
-        }
-      });
-      props.showToast(`${cfDirtyRows.value.length}건 저장되었습니다.`, 'success');
-      reload();
+      const saveRows = cfDirtyRows.value.map(r => ({ ...r, rowStatus: r._status }));
+      try {
+        await boApiSvc.syProp.saveList(saveRows, '속성관리', '저장');
+        props.showToast('저장되었습니다.', 'success');
+        await fetchData();
+      } catch (err) {
+        props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+      }
     };
 
     const onReset = () => {
@@ -188,7 +175,7 @@ window.SyPropMng = {
       const header = ['ID','표시경로','키','값','라벨','타입','정렬','사용','비고'];
       const lines = [header.join(',')];
       cfGridRows.value.forEach(r => {
-        lines.push([r.propId, r.dispPath, r.propKey, r.propValue, r.propLabel, r.propType, r.sortOrd, r.useYn, r.remark || '']
+        lines.push([r.propId, r.pathId, r.propKey, r.propValue, r.propLabel, r.propType, r.sortOrd, r.useYn, r.remark || '']
           .map(c => '"' + String(c).replace(/"/g,'""') + '"').join(','));
       });
       const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });

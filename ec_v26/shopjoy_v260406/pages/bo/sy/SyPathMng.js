@@ -172,24 +172,15 @@ window.SyPathMng = {
       }
       const ok = await props.showConfirm?.('저장', `${changed.length}건을 저장하시겠습니까?`);
       if (!ok) return;
-      for (const row of changed) {
-        const isNew = row._status === 'N';
-        const payload = { bizCd: row.bizCd, parentPathId: row.parentPathId, pathLabel: row.pathLabel, sortOrd: row.sortOrd, useYn: row.useYn, pathRemark: row.pathRemark };
-        try {
-          const res = isNew
-            ? await boApiSvc.syPath.create(payload, '경로관리', '등록')
-            : await boApiSvc.syPath.update(row.pathId, payload, '경로관리', '저장');
-          if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        } catch (err) {
-          const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-          if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-          props.showToast?.(msg, 'error', 0);
-          return;
-        }
+      const saveRows = changed.map(r => ({ ...r, rowStatus: r._row_status || r._status }));
+      try {
+        await boApiSvc.syPath.saveList(saveRows, '경로관리', '저장');
+        props.showToast?.('저장되었습니다.', 'success');
+        await handleSearchTree();
+        await handleGridSearch();
+      } catch (err) {
+        props.showToast?.(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
-      props.showToast?.('저장되었습니다.', 'success');
-      await handleSearchTree();
-      await handleGridSearch();
     };
 
     /* ── 부모경로 선택 모달 ── */

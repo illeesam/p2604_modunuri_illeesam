@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.vo;
+﻿package com.shopjoy.ecadminapi.base.sy.data.vo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyCodeGrp;
@@ -18,7 +18,7 @@ public class SyCodeGrpReq {
     private String siteId;
     private String codeGrp;
     private String grpNm;
-    private String dispPath;
+    private String pathId;
     private String codeGrpDesc;
     private String useYn;
     private String regBy;
@@ -32,7 +32,7 @@ public class SyCodeGrpReq {
                 .siteId(siteId)
                 .codeGrp(codeGrp)
                 .grpNm(grpNm)
-                .dispPath(dispPath)
+                .pathId(pathId)
                 .codeGrpDesc(codeGrpDesc)
                 .useYn(useYn)
                 .regBy(regBy)

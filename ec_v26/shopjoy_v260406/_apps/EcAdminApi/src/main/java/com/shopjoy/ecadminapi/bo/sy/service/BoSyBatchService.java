@@ -81,4 +81,28 @@ public class BoSyBatchService {
         if (repository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다.");
     }
+
+    @Transactional
+    public void saveList(List<SyBatch> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (SyBatch row : rows) {
+            String rs = row.getRowStatus();
+            if ("I".equals(rs)) {
+                row.setBatchId("BA" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                repository.save(row);
+            } else if ("U".equals(rs)) {
+                SyBatch entity = repository.findById(row.getBatchId())
+                    .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getBatchId()));
+                VoUtil.voCopyExclude(row, entity, "batchId^regBy^regDate");
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                repository.save(entity);
+            } else if ("D".equals(rs)) {
+                if (repository.existsById(row.getBatchId())) repository.deleteById(row.getBatchId());
+            }
+        }
+        em.flush();
+    }
 }

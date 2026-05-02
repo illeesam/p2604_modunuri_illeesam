@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.dto;
+﻿package com.shopjoy.ecadminapi.base.sy.data.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +14,7 @@ public class SyBbmDto {
     private String siteId;
     private String bbmCode;
     private String bbmNm;
-    private String dispPath;
+    private String pathId;
     private String bbmTypeCd;
     private String allowComment;
     private String allowAttach;

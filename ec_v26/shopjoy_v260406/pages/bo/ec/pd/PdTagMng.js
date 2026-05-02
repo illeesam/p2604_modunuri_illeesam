@@ -95,29 +95,21 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
       }
     };
     const saveAll = async () => {
-      const changed = window.safeArrayUtils.safeFilter(gridRows, r => r._row_status === 'N' || r._row_status === 'U');
+      const changed = window.safeArrayUtils.safeFilter(gridRows, r => ['N','I','U','D'].includes(r._row_status));
       if (!changed.length) { props.showToast('변경된 내용이 없습니다.', 'info'); return; }
-      for (const row of changed) {
+      for (const row of changed.filter(r => r._row_status !== 'D')) {
         if (!row.tagNm) { props.showToast('태그명은 필수입니다.', 'error'); return; }
-        const ok = await props.showConfirm('저장', '저장하시겠습니까?');
-        if (!ok) return;
-        const isNewRow = row._row_status === 'N';
-        const src = tags;
-        if (isNewRow) src.push({ ...row });
-        else { const si = src.findIndex(t => t.tagId === row.tagId); if (si !== -1) Object.assign(src[si], row); }
-        row._row_status = null;
-        try {
-          const res = await (isNewRow ? boApiSvc.pdTag.create({ ...row }, '태그관리', '등록') : boApiSvc.pdTag.update(row.tagId, { ...row }, '태그관리', '저장'));
-          if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-          if (props.showToast) props.showToast('저장되었습니다.', 'success');
-          await handleSearchList();
-        } catch (err) {
-          console.error('[catch-info]', err);
-          const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-          if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-          if (props.showToast) props.showToast(errMsg, 'error', 0);
-        }
-        break;
+      }
+      const ok = await props.showConfirm('저장', '저장하시겠습니까?');
+      if (!ok) return;
+      const saveRows = changed.map(r => ({ ...r, rowStatus: r._row_status === 'N' ? 'I' : r._row_status }));
+      try {
+        await boApiSvc.pdTag.saveList(saveRows, '태그관리', '저장');
+        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+        await handleSearchList();
+      } catch (err) {
+        const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
+        if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
     };
     const onSearch = async () => {

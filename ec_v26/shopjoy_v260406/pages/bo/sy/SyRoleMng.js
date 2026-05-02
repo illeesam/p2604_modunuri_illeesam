@@ -386,21 +386,14 @@ window.SyRoleMng = {
       if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
-      dRows.forEach(r => {
-        const i = roles.findIndex(x => x.roleId === r.roleId);
-        if (i !== -1) roles.splice(i, 1);
-        const rmIdxs = roleMenus.map((x,i)=>x.roleId===r.roleId?i:-1).filter(i=>i>=0).reverse(); rmIdxs.forEach(i=>roleMenus.splice(i,1));
-        const ruIdxs = roleUsers.map((x,i)=>x.roleId===r.roleId?i:-1).filter(i=>i>=0).reverse(); ruIdxs.forEach(i=>roleUsers.splice(i,1));
-      });
-      uRows.forEach(r => { const i = roles.findIndex(x => x.roleId === r.roleId); if (i !== -1) Object.assign(roles[i], { roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', roleCat: [...(r.roleCat || [])], remark: r.remark }); });
-      let nextId = Math.max(...roles.map(r => r.roleId), 0);
-      iRows.forEach(r => { roles.push({ roleId: ++nextId, roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId || null, roleType: r.roleType, sortOrd: Number(r.sortOrd) || 1, useYn: r.useYn, restrictPerm: r.restrictPerm || '없음', roleCat: [...(r.roleCat || [])], remark: r.remark, regDate: new Date().toISOString().slice(0, 10) }); });
-      const parts = [];
-      if (iRows.length) parts.push(`등록 ${iRows.length}건`);
-      if (uRows.length) parts.push(`수정 ${uRows.length}건`);
-      if (dRows.length) parts.push(`삭제 ${dRows.length}건`);
-      props.showToast(`${parts.join(', ')} 저장되었습니다.`);
-      handleSearchList();
+      const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
+      try {
+        await boApiSvc.syRole.saveList(saveRows, '역할관리', '저장');
+        props.showToast('저장되었습니다.');
+        await handleSearchList();
+      } catch (err) {
+        props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+      }
     };
 
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };

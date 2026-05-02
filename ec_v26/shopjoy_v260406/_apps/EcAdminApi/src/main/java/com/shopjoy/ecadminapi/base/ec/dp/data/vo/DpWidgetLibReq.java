@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.ec.dp.data.vo;
+﻿package com.shopjoy.ecadminapi.base.ec.dp.data.vo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidgetLib;
@@ -20,7 +20,7 @@ public class DpWidgetLibReq {
     private String widgetNm;
     private String widgetTypeCd;
     private String widgetLibDesc;
-    private String dispPath;
+    private String pathId;
     private String thumbnailUrl;
     private String templateHtml;
     private String configSchema;
@@ -40,7 +40,7 @@ public class DpWidgetLibReq {
                 .widgetNm(widgetNm)
                 .widgetTypeCd(widgetTypeCd)
                 .widgetLibDesc(widgetLibDesc)
-                .dispPath(dispPath)
+                .pathId(pathId)
                 .thumbnailUrl(thumbnailUrl)
                 .templateHtml(templateHtml)
                 .configSchema(configSchema)

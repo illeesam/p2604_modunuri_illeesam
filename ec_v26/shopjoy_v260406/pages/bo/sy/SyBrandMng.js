@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 브랜드관리 (CRUD 그리드) */
+﻿/* ShopJoy Admin - 브랜드관리 (CRUD 그리드) */
 window.SyBrandMng = {
   name: 'SyBrandMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
@@ -78,7 +78,7 @@ window.SyBrandMng = {
     let   _tempId    = -1;
     
 
-    const EDIT_FIELDS = ['brandCode', 'brandNm', 'brandEnNm', 'dispPath', 'logoUrl', 'sortOrd', 'useYn', 'remark'];
+    const EDIT_FIELDS = ['brandCode', 'brandNm', 'brandEnNm', 'pathId', 'logoUrl', 'sortOrd', 'useYn', 'remark'];
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -136,7 +136,7 @@ window.SyBrandMng = {
     const addRow = () => {
       const newRow = {
         brandId: _tempId--, brandCode: '', brandNm: '', brandEnNm: '',
-        dispPath: uiState.selectedPath || 'fashion.misc',
+        pathId: uiState.selectedPath || 'fashion.misc',
         logoUrl: '', sortOrd: gridRows.length + 1, useYn: 'Y', remark: '',
         _row_status: 'I', _row_check: false, _row_org: null,
       };
@@ -205,32 +205,14 @@ window.SyBrandMng = {
       const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?',
         { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
-
-      if (!brands) brands = [];
-      dRows.forEach(r => {
-        const idx = brands.findIndex(b => b.brandId === r.brandId);
-        if (idx !== -1) brands.splice(idx, 1);
-      });
-      uRows.forEach(r => {
-        const idx = brands.findIndex(b => b.brandId === r.brandId);
-        if (idx !== -1) Object.assign(brands[idx],
-          { brandCode: r.brandCode, brandNm: r.brandNm, brandEnNm: r.brandEnNm,
-            logoUrl: r.logoUrl, sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark });
-      });
-      let nextId = Math.max(...brands.map(b => b.brandId), 0);
-      iRows.forEach(r => {
-        brands.push({
-          brandId: ++nextId, brandCode: r.brandCode, brandNm: r.brandNm, brandEnNm: r.brandEnNm,
-          logoUrl: r.logoUrl, sortOrd: r.sortOrd, useYn: r.useYn, remark: r.remark,
-          regDate: new Date().toISOString().slice(0, 10),
-        });
-      });
-      const toastParts = [];
-      if (iRows.length) toastParts.push(`등록 ${iRows.length}건`);
-      if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
-      if (dRows.length) toastParts.push(`삭제 ${dRows.length}건`);
-      props.showToast(`${toastParts.join(', ')} 저장되었습니다.`);
-      handleSearchList();
+      const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
+      try {
+        await boApiSvc.syBrand.saveList(saveRows, '브랜드관리', '저장');
+        props.showToast('저장되었습니다.');
+        await handleSearchList();
+      } catch (err) {
+        props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+      }
     };
 
     /* ── 드래그 ── */
@@ -259,7 +241,7 @@ window.SyBrandMng = {
       gridRows.filter(r => r._row_status !== 'D'),
       [
         { label: 'ID',       key: 'brandId' },
-        { label: '표시경로',   key: 'dispPath' },
+        { label: '표시경로',   key: 'pathId' },
         { label: '브랜드코드', key: 'brandCode' },
         { label: '브랜드명',  key: 'brandNm' },
         { label: '영문명',    key: 'brandEnNm' },
