@@ -73,7 +73,7 @@
           try {
             var stack = new Error().stack.split('\n');
             for (var si = 1; si < stack.length; si++) {
-              if (!stack[si].includes('foApiAxios.js') && !stack[si].includes('axios.min.js')) {
+              if (!stack[si].includes('foApiAxios.js') && !stack[si].includes('axios.min.js') && !stack[si].includes('coApiSvc.js') && !stack[si].includes('foApiSvc.js')) {
                 var fm = stack[si].match(/([a-zA-Z0-9_-]+\.js)/);
                 var fnm = stack[si].match(/at\s+(?:Object\.)?([a-zA-Z0-9_$.<>]+)\s+/);
                 var lm = stack[si].match(/:(\d+):\d+[\)$]/);

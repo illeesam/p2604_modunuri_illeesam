@@ -45,7 +45,7 @@
       try {
         const stack = new Error().stack.split('\n');
         // 내부 라이브러리 프레임을 건너뛰고 실제 업무 컴포넌트 프레임을 찾음
-        const SKIP = ['coUtil.js', 'vue.global', 'axios.min.js', 'boApiAxios.js', 'foApiAxios.js', 'pinia.iife.js', '<anonymous>'];
+        const SKIP = ['coUtil.js', 'vue.global', 'axios.min.js', 'boApiAxios.js', 'foApiAxios.js', 'coApiSvc.js', 'boApiSvc.js', 'foApiSvc.js', 'pinia.iife.js', '<anonymous>'];
         let callerLine = '';
         for (let i = 1; i < stack.length; i++) {
           const line = stack[i] || '';
