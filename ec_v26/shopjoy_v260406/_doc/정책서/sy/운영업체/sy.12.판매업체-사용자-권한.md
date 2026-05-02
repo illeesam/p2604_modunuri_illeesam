@@ -1,4 +1,4 @@
-# sy.12. 판매업체 · 사용자 · 권한 정책
+﻿# sy.12. 판매업체 · 사용자 · 권한 정책
 
 ## 목적
 멀티벤더 플랫폼에서 상품을 판매하는 판매업체,
@@ -233,7 +233,7 @@ SUSPENDED → ACTIVE  (정지 해제)
 | pageId | 라벨 |
 |--------|------|
 | `syBizMng` | 시스템 > 업체 |
-| `syBizUserMng` | 시스템 > 업체사용자 |
+| `syVendorUserMng` | 시스템 > 업체사용자 |
 | `syRoleMng` | 시스템 > 역할관리 |
 | `syMenuMng` | 시스템 > 메뉴관리 |
 | `stConfigMng` | 정산 > 정산기준관리 |

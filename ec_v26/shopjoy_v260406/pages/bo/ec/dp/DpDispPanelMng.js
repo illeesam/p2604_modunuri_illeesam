@@ -217,8 +217,10 @@ window.DpDispPanelMng = {
       searchParam.dispTime = now.toTimeString().slice(0, 5);
     };
 
-    const buildSearchParams = () =>
-      Object.fromEntries(Object.entries(searchParam).filter(([k, v]) => k !== 'dateRange' && v !== '' && v !== null && v !== undefined));
+    const buildSearchParams = () => ({
+      ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
+      ...Object.fromEntries(Object.entries(searchParam).filter(([k, v]) => k !== 'dateRange' && v !== '' && v !== null && v !== undefined)),
+    });
 
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData(buildSearchParams()); };
 
@@ -342,7 +344,7 @@ window.DpDispPanelMng = {
     const onWidgetDragEnd = () => { uiState.widgetDragPanel = null; uiState.widgetDragSrcWi = null; uiState.widgetDragOverWi = null; };
 
     /* ── 표시경로 트리 (sy_path 기반) ── */
-    const selectPathNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; };
+    const selectPathNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchData(buildSearchParams()); };
 
     /* ── 표시경로 (영역별 그룹) ── */
     const _initSearchParam = () => {
@@ -455,7 +457,7 @@ window.DpDispPanelMng = {
   <div style="flex:1;min-width:0;">
   <div class="card">
     <div class="toolbar">
-      <span class="list-title">전시패널 목록 <span class="list-count">{{ cfFiltered.length }}건</span></span>
+      <span class="list-title">전시패널 목록 <span class="list-count">{{ cfFiltered.length }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>

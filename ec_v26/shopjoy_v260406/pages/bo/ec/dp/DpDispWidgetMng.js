@@ -63,6 +63,7 @@ window.DpDispWidgetMng = {
         const libParams = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...getSortParam(),
+          ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
           ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
           ...(kw   ? { kw: kw.trim() }      : {}),
           ...(type ? { widgetType: type }    : {}),
@@ -140,7 +141,7 @@ window.DpDispWidgetMng = {
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
     /* ── 표시경로 트리 ── */
-    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; };
+    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchData(); };
     const handleDelete = async (d) => {
       const ok = await props.showConfirm('삭제', '삭제하시겠습니까?');
       if (!ok) return;
@@ -222,8 +223,9 @@ window.DpDispWidgetMng = {
   <div style="flex:1;min-width:0;">
   <!-- ── 목록 ───────────────────────────────────────────────────────────── -->
   <div class="card" style="padding:0;">
-    <div style="padding:12px 18px;border-bottom:1px solid #f0f0f0;">
+    <div style="padding:12px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;">
       <span style="font-size:13px;color:#555;">총 <b>{{ pager.pageTotalCount }}</b>건</span>
+      <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;">#{{ uiState.selectedPath }}</span>
     </div>
 
     <table class="bo-table">

@@ -28,7 +28,7 @@ window.SySiteMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.sySite.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, '사이트관리', '목록조회');
+        const res = await boApiSvc.sySite.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, '사이트관리', '목록조회');
         const data = res.data?.data;
         sites.splice(0, sites.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || sites.length;
@@ -58,7 +58,7 @@ window.SySiteMng = {
 
 
     /* ── 좌측 표시경로 트리 ── */
-    const selectNode = (path) => { uiState.selectedPath = path; };
+    const selectNode = (path) => { uiState.selectedPath = path; pager.pageNo = 1; handleSearchList(); };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
@@ -166,7 +166,6 @@ const detailModal = reactive({
     const exportExcel = () => boUtil.exportCsv(sites, [{label:'ID',key:'siteId'},{label:'사이트코드',key:'siteCode'},{label:'사이트명',key:'siteNm'},{label:'도메인',key:'domain'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '사이트목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
-    watch(() => uiState.selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
     // ── return ───────────────────────────────────────────────────────────────
@@ -220,7 +219,7 @@ const detailModal = reactive({
     <div>
 <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사이트목록 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사이트목록 <span class="list-count">{{ pager.pageTotalCount }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>

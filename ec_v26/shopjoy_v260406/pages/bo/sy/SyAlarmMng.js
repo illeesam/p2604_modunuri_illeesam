@@ -31,6 +31,7 @@ window.SyAlarmMng = {
         const res = await boApiSvc.syAlarm.getPage({
             pageNo: pager.pageNo, pageSize: pager.pageSize,
             ...getSortParam(),
+            ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           }, '알람관리', '목록조회');
         const data = res.data?.data;
@@ -62,7 +63,7 @@ window.SyAlarmMng = {
 
 
     /* ── 좌측 표시경로 트리 ── */
-    const selectNode = (path) => { uiState.selectedPath = path; };
+    const selectNode = (path) => { uiState.selectedPath = path; pager.pageNo = 1; handleSearchList(); };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
@@ -161,7 +162,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const exportExcel = () => boUtil.exportCsv(alarms, [{label:'ID',key:'alarmId'},{label:'유형',key:'alarmTypeCd'},{label:'채널',key:'channelCd'},{label:'내용',key:'content'},{label:'상태',key:'statusCd'},{label:'발송일',key:'sendDate'}], '알림목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
-    watch(() => uiState.selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
     // ── return ───────────────────────────────────────────────────────────────
@@ -209,7 +209,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     <div>
 <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>알림목록 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>알림목록 <span class="list-count">{{ pager.pageTotalCount }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>

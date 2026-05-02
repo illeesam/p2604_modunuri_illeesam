@@ -1,4 +1,4 @@
-# sy.15. 프로그램관리업체 · 사용자 · 권한 정책
+﻿# sy.15. 프로그램관리업체 · 사용자 · 권한 정책
 
 ## 목적
 플랫폼 시스템의 개발·유지보수·기술지원을 담당하는 외부 업체(SI업체·유지보수 업체),
@@ -261,7 +261,7 @@ SUPER_ADMIN만 역할 할당 가능하다.
 | pageId | 라벨 |
 |--------|------|
 | `syBizMng` | 시스템 > 업체 (SUPER_ADMIN 접근) |
-| `syBizUserMng` | 시스템 > 업체사용자 (SUPER_ADMIN 전용) |
+| `syVendorUserMng` | 시스템 > 업체사용자 (SUPER_ADMIN 전용) |
 | `syRoleMng` | 시스템 > 역할관리 (PROG_ 역할 트리 관리) |
 | `syBatchMng` | 시스템 > 배치스케줄관리 |
 

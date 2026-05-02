@@ -789,6 +789,47 @@ public List<XxxDto> getMyXxx(Map<String, Object> p) {
 
 ---
 
+## Vue 3 watch / computed 최소화 원칙 ⭐
+
+**방침**: `watch`와 `computed`는 꼭 필요한 경우에만 사용한다. 가능하면 직접 함수 호출로 대체한다.
+
+### watch() 허용 케이스만 사용
+
+| 허용 | 예시 |
+|---|---|
+| `isAppReady` 감시 (앱 스토어 비동기 준비) | `watch(isAppReady, v => { if (v) fnLoadCodes(); })` |
+| 외부 `props.*` 변경 감시 | `watch(() => props.editId, handleLoadDetail)` |
+| UI 탭/뷰모드 window 영속화 | `watch(() => uiState.tab, v => { window._xxState.tab = v; })` |
+| 에디터 초기화 등 복잡 사이드 이펙트 | Quill on/off 전환 |
+
+```js
+// ❌ 금지 — watch로 조회 트리거
+watch(() => uiState.selectedPath, () => handleSearchList());
+
+// ✅ 대체 — 이벤트 함수에서 직접 호출
+const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchList(); };
+```
+
+### computed() 허용 케이스만 사용
+
+| 허용 | 예시 |
+|---|---|
+| 여러 reactive 값에서 파생, 템플릿 반복 사용 | `cfIsNew`, `cfDetailEditId`, `cfTree` (트리 빌드) |
+| 클라이언트 전체 로드 목록의 필터·페이징 | `cfFiltered`, `cfPageList`, `cfPageNums` |
+| 앱 초기화 복합 조건 | `isAppReady` |
+
+```js
+// ❌ 불필요 — 단순 getter를 computed로 래핑
+const cfSiteNm = computed(() => boUtil.getSiteNm());
+const cfIsNew  = computed(() => !props.editId);
+
+// ✅ 대체 — 일반 fn 함수 또는 템플릿 직접 표현식
+const fnSiteNm = () => boUtil.getSiteNm();          // template: {{ fnSiteNm() }}
+// template: <span v-if="!editId">신규</span>
+```
+
+---
+
 ## Vue 3 초기화 순서 (Composition API)
 
 **핵심 원칙**: `ref()`, `reactive()`, `computed()` 선언은 반드시 `watch()`, `watchEffect()`보다 **먼저** 정의.

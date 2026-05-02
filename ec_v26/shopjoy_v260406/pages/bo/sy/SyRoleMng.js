@@ -53,7 +53,7 @@ window.SyRoleMng = {
     /* ── 좌측 표시경로 트리 ── */
         const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
-    const selectNode = (path) => { uiState.selectedPath = path; };
+    const selectNode = (path) => { uiState.selectedPath = path; handleSearchList(); };
     const cfTree = computed(() => {
       const t = boUtil.buildRoleTree();
       const rolesById = Object.fromEntries((roles || []).map(r => [r.roleId, r]));
@@ -492,11 +492,7 @@ window.SyRoleMng = {
       [{label:'ID',key:'roleId'},{label:'역할코드',key:'roleCode'},{label:'역할명',key:'roleNm'},{label:'상위ID',key:'parentId'},{label:'유형',key:'roleType'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'제한',key:'restrictPerm'},{label:'비고',key:'remark'}],
       '역할목록.csv'
     );
-    /* 트리 path 변경 시 자동 fetch */
-
-    watch(() => uiState.selectedPath, () => { handleSearchList(); });
-
-    watch(() => searchParam.treeCatFilter, () => { handleSearchList(); });
+    const onTreeCatChange = () => { handleSearchList(); };
 
 
     // ── return ───────────────────────────────────────────────────────────────
@@ -506,7 +502,7 @@ window.SyRoleMng = {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       cfSiteNm, ROLE_TYPES, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, fnPermColor, depthBullet, depthColor, fnStatusClass,
-      searchParam, onSearch, onReset,
+      searchParam, onSearch, onReset, onTreeCatChange,
       gridRows,
       setFocused, onOpenSetting, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
@@ -549,7 +545,7 @@ window.SyRoleMng = {
   <div style="display:grid;grid-template-columns:20fr 80fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 역할</span></div>
-      <select v-model="searchParam.treeCatFilter" style="width:100%;padding:4px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:5px;margin-bottom:8px;">
+      <select v-model="searchParam.treeCatFilter" @change="onTreeCatChange" style="width:100%;padding:4px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:5px;margin-bottom:8px;">
         <option value="">역할구분 전체</option>
         <option v-for="c in codes.role_cats" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
       </select>
@@ -565,7 +561,7 @@ window.SyRoleMng = {
 <!-- ── CRUD 그리드 ───────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>역할목록 <span class="list-count">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>역할목록 <span class="list-count">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>

@@ -13,7 +13,7 @@ window.SyBatchMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.syBatch.getPage({ pageNo: 1, pageSize: 10000 }, '배치관리', '목록조회');
+        const res = await boApiSvc.syBatch.getPage({ pageNo: 1, pageSize: 10000, ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}) }, '배치관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         batches.splice(0, batches.length, ...list);
         gridRows.splice(0);
@@ -41,7 +41,7 @@ window.SyBatchMng = {
 
 
     /* ── 좌측 표시경로 트리 ── */
-    const selectNode = (path) => { uiState.selectedPath = path; };
+    const selectNode = (path) => { uiState.selectedPath = path; handleSearchList(); };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
@@ -354,7 +354,6 @@ window.SyBatchMng = {
     );
     /* 트리 path 변경 시 자동 fetch */
 
-    watch(() => uiState.selectedPath, () => { handleSearchList(); });
 
 
     // ── return ───────────────────────────────────────────────────────────────
@@ -420,7 +419,7 @@ window.SyBatchMng = {
 <!-- ── CRUD 그리드 ───────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>배치목록 <span class="list-count">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>배치목록 <span class="list-count">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>

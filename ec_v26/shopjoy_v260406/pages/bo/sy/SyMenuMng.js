@@ -33,7 +33,7 @@ window.SyMenuMng = {
     const searchParam = reactive(_initSearchParam());
 
     /* 좌측 메뉴 트리 */
-    const selectNode = (id) => { uiState.selectedTreeId = id; };
+    const selectNode = (id) => { uiState.selectedTreeId = id; handleSearchList(); };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
@@ -73,7 +73,6 @@ window.SyMenuMng = {
       return boUtil.collectDescendantIds(menus, 'menuId', 'parentId', uiState.selectedTreeId);
     });
 
-    watch(() => uiState.selectedTreeId, () => { handleSearchList(); });
 
 
 
@@ -284,7 +283,7 @@ window.SyMenuMng = {
     <div>
 <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>메뉴목록 <span class="list-count">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>메뉴목록 <span class="list-count">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span><span v-if="uiState.selectedTreeId != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedTreeId }}</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>

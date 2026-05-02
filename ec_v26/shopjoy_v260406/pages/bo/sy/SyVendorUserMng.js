@@ -93,14 +93,6 @@ window.SyVendorUserMng = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      handleLoadData();
-      expandAll();
-      handleLoadDetail();
-    });
-
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
       const codeStore = window.sfGetBoCodeStore?.();
@@ -120,10 +112,14 @@ window.SyVendorUserMng = {
 
     // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      handleLoadData();
+      expandAll();
+      handleLoadDetail();
     });
 
     const cfVendorMap = computed(() => Object.fromEntries(vendors.map(v => [v.vendorId, v])));
@@ -379,8 +375,6 @@ window.SyVendorUserMng = {
     });
     const fnPermBadgeColor = (p) => ({관리:'#f59e0b',쓰기:'#16a34a',읽기:'#2563eb',차단:'#e8587a'}[p]||'#9ca3af');
 
-    const searchVendorId = Vue.toRef(uiState, 'searchVendorId');
-
     // ── return ───────────────────────────────────────────────────────────────
 
     return {
@@ -459,8 +453,53 @@ window.SyVendorUserMng = {
         </tr>
       </tbody>
     </table>
+    <bo-pager :pager="bizPager" :on-set-page="setBizPage" />
+  </div>
+
+  <!-- ── 사용자 목록 ─────────────────────────────────────────────────────── -->
+  <div v-if="uiState.searchVendorId != null" class="card" style="margin-top:16px;">
+    <div class="toolbar">
+      <span class="list-title">
+        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+        사용자목록
+        <span class="list-count">{{ vendorUsers.length }}건</span>
+      </span>
+      <button class="btn btn-primary btn-sm" @click="openNew">+ 신규등록</button>
+    </div>
+    <table class="bo-table">
+      <thead><tr>
+        <th style="width:36px;text-align:center;">번호</th>
+        <th>이름</th><th>직위</th><th>부서</th>
+        <th>휴대전화</th><th>이메일</th>
+        <th style="width:80px;text-align:center;">상태</th>
+        <th style="width:70px;text-align:right;">관리</th>
+      </tr></thead>
+      <tbody>
+        <tr v-if="uiState.loading"><td colspan="8" style="text-align:center;padding:20px;color:#aaa;">로딩중...</td></tr>
+        <tr v-else-if="!(pager.pageList||[]).length"><td colspan="8" style="text-align:center;color:#999;padding:20px;">데이터가 없습니다.</td></tr>
+        <tr v-for="(u, uidx) in (pager.pageList||[])" :key="u.vendorUserId"
+          :style="{cursor:'pointer',background:formData.vendorUserId===u.vendorUserId?'#fff0f4':'transparent'}"
+          @click="openEdit(u)">
+          <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo-1)*pager.pageSize + uidx + 1 }}</td>
+          <td style="font-weight:600;">{{ u.memberNm }}</td>
+          <td style="font-size:12px;color:#666;">{{ u.positionCd }}</td>
+          <td style="font-size:12px;color:#666;">{{ u.vendorUserDeptNm }}</td>
+          <td style="font-size:12px;">{{ u.vendorUserMobile }}</td>
+          <td style="font-size:12px;">{{ u.vendorUserEmail }}</td>
+          <td style="text-align:center;">
+            <span class="badge" :class="fnStatusBadge(u.vendorUserStatusCd)">{{ fnStatusLabel(u.vendorUserStatusCd) }}</span>
+          </td>
+          <td style="text-align:right;">
+            <button class="btn btn-danger btn-xs" @click.stop="handleDeleteRow(u)">삭제</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-      </div>
+  </div>
+  <div v-else class="card" style="margin-top:16px;text-align:center;padding:30px;color:#aaa;">
+    상단 목록에서 업체를 선택하면 사용자 목록이 표시됩니다.
+  </div>
 
       <!-- ── 인라인 폼 ────────────────────────────────────────────────────── -->
       <div v-if="uiState.formMode" class="card" style="margin-top:16px;border:2px solid #e8587a;">

@@ -56,7 +56,11 @@ window.SyPathMng = {
     const uiState = reactive({ selectedPathId: null });
 
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
-    const selectNode = (id) => { uiState.selectedPathId = (uiState.selectedPathId === id) ? null : id; };
+    const selectNode = (id) => {
+      uiState.selectedPathId = (uiState.selectedPathId === id) ? null : id;
+      pager.pageNo = 1;
+      handleGridSearch();
+    };
     const expandAll = () => {
       expanded.clear(); expanded.add(null);
       const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); };
@@ -105,8 +109,6 @@ window.SyPathMng = {
       await handleSearchTree();
       await handleGridSearch();
     });
-
-    watch(() => uiState.selectedPathId, async () => { pager.pageNo = 1; await handleGridSearch(); });
 
     const onSearch = async () => { pager.pageNo = 1; await handleGridSearch(); };
     const onReset = async () => {

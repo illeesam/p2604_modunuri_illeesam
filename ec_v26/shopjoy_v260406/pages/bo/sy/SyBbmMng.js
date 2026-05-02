@@ -12,7 +12,7 @@ window.SyBbmMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.syBbm.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, '게시판모드관리', '목록조회');
+        const res = await boApiSvc.syBbm.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, '게시판모드관리', '목록조회');
         const data = res.data?.data;
         bbms.splice(0, bbms.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || bbms.length;
@@ -28,7 +28,7 @@ window.SyBbmMng = {
       }
     };
     /* 표시경로 트리/픽커 (sy_path biz_cd=sy_bbm) */
-    const selectNode = (id) => { uiState.selectedPath = id; };
+    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchList(); };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
@@ -163,7 +163,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     <div>
       <div class="card">
         <div class="toolbar">
-          <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>게시판목록 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
+          <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>게시판목록 <span class="list-count">{{ pager.pageTotalCount }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span></span>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
             <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>

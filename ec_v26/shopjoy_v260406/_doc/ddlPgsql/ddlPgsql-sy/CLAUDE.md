@@ -1,4 +1,4 @@
-# SY 도메인 DDL
+﻿# SY 도메인 DDL
 
 시스템(SY) 도메인 DDL 파일 목록. 테이블 추가 시 이 목록에도 추가할 것.
 
@@ -74,7 +74,7 @@
 | `syCodeMng` | 시스템 > 공통코드관리 | sy_code_grp, sy_code |
 | `syBrandMng` | 시스템 > 브랜드관리 | sy_brand |
 | `syBizMng` | 시스템 > 업체 | sy_vendor, sy_vendor_content, sy_vendor_brand |
-| `syBizUserMng` | 시스템 > 업체사용자 | sy_vendor_user |
+| `syVendorUserMng` | 시스템 > 업체사용자 | sy_vendor_user |
 | `syAttachMng` | 시스템 > 첨부관리 | sy_attach_grp, sy_attach |
 | `syTemplateMng` | 시스템 > 템플릿관리 | sy_template |
 | `syBatchMng` | 시스템 > 배치스케줄관리 | sy_batch, sy_batch_hist, sy_batch_log |

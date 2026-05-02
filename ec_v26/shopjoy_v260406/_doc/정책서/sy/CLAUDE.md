@@ -1,4 +1,4 @@
-# 정책서/sy/ — 시스템(System) 도메인 정책
+﻿# 정책서/sy/ — 시스템(System) 도메인 정책
 
 멀티사이트 플랫폼, 사용자·권한·메뉴·코드·업체 및 개발 표준 정책.
 
@@ -42,7 +42,7 @@
 | `syCodeMng` | 시스템 > 공통코드관리 |
 | `syBrandMng` | 시스템 > 브랜드관리 |
 | `syBizMng` | 시스템 > 업체 |
-| `syBizUserMng` | 시스템 > 업체사용자 |
+| `syVendorUserMng` | 시스템 > 업체사용자 |
 | `syUserMng` | 시스템 > 사용자관리 |
 | `syDeptMng` | 시스템 > 부서관리 |
 | `syRoleMng` | 시스템 > 역할관리 |

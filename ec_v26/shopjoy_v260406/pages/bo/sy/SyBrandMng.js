@@ -25,6 +25,7 @@ window.SyBrandMng = {
       try {
         const params = {
           pageNo: 1, pageSize: 10000,
+          ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
         };
         const res = await boApiSvc.syBrand.getPage(params, '브랜드관리', '목록조회');
@@ -250,7 +251,7 @@ window.SyBrandMng = {
       '브랜드목록.csv'
     );
 
-    const onPathSelect = (pathId) => { uiState.selectedPath = pathId; };
+    const onPathSelect = (pathId) => { uiState.selectedPath = pathId; handleSearchList(); };
 
     // ★ onMounted
     onMounted(() => {
@@ -258,7 +259,6 @@ window.SyBrandMng = {
       handleSearchList('DEFAULT');
     });
 
-    watch(() => uiState.selectedPath, () => handleSearchList());
 
     // ── return ───────────────────────────────────────────────────────────────
 
@@ -318,7 +318,7 @@ window.SyBrandMng = {
       <span class="list-title">
         <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
         브랜드목록
-        <span v-if="uiState.selectedPath" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">{{ uiState.selectedPath }}</span>
+        <span v-if="uiState.selectedPath" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span>
         <span class="list-count">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span>
       </span>
       <div style="display:flex;gap:6px;">

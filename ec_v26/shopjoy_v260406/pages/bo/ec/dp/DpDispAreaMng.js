@@ -167,7 +167,7 @@ const searchParam = reactive(_initSearchParam());
     </div>
     <div class="card">
       <div class="toolbar">
-        <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
+        <span class="list-count">총 {{ pager.pageTotalCount }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span>
         <button class="btn btn-primary btn-sm" @click="openNew">✚ 신규등록</button>
       </div>
       <table class="bo-table">

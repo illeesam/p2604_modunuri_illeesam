@@ -1,41 +1,18 @@
-/* ShopJoy Admin - 회원그룹관리 */
+/* ShopJoy Admin - 회원그룹관리 (CRUD 그리드) */
 window.MbMemGroupMng = {
   name: 'MbMemGroupMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const groups = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({ member_group_types: [], use_yn: [] });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, checkAll: false, focusedIdx: null });
+    const codes = reactive({ use_yn: [] });
+    const searchParam = reactive({ kw: '', use: '' });
+    const gridRows = reactive([]);
+    let _tempId = -1;
 
-    // onMounted에서 API 로드
-    const handleSearchList = async (searchType = 'DEFAULT') => {
-      uiState.loading = true;
-      try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
-        const res = await boApiSvc.mbMemGroup.getPage(params, '회원그룹관리', '조회');
-        const list = res.data?.data?.pageList || res.data?.data?.list || [];
-        groups.splice(0, groups.length, ...list);
-        gridRows.splice(0);
-        list.forEach(g => gridRows.push({ ...g, _row_status: null }));
-        pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
-        pager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
-        Object.assign(pager.pageCond, res.data?.data?.pageCond || pager.pageCond);
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-      } finally {
-        uiState.loading = false;
-      }
-    };
+    const EDIT_FIELDS = ['groupNm', 'groupMemo', 'useYn'];
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
-    });
-const isAppReady = computed(() => {
+    const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
       const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
@@ -45,7 +22,6 @@ const isAppReady = computed(() => {
       try {
         const codeStore = window.sfGetBoCodeStore?.();
         if (!codeStore?.snGetGrpCodes) return;
-        codes.member_group_types = await codeStore.snGetGrpCodes('MEMBER_GROUP_TYPE') || [];
         codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
         uiState.isPageCodeLoad = true;
       } catch (err) {
@@ -53,135 +29,233 @@ const isAppReady = computed(() => {
       }
     };
 
-    // ── watch ────────────────────────────────────────────────────────────────
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
+    const makeRow = (b) => ({
+      ...b,
+      _row_status: 'N',
+      _row_check: false,
+      _row_org: EDIT_FIELDS.reduce((acc, f) => { acc[f] = b[f]; return acc; }, {}),
     });
 
-  const _initSearchParam = () => ({ kw: '', use: '' });
-  const searchParam = reactive(_initSearchParam());
-    const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    const gridRows   = reactive([]);
-    let   _tempId    = -1;
-
-
-    const addRow       = () => { gridRows.unshift({ groupId: 'G' + (_tempId--), siteId: 1, groupNm: '', groupMemo: '', memberCnt: 0, useYn: 'Y', _row_status: 'N' }); };
-    const onCellChange = (idx) => { if (gridRows[idx]._row_status !== 'N') gridRows[idx]._row_status = 'U'; };
-    const handleDeleteRow    = async (idx) => {
-      const row = gridRows[idx];
-      if (row._row_status === 'N') { gridRows.splice(idx, 1); return; }
-      const ok = await props.showConfirm('삭제', `[${row.groupNm}] 그룹을 삭제하시겠습니까?`);
-      if (!ok) return;
-      const si = groups.findIndex(g => g.groupId === row.groupId);
-      if (si !== -1) groups.splice(si, 1);
-      gridRows.splice(idx, 1);
+    const handleSearchList = async () => {
+      uiState.loading = true;
       try {
-        const res = await boApiSvc.mbMemGroup.remove(row.groupId, '회원그룹관리', '삭제');
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+        const params = {
+          pageNo: 1, pageSize: 10000,
+          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+        };
+        const res = await boApiSvc.mbMemGroup.getPage(params, '회원그룹관리', '목록조회');
+        const list = res.data?.data?.pageList || res.data?.data?.list || [];
+        gridRows.splice(0, gridRows.length, ...list.map(b => makeRow(b)));
+        uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        uiState.error = err.message;
+      } finally {
+        uiState.loading = false;
       }
     };
-    const handleSaveAll = async () => {
-      const changed = window.safeArrayUtils.safeFilter(gridRows, r => ['N','I','U','D'].includes(r._row_status));
-      if (!changed.length) { props.showToast('변경된 내용이 없습니다.', 'info'); return; }
-      for (const row of changed.filter(r => r._row_status !== 'D')) {
-        if (!row.groupNm) { props.showToast('그룹명은 필수입니다.', 'error'); return; }
+
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      handleSearchList();
+    });
+
+    const onSearch = async () => { await handleSearchList(); };
+    const onReset = () => { Object.assign(searchParam, { kw: '', use: '' }); handleSearchList(); };
+
+    const setFocused = (idx) => { uiState.focusedIdx = idx; };
+
+    const onCellChange = (row) => {
+      if (row._row_status === 'I' || row._row_status === 'D') return;
+      const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f]));
+      row._row_status = changed ? 'U' : 'N';
+    };
+
+    const addRow = () => {
+      const newRow = {
+        groupId: _tempId--, groupNm: '', groupMemo: '', memberCnt: 0, useYn: 'Y',
+        _row_status: 'I', _row_check: false, _row_org: null,
+      };
+      const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
+      gridRows.splice(insertAt, 0, newRow);
+      uiState.focusedIdx = insertAt;
+    };
+
+    const deleteRow = (idx) => {
+      const row = gridRows[idx];
+      if (row._row_status === 'I') {
+        gridRows.splice(idx, 1);
+        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
+      } else {
+        row._row_status = 'D';
       }
-      const ok = await props.showConfirm('저장', '저장하시겠습니까?');
+    };
+
+    const cancelRow = (idx) => {
+      const row = gridRows[idx];
+      if (row._row_status === 'I') {
+        gridRows.splice(idx, 1);
+        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
+      } else {
+        if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; });
+        row._row_status = 'N';
+      }
+    };
+
+    const deleteRows = () => {
+      for (let i = gridRows.length - 1; i >= 0; i--) {
+        if (!gridRows[i]._row_check) continue;
+        if (gridRows[i]._row_status === 'I') gridRows.splice(i, 1);
+        else gridRows[i]._row_status = 'D';
+      }
+    };
+
+    const cancelChecked = () => {
+      const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.groupId));
+      if (!ids.size) { props.showToast('취소할 행을 선택해주세요.', 'info'); return; }
+      for (let i = gridRows.length - 1; i >= 0; i--) {
+        const row = gridRows[i];
+        if (!ids.has(row.groupId)) continue;
+        if (row._row_status === 'N') continue;
+        if (row._row_status === 'I') { gridRows.splice(i, 1); }
+        else if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
+      }
+    };
+
+    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
+
+    const handleSave = async () => {
+      const iRows = gridRows.filter(r => r._row_status === 'I');
+      const uRows = gridRows.filter(r => r._row_status === 'U');
+      const dRows = gridRows.filter(r => r._row_status === 'D');
+      if (!iRows.length && !uRows.length && !dRows.length) {
+        props.showToast('변경된 데이터가 없습니다.', 'error'); return;
+      }
+      for (const r of [...iRows, ...uRows]) {
+        if (!r.groupNm) {
+          props.showToast('그룹명은 필수입니다.', 'error'); return;
+        }
+      }
+      const details = [];
+      if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
+      if (uRows.length) details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' });
+      if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
+      const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
-      const saveRows = changed.map(r => ({ ...r, rowStatus: r._row_status === 'N' ? 'I' : r._row_status }));
+      const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
       try {
         await boApiSvc.mbMemGroup.saveList(saveRows, '회원그룹관리', '저장');
-        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+        props.showToast('저장되었습니다.');
         await handleSearchList();
       } catch (err) {
-        const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };
-    const onSearch = async () => {
-      pager.pageNo = 1;
-      await handleSearchList('DEFAULT');
+
+    const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
+    const cfVisibleCount = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
+
+    return {
+      uiState, codes, searchParam, gridRows,
+      onSearch, onReset, setFocused, onCellChange,
+      addRow, deleteRow, cancelRow, deleteRows, cancelChecked, toggleCheckAll,
+      handleSave, fnStatusClass, cfVisibleCount,
     };
-
-    const onReset = () => {
-      Object.assign(searchParam, _initSearchParam());
-      onSearch();
-    };
-
-    const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
-    const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
-
-    // ── return ───────────────────────────────────────────────────────────────
-
-    return { groups, uiState, codes, searchParam, pager, setPage, onSearch, onReset,
-             gridRows, addRow, onCellChange, handleDeleteRow, handleSaveAll, fnYnBadge, onSizeChange };
   },
   template: `
 <div>
   <div class="page-title">회원그룹관리</div>
-    <div class="card">
-      <div class="search-bar">
-        <label class="search-label">그룹명</label>
-        <input class="form-control" v-model="searchParam.kw" @keyup.enter="() => onSearch?.()" placeholder="그룹명 검색">
-        <label class="search-label">사용여부</label>
-        <select class="form-control" v-model="searchParam.use">
-          <option value="">전체</option>
-          <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-        <div class="search-actions">
-          <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
-          <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-        </div>
+
+  <div class="card">
+    <div class="search-bar">
+      <label class="search-label">그룹명</label>
+      <input class="form-control" v-model="searchParam.kw" @keyup.enter="onSearch" placeholder="그룹명 검색">
+      <label class="search-label">사용여부</label>
+      <select class="form-control" v-model="searchParam.use">
+        <option value="">전체</option>
+        <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+      </select>
+      <div class="search-actions">
+        <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
+        <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>
-    <div class="card">
-      <div class="toolbar">
-        <span class="list-title">회원그룹 목록</span>
-        <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
-        <div style="margin-left:auto;display:flex;gap:6px;">
-          <button class="btn btn-primary btn-sm" @click="addRow">+ 행추가</button>
-          <button class="btn btn-blue btn-sm" @click="handleSaveAll">저장</button>
-        </div>
+  </div>
+
+  <div class="card">
+    <div class="toolbar">
+      <span class="list-title">
+        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+        회원그룹 목록
+        <span class="list-count">{{ cfVisibleCount }}건</span>
+      </span>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
+        <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
+        <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
+        <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
       </div>
-      <table class="bo-table">
+    </div>
+
+    <div style="max-height:480px;overflow-y:auto;">
+      <table class="bo-table crud-grid">
         <thead><tr>
           <th style="width:36px;text-align:center;">번호</th>
-          <th>그룹명</th><th>메모</th>
-          <th style="width:80px;text-align:right">회원수</th>
-          <th style="width:70px;text-align:center">사용</th>
-          <th style="width:60px;text-align:center">삭제</th>
+          <th class="col-id">ID</th>
+          <th class="col-status">상태</th>
+          <th class="col-check"><input type="checkbox" v-model="uiState.checkAll" @change="toggleCheckAll"></th>
+          <th style="min-width:180px;">그룹명</th>
+          <th style="min-width:260px;">메모</th>
+          <th style="width:90px;text-align:right;">회원수</th>
+          <th style="width:90px;text-align:center;">사용여부</th>
+          <th class="col-act-cancel"></th>
+          <th class="col-act-delete"></th>
         </tr></thead>
         <tbody>
-          <tr v-for="(row,idx) in gridRows" :key="row?.groupId" :class="{'table-row-new':row._row_status==='N','table-row-mod':row._row_status==='U'}">
-            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
-            <td><input v-if="row._row_status" class="form-control" v-model="row.groupNm" @input="onCellChange(idx)"><span v-else>{{ row.groupNm }}</span></td>
-            <td><input v-if="row._row_status" class="form-control" v-model="row.groupMemo" @input="onCellChange(idx)"><span v-else>{{ row.groupMemo }}</span></td>
-            <td style="text-align:right">{{ (row.memberCnt||0).toLocaleString() }}</td>
-            <td style="text-align:center">
-              <select v-if="row._row_status" class="form-control" v-model="row.useYn" @change="onCellChange(idx)">
+          <tr v-if="uiState.loading">
+            <td colspan="10" style="text-align:center;padding:30px;color:#aaa;">로딩중...</td>
+          </tr>
+          <tr v-else-if="!gridRows.length">
+            <td colspan="10" style="text-align:center;padding:30px;color:#aaa;">데이터가 없습니다.</td>
+          </tr>
+          <tr v-else v-for="(row, idx) in gridRows" :key="row.groupId"
+              class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
+              @click="setFocused(idx)">
+            <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
+            <td class="col-id-val">{{ row.groupId > 0 ? row.groupId : 'NEW' }}</td>
+            <td class="col-status-val">
+              <span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span>
+            </td>
+            <td class="col-check-val"><input type="checkbox" v-model="row._row_check"></td>
+            <td>
+              <input class="grid-input" v-model="row.groupNm"
+                :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="그룹명">
+            </td>
+            <td>
+              <input class="grid-input" v-model="row.groupMemo"
+                :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="메모">
+            </td>
+            <td style="text-align:right;padding-right:10px;">{{ (row.memberCnt || 0).toLocaleString() }}</td>
+            <td>
+              <select class="grid-select" v-model="row.useYn"
+                :disabled="row._row_status==='D'" @change="onCellChange(row)">
                 <option v-for="c in codes.use_yn" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
               </select>
-              <span v-else :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span>
             </td>
-            <td style="text-align:center"><button class="btn btn-danger btn-xs" @click="handleDeleteRow(idx)">삭제</button></td>
+            <td class="col-act-cancel-val">
+              <button v-if="['U','I','D'].includes(row._row_status)"
+                class="btn btn-secondary btn-xs" @click.stop="cancelRow(idx)">취소</button>
+            </td>
+            <td class="col-act-delete-val">
+              <button v-if="['N','U'].includes(row._row_status)"
+                class="btn btn-danger btn-xs" @click.stop="deleteRow(idx)">삭제</button>
+            </td>
           </tr>
-          <tr v-if="!gridRows.length"><td colspan="6" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
     </div>
+  </div>
 </div>`
 };

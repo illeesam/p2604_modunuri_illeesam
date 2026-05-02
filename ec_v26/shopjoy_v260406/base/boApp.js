@@ -117,7 +117,7 @@
       { id: 'syCodeMng',     label: '공통코드관리' },
       { id: 'syBrandMng',    label: '브랜드관리' },
       { id: 'syVendorMng',   label: '업체' },
-      { id: 'syBizUserMng',  label: '업체사용자' },
+      { id: 'syVendorUserMng',  label: '업체사용자' },
       { group: '공통업무' },
       { id: 'cmNoticeMng',   label: '공지사항관리' },
       { id: 'syBbmMng',      label: '게시판관리' },
@@ -181,7 +181,7 @@
 
       /* ── 페이지 & 라우팅 ── */
       const page   = ref('dashboard');
-      const cfDashboardComp = computed(() => 'DashboardBoEc' + (window.BO_SITE_NO || '01'));
+      const cfDashboardComp = 'DashboardBoEc' + (window.BO_SITE_NO || '01');
       const errorMessage = ref('');
       /* X- 헤더 배열을 압축 포맷으로 변환
          x-ui-nm: 사이트관리 | x-cmd-nm: 목록조회 | x-trace-id: 20260501_063729_0223
@@ -318,7 +318,7 @@
         'syCodeMng':'sy-code-mng', 'syCodeDtl':'sy-code-dtl',
         'syBrandMng':'sy-brand-mng', 'syAttachMng':'sy-attach-mng',
         'syTemplateMng':'sy-template-mng', 'syTemplateDtl':'sy-template-dtl',
-        'syVendorMng':'sy-vendor-mng', 'syVendorDtl':'sy-vendor-dtl', 'syBizMng':'sy-biz-mng', 'syBizUserMng':'sy-biz-user-mng',
+        'syVendorMng':'sy-vendor-mng', 'syVendorDtl':'sy-vendor-dtl', 'syBizMng':'sy-biz-mng', 'syVendorUserMng':'sy-vendor-user-mng',
         'pdCategoryMng':'pd-category-mng', 'pdCategoryDtl':'pd-category-dtl', 'pdCategoryProdMng':'pd-category-prod-mng',
         'syUserMng':'sy-user-mng', 'syUserDtl':'sy-user-dtl',
         'syBatchMng':'sy-batch-mng', 'syBatchDtl':'sy-batch-dtl',
@@ -610,13 +610,9 @@
         else if (type === 'member')    commonFilter.memberId = null;
         else if (type === 'order')     commonFilter.orderId  = null;
       };
-      /* 공통 필터 표시용 헬퍼 */
-      const filterSite      = computed(() => null);
-      const filterVendor    = computed(() => null);
-      const cfFilterDlivVendor = computed(() => null);
-      const cfFilterBoUser = computed(() => null);
-      const filterMember    = computed(() => null);
-      const filterOrder     = computed(() => null);
+      /* 공통 필터 표시용 헬퍼 (미구현 — 항상 null) */
+      const filterSite = null, filterVendor = null, cfFilterDlivVendor = null;
+      const cfFilterBoUser = null, filterMember = null, filterOrder = null;
 
       /* ── API 로그 (최대 10건, localStorage 저장) ── */
       const apiLogs = reactive([]);
@@ -943,7 +939,20 @@
         }
       }, { immediate: true });
       const loginModal  = reactive({ show: false, tab: 'login' });
-      const loginForm   = reactive({ loginId: 'admin2', loginPwd: 'demo1234', authMethod: '메인' });
+      const loginForm   = reactive({ loginId: '', loginPwd: '', authMethod: '메인' });
+      const QUICK_USERS = [
+        { loginId: 'super_admin',  loginPwd: 'demo1234', label: '슈퍼관리자',   role: 'SUPER',  icon: '👑' },
+        { loginId: 'admin1',       loginPwd: 'demo1234', label: '운영관리자',   role: 'ADMIN',  icon: '🛡' },
+        { loginId: 'admin2',       loginPwd: 'demo1234', label: '일반관리자',   role: 'ADMIN',  icon: '👤' },
+        { loginId: 'operator1',    loginPwd: 'demo1234', label: '운영자',       role: 'OPR',    icon: '⚙️' },
+        { loginId: 'cs_agent1',    loginPwd: 'demo1234', label: 'CS상담원',     role: 'CS',     icon: '🎧' },
+        { loginId: 'vendor1',      loginPwd: 'demo1234', label: '판매업체',     role: 'VENDOR', icon: '🏪' },
+      ];
+      const quickLogin = (u) => {
+        loginForm.loginId = u.loginId;
+        loginForm.loginPwd = u.loginPwd;
+        doLogin();
+      };
       const regForm     = reactive({ name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
       const userRoles   = ref([]);
       const loginError  = ref('');
@@ -1165,6 +1174,7 @@
         boInitReady, cfIsLoggedIn, currentAuthUser, currentAuthUserRoles, activeRoleId, rolePath, onRoleChange, rolesOfUser, bizInfoOfUser,
         loginModal, loginForm, regForm, loginError, uiState, userRoles,
         openLogin, closeLogin, doLogin, doLogout, doRegister,
+        QUICK_USERS, quickLogin,
         profileForm, openProfile, saveProfile,
         pwForm, pwError, openPwChange, savePwChange,
         favorites, favKeepSet, sidebarTab, isFav, toggleFav, cfFavList, toggleFavKeep,
@@ -1486,7 +1496,7 @@
           <sy-template-dtl v-else-if="page==='syTemplateDtl'" :navigate="navigate"  :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
           <sy-vendor-mng  v-else-if="page==='syVendorMng'"  :navigate="navigate"  :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
           <sy-biz-mng     v-else-if="page==='syBizMng'"     :navigate="navigate"  :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
-          <sy-biz-user-mng v-else-if="page==='syBizUserMng'" :navigate="navigate"  :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
+          <sy-vendor-user-mng v-else-if="page==='syVendorUserMng'" :navigate="navigate"  :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
           <sy-vendor-dtl  v-else-if="page==='syVendorDtl'"  :navigate="navigate"  :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
           <pd-category-mng v-else-if="page==='pdCategoryMng'" :navigate="navigate"  :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" />
           <pd-category-dtl v-else-if="page==='pdCategoryDtl'" :navigate="navigate"  :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="editId" />
@@ -1906,30 +1916,51 @@
       </div>
 
       <!-- 로그인 폼 -->
-      <div v-if="loginModal.tab==='login'">
-        <div class="form-group">
-          <label class="form-label">로그인 ID</label>
-          <input class="form-control" v-model="loginForm.loginId" placeholder="로그인 ID 입력" @keyup.enter="doLogin" autocomplete="username" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">비밀번호</label>
-          <input class="form-control" type="password" v-model="loginForm.loginPwd" placeholder="비밀번호 입력" @keyup.enter="doLogin" autocomplete="current-password" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">인증방식</label>
-          <div class="auth-methods">
-            <label v-for="m in AUTH_METHODS" :key="m"
-              class="auth-method-item" :class="{active: loginForm.authMethod===m}">
-              <input type="radio" :value="m" v-model="loginForm.authMethod" style="display:none" />
-              {{ m }}
-            </label>
+      <div v-if="loginModal.tab==='login'" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+        <!-- 좌: 입력 폼 -->
+        <div>
+          <div class="form-group">
+            <label class="form-label">로그인 ID</label>
+            <input class="form-control" v-model="loginForm.loginId" placeholder="로그인 ID 입력" @keyup.enter="doLogin" autocomplete="username" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">비밀번호</label>
+            <input class="form-control" type="password" v-model="loginForm.loginPwd" placeholder="비밀번호 입력" @keyup.enter="doLogin" autocomplete="current-password" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">인증방식</label>
+            <div class="auth-methods">
+              <label v-for="m in AUTH_METHODS" :key="m"
+                class="auth-method-item" :class="{active: loginForm.authMethod===m}">
+                <input type="radio" :value="m" v-model="loginForm.authMethod" style="display:none" />
+                {{ m }}
+              </label>
+            </div>
+          </div>
+          <div v-if="loginError" class="login-error">{{ loginError }}</div>
+          <button class="btn btn-primary" style="width:100%;margin-top:4px;" @click="doLogin">로그인</button>
+          <div style="text-align:center;margin-top:12px;font-size:12px;color:#aaa;">
+            <span>계정이 없으신가요?</span>
+            <span style="color:#e8587a;cursor:pointer;margin-left:6px;font-weight:600;" @click="loginModal.tab='register';loginError=''">회원가입</span>
           </div>
         </div>
-        <div v-if="loginError" class="login-error">{{ loginError }}</div>
-        <button class="btn btn-primary" style="width:100%;margin-top:4px;" @click="doLogin">로그인</button>
-        <div style="text-align:center;margin-top:12px;font-size:12px;color:#aaa;">
-          <span>계정이 없으신가요?</span>
-          <span style="color:#e8587a;cursor:pointer;margin-left:6px;font-weight:600;" @click="loginModal.tab='register';loginError=''">회원가입</span>
+        <!-- 우: 사용자 선택 -->
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px;letter-spacing:.3px;">🔑 빠른 로그인</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <button v-for="u in QUICK_USERS" :key="u.loginId"
+              class="quick-login-btn"
+              :class="{active: loginForm.loginId===u.loginId}"
+              @click="quickLogin(u)">
+              <span class="quick-login-icon">{{ u.icon }}</span>
+              <span class="quick-login-info">
+                <span class="quick-login-label">{{ u.label }}</span>
+                <span class="quick-login-id">{{ u.loginId }}</span>
+              </span>
+              <span class="quick-login-arrow">›</span>
+            </button>
+          </div>
+          <div style="margin-top:10px;font-size:11px;color:#bbb;text-align:center;">비밀번호: demo1234</div>
         </div>
       </div>
 
@@ -2103,7 +2134,7 @@
   .component('SyTemplateMng',  window.SyTemplateMng)
   .component('SyTemplateDtl',  window.SyTemplateDtl)
   .component('SyVendorMng',    window.SyVendorMng)
-  .component('SyBizUserMng',   window.SyBizUserMng)
+  .component('SyVendorUserMng', window.SyVendorUserMng)
   .component('SyVendorDtl',    window.SyVendorDtl)
   .component('SyAttachMng',    window.SyAttachMng)
   /* ── pages/bo/sy/ — 배치 ── */

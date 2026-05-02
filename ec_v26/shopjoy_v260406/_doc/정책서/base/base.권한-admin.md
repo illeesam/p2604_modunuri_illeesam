@@ -1,4 +1,4 @@
----
+﻿---
 정책명: 관리자(Back Office) 권한 정책
 정책번호: base-권한-admin
 관리자: 개발팀
@@ -390,7 +390,7 @@ API 요청
 |---|---|
 | `syUserMng` | 시스템 > 사용자관리 |
 | `syBizMng` | 시스템 > 업체 |
-| `syBizUserMng` | 시스템 > 업체사용자 |
+| `syVendorUserMng` | 시스템 > 업체사용자 |
 | `syRoleMng` | 시스템 > 역할관리 |
 | `syMenuMng` | 시스템 > 메뉴관리 |
 

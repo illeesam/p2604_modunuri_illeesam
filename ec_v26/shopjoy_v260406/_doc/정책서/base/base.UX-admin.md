@@ -674,6 +674,6 @@ Vue.onMounted(async () => {
 | 카테고리 선택 | `await handleSearchList()` | `PdProdMng` |
 | 부서 선택 | `await handleSearchList()` | `SyDeptMng`, `SyUserDtl` |
 | 메뉴 선택 | `await handleSearchList()` | `SyMenuMng` |
-| 역할 선택 | `await handleSearchList()` | `SyRoleMng`, `SyBizUserMng` |
+| 역할 선택 | `await handleSearchList()` | `SyRoleMng`, `SyVendorUserMng` |
 | 경로 선택 | `PathPickModal` 내부 자동 처리 | 전체 (18개 파일) |
 | 회원 선택 | `await handleSearchData()` | `MbCustInfoMng` |

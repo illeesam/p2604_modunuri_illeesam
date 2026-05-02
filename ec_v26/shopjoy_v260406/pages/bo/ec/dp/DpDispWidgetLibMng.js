@@ -194,7 +194,7 @@ window.DpDispWidgetLibMng = {
     <div>
       <div class="card">
         <div class="toolbar">
-          <span class="list-title">위젯라이브러리 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
+          <span class="list-title">위젯라이브러리 <span class="list-count">{{ pager.pageTotalCount }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span></span>
           <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
         </div>
         <table class="bo-table">

@@ -414,7 +414,7 @@ codes.disp_ui_types = codeStore.svCodes;  // ❌ Store 오염 가능
 - Settlement (9): StConfigMng, StErpGenMng, StErpReconMng, StErpViewMng, StRawMng, StReconClaimMng, StReconOrderMng, StReconPayMng, StReconVendorMng, StSettleAdjMng, StSettleCloseMng, StSettleEtcAdjMng, StSettlePayMng, StStatusMng
 
 **SY 도메인 (21개):**
-- SyAlarmMng, SyAttachMng, SyBatchMng, SyBbmMng, SyBbsMng, SyBizMng, SyBizUserMng, SyBrandMng, SyCodeMng, SyContactMng, SyDashboardMng, SyDeptMng, SyI18nMng, SyMenuMng, SyPathMng, SyPropMng, SyRoleMng, SySiteMng, SyTemplateMng, SyUserMng, SyVendorMng
+- SyAlarmMng, SyAttachMng, SyBatchMng, SyBbmMng, SyBbsMng, SyBrandMng, SyCodeMng, SyContactMng, SyDashboardMng, SyDeptMng, SyI18nMng, SyMenuMng, SyPathMng, SyPropMng, SyRoleMng, SySiteMng, SyTemplateMng, SyUserMng, SyVendorMng, SyVendorUserMng
 
 ### ✅ Tier 3: BO 상세/편집 화면 (Dtl) — 완료 (31개)
 

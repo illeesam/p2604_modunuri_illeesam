@@ -5,6 +5,80 @@
 
 ---
 
+## 0. watch / computed 최소화 원칙 ⭐
+
+**핵심 방침**: `watch`와 `computed`는 꼭 필요한 경우에만 사용하고, 가능하면 직접 함수 호출 방식으로 대체한다.
+
+### watch() 허용 케이스
+
+| 케이스 | 이유 | 예시 |
+|---|---|---|
+| `isAppReady` 감시 | 앱 스토어가 비동기로 준비되는 시점을 알 수 없어 watch가 불가피 | `watch(isAppReady, v => { if (v) fnLoadCodes(); })` |
+| 외부 `props.*` 변경 감시 | 부모가 언제 prop을 바꿀지 제어 불가 | `watch(() => props.editId, handleLoadDetail)` |
+| UI 탭/뷰모드 영속화 | 상태 변경 시점에 즉시 window에 동기화 필요 | `watch(() => uiState.tab, v => { window._xxState.tab = v; })` |
+| 에디터 초기화 등 복잡 사이드 이펙트 | DOM 상태나 라이브러리 인스턴스 제어가 필요한 경우 | Quill 에디터 on/off 전환 |
+
+### watch() 금지 케이스 → 직접 호출로 대체
+
+```js
+// ❌ 금지 — 검색 파라미터 변경 시 watch로 조회 트리거
+watch(() => searchParam.kw, () => handleSearchList());
+watch(() => uiState.selectedPath, () => handleSearchList());
+
+// ✅ 대체 — 이벤트 함수에서 직접 호출
+const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };
+
+// 경로 선택 시 직접 호출
+const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchList(); };
+```
+
+### computed() 허용 케이스
+
+| 케이스 | 이유 | 예시 |
+|---|---|---|
+| 여러 reactive 값에서 파생되고 템플릿에서 반복 사용 | 의존 추적 + 캐싱이 필요한 경우 | `cfIsNew`, `cfDetailEditId`, `cfTree` (트리 빌드) |
+| 복잡한 목록 필터·변환 결과 (클라이언트 전체 로드) | 매 렌더마다 재계산하면 비용이 큰 경우 | `cfFiltered`, `cfPageList`, `cfPageNums` |
+| 앱 초기화 상태 복합 조건 | 여러 스토어를 합산한 준비 여부 | `isAppReady` |
+
+### computed() 금지 케이스 → 일반 함수나 reactive로 대체
+
+```js
+// ❌ 금지 — 단순 getter를 computed로 래핑
+const cfSiteNm = computed(() => boUtil.getSiteNm());
+
+// ✅ 대체 — 일반 함수로 선언 (또는 템플릿에서 직접 호출)
+const fnSiteNm = () => boUtil.getSiteNm();
+// template: {{ fnSiteNm() }}
+// 또는 template: {{ $root.boUtil?.getSiteNm() }}  ← boUtil이 전역이면 직접 호출 가능
+
+// ❌ 금지 — reactive 값을 단순히 다시 접근하는 computed
+const cfIsNew = computed(() => !props.editId);
+
+// ✅ 대체 — template에서 직접 표현식 사용
+// template: <span v-if="!editId">신규</span>
+// 또는 단순 함수
+const cfIsNew = () => !props.editId;
+// template: <span v-if="cfIsNew()">신규</span>
+
+// ❌ 금지 — 호출 빈도 낮은 변환을 computed로 선언
+const cfStatusLabel = computed(() => ({ A:'활성', I:'비활성' }[status.value] || status.value));
+
+// ✅ 대체 — 순수 fn 함수
+const fnStatusLabel = (s) => ({ A:'활성', I:'비활성' }[s] || s);
+```
+
+### 판단 기준 요약
+
+```
+reactive 값이 변할 때 자동으로 반응해야 하는가?
+  └─ NO  → 일반 함수(fn*) 또는 직접 표현식 사용
+  └─ YES → computed 또는 watch 고려
+            └─ 값을 파생시키면? → computed
+            └─ 사이드 이펙트가 필요하면? → watch (허용 케이스인지 먼저 확인)
+```
+
+---
+
 ## 1. setup() 내부 구역 순서
 
 `setup()` 함수 안은 아래 순서로 구역을 구분한다.  
@@ -12,8 +86,8 @@
 
 ```
 // ── 선언부 ────────────────────────────────────────────────────────────────
-// ── computed ──────────────────────────────────────────────────────────────
-// ── watch ─────────────────────────────────────────────────────────────────
+// ── computed (필요한 경우에만) ────────────────────────────────────────────
+// ── watch (허용 케이스에만) ───────────────────────────────────────────────
 // ── 초기화부 ──────────────────────────────────────────────────────────────
 // ── 이벤트 함수 모음 ──────────────────────────────────────────────────────
 // ── 일반 함수 모음 ────────────────────────────────────────────────────────
@@ -25,8 +99,8 @@
 | 구역 | 포함 항목 |
 |---|---|
 | **선언부** | `reactive()`, `ref()`, 외부 상수 참조 (`DATE_RANGE_OPTIONS` 등) |
-| **computed** | `computed(() => …)` 전체 (`cf*`, `isAppReady` 등) |
-| **watch** | `watch(…)` 전체 |
+| **computed** | `computed(() => …)` 전체 (`cf*`, `isAppReady` 등) — 허용 케이스에만 작성 |
+| **watch** | `watch(…)` 전체 — 허용 케이스(isAppReady·props·영속화)에만 작성 |
 | **초기화부** | `fn*` 유틸 함수, `onMounted` |
 | **이벤트 함수 모음** | `on*` 접두어 함수 — 버튼·입력 이벤트 직결 핸들러 |
 | **일반 함수 모음** | `handle*`, `load*`, `open*`, `close*`, `fn*` 배지/포맷 함수, `exportExcel` 등 |

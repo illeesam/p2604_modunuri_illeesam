@@ -29,7 +29,7 @@ window.SyBbsMng = {
     const handleSearchBbs = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.syBbs.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, '게시판관리', '목록조회');
+        const res = await boApiSvc.syBbs.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, '게시판관리', '목록조회');
         const data = res.data?.data;
         bbss.splice(0, bbss.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || bbss.length;
@@ -71,7 +71,7 @@ window.SyBbsMng = {
     /* ── 좌측 표시경로 트리 ── */
         const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
-    const selectNode = (path) => { uiState.selectedPath = path; };
+    const selectNode = (path) => { uiState.selectedPath = path; pager.pageNo = 1; handleSearchBbs(); };
     const cfTree = computed(() => boUtil.buildPathTree('sy_bbs'));
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
@@ -173,7 +173,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const exportExcel = () => boUtil.exportCsv(bbss, [{label:'ID',key:'bbsId'},{label:'제목',key:'title'},{label:'작성자',key:'authorNm'},{label:'조회수',key:'viewCount'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '게시글목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
-    watch(() => uiState.selectedPath, () => { if (typeof loadGrid === 'function') loadGrid(); });
 
 
     // ── return ───────────────────────────────────────────────────────────────
@@ -206,7 +205,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>게시글목록 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>게시글목록 <span class="list-count">{{ pager.pageTotalCount }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span></span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
