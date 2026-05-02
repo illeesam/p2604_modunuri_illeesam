@@ -27,8 +27,7 @@ window.SyBizMng = {
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
-    const cfAllowedPathIds = computed(() => uiState.selectedPath == null ? null : boUtil.getPathDescendants('sy_vendor', uiState.selectedPath));
-    const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage; const s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage; const s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     // ── watch ────────────────────────────────────────────────────────────────
 
@@ -62,7 +61,9 @@ window.SyBizMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.syVendor.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) }, '업체관리', '목록조회');
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
+        if (uiState.selectedPath != null) params.pathId = uiState.selectedPath;
+        const res = await boApiSvc.syVendor.getPage(params, '업체관리', '목록조회');
         const data = res.data?.data;
         bizs.splice(0, bizs.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || bizs.length;

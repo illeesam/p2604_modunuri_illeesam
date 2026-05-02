@@ -13,8 +13,14 @@ window.SyAttachMng = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
+        const attachParams = { pageNo: 1, pageSize: 10000 };
+        if (uiState.selectedGrpId) attachParams.attachGrpId = uiState.selectedGrpId;
+        if (searchParam.kw)        attachParams.kw           = searchParam.kw;
+        if (searchParam.dateStart) attachParams.dateStart    = searchParam.dateStart;
+        if (searchParam.dateEnd)   attachParams.dateEnd      = searchParam.dateEnd;
+
         const [attachRes, grpRes] = await Promise.all([
-          boApiSvc.syAttach.getPage({ pageNo: 1, pageSize: 10000 }, '첨부파일관리', '조회'),
+          boApiSvc.syAttach.getPage(attachParams, '첨부파일관리', '조회'),
           boApiSvc.syAttachGrp.getPage({ pageNo: 1, pageSize: 10000 }, '첨부파일관리', '조회'),
         ]);
         attaches.splice(0, attaches.length, ...(attachRes.data?.data?.pageList || attachRes.data?.data?.list || []));
@@ -75,7 +81,7 @@ window.SyAttachMng = {
     /* ── 첨부그룹 ── */
         const grpForm = reactive({ grpNm: '', grpCode: '', description: '', maxCount: 10, maxSizeMb: 5, allowExt: 'jpg,png', status: '활성' });
     
-    const selectGrp = (id) => { uiState.selectedGrpId = uiState.selectedGrpId === id ? null : id; uiState.grpEditMode = false; };
+    const selectGrp = (id) => { uiState.selectedGrpId = uiState.selectedGrpId === id ? null : id; uiState.grpEditMode = false; handleSearchData('DEFAULT'); };
 
     const openGrpNew = () => {
       uiState.grpEditId = null; uiState.grpEditMode = true;
@@ -111,35 +117,12 @@ window.SyAttachMng = {
     /* ── 첨부파일 ── */
     Object.assign(searchParam, { kw: '' });
     const fileForm = reactive({ attachGrpId: null, fileNm: '', fileSize: 0, fileExt: '', url: '', refId: '', memo: '' });
-    
-    const applied = reactive({ kw: '', dateStart: '', dateEnd: '' });
 
-    const cfFilteredFiles = computed(() => {
-      const items = attaches || [];
-      if (!Array.isArray(items)) return [];
-      return items.filter(a => {
-        if (uiState.selectedGrpId && a.attachGrpId !== uiState.selectedGrpId) return false;
-        const kw = applied.kw.trim().toLowerCase();
-        if (kw && !a.fileNm.toLowerCase().includes(kw) && !a.refId.toLowerCase().includes(kw)) return false;
-        const _d = String(a.regDate || '').slice(0, 10);
-        if (applied.dateStart && _d < applied.dateStart) return false;
-        if (applied.dateEnd && _d > applied.dateEnd) return false;
-        return true;
-      });
-    });
-
-    const onSearch = async () => {
-      Object.assign(applied, {
-        kw: searchParam.kw,
-        dateStart: searchParam.dateStart,
-        dateEnd: searchParam.dateEnd,
-      });
-      await handleSearchData('DEFAULT');
-    };
+    const onSearch = async () => { await handleSearchData('DEFAULT'); };
     const onReset = () => {
       searchParam.kw = '';
       searchParam.dateStart = ''; searchParam.dateEnd = ''; searchParam.dateRange = '';
-      Object.assign(applied, { kw: '', dateStart: '', dateEnd: '' });
+      handleSearchData('DEFAULT');
     };
 
     const openFileNew = () => {
@@ -179,7 +162,7 @@ window.SyAttachMng = {
     };
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
 
-    const cfTotal = computed(() => cfFilteredFiles.value.length);
+    const cfTotal = computed(() => attaches.length);
 
     const fileEditMode = Vue.toRef(uiState, 'fileEditMode');
     const grpEditMode = Vue.toRef(uiState, 'grpEditMode');
@@ -189,7 +172,7 @@ window.SyAttachMng = {
     return { attaches, uiState, codes, searchParam, onDateRangeChange, cfSiteNm,
       attachGrps, grpForm, cfTotal,
       selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
-      fileForm, applied, cfFilteredFiles, onSearch, onReset, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
+      fileForm, onSearch, onReset, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
       fnFmtSize, fnStatusBadge,
     };
   },
@@ -334,8 +317,8 @@ window.SyAttachMng = {
             <th style="width:36px;text-align:center;">번호</th><th>그룹</th><th>파일명</th><th>크기</th><th>확장자</th><th>참조ID</th><th>메모</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th>
           </tr></thead>
           <tbody>
-            <tr v-if="cfFilteredFiles.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-            <tr v-for="(a, idx) in cfFilteredFiles" :key="a.attachId">
+            <tr v-if="attaches.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+            <tr v-for="(a, idx) in attaches" :key="a.attachId">
               <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
               <td><span style="font-size:11px;color:#666;">{{ a.attachGrpNm }}</span></td>
               <td style="font-size:12px;word-break:break-all;">{{ a.fileNm }}</td>

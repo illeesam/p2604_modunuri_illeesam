@@ -3365,7 +3365,7 @@ window.PathPickModal = {
       <div style="display:flex;justify-content:flex-end;gap:8px;">
         <button @click="$emit('close')"
           style="padding:9px 20px;font-size:12.5px;font-weight:600;background:#fff;color:#6b7280;border:1px solid #d1d5db;border-radius:7px;cursor:pointer;">취소</button>
-        <button @click="handleConfirm"
+        <button @click="confirm"
           style="padding:9px 22px;font-size:12.5px;font-weight:700;background:linear-gradient(135deg,#e8587a,#d14165);color:#fff;border:none;border-radius:7px;cursor:pointer;box-shadow:0 2px 6px rgba(232,88,122,.25);">✓ 선택</button>
       </div>
     </div>

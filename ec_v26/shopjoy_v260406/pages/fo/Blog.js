@@ -74,13 +74,6 @@ window.Blog = {
       onSearch();
     };
 
-    const cfFilteredPosts = computed(() => {
-      let list = posts;
-      if (searchParam.cat !== 'all') list = list.filter(p => p.category === searchParam.cat);
-      const q = searchParam.kw.trim().toLowerCase();
-      if (q) list = list.filter(p => p.title.toLowerCase().includes(q) || p.excerpt.toLowerCase().includes(q) || (p.tags || []).some(t => t.includes(q)));
-      return list;
-    });
 
     const thumbBgs = [
       'linear-gradient(135deg, #f5f0e8 0%, #e8d5b7 100%)',
@@ -102,7 +95,7 @@ window.Blog = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { pager, cfPageNums, setPage, onSizeChange, searchParam, categories, cfFilteredPosts, cfLatestPosts, postBg, onSearch, onReset, uiState, codes };
+    return { pager, cfPageNums, setPage, onSizeChange, searchParam, categories, posts, cfLatestPosts, postBg, onSearch, onReset, uiState, codes };
   },
   template: /* html */ `
 <div class="page-wrap">
@@ -181,7 +174,7 @@ window.Blog = {
 
     <!-- ── 포스트 목록 ─────────────────────────────────────────────────────── -->
     <div>
-      <div v-for="post in cfFilteredPosts" :key="post.id"
+      <div v-for="post in posts" :key="post.id"
         class="card" style="display:flex;flex-wrap:wrap;gap:clamp(12px,2vw,24px);padding:0;margin-bottom:clamp(12px,2vw,24px);overflow:hidden;cursor:pointer;transition:box-shadow .2s;"
         @click="navigate('blogView', { editId: post.id })"
         @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)'"
@@ -211,7 +204,7 @@ window.Blog = {
       </div>
 
       <!-- ── 빈 상태 ─────────────────────────────────────────────────────── -->
-      <div v-if="cfFilteredPosts.length === 0" style="text-align:center;padding:60px 0;color:var(--text-muted);">
+      <div v-if="posts.length === 0" style="text-align:center;padding:60px 0;color:var(--text-muted);">
         <div style="font-size:2rem;margin-bottom:12px;">📝</div>
         <div style="font-size:0.95rem;">검색 결과가 없습니다.</div>
       </div>

@@ -62,7 +62,14 @@ window.Prod02List = {
     const handleLoadProducts = async () => {
       uiState.loading = true;
       try {
-        const res = await foApiSvc.pdProd.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize }, '상품목록', '목록조회');
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize };
+        if (uiState.searchText) params.kw = uiState.searchText;
+        if (selCats.size > 0) params.categoryIds = [...selCats].join(',');
+        if (uiState.priceMin) params.priceMin = uiState.priceMin;
+        if (uiState.priceMax) params.priceMax = uiState.priceMax;
+        if (selColors.size > 0) params.colors = [...selColors].join(',');
+        if (selSizes.size > 0) params.sizes = [...selSizes].join(',');
+        const res = await foApiSvc.pdProd.getPage(params, '상품목록', '목록조회');
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;
         allProducts.splice(0, allProducts.length, ...(res.data?.data?.pageList || []).map(p => assignImage({
@@ -134,27 +141,11 @@ window.Prod02List = {
       uiState.searchText = ''; uiState.priceMin = ''; uiState.priceMax = '';
       selColors.clear(); selSizes.clear(); selCats.clear();
     };
-
-    /* ── 필터링 ── */
-    const cfFilteredProducts = computed(() => {
-      let list = allProducts;
-      const q = uiState.searchText.trim().toLowerCase();
-      if (q) list = list.filter(p => (p.prodNm || '').toLowerCase().includes(q) ||
-                                     (p.tags || []).some(t => t.includes(q)));
-      const pMin = uiState.priceMin ? parseInt(uiState.priceMin, 10) : 0;
-      const pMax = uiState.priceMax ? parseInt(uiState.priceMax, 10) : Infinity;
-      if (pMin > 0 || pMax < Infinity) list = list.filter(p => p.priceNum >= pMin && p.priceNum <= pMax);
-      if (selCats.size   > 0) list = list.filter(p => selCats.has(p.categoryId));
-      if (selColors.size > 0) list = list.filter(p => (p.opt1s || []).some(c => selColors.has(c.name)));
-      if (selSizes.size  > 0) list = list.filter(p => (p.opt2s || []).some(s => selSizes.has(s)));
-      return list;
-    });
-
     /* ── PC 페이지네이션 ── */
-    const cfTotalPages  = computed(() => Math.max(1, Math.ceil(cfFilteredProducts.value.length / PAGE_SIZE)));
+    const cfTotalPages  = computed(() => Math.max(1, Math.ceil(allProducts.length / PAGE_SIZE)));
     const cfPagedProducts = computed(() => {
       const s = (uiState.currentPage - 1) * PAGE_SIZE;
-      return cfFilteredProducts.value.slice(s, s + PAGE_SIZE);
+      return allProducts.slice(s, s + PAGE_SIZE);
     });
     const cfPageNums = computed(() => {
       const t = cfTotalPages.value;
@@ -171,8 +162,8 @@ window.Prod02List = {
     });
 
     /* ── 모바일 무한스크롤 ── */
-    const cfMobileProducts = computed(() => cfFilteredProducts.value.slice(0, uiState.mobileCount));
-    const cfHasMore       = computed(() => uiState.mobileCount < cfFilteredProducts.value.length);
+    const cfMobileProducts = computed(() => allProducts.slice(0, uiState.mobileCount));
+    const cfHasMore       = computed(() => uiState.mobileCount < allProducts.length);
 
     /* ── 모바일 판별 ── */
         const onResize = () => { uiState.isMobile = window.innerWidth < 768; };
@@ -190,6 +181,7 @@ window.Prod02List = {
     ], () => {
       uiState.currentPage = 1;
       uiState.mobileCount = PAGE_SIZE;
+      handleLoadProducts();
     });
 
     /* ── IntersectionObserver (모바일 무한스크롤) ── */
@@ -200,7 +192,7 @@ window.Prod02List = {
       if (!el || !('IntersectionObserver' in window)) return;
       observer = new IntersectionObserver(entries => {
         if (entries[0].isIntersecting && cfHasMore.value && uiState.isMobile) {
-          uiState.mobileCount = Math.min(cfFilteredProducts.value.length, uiState.mobileCount + PAGE_SIZE);
+          uiState.mobileCount = Math.min(allProducts.length, uiState.mobileCount + PAGE_SIZE);
         }
       }, { rootMargin: '300px' });
       observer.observe(el);
@@ -229,7 +221,7 @@ window.Prod02List = {
 
     return { pager,
       uiState,
-      allProducts, cfFilteredProducts,
+      allProducts,
       selColors, selSizes, selCats,
       cfAllColors, cfAllSizes, cfAllCats,
       toggleColor, toggleSize, toggleCat, cfHasFilter, clearFilters,
@@ -392,7 +384,7 @@ window.Prod02List = {
   <!-- ── 결과 요약 ────────────────────────────────────────────────────────── -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
     <div style="font-size:0.85rem;color:var(--text-secondary);">
-      총 <strong style="color:var(--text-primary);">{{ cfFilteredProducts.length }}</strong>개 상품
+      총 <strong style="color:var(--text-primary);">{{ allProducts.length }}</strong>개 상품
       <span v-if="cfHasFilter" style="color:#f97316;font-size:0.78rem;margin-left:6px;">(필터 적용중)</span>
     </div>
   </div>
@@ -481,7 +473,7 @@ window.Prod02List = {
   </div>
 
   <!-- ── 결과 없음 ────────────────────────────────────────────────────────── -->
-  <div v-if="!uiState.loading && cfFilteredProducts.length===0"
+  <div v-if="!uiState.loading && allProducts.length===0"
     style="text-align:center;padding:60px 0;color:var(--text-muted);">
     <div style="font-size:3rem;margin-bottom:12px;">🔍</div>
     <div style="font-size:1rem;font-weight:600;">해당 조건의 상품이 없습니다.</div>

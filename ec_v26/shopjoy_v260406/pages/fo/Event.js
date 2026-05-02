@@ -24,6 +24,8 @@ window.EventPage = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize };
+        if (uiState.activeTab) params.status = uiState.activeTab;
+        if (uiState.sortBy === 'deadline') params.sortBy = 'endDate';
         const res = await foApiSvc.pmEvent.getPage(params, '이벤트', '목록조회');
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;
@@ -53,31 +55,19 @@ window.EventPage = {
 
     // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+    watch(() => uiState.activeTab, () => { pager.pageNo = 1; handleSearchList('DEFAULT'); });
+    watch(() => uiState.sortBy,    () => { pager.pageNo = 1; handleSearchList('DEFAULT'); });
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
-
-    const cfFilteredEvents = computed(() => {
-      let list = events.filter(e =>
-        uiState.activeTab === 'ongoing' ? e.status === 'ongoing' : e.status === 'ended'
-      );
-      if (uiState.sortBy === 'deadline') {
-        list = [...list].sort((a, b) => a.endDate.localeCompare(b.endDate));
-      }
-      return list;
-    });
 
     const cfOngoingCount = computed(() => events.filter(e => e.status === 'ongoing').length);
     const cfEndedCount   = computed(() => events.filter(e => e.status === 'ended').length);
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { pager, cfPageNums, setPage, onSizeChange, cfFilteredEvents, cfOngoingCount, cfEndedCount, uiState, codes };
+    return { pager, cfPageNums, setPage, onSizeChange, events, cfOngoingCount, cfEndedCount, uiState, codes };
   },
   template: /* html */ `
 <div class="page-wrap">
@@ -140,7 +130,7 @@ window.EventPage = {
 
   <!-- ── 이벤트 그리드 ──────────────────────────────────────────────────────── -->
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;">
-    <div v-for="ev in cfFilteredEvents" :key="ev.id"
+    <div v-for="ev in events" :key="ev.id"
       style="background:var(--bg-card);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;"
       @click="navigate('eventView', { eventId: ev.id })"
       @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 6px 20px rgba(0,0,0,0.1)'"
@@ -182,7 +172,7 @@ window.EventPage = {
   </div>
 
   <!-- ── 빈 상태 ─────────────────────────────────────────────────────────── -->
-  <div v-if="cfFilteredEvents.length === 0" style="text-align:center;padding:clamp(32px,6vw,60px) 0;color:var(--text-muted);">
+  <div v-if="events.length === 0" style="text-align:center;padding:clamp(32px,6vw,60px) 0;color:var(--text-muted);">
     <div style="font-size:2rem;margin-bottom:12px;">📭</div>
     <div style="font-size:0.95rem;">{{ uiState.activeTab === 'ongoing' ? '진행 중인 이벤트가 없습니다.' : '종료된 이벤트가 없습니다.' }}</div>
   </div>

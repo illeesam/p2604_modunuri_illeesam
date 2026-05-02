@@ -39,24 +39,6 @@ window.SyCodeMng = {
     // grpDirtyCount: grpRows 변경 시 갱신 (템플릿에서 함수 반복 호출 대신 값 참조)
     const syncGrpDirty = () => { uiState.grpDirtyCount = grpRows.filter(r => r._row_status !== 'N').length; };
 
-    // ── visibleGrpRows 갱신 (검색조건 + 경로 필터) ───────────────────────────
-
-    const applyGrpFilter = () => {
-      const sp = uiState.grpSelectedPath;
-      const kw = (searchParam.kw || '').toLowerCase();
-      const useYn = searchParam.useYn || '';
-      const dateStart = searchParam.dateStart || '';
-      const dateEnd = searchParam.dateEnd || '';
-      visibleGrpRows.splice(0, visibleGrpRows.length, ...grpRows.filter(r => {
-        if (sp && !(r.pathId || '').startsWith(sp)) return false;
-        if (kw && !((r.codeGrp || '').toLowerCase().includes(kw) || (r.grpNm || '').toLowerCase().includes(kw) || (r.description || '').toLowerCase().includes(kw))) return false;
-        if (useYn && r.useYn !== useYn) return false;
-        if (dateStart && r.regDate && r.regDate < dateStart) return false;
-        if (dateEnd && r.regDate && r.regDate > dateEnd) return false;
-        return true;
-      }));
-    };
-
     // ── 트리 갱신 ─────────────────────────────────────────────────────────────
 
     const rebuildTree = () => {
@@ -105,7 +87,7 @@ window.SyCodeMng = {
     };
     watch(() => window.sfGetBoCodeStore?.()?.svCodes?.length, checkAndLoadCodes);
 
-    watch(() => uiState.grpSelectedPath, () => { uiState.selectedGrp = ''; applyGrpFilter(); });
+    watch(() => uiState.grpSelectedPath, () => { uiState.selectedGrp = ''; handleLoadAllGroups(); });
     watch(() => uiState.selectedGrp, () => { handleSearchList(); });
 
     // ── 초기화 ────────────────────────────────────────────────────────────────
@@ -185,8 +167,15 @@ window.SyCodeMng = {
 
     const handleLoadAllGroups = async () => {
       try {
+        const grpParams = {};
+        if (uiState.grpSelectedPath) grpParams.pathId = uiState.grpSelectedPath;
+        if (searchParam.kw)        grpParams.kw        = searchParam.kw;
+        if (searchParam.useYn)     grpParams.useYn     = searchParam.useYn;
+        if (searchParam.dateStart) grpParams.dateStart = searchParam.dateStart;
+        if (searchParam.dateEnd)   grpParams.dateEnd   = searchParam.dateEnd;
+
         const [grpRes, codeRes] = await Promise.all([
-          boApiSvc.syCodeGrp.getAll({}, '코드관리', '그룹목록조회'),
+          boApiSvc.syCodeGrp.getAll(grpParams, '코드관리', '그룹목록조회'),
           boApiSvc.syCode.getPage({ pageNo: 1, pageSize: 100000 }, '코드관리', '코드수집계'),
         ]);
         const grpList  = grpRes.data?.data  || [];
@@ -207,7 +196,7 @@ window.SyCodeMng = {
           _row_org: { codeGrp: g.codeGrp, grpNm: g.grpNm, pathId: g.pathId || null, description: g.codeGrpDesc || '', useYn: g.useYn || 'Y' },
         }));
         syncGrpDirty();
-        applyGrpFilter();
+        visibleGrpRows.splice(0, visibleGrpRows.length, ...grpRows);
         gridRows.splice(0); uiState.focusedIdx = null;
       } catch (_) {}
     };
@@ -320,7 +309,7 @@ window.SyCodeMng = {
         _row_status: 'I', _tempId: _grpTempId--, _row_org: {},
       });
       syncGrpDirty();
-      applyGrpFilter();
+      visibleGrpRows.splice(0, visibleGrpRows.length, ...grpRows);
     };
 
     const handleDeleteGrp = (idx) => {
@@ -328,7 +317,7 @@ window.SyCodeMng = {
       if (r._row_status === 'I') { grpRows.splice(grpRows.indexOf(r), 1); }
       else { r._row_status = r._row_status === 'D' ? 'N' : 'D'; }
       syncGrpDirty();
-      applyGrpFilter();
+      visibleGrpRows.splice(0, visibleGrpRows.length, ...grpRows);
     };
 
     const cancelGrp = (idx) => {
@@ -336,7 +325,7 @@ window.SyCodeMng = {
       if (r._row_status === 'I') { grpRows.splice(grpRows.indexOf(r), 1); }
       else { Object.assign(r, r._row_org); r._row_status = 'N'; }
       syncGrpDirty();
-      applyGrpFilter();
+      visibleGrpRows.splice(0, visibleGrpRows.length, ...grpRows);
     };
 
     const handleSaveGrp = async () => {

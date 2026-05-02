@@ -54,12 +54,13 @@ window.DpDispPanelMng = {
       }
     });
 
-    const handleSearchData = async (searchType = 'DEFAULT') => {
+    const handleSearchData = async (uiParams = {}) => {
       uiState.loading = true;
       try {
+        const params = { pageNo: 1, pageSize: 10000, ...uiParams };
         const [panelsRes, displaysRes] = await Promise.all([
           boApiSvc.dpPanel.getPage({ pageNo: 1, pageSize: 10000 }, '전시패널관리', '조회'),
-          boApiSvc.dpUi.getPage({ pageNo: 1, pageSize: 10000 }, '전시패널관리', '조회'),
+          boApiSvc.dpUi.getPage(params, '전시패널관리', '조회'),
         ]);
         panels.splice(0, panels.length, ...(panelsRes.data?.data?.pageList || panelsRes.data?.data?.list || []));
         displays.splice(0, displays.length, ...(displaysRes.data?.data?.pageList || displaysRes.data?.data?.list || []));
@@ -141,61 +142,26 @@ window.DpDispPanelMng = {
       return '-';
     };
 
-    const applied = reactive({ kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' });
-
-    const cfFiltered = computed(() => window.safeArrayUtils.safeFilter(displays, d => {
-      const kw = applied.kw.trim().toLowerCase();
-      if (kw && !d.name.toLowerCase().includes(kw) && !d.area.toLowerCase().includes(kw)) return false;
-      if (applied.area && d.area !== applied.area) return false;
-      if (applied.status && d.status !== applied.status) return false;
-      const _d = String(d.regDate || '').slice(0, 10);
-      if (applied.dateStart && _d < applied.dateStart) return false;
-      if (applied.dateEnd && _d > applied.dateEnd) return false;
-      /* 전시일시: 특정 일시가 패널 전시기간 내에 포함되는지 */
-      if (applied.dispDate) {
-        const dt = `${applied.dispDate} ${applied.dispTime || '00:00'}`;
-        const ps = `${d.dispStartDate || '0000-01-01'} ${d.dispStartTime || '00:00'}`;
-        const pe = `${d.dispEndDate   || '9999-12-31'} ${d.dispEndTime   || '23:59'}`;
-        if (dt < ps || dt > pe) return false;
-      }
-      if (applied.visibility && !window.visibilityUtil.has(d.visibilityTargets, applied.visibility)) return false;
-      if (applied.layoutType && (d.layoutType || 'grid') !== applied.layoutType) return false;
-      /* 트리 선택 필터 */
-      if (uiState.selectedTreeKey) {
-        const k = uiState.selectedTreeKey;
-        if (k.startsWith('panel_')) {
-          if (d.dispId !== k.slice(6)) return false;
+    const cfFiltered = computed(() => {
+      if (!uiState.selectedTreeKey) return displays;
+      const k = uiState.selectedTreeKey;
+      return window.safeArrayUtils.safeFilter(displays, d => {
+        if (k.startsWith('panel_')) return d.dispId === k.slice(6);
+        const areaNm = (code) => {
+          const c = window.safeArrayUtils.safeFind(codes.disp_area, x => x.codeValue === code);
+          return c ? c.codeLabel : code;
+        };
+        const area = d.area || '';
+        if (k.includes('_')) {
+          const [topPrefix, ...labelParts] = k.split('_');
+          const targetLabel = labelParts.join('_');
+          if (!area.startsWith(topPrefix + '_')) return false;
+          return areaNm(area) === targetLabel;
         } else {
-          // top-level prefix or sub-group
-          const areaNm = (code) => {
-            const c = window.safeArrayUtils.safeFind(codes.disp_area, x => x.codeValue === code);
-            return c ? c.codeLabel : code;
-          };
-
-          if (k.includes('_')) {
-            // sub-group: "HOME_홈 배너" → find matching area
-            const [topPrefix, ...labelParts] = k.split('_');
-            const targetLabel = labelParts.join('_');
-            const area = d.area || '';
-            if (!area.startsWith(topPrefix + '_')) return false;
-            if (areaNm(area) !== targetLabel) return false;
-          } else {
-            // top-level: just prefix like "HOME" or "FOOTER"
-            const area = d.area || '';
-            if (area === k) {
-              // Exact match for simple prefixes like "FOOTER"
-              return true;
-            } else if (area.startsWith(k + '_')) {
-              // Prefix match for "HOME_*" when selecting "HOME"
-              return true;
-            } else {
-              return false;
-            }
-          }
+          return area === k || area.startsWith(k + '_');
         }
-      }
-      return true;
-    }));
+      });
+    });
     const cfAreas = computed(() =>
       (codes.disp_area || [])
         .filter(c => c.useYn === 'Y')
@@ -239,22 +205,27 @@ window.DpDispPanelMng = {
       searchParam.dispTime = now.toTimeString().slice(0, 5);
     };
 
-    const onSearch = async () => {
-    try {
-      Object.assign(applied, searchParam);
-      pager.pageNo = 1;
-      await handleSearchData();
-    } catch (err) {
-      console.error('[catch-info]', err);
-    }
-  };
+    const buildSearchParams = () => {
+      const p = {};
+      if (searchParam.kw)         p.kw         = searchParam.kw;
+      if (searchParam.area)       p.area        = searchParam.area;
+      if (searchParam.status)     p.status      = searchParam.status;
+      if (searchParam.dateStart)  p.dateStart   = searchParam.dateStart;
+      if (searchParam.dateEnd)    p.dateEnd     = searchParam.dateEnd;
+      if (searchParam.dispDate)   p.dispDate    = searchParam.dispDate;
+      if (searchParam.dispTime)   p.dispTime    = searchParam.dispTime;
+      if (searchParam.visibility) p.visibility  = searchParam.visibility;
+      if (searchParam.layoutType) p.layoutType  = searchParam.layoutType;
+      return p;
+    };
+
+    const onSearch = async () => { pager.pageNo = 1; await handleSearchData(buildSearchParams()); };
 
     const onReset = () => {
-    Object.assign(searchParam, searchParamOrg);
-    Object.assign(applied, { kw: '', area: '', status: '', dateStart: '', dateEnd: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' });
-    pager.pageNo = 1;
-    handleSearchData();
-  };
+      Object.assign(searchParam, searchParamOrg);
+      pager.pageNo = 1;
+      handleSearchData({});
+    };
   
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
@@ -443,7 +414,7 @@ window.DpDispPanelMng = {
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), panels, uiState, fnPathLabel, displays, codes,
       cfPanelTree, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll,
       selectPathNode,
-      onDateRangeChange: handleDateRangeChange, cfSiteNm, searchParam, searchParamOrg, pager, applied, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, fnWLabel, openCardPreview, closeCardPreview, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd, setDispNow };
+      onDateRangeChange: handleDateRangeChange, cfSiteNm, searchParam, searchParamOrg, pager, cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, fnWLabel, openCardPreview, closeCardPreview, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd, setDispNow };
   },
   template: /* html */`
 <div>

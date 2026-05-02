@@ -40,7 +40,14 @@ window.DpDispAreaMng = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.dpArea.getPage({ pageNo: 1, pageSize: 10000 }, '전시영역관리', '목록조회');
+        const params = { pageNo: 1, pageSize: 10000 };
+        if (uiState.selectedPath)    params.pathId    = uiState.selectedPath;
+        if (searchParam.kw)          params.kw        = searchParam.kw;
+        if (searchParam.areaType)    params.areaType  = searchParam.areaType;
+        if (searchParam.useYn)       params.useYn     = searchParam.useYn;
+        if (searchParam.dateStart)   params.dateStart = searchParam.dateStart;
+        if (searchParam.dateEnd)     params.dateEnd   = searchParam.dateEnd;
+        const res = await boApiSvc.dpArea.getPage(params, '전시영역관리', '목록조회');
         areas.splice(0, areas.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
@@ -59,7 +66,7 @@ window.DpDispAreaMng = {
     const fnPathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* ── 표시경로 트리 ── */
-    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; };
+    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchData(); };
 
     /* ── 검색 ── */
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -88,22 +95,13 @@ const searchParam = reactive({
       }
     };
     const cfSiteNm = computed(() => boUtil.getSiteNm());
-    const onSearch = async () => {
-    try {
-      Object.assign(applied, searchParam);
-      pager.pageNo = 1;
-      await handleSearchData();
-    } catch (err) {
-      console.error('[catch-info]', err);
-    }
-  };
+    const onSearch = async () => { pager.pageNo = 1; await handleSearchData(); };
 
     const onReset = () => {
-    Object.assign(searchParam, searchParamOrg);
-    Object.assign(applied, searchParamOrg);
-    pager.pageNo = 1;
-    handleSearchData();
-  };
+      Object.assign(searchParam, searchParamOrg);
+      pager.pageNo = 1;
+      handleSearchData();
+    };
   
     const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
@@ -120,29 +118,15 @@ const searchParam = reactive({
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
 
-    const applied = reactive({ kw: '', areaType: '', useYn: '', dateStart: '', dateEnd: '', dateRange: '' });
-
-    const cfFiltered = computed(() => {
-      const kw = applied.kw.toLowerCase();
-      return (areas || []).filter(a => {
-        if (kw && !(a.codeLabel||'').toLowerCase().includes(kw) && !(a.codeValue||'').toLowerCase().includes(kw)) return false;
-        if (applied.areaType && a.areaType !== applied.areaType) return false;
-        if (applied.useYn && a.useYn !== applied.useYn) return false;
-        const d = String(a.regDate||'').slice(0,10);
-        if (applied.dateStart && d < applied.dateStart) return false;
-        if (applied.dateEnd && d > applied.dateEnd) return false;
-        return true;
-      });
-    });
-    const cfTotal      = computed(() => cfFiltered.value.length);
+    const cfTotal      = computed(() => areas.length);
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.pageSize)));
-    const cfPageList   = computed(() => cfFiltered.value.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
+    const cfPageList   = computed(() => areas.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
     const cfPageNums   = computed(() => { const c=pager.pageNo,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { areas, uiState, codes, pager, searchParam, applied,
-      cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums,
+    return { areas, uiState, codes, pager, searchParam,
+      cfTotal, cfTotalPages, cfPageList, cfPageNums,
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange, cfSiteNm,
       selectNode, fnPathLabel,
       uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId };

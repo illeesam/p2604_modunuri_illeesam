@@ -13,9 +13,13 @@ window.SyBatchHist = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
+        const logParams = { pageNo: 1, pageSize: 10000 };
+        if (uiState.searchBatchId) logParams.batchId   = uiState.searchBatchId;
+        if (uiState.searchStatus)  logParams.runStatus = uiState.searchStatus;
+
         const [resBatch, resLogs] = await Promise.all([
           boApiSvc.syBatch.getPage({ pageNo: 1, pageSize: 10000 }, '배치이력', '목록조회'),
-          boApiSvc.syBatchLog.getPage({ pageNo: 1, pageSize: 10000 }, '배치이력', '목록조회'),
+          boApiSvc.syBatchLog.getPage(logParams, '배치이력', '목록조회'),
         ]);
         batches.splice(0, batches.length, ...(resBatch.data?.data?.list || []));
         batchLogs.splice(0, batchLogs.length, ...(resLogs.data?.data?.list || []));
@@ -59,21 +63,9 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       batches.map(b => ({ batchId: b.batchId, label: b.batchNm }))
     );
 
-    const applied = reactive({ searchBatchId: '', searchStatus: '' });
-
-    const cfFiltered = computed(() => {
-      const logs = [...(batchLogs || [])];
-      logs.sort((a, b) => (b.runAt > a.runAt ? 1 : -1));
-      return logs.filter(l => {
-        if (applied.searchBatchId && l.batchId !== Number(applied.searchBatchId)) return false;
-        if (applied.searchStatus && l.runStatus !== applied.searchStatus) return false;
-        return true;
-      });
-    });
-
-    const cfTotal      = computed(() => cfFiltered.value.length);
+    const cfTotal      = computed(() => batchLogs.length);
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.pageSize)));
-    const cfPageList   = computed(() => cfFiltered.value.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
+    const cfPageList   = computed(() => [...batchLogs].sort((a, b) => (b.runAt > a.runAt ? 1 : -1)).slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
     const cfPageNums   = computed(() => {
       const c = pager.pageNo, l = pager.pageTotalPage;
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
@@ -81,7 +73,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     });
     const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
-    const onSearch     = () => { applied.searchBatchId = uiState.searchBatchId; applied.searchStatus = uiState.searchStatus; pager.pageNo = 1; };
+    const onSearch     = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
     const onFilter     = () => { pager.pageNo = 1; };
 
     /* ── 메시지 상세 토글 ── */
@@ -101,8 +93,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { batches, uiState, applied, cfBatchOptions,
-      cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums, pager,
+    return { batches, uiState, cfBatchOptions,
+      cfTotal, cfTotalPages, cfPageList, cfPageNums, pager,
       setPage, onSizeChange, onSearch, onFilter,
       toggleExpand,
       fnRunBadge, fnFmtDuration,

@@ -63,7 +63,13 @@ window.SyPropMng = {
     const fetchData = async (searchType = 'DEFAULT') => {
       Object.assign(applied, searchParam);
       try {
-        const res = await boApiSvc.syProp.getPage({ pageNo: 1, pageSize: 10000, siteId: cfSiteId.value }, '속성관리', '목록조회');
+        const params = { pageNo: 1, pageSize: 10000 };
+        if (cfSiteId.value)          params.siteId  = cfSiteId.value;
+        if (uiState.selectedPath)    params.pathId  = uiState.selectedPath;
+        if (searchParam.kw)          params.kw      = searchParam.kw;
+        if (searchParam.useFlt)      params.useYn   = searchParam.useFlt;
+        if (searchParam.typeFlt)     params.propType = searchParam.typeFlt;
+        const res = await boApiSvc.syProp.getPage(params, '속성관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         _rawProps.splice(0, _rawProps.length, ...list);
         reload();
@@ -72,13 +78,6 @@ window.SyPropMng = {
       }
     };
 
-    /* ── 사이트 필터 (공통필터 사이트와 동기화) ── */
-    const cfFilteredBySite = computed(() => {
-      const sid = cfSiteId.value;
-      if (!sid) return rows;
-      return rows.filter(r => r.siteId == sid || r.siteId == null);
-    });
-
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
@@ -86,24 +85,10 @@ window.SyPropMng = {
     });
 
     /* ── 선택 노드 ── */
-    const selectNode = (path) => { uiState.selectedPath = path; };
+    const selectNode = (path) => { uiState.selectedPath = path; fetchData('DEFAULT'); };
 
-    /* ── 그리드에 표시할 행: 선택 노드의 path로 시작하는 모든 항목 ── */
-    const cfGridRows = computed(() => {
-      const sp = uiState.selectedPath;
-      let arr = cfFilteredBySite.value;
-      if (sp) arr = arr.filter(r => (r.pathId || '').startsWith(sp));
-      const k = applied.kw.trim().toLowerCase();
-      if (k) arr = arr.filter(r =>
-        (r.pathId||'').toLowerCase().includes(k) ||
-        (r.propKey||'').toLowerCase().includes(k) ||
-        (r.propLabel||'').toLowerCase().includes(k) ||
-        (r.propValue||'').toString().toLowerCase().includes(k)
-      );
-      if (applied.useFlt)  arr = arr.filter(r => r.useYn === applied.useFlt);
-      if (applied.typeFlt) arr = arr.filter(r => r.propType === applied.typeFlt);
-      return arr.filter(r => r._status !== 'D');
-    });
+    /* ── 그리드에 표시할 행: 삭제 표시 제외 ── */
+    const cfGridRows = computed(() => rows.filter(r => r._status !== 'D'));
 
 
     /* ── 행 변경 추적 ── */

@@ -36,13 +36,20 @@ window.DpDispWidgetMng = {
       }
     });
 
+    const searchParam = reactive({ kw: '', type: '', status: '' });
+    const searchParamOrg = reactive({ kw: '', type: '', status: '' });
+
     // onMounted에서 API 로드
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
+        const libParams = { pageNo: 1, pageSize: 10000 };
+        if (searchParam.kw)     libParams.kw         = searchParam.kw;
+        if (searchParam.type)   libParams.widgetType  = searchParam.type;
+        if (searchParam.status) libParams.status      = searchParam.status;
         const [res, resLibs] = await Promise.all([
           boApiSvc.dpWidget.getPage({ pageNo: 1, pageSize: 10000 }, '전시위젯관리', '조회'),
-          boApiSvc.dpWidgetLib.getPage({ pageNo: 1, pageSize: 10000 }, '전시위젯관리', '조회'),
+          boApiSvc.dpWidgetLib.getPage(libParams, '전시위젯관리', '조회'),
         ]);
         widgets.splice(0, widgets.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         widgetLibs.splice(0, widgetLibs.length, ...(resLibs.data?.data?.list || []));
@@ -54,8 +61,6 @@ window.DpDispWidgetMng = {
         uiState.loading = false;
       }
     };
-    const searchParam = reactive({ kw: '', type: '', status: '' });
-    const searchParamOrg = reactive({ kw: '', type: '', status: '' });
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
@@ -81,23 +86,13 @@ window.DpDispWidgetMng = {
 
     /* ── 검색 ── */
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-const applied = reactive({ kw: '', type: '', status: '' });
-    const onSearch = async () => {
-    try {
-      Object.assign(applied, searchParam);
-      pager.pageNo = 1;
-      await handleSearchData('DEFAULT');
-    } catch (err) {
-      console.error('[catch-info]', err);
-    }
-  };
+    const onSearch = async () => { pager.pageNo = 1; await handleSearchData('DEFAULT'); };
 
     const onReset = () => {
-    Object.assign(searchParam, searchParamOrg);
-    Object.assign(applied, { kw: '', type: '', status: '' });
-    pager.pageNo = 1;
-    handleSearchData('DEFAULT');
-  };
+      Object.assign(searchParam, searchParamOrg);
+      pager.pageNo = 1;
+      handleSearchData('DEFAULT');
+    };
   
 
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
@@ -112,16 +107,9 @@ const applied = reactive({ kw: '', type: '', status: '' });
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
-    const cfFiltered = computed(() => (widgetLibs || []).filter(d => {
-      const kw = (applied.kw || '').toLowerCase();
-      if (kw && !(d.name || '').toLowerCase().includes(kw)) return false;
-      if (applied.type && d.widgetType !== applied.type) return false;
-      if (applied.status && d.status !== applied.status) return false;
-      return true;
-    }));
-    const cfTotalCount = computed(() => cfFiltered.value.length);
+    const cfTotalCount = computed(() => widgetLibs.length);
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotalCount.value / pager.pageSize)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
+    const cfPageList = computed(() => widgetLibs.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
     const cfPageNums = computed(() => { const c=pager.pageNo,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const fnStatusCls = (v) => ({ '활성':'badge-green', '비활성':'badge-gray' }[v] || 'badge-gray');
     const contentSummary = (d) => d?.contents || d?.desc || '';
@@ -148,13 +136,13 @@ const applied = reactive({ kw: '', type: '', status: '' });
     return { widgets, widgetLibs, uiState, pathLabel,
       codes, wTypeLabel, wIcon,
       searchParam, searchParamOrg, pager,
-      applied, onSearch, onReset,
+      onSearch, onReset,
       cfSiteNm,
       setPage, onSizeChange,
       uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId),
       handleLoadDetail, openNew, closeDetail, inlineNavigate,
       cfDetailEditId, cfDetailKey,
-      cfFiltered, cfTotalCount, cfTotalPages, cfPageList, cfPageNums,
+      cfTotalCount, cfTotalPages, cfPageList, cfPageNums,
       selectNode,
       fnStatusCls, contentSummary, handleDelete,
     };
