@@ -1,19 +1,19 @@
 package com.shopjoy.ecadminapi.base.sy.data.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.experimental.SuperBuilder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 
 @Entity
 @Table(name = "sy_role", schema = "shopjoy_2604")
 @Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
+@NoArgsConstructor @AllArgsConstructor @SuperBuilder
 // 역할(권한) 엔티티
-public class SyRole {
+public class SyRole extends BaseEntity {
 
     @Id
     @Column(name = "role_id", length = 21, nullable = false)
@@ -45,18 +45,6 @@ public class SyRole {
 
     @Column(name = "role_remark", length = 300)
     private String roleRemark;
-
-    @Column(name = "reg_by", length = 30)
-    private String regBy;
-
-    @Column(name = "reg_date")
-    private LocalDateTime regDate;
-
-    @Column(name = "upd_by", length = 30)
-    private String updBy;
-
-    @Column(name = "upd_date")
-    private LocalDateTime updDate;
 
     @Column(name = "disp_path", length = 200)
     private String dispPath;

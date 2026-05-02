@@ -5,15 +5,17 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
+import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 
 @Entity
 @Table(name = "cm_chatt_room", schema = "shopjoy_2604")
 @Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
+@NoArgsConstructor @AllArgsConstructor @SuperBuilder
 // 채팅방 엔티티
-public class CmChattRoom {
+public class CmChattRoom extends BaseEntity {
 
     @Id
     @Column(name = "chatt_room_id", length = 21, nullable = false)
@@ -57,17 +59,5 @@ public class CmChattRoom {
 
     @Column(name = "close_reason", length = 200)
     private String closeReason;
-
-    @Column(name = "reg_by", length = 30)
-    private String regBy;
-
-    @Column(name = "reg_date")
-    private LocalDateTime regDate;
-
-    @Column(name = "upd_by", length = 30)
-    private String updBy;
-
-    @Column(name = "upd_date")
-    private LocalDateTime updDate;
 
 }

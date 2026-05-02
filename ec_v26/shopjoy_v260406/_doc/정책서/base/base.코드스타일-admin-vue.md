@@ -139,7 +139,77 @@ template 안의 주요 구역은 HTML 주석으로 구분한다.
 
 ---
 
-## 9. 전체 구조 예시
+## 9. BO API 변경성 호출 필수 헤더 (`X-UI-Nm`, `X-Cmd-Nm`)
+
+`boApi.post / put / delete / patch` 등 **변경성 API 호출 시** `coUtil.apiHdr(uiNm, cmdNm)`을 반드시 전달해야 한다.  
+누락 시 `boApiAxios.js` 인터셉터가 요청을 차단하고 `[BO API] 필수 헤더 누락: X-UI-Nm, X-Cmd-Nm` 에러 토스트를 출력한다.
+
+### 메서드별 인자 위치
+
+| 메서드 | 시그니처 | 헤더 위치 |
+|---|---|---|
+| `get` | `boApi.get(url, config)` | `config` 자리에 `coUtil.apiHdr(...)` |
+| `post` | `boApi.post(url, data, config)` | 세 번째 인자에 `coUtil.apiHdr(...)` |
+| `put` | `boApi.put(url, data, config)` | 세 번째 인자에 `coUtil.apiHdr(...)` |
+| `patch` | `boApi.patch(url, data, config)` | 세 번째 인자에 `coUtil.apiHdr(...)` |
+| `delete` | `boApi.delete(url, config)` | 두 번째 인자에 `coUtil.apiHdr(...)` |
+
+### 올바른 예시
+
+```js
+// GET (조회) — services/boApiSvc.js 에 등록하면 내부에서 coUtil.apiHdr 사용
+const res = await boApiSvc.syCode.getPage({ codeGrp: 'USE_YN' }, '공통코드관리', '목록조회');
+
+// POST (등록)
+await boApi.post('/bo/sy/code', row, coUtil.apiHdr('공통코드관리', '등록'));
+
+// PUT (수정)
+await boApi.put(`/bo/sy/code/${id}`, row, coUtil.apiHdr('공통코드관리', '수정'));
+
+// DELETE (삭제)
+await boApi.delete(`/bo/sy/code/${id}`, coUtil.apiHdr('공통코드관리', '삭제'));
+```
+
+### 잘못된 예시
+
+```js
+// ❌ 헤더 없이 호출 — 인터셉터에서 차단됨
+await boApi.post('/bo/sy/code', row);
+await boApi.put(`/bo/sy/code/${id}`, row);
+await boApi.delete(`/bo/sy/code/${id}`);
+```
+
+---
+
+## 10. 저장 완료 후 재조회 정책
+
+CRUD 저장 함수(`handleSave`, `handleSaveGrp` 등)는 **저장 성공 후 반드시 서버에서 재조회**해야 한다.  
+로컬 상태만 업데이트하면 서버가 부여한 ID·타임스탬프·변환값이 반영되지 않는다.
+
+### 패턴
+
+```js
+const handleSave = async () => {
+  // ... 확인 다이얼로그 ...
+  try {
+    await boApi.post('/bo/sy/xxx', row, coUtil.apiHdr('XXX관리', '등록'));
+    props.showToast('저장되었습니다.');
+    await handleSearchList();   // ← 반드시 서버 재조회
+  } catch (err) {
+    props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+  }
+};
+```
+
+### 규칙
+
+- **코드목록 저장** → `handleSearchList()` 로 해당 그룹 코드 재조회
+- **그룹 저장** → `handleLoadAllGroups()` 로 전체 그룹 재조회 (서버 집계값 반영)
+- 로컬 배열 직접 조작(`splice`, `push`, `forEach r._row_status = 'N'`)으로 저장 완료를 표현하지 않는다
+
+---
+
+## 11. 전체 구조 예시
 
 ```js
 /* ShopJoy Admin - 화면명 */

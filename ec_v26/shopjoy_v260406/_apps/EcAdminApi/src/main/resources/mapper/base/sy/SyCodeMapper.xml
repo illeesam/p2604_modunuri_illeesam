@@ -8,6 +8,7 @@
     <sql id="syCodeCond">
         <where>
             <if test="siteId != null and siteId != ''">AND c.site_id = #{siteId}</if>
+            <if test="codeGrp != null and codeGrp != ''">AND c.code_grp = #{codeGrp}</if>
             <if test="dateStart != null and dateStart != ''">AND c.reg_date &gt;= #{dateStart}::DATE</if>
             <if test="dateEnd   != null and dateEnd   != ''">AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>

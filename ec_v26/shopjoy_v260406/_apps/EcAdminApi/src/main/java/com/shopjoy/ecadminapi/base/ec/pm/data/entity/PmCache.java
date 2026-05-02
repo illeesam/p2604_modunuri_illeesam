@@ -5,16 +5,18 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 
 @Entity
 @Table(name = "pm_cache", schema = "shopjoy_2604")
 @Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
+@NoArgsConstructor @AllArgsConstructor @SuperBuilder
 // 캐시(충전금) 엔티티
-public class PmCache {
+public class PmCache extends BaseEntity {
 
     @Id
     @Column(name = "cache_id", length = 21, nullable = false)
@@ -52,17 +54,5 @@ public class PmCache {
 
     @Column(name = "expire_date")
     private LocalDate expireDate;
-
-    @Column(name = "reg_by", length = 30)
-    private String regBy;
-
-    @Column(name = "reg_date")
-    private LocalDateTime regDate;
-
-    @Column(name = "upd_by", length = 30)
-    private String updBy;
-
-    @Column(name = "upd_date")
-    private LocalDateTime updDate;
 
 }

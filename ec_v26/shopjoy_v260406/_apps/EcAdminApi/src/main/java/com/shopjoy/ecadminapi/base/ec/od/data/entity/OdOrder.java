@@ -5,15 +5,17 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
+import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 
 @Entity
 @Table(name = "od_order", schema = "shopjoy_2604")
 @Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
+@NoArgsConstructor @AllArgsConstructor @SuperBuilder
 // 주문 엔티티
-public class OdOrder {
+public class OdOrder extends BaseEntity {
 
     @Id
     @Column(name = "order_id", length = 21, nullable = false)
@@ -138,18 +140,6 @@ public class OdOrder {
 
     @Column(name = "dliv_ship_date")
     private LocalDateTime dlivShipDate;
-
-    @Column(name = "reg_by", length = 30)
-    private String regBy;
-
-    @Column(name = "reg_date")
-    private LocalDateTime regDate;
-
-    @Column(name = "upd_by", length = 30)
-    private String updBy;
-
-    @Column(name = "upd_date")
-    private LocalDateTime updDate;
 
     @Column(name = "appr_status_cd", length = 20)
     private String apprStatusCd;

@@ -13,7 +13,52 @@ window.SyBizMng = {
       biz_class: ['법인','개인','면세','간이','공공'],
     });
 
-    // onMounted에서 API 로드
+    /* 검색 */
+    const searchParam = reactive({ kw: '', statusFlt: '', vendorTypeFlt: '' });
+
+    /* 페이징 */
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    // ── computed ─────────────────────────────────────────────────────────────
+
+    const isAppReady = computed(() => {
+      const initStore = window.useBoAppInitStore?.();
+      const codeStore = window.sfGetBoCodeStore?.();
+      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+
+    const cfAllowedPathIds = computed(() => uiState.selectedPath == null ? null : boUtil.getPathDescendants('sy_vendor', uiState.selectedPath));
+    const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage; const s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+
+    // ── watch ────────────────────────────────────────────────────────────────
+
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+    watch(() => uiState.selectedPath, () => { pager.pageNo = 1; handleSearchList('DEFAULT'); });
+
+    // ── 초기화부 ─────────────────────────────────────────────────────────────
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.sfGetBoCodeStore?.();
+        if (!codeStore?.snGetGrpCodes) return;
+        codes.vendor_status = await codeStore.snGetGrpCodes('VENDOR_STATUS') || [];
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      handleSearchList('DEFAULT');
+    });
+
+    // ── 이벤트 함수 모음 ──────────────────────────────────────────────────────
+
+    /* 좌측 표시경로 트리 */
+    const selectNode = (id) => { uiState.selectedPath = id; };
+
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -30,51 +75,9 @@ window.SyBizMng = {
         uiState.loading = false;
       }
     };
-    /* 좌측 표시경로 트리 */
-    const selectNode = (id) => { uiState.selectedPath = id; };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      handleSearchList('DEFAULT');
-    });
-
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.vendor_status = await codeStore.snGetGrpCodes('VENDOR_STATUS') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
-    const cfAllowedPathIds = computed(() => uiState.selectedPath == null ? null : boUtil.getPathDescendants('sy_vendor', uiState.selectedPath));
-
-    /* 검색 */
-    const searchParam = reactive({ kw: '', statusFlt: '', vendorTypeFlt: '' });
-
-    /* 페이징 */
-const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage; const s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const setPage = n => { if(n>=1 && n<=pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-
-    watch(() => uiState.selectedPath, () => { pager.pageNo = 1; handleSearchList('DEFAULT'); });
 
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const onReset = () => {

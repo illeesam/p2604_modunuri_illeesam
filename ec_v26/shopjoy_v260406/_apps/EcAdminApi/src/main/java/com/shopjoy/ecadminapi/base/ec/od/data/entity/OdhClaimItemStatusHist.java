@@ -5,15 +5,17 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
+import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 
 @Entity
 @Table(name = "odh_claim_item_status_hist", schema = "shopjoy_2604")
 @Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
+@NoArgsConstructor @AllArgsConstructor @SuperBuilder
 // 클레임 아이템 상태 이력 엔티티
-public class OdhClaimItemStatusHist {
+public class OdhClaimItemStatusHist extends BaseEntity {
 
     @Id
     @Column(name = "claim_item_status_hist_id", length = 21, nullable = false)
@@ -48,17 +50,5 @@ public class OdhClaimItemStatusHist {
 
     @Column(name = "memo", length = 300)
     private String memo;
-
-    @Column(name = "reg_by", length = 30)
-    private String regBy;
-
-    @Column(name = "reg_date")
-    private LocalDateTime regDate;
-
-    @Column(name = "upd_by", length = 30)
-    private String updBy;
-
-    @Column(name = "upd_date")
-    private LocalDateTime updDate;
 
 }

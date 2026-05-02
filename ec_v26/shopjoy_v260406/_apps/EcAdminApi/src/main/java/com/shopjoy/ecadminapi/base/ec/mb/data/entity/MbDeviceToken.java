@@ -5,14 +5,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
+import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 
 @Entity
 @Table(name = "mb_device_token", schema = "shopjoy_2604")
 @Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
-public class MbDeviceToken {
+@NoArgsConstructor @AllArgsConstructor @SuperBuilder
+public class MbDeviceToken extends BaseEntity {
 
     @Id
     @Column(name = "device_token_id", length = 21, nullable = false)
@@ -35,17 +37,5 @@ public class MbDeviceToken {
 
     @Column(name = "alim_read_date")
     private LocalDateTime alimReadDate;
-
-    @Column(name = "reg_by", length = 30)
-    private String regBy;
-
-    @Column(name = "reg_date")
-    private LocalDateTime regDate;
-
-    @Column(name = "upd_by", length = 30)
-    private String updBy;
-
-    @Column(name = "upd_date")
-    private LocalDateTime updDate;
 
 }

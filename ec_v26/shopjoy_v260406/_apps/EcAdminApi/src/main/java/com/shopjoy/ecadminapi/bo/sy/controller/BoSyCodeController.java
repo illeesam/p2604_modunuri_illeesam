@@ -44,6 +44,12 @@ public class BoSyCodeController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    @PostMapping("/save-list")
+    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyCode> rows) {
+        service.saveList(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<SyCode>> create(@RequestBody SyCode body) {
         SyCode result = service.create(body);

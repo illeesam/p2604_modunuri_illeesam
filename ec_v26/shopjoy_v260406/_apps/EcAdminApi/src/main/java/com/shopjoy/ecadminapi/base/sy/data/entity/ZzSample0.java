@@ -5,14 +5,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
+import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 
 @Entity
 @Table(name = "zz_sample0", schema = "shopjoy_2604")
 @Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
-public class ZzSample0 {
+@NoArgsConstructor @AllArgsConstructor @SuperBuilder
+public class ZzSample0 extends BaseEntity {
 
     @Id
     @Column(name = "sample0_id", length = 21, nullable = false)
@@ -32,18 +33,6 @@ public class ZzSample0 {
 
     @Column(name = "use_yn", length = 1)
     private String useYn;
-
-    @Column(name = "reg_by", length = 30)
-    private String regBy;
-
-    @Column(name = "reg_date")
-    private LocalDateTime regDate;
-
-    @Column(name = "upd_by", length = 30)
-    private String updBy;
-
-    @Column(name = "upd_date")
-    private LocalDateTime updDate;
 
     @Column(name = "col01", length = 200)
     private String col01;

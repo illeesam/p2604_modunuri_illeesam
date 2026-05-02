@@ -5,16 +5,18 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 
 @Entity
 @Table(name = "sy_vendor_user_role", schema = "shopjoy_2604")
 @Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
+@NoArgsConstructor @AllArgsConstructor @SuperBuilder
 // 업체 사용자 역할 연결 엔티티
-public class SyVendorUserRole {
+public class SyVendorUserRole extends BaseEntity {
 
     @Id
     @Column(name = "vendor_user_role_id", length = 21, nullable = false)
@@ -44,15 +46,4 @@ public class SyVendorUserRole {
     @Column(name = "vendor_user_role_remark", length = 500)
     private String vendorUserRoleRemark;
 
-    @Column(name = "reg_by", length = 30)
-    private String regBy;
-
-    @Column(name = "reg_date")
-    private LocalDateTime regDate;
-
-    @Column(name = "upd_by", length = 30)
-    private String updBy;
-
-    @Column(name = "upd_date")
-    private LocalDateTime updDate;
 }

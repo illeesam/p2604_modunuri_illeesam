@@ -1,19 +1,18 @@
 package com.shopjoy.ecadminapi.base.sy.data.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.experimental.SuperBuilder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 
 @Entity
 @Table(name = "sy_code", schema = "shopjoy_2604")
 @Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
-// 공통 코드 엔티티
-public class SyCode {
+@NoArgsConstructor @AllArgsConstructor @SuperBuilder
+public class SyCode extends BaseEntity {
 
     @Id
     @Column(name = "code_id", length = 21, nullable = false)
@@ -45,17 +44,5 @@ public class SyCode {
 
     @Column(name = "code_remark", length = 300)
     private String codeRemark;
-
-    @Column(name = "reg_by", length = 30)
-    private String regBy;
-
-    @Column(name = "reg_date")
-    private LocalDateTime regDate;
-
-    @Column(name = "upd_by", length = 30)
-    private String updBy;
-
-    @Column(name = "upd_date")
-    private LocalDateTime updDate;
 
 }

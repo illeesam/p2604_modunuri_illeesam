@@ -5,14 +5,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
+import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 
 @Entity
 @Table(name = "syh_user_token_log", schema = "shopjoy_2604")
 @Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
-public class SyhUserTokenLog {
+@NoArgsConstructor @AllArgsConstructor @SuperBuilder
+public class SyhUserTokenLog extends BaseEntity {
 
     @Id
     @Column(name = "log_id", length = 21, nullable = false)
@@ -56,17 +58,5 @@ public class SyhUserTokenLog {
 
     @Column(name = "revoke_reason", length = 200)
     private String revokeReason;
-
-    @Column(name = "reg_by", length = 30)
-    private String regBy;
-
-    @Column(name = "reg_date")
-    private LocalDateTime regDate;
-
-    @Column(name = "upd_by", length = 30)
-    private String updBy;
-
-    @Column(name = "upd_date")
-    private LocalDateTime updDate;
 
 }

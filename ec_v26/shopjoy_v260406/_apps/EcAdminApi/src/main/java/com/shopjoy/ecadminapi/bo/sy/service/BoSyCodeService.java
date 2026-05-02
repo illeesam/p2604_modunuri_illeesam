@@ -77,6 +77,34 @@ public class BoSyCodeService {
     }
 
     @Transactional
+    public void saveList(List<SyCode> rows) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (SyCode row : rows) {
+            String status = row.getRowStatus();
+            if ("I".equals(status)) {
+                row.setCodeId("CD" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                repository.save(row);
+            } else if ("U".equals(status)) {
+                String codeId = row.getCodeId();
+                if (codeId == null) throw new CmBizException("수정 행에 codeId가 없습니다.");
+                SyCode entity = repository.findById(codeId)
+                    .orElseThrow(() -> new CmBizException("존재하지 않는 코드: " + codeId));
+                VoUtil.voCopy(row, entity, "codeId", "regBy", "regDate");
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                repository.save(entity);
+            } else if ("D".equals(status)) {
+                String codeId = row.getCodeId();
+                if (codeId != null) repository.findById(codeId).ifPresent(repository::delete);
+            }
+        }
+        em.flush();
+        codeCache.evictAll();
+    }
+
+    @Transactional
     public void delete(String id) {
         SyCode entity = repository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
