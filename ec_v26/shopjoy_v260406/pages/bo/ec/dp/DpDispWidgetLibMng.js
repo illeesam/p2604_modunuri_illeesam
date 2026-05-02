@@ -112,7 +112,7 @@ window.DpDispWidgetLibMng = {
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
     const closeDetail = () => { uiStateDetail.selectedId = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'dpDispWidgetLibMng') { uiStateDetail.selectedId = null; return; }
+      if (pg === 'dpDispWidgetLibMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);

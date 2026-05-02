@@ -10,7 +10,6 @@ window.DpDispPanelDtl = {
     const tab = Vue.toRef(uiState, 'tab');
     const previewMode = Vue.toRef(uiState, 'previewMode');
     const codes = reactive({ layout_types: [], disp_widget_types: [], active_statuses: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 호출'},{value:'modal',label:'모달 오픈'},{value:'url',label:'외부 URL'}] });
-    const displays = reactive([]);
     const events = reactive([]);
 
     // App 초기화 준비 상태
@@ -42,16 +41,28 @@ window.DpDispPanelDtl = {
     });
 
     // onMounted에서 API 로드
+    const handleLoadDetail = async () => {
+      if (cfIsNew.value) return;
+      uiState.loading = true;
+      try {
+        const res = await boApiSvc.dpPanel.getById(props.editId, '전시패널관리', '상세조회');
+        const data = res.data?.data;
+        if (data) Object.assign(form, data);
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
     const handleLoadData = async () => {
       uiState.loading = true;
       try {
-        const [panelsRes, displaysRes, eventsRes] = await Promise.all([
-          boApiSvc.dpPanel.getPage({ pageNo: 1, pageSize: 10000 }, '전시패널관리', '조회'),
-          boApiSvc.dpUi.getPage({ pageNo: 1, pageSize: 10000 }, '전시패널관리', '조회'),
+        const [eventsRes] = await Promise.all([
           boApiSvc.pmEvent.getPage({ pageNo: 1, pageSize: 10000 }, '전시패널관리', '조회'),
         ]);
-        panels.splice(0, panels.length, ...(panelsRes.data?.data?.pageList || panelsRes.data?.data?.list || []));
-        displays.splice(0, displays.length, ...(displaysRes.data?.data?.pageList || displaysRes.data?.data?.list || []));
         events.splice(0, events.length, ...(eventsRes.data?.data?.pageList || eventsRes.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
@@ -437,36 +448,7 @@ window.DpDispPanelDtl = {
 
     const handleInitForm = async () => {
       await nextTick();
-      /* 기존 데이터 로드 */
-      if (!cfIsNew.value) {
-        const d = displays.find(x => x.dispId === props.editId);
-        if (d) {
-          form.dispId        = d.dispId;
-          form.dispCode      = d.dispCode      || '';
-          form.area          = d.area          || 'HOME_BANNER';
-          form.name          = d.name          || '';
-          form.status        = d.status        || '활성';
-          form.htmlDesc      = d.htmlDesc      || '';
-          form.condition     = d.condition     || '항상 표시';
-          form.authRequired  = d.authRequired  || false;
-          form.authGrade     = d.authGrade     || '';
-          form.layoutType    = d.layoutType    || 'grid';
-          form.gridCols      = d.gridCols      || 1;
-          form.titleYn       = d.titleYn       || 'N';
-          form.title         = d.title         || '';
-          form.panelDispYn           = d.panelDispYn           || 'Y';
-          form.panelDispStartDate    = d.panelDispStartDate    || '';
-          form.panelDispEndDate      = d.panelDispEndDate      || '';
-          form.panelDispEnv          = d.panelDispEnv          || '^PROD^';
-          form.panelVisibilityTargets= d.panelVisibilityTargets|| '^PUBLIC^';
-          if (d.rows && d.rows.length) {
-            rows.splice(0, rows.length, ...d.rows.map((r, i) => makeRowData({ sortOrder: i+1, ...r })));
-            d.rows.forEach((_, i) => expandedSections.add('tab'+(i+1)));
-          } else {
-            Object.assign(window.safeArrayUtils.safeGet(rows, 0), { ...d });
-          }
-        }
-      } else {
+      if (cfIsNew.value) {
         /* 신규: 패널코드 자동 생성 DP_YYMMDD_HHMMSS */
         const t = new Date();
         const p = n => String(n).padStart(2, '0');
@@ -477,8 +459,9 @@ window.DpDispPanelDtl = {
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
+    onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
+      await handleLoadDetail();
       handleLoadData();
       handleInitForm();
     });
@@ -516,20 +499,11 @@ window.DpDispPanelDtl = {
       const isNewPanel = cfIsNew.value;
       const ok = await props.showConfirm(isNewPanel ? '등록' : '저장', isNewPanel ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      const payload = { ...form, rows: rows.map(r => ({ ...r })), sortOrder: Number(window.safeArrayUtils.safeGet(rows, 0).sortOrder) };
-      if (isNewPanel) {
-        payload.dispId  = nextId.value(displays, 'dispId');
-        payload.regDate = new Date().toISOString().slice(0, 10);
-        displays.push(payload);
-      } else {
-        const idx = displays.findIndex(x => x.dispId === props.editId);
-        if (idx !== -1) Object.assign(displays[idx], payload);
-      }
       try {
         const res = await (isNewPanel ? boApiSvc.dpPanel.create({ ...form, rows: rows.map(r => ({ ...r })) }, '전시패널관리', '등록') : boApiSvc.dpPanel.update(form.dispId, { ...form, rows: rows.map(r => ({ ...r })) }, '전시패널관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewPanel ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('dpDispPanelMng');
+        if (props.navigate) props.navigate('dpDispPanelMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -721,7 +695,7 @@ window.DpDispPanelDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { panels, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
+    return { uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
       libPickMode, openLibPick, onLibPicked,
       onRowCopy,
       cfVisibilityOptions, hasVisibility, toggleVisibility,

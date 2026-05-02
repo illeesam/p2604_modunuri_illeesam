@@ -221,7 +221,7 @@ window.PmCouponDtl = {
         const res = await (cfIsNew.value ? boApiSvc.pmCoupon.create({ ...form }, '쿠폰관리', '등록') : boApiSvc.pmCoupon.update(form.couponId, { ...form }, '쿠폰관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('pmCouponMng');
+        if (props.navigate) props.navigate('pmCouponMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

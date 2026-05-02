@@ -79,7 +79,7 @@ window.PmEventMng = {
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
     const closeDetail = () => { uiStateDetail.selectedId = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'pmEventMng') { uiStateDetail.selectedId = null; return; }
+      if (pg === 'pmEventMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };

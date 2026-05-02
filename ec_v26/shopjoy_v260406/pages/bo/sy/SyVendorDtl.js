@@ -3,27 +3,10 @@ window.SyVendorDtl = {
   name: 'SyVendorDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
-    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { reactive, computed, watch, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
 
-    const vendors = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, memoEl: null });
     const codes = reactive({ active_statuses: [], vendor_type_kr: [] });
-
-    // onMounted에서 API 로드
-    const handleLoadData = async () => {
-      uiState.loading = true;
-      try {
-        const res = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '판매자관리', '상세조회');
-        vendors = res.data?.data?.pageList || res.data?.data?.list || [];
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-      } finally {
-        uiState.loading = false;
-      }
-    };
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
       const codeStore = window.sfGetBoCodeStore?.();
@@ -41,7 +24,6 @@ window.SyVendorDtl = {
         console.error('[fnLoadCodes]', err);
       }
       uiState.isPageCodeLoad = true;
-      handleLoadData();
     };
 
     // ── watch ────────────────────────────────────────────────────────────────
@@ -67,10 +49,6 @@ window.SyVendorDtl = {
     });
 
     const handleInitForm = async () => {
-      if (!cfIsNew.value) {
-        const v = vendors.find(x => x.vendorId === props.editId);
-        if (v) Object.assign(form, { ...v });
-      }
       await nextTick();
       if (uiState.memoEl) {
         _qMemo = new Quill(uiState.memoEl, {
@@ -83,9 +61,26 @@ window.SyVendorDtl = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
+    const handleLoadDetail = async () => {
+      if (cfIsNew.value) return;
+      uiState.loading = true;
+      try {
+        const res = await boApiSvc.syVendor.getById(props.editId, '판매자관리', '상세조회');
+        const data = res.data?.data;
+        if (data) Object.assign(form, data);
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    // ★ onMounted — 진입 시 코드 로드 + 상세 조회
+    onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
+      if (!cfIsNew.value) { await handleLoadDetail(); }
       handleInitForm();
     });
 
@@ -121,17 +116,11 @@ window.SyVendorDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (cfIsNew.value) {
-        vendors.push({ ...form, vendorId: nextId.value(vendors, 'vendorId') });
-      } else {
-        const idx = vendors.findIndex(x => x.vendorId === props.editId);
-        if (idx !== -1) Object.assign(vendors[idx], { ...form });
-      }
       try {
         const res = await (cfIsNew.value ? boApiSvc.syVendor.create({ ...form }, '판매자관리', '등록') : boApiSvc.syVendor.update(form.vendorId, { ...form }, '판매자관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('syVendorMng');
+        if (props.navigate) props.navigate('syVendorMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -145,7 +134,7 @@ window.SyVendorDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { vendors, uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, addrDetailRef, openKakaoPostcode, memoEl };
+    return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, addrDetailRef, openKakaoPostcode, memoEl };
   },
   template: /* html */`
 <div>

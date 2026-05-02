@@ -132,7 +132,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
     const closeDetail = () => { uiStateDetail.selectedId = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'syUserMng') { uiStateDetail.selectedId = null; return; }
+      if (pg === 'syUserMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchData('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };

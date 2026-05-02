@@ -210,7 +210,7 @@ window.PmPlanDtl = {
         const res = await (cfIsNew.value ? boApiSvc.pmPlan.create(form, '요금제관리', '등록') : boApiSvc.pmPlan.update(props.editId, form, '요금제관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('pmPlanMng');
+        if (props.navigate) props.navigate('pmPlanMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

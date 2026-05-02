@@ -58,6 +58,7 @@
   boApiSvc.dpPanel = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/dp/panel/page', { params, ...hdr(uiNm, cmdNm) }); },
     getBasePage(params, uiNm, cmdNm) { return global.boApi.get('/base/ec/dp/panel/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(dispId, uiNm, cmdNm) { return global.boApi.get(`/bo/ec/dp/panel/${dispId}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm) { return global.boApi.post('/bo/ec/dp/panel', body, hdr(uiNm, cmdNm)); },
     update(dispId, body, uiNm, cmdNm) { return global.boApi.put(`/bo/ec/dp/panel/${dispId}`, body, hdr(uiNm, cmdNm)); },
     remove(dispId, uiNm, cmdNm) { return global.boApi.delete(`/bo/ec/dp/panel/${dispId}`, hdr(uiNm, cmdNm)); },
@@ -84,6 +85,7 @@
   /* ── dp: 위젯라이브러리 ─────────────────────────────────────── */
   boApiSvc.dpWidgetLib = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/dp/widget-lib/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(libId, uiNm, cmdNm) { return global.boApi.get(`/bo/ec/dp/widget-lib/${libId}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm) { return global.boApi.post('/bo/ec/dp/widget-lib', body, hdr(uiNm, cmdNm)); },
     update(libId, body, uiNm, cmdNm) { return global.boApi.put(`/bo/ec/dp/widget-lib/${libId}`, body, hdr(uiNm, cmdNm)); },
     remove(libId, uiNm, cmdNm) { return global.boApi.delete(`/bo/ec/dp/widget-lib/${libId}`, hdr(uiNm, cmdNm)); },
@@ -375,6 +377,7 @@
   /* ── sy: 알람 ───────────────────────────────────────────────── */
   boApiSvc.syAlarm = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/alarm/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(alarmId, uiNm, cmdNm) { return global.boApi.get(`/bo/sy/alarm/${alarmId}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm) { return global.boApi.post('/bo/sy/alarm', body, hdr(uiNm, cmdNm)); },
     update(alarmId, body, uiNm, cmdNm) { return global.boApi.put(`/bo/sy/alarm/${alarmId}`, body, hdr(uiNm, cmdNm)); },
     remove(alarmId, uiNm, cmdNm) { return global.boApi.delete(`/bo/sy/alarm/${alarmId}`, hdr(uiNm, cmdNm)); },
@@ -393,6 +396,7 @@
   /* ── sy: 배치 ───────────────────────────────────────────────── */
   boApiSvc.syBatch = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/batch/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(batchId, uiNm, cmdNm) { return global.boApi.get(`/bo/sy/batch/${batchId}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm) { return global.boApi.post('/bo/sy/batch', body, hdr(uiNm, cmdNm)); },
     update(batchId, body, uiNm, cmdNm) { return global.boApi.put(`/bo/sy/batch/${batchId}`, body, hdr(uiNm, cmdNm)); },
     run(body, uiNm, cmdNm) { return global.boApi.post('/bo/sy/batch/run', body, hdr(uiNm, cmdNm)); },
@@ -415,6 +419,7 @@
   /* ── sy: 게시판모드(BBM) ────────────────────────────────────── */
   boApiSvc.syBbm = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/bbm/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(bbmId, uiNm, cmdNm) { return global.boApi.get(`/bo/sy/bbm/${bbmId}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm) { return global.boApi.post('/bo/sy/bbm', body, hdr(uiNm, cmdNm)); },
     update(bbmId, body, uiNm, cmdNm) { return global.boApi.put(`/bo/sy/bbm/${bbmId}`, body, hdr(uiNm, cmdNm)); },
     remove(bbmId, uiNm, cmdNm) { return global.boApi.delete(`/bo/sy/bbm/${bbmId}`, hdr(uiNm, cmdNm)); },
@@ -539,6 +544,7 @@
   /* ── sy: 업체(Vendor) ───────────────────────────────────────── */
   boApiSvc.syVendor = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/vendor/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(vendorId, uiNm, cmdNm) { return global.boApi.get(`/bo/sy/vendor/${vendorId}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm) { return global.boApi.post('/bo/sy/vendor', body, hdr(uiNm, cmdNm)); },
     update(vendorId, body, uiNm, cmdNm) { return global.boApi.put(`/bo/sy/vendor/${vendorId}`, body, hdr(uiNm, cmdNm)); },
     remove(vendorId, uiNm, cmdNm) { return global.boApi.delete(`/bo/sy/vendor/${vendorId}`, hdr(uiNm, cmdNm)); },

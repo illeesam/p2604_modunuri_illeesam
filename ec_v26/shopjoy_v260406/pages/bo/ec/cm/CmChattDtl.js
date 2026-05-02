@@ -143,7 +143,7 @@ window.CmChattDtl = {
         const res = await boApiSvc.cmChatt.create({ ...form }, '채팅관리', '등록');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('등록되었습니다.', 'success');
-        if (props.navigate) props.navigate('cmChattMng');
+        if (props.navigate) props.navigate('cmChattMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

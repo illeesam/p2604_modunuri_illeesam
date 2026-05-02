@@ -3,27 +3,10 @@ window.SyAlarmDtl = {
   name: 'SyAlarmDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
-    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { reactive, computed, watch, onMounted, ref } = Vue;
 
-    const alarms = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ alarm_types: [], alarm_statuses: [], alarm_target_types: [] });
-
-    // onMounted에서 API 로드
-    const handleSearchList = async (searchType = 'DEFAULT') => {
-      uiState.loading = true;
-      try {
-        const res = await boApiSvc.syAlarm.getPage({ pageNo: 1, pageSize: 10000 }, '알람관리', '상세조회');
-        alarms = res.data?.data?.pageList || res.data?.data?.list || [];
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-      } finally {
-        uiState.loading = false;
-      }
-    };
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
       const codeStore = window.sfGetBoCodeStore?.();
@@ -42,7 +25,6 @@ window.SyAlarmDtl = {
         console.error('[fnLoadCodes]', err);
       }
       uiState.isPageCodeLoad = true;
-      handleSearchList();
     };
 
     // ── watch ────────────────────────────────────────────────────────────────
@@ -62,13 +44,26 @@ window.SyAlarmDtl = {
       message: yup.string().required('메시지를 입력해주세요.'),
     });
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      if (!cfIsNew.value) {
-        const a = alarms.find(x => x.alarmId === props.editId);
-        if (a) Object.assign(form, { ...a });
+    const handleLoadDetail = async () => {
+      if (cfIsNew.value) return;
+      uiState.loading = true;
+      try {
+        const res = await boApiSvc.syAlarm.getById(props.editId, '알람관리', '상세조회');
+        const data = res.data?.data;
+        if (data) Object.assign(form, data);
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+      } finally {
+        uiState.loading = false;
       }
+    };
+
+    // ★ onMounted — 진입 시 코드 로드 + 상세 조회
+    onMounted(async () => {
+      if (isAppReady.value) fnLoadCodes();
+      if (!cfIsNew.value) { await handleLoadDetail(); }
     });
 
     const handleSave = async () => {
@@ -83,17 +78,11 @@ window.SyAlarmDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (cfIsNew.value) {
-        alarms.unshift({ ...form, alarmId: nextId.value(alarms, 'alarmId'), regDate: new Date().toISOString().slice(0, 10) });
-      } else {
-        const idx = alarms.findIndex(x => x.alarmId === props.editId);
-        if (idx !== -1) Object.assign(alarms[idx], { ...form });
-      }
       try {
         const res = await (cfIsNew.value ? boApiSvc.syAlarm.create({ ...form }, '알람관리', '등록') : boApiSvc.syAlarm.update(form.alarmId, { ...form }, '알람관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('syAlarmMng');
+        if (props.navigate) props.navigate('syAlarmMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -104,7 +93,7 @@ window.SyAlarmDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { alarms, uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm };
+    return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm };
   },
   template: /* html */`
 <div>

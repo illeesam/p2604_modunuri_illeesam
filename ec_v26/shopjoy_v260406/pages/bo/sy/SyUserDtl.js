@@ -3,27 +3,10 @@ window.SyUserDtl = {
   name: 'SyUserDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
-    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { reactive, computed, watch, onMounted, ref } = Vue;
 
-    const users = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ active_statuses: [], user_roles: [] });
-
-    // onMounted에서 API 로드
-    const handleSearchList = async (searchType = 'DEFAULT') => {
-      uiState.loading = true;
-      try {
-        const res = await boApiSvc.syUser.getPage({ pageNo: 1, pageSize: 10000 }, '사용자관리', '상세조회');
-        users.splice(0, users.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-      } finally {
-        uiState.loading = false;
-      }
-    };
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
       const codeStore = window.sfGetBoCodeStore?.();
@@ -41,7 +24,6 @@ window.SyUserDtl = {
         console.error('[fnLoadCodes]', err);
       }
       uiState.isPageCodeLoad = true;
-      handleSearchList();
     };
 
     // ── watch ────────────────────────────────────────────────────────────────
@@ -66,13 +48,26 @@ window.SyUserDtl = {
       email:   yup.string().required('이메일을 입력해주세요.'),
     });
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      if (!cfIsNew.value) {
-        const u = users.find(x => x.boUserId === props.editId);
-        if (u) Object.assign(form, { ...u, password: '' });
+    const handleLoadDetail = async () => {
+      if (cfIsNew.value) return;
+      uiState.loading = true;
+      try {
+        const res = await boApiSvc.syUser.getById(props.editId, '사용자관리', '상세조회');
+        const data = res.data?.data;
+        if (data) Object.assign(form, { ...data, password: '' });
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+      } finally {
+        uiState.loading = false;
       }
+    };
+
+    // ★ onMounted — 진입 시 코드 로드 + 상세 조회
+    onMounted(async () => {
+      if (isAppReady.value) fnLoadCodes();
+      if (!cfIsNew.value) { await handleLoadDetail(); }
     });
 
     /* ── 카카오 주소 검색 ── */
@@ -123,21 +118,11 @@ window.SyUserDtl = {
       if (cfIsNew.value && !form.password) { props.showToast('신규 등록 시 비밀번호는 필수입니다.', 'error'); return; }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (cfIsNew.value) {
-        const { password, ...rest } = form;
-        users.push({ ...rest, boUserId: nextId.value(users, 'boUserId'), lastLogin: '-', regDate: new Date().toISOString().slice(0, 10) });
-      } else {
-        const idx = users.findIndex(x => x.boUserId === props.editId);
-        if (idx !== -1) {
-          const { password, ...rest } = form;
-          Object.assign(users[idx], rest);
-        }
-      }
       try {
         const res = await (cfIsNew.value ? boApiSvc.syUser.create({ ...form }, '사용자관리', '등록') : boApiSvc.syUser.update(form.boUserId, { ...form }, '사용자관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('syUserMng');
+        if (props.navigate) props.navigate('syUserMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -148,7 +133,7 @@ window.SyUserDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { users, uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm,
+    return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm,
              addrDetailRef, openKakaoPostcode,
              deptModal, openDeptModal, onDeptSelect, clearDept,
              cfUserRoles, fnRoleTypeBadge };

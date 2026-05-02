@@ -94,7 +94,7 @@ window.DpDispPanelMng = {
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
     const closeDetail = () => { uiStateDetail.selectedId = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'dpDispPanelMng') { uiStateDetail.selectedId = null; return; }
+      if (pg === 'dpDispPanelMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };

@@ -5,24 +5,8 @@ window.SyBbsDtl = {
   setup(props) {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick, watch } = Vue;
 
-    const bbss = reactive([]);
     const uiState = reactive({ loading: false, showBbmDetail: false, error: null, isPageCodeLoad: false, selectedBbm: null, showBbmModal: false });
     const codes = reactive({ bbs_post_statuses: [] });
-
-    // onMounted에서 API 로드
-    const handleSearchList = async (searchType = 'DEFAULT') => {
-      uiState.loading = true;
-      try {
-        const res = await boApiSvc.syBbs.getPage({ pageNo: 1, pageSize: 10000 }, '게시판관리', '상세조회');
-        bbss.splice(0, bbss.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-      } finally {
-        uiState.loading = false;
-      }
-    };
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
       const codeStore = window.sfGetBoCodeStore?.();
@@ -39,7 +23,6 @@ window.SyBbsDtl = {
         console.error('[fnLoadCodes]', err);
       }
       uiState.isPageCodeLoad = true;
-      handleSearchList();
     };
 
     // ── watch ────────────────────────────────────────────────────────────────
@@ -97,16 +80,29 @@ window.SyBbsDtl = {
 
     /* ── 초기화 ── */
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      if (!cfIsNew.value) {
-        const b = bbss.find(x => x.bbsId === props.editId);
-        if (b) {
-          Object.assign(form, { ...b });
+    const handleLoadDetail = async () => {
+      if (cfIsNew.value) return;
+      uiState.loading = true;
+      try {
+        const res = await boApiSvc.syBbs.getById(props.editId, '게시판관리', '상세조회');
+        const data = res.data?.data;
+        if (data) {
+          Object.assign(form, data);
           uiState.selectedBbm = null;
         }
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+      } finally {
+        uiState.loading = false;
       }
+    };
+
+    // ★ onMounted — 진입 시 코드 로드 + 상세 조회
+    onMounted(async () => {
+      if (isAppReady.value) fnLoadCodes();
+      if (!cfIsNew.value) { await handleLoadDetail(); }
       /* htmleditor 초기화는 selectedBbm 결정 후 — viewMode 일 때는 초기화 불필요 */
       if (!props.viewMode && cfContentType.value === 'htmleditor') {
         Vue.nextTick(() => { initQuill(); });
@@ -144,17 +140,11 @@ window.SyBbsDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (cfIsNew.value) {
-        bbss.unshift({ ...form, bbmId: Number(form.bbmId), bbsId: ((bbss.reduce((m, x) => Math.max(m, Number(x.bbsId) || 0), 0) || 0) + 1), viewCount: 0, commentCount: 0, regDate: new Date().toISOString().slice(0, 10) });
-      } else {
-        const idx = bbss.findIndex(x => x.bbsId === props.editId);
-        if (idx !== -1) Object.assign(bbss[idx], { ...form, bbmId: Number(form.bbmId) });
-      }
       try {
         const res = await (cfIsNew.value ? boApiSvc.syBbs.create({ ...form }, '게시판관리', '등록') : boApiSvc.syBbs.update(form.bbsId, { ...form }, '게시판관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('syBbsMng');
+        if (props.navigate) props.navigate('syBbsMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -168,7 +158,7 @@ window.SyBbsDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { bbss, uiState, codes, cfIsNew, form, errors, selectedBbm, cfContentType, cfAllowAttach, cfAttachMaxCount,
+    return { uiState, codes, cfIsNew, form, errors, selectedBbm, cfContentType, cfAllowAttach, cfAttachMaxCount,
       showBbmModal, onBbmSelect, handleSave, cfSiteNm,
     };
   },

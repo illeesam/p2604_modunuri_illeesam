@@ -6,46 +6,14 @@ window.SyCodeDtl = {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { reactive, computed, watch, onMounted, ref } = Vue;
 
-    const codes = reactive([]);
     const pageCodes = reactive({ use_yn: [] });
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
 
-    // onMounted에서 API 로드
-    const handleSearchList = async (searchType = 'DEFAULT') => {
-      uiState.loading = true;
-      try {
-        const res = await boApiSvc.syCode.getPage({ pageNo: 1, pageSize: 10000 }, '코드관리', '상세조회');
-        codes = res.data?.data?.pageList || res.data?.data?.list || [];
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-      } finally {
-        uiState.loading = false;
-      }
-    };
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
       const codeStore = window.sfGetBoCodeStore?.();
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (codeStore?.snGetGrpCodes) {
-          pageCodes.use_yn = await codeStore.snGetGrpCodes('USE_YN') || [];
-        }
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-      uiState.isPageCodeLoad = true;
-      handleSearchList();
-    };
-
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
@@ -60,13 +28,42 @@ window.SyCodeDtl = {
       codeValue: yup.string().required('코드값을 입력해주세요.'),
     });
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      if (!cfIsNew.value) {
-        const c = codes.find(x => x.codeId === props.editId);
-        if (c) Object.assign(form, { ...c });
+    const handleLoadDetail = async () => {
+      if (cfIsNew.value) return;
+      uiState.loading = true;
+      try {
+        const res = await boApiSvc.syCode.getById(props.editId, '코드관리', '상세조회');
+        const data = res.data?.data;
+        if (data) Object.assign(form, data);
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+      } finally {
+        uiState.loading = false;
       }
+    };
+
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.sfGetBoCodeStore?.();
+        if (codeStore?.snGetGrpCodes) {
+          pageCodes.use_yn = await codeStore.snGetGrpCodes('USE_YN') || [];
+        }
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+      uiState.isPageCodeLoad = true;
+    };
+
+    // ── watch ────────────────────────────────────────────────────────────────
+
+    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+
+    // ★ onMounted — 코드 로드 + 상세 조회
+    onMounted(async () => {
+      if (isAppReady.value) fnLoadCodes();
+      if (!cfIsNew.value) await handleLoadDetail();
     });
 
     const handleSave = async () => {
@@ -81,17 +78,11 @@ window.SyCodeDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (cfIsNew.value) {
-        codes.push({ ...form, codeId: nextId.value(codes, 'codeId'), sortOrd: Number(form.sortOrd) || 1 });
-      } else {
-        const idx = codes.findIndex(x => x.codeId === props.editId);
-        if (idx !== -1) Object.assign(codes[idx], { ...form, sortOrd: Number(form.sortOrd) || 1 });
-      }
       try {
         const res = await (cfIsNew.value ? boApiSvc.syCode.create({ ...form }, '코드관리', '등록') : boApiSvc.syCode.update(form.codeId, { ...form }, '코드관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('syCodeMng');
+        if (props.navigate) props.navigate('syCodeMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -102,7 +93,7 @@ window.SyCodeDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { codes, uiState, pageCodes, cfIsNew, form, errors, handleSave, cfSiteNm };
+    return { uiState, pageCodes, cfIsNew, form, errors, handleSave, cfSiteNm };
   },
   template: /* html */`
 <div>

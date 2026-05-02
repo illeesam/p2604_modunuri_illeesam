@@ -108,7 +108,7 @@ window.PdCategoryDtl = {
         const res = await (cfIsNew.value ? boApiSvc.pdCategory.create({ ...form }, '카테고리관리', '등록') : boApiSvc.pdCategory.update(form.categoryId, { ...form }, '카테고리관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('pdCategoryMng');
+        if (props.navigate) props.navigate('pdCategoryMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

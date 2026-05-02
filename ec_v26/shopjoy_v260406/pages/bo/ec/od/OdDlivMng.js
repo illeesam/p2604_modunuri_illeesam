@@ -96,7 +96,7 @@ const isAppReady = computed(() => {
 
     /* DlivDtl 에 넘길 navigate: 'odDlivMng' 이동 요청 → 패널 닫기로 인터셉트 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'odDlivMng') { uiStateDetail.selectedId = null; return; }
+      if (pg === 'odDlivMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };

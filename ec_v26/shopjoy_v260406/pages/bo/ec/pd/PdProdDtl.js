@@ -688,7 +688,7 @@ window.PdProdDtl = {
           : boApiSvc.pdProd.update(form.prodId, payload, '상품관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('pdProdMng');
+        if (props.navigate) props.navigate('pdProdMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

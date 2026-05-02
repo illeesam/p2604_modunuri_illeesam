@@ -104,7 +104,7 @@ const searchParam = reactive(_initSearchParam());
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
     const closeDetail = () => { uiStateDetail.selectedId = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'dpDispAreaMng') { uiStateDetail.selectedId = null; return; }
+      if (pg === 'dpDispAreaMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchData('RELOAD'); return; }
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);

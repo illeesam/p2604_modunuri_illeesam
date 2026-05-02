@@ -3,29 +3,10 @@ window.SyTemplateDtl = {
   name: 'SyTemplateDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
-    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { reactive, computed, onMounted, ref, onBeforeUnmount, watch, nextTick } = Vue;
 
-    const templates = reactive([]);
-    /* 미리보기 / 발송 모달 — handleLoadData에서 참조하므로 먼저 선언 */
+    /* 미리보기 / 발송 모달 */
     const uiState = reactive({ previewOpen: false, sendOpen: false, error: null, isPageCodeLoad: false, loading: false, quillEditorEl: null});
-
-    // onMounted에서 API 로드
-    const handleLoadData = async () => {
-      uiState.loading = true;
-      try {
-        const res = await boApiSvc.syTemplate.getPage({ pageNo: 1, pageSize: 10000 }, '템플릿관리', '상세조회');
-        const list = res.data?.data?.pageList || res.data?.data?.list || [];
-        templates.splice(0, templates.length, ...list);
-        uiState.error = null;
-        await handleInitForm();
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-      } finally {
-        uiState.loading = false;
-      }
-    };
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const form = reactive({
@@ -70,17 +51,30 @@ window.SyTemplateDtl = {
     }, { flush: 'post' });
 
     const handleInitForm = async () => {
-      if (!cfIsNew.value) {
-        const t = templates.find(x => x.templateId === props.editId);
-        if (t) Object.assign(form, { sampleParams: '{}', ...t });
-      }
       if (cfUseHtmlEditor.value && !props.viewMode) { await nextTick(); initQuill(); }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
+    const handleLoadDetail = async () => {
+      if (cfIsNew.value) return;
+      uiState.loading = true;
+      try {
+        const res = await boApiSvc.syTemplate.getById(props.editId, '템플릿관리', '상세조회');
+        const data = res.data?.data;
+        if (data) Object.assign(form, { sampleParams: '{}', ...data });
+        uiState.error = null;
+        await handleInitForm();
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    // ★ onMounted — 진입 시 코드 로드 + 상세 조회
+    onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
-      else handleLoadData();
+      if (!cfIsNew.value) { await handleLoadDetail(); } else { await handleInitForm(); }
     });
 
     onBeforeUnmount(() => destroyQuill());
@@ -107,17 +101,11 @@ window.SyTemplateDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (cfIsNew.value) {
-        templates.push({ ...form, templateId: nextId.value(templates, 'templateId'), regDate: new Date().toISOString().slice(0, 10) });
-      } else {
-        const idx = templates.findIndex(x => x.templateId === props.editId);
-        if (idx !== -1) Object.assign(templates[idx], { ...form });
-      }
       try {
         const res = await (cfIsNew.value ? boApiSvc.syTemplate.create({ ...form }, '템플릿관리', '등록') : boApiSvc.syTemplate.update(form.templateId, { ...form }, '템플릿관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('syTemplateMng');
+        if (props.navigate) props.navigate('syTemplateMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -144,11 +132,9 @@ window.SyTemplateDtl = {
           codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
         }
         uiState.isPageCodeLoad = true;
-        handleLoadData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
         uiState.isPageCodeLoad = true;
-        handleLoadData();
       }
     };
 
@@ -158,7 +144,7 @@ window.SyTemplateDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { templates, uiState, cfIsNew, form, errors, codes, handleSave, cfNeedSubject, cfIsLongContent,
+    return { uiState, cfIsNew, form, errors, codes, handleSave, cfNeedSubject, cfIsLongContent,
              cfUseHtmlEditor, quillEditorEl, cfSiteNm };
   },
   template: /* html */`

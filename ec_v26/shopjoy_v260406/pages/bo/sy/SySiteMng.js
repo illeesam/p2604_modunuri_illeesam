@@ -47,6 +47,7 @@ window.SySiteMng = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
+      pager.pageNo = 1;
       handleSearchList('DEFAULT');
     });
 
@@ -102,7 +103,7 @@ const detailModal = reactive({
       if (pg === 'sySiteMng') {
         detailModal.show = false;
         detailModal.editId = null;
-        if (opts.reload) handleSearchList('DEFAULT');
+        if (opts.reload) handleSearchList('RELOAD');
         return;
       }
       if (pg === '__switchToEdit__') { detailModal.viewMode = 'edit'; return; }
@@ -112,7 +113,7 @@ const detailModal = reactive({
     const cfIsViewMode = computed(() => detailModal.viewMode === 'view' && detailModal.editId !== '__new__');
     const cfDetailKey = computed(() => `${detailModal.editId}_${detailModal.viewMode}`);
 
-    const cfTypeOptions = computed(() => [...new Set(sites.map(s => s.siteType))].sort());
+    const cfTypeOptions = computed(() => [...new Set(sites.map(s => s.siteTypeCd))].sort());
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const fnStatusBadge = s => ({ '운영중': 'badge-green', '점검중': 'badge-orange', '비활성': 'badge-gray' }[s] || 'badge-gray');
@@ -123,7 +124,7 @@ const detailModal = reactive({
       '가격비교': 'badge-blue', '시각화': 'badge-purple', '홈페이지': 'badge-gray',
     }[t] || 'badge-gray');
 
-    const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSearch = () => { pager.pageNo = 1; handleSearchList('SEARCH'); };
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
@@ -220,19 +221,19 @@ const detailModal = reactive({
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td style="font-size:12px;"><div style="display:flex;align-items:center;gap:6px;"><span style="flex:1;padding:4px 6px;background:#f3f4f6;border-radius:4px;color:#666;font-weight:500;">{{ pathLabel(s.pathId) || '미설정' }}</span><button type="button" @click="openPathPick(s)" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;hover:background:#eef2ff;">🔍</button></div></td>
           <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;">{{ s.siteCode }}</code></td>
-          <td><span class="badge" :class="fnTypeBadge(s.siteType)" style="font-size:10px;">{{ s.siteType }}</span></td>
+          <td><span class="badge" :class="fnTypeBadge(s.siteTypeCd)" style="font-size:10px;">{{ s.siteTypeCd }}</span></td>
           <td>
             <span class="title-link" @click="handleLoadDetail(s.siteId)" :style="detailModal.editId===s.siteId?'color:#e8587a;font-weight:700;':''">
               {{ s.siteNm }}<span v-if="detailModal.editId===s.siteId" style="font-size:10px;margin-left:3px;">▼</span>
             </span>
             <div style="font-size:11px;color:#888;margin-top:2px;">{{ s.description }}</div>
           </td>
-          <td style="font-size:12px;color:#2563eb;">{{ s.domain }}</td>
-          <td style="font-size:12px;">{{ s.email }}</td>
-          <td style="font-size:12px;">{{ s.phone }}</td>
-          <td style="font-size:12px;">{{ s.ceo }}</td>
+          <td style="font-size:12px;color:#2563eb;">{{ s.siteDomain }}</td>
+          <td style="font-size:12px;">{{ s.siteEmail }}</td>
+          <td style="font-size:12px;">{{ s.sitePhone }}</td>
+          <td style="font-size:12px;">{{ s.siteCeo }}</td>
           <td style="font-size:12px;">{{ s.regDate }}</td>
-          <td><span class="badge" :class="fnStatusBadge(s.statusCd)">{{ s.statusCd }}</span></td>
+          <td><span class="badge" :class="fnStatusBadge(s.siteStatusCd)">{{ s.siteStatusCd }}</span></td>
           <td><div class="actions">
             <button class="btn btn-blue btn-sm" @click="handleLoadDetail(s.siteId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="handleDelete(s)">삭제</button>

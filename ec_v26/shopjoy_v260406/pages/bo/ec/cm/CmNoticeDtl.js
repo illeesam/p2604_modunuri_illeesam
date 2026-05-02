@@ -94,7 +94,7 @@ window.CmNoticeDtl = {
         if (props.showToast) props.showToast(isNewNotice ? '등록되었습니다.' : '저장되었습니다.', 'success');
         // 200ms 딜레이 후 목록으로 복귀 (서버 반영 대기)
         await new Promise(r => setTimeout(r, 200));
-        if (props.navigate) props.navigate('cmNoticeMng');
+        if (props.navigate) props.navigate('cmNoticeMng', { reload: true });
       } catch (err) {
         console.error('[handleSave] Error:', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

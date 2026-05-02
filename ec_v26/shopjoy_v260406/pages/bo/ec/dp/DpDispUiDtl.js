@@ -309,7 +309,7 @@ window.DpDispUiDtl = {
         const res = await (isNewUi ? boApiSvc.dpUi.create({ ...form }, '전시UI관리', '등록') : boApiSvc.dpUi.update(form.codeId, { ...form }, '전시UI관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('dpDispUiMng');
+        if (props.navigate) props.navigate('dpDispUiMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

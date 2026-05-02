@@ -3,29 +3,12 @@ window.SyBbmDtl = {
   name: 'SyBbmDtl',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
-    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { reactive, computed, watch, onMounted, ref } = Vue;
 
-    const bbms = reactive([]);
-    const uiState = reactive({ loading: false, error: null, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ bbm_types: [], bbm_comment_types: [], bbm_attach_types: [], bbm_content_types: [], bbm_scope_types: [], use_yn: [],
       allow_yn_opts: [{codeValue:'Y',codeLabel:'허용'},{codeValue:'N',codeLabel:'불가'}],
     });
-
-    // onMounted에서 API 로드
-    const handleSearchList = async (searchType = 'DEFAULT') => {
-      uiState.loading = true;
-      try {
-        const res = await boApiSvc.syBbm.getPage({ pageNo: 1, pageSize: 10000 }, '게시판모드관리', '상세조회');
-        bbms = res.data?.data?.pageList || res.data?.data?.list || [];
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-      } finally {
-        uiState.loading = false;
-      }
-    };
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
       const codeStore = window.sfGetBoCodeStore?.();
@@ -47,7 +30,6 @@ window.SyBbmDtl = {
         console.error('[fnLoadCodes]', err);
       }
       uiState.isPageCodeLoad = true;
-      handleSearchList();
     };
 
     // ── watch ────────────────────────────────────────────────────────────────
@@ -76,13 +58,26 @@ window.SyBbmDtl = {
       bbmNm: yup.string().required('게시판명을 입력해주세요.'),
     });
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      if (!cfIsNew.value) {
-        const b = bbms.find(x => x.bbmId === props.editId);
-        if (b) Object.assign(form, { ...b });
+    const handleLoadDetail = async () => {
+      if (cfIsNew.value) return;
+      uiState.loading = true;
+      try {
+        const res = await boApiSvc.syBbm.getById(props.editId, '게시판모드관리', '상세조회');
+        const data = res.data?.data;
+        if (data) Object.assign(form, data);
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+      } finally {
+        uiState.loading = false;
       }
+    };
+
+    // ★ onMounted — 진입 시 코드 로드 + 상세 조회
+    onMounted(async () => {
+      if (isAppReady.value) fnLoadCodes();
+      if (!cfIsNew.value) { await handleLoadDetail(); }
     });
 
     const handleSave = async () => {
@@ -97,17 +92,11 @@ window.SyBbmDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (cfIsNew.value) {
-        bbms.push({ ...form, bbmId: nextId.value(bbms, 'bbmId'), regDate: new Date().toISOString().slice(0, 10) });
-      } else {
-        const idx = bbms.findIndex(x => x.bbmId === props.editId);
-        if (idx !== -1) Object.assign(bbms[idx], { ...form });
-      }
       try {
         const res = await (cfIsNew.value ? boApiSvc.syBbm.create({ ...form }, '게시판모드관리', '등록') : boApiSvc.syBbm.update(form.bbmId, { ...form }, '게시판모드관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('syBbmMng');
+        if (props.navigate) props.navigate('syBbmMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -118,7 +107,7 @@ window.SyBbmDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { bbms, uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
+    return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
   },
   template: /* html */`
 <div>

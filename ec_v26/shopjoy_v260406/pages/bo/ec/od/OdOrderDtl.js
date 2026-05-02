@@ -141,7 +141,7 @@ window.OdOrderDtl = {
           : boApiSvc.odOrder.update(form.orderId, { ...form, totalPrice: Number(form.totalPrice) }, '주문관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(isNewOrder ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('odOrderMng');
+        if (props.navigate) props.navigate('odOrderMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

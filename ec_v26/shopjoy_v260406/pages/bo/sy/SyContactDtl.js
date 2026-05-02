@@ -4,29 +4,12 @@ window.SyContactDtl = {
   name: 'SyContactDtl',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
   setup(props) {
-    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick, watch } = Vue;
 
-    const contacts = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._syContactDtlState.tab || 'content', viewMode2: window._syContactDtlState.viewMode || 'tab', contentEl: null, answerEl: null });
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
     const codes = reactive({ contact_categories: [], contact_statuses: [] });
-
-    // onMounted에서 API 로드
-    const handleLoadData = async () => {
-      uiState.loading = true;
-      try {
-        const res = await boApiSvc.syContact.getPage({ pageNo: 1, pageSize: 10000 }, '문의관리', '상세조회');
-        contacts = res.data?.data?.pageList || res.data?.data?.list || [];
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-      } finally {
-        uiState.loading = false;
-      }
-    };
     const cfIsNew = computed(() => !props.editId);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
@@ -76,12 +59,6 @@ window.SyContactDtl = {
     });
 
     const handleInitForm = async () => {
-      if (!isNew.value) {
-        const c = contacts.find(x => x.inquiryId === props.editId);
-        if (c) Object.assign(form, { ...c });
-        // 답변 있으면 답변 탭 기본 선택
-        if (form.answer) uiState.tab = 'answer';
-      }
       await nextTick();
       const fullToolbar = [[{header:[1,2,3,false]}],['bold','italic','underline'],[{color:[]},{background:[]}],[{list:'ordered'},{list:'bullet'}],['link','blockquote','clean']];
       if (uiState.contentEl) {
@@ -104,10 +81,29 @@ window.SyContactDtl = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
+    const handleLoadDetail = async () => {
+      if (cfIsNew.value) return;
+      uiState.loading = true;
+      try {
+        const res = await boApiSvc.syContact.getById(props.editId, '문의관리', '상세조회');
+        const data = res.data?.data;
+        if (data) {
+          Object.assign(form, data);
+          if (form.answer) uiState.tab = 'answer';
+        }
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    // ★ onMounted — 진입 시 코드 로드 + 상세 조회
+    onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
-      handleLoadData();
+      if (!cfIsNew.value) { await handleLoadDetail(); }
       handleInitForm();
     });
 
@@ -120,11 +116,6 @@ window.SyContactDtl = {
       const m = getMember.value(Number(form.userId));
       if (m) form.userNm = m.memberNm;
     };
-
-    /* 같은 회원의 다른 문의 */
-    const cfMemberContacts = computed(() =>
-      contacts.filter(c => String(c.userId) === String(form.userId) && c.inquiryId !== props.editId)
-    );
 
     const fnStatusBadge = s => ({
       '요청': 'badge-orange', '처리중': 'badge-blue', '답변완료': 'badge-green', '취소됨': 'badge-gray'
@@ -142,17 +133,11 @@ window.SyContactDtl = {
       }
       const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
-      if (cfIsNew.value) {
-        contacts.push({ ...form, inquiryId: nextId.value(contacts, 'inquiryId'), userId: Number(form.userId), date: form.date || new Date().toISOString().slice(0, 16).replace('T', ' ') });
-      } else {
-        const idx = contacts.findIndex(x => x.inquiryId === props.editId);
-        if (idx !== -1) Object.assign(contacts[idx], { ...form });
-      }
       try {
         const res = await (cfIsNew.value ? boApiSvc.syContact.create({ ...form }, '문의관리', '등록') : boApiSvc.syContact.update(form.inquiryId, { ...form }, '문의관리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('syContactMng');
+        if (props.navigate) props.navigate('syContactMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -161,15 +146,19 @@ window.SyContactDtl = {
       }
     };
 
-    const saveAnswer = () => {
+    const saveAnswer = async () => {
       if (!cfIsNew.value) {
-        const idx = contacts.findIndex(x => x.inquiryId === props.editId);
-        if (idx !== -1) {
-          contacts[idx].answer = form.answer;
-          if (form.answer) contacts[idx].statusCd = '답변완료';
+        try {
+          await boApiSvc.syContact.update(form.inquiryId, { ...form }, '문의관리', '답변저장');
+          props.showToast('답변이 저장되었습니다.');
+          if (props.navigate) props.navigate('syContactMng', { reload: true });
+        } catch (err) {
+          console.error('[catch-info]', err);
+          props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
         }
+      } else {
+        props.showToast('답변이 저장되었습니다.');
       }
-      props.showToast('답변이 저장되었습니다.');
     };
 
     const answerEl = Vue.toRef(uiState, 'answerEl');
@@ -177,7 +166,7 @@ window.SyContactDtl = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { contacts, uiState, codes, cfIsNew, tab, viewMode2, showTab, form, errors, cfMemberContacts, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm, contentEl, answerEl };
+    return { uiState, codes, cfIsNew, tab, viewMode2, showTab, form, errors, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm, contentEl, answerEl };
   },
   template: /* html */`
 <div>
@@ -193,7 +182,7 @@ window.SyContactDtl = {
       <div class="tab-nav">
         <button class="tab-btn" :class="{active:tab==='content'}" :disabled="viewMode2!=='tab'" @click="tab='content'">📋 문의 내용</button>
         <button class="tab-btn" :class="{active:tab==='answer'}"  :disabled="viewMode2!=='tab'" @click="tab='answer'">💬 답변</button>
-        <button v-if="!cfIsNew && form.userId" class="tab-btn" :class="{active:tab==='history'}" :disabled="viewMode2!=='tab'" @click="tab='history'">🕒 회원 문의 이력 <span class="tab-count">{{ cfMemberContacts.length }}</span></button>
+        <button v-if="!cfIsNew && form.userId" class="tab-btn" :class="{active:tab==='history'}" :disabled="viewMode2!=='tab'" @click="tab='history'">🕒 회원 문의 이력</button>
       </div>
       <div class="tab-view-modes">
         <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭으로 보기">📑</button>
@@ -286,20 +275,8 @@ window.SyContactDtl = {
 
     <!-- ── 회원 문의 이력 ───────────────────────────────────────────────────── -->
     <div class="card" v-show="showTab('history')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 문의 이력 <span class="tab-count">{{ cfMemberContacts.length }}</span></div>
-      <table class="bo-table" v-if="cfMemberContacts.length">
-        <thead><tr><th>카테고리</th><th>제목</th><th>상태</th><th>등록일</th><th>관리</th></tr></thead>
-        <tbody>
-          <tr v-for="c in cfMemberContacts" :key="c.inquiryId">
-            <td><span class="tag">{{ c.categoryCd }}</span></td>
-            <td>{{ c.title }}</td>
-            <td><span class="badge" :class="fnStatusBadge(c.statusCd)">{{ c.statusCd }}</span></td>
-            <td>{{ c.date.slice(0,10) }}</td>
-            <td><button class="btn btn-blue btn-sm" @click="navigate('syContactDtl',{id:c.inquiryId})">상세</button></td>
-          </tr>
-        </tbody>
-      </table>
-      <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">다른 문의 이력이 없습니다.</div>
+      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 문의 이력</div>
+      <div style="text-align:center;color:#aaa;padding:30px;font-size:13px;">회원 문의 이력은 목록에서 확인하세요.</div>
     </div>
     </div>
   </div>

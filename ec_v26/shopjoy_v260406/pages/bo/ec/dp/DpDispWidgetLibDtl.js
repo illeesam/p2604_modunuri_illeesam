@@ -6,7 +6,7 @@ window.DpDispWidgetLibDtl = {
   setup(props, { emit }) {
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const codes = reactive({ disp_widget_types: [], active_statuses: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 실행'},{value:'modal',label:'모달 열기'}] });
-    const uiState = reactive({ isPageCodeLoad: false, error: null, previewMode: 'default', previewPaneWidth: 460, htmlContentEl: null});
+    const uiState = reactive({ isPageCodeLoad: false, loading: false, error: null, previewMode: 'default', previewPaneWidth: 460, htmlContentEl: null});
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
     // App 초기화 준비 상태
@@ -106,19 +106,19 @@ window.DpDispWidgetLibDtl = {
     const errors = reactive({});
 
     /* ── 기존 데이터 로드 ── */
-    const handleSearchList = async (searchType = 'DEFAULT') => {
+    const handleLoadDetail = async () => {
+      if (cfIsNew.value) return;
+      uiState.loading = true;
       try {
-        const res = await boApiSvc.dpWidgetLib.getPage({ pageNo: 1, pageSize: 10000 }, '전시위젯라이브러리', '조회');
-        widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
-      } catch (_) {}
-      if (!cfIsNew.value) {
-        const src = (Array.isArray(widgetLibs) ? widgetLibs : []).find(d => d.libId == props.editId);
-        if (src) Object.assign(form, src);
-      } else {
-        /* 신규: Lib코드 자동 생성 DL_YYMMDD_HHMMSS */
-        const t = new Date();
-        const p = n => String(n).padStart(2, '0');
-        form.libCode = `DL_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
+        const res = await boApiSvc.dpWidgetLib.getById(props.editId, '전시위젯라이브러리', '상세조회');
+        const data = res.data?.data;
+        if (data) Object.assign(form, data);
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+      } finally {
+        uiState.loading = false;
       }
       if (form.widgetType === 'html_editor') {
         await nextTick();
@@ -126,10 +126,19 @@ window.DpDispWidgetLibDtl = {
       }
     };
 
+    const handleInitNewForm = () => {
+      if (!cfIsNew.value) return;
+      /* 신규: Lib코드 자동 생성 DL_YYMMDD_HHMMSS */
+      const t = new Date();
+      const p = n => String(n).padStart(2, '0');
+      form.libCode = `DL_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
+    };
+
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
+    onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
-      handleSearchList('DEFAULT');
+      await handleLoadDetail();
+      handleInitNewForm();
     });
 
     /* ── 위젯 유형별 표시 여부 ── */
@@ -412,20 +421,11 @@ window.DpDispWidgetLibDtl = {
       const isNewLib = cfIsNew.value;
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
-      const list = widgetLibs;
-      if (isNewLib) {
-        const newId = Math.max(0, ...list.map(d => d.libId)) + 1;
-        form.libId = newId;
-        list.push({ ...form });
-      } else {
-        const idx = list.findIndex(d => d.libId == form.libId);
-        if (idx >= 0) Object.assign(list[idx], { ...form });
-      }
       try {
         const res = await (isNewLib ? boApiSvc.dpWidgetLib.create({ ...form }, '전시위젯라이브러리', '등록') : boApiSvc.dpWidgetLib.update(form.libId, { ...form }, '전시위젯라이브러리', '저장'));
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
         if (props.showToast) props.showToast('저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('dpDispWidgetLibMng');
+        if (props.navigate) props.navigate('dpDispWidgetLibMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -439,9 +439,6 @@ window.DpDispWidgetLibDtl = {
       if (cfIsNew.value) return;
       const ok = await props.showConfirm('삭제', '이 위젯 Lib를 삭제하시겠습니까?');
       if (!ok) return;
-      const list = widgetLibs || [];
-      const idx  = list.findIndex(d => d.libId == form.libId);
-      if (idx >= 0) list.splice(idx, 1);
       try {
         const res = await boApiSvc.dpWidgetLib.remove(form.libId, '전시위젯라이브러리', '삭제');
         if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
@@ -452,7 +449,7 @@ window.DpDispWidgetLibDtl = {
         if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
         if (props.showToast) props.showToast(errMsg, 'error', 0);
       }
-      props.navigate('dpDispWidgetLibMng');
+      props.navigate('dpDispWidgetLibMng', { reload: true });
     };
 
     /* ── 위젯Lib 내용복사 팝업 ── */
