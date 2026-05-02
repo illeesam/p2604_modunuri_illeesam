@@ -8,6 +8,15 @@
     <sql id="syCodeGrpCond">
         <where>
             <if test="siteId != null and siteId != ''">AND g.site_id = #{siteId}</if>
+            <if test="pathId != null and pathId != ''">
+                AND g.path_id IN (
+                    WITH RECURSIVE sub AS (
+                        SELECT path_id FROM shopjoy_2604.sy_path WHERE path_id = #{pathId}::BIGINT
+                        UNION ALL
+                        SELECT p.path_id FROM shopjoy_2604.sy_path p JOIN sub s ON p.parent_path_id = s.path_id
+                    ) SELECT path_id FROM sub
+                )
+            </if>
             <if test="kw != null and kw != ''">
                 AND (g.grp_nm ILIKE '%' || #{kw} || '%')
             </if>

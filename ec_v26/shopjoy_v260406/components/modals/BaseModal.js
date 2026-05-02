@@ -697,31 +697,16 @@ window.BoUserSelectModal = {
   props: ['dispDataset', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { computed, reactive, onMounted } = Vue;
+    const { computed, reactive, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
-    const modalState = reactive({
-      depts: [],
-      users: [],
-      loading: false,
-      selectedDeptId: null,
-      deptKw: '',
-      userKw: '',
-      selectedIds: new Set()
-    });
-    const handleSearchList = async () => {
-      modalState.loading = true;
-      try {
-        const [deptRes, userRes] = await Promise.all([
-          boApiSvc.syDept.getList({ pageSize: 10000 }, '부서관리', '목록조회'),
-          boApiSvc.syUser.getList({ pageSize: 10000 }, '사용자관리', '목록조회'),
-        ]);
-        modalState.depts = deptRes.data?.data || [];
-        modalState.users = userRes.data?.data || [];
-      } catch (e) { modalState.depts = []; modalState.users = []; } finally { modalState.loading = false; }
-    };
-    onMounted(() => { handleSearchList(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
+    const depts = reactive([]);
+    const uiState = reactive({ loading: false, deptKw: '', selectedDeptId: null });
+    const pager = reactive({ page: 1, size: 20, pageTotalCount: 0, pageTotalPage: 1, pageList: [], pageNums: [], userKw: '' });
+    const selectedIds = reactive(new Set());
+    const selectedUsers = reactive([]);
+
+    /* ── 부서 트리 (전체 로드) ── */
     const fnBuildDeptTree = (items, parentId, depth) =>
       items.filter(d => (d.parentId || null) === (parentId || null) && d.useYn === 'Y')
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
@@ -731,60 +716,80 @@ window.BoUserSelectModal = {
       return result;
     };
     const cfFlatDeptTree = computed(() => {
-      const kw = modalState.deptKw.trim().toLowerCase();
+      const kw = uiState.deptKw.trim().toLowerCase();
       const base = kw
-        ? modalState.depts.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(kw))
-        : modalState.depts;
+        ? depts.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(kw))
+        : depts;
       return fnFlattenDept(fnBuildDeptTree(base, null, 1));
     });
 
-    const fnGetDescDeptIds = (deptId) => {
-      const ids = new Set();
-      const queue = [deptId];
-      while (queue.length) {
-        const id = queue.shift();
-        ids.add(id);
-        modalState.depts.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId));
-      }
-      return ids;
+    /* ── 사용자 페이지 조회 ── */
+    const fnBuildPagerNums = () => {
+      const c = pager.page, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
+    const handleSearchUsers = async () => {
+      uiState.loading = true;
+      try {
+        const params = { pageNo: pager.page, pageSize: pager.size };
+        if (pager.userKw.trim()) params.kw = pager.userKw.trim();
+        if (uiState.selectedDeptId != null) params.deptId = uiState.selectedDeptId;
+        const res = await boApiSvc.syUser.getPage(params, '사용자선택', '목록조회');
+        const d = res.data?.data;
+        pager.pageList = d?.pageList || d?.list || [];
+        pager.pageTotalCount = d?.pageTotalCount || 0;
+        pager.pageTotalPage = d?.pageTotalPage || 1;
+        fnBuildPagerNums();
+      } catch (e) { pager.pageList = []; } finally { uiState.loading = false; }
+    };
+    const handleSearchList = async () => {
+      uiState.loading = true;
+      try {
+        const deptRes = await boApiSvc.syDept.getList({ pageSize: 10000 }, '부서관리', '목록조회');
+        depts.splice(0, depts.length, ...(deptRes.data?.data || []));
+      } catch (e) { depts.splice(0); } finally { uiState.loading = false; }
+      await handleSearchUsers();
+    };
+    onMounted(() => { handleSearchList(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
 
-    /* ── 사용자 ── */
-    const cfTotalUsers = computed(() => modalState.users.length);
-
-    const cfFiltered = computed(() => {
-      const k = modalState.userKw.trim().toLowerCase();
-      let list = modalState.users;
-      if (modalState.selectedDeptId !== null) {
-        const ids = fnGetDescDeptIds(modalState.selectedDeptId);
-        list = list.filter(u => ids.has(u.deptId));
-      }
-      if (k) list = list.filter(u =>
-        (u.userNm || u.name || '').toLowerCase().includes(k) ||
-        (u.loginId || '').toLowerCase().includes(k) ||
-        (u.userEmail || u.email || '').toLowerCase().includes(k)
-      );
-      return list;
-    });
-
-    const fnIsChecked = (u) => modalState.selectedIds.has(u.userId || u.boUserId);
+    /* ── 선택 ── */
+    const fnIsChecked = (u) => selectedIds.has(u.userId || u.boUserId);
     const handleToggleUser = (u) => {
       const id = u.userId || u.boUserId;
-      if (modalState.selectedIds.has(id)) modalState.selectedIds.delete(id);
-      else modalState.selectedIds.add(id);
+      if (selectedIds.has(id)) {
+        selectedIds.delete(id);
+        const idx = selectedUsers.findIndex(x => (x.userId || x.boUserId) === id);
+        if (idx !== -1) selectedUsers.splice(idx, 1);
+      } else {
+        selectedIds.add(id);
+        selectedUsers.push(u);
+      }
     };
-    const cfAllChecked = computed(() => cfFiltered.value.length > 0 && cfFiltered.value.every(u => modalState.selectedIds.has(u.userId || u.boUserId)));
+    const cfAllChecked = computed(() => pager.pageList.length > 0 && pager.pageList.every(u => selectedIds.has(u.userId || u.boUserId)));
     const handleToggleAll = () => {
-      if (cfAllChecked.value) cfFiltered.value.forEach(u => modalState.selectedIds.delete(u.userId || u.boUserId));
-      else cfFiltered.value.forEach(u => modalState.selectedIds.add(u.userId || u.boUserId));
+      if (cfAllChecked.value) {
+        pager.pageList.forEach(u => {
+          const id = u.userId || u.boUserId;
+          selectedIds.delete(id);
+          const idx = selectedUsers.findIndex(x => (x.userId || x.boUserId) === id);
+          if (idx !== -1) selectedUsers.splice(idx, 1);
+        });
+      } else {
+        pager.pageList.forEach(u => {
+          const id = u.userId || u.boUserId;
+          if (!selectedIds.has(id)) { selectedIds.add(id); selectedUsers.push(u); }
+        });
+      }
     };
-    const cfSelectedCount = computed(() => modalState.selectedIds.size);
-    const handleConfirm = () => {
-      const selected = modalState.users.filter(u => modalState.selectedIds.has(u.userId || u.boUserId));
-      emit('select', selected);
-    };
+    const cfSelectedCount = computed(() => selectedIds.size);
+    const handleConfirm = () => { emit('select', [...selectedUsers]); };
 
-    return { cfSiteNm, ...modalState, cfFlatDeptTree, cfFiltered, cfTotalUsers, fnIsChecked, handleToggleUser, cfAllChecked, handleToggleAll, cfSelectedCount, handleConfirm };
+    const onSearch = () => { pager.page = 1; handleSearchUsers(); };
+    const setPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.page = n; handleSearchUsers(); } };
+    return { cfSiteNm, depts, uiState, pager, selectedIds, cfFlatDeptTree,
+      fnIsChecked, handleToggleUser, cfAllChecked, handleToggleAll, cfSelectedCount, handleConfirm,
+      onSearch, setPage };
   },
   template: /* html */`
 <div class="modal-overlay" @click.self="$emit('close')">
@@ -812,7 +817,7 @@ window.BoUserSelectModal = {
           <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">조직 / 부서</div>
           <div style="position:relative;">
             <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;color:#bbb;">🔍</span>
-            <input v-model="deptKw" placeholder="부서 검색"
+            <input v-model="uiState.deptKw" placeholder="부서 검색"
               style="width:100%;border:1px solid #e5e7eb;border-radius:7px;padding:5px 8px 5px 24px;font-size:12px;outline:none;box-sizing:border-box;background:#fff;color:#374151;" />
           </div>
         </div>
@@ -820,28 +825,28 @@ window.BoUserSelectModal = {
         <div style="flex:1;overflow-y:auto;padding:6px 6px;">
           <!-- 루트: 전체 (1레벨) -->
           <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;margin-bottom:2px;transition:all .12s;"
-            :style="selectedDeptId===null?'background:#e8587a;box-shadow:0 2px 8px rgba(232,88,122,0.25);':'background:transparent;'"
-            @click="selectedDeptId=null">
+            :style="uiState.selectedDeptId===null?'background:#e8587a;box-shadow:0 2px 8px rgba(232,88,122,0.25);':'background:transparent;'"
+            @click="uiState.selectedDeptId=null; onSearch()">
             <span style="font-size:8px;font-weight:900;flex-shrink:0;line-height:1;"
-              :style="{ color: selectedDeptId===null?'#fff':'#e8587a' }">●</span>
+              :style="{ color: uiState.selectedDeptId===null?'#fff':'#e8587a' }">●</span>
             <span style="font-size:13px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
-              :style="{ color: selectedDeptId===null?'#fff':'#374151' }">전체</span>
+              :style="{ color: uiState.selectedDeptId===null?'#fff':'#374151' }">전체</span>
             <span style="font-size:10px;font-weight:600;flex-shrink:0;"
-              :style="{ color: selectedDeptId===null?'rgba(255,255,255,0.75)':'#bbb' }">{{ cfTotalUsers }}</span>
+              :style="{ color: uiState.selectedDeptId===null?'rgba(255,255,255,0.75)':'#bbb' }">{{ pager.pageTotalCount }}</span>
           </div>
           <!-- 2레벨~: 실 데이터 -->
           <div v-for="d in cfFlatDeptTree" :key="d.deptId"
             style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;cursor:pointer;margin-bottom:1px;transition:all .12s;"
-            :style="selectedDeptId===d.deptId?'background:#e8587a;box-shadow:0 2px 8px rgba(232,88,122,0.2);':'background:transparent;'"
-            @click="selectedDeptId=d.deptId">
+            :style="uiState.selectedDeptId===d.deptId?'background:#e8587a;box-shadow:0 2px 8px rgba(232,88,122,0.2);':'background:transparent;'"
+            @click="uiState.selectedDeptId=d.deptId; onSearch()">
             <span style="flex-shrink:0;font-weight:800;line-height:1;"
               :style="{
                 marginLeft: ((d._depth-1)*13)+'px',
                 fontSize: d._depth===1?'10px':'8px',
-                color: selectedDeptId===d.deptId?'#fff':['#2563eb','#52c41a','#f59e0b'][Math.min(d._depth-1,2)]
+                color: uiState.selectedDeptId===d.deptId?'#fff':['#2563eb','#52c41a','#f59e0b'][Math.min(d._depth-1,2)]
               }">{{ ['●','◦','·'][Math.min(d._depth-1,2)] }}</span>
             <span style="font-size:12px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
-              :style="{ fontWeight: d._depth===1?'600':'400', color: selectedDeptId===d.deptId?'#fff':'#374151' }">
+              :style="{ fontWeight: d._depth===1?'600':'400', color: uiState.selectedDeptId===d.deptId?'#fff':'#374151' }">
               {{ d.deptNm }}
             </span>
           </div>
@@ -855,8 +860,9 @@ window.BoUserSelectModal = {
         <div style="padding:10px 14px 8px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
           <div style="position:relative;">
             <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:#bbb;">🔍</span>
-            <input v-model="userKw" placeholder="이름 / 로그인ID / 이메일 검색"
+            <input v-model="pager.userKw" placeholder="이름 / 로그인ID / 이메일 검색" @keyup.enter="onSearch"
               style="width:100%;border:1px solid #e5e7eb;border-radius:7px;padding:6px 10px 6px 28px;font-size:12px;outline:none;box-sizing:border-box;color:#374151;" />
+            <button @click="onSearch" style="margin-top:4px;width:100%;padding:5px 0;border:1px solid #e8587a;border-radius:6px;background:#e8587a;color:#fff;font-size:12px;font-weight:600;cursor:pointer;">조회</button>
           </div>
         </div>
         <!-- 전체선택 바 -->
@@ -866,17 +872,17 @@ window.BoUserSelectModal = {
             전체선택
           </label>
           <span style="margin-left:auto;font-size:12px;color:#9ca3af;">
-            총 <b style="color:#374151;">{{ cfFiltered.length }}</b>명
+            총 <b style="color:#374151;">{{ pager.pageTotalCount }}</b>명
           </span>
         </div>
         <!-- 카드 목록 -->
         <div style="flex:1;overflow-y:auto;">
-          <div v-if="loading" style="text-align:center;color:#bbb;padding:52px 0;font-size:13px;">로딩 중...</div>
-          <div v-else-if="cfFiltered.length===0" style="text-align:center;color:#bbb;padding:52px 0;font-size:13px;">
+          <div v-if="uiState.loading" style="text-align:center;color:#bbb;padding:52px 0;font-size:13px;">로딩 중...</div>
+          <div v-else-if="pager.pageList.length===0" style="text-align:center;color:#bbb;padding:52px 0;font-size:13px;">
             <div style="font-size:32px;margin-bottom:8px;">🔍</div>
             검색 결과가 없습니다.
           </div>
-          <div v-for="u in cfFiltered" :key="u.userId || u.boUserId"
+          <div v-for="u in pager.pageList" :key="u.userId || u.boUserId"
             style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .1s;"
             :style="fnIsChecked(u)?'background:#fff5f7;':'' "
             @click="handleToggleUser(u)">
@@ -900,6 +906,16 @@ window.BoUserSelectModal = {
               :style="(u.useYn||u.status)==='Y'||(u.status)==='활성'?'background:#dcfce7;color:#16a34a;':'background:#f3f4f6;color:#9ca3af;'">
               {{ u.useYn === 'Y' ? '활성' : u.useYn === 'N' ? '비활성' : (u.status || '') }}
             </span>
+          </div>
+          <!-- 페이지네이션 -->
+          <div v-if="pager.pageTotalPage > 1" style="display:flex;justify-content:center;align-items:center;gap:3px;padding:8px 0;border-top:1px solid #f0f0f0;flex-shrink:0;">
+            <button :disabled="pager.page===1" @click="setPage(1)" style="padding:3px 7px;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;background:#fff;cursor:pointer;">«</button>
+            <button :disabled="pager.page===1" @click="setPage(pager.page-1)" style="padding:3px 7px;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;background:#fff;cursor:pointer;">‹</button>
+            <button v-for="n in pager.pageNums" :key="n" @click="setPage(n)"
+              style="padding:3px 8px;border-radius:4px;font-size:11px;cursor:pointer;border:1px solid;"
+              :style="pager.page===n?'background:#e8587a;color:#fff;border-color:#e8587a;font-weight:700;':'background:#fff;border-color:#e5e7eb;color:#374151;'">{{ n }}</button>
+            <button :disabled="pager.page===pager.pageTotalPage" @click="setPage(pager.page+1)" style="padding:3px 7px;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;background:#fff;cursor:pointer;">›</button>
+            <button :disabled="pager.page===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)" style="padding:3px 7px;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;background:#fff;cursor:pointer;">»</button>
           </div>
         </div>
       </div>

@@ -8,6 +8,15 @@
     <sql id="dpWidgetLibCond">
         <where>
             <if test="siteId != null and siteId != ''">AND l.site_id = #{siteId}</if>
+            <if test="pathId != null and pathId != ''">
+                AND l.path_id IN (
+                    WITH RECURSIVE sub AS (
+                        SELECT path_id FROM shopjoy_2604.sy_path WHERE path_id = #{pathId}::BIGINT
+                        UNION ALL
+                        SELECT p.path_id FROM shopjoy_2604.sy_path p JOIN sub s ON p.parent_path_id = s.path_id
+                    ) SELECT path_id FROM sub
+                )
+            </if>
             <if test="typeCd != null and typeCd != ''">AND l.widget_type_cd = #{typeCd}</if>
             <if test="kw != null and kw != ''">
                 AND (l.widget_nm ILIKE '%' || #{kw} || '%')

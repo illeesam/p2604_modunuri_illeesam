@@ -7,6 +7,15 @@
     <sql id="syPropCond">
         <where>
             <if test="siteId != null and siteId != ''">AND p.site_id = #{siteId}</if>
+            <if test="pathId != null and pathId != ''">
+                AND p.path_id IN (
+                    WITH RECURSIVE sub AS (
+                        SELECT path_id FROM shopjoy_2604.sy_path WHERE path_id = #{pathId}::BIGINT
+                        UNION ALL
+                        SELECT pp.path_id FROM shopjoy_2604.sy_path pp JOIN sub s ON pp.parent_path_id = s.path_id
+                    ) SELECT path_id FROM sub
+                )
+            </if>
             <if test="typeCd != null and typeCd != ''">AND p.prop_type_cd = #{typeCd}</if>
             <if test="dateStart != null and dateStart != ''">AND p.reg_date &gt;= #{dateStart}::DATE</if>
             <if test="dateEnd   != null and dateEnd   != ''">AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>

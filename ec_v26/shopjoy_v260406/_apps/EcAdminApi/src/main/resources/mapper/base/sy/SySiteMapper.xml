@@ -8,6 +8,15 @@
     <sql id="sySiteCond">
         <where>
             <if test="siteId != null and siteId != ''">AND s.site_id = #{siteId}</if>
+            <if test="pathId != null and pathId != ''">
+                AND s.path_id IN (
+                    WITH RECURSIVE sub AS (
+                        SELECT path_id FROM shopjoy_2604.sy_path WHERE path_id = #{pathId}::BIGINT
+                        UNION ALL
+                        SELECT p.path_id FROM shopjoy_2604.sy_path p JOIN sub st ON p.parent_path_id = st.path_id
+                    ) SELECT path_id FROM sub
+                )
+            </if>
             <if test="status != null and status != ''">AND s.site_status_cd = #{status}</if>
             <if test="typeCd != null and typeCd != ''">AND s.site_type_cd = #{typeCd}</if>
             <if test="kw != null and kw != ''">
