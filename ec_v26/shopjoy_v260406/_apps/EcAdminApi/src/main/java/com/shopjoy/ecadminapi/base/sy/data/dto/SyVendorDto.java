@@ -1,4 +1,4 @@
-﻿package com.shopjoy.ecadminapi.base.sy.data.dto;
+package com.shopjoy.ecadminapi.base.sy.data.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

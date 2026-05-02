@@ -1,4 +1,4 @@
-﻿package com.shopjoy.ecadminapi.base.sy.data.vo;
+package com.shopjoy.ecadminapi.base.sy.data.vo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbm;

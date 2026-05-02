@@ -15,7 +15,7 @@ public class SyPathReq {
     private String rowStatus;   // I: insert, U: update, D: delete
 
     private String bizCd;
-    private Long parentPathId;
+    private String parentPathId;
     private String pathLabel;
     private Integer sortOrd;
     private String useYn;

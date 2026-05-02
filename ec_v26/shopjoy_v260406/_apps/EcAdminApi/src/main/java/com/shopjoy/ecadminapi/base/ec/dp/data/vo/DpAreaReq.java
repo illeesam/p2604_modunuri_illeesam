@@ -1,4 +1,4 @@
-﻿package com.shopjoy.ecadminapi.base.ec.dp.data.vo;
+package com.shopjoy.ecadminapi.base.ec.dp.data.vo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpArea;
