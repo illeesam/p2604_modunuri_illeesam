@@ -14,7 +14,8 @@ window.SyBatchHist = {
       uiState.loading = true;
       try {
         const logParams = {
-          pageNo: 1, pageSize: 10000,
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          sortBy: 'runAt', sortDir: 'desc',
           ...(uiState.searchBatchId ? { batchId: uiState.searchBatchId }   : {}),
           ...(uiState.searchStatus  ? { runStatus: uiState.searchStatus }  : {}),
         };
@@ -24,7 +25,10 @@ window.SyBatchHist = {
           boApiSvc.syBatchLog.getPage(logParams, '배치이력', '목록조회'),
         ]);
         batches.splice(0, batches.length, ...(resBatch.data?.data?.list || []));
-        batchLogs.splice(0, batchLogs.length, ...(resLogs.data?.data?.list || []));
+        const d = resLogs.data?.data;
+        batchLogs.splice(0, batchLogs.length, ...(d?.pageList || d?.list || []));
+        pager.pageTotalCount = d?.pageTotalCount || 0;
+        pager.pageTotalPage  = d?.pageTotalPage  || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -65,18 +69,14 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       batches.map(b => ({ batchId: b.batchId, label: b.batchNm }))
     );
 
-    const cfTotal      = computed(() => batchLogs.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.pageSize)));
-    const cfPageList   = computed(() => [...batchLogs].sort((a, b) => (b.runAt > a.runAt ? 1 : -1)).slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
-    const cfPageNums   = computed(() => {
+    const cfPageNums = computed(() => {
       const c = pager.pageNo, l = pager.pageTotalPage;
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
-    const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
-    const onSizeChange = () => { pager.pageNo = 1; };
+    const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
     const onSearch     = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
-    const onFilter     = () => { pager.pageNo = 1; };
 
     /* ── 메시지 상세 토글 ── */
         const toggleExpand = (logId) => {
@@ -95,9 +95,9 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { batches, uiState, cfBatchOptions,
-      cfTotal, cfTotalPages, cfPageList, cfPageNums, pager,
-      setPage, onSizeChange, onSearch, onFilter,
+    return { batches, batchLogs, uiState, cfBatchOptions,
+      cfPageNums, pager,
+      setPage, onSizeChange, onSearch,
       toggleExpand,
       fnRunBadge, fnFmtDuration,
       codes,
@@ -109,7 +109,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     <div style="font-size:13px;font-weight:700;color:#555;">
       <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
       배치 실행이력
-      <span class="list-count" style="margin-left:4px;">{{ cfTotal }}건</span>
+      <span class="list-count" style="margin-left:4px;">{{ pager.pageTotalCount }}건</span>
     </div>
     <div style="display:flex;gap:6px;align-items:center;">
       <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:160px;" v-model="uiState.searchBatchId">
@@ -139,11 +139,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       </tr>
     </thead>
     <tbody>
-      <tr v-if="cfPageList.length===0">
+      <tr v-if="batchLogs.length===0">
         <td colspan="9" style="text-align:center;color:#aaa;padding:24px;">실행이력이 없습니다.</td>
       </tr>
 
-      <template v-for="(log, idx) in cfPageList" :key="log.logId">
+      <template v-for="(log, idx) in batchLogs" :key="log.logId">
         <!-- ── 데이터 행 ──────────────────────────────────────────────────── -->
         <tr :style="log.runStatus==='실패' ? 'background:#fff5f5;' : log.runStatus==='실행중' ? 'background:#f0f8ff;' : ''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
@@ -223,8 +223,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
       <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
       <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-      <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
-      <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+      <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+      <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
     </div>
     <div class="pager-right">
       <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">

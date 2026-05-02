@@ -49,7 +49,7 @@ window.PdBundleMng = {
       uiState.loading = true;
       try {
         const bundleParams = {
-          pageNo: 1, pageSize: 10000,
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...(searchParam.nm ? { nm: searchParam.nm.trim() } : {}),
         };
         const [bundlesRes, prodsRes, catsRes] = await Promise.all([
@@ -57,7 +57,10 @@ window.PdBundleMng = {
           boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 10000 }, '상품번들관리', '목록조회'),
           boApiSvc.pdCategory.getPage({ pageNo: 1, pageSize: 10000 }, '상품번들관리', '목록조회'),
         ]);
-        bundles.splice(0, bundles.length, ...(bundlesRes.data?.data?.pageList || bundlesRes.data?.data?.list || []));
+        const dBundles = bundlesRes.data?.data;
+        bundles.splice(0, bundles.length, ...(dBundles?.pageList || dBundles?.list || []));
+        pager.pageTotalCount = dBundles?.pageTotalCount || 0;
+        pager.pageTotalPage  = dBundles?.pageTotalPage  || 1;
         products.splice(0, products.length, ...(prodsRes.data?.data?.pageList || prodsRes.data?.data?.list || []));
         categories.splice(0, categories.length, ...(catsRes.data?.data?.pageList || catsRes.data?.data?.list || []));
         uiState.error = null;
@@ -185,33 +188,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     watch(bundles, updateBundleList);
 
-    const cfTotal    = computed(() => (bundleList || []).length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil((cfTotal.value || 0) / (pager.pageSize || 10))));
-    const cfPageList   = computed(() => {
-      try {
-        const list = bundleList || [];
-        if (!Array.isArray(list)) return [];
-        const start = ((pager.pageNo || 1) - 1) * (pager.pageSize || 10);
-        const end = start + (pager.pageSize || 10);
-        return list.slice(start, end) || [];
-      } catch (e) {
-        console.error('cfPageList error:', e);
-        return [];
-      }
-    });
-    const cfPageNums   = computed(() => {
-      try {
-        const c = pager.pageNo || 1;
-        const l = Math.max(1, pager.pageTotalPage || 1);
-        const s = Math.max(1, c - 2);
-        const e = Math.min(l, s + 4);
-        const len = Math.max(0, e - s + 1);
-        return Array.from({ length: len }, (_, i) => s + i) || [];
-      } catch (e) {
-        console.error('cfPageNums error:', e);
-        return [];
-      }
-    });
+    const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const onSearch = async () => {
       pager.pageNo = 1;
@@ -224,7 +201,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       await handleSearchData();
     };
 
-    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchData('PAGE_CLICK'); } };
+    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchData(); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
     /* ── 신규등록 열기 ── */
@@ -407,7 +384,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     return {
       codes, uiState, bundles, bundleList,
-      searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList,
+      searchParam, searchParamOrg, pager, cfPageNums, setPage,
       onSearch, onReset, rateSum, fnRateSumBadge, getProdNm, getProdPrice,
       getCategoryNm, getCategoryDepth, getBrandNm,
       categories, products, brands, categoryProds,
@@ -452,7 +429,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
   <div class="card">
     <div class="toolbar">
       <span class="list-title">묶음상품 목록</span>
-      <span class="list-count">총 {{ cfTotal }}건</span>
+      <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
       <div class="pager-right">
         <button class="btn btn-green btn-sm" @click="openNew">+ 신규등록</button>
       </div>
@@ -468,7 +445,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         <th style="width:110px;text-align:center">관리</th>
       </tr></thead>
       <tbody>
-        <template v-for="(g, idx) in cfPageList" :key="g?.bundleProdId">
+        <template v-for="(g, idx) in bundleList" :key="g?.bundleProdId">
           <tr :style="(uiState.dtlMode==='edit' && uiState.editBundleId===g.bundleProdId) ? 'background:#e6f4ff' : ''">
             <td style="text-align:center;font-size:11px;color:#999;vertical-align:top;padding-top:12px;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td>
@@ -510,7 +487,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
             </td>
           </tr>
         </template>
-        <tr v-if="!cfPageList.length">
+        <tr v-if="!bundleList.length">
           <td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td>
         </tr>
       </tbody>
@@ -521,8 +498,8 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
            <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
            <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
            <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
-           <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">

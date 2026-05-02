@@ -50,14 +50,17 @@ window.DpDispUiMng = {
       try {
         const { type, kw, ...restParam } = searchParam;
         const params = {
-          pageNo: 1, pageSize: 10000,
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
           ...(kw       ? { kw: kw.trim() } : {}),
           ...(type     ? { uiType: type }  : {}),
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
         };
         const res = await boApiSvc.dpUi.getPage(params, '전시UI관리', '조회');
-        displays.splice(0, displays.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
+        const d = res.data?.data;
+        displays.splice(0, displays.length, ...(d?.pageList || d?.list || []));
+        pager.pageTotalCount = d?.pageTotalCount || 0;
+        pager.pageTotalPage  = d?.pageTotalPage  || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -102,20 +105,17 @@ window.DpDispUiMng = {
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
 
-    const cfTotal      = computed(() => displays.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.pageSize)));
-    const cfPageList   = computed(() => displays.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
-    const cfPageNums   = computed(() => { const c=pager.pageNo,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
     const onReset  = () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; handleSearchList('DEFAULT'); };
-    const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.pageNo = n; };
-    const onSizeChange = () => { pager.pageNo = 1; };
+    const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
 
     // ── return ───────────────────────────────────────────────────────────────
 
     return { displays, uiState, codes, pager, searchParam,
-      cfTotal, cfTotalPages, cfPageList, cfPageNums,
+      cfPageNums,
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange, cfSiteNm,
       selectNode, pathLabel,
       uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId };
@@ -150,7 +150,7 @@ window.DpDispUiMng = {
     </div>
     <div class="card">
       <div class="toolbar">
-        <span class="list-count">총 {{ cfTotal }}건</span>
+        <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
         <button class="btn btn-primary btn-sm" @click="openNew">✚ 신규등록</button>
       </div>
       <table class="bo-table">
@@ -159,8 +159,8 @@ window.DpDispUiMng = {
         </tr></thead>
         <tbody>
           <tr v-if="uiState.loading"><td colspan="6" style="text-align:center;padding:30px;color:#aaa;">로딩 중...</td></tr>
-          <tr v-else-if="!cfPageList.length"><td colspan="6" style="text-align:center;padding:30px;color:#aaa;">조회된 데이터가 없습니다.</td></tr>
-          <tr v-for="(d, idx) in cfPageList" :key="d?.dispId">
+          <tr v-else-if="!displays.length"><td colspan="6" style="text-align:center;padding:30px;color:#aaa;">조회된 데이터가 없습니다.</td></tr>
+          <tr v-for="(d, idx) in displays" :key="d?.dispId">
             <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td class="title-link" @click="loadView(d.dispId)">{{ d.name }}</td>
             <td>{{ d.uiType }}</td>
@@ -178,8 +178,8 @@ window.DpDispUiMng = {
           <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
           <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
           <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-          <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
-          <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+          <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+          <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
         </div>
         <div class="pager-right">
           <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">

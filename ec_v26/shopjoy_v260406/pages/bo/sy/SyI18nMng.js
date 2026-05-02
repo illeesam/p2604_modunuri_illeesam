@@ -16,14 +16,16 @@ window.SyI18nMng = {
       try {
         const { kw, scope, use } = searchParam;
         const params = {
-          pageNo: 1, pageSize: 10000,
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...(kw    ? { kw: kw.trim() }         : {}),
           ...(scope ? { i18nScopeCd: scope }     : {}),
           ...(use   ? { useYn: use }             : {}),
         };
         const res = await boApiSvc.syI18n.getPage(params, '다국어관리', '조회');
-        const list = res.data?.data?.pageList || res.data?.data?.list || [];
-        i18nKeys.splice(0, i18nKeys.length, ...list);
+        const d = res.data?.data;
+        i18nKeys.splice(0, i18nKeys.length, ...(d?.pageList || []));
+        pager.pageTotalCount = d?.pageTotalCount || 0;
+        pager.pageTotalPage  = d?.pageTotalPage  || 1;
       } catch (err) {
         console.error('[handleSearchData]', err);
         i18nKeys.splice(0, i18nKeys.length);
@@ -66,10 +68,7 @@ window.SyI18nMng = {
     const LANG_LABELS = { ko:'한국어', en:'English', ja:'日本語', in:'Indonesia' };
     const fnScopeBadge  = s => ({ COMMON:'badge-blue', FO:'badge-green', BO:'badge-orange' }[s] || 'badge-gray');
 
-    const cfTotal      = computed(() => i18nKeys.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.pageSize)));
-    const cfPageList   = computed(() => i18nKeys.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
-    const cfPageNums   = computed(() => { const c=pager.pageNo,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const cfSelectedKey = computed(() => (i18nKeys||[]).find(k => k.i18nId === uiState.selectedId) || null);
     const cfSelectedMsgs = computed(() => {
@@ -116,13 +115,13 @@ window.SyI18nMng = {
     };
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData('DEFAULT'); };
     const onReset  = () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; handleSearchData('DEFAULT'); };
-    const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.pageNo = n; };
-    const onSizeChange = () => { pager.pageNo = 1; };
+    const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, codes, searchParam, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList, onSearch, onReset,
+    return { uiState, codes, searchParam, pager, cfPageNums, setPage, onSearch, onReset,
              selectedId, cfSelectedKey, cfSelectedMsgs, msgForm, openDetail, saveMsgs, getLangMsg,
              LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, onSizeChange };
   },
@@ -148,7 +147,7 @@ window.SyI18nMng = {
     <div class="card">
       <div class="toolbar">
         <span class="list-title">다국어 키 목록</span>
-        <span class="list-count">총 {{ cfTotal }}건</span>
+        <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
       </div>
       <table class="bo-table">
         <thead><tr>
@@ -161,7 +160,7 @@ window.SyI18nMng = {
           <th style="width:60px;text-align:center">사용</th>
         </tr></thead>
         <tbody>
-          <tr v-for="(row, idx) in cfPageList" :key="row.i18nId" :class="{active:selectedId===row.i18nId}" @click="openDetail(row)" style="cursor:pointer">
+          <tr v-for="(row, idx) in i18nKeys" :key="row.i18nId" :class="{active:selectedId===row.i18nId}" @click="openDetail(row)" style="cursor:pointer">
             <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td><code style="font-size:12px;color:#7c3aed">{{ row.i18nKey }}</code></td>
             <td style="color:#666;font-size:12px">{{ row.i18nDesc }}</td>
@@ -172,7 +171,7 @@ window.SyI18nMng = {
             <td style="text-align:center;font-size:11px;color:#555">{{ getLangMsg(row.i18nId,'ja') }}</td>
             <td style="text-align:center"><span :class="['badge',fnYnBadge(row.useYn)]">{{ row.useYn }}</span></td>
           </tr>
-          <tr v-if="!cfPageList.length"><td colspan="9" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
+          <tr v-if="!i18nKeys.length"><td colspan="9" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
       <div class="pagination">
@@ -181,8 +180,8 @@ window.SyI18nMng = {
            <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
            <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
            <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
-           <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">

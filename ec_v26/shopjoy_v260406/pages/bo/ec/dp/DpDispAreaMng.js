@@ -41,12 +41,15 @@ window.DpDispAreaMng = {
       uiState.loading = true;
       try {
         const params = {
-          pageNo: 1, pageSize: 10000,
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
         };
         const res = await boApiSvc.dpArea.getPage(params, '전시영역관리', '목록조회');
-        areas.splice(0, areas.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
+        const d = res.data?.data;
+        areas.splice(0, areas.length, ...(d?.pageList || d?.list || []));
+        pager.pageTotalCount = d?.pageTotalCount || 0;
+        pager.pageTotalPage  = d?.pageTotalPage  || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -101,8 +104,8 @@ const searchParam = reactive({
       handleSearchData();
     };
   
-    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.pageNo = n; };
-    const onSizeChange = () => { pager.pageNo = 1; };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
     /* ── 하단 상세 임베드 ── */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
@@ -116,15 +119,12 @@ const searchParam = reactive({
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
 
-    const cfTotal      = computed(() => areas.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.pageSize)));
-    const cfPageList   = computed(() => areas.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
-    const cfPageNums   = computed(() => { const c=pager.pageNo,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     // ── return ───────────────────────────────────────────────────────────────
 
     return { areas, uiState, codes, pager, searchParam,
-      cfTotal, cfTotalPages, cfPageList, cfPageNums,
+      cfPageNums,
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange, cfSiteNm,
       selectNode, fnPathLabel,
       uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId };
@@ -159,7 +159,7 @@ const searchParam = reactive({
     </div>
     <div class="card">
       <div class="toolbar">
-        <span class="list-count">총 {{ cfTotal }}건</span>
+        <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
         <button class="btn btn-primary btn-sm" @click="openNew">✚ 신규등록</button>
       </div>
       <table class="bo-table">
@@ -168,8 +168,8 @@ const searchParam = reactive({
         </tr></thead>
         <tbody>
           <tr v-if="uiState.loading"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">로딩 중...</td></tr>
-          <tr v-else-if="!cfPageList.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">조회된 데이터가 없습니다.</td></tr>
-          <tr v-for="(a, idx) in cfPageList" :key="a?.codeId">
+          <tr v-else-if="!areas.length"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">조회된 데이터가 없습니다.</td></tr>
+          <tr v-for="(a, idx) in areas" :key="a?.codeId">
             <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td><code style="font-size:11px;">{{ a.codeValue }}</code></td>
             <td class="title-link" @click="loadView(a.codeId)">{{ a.codeLabel }}</td>
@@ -188,8 +188,8 @@ const searchParam = reactive({
           <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
           <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
           <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-          <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
-          <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+          <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+          <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
         </div>
         <div class="pager-right">
           <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">

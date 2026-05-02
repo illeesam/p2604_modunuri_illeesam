@@ -45,14 +45,18 @@ window.DpDispWidgetLibMng = {
       try {
         const { type, kw, ...restParam } = searchParam;
         const params = {
-          pageNo: 1, pageSize: 10000,
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          sortBy: 'libId', sortDir: 'desc',
           ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
           ...(kw   ? { kw: kw.trim() }       : {}),
           ...(type ? { widgetType: type }     : {}),
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
         };
         const res = await boApiSvc.dpWidgetLib.getPage(params, '전시위젯라이브러리', '조회');
-        widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
+        const d = res.data?.data;
+        widgetLibs.splice(0, widgetLibs.length, ...(d?.pageList || d?.list || []));
+        pager.pageTotalCount = d?.pageTotalCount || 0;
+        pager.pageTotalPage  = d?.pageTotalPage  || 1;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -99,17 +103,7 @@ window.DpDispWidgetLibMng = {
     /* ── 표시경로 트리 ── */
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    const cfTotalCount  = computed(() => widgetLibs.length);
-    const cfPageList    = computed(() => {
-      const s = (pager.pageNo - 1) * pager.pageSize;
-      return [...widgetLibs].sort((a, b) => b.libId - a.libId).slice(s, s + pager.pageSize);
-    });
-    const cfTotalPages  = computed(() => Math.max(1, Math.ceil(cfTotalCount.value / pager.pageSize)));
-    const cfPageNumbers = computed(() => {
-      const pages = []; const cur = pager.pageNo; const tot = pager.pageTotalPage;
-      for (let i = Math.max(1, cur - 2); i <= Math.min(tot, cur + 2); i++) pages.push(i);
-      return pages;
-    });
+    const cfPageNumbers = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     /* ── 하단 인라인 Dtl ── */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
@@ -121,8 +115,8 @@ window.DpDispWidgetLibMng = {
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
-    const setPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
-    const onSizeChange = () => { pager.pageNo = 1; };
+    const setPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
     const handleDelete = async (lib) => {
       const ok = await props.showConfirm('삭제', `[${lib.name}]을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -144,7 +138,7 @@ window.DpDispWidgetLibMng = {
     return { widgetLibs, uiState, codes, searchParam, pager,
       onSearch, onReset, setPage, onSizeChange,
       selectNode,
-      cfTotalCount, cfPageList, cfTotalPages, cfPageNumbers,
+      cfPageNumbers,
       wIcon, wTypeLabel,
       uiStateDetail, cfDetailEditId, handleLoadDetail, openNew, closeDetail, inlineNavigate,
       cfSiteNm, handleDelete };
@@ -182,14 +176,14 @@ window.DpDispWidgetLibMng = {
     <div>
       <div class="card">
         <div class="toolbar">
-          <span class="list-title">위젯라이브러리 <span class="list-count">{{ cfTotalCount }}건</span></span>
+          <span class="list-title">위젯라이브러리 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
           <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
         </div>
         <table class="bo-table">
           <thead><tr><th style="width:36px;text-align:center;">번호</th><th>이름</th><th>타입</th><th>상태</th><th style="text-align:right">관리</th></tr></thead>
           <tbody>
-            <tr v-if="cfPageList.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-            <tr v-for="(lib, idx) in cfPageList" :key="lib.libId">
+            <tr v-if="widgetLibs.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+            <tr v-for="(lib, idx) in widgetLibs" :key="lib.libId">
               <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
               <td><span class="title-link" @click="handleLoadDetail(lib.libId)">{{ wIcon(lib.widgetType) }} {{ lib.name }}</span></td>
               <td><span class="tag">{{ wTypeLabel(lib.widgetType) }}</span></td>
@@ -207,8 +201,8 @@ window.DpDispWidgetLibMng = {
             <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
             <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
             <button v-for="n in cfPageNumbers" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-            <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
-            <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+            <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+            <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
           </div>
           <div class="pager-right">
             <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
