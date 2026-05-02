@@ -247,7 +247,7 @@ window.PdProdDtl = {
       { codeValue: 'MATERIAL',   codeLabel: '소재 단독' },
       { codeValue: 'CUSTOM',     codeLabel: '직접입력 단독' },
     ];
-    const cfOptTypeLevel1Codes = computed(() => OPT_CATEGORY_LABELS);
+    const cfOptTypeLevel1Codes = OPT_CATEGORY_LABELS;
     // 2레벨 = 각 차원에서 고를 수 있는 단일 옵션 유형 목록
     const cfOptTypeCodes = computed(() =>
       cfOptTypeAllCodes.value

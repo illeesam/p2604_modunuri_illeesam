@@ -48,8 +48,10 @@ window.PdBundleMng = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
+        const bundleParams = { pageNo: 1, pageSize: 10000 };
+        if (searchParam.nm) bundleParams.nm = searchParam.nm.trim();
         const [bundlesRes, prodsRes, catsRes] = await Promise.all([
-          boApiSvc.pdBundle.getPage({ pageNo: 1, pageSize: 10000 }, '상품번들관리', '목록조회'),
+          boApiSvc.pdBundle.getPage(bundleParams, '상품번들관리', '목록조회'),
           boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 10000 }, '상품번들관리', '목록조회'),
           boApiSvc.pdCategory.getPage({ pageNo: 1, pageSize: 10000 }, '상품번들관리', '목록조회'),
         ]);
@@ -153,28 +155,24 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const bundleList = reactive([]);
     const updateBundleList = () => {
       try {
-        const kw = (searchParam?.nm || '').toLowerCase();
         const bundleArray = bundles;
         if (!Array.isArray(bundleArray) || bundleArray.length === 0) {
           bundleList.splice(0, bundleList.length);
           return;
         }
-        // API 응답: prodId 기반 상품 목록 (prodTypeCd=BUNDLE)
-        const result = bundleArray
-          .map(b => {
-            const id = b?.prodId || b?.bundleProdId;
-            return {
-              bundleProdId: id,
-              prodNm: b?.prodNm || b?.prodName || getProdNm(id),
-              prod: b,
-              items: [],
-              itemCount: 0,
-              salePrice: b?.salePrice || 0,
-              prodStatusCd: b?.prodStatusCd || b?.status,
-              regDate: b?.regDate,
-            };
-          })
-          .filter(g => !kw || (g?.prodNm || '').toLowerCase().includes(kw));
+        const result = bundleArray.map(b => {
+          const id = b?.prodId || b?.bundleProdId;
+          return {
+            bundleProdId: id,
+            prodNm: b?.prodNm || b?.prodName || getProdNm(id),
+            prod: b,
+            items: [],
+            itemCount: 0,
+            salePrice: b?.salePrice || 0,
+            prodStatusCd: b?.prodStatusCd || b?.status,
+            regDate: b?.regDate,
+          };
+        });
         bundleList.splice(0, bundleList.length, ...result);
       } catch (e) {
         console.error('bundleList error:', e);
@@ -182,8 +180,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       }
     };
     updateBundleList();
-
-    watch(() => searchParam.nm, updateBundleList);
 
     watch(bundles, updateBundleList);
 

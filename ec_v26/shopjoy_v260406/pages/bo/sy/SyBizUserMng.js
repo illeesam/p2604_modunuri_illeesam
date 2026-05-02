@@ -131,8 +131,6 @@ window.SyBizUserMng = {
       return '['+vt+'] '+v.vendorNm;
     };
 
-    const applied = reactive({ vendorId: null });
-
     const bizPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const cfBizTotalPages = computed(() => Math.max(1, Math.ceil(vendors.length / bizPager.pageSize)));
     const cfBizPageNums   = computed(() => { const c=bizPager.pageNo,l=cfBizTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
@@ -148,7 +146,6 @@ window.SyBizUserMng = {
 
     const pickVendorRow = (v) => {
       uiState.searchVendorId = v.vendorId;
-      applied.vendorId = v.vendorId;
       uiState.treeRoleCat = ({ SALES:'SALES', DELIVERY:'DELIVERY', CS:'CS', SITE:'SITE', PROG:'PROG',
                               PARTNER:'SITE', INTERNAL:'SITE' })[v.vendorTypeCd] || '';
       loadVendorUsers(v.vendorId);
@@ -190,17 +187,12 @@ window.SyBizUserMng = {
       return new Set(roles.filter(r=>ids.has(r.roleId)).map(r=>r.roleCode));
     });
 
-    const cfFiltered = computed(() => vendorUsers.filter(u => {
-      if (applied.vendorId != null && u.vendorId !== applied.vendorId) return false;
-      return true;
-    }));
-
-const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfFiltered.value.length / pager.pageSize)));
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(vendorUsers.length / pager.pageSize)));
     const cfPageNums   = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const setPage    = n => { if(n>=1&&n<=pager.pageTotalPage) pager.pageNo=n; };
     const onSizeChange = () => { pager.pageNo=1; };
-    const cfPagedRows  = computed(() => cfFiltered.value.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize));
+    const cfPagedRows  = computed(() => vendorUsers.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize));
 
     /* ── 인라인 폼 (사용자 등록/수정) ── */
         const formData = reactive({});
@@ -213,7 +205,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     });
 
     const openNew = () => {
-      const vid = applied.vendorId || uiState.searchVendorId;
+      const vid = uiState.searchVendorId;
       if (!vid) { props.showToast('업체를 먼저 선택해주세요.', 'warning'); return; }
       Object.assign(formData, blank());
       formData.vendorId = vid;
@@ -396,12 +388,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       vendorUsers, cfVendorMap, fnVendorNm, fnVendorTypeCd, fnVendorSummary,
       vendors, bizPager, cfBizTotalPages, cfBizPageNums, cfBizPagedRows, setBizPage,
       onSearch, onReset,
-      applied,
       pickVendorRow, fnVendorStatusBadge, fnVendorStatusLabel, fnVendorTypeBadge, fnVendorTypeLabel,
       onVendorPicked,
       cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
       fnStatusBadge, fnStatusLabel,
-      cfFiltered, cfPagedRows, pager, cfTotalPages, cfPageNums, setPage, onSizeChange,
+      cfPagedRows, pager, cfTotalPages, cfPageNums, setPage, onSizeChange,
       formData, openNew, openEdit, closeForm, handleSaveForm, handleDeleteRow,
       userRoles, roleTreeExpanded,
       openRoleModal, closeRoleModal, confirmRoleModal, handleDeleteRole,
@@ -428,7 +419,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       <div :style="{display:'flex',alignItems:'center',gap:'8px',flex:1,maxWidth:'480px',padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',background:'#f5f5f7',color:uiState.searchVendorId!=null?'#374151':'#9ca3af',fontWeight:uiState.searchVendorId!=null?600:400,fontSize:'12px'}">
         <span style="flex:1;">{{ uiState.searchVendorId != null ? fnVendorSummary(uiState.searchVendorId) : '업체 선택...' }}</span>
         <button type="button" @click="uiState.vendorPickOpen=true" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}">🔍</button>
-        <button v-if="uiState.searchVendorId!=null" type="button" @click="uiState.searchVendorId=null;applied.vendorId=null;vendorUsers.splice(0)" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #fca5a5',borderRadius:'50%',fontSize:'11px',color:'#dc2626',padding:'0',fontWeight:700}">✕</button>
+        <button v-if="uiState.searchVendorId!=null" type="button" @click="uiState.searchVendorId=null;vendorUsers.splice(0)" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #fca5a5',borderRadius:'50%',fontSize:'11px',color:'#dc2626',padding:'0',fontWeight:700}">✕</button>
       </div>
       <input v-model="uiState.bizKw" placeholder="업체명 / 사업자번호 검색" style="margin-left:12px;min-width:200px;" />
       <select class="form-control" v-model="uiState.bizVendorFlt" style="width:140px;">
@@ -497,7 +488,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     <div>
       <div class="card">
         <div class="toolbar">
-          <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사용자목록 <span class="list-count">{{ cfFiltered.length }}건</span></span>
+          <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사용자목록 <span class="list-count">{{ vendorUsers.length }}건</span></span>
           <button class="btn btn-blue btn-sm" @click="openNew">+ 신규</button>
         </div>
         <table class="bo-table">

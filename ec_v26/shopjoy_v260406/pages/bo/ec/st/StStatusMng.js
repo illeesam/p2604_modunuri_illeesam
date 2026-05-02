@@ -84,11 +84,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
-    const cfOrders   = computed(() => orderList);
-    const cfClaims   = computed(() => claimList);
     const cfVendors  = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
-    const cfCoupons  = computed(() => couponList);
-    const cfCacheList= computed(() => cacheDataList);
 
     const COMM_RATE = 0.10; // 수수료율 10%
 
@@ -106,13 +102,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const vendorPager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfVendorRows = computed(() => {
-      const filteredOrders = window.safeArrayUtils.safeFilter(cfOrders.value, o => inRange(o.orderDate) && o.status !== '취소됨');
+      const filteredOrders = window.safeArrayUtils.safeFilter(orderList, o => inRange(o.orderDate) && o.status !== '취소됨');
       return cfVendors.value.map(v => {
         const vOrders = window.safeArrayUtils.safeFilter(filteredOrders, o => o.vendorId === v.vendorId);
         const sales   = vOrders.reduce((s, o) => s + (o.totalPrice || 0), 0);
-        const refund  = cfClaims.value
+        const refund  = claimList
           .filter(c => inRange(c.requestDate) && ['환불완료','취소완료'].includes(c.status))
-          .filter(c => { const o = cfOrders.value.find(x => x.orderId === c.orderId); return o && o.vendorId === v.vendorId; })
+          .filter(c => { const o = orderList.find(x => x.orderId === c.orderId); return o && o.vendorId === v.vendorId; })
           .reduce((s, c) => s + (c.refundAmount || 0), 0);
         const netSales = sales - refund;
         const comm     = Math.round(netSales * COMM_RATE);
@@ -135,7 +131,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const cfOrderRows = computed(() => {
       const kw = uiState.orderSearchKw.trim().toLowerCase();
-      return window.safeArrayUtils.safeFilter(cfOrders.value, o => {
+      return window.safeArrayUtils.safeFilter(orderList, o => {
         if (!inRange(o.orderDate)) return false;
         if (uiState.orderSearchStatus && o.status !== uiState.orderSearchStatus) return false;
         if (kw && !o.orderId.toLowerCase().includes(kw) && !o.userNm.toLowerCase().includes(kw) && !o.prodNm.toLowerCase().includes(kw)) return false;
@@ -169,7 +165,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const claimPager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfClaimRows = computed(() => {
-      return window.safeArrayUtils.safeFilter(cfClaims.value, c => {
+      return window.safeArrayUtils.safeFilter(claimList, c => {
         if (!inRange(c.requestDate)) return false;
         if (uiState.claimSearchType   && c.type   !== uiState.claimSearchType)   return false;
         if (uiState.claimSearchStatus && c.status !== uiState.claimSearchStatus) return false;
@@ -203,7 +199,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const cfPromoRows = computed(() => {
       const kw = uiState.promoSearchKw.trim().toLowerCase();
-      const couponRows = cfCoupons.value.map(c => {
+      const couponRows = couponList.map(c => {
         const discountAmt = c.discountType === 'amount' ? c.discountValue * c.useCount
           : c.discountType === 'rate' ? Math.round(50000 * (c.discountValue / 100) * c.useCount) // 평균 주문금액 가정
           : 3000 * c.useCount;
@@ -218,7 +214,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         };
       });
       const cacheRows = [
-        { promoId: 'CCH-001', promoType: '캐쉬', promoNm: '캐쉬 사용 합산', issueCnt: cfCacheList.value.filter(x => x.type==='충전').length, useCnt: cfCacheList.value.filter(x => x.type==='사용').length, discountAmt: cfCacheList.value.filter(x => x.type==='사용').reduce((s,x) => s + Math.abs(x.amount), 0), status: '진행중', period: '상시' },
+        { promoId: 'CCH-001', promoType: '캐쉬', promoNm: '캐쉬 사용 합산', issueCnt: cacheDataList.filter(x => x.type==='충전').length, useCnt: cacheDataList.filter(x => x.type==='사용').length, discountAmt: cacheDataList.filter(x => x.type==='사용').reduce((s,x) => s + Math.abs(x.amount), 0), status: '진행중', period: '상시' },
       ];
       const allRows = [...couponRows, ...cacheRows];
       return allRows.filter(r => {
@@ -243,13 +239,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const cfSettleRows = computed(() => {
       const monthMap = {};
-      window.safeArrayUtils.safeForEach(cfOrders.value, o => {
+      window.safeArrayUtils.safeForEach(orderList, o => {
         const m = String(o.orderDate || '').slice(0, 7);
         if (!m) return;
         if (!monthMap[m]) monthMap[m] = { month: m, orderCnt: 0, sales: 0, refund: 0, commAmt: 0, promoAmt: 0 };
         if (o.status !== '취소됨') { monthMap[m].orderCnt++; monthMap[m].sales += o.totalPrice || 0; }
       });
-      window.safeArrayUtils.safeForEach(cfClaims.value, c => {
+      window.safeArrayUtils.safeForEach(claimList, c => {
         const m = String(c.requestDate || '').slice(0, 7);
         if (m && monthMap[m] && ['환불완료','취소완료'].includes(c.status)) monthMap[m].refund += c.refundAmount || 0;
       });

@@ -464,7 +464,6 @@ window.DpDispUiSimul = {
     const structColCount   = ref(1);        // 1 ~ 32
     const sMakeInit = (cols) => Array(cols * 2).fill(null);
     const structSlots = reactive([...sMakeInit(1)]);
-    const cfStructCurrentSlots = computed(() => structSlots);
     const structAutoExpand = () => {
       const cols = uiState.structColCount;
       if (structSlots.slice(structSlots.length - cols).some(Boolean))
@@ -829,7 +828,7 @@ window.DpDispUiSimul = {
       panelWidgetTypes, isPanelAllChecked,
       checkedWidgetKeys, toggleWidgetCheck, checkAllWidgets, clearCheckedWidgets, cfCheckedWidgetCount, cfCheckedWidgetList,
       /* Tab2 그리드 */
-      structSlots, cfStructCurrentSlots, cfStructGridCols,
+      structSlots, cfStructGridCols,
       STRUCT_VIEWPORT,
       applyAreaLayout,
       onStructDragOver, onStructDragLeave, onStructDrop,
@@ -1477,7 +1476,7 @@ window.DpDispUiSimul = {
           </div>
           <div :style="{ border: STRUCT_VIEWPORT[structViewport].width ? '2px solid #d1d5db' : 'none', borderRadius: STRUCT_VIEWPORT[structViewport].width ? '12px' : '0', padding: STRUCT_VIEWPORT[structViewport].width ? '10px' : '0', background:'#fff', boxShadow: STRUCT_VIEWPORT[structViewport].width ? '0 4px 20px rgba(0,0,0,.12)' : 'none' }">
           <div :style="{ display:'grid', gridTemplateColumns:cfStructGridCols, gap:'10px' }">
-            <template v-for="(slot, idx) in cfStructCurrentSlots" :key="Math.random()">
+            <template v-for="(slot, idx) in structSlots" :key="Math.random()">
             <div v-if="!structShowReal || slot"
               @dragover="onStructDragOver($event, idx)"
               @dragleave="onStructDragLeave"
@@ -1613,7 +1612,7 @@ window.DpDispUiSimul = {
             </div>
             </template>
           </div><!-- ── /grid ──────────────────────────────────────────────────────────── -->
-          <div v-if="window.safeArrayUtils.safeEvery(cfStructCurrentSlots, s=>!s)" style="text-align:center;padding:40px;color:#bbb;font-size:13px;">
+          <div v-if="window.safeArrayUtils.safeEvery(structSlots, s=>!s)" style="text-align:center;padding:40px;color:#bbb;font-size:13px;">
             좌측 영역 또는 패널을 드래그하여 배치하세요
           </div>
           </div><!-- ── /device frame ──────────────────────────────────────────────────── -->

@@ -17,7 +17,6 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const memberList = reactive([]);
-    const cfMembers = computed(() => memberList);
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
@@ -73,7 +72,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
     const cfLogList = computed(() => {
       const rows = [];
       LOG_DATES.forEach((dt, i) => {
-        const m = cfMembers.value[i % Math.max(1, cfMembers.value.length)];
+        const m = memberList[i % Math.max(1, memberList.length)];
         if (!m) return;
         const resultCd = RESULT_CODES[i % RESULT_CODES.length];
         const isSuccess = resultCd === 'SUCCESS';

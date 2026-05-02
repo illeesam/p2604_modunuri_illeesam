@@ -96,13 +96,10 @@ window.DpDispWidgetLibMng = {
     /* ── 표시경로 트리 ── */
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    /* 최종 리스트 */
-    const cfFiltered = computed(() => [...widgetLibs].sort((a, b) => b.libId - a.libId));
-
-    const cfTotalCount  = computed(() => cfFiltered.value.length);
+    const cfTotalCount  = computed(() => widgetLibs.length);
     const cfPageList    = computed(() => {
       const s = (pager.pageNo - 1) * pager.pageSize;
-      return cfFiltered.value.slice(s, s + pager.pageSize);
+      return [...widgetLibs].sort((a, b) => b.libId - a.libId).slice(s, s + pager.pageSize);
     });
     const cfTotalPages  = computed(() => Math.max(1, Math.ceil(cfTotalCount.value / pager.pageSize)));
     const cfPageNumbers = computed(() => {
@@ -144,7 +141,7 @@ window.DpDispWidgetLibMng = {
     return { widgetLibs, uiState, codes, searchParam, pager,
       onSearch, onReset, setPage, onSizeChange,
       selectNode,
-      cfFiltered, cfTotalCount, cfPageList, cfTotalPages, cfPageNumbers,
+      cfTotalCount, cfPageList, cfTotalPages, cfPageNumbers,
       wIcon, wTypeLabel,
       uiStateDetail, cfDetailEditId, handleLoadDetail, openNew, closeDetail, inlineNavigate,
       cfSiteNm, handleDelete };

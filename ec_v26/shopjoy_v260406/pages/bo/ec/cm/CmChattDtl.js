@@ -154,8 +154,7 @@ window.CmChattDtl = {
 
     const onUserChange = () => {};
 
-    const cfUserChats = computed(() => []);
-    const cfSearchUser = computed(() => null);
+    const cfUserChats = reactive([]);
 
     const replyText = Vue.toRef(uiState, 'replyText');
     const searchUserId = Vue.toRef(uiState, 'searchUserId');
@@ -166,7 +165,7 @@ window.CmChattDtl = {
     return { cfIsNew, tab, viewMode2, showTab, chat, replyText, sendReply, closeChat, msgBoxRef,
       hasRef, refLabel, openMsgRef, refModal, closeRefModal,
       form, errors, handleSave, onUserChange,
-      searchUserId, cfUserChats, cfSearchUser,
+      searchUserId, cfUserChats,
       cfMemberChats, codes,
     };
   },
