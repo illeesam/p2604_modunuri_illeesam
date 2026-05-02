@@ -82,7 +82,7 @@ window.XsSample01 = {
     const makeRow = (d) => ({
       ...d,
       _row_status: 'N', _row_check: false,
-      _orig: { memberNm: d.memberNm, email: d.email, phone: d.phone, grade: d.grade, status: d.status },
+      _row_org: { memberNm: d.memberNm, email: d.email, phone: d.phone, grade: d.grade, status: d.status },
     });
 
     /* ── Pager ── */
@@ -122,12 +122,12 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
     const setFocused = idx => { uiState.focusedIdx = idx; };
     const onCellChange = row => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
-      row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._orig[f])) ? 'U' : 'N';
+      row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f])) ? 'U' : 'N';
     };
 
     const addRow = () => {
       const f = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
-      const newRow = { memberId: _tempId--, memberNm: '', email: '', phone: '', grade: '일반', status: '활성', regDate: '', _row_status: 'I', _row_check: false, _orig: null };
+      const newRow = { memberId: _tempId--, memberNm: '', email: '', phone: '', grade: '일반', status: '활성', regDate: '', _row_status: 'I', _row_check: false, _row_org: null };
       const at = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(at, 0, newRow); uiState.focusedIdx = at;
       pager.pageNo = Math.ceil((at + 1) / pager.pageSize);
@@ -142,7 +142,7 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
     const cancelRow = idx => {
       const row = gridRows[idx];
       if (row._row_status === 'I') { gridRows.splice(idx, 1); if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); }
-      else { if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; }
+      else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
     };
 
     const deleteRows = () => { for (let i = gridRows.length - 1; i >= 0; i--) { if (!gridRows[i]._row_check) continue; if (gridRows[i]._row_status === 'I') gridRows.splice(i, 1); else gridRows[i]._row_status = 'D'; } };
@@ -154,7 +154,7 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
         const row = gridRows[i]; if (!ids.has(row.memberId)) continue;
         if (row._row_status === 'N') continue;
         if (row._row_status === 'I') gridRows.splice(i, 1);
-        else { if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; }
+        else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
       }
     };
 

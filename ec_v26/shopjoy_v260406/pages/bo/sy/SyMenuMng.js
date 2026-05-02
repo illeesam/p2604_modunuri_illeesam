@@ -111,7 +111,7 @@ window.SyMenuMng = {
 
     const makeRow = (m) => ({
       ...m, _depth: m._depth || 0, _row_status: 'N', _row_check: false,
-      _orig: { menuCode: m.menuCode, menuNm: m.menuNm, parentId: m.parentId,
+      _row_org: { menuCode: m.menuCode, menuNm: m.menuNm, parentId: m.parentId,
                menuUrl: m.menuUrl, menuType: m.menuType, sortOrd: m.sortOrd, useYn: m.useYn, remark: m.remark },
     });
 
@@ -130,7 +130,7 @@ window.SyMenuMng = {
 
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
-      const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._orig[f]));
+      const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f]));
       row._row_status = changed ? 'U' : 'N';
     };
 
@@ -141,7 +141,7 @@ window.SyMenuMng = {
         menuUrl: '', menuType: ref ? ref.menuType : '페이지',
         sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
         useYn: 'Y', remark: '',
-        _depth: ref ? ref._depth : 0, _row_status: 'I', _row_check: false, _orig: null,
+        _depth: ref ? ref._depth : 0, _row_status: 'I', _row_check: false, _row_org: null,
       };
       const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(insertAt, 0, newRow);
@@ -162,7 +162,7 @@ window.SyMenuMng = {
         gridRows.splice(realIdx, 1);
         if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= realIdx ? 1 : 0));
       } else {
-        if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
+        if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; });
         row._row_status = 'N';
       }
     };
@@ -175,7 +175,7 @@ window.SyMenuMng = {
         if (!checkedIds.has(row.menuId)) continue;
         if (row._row_status === 'I') { gridRows.splice(i, 1); }
         else if (row._row_status !== 'N') {
-          if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
+          if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; });
           row._row_status = 'N';
         }
       }

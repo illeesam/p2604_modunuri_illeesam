@@ -110,6 +110,7 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
           const res = await (isNewRow ? boApiSvc.pdTag.create({ ...row }, '태그관리', '등록') : boApiSvc.pdTag.update(row.tagId, { ...row }, '태그관리', '저장'));
           if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
           if (props.showToast) props.showToast('저장되었습니다.', 'success');
+          await handleSearchList();
         } catch (err) {
           console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

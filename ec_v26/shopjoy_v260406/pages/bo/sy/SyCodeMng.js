@@ -141,12 +141,12 @@ window.SyCodeMng = {
 
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
-      row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._orig[f])) ? 'U' : 'N';
+      row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f])) ? 'U' : 'N';
     };
 
     const onGrpChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
-      row._row_status = GRP_FIELDS.some(f => String(row[f] || '') !== String(row._orig[f] || '')) ? 'U' : 'N';
+      row._row_status = GRP_FIELDS.some(f => String(row[f] || '') !== String(row._row_org[f] || '')) ? 'U' : 'N';
       syncGrpDirty();
     };
 
@@ -200,7 +200,7 @@ window.SyCodeMng = {
           ...g,
           _row_status: 'N',
           codeCount: countMap.get(g.codeGrp) ?? 0,
-          _orig: { codeGrp: g.codeGrp, grpNm: g.grpNm, pathId: null, description: g.description || '', type: g.type || '일반', useYn: g.useYn || 'Y' },
+          _row_org: { codeGrp: g.codeGrp, grpNm: g.grpNm, pathId: null, description: g.description || '', type: g.type || '일반', useYn: g.useYn || 'Y' },
         }));
         syncGrpDirty();
         applyGrpFilter();
@@ -224,7 +224,7 @@ window.SyCodeMng = {
 
     const makeRow = (c) => ({
       ...c, _row_status: 'N', _row_check: false,
-      _orig: { codeGrp: c.codeGrp, codeLabel: c.codeLabel, codeValue: c.codeValue,
+      _row_org: { codeGrp: c.codeGrp, codeLabel: c.codeLabel, codeValue: c.codeValue,
                sortOrd: c.sortOrd, useYn: c.useYn, remark: c.remark, parentCodeValue: c.parentCodeValue || null },
     });
 
@@ -238,7 +238,7 @@ window.SyCodeMng = {
         codeId: _tempId--, codeGrp: grp, codeLabel: '', codeValue: '',
         sortOrd: maxSort + 1, useYn: 'Y', remark: '', parentCodeValue: null,
         _row_status: 'I', _row_check: false,
-        _orig: { codeGrp: grp, codeLabel: '', codeValue: '', sortOrd: maxSort + 1, useYn: 'Y', remark: '', parentCodeValue: null },
+        _row_org: { codeGrp: grp, codeLabel: '', codeValue: '', sortOrd: maxSort + 1, useYn: 'Y', remark: '', parentCodeValue: null },
       };
       gridRows.splice(insertAt, 0, newRow);
       uiState.focusedIdx = insertAt;
@@ -257,7 +257,7 @@ window.SyCodeMng = {
       if (row._row_status === 'I') {
         gridRows.splice(idx, 1);
         if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
-      } else { if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; }
+      } else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
     };
 
     const cancelChecked = () => {
@@ -267,7 +267,7 @@ window.SyCodeMng = {
         const row = gridRows[i];
         if (!ids.has(row.codeId) || row._row_status === 'N') continue;
         if (row._row_status === 'I') { gridRows.splice(i, 1); }
-        else { if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; }
+        else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
       }
     };
 
@@ -313,7 +313,7 @@ window.SyCodeMng = {
     const addGrp = () => {
       grpRows.push({
         codeGrp: 'NEW_GRP', grpNm: '신규 그룹', pathId: null, dispPath: 'new.path', description: '', type: '일반', useYn: 'Y',
-        _row_status: 'I', _tempId: _grpTempId--, _orig: {},
+        _row_status: 'I', _tempId: _grpTempId--, _row_org: {},
       });
       syncGrpDirty();
       applyGrpFilter();
@@ -330,7 +330,7 @@ window.SyCodeMng = {
     const cancelGrp = (idx) => {
       const r = visibleGrpRows[idx];
       if (r._row_status === 'I') { grpRows.splice(grpRows.indexOf(r), 1); }
-      else { Object.assign(r, r._orig); r._row_status = 'N'; }
+      else { Object.assign(r, r._row_org); r._row_status = 'N'; }
       syncGrpDirty();
       applyGrpFilter();
     };

@@ -111,7 +111,7 @@ window.SyBrandMng = {
       ...b,
       _row_status: 'N',
       _row_check:  false,
-      _orig: EDIT_FIELDS.reduce((acc, f) => { acc[f] = b[f]; return acc; }, {}),
+      _row_org: EDIT_FIELDS.reduce((acc, f) => { acc[f] = b[f]; return acc; }, {}),
     });
 
 
@@ -129,7 +129,7 @@ window.SyBrandMng = {
 
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
-      const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._orig[f]));
+      const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f]));
       row._row_status = changed ? 'U' : 'N';
     };
 
@@ -138,7 +138,7 @@ window.SyBrandMng = {
         brandId: _tempId--, brandCode: '', brandNm: '', brandEnNm: '',
         dispPath: uiState.selectedPath || 'fashion.misc',
         logoUrl: '', sortOrd: gridRows.length + 1, useYn: 'Y', remark: '',
-        _row_status: 'I', _row_check: false, _orig: null,
+        _row_status: 'I', _row_check: false, _row_org: null,
       };
       const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(insertAt, 0, newRow);
@@ -161,7 +161,7 @@ window.SyBrandMng = {
         gridRows.splice(idx, 1);
         if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
       } else {
-        if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
+        if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; });
         row._row_status = 'N';
       }
     };
@@ -174,7 +174,7 @@ window.SyBrandMng = {
         if (!ids.has(row.brandId)) continue;
         if (row._row_status === 'N') continue;
         if (row._row_status === 'I') { gridRows.splice(i, 1); }
-        else if (row._orig) { EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; }
+        else if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
       }
     };
 

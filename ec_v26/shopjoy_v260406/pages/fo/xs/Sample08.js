@@ -47,7 +47,7 @@ window.XsSample08 = {
         const EDIT_FIELDS = ['categoryNm', 'parentNm', 'depth', 'sortOrd', 'useYn'];
     const toRow = d => ({ categoryId: d.sample1Id, categoryNm: d.cdNm || '', parentNm: d.col01 || '-', depth: Number(d.col02) || 1, sortOrd: Number(d.srtordVl) || 1, useYn: d.useYn || 'Y', regDate: d.regDt || '' });
     const toPayload = r => ({ cdGrp: CD_GRP, cdNm: r.categoryNm, col01: r.parentNm, col02: String(r.depth), srtordVl: r.sortOrd, useYn: r.useYn });
-    const makeRow = d => ({ ...d, _row_status: 'N', _row_check: false, _orig: { categoryNm: d.categoryNm, parentNm: d.parentNm, depth: d.depth, sortOrd: d.sortOrd, useYn: d.useYn } });
+    const makeRow = d => ({ ...d, _row_status: 'N', _row_check: false, _row_org: { categoryNm: d.categoryNm, parentNm: d.parentNm, depth: d.depth, sortOrd: d.sortOrd, useYn: d.useYn } });
     const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
     const cfPagedRows  = computed(() => gridRows.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
@@ -78,16 +78,16 @@ const cfTotal      = computed(() => gridRows.filter(r => r._row_status !== 'D').
     const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
     const onReset  = async () => { Object.assign(searchParam, { kw: '', useYn: '' }); pager.pageNo = 1; await handleSearchList('DEFAULT'); };
     const setFocused   = idx => { uiState.focusedIdx = idx; };
-    const onCellChange = row => { if (row._row_status === 'I' || row._row_status === 'D') return; row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._orig[f])) ? 'U' : 'N'; };
+    const onCellChange = row => { if (row._row_status === 'I' || row._row_status === 'D') return; row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f])) ? 'U' : 'N'; };
     const addRow = () => {
       const at = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
-      gridRows.splice(at, 0, { categoryId: _tempId--, categoryNm: '', parentNm: '-', depth: 1, sortOrd: 1, useYn: 'Y', regDate: '', _row_status: 'I', _row_check: false, _orig: null });
+      gridRows.splice(at, 0, { categoryId: _tempId--, categoryNm: '', parentNm: '-', depth: 1, sortOrd: 1, useYn: 'Y', regDate: '', _row_status: 'I', _row_check: false, _row_org: null });
       uiState.focusedIdx = at; pager.pageNo = Math.ceil((at + 1) / pager.pageSize);
     };
     const deleteRow = idx => { const row = gridRows[idx]; if (row._row_status === 'I') { gridRows.splice(idx, 1); if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); } else row._row_status = 'D'; };
-    const cancelRow = idx => { const row = gridRows[idx]; if (row._row_status === 'I') { gridRows.splice(idx, 1); if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); } else { if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; } };
+    const cancelRow = idx => { const row = gridRows[idx]; if (row._row_status === 'I') { gridRows.splice(idx, 1); if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); } else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; } };
     const deleteRows    = () => { for (let i = gridRows.length - 1; i >= 0; i--) { if (!gridRows[i]._row_check) continue; if (gridRows[i]._row_status === 'I') gridRows.splice(i, 1); else gridRows[i]._row_status = 'D'; } };
-    const cancelChecked = () => { const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.categoryId)); if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; } for (let i = gridRows.length - 1; i >= 0; i--) { const row = gridRows[i]; if (!ids.has(row.categoryId)) continue; if (row._row_status === 'N') continue; if (row._row_status === 'I') gridRows.splice(i, 1); else { if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; } } };
+    const cancelChecked = () => { const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.categoryId)); if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; } for (let i = gridRows.length - 1; i >= 0; i--) { const row = gridRows[i]; if (!ids.has(row.categoryId)) continue; if (row._row_status === 'N') continue; if (row._row_status === 'I') gridRows.splice(i, 1); else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; } } };
     const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I'), uRows = gridRows.filter(r => r._row_status === 'U'), dRows = gridRows.filter(r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) { showToast('변경된 데이터가 없습니다.', 'error'); return; }

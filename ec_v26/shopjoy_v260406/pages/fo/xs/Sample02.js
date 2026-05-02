@@ -74,7 +74,7 @@ window.XsSample02 = {
     const makeRow = d => ({
       ...d,
       _row_status: 'N', _row_check: false,
-      _orig: { productNm: d.productNm, category: d.category, price: d.price, stock: d.stock, status: d.status },
+      _row_org: { productNm: d.productNm, category: d.category, price: d.price, stock: d.stock, status: d.status },
     });
 
     /* ── 무한스크롤 (IntersectionObserver) ── */
@@ -126,12 +126,12 @@ window.XsSample02 = {
     const setFocused   = idx => { uiState.focusedIdx = idx; };
     const onCellChange = row => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
-      row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._orig[f])) ? 'U' : 'N';
+      row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f])) ? 'U' : 'N';
     };
 
     const addRow = () => {
       const at = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : Math.min(uiState.visibleCount, gridRows.length);
-      gridRows.splice(at, 0, { productId: _tempId--, productNm: '', category: '상의', price: 0, stock: 0, status: '판매중', regDate: '', _row_status: 'I', _row_check: false, _orig: null });
+      gridRows.splice(at, 0, { productId: _tempId--, productNm: '', category: '상의', price: 0, stock: 0, status: '판매중', regDate: '', _row_status: 'I', _row_check: false, _row_org: null });
       uiState.focusedIdx = at;
       // 새 행이 보이도록 visibleCount 확장
       if (at >= uiState.visibleCount) uiState.visibleCount = at + 1;
@@ -152,7 +152,7 @@ window.XsSample02 = {
         gridRows.splice(idx, 1);
         if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
         if (idx < uiState.visibleCount) uiState.visibleCount = Math.max(10, uiState.visibleCount - 1);
-      } else { if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; }
+      } else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
     };
 
     const deleteRows = () => {
@@ -169,7 +169,7 @@ window.XsSample02 = {
       for (let i = gridRows.length - 1; i >= 0; i--) {
         const row = gridRows[i]; if (!ids.has(row.productId) || row._row_status === 'N') continue;
         if (row._row_status === 'I') gridRows.splice(i, 1);
-        else { if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; }); row._row_status = 'N'; }
+        else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
       }
     };
 

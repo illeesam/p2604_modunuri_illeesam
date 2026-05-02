@@ -93,7 +93,7 @@ window.SyPathMng = {
         const res = await boApiSvc.syPath.getPage(params, '경로관리', '목록조회');
         const data = res.data?.data || {};
         const list = data.pageList || data.list || [];
-        gridRows.splice(0, gridRows.length, ...list.map(r => ({ ...r, _status: null, _orig: { ...r } })));
+        gridRows.splice(0, gridRows.length, ...list.map(r => ({ ...r, _status: null, _row_org: { ...r } })));
         pager.totalCount = data.totalCount ?? list.length;
       } catch (e) { console.error('[handleGridSearch]', e); }
     };
@@ -132,7 +132,7 @@ window.SyPathMng = {
         useYn: 'Y',
         pathRemark: '',
         _status: 'N',
-        _orig: null,
+        _row_org: null,
       });
     };
 
@@ -140,8 +140,8 @@ window.SyPathMng = {
       if (row._status === 'N') {
         const idx = gridRows.findIndex(r => r.pathId === row.pathId);
         if (idx !== -1) gridRows.splice(idx, 1);
-      } else if (row._orig) {
-        Object.assign(row, row._orig, { _status: null });
+      } else if (row._row_org) {
+        Object.assign(row, row._row_org, { _status: null });
       }
     };
 

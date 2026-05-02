@@ -121,7 +121,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
 
     const makeRow = c => ({
       ...c, _depth: c._depth || 0, _row_status: null, _row_check: false,
-      _orig: { categoryNm: c.categoryNm, parentCategoryId: c.parentCategoryId, sortOrd: c.sortOrd, categoryDesc: c.categoryDesc, categoryStatusCd: c.categoryStatusCd },
+      _row_org: { categoryNm: c.categoryNm, parentCategoryId: c.parentCategoryId, sortOrd: c.sortOrd, categoryDesc: c.categoryDesc, categoryStatusCd: c.categoryStatusCd },
     });
 
 
@@ -236,8 +236,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       if (!row) return;
       if (row._row_status === 'N') {
         gridRows.splice(idx, 1);
-      } else if (row._orig) {
-        Object.assign(row, row._orig);
+      } else if (row._row_org) {
+        Object.assign(row, row._row_org);
         row._row_status = null;
       }
     };
@@ -293,7 +293,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       for (const row of changed) {
         const isNew = row._row_status === 'N';
         const payload = { ...row };
-        delete payload._depth; delete payload._row_status; delete payload._row_check; delete payload._orig; delete payload._children;
+        delete payload._depth; delete payload._row_status; delete payload._row_check; delete payload._row_org; delete payload._children;
         if (isNew) delete payload.categoryId;
         try {
           const res = isNew

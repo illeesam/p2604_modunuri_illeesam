@@ -209,7 +209,7 @@ window.SyRoleMng = {
       return { ...r, _depth: r._depth || 0, _row_status: 'N', _row_check: false,
         restrictPerm: r.restrictPerm || '없음',
         roleCat: cat,
-        _orig: { roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId,
+        _row_org: { roleCode: r.roleCode, roleNm: r.roleNm, parentId: r.parentId,
                  roleType: r.roleType, sortOrd: r.sortOrd, useYn: r.useYn,
                  restrictPerm: r.restrictPerm || '없음',
                  roleCat: JSON.stringify(cat), remark: r.remark },
@@ -310,8 +310,8 @@ window.SyRoleMng = {
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
       const changed = EDIT_FIELDS.some(f => {
-        if (f === 'roleCat') return JSON.stringify(row.roleCat || []) !== (row._orig.roleCat || '[]');
-        return String(row[f]) !== String(row._orig[f]);
+        if (f === 'roleCat') return JSON.stringify(row.roleCat || []) !== (row._row_org.roleCat || '[]');
+        return String(row[f]) !== String(row._row_org[f]);
       });
       row._row_status = changed ? 'U' : 'N';
     };
@@ -323,7 +323,7 @@ window.SyRoleMng = {
         roleType: ref ? ref.roleType : '업무',
         sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
         useYn: 'Y', restrictPerm: '없음', roleCat: [], remark: '',
-        _depth: ref ? ref._depth : 0, _row_status: 'I', _row_check: false, _orig: null,
+        _depth: ref ? ref._depth : 0, _row_status: 'I', _row_check: false, _row_org: null,
       };
       const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(insertAt, 0, newRow);
@@ -345,7 +345,7 @@ window.SyRoleMng = {
         gridRows.splice(realIdx, 1);
         if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= realIdx ? 1 : 0));
       } else {
-        if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
+        if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; });
         row._row_status = 'N';
       }
     };
@@ -358,7 +358,7 @@ window.SyRoleMng = {
         if (!checkedIds.has(row.roleId)) continue;
         if (row._row_status === 'I') { gridRows.splice(i, 1); }
         else if (row._row_status !== 'N') {
-          if (row._orig) EDIT_FIELDS.forEach(f => { row[f] = row._orig[f]; });
+          if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; });
           row._row_status = 'N';
         }
       }
