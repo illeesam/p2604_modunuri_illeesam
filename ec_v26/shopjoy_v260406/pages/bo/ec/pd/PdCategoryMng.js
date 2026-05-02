@@ -78,6 +78,7 @@ window.PdCategoryMng = {
         pager.pageNo          = 1;
         pager.pageTotalCount  = gridRows.length;
         pager.pageTotalPage   = Math.max(1, Math.ceil(gridRows.length / pager.pageSize));
+        fnBuildPagerNums();
       } catch (e) {
         console.error('[handleGridSearch]', e);
       }
@@ -132,12 +133,9 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
 
     const cfTotal     = computed(() => window.safeArrayUtils.safeFilter((gridRows || []), r => r._row_status !== 'D').length);
     const cfPagedRows = computed(() => (gridRows || []).slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
-    const cfPageNums  = computed(() => {
-      const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    });
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const setPage       = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
-    const onSizeChange  = () => { pager.pageNo = 1; pager.pageTotalPage = Math.max(1, Math.ceil(gridRows.length / pager.pageSize)); };
+    const onSizeChange  = () => { pager.pageNo = 1; pager.pageTotalPage = Math.max(1, Math.ceil(gridRows.length / pager.pageSize)); fnBuildPagerNums(); };
     const getRealIdx    = localIdx => (pager.pageNo - 1) * pager.pageSize + localIdx;
 
     const onSearch = async () => {
@@ -324,7 +322,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       codes, uiState,
       selectNode, handleGridSearch,
       searchParam, searchParamOrg,
-      gridRows, cfPagedRows, cfTotal, pager, cfPageNums, setPage, onSizeChange, getRealIdx,
+      gridRows, cfPagedRows, cfTotal, pager, setPage, onSizeChange, getRealIdx,
       onSearch, onReset,
       catPickerModal, cfCatPickerList, onParentSelect, openParentModal, fnDepthColor, fnDepthBullet, parentNm,
       focusedIdx, setFocused, addRow, addChildRow, cancelRow, cancelChecked, deleteRow, deleteRows, handleSave,
@@ -531,7 +529,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         <div class="pager">
           <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
           <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-          <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+          <button v-for="n in pager.pageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
         </div>

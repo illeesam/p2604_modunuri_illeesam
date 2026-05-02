@@ -22,6 +22,7 @@ window.OdClaimMng = {
         members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
         pager.pageTotalCount = claimsRes.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = claimsRes.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        fnBuildPagerNums();
         Object.assign(pager.pageCond, claimsRes.data?.data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
@@ -114,11 +115,7 @@ const isAppReady = computed(() => {
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
-    const cfPageNums = computed(() => {
-      const cur = pager.pageNo, last = pager.pageTotalPage;
-      const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
-      return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-    });
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const fnTypeBadge = t => ({ '취소': 'badge-gray', '반품': 'badge-orange', '교환': 'badge-blue' }[t] || 'badge-gray');
     const fnStatusBadge = s => ({
@@ -335,7 +332,7 @@ const isAppReady = computed(() => {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), claims, members, uiState, codes, searchParam, searchParamOrg, handleDateRangeChange, cfSiteNm, pager, cfPageNums, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), claims, members, uiState, codes, searchParam, searchParamOrg, handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>
@@ -408,7 +405,7 @@ const isAppReady = computed(() => {
       <div class="pager">
         <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
         <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button v-for="n in pager.pageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
         <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
         <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
       </div>

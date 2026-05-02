@@ -93,6 +93,7 @@ const rawList = reactive([]);
         rawList.splice(0, rawList.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || rawList.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
       } catch (err) {
         console.error('[handleSearchList]', err);
@@ -112,7 +113,7 @@ const rawList = reactive([]);
     });
 
 
-    const cfPageNums = computed(() => { const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c-2), e = Math.min(l, s+4); return Array.from({length: e-s+1}, (_, i) => s+i); });
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const cfSummary = computed(() => ({
       totalAmt:   rawList.reduce((s, r) => s + (r.settleTargetAmt || 0), 0),
@@ -158,7 +159,7 @@ const rawList = reactive([]);
   return {
       uiState, handleDateRangeChange,
       searchParam,
-      pager, rawList, cfPageNums, cfSummary,
+      pager, rawList, cfSummary,
       setPage, onSizeChange, onSearch, onReset,
       expandedRows, toggleRow, isExpanded,
       fnStatusBadge, rawStatusLabel, fnRawStatusBadge, vendorTypeLabel, orderStatusLabel,
@@ -410,7 +411,7 @@ const rawList = reactive([]);
       <div class="pager">
         <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
         <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
         <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
         <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
       </div>

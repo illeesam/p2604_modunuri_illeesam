@@ -46,6 +46,7 @@ window.PdRestockNotiMng = {
         restockNotis.splice(0, restockNotis.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
@@ -74,7 +75,7 @@ const searchParam = reactive({
     const getProdNm = id => { const p = (products||[]).find(p => p.productId === id); return p ? p.productName : ('상품#'+id); };
     const getMemNm  = id => { const m = (members||[]).find(m => m.userId === id); return m ? m.name : ('회원#'+id); };
 
-    const cfPageNums   = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const allChecked    = computed(() => restockNotis.length > 0 && restockNotis.every(r => checkedIds.has(r.restockNotiId)));
     const toggleAll     = () => { if (allChecked.value) restockNotis.forEach(r => checkedIds.delete(r.restockNotiId)); else restockNotis.forEach(r => checkedIds.add(r.restockNotiId)); };
@@ -115,7 +116,7 @@ const searchParam = reactive({
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { restockNotis, uiState, searchParam, searchParamOrg, pager, cfPageNums, setPage, onSearch, onReset,
+    return { restockNotis, uiState, searchParam, searchParamOrg, pager, setPage, onSearch, onReset,
              checkedIds, checkedCount, allChecked, toggleAll, toggleOne, handleSend, fnYnBadge, getProdNm, getMemNm, onSizeChange,
              codes };
   },
@@ -171,7 +172,7 @@ const searchParam = reactive({
          <div class="pager">
            <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
            <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pager.pageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
            <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
          </div>

@@ -31,11 +31,7 @@ window.CmNoticeMng = {
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId); // 신규 시 null, 수정 시 ID
     const cfIsViewMode   = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__'); // 조회 모드 여부
     const cfDetailKey    = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`); // 상세 컴포넌트 강제 재마운트 키
-    const cfPageNums     = computed(() => {                                         // 현재 페이지 기준 ±2 페이지 번호 배열
-      const cur = pager.pageNo, last = pager.pageTotalPage;
-      const s = Math.max(1, cur - 2), e = Math.min(last, s + 4);
-      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    });
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const isAppReady     = computed(() => {                                         // 앱 초기화 + 코드 로드 완료 여부
       const initStore = window.useBoAppInitStore?.();
       const codeStore = window.sfGetBoCodeStore?.();
@@ -113,6 +109,7 @@ window.CmNoticeMng = {
         notices.splice(0, notices.length, ...(res.data?.data?.pageList || []));
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage  = res.data?.data?.pageTotalPage  || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        fnBuildPagerNums();
         Object.assign(pager.pageCond, res.data?.data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
@@ -196,7 +193,7 @@ window.CmNoticeMng = {
       uiStateDetail, notices, uiState, codes, pager,
       searchParam, searchParamOrg,
       selectedId: computed(() => uiStateDetail.selectedId),
-      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey, cfPageNums,
+      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,
       onSearch, onReset, onDateRangeChange, onSizeChange, setPage,
       handleSearchList, handleDelete, handleLoadDetail, loadView,
       openNew, closeDetail, inlineNavigate,
@@ -291,7 +288,7 @@ window.CmNoticeMng = {
       <div class="pager">
         <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
         <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
         <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
         <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
       </div>

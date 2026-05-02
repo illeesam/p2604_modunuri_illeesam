@@ -17,6 +17,7 @@ window.SySiteMng = {
         sites.splice(0, sites.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || sites.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
@@ -118,11 +119,7 @@ const detailModal = reactive({
     const cfDetailKey = computed(() => `${detailModal.editId}_${detailModal.viewMode}`);
 
     const cfTypeOptions = computed(() => [...new Set(sites.map(s => s.siteType))].sort());
-    const cfPageNums = computed(() => {
-      const cur = pager.pageNo, last = pager.pageTotalPage;
-      const start = Math.max(1, cur - 2), end = Math.min(last, start + 4);
-      return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-    });
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const fnStatusBadge = s => ({ '운영중': 'badge-green', '점검중': 'badge-orange', '비활성': 'badge-gray' }[s] || 'badge-gray');
     const fnTypeBadge   = t => ({
@@ -167,7 +164,7 @@ const detailModal = reactive({
       selectNode,
       searchParam, onDateRangeChange,
       cfTypeOptions,
-      pager, cfPageNums,
+      pager,
       onSearch, onReset, setPage, onSizeChange,
       fnStatusBadge, fnTypeBadge, handleDelete,
       cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey,
@@ -254,7 +251,7 @@ const detailModal = reactive({
       <div class="pager">
         <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
         <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
         <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
         <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
       </div>

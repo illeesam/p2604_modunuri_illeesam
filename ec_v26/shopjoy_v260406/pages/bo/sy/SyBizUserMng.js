@@ -72,6 +72,8 @@ window.SyBizUserMng = {
     /* ── 업체 목록 (상단 검색/선택) ── */
 
     const vendors = reactive([]);
+    const bizPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const fnBuildBizPagerNums = () => { bizPager.pageTotalCount=vendors.length; bizPager.pageTotalPage=Math.max(1,Math.ceil(vendors.length/bizPager.pageSize)); const c=bizPager.pageNo,l=bizPager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); bizPager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const handleLoadDetail = async () => {
       uiState.loading = true;
       try {
@@ -83,6 +85,7 @@ window.SyBizUserMng = {
         const res = await boApiSvc.syVendor.getPage(params, '업체사용자관리', '조회');
         const list = res.data?.data?.pageList || res.data?.data || [];
         vendors.splice(0, vendors.length, ...list);
+        fnBuildBizPagerNums();
       } catch(e) {
         console.error('[SyBizUserMng] vendor load failed', e);
       } finally {
@@ -133,11 +136,8 @@ window.SyBizUserMng = {
       return '['+vt+'] '+v.vendorNm;
     };
 
-    const bizPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const cfBizTotalPages = computed(() => Math.max(1, Math.ceil(vendors.length / bizPager.pageSize)));
-    const cfBizPageNums   = computed(() => { const c=bizPager.pageNo,l=cfBizTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
     const cfBizPagedRows  = computed(() => vendors.slice((bizPager.pageNo-1)*bizPager.pageSize, bizPager.pageNo*bizPager.pageSize));
-    const setBizPage    = n => { if(n>=1&&n<=cfBizTotalPages.value) bizPager.pageNo=n; };
+    const setBizPage    = n => { if(n>=1&&n<=bizPager.pageTotalPage) bizPager.pageNo=n; };
 
     const fnVendorStatusBadge = (s) => ({ ACTIVE:'badge-green', SUSPENDED:'badge-orange', TERMINATED:'badge-red' }[s] || 'badge-gray');
     const fnVendorStatusLabel = (s) => ({ ACTIVE:'운영중', SUSPENDED:'중지', TERMINATED:'종료' }[s] || s);
@@ -172,6 +172,7 @@ window.SyBizUserMng = {
         const res = await boApiSvc.syVendorUser.getList({ vendorId, pageSize: 10000 }, '사업자사용자관리', '조회');
         const list = res.data?.data || [];
         vendorUsers.splice(0, vendorUsers.length, ...list);
+        fnBuildPagerNums();
       } catch(e) {
       } finally {
         uiState.loading = false;
@@ -190,9 +191,8 @@ window.SyBizUserMng = {
     });
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(vendorUsers.length / pager.pageSize)));
-    const cfPageNums   = computed(() => { const c=pager.pageNo,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
-    const setPage    = n => { if(n>=1&&n<=cfTotalPages.value) pager.pageNo=n; };
+    const fnBuildPagerNums = () => { pager.pageTotalCount=vendorUsers.length; pager.pageTotalPage=Math.max(1,Math.ceil(vendorUsers.length/pager.pageSize)); const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+    const setPage    = n => { if(n>=1&&n<=pager.pageTotalPage) pager.pageNo=n; };
     const onSizeChange = () => { pager.pageNo=1; };
     const cfPagedRows  = computed(() => vendorUsers.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize));
 
@@ -388,13 +388,13 @@ window.SyBizUserMng = {
     return {
       uiState, codes,
       vendorUsers, cfVendorMap, fnVendorNm, fnVendorTypeCd, fnVendorSummary,
-      vendors, bizPager, cfBizTotalPages, cfBizPageNums, cfBizPagedRows, setBizPage,
+      vendors, bizPager, cfBizPagedRows, setBizPage,
       onSearch, onReset,
       pickVendorRow, fnVendorStatusBadge, fnVendorStatusLabel, fnVendorTypeBadge, fnVendorTypeLabel,
       onVendorPicked,
       cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
       fnStatusBadge, fnStatusLabel,
-      cfPagedRows, pager, cfTotalPages, cfPageNums, setPage, onSizeChange,
+      cfPagedRows, pager, setPage, onSizeChange,
       formData, openNew, openEdit, closeForm, handleSaveForm, handleDeleteRow,
       userRoles, roleTreeExpanded,
       openRoleModal, closeRoleModal, confirmRoleModal, handleDeleteRole,
@@ -466,9 +466,9 @@ window.SyBizUserMng = {
       <div class="pager">
         <button :disabled="bizPager.pageNo===1" @click="setBizPage(1)">«</button>
         <button :disabled="bizPager.pageNo===1" @click="setBizPage(bizPager.pageNo-1)">‹</button>
-        <button v-for="n in cfBizPageNums" :key="n" :class="{active:bizPager.pageNo===n}" @click="setBizPage(n)">{{ n }}</button>
-        <button :disabled="bizPager.pageNo===cfBizTotalPages.value" @click="setBizPage(bizPager.pageNo+1)">›</button>
-        <button :disabled="bizPager.pageNo===cfBizTotalPages.value" @click="setBizPage(cfBizTotalPages.value)">»</button>
+        <button v-for="n in bizPager.pageNums" :key="n" :class="{active:bizPager.pageNo===n}" @click="setBizPage(n)">{{ n }}</button>
+        <button :disabled="bizPager.pageNo===bizPager.pageTotalPage" @click="setBizPage(bizPager.pageNo+1)">›</button>
+        <button :disabled="bizPager.pageNo===bizPager.pageTotalPage" @click="setBizPage(bizPager.pageTotalPage)">»</button>
       </div>
       <div></div>
     </div>
@@ -522,9 +522,9 @@ window.SyBizUserMng = {
           <div class="pager">
             <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
             <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-            <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-            <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
-            <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+            <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+            <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+            <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
           </div>
           <div class="pager-right">
             <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">

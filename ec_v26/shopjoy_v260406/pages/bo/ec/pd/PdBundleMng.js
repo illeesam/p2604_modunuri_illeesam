@@ -61,6 +61,7 @@ window.PdBundleMng = {
         bundles.splice(0, bundles.length, ...(dBundles?.pageList || dBundles?.list || []));
         pager.pageTotalCount = dBundles?.pageTotalCount || 0;
         pager.pageTotalPage  = dBundles?.pageTotalPage  || 1;
+        fnBuildPagerNums();
         products.splice(0, products.length, ...(prodsRes.data?.data?.pageList || prodsRes.data?.data?.list || []));
         categories.splice(0, categories.length, ...(catsRes.data?.data?.pageList || catsRes.data?.data?.list || []));
         uiState.error = null;
@@ -188,7 +189,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     watch(bundles, updateBundleList);
 
-    const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const onSearch = async () => {
       pager.pageNo = 1;
@@ -384,7 +385,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     return {
       codes, uiState, bundles, bundleList,
-      searchParam, searchParamOrg, pager, cfPageNums, setPage,
+      searchParam, searchParamOrg, pager, setPage,
       onSearch, onReset, rateSum, fnRateSumBadge, getProdNm, getProdPrice,
       getCategoryNm, getCategoryDepth, getBrandNm,
       categories, products, brands, categoryProds,
@@ -497,7 +498,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
          <div class="pager">
            <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
            <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pager.pageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
            <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
          </div>

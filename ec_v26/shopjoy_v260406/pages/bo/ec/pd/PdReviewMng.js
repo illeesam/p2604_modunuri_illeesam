@@ -47,6 +47,7 @@ window.PdReviewMng = {
         reviews.splice(0, reviews.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
@@ -80,7 +81,7 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
     const getProdNm = id => { const p = (products||[]).find(p => p.productId === id); return p ? p.productName : id; };
     const getMemNm  = id => { const m = (members||[]).find(m => m.userId === id); return m ? m.name : id; };
 
-    const cfPageNums   = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const cfSelectedRow = computed(() => reviews.find(r => r.reviewId === selectedId.value) || null);
 
@@ -116,7 +117,7 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { reviews, uiState, searchParam, searchParamOrg, pager, cfPageNums, setPage, onSearch, onReset,
+    return { reviews, uiState, searchParam, searchParamOrg, pager, setPage, onSearch, onReset,
               selectedId, cfSelectedRow, openDetail, changeStatus, fnStatusBadge, STATUS_LABEL, getProdNm, getMemNm, starStr, onSizeChange, codes };
   },
   template: `
@@ -185,7 +186,7 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
          <div class="pager">
            <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
            <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pager.pageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
            <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
          </div>

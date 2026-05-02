@@ -4,7 +4,7 @@ window.SyPathMng = {
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
 
   setup(props) {
-    const { ref, reactive, computed, watch, onMounted } = Vue;
+    const { reactive, computed, watch, onMounted } = Vue;
 
     /* ── 코드 ── */
     const codes = reactive({ use_yn: [] });
@@ -64,14 +64,14 @@ window.SyPathMng = {
 
     /* ── 그리드 ── */
     const gridRows = reactive([]);
-    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [10, 20, 50, 100] });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [10, 20, 50, 100], pageCond: {} });
     let _newId = -1;
 
-    const cfPageNums = computed(() => {
+    const fnBuildPagerNums = () => {
       const c = pager.pageNo, l = pager.pageTotalPage;
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    });
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    };
 
     /* ── 트리 전체 조회 (path_id / parent_path_id 기반) ── */
     const handleSearchTree = async () => {
@@ -95,6 +95,7 @@ window.SyPathMng = {
         gridRows.splice(0, gridRows.length, ...list.map(r => ({ ...r, _status: null, _row_org: { ...r } })));
         pager.pageTotalCount = data.pageTotalCount ?? data.totalCount ?? list.length;
         pager.pageTotalPage  = data.pageTotalPage  ?? Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
+        fnBuildPagerNums();
       } catch (e) { console.error('[handleGridSearch]', e); }
     };
 
@@ -223,7 +224,7 @@ window.SyPathMng = {
     return {
       uiState, searchParam, codes,
       cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
-      gridRows, cfDirtyRows, pager, cfPageNums, setPage, onSizeChange,
+      gridRows, cfDirtyRows, pager, setPage, onSizeChange,
       onSearch, onReset, onCellChange, addRow, cancelRow, deleteRow, handleSave,
       parentModal, cfParentTree, openParentModal, closeParentModal, toggleParentNode, selectParent, getParentLabel,
     };
@@ -360,7 +361,7 @@ window.SyPathMng = {
         <div class="pager">
           <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
           <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-          <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+          <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
         </div>

@@ -57,6 +57,7 @@ window.PdDlivTmpltMng = {
         dlivTmplts.splice(0, dlivTmplts.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
       } catch (_) {
       console.error('[catch-info]', _);}
@@ -72,7 +73,7 @@ window.PdDlivTmpltMng = {
     const METHOD_LABELS  = { COURIER:'택배', DIRECT:'직접배송', PICKUP:'방문수령' };
     const PAY_LABELS     = { PREPAY:'선결제', COD:'착불' };
 
-    const cfPageNums   = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const cfSelectedRow = computed(() => dlivTmplts.find(t => t.dlivTmpltId === uiState.selectedId) || null);
     const form = reactive({});
@@ -141,7 +142,7 @@ window.PdDlivTmpltMng = {
     // ── return ───────────────────────────────────────────────────────────────
 
     return { uiState, codes, searchParam, searchParamOrg,
-             pager, cfPageNums, setPage, onSearch, onReset,
+             pager, setPage, onSearch, onReset,
              form, openDetail, openNew, closeDetail, handleSave, handleDelete,
              fnYnBadge, fnMethodBadge, METHOD_LABELS, PAY_LABELS, onSizeChange, dlivTmplts};
   },
@@ -214,7 +215,7 @@ window.PdDlivTmpltMng = {
          <div class="pager">
            <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
            <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pager.pageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
            <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
          </div>

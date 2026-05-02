@@ -27,7 +27,7 @@ window.SyBizMng = {
       return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
     });
 
-const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage; const s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     // ── watch ────────────────────────────────────────────────────────────────
 
@@ -68,6 +68,7 @@ const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage; 
         bizs.splice(0, bizs.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || bizs.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
       } catch (err) {
         console.error('[catch-info]', err);
@@ -139,7 +140,7 @@ const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage; 
 
     return { bizs, uiState, codes, selectNode,
       searchParam,
-      pager, cfPageNums, setPage, onSizeChange,
+      pager, setPage, onSizeChange,
       pathLabel, fnVendorTypeLabel, fnVendorTypeBadge, fnRoleCatLabel, fnRoleCatColor, fnStatusBadge, fnStatusLabel,
       onSearch, onReset,
       formData, openNew, openEdit, closeForm, handleSaveForm,
@@ -217,7 +218,7 @@ const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage; 
           <div class="pager">
             <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
             <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-            <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+            <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
             <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
             <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
           </div>

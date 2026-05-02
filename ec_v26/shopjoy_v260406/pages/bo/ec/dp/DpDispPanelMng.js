@@ -167,9 +167,14 @@ window.DpDispPanelMng = {
         .filter(c => c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfFiltered.value.length / pager.pageSize)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
-    const cfPageNums = computed(() => { const c=pager.pageNo,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const fnBuildPagerNums = () => {
+      pager.pageTotalCount = cfFiltered.value.length;
+      pager.pageTotalPage  = Math.max(1, Math.ceil(cfFiltered.value.length / pager.pageSize));
+      const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4);
+      pager.pageNums = Array.from({length:e-s+1},(_,i)=>s+i);
+      pager.pageList = cfFiltered.value.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize);
+    };
+    watch(cfFiltered, () => { fnBuildPagerNums(); });
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
     const fnTypeBadge = t => ({
       'image_banner':'badge-blue', 'product_slider':'badge-purple', 'product':'badge-purple',
@@ -211,8 +216,8 @@ window.DpDispPanelMng = {
       handleSearchData({});
     };
   
-    const setPage = n => { if (n >= 1 && n <= cfTotalPages.value) pager.pageNo = n; };
-    const onSizeChange = () => { pager.pageNo = 1; };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; fnBuildPagerNums(); } };
+    const onSizeChange = () => { pager.pageNo = 1; fnBuildPagerNums(); };
 
     const handleDelete = async (d) => {
       const ok = await props.showConfirm('삭제', `[${d.name}]을 삭제하시겠습니까?`);
@@ -281,8 +286,8 @@ window.DpDispPanelMng = {
       e.preventDefault(); uiState.panelDragOverIdx = -1;
       const src = uiState.panelDragSrc;
       if (src === null || src === pageIdx) { uiState.panelDragSrc = null; return; }
-      const srcId = cfPageList.value[src]?.dispId;
-      const tgtId = cfPageList.value[pageIdx]?.dispId;
+      const srcId = pager.pageList?.[src]?.dispId;
+      const tgtId = pager.pageList?.[pageIdx]?.dispId;
       if (!srcId || !tgtId) { uiState.panelDragSrc = null; return; }
       const arr = displays;
       const si = arr.findIndex(x => x.dispId === srcId);
@@ -398,7 +403,7 @@ window.DpDispPanelMng = {
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), panels, uiState, fnPathLabel, displays, codes,
       cfPanelTree, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll,
       selectPathNode,
-      onDateRangeChange: handleDateRangeChange, cfSiteNm, searchParam, searchParamOrg, pager, cfFiltered, cfTotalPages, cfPageList, cfPageNums, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, fnWLabel, openCardPreview, closeCardPreview, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd, setDispNow };
+      onDateRangeChange: handleDateRangeChange, cfSiteNm, searchParam, searchParamOrg, pager, cfFiltered, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, fnWLabel, openCardPreview, closeCardPreview, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd, setDispNow };
   },
   template: /* html */`
 <div>
@@ -472,8 +477,8 @@ window.DpDispPanelMng = {
         </tr>
       </thead>
       <tbody>
-        <tr v-if="cfPageList.length===0"><td colspan="6" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <template v-for="(d, pageIdx) in cfPageList" :key="d?.dispId">
+        <tr v-if="!pager.pageList?.length"><td colspan="6" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
+        <template v-for="(d, pageIdx) in pager.pageList" :key="d?.dispId">
           <tr draggable="true"
             @dragstart="onPanelDragStart($event, pageIdx)"
             @dragover="onPanelDragOver($event, pageIdx)"
@@ -608,9 +613,9 @@ window.DpDispPanelMng = {
       <div class="pager">
         <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
         <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
-        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+        <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">

@@ -159,8 +159,8 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
       return filterRows(cfHistList.value, 'histId');
     });
 
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfFiltered.value.length / pager.pageSize)));
-    const cfPageNums   = computed(() => { const c=pager.pageNo,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const fnBuildPagerNums = () => { pager.pageTotalCount=cfFiltered.value.length; pager.pageTotalPage=Math.max(1,Math.ceil(cfFiltered.value.length/pager.pageSize)); const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+    watch(cfFiltered, () => { pager.pageNo = 1; fnBuildPagerNums(); });
 
     const cfSummary = computed(() => {
       const all = filterRows(cfLogList.value, 'logId');
@@ -189,7 +189,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
 
     const onSearch     = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
     const onReset      = async () => { uiState.searchKw=''; uiState.searchResult=''; uiState.searchIp=''; uiState.searchTokenAction=''; uiState.dateRange='이번달'; onDateRangeChange(); pager.pageNo=1; await handleSearchList(); };
-    const setPage      = n => { if (n >= 1 && n <= cfTotalPages.value) pager.pageNo = n; };
+    const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
     const onTabChange  = tab => { uiState.activeTab = tab; pager.pageNo = 1; };
 
@@ -201,7 +201,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
       uiState, onTabChange,
       onDateRangeChange,
       codes,
-      pager, cfFiltered, cfTotalPages, cfPageNums, cfSummary,
+      pager, cfFiltered, cfSummary,
       expandedRows, toggleRow, isExpanded,
       fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge,
       onSearch, onReset, setPage, onSizeChange,
@@ -432,9 +432,9 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
       <div class="pager">
         <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
         <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
-        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+        <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+        <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">

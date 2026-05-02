@@ -20,6 +20,7 @@ window.MbMemGradeMng = {
         list.forEach(g => gridRows.push({ ...g, _row_status: null }));
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        fnBuildPagerNums();
         Object.assign(pager.pageCond, res.data?.data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
@@ -62,7 +63,7 @@ const isAppReady = computed(() => {
 
     const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    const cfPageNums   = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const gridRows   = reactive([]);
     let   _tempId    = -1;
@@ -136,7 +137,7 @@ const isAppReady = computed(() => {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { grades, uiState, codes, searchParam, searchParamOrg, pager, cfPageNums, setPage, onSearch, onReset,
+    return { grades, uiState, codes, searchParam, searchParamOrg, pager, setPage, onSearch, onReset,
              gridRows, addRow, onCellChange, handleDeleteRow, handleSaveAll, fnYnBadge, onSizeChange };
   },
   template: `
@@ -207,7 +208,7 @@ const isAppReady = computed(() => {
          <div class="pager">
            <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
            <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-           <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pager.pageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
            <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
          </div>

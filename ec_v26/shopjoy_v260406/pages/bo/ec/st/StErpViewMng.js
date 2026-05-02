@@ -48,13 +48,14 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const searchParam = reactive({ kw: '', type: '', status: '', dateEnd: '' });
     const searchParamOrg = reactive({ kw: '', type: '', status: '' });
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         slips.splice(0, slips.length);
         pager.pageTotalCount = 0;
         pager.pageTotalPage = 1;
+        fnBuildPagerNums();
       } catch (_) { console.error('[catch-info]', _); }
     };
 
@@ -87,7 +88,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, handleDateRangeChange, codes, pager, slips, cfPageNums, doResend, fnStatusBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return { uiState, handleDateRangeChange, codes, pager, slips, doResend, fnStatusBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
   template: /* html */`
 <div>
@@ -148,7 +149,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
          <div class="pager">
            <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
            <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-           <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+           <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
            <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
            <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
          </div>

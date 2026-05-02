@@ -59,6 +59,7 @@ window.DpDispWidgetMng = {
         widgetLibs.splice(0, widgetLibs.length, ...(dLibs?.pageList || dLibs?.list || []));
         pager.pageTotalCount = dLibs?.pageTotalCount || 0;
         pager.pageTotalPage  = dLibs?.pageTotalPage  || 1;
+        fnBuildPagerNums();
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -113,7 +114,7 @@ window.DpDispWidgetMng = {
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
-    const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const fnStatusCls = (v) => ({ '활성':'badge-green', '비활성':'badge-gray' }[v] || 'badge-gray');
     const contentSummary = (d) => d?.contents || d?.desc || '';
 
@@ -145,7 +146,6 @@ window.DpDispWidgetMng = {
       uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId),
       handleLoadDetail, openNew, closeDetail, inlineNavigate,
       cfDetailEditId, cfDetailKey,
-      cfPageNums,
       selectNode,
       fnStatusCls, contentSummary, handleDelete,
     };
@@ -269,7 +269,7 @@ window.DpDispWidgetMng = {
       <div class="pager">
         <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
         <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
-        <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
+        <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
         <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
         <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
       </div>
