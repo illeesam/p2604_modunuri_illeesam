@@ -5,7 +5,7 @@ window.PmEventMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const events = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, viewMode: 'list'});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, viewMode: 'list', sortKey: '', sortDir: 'asc' });
     const codes = reactive({
       event_statuses: [],
       date_range_opts: [],
@@ -37,10 +37,25 @@ window.PmEventMng = {
     });
 
     // onMounted에서 API 로드
+    const SORT_MAP = { nm: { asc: 'nm_asc', desc: 'nm_desc' }, reg: { asc: 'reg_asc', desc: 'reg_desc' } };
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchList();
+    };
+    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pmEvent.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '이벤트관리', '목록조회');
+        const res = await boApiSvc.pmEvent.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '이벤트관리', '목록조회');
         const data = res.data?.data;
         events.splice(0, events.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -96,6 +111,7 @@ window.PmEventMng = {
 
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
+      uiState.sortKey = ''; uiState.sortDir = 'asc';
       pager.pageNo = 1;
       await handleSearchList();
     };
@@ -128,7 +144,7 @@ window.PmEventMng = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), events, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, viewMode, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), events, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, viewMode, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon };
   },
   template: /* html */`
 <div>
@@ -160,7 +176,7 @@ window.PmEventMng = {
     </div>
     <!-- ── 리스트 뷰 ──────────────────────────────────────────────────────── -->
     <table class="bo-table" v-if="viewMode==='list'">
-      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>이벤트 제목</th><th>대상상품</th><th>인증필요</th><th>시작일</th><th>종료일</th><th>상태</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
+      <thead><tr><th style="width:36px;text-align:center;">번호</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">이벤트 제목 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>대상상품</th><th>인증필요</th><th>시작일</th><th>종료일</th><th>상태</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
         <tr v-if="events.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-else v-for="(e, idx) in events" :key="e?.eventId" :style="uiStateDetail.selectedId===e.eventId?'background:#fff8f9;':''">

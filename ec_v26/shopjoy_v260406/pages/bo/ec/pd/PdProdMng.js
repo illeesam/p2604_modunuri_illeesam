@@ -5,14 +5,29 @@ window.PdProdMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const products = reactive([]);
-    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ product_statuses: [], option_types: [], category_depths: [], date_range_opts: [] });
 
     // onMounted에서 API 로드
+    const SORT_MAP = { nm: { asc: 'nm_asc', desc: 'nm_desc' }, reg: { asc: 'reg_asc', desc: 'reg_desc' } };
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchList();
+    };
+    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pdProd.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '상품관리', '목록조회');
+        const res = await boApiSvc.pdProd.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '상품관리', '목록조회');
         const data = res.data?.data;
         products.splice(0, products.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -115,6 +130,7 @@ const isAppReady = computed(() => {
     };
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
+      uiState.sortKey = ''; uiState.sortDir = 'asc';
       pager.pageNo = 1;
       await handleSearchList();
     };
@@ -151,7 +167,7 @@ const isAppReady = computed(() => {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiStateDetail, selectedId, products, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel };
+    return { uiStateDetail, selectedId, products, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel, onSort, sortIcon };
   },
   template: /* html */`
 <div>
@@ -193,7 +209,7 @@ const isAppReady = computed(() => {
     </div>
     <table class="bo-table">
       <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th><th>상품명</th><th>카테고리</th><th>가격</th><th>재고</th><th>브랜드</th><th>상태</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th>
+        <th style="width:36px;text-align:center;">번호</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">상품명 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>카테고리</th><th>가격</th><th>재고</th><th>브랜드</th><th>상태</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
         <tr v-if="products.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>

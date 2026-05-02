@@ -6,14 +6,30 @@ window.OdDlivMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const deliveries = reactive([]);
     const members = reactive([]);
-    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status'});
+    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
     const codes = reactive({ order_statuses: [], dliv_statuses: [], dliv_types: [], payment_methods: [], courier_codes: [], approval_actions: ['승인','반려','보류'], req_targets: ['주문','상품','배송','추가결재'], date_range_opts: [] });
+
+    const SORT_MAP = { reg: { asc: 'reg_asc', desc: 'reg_desc' } };
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchData();
+    };
+    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     // onMounted에서 API 로드
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         const [delivRes, membersRes] = await Promise.all([
           boApiSvc.odDliv.getPage(params, '배송관리', '목록조회'),
           boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 10000 }, '배송관리', '목록조회')
@@ -119,6 +135,7 @@ const isAppReady = computed(() => {
     };
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
+      uiState.sortKey = ''; uiState.sortDir = 'asc';
       pager.pageNo = 1;
       await handleSearchData();
     };
@@ -306,7 +323,7 @@ const isAppReady = computed(() => {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), deliveries, members, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), deliveries, members, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon };
   },
   template: /* html */`
 <div>
@@ -339,7 +356,9 @@ const isAppReady = computed(() => {
     <table class="bo-table">
       <thead><tr>
         <th style="width:36px;text-align:center;"><input type="checkbox" :checked="cfAllChecked" @change="toggleCheckAll" /></th>
-        <th style="width:36px;text-align:center;">번호</th><th>배송ID</th><th>주문ID</th><th>회원</th><th>수령인</th><th>택배사</th><th>운송장번호</th><th>배송지</th><th>상태</th><th>사이트명</th><th style="text-align:right">관리</th>
+        <th style="width:36px;text-align:center;">번호</th><th>배송ID</th><th>주문ID</th><th>회원</th><th>수령인</th><th>택배사</th><th>운송장번호</th><th>배송지</th>
+        <th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">상태 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th>
+        <th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
         <tr v-if="deliveries.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>

@@ -5,7 +5,7 @@ window.DpDispWidgetLibMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const widgetLibs = reactive([]);
-    const uiState = reactive({ loading: false, isPageCodeLoad: false, selectedPath: null });
+    const uiState = reactive({ loading: false, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ disp_widget_types: [], active_statuses: [] });
 
     // App 초기화 준비 상태
@@ -39,6 +39,22 @@ window.DpDispWidgetLibMng = {
     const _initSearchParam = () => ({ kw: '', type: '', status: '' });
     const searchParam = reactive(_initSearchParam());
 
+    const SORT_MAP = { nm: { asc: 'nm_asc', desc: 'nm_desc' }, reg: { asc: 'reg_asc', desc: 'reg_desc' } };
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchList();
+    };
+    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
@@ -46,7 +62,7 @@ window.DpDispWidgetLibMng = {
         const { type, kw, ...restParam } = searchParam;
         const params = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
-          sortBy: 'libId', sortDir: 'desc',
+          ...getSortParam(),
           ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
           ...(kw   ? { kw: kw.trim() }       : {}),
           ...(type ? { widgetType: type }     : {}),
@@ -97,6 +113,7 @@ window.DpDispWidgetLibMng = {
     };
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
+      uiState.sortKey = ''; uiState.sortDir = 'asc';
       pager.pageNo = 1;
       handleSearchList('DEFAULT');
     };
@@ -142,7 +159,7 @@ window.DpDispWidgetLibMng = {
       fnBuildPagerNums,
       wIcon, wTypeLabel,
       uiStateDetail, cfDetailEditId, handleLoadDetail, openNew, closeDetail, inlineNavigate,
-      cfSiteNm, handleDelete };
+      cfSiteNm, handleDelete, onSort, sortIcon };
   },
   template: /* html */`
 <div>
@@ -181,7 +198,7 @@ window.DpDispWidgetLibMng = {
           <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
         </div>
         <table class="bo-table">
-          <thead><tr><th style="width:36px;text-align:center;">번호</th><th>이름</th><th>타입</th><th>상태</th><th style="text-align:right">관리</th></tr></thead>
+          <thead><tr><th style="width:36px;text-align:center;">번호</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">이름 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>타입</th><th>상태</th><th style="text-align:right">관리</th></tr></thead>
           <tbody>
             <tr v-if="widgetLibs.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
             <tr v-else v-for="(lib, idx) in widgetLibs" :key="lib.libId">

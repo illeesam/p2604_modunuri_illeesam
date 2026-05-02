@@ -5,7 +5,7 @@ window.PmCacheMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const caches = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, viewMode: 'list'});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, viewMode: 'list', sortKey: '', sortDir: 'asc' });
     const codes = reactive({
       cache_statuses: [],
       cache_trans_types: [],
@@ -54,10 +54,25 @@ window.PmCacheMng = {
     };
 
     // onMounted에서 API 로드
+    const SORT_MAP = { reg: { asc: 'reg_asc', desc: 'reg_desc' } };
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchList();
+    };
+    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pmCache.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '캐시관리', '목록조회');
+        const res = await boApiSvc.pmCache.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '캐시관리', '목록조회');
         const data = res.data?.data;
         caches.splice(0, caches.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -99,6 +114,7 @@ window.PmCacheMng = {
 
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
+      uiState.sortKey = ''; uiState.sortDir = 'asc';
       pager.pageNo = 1;
       await handleSearchList();
     };
@@ -130,7 +146,7 @@ window.PmCacheMng = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), caches, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), caches, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       get viewMode() { return uiState.viewMode; }, set viewMode(v) { uiState.viewMode = v; },
       get selectedId() { return uiStateDetail.selectedId; } };
   },
@@ -163,7 +179,7 @@ window.PmCacheMng = {
       </div>
     </div>
     <table class="bo-table" v-if="viewMode==='list'">
-      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>회원</th><th>일시</th><th>유형</th><th>금액</th><th>잔액</th><th>내용</th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
+      <thead><tr><th style="width:36px;text-align:center;">번호</th><th>회원</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">일시 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>유형</th><th>금액</th><th>잔액</th><th>내용</th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
         <tr v-if="caches.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
         <tr v-else v-for="(c, idx) in caches" :key="c?.cacheId" :style="selectedId===c.cacheId?'background:#fff8f9;':''">

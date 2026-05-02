@@ -6,7 +6,7 @@ window.Cart = {
   setup(props) {
     const { computed, ref, reactive, watch, onMounted } = Vue;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, checkedIdxs: new Set() });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, checkedIdxs: new Set(), sortKey: '', sortDir: 'asc' });
     const codes = reactive({});
 
     const isAppReady = computed(() => {
@@ -33,6 +33,26 @@ window.Cart = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+    /* ── 정렬 ── */
+    const onCartSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+    };
+    const cartSortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
+    const cfSortedCart = computed(() => {
+      const list = [...(props.cart || [])].map((item, i) => ({ ...item, _origIdx: i }));
+      if (!uiState.sortKey) return list;
+      return list.sort((a, b) => {
+        let va, vb;
+        if (uiState.sortKey === 'nm') { va = a.product?.prodNm || ''; vb = b.product?.prodNm || ''; return uiState.sortDir === 'asc' ? va.localeCompare(vb, 'ko') : vb.localeCompare(va, 'ko'); }
+        if (uiState.sortKey === 'price') { va = parsePrice(a.product?.price) * a.qty; vb = parsePrice(b.product?.price) * b.qty; return uiState.sortDir === 'asc' ? va - vb : vb - va; }
+        return 0;
+      });
+    });
+
     /* ── 체크박스 ── */
     const isChecked = (idx) => uiState.checkedIdxs.has(idx);
 
@@ -119,7 +139,7 @@ window.Cart = {
       isChecked, toggleCheck, cfAllChecked, cfSomeChecked, toggleAll,
       removeItem, goOrder,
       formatPrice, cfTotalPriceStr, cfSummaryItems, cfOrderCount, handleClearAll,
-      uiState, codes };
+      uiState, codes, cfSortedCart, onCartSort, cartSortIcon };
   },
 
   template: /* html */ `
@@ -153,8 +173,8 @@ window.Cart = {
       <!-- ── 왼쪽: 상품 목록 ────────────────────────────────────────────────── -->
       <div>
         <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px;">
-          <!-- ── 전체 선택/삭제 헤더 ──────────────────────────────────────────── -->
-          <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <!-- ── 전체 선택/삭제 + 정렬 헤더 ─────────────────────────────────── -->
+          <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
             <label style="display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;">
               <input type="checkbox" :checked="cfAllChecked" :indeterminate.prop="cfSomeChecked"
                 @change="toggleAll"
@@ -169,21 +189,32 @@ window.Cart = {
                 </span>
               </span>
             </label>
-            <button @click="handleClearAll"
-              style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.8rem;text-decoration:underline;padding:0;">
-              전체 삭제
-            </button>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:0.75rem;color:var(--text-muted);">정렬:</span>
+              <button @click="onCartSort('nm')"
+                :style="uiState.sortKey==='nm' ? 'background:var(--blue);color:#fff;border:none;border-radius:12px;padding:3px 10px;font-size:0.75rem;cursor:pointer;font-weight:700;' : 'background:var(--bg-base);color:var(--text-muted);border:1px solid var(--border);border-radius:12px;padding:3px 10px;font-size:0.75rem;cursor:pointer;'">
+                상품명 {{ cartSortIcon('nm') }}
+              </button>
+              <button @click="onCartSort('price')"
+                :style="uiState.sortKey==='price' ? 'background:var(--blue);color:#fff;border:none;border-radius:12px;padding:3px 10px;font-size:0.75rem;cursor:pointer;font-weight:700;' : 'background:var(--bg-base);color:var(--text-muted);border:1px solid var(--border);border-radius:12px;padding:3px 10px;font-size:0.75rem;cursor:pointer;'">
+                가격 {{ cartSortIcon('price') }}
+              </button>
+              <button @click="handleClearAll"
+                style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.8rem;text-decoration:underline;padding:0;margin-left:4px;">
+                전체 삭제
+              </button>
+            </div>
           </div>
 
           <!-- ── 각 상품 ─────────────────────────────────────────────────── -->
-          <div v-for="(item, idx) in cart" :key="idx"
+          <div v-for="(item, idx) in cfSortedCart" :key="item._origIdx"
             style="padding:20px;display:flex;gap:12px;align-items:flex-start;"
-            :style="{ borderBottom: idx===cart.length-1 ? 'none' : '1px solid var(--border)',
-                      background: isChecked(idx) ? 'var(--blue-dim)' : '' }">
+            :style="{ borderBottom: idx===cfSortedCart.length-1 ? 'none' : '1px solid var(--border)',
+                      background: isChecked(item._origIdx) ? 'var(--blue-dim)' : '' }">
 
             <!-- ── 체크박스 ───────────────────────────────────────────────── -->
             <div style="padding-top:4px;flex-shrink:0;">
-              <input type="checkbox" :checked="isChecked(idx)" @change="toggleCheck(idx)"
+              <input type="checkbox" :checked="isChecked(item._origIdx)" @change="toggleCheck(item._origIdx)"
                 style="width:17px;height:17px;cursor:pointer;accent-color:var(--blue);" />
             </div>
 
@@ -206,9 +237,9 @@ window.Cart = {
               </div>
               <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
                 <div style="display:flex;align-items:center;gap:8px;">
-                  <button class="qty-btn" @click="updateCartQty(idx,-1)">−</button>
+                  <button class="qty-btn" @click="updateCartQty(item._origIdx,-1)">−</button>
                   <span class="qty-val">{{ item.qty }}</span>
-                  <button class="qty-btn" @click="updateCartQty(idx,1)">+</button>
+                  <button class="qty-btn" @click="updateCartQty(item._origIdx,1)">+</button>
                 </div>
                 <div style="font-size:0.95rem;font-weight:800;color:var(--blue);">
                   {{ formatPrice(item.product.price, item.qty) }}
@@ -217,7 +248,7 @@ window.Cart = {
             </div>
 
             <!-- ── 삭제 버튼 ──────────────────────────────────────────────── -->
-            <button @click="removeItem(idx)"
+            <button @click="removeItem(item._origIdx)"
               style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.2rem;padding:0;flex-shrink:0;transition:color 0.2s;"
               @mouseenter="$event.currentTarget.style.color='#e53e3e'"
               @mouseleave="$event.currentTarget.style.color='var(--text-muted)'"

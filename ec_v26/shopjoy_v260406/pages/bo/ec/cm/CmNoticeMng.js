@@ -8,7 +8,7 @@ window.CmNoticeMng = {
     // ── 선언부 ────────────────────────────────────────────────────────────────
 
     const notices       = reactive([]);                                              // 공지사항 목록
-    const uiState       = reactive({ loading: false, error: null, isPageCodeLoad: false }); // 로딩·에러·코드로드 상태
+    const uiState       = reactive({ loading: false, error: null, isPageCodeLoad: false, sortKey: '', sortDir: 'asc' }); // 로딩·에러·코드로드 상태
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });         // 하단 상세 패널 상태 (선택ID, view|edit)
     const codes         = reactive({ noticeTypes: [], noticeStatuses: [], date_range_opts: [] });         // 공통코드 (유형·상태)
     const pager         = reactive({
@@ -77,6 +77,7 @@ window.CmNoticeMng = {
     // 초기화 버튼 클릭 — 검색 조건을 초기값으로 되돌린 후 재조회
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
+      uiState.sortKey = ''; uiState.sortDir = 'asc';
       onSearch();
     };
 
@@ -100,11 +101,27 @@ window.CmNoticeMng = {
 
     // ── 일반 함수 모음 ────────────────────────────────────────────────────────
 
+    const SORT_MAP = { nm: { asc: 'nm_asc', desc: 'nm_desc' }, reg: { asc: 'reg_asc', desc: 'reg_desc' } };
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchList();
+    };
+    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
     // 공지사항 목록 페이징 조회
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.cmNotice.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) }, '공지사항관리', '조회');
+        const res = await boApiSvc.cmNotice.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) }, '공지사항관리', '조회');
         notices.splice(0, notices.length, ...(res.data?.data?.pageList || []));
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage  = res.data?.data?.pageTotalPage  || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
@@ -191,7 +208,7 @@ window.CmNoticeMng = {
       onSearch, onReset, onDateRangeChange, onSizeChange, setPage,
       handleSearchList, handleDelete, handleLoadDetail, loadView,
       openNew, closeDetail, inlineNavigate,
-      fnStatusBadge, fnTypeBadge, exportExcel,
+      fnStatusBadge, fnTypeBadge, exportExcel, onSort, sortIcon,
     };
   },
   template: /* html */`
@@ -241,8 +258,8 @@ window.CmNoticeMng = {
     <table class="bo-table">
       <thead>
         <tr>
-          <th style="width:36px;text-align:center;">번호</th><th>유형</th><th>제목</th><th>고정</th>
-          <th>시작일</th><th>종료일</th><th>상태</th><th>사이트명</th><th>등록일</th>
+          <th style="width:36px;text-align:center;">번호</th><th>유형</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">제목 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>고정</th>
+          <th>시작일</th><th>종료일</th><th>상태</th><th>사이트명</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th>
           <th style="text-align:right">관리</th>
         </tr>
       </thead>

@@ -5,7 +5,7 @@ window.DpDispAreaMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const areas = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ layout_types: [], use_yn: [], date_range_opts: [] });
 
     // App 초기화 준비 상태
@@ -36,12 +36,29 @@ window.DpDispAreaMng = {
       }
     });
 
+    const SORT_MAP = { nm: { asc: 'nm_asc', desc: 'nm_desc' }, reg: { asc: 'reg_asc', desc: 'reg_desc' } };
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchData();
+    };
+    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
     // onMounted에서 API 로드
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const params = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
+          ...getSortParam(),
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
         };
@@ -90,6 +107,7 @@ const searchParam = reactive(_initSearchParam());
 
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
+      uiState.sortKey = ''; uiState.sortDir = 'asc';
       pager.pageNo = 1;
       handleSearchData();
     };
@@ -116,7 +134,8 @@ const searchParam = reactive(_initSearchParam());
     return { areas, uiState, codes, pager, searchParam,
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange, cfSiteNm,
       selectNode, fnPathLabel,
-      uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId };
+      uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
+      onSort, sortIcon };
   },
   template: /* html */`
 <div>
@@ -153,7 +172,7 @@ const searchParam = reactive(_initSearchParam());
       </div>
       <table class="bo-table">
         <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th><th>영역코드</th><th>영역명</th><th>유형</th><th>사용여부</th><th>등록일</th><th>액션</th>
+          <th style="width:36px;text-align:center;">번호</th><th>영역코드</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">영역명 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>유형</th><th>사용여부</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>액션</th>
         </tr></thead>
         <tbody>
           <tr v-if="uiState.loading"><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">로딩 중...</td></tr>

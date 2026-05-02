@@ -7,7 +7,7 @@ window.PdReviewMng = {
     const products = reactive([]);
     const members = reactive([]);
     const reviews = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({
       review_statuses: [],
       review_rating_opts: [{value:'5',label:'5점'},{value:'4',label:'4점대'},{value:'3',label:'3점대'},{value:'2',label:'2점대'},{value:'1',label:'1점대'}],
@@ -39,10 +39,25 @@ window.PdReviewMng = {
     });
 
     // onMounted에서 API 로드
+    const SORT_MAP = { reg: { asc: 'reg_asc', desc: 'reg_desc' } };
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchList();
+    };
+    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pdReview.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '상품리뷰관리', '목록조회');
+        const res = await boApiSvc.pdReview.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '상품리뷰관리', '목록조회');
         const data = res.data?.data;
         reviews.splice(0, reviews.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -99,6 +114,7 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
 
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
+      uiState.sortKey = ''; uiState.sortDir = 'asc';
       pager.pageNo = 1;
       await handleSearchList();
     };
@@ -110,7 +126,7 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
     // ── return ───────────────────────────────────────────────────────────────
 
     return { reviews, uiState, searchParam, pager, setPage, onSearch, onReset,
-              selectedId, cfSelectedRow, openDetail, changeStatus, fnStatusBadge, STATUS_LABEL, getProdNm, getMemNm, starStr, onSizeChange, codes };
+              selectedId, cfSelectedRow, openDetail, changeStatus, fnStatusBadge, STATUS_LABEL, getProdNm, getMemNm, starStr, onSizeChange, codes, onSort, sortIcon };
   },
   template: `
 <div>
@@ -151,7 +167,7 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
           <th style="width:90px;text-align:center">평점</th>
           <th style="width:60px;text-align:right">도움</th>
           <th style="width:80px;text-align:center">상태</th>
-          <th style="width:140px">작성일</th>
+          <th @click="onSort('reg')" style="width:140px;cursor:pointer;user-select:none;white-space:nowrap;">작성일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th>
           <th style="width:80px;text-align:center">상태변경</th>
         </tr></thead>
         <tbody>

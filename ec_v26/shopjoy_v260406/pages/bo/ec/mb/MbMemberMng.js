@@ -7,7 +7,7 @@ window.MbMemberMng = {
 
     // 1️⃣ ref/reactive 선언
     const members = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ member_statuses: [], member_grades: [] });
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const _initSearchParam = () => ({ kw: '', grade: '', status: '' });
@@ -43,11 +43,28 @@ window.MbMemberMng = {
       }
     };
 
+    const SORT_MAP = { nm: { asc: 'nm_asc', desc: 'nm_desc' }, reg: { asc: 'reg_asc', desc: 'reg_desc' } };
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchList();
+    };
+    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await boApiSvc.mbMember.getPage({
             pageNo: pager.pageNo, pageSize: pager.pageSize,
+            ...getSortParam(),
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           }, '회원관리', '목록조회');
         const data = res.data?.data;
@@ -155,7 +172,7 @@ window.MbMemberMng = {
     const fnGradeBadge = g => ({ 'VIP': 'badge-purple', '우수': 'badge-blue', '일반': 'badge-gray' }[g] || 'badge-gray');
     const fnStatusBadge = s => ({ '활성': 'badge-green', '정지': 'badge-red' }[s] || 'badge-gray');
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
+    const onReset = () => { Object.assign(searchParam, _initSearchParam()); uiState.sortKey = ''; uiState.sortDir = 'asc'; onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
@@ -173,7 +190,8 @@ window.MbMemberMng = {
       selectedId: computed(() => detailModal.editId), members, uiState, codes,
       searchParam, pager, setPage,
       onSearch, onReset, cfSelectedRow, detailModal, openDetail, openNew, closeDetail,
-      handleSave, handleDelete, fnGradeBadge, fnStatusBadge, fnFmtDate, onSizeChange
+      handleSave, handleDelete, fnGradeBadge, fnStatusBadge, fnFmtDate, onSizeChange,
+      onSort, sortIcon, uiState
     };
   },
   template: /* html */`
@@ -207,7 +225,11 @@ window.MbMemberMng = {
     </div>
     <table class="bo-table">
       <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th><th>이름</th><th>이메일</th><th>연락처</th><th>등급</th><th>상태</th><th>가입일</th><th style="width:80px;text-align:right">주문수</th><th style="width:100px;text-align:right">총구매액</th><th style="text-align:center;width:80px">관리</th>
+        <th style="width:36px;text-align:center;">번호</th>
+        <th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">이름 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th>
+        <th>이메일</th><th>연락처</th><th>등급</th><th>상태</th>
+        <th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">가입일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th>
+        <th style="width:80px;text-align:right">주문수</th><th style="width:100px;text-align:right">총구매액</th><th style="text-align:center;width:80px">관리</th>
       </tr></thead>
       <tbody>
         <tr v-for="(row, idx) in members" :key="row?.memberId" :class="{active:selectedId===row.memberId}" style="cursor:pointer">

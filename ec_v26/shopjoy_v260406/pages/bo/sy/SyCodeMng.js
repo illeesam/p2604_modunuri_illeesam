@@ -3,7 +3,7 @@ window.SyCodeMng = {
   name: 'SyCodeMng',
   props: ['navigate', 'showToast', 'showConfirm'],
   setup(props) {
-    const { reactive, computed, watch, onMounted } = Vue;
+    const { reactive, watch, onMounted, nextTick } = Vue;
 
     // ── 선언부 ────────────────────────────────────────────────────────────────
 
@@ -15,6 +15,8 @@ window.SyCodeMng = {
       isTreeType: false,
       grpDirtyCount: 0,
       grpSortKey: '', grpSortDir: 'asc',
+      grpRows: [],
+      gridRows: [],
     });
 
     const _initSearchParam = () => {
@@ -30,9 +32,6 @@ window.SyCodeMng = {
 
     const searchParam    = reactive(_initSearchParam());
     const searchParamOrg = reactive(_initSearchParam());
-    const gridRows       = reactive([]);    // 현재 선택 그룹 코드 행
-    const grpRows        = reactive([]);    // 코드그룹 CRUD 그리드 전체 행
-    const visibleGrpRows = reactive([]);    // 필터 적용된 그룹 행 (템플릿 직접 바인딩)
     const pathPickModal  = reactive({ show: false, row: null });
     const treeExpanded   = reactive(new Set());
     const parentOpts     = reactive([]);
@@ -42,21 +41,22 @@ window.SyCodeMng = {
 
     let _tempId    = -1;
     let _grpTempId = -1;
+    let _grpLoadSeq = 0;
     const EDIT_FIELDS = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'remark', 'parentCodeValue'];
     const GRP_FIELDS  = ['codeGrp', 'grpNm', 'pathId', 'description', 'type', 'useYn'];
 
-    const codeTotal = () => gridRows.filter(r => r._row_status !== 'D').length;
-    const grpCount  = () => visibleGrpRows.filter(r => r._row_status !== 'D').length;
+    const codeTotal = () => uiState.gridRows.filter(r => r._row_status !== 'D').length;
+    const grpCount  = () => uiState.grpRows.filter(r => r._row_status !== 'D').length;
 
-    // grpDirtyCount: grpRows 변경 시 갱신 (템플릿에서 함수 반복 호출 대신 값 참조)
-    const syncGrpDirty = () => { uiState.grpDirtyCount = grpRows.filter(r => r._row_status !== 'N').length; };
+    // grpDirtyCount: uiState.grpRows 변경 시 갱신
+    const syncGrpDirty = () => { uiState.grpDirtyCount = uiState.grpRows.filter(r => r._row_status !== 'N').length; };
 
     // ── 트리 갱신 ─────────────────────────────────────────────────────────────
 
     const rebuildTree = () => {
       parentOpts.splice(0);
       if (uiState.isTreeType) {
-        const visible = gridRows.filter(r => r._row_status !== 'D');
+        const visible = uiState.gridRows.filter(r => r._row_status !== 'D');
         const byValue = new Map(visible.map(c => [c.codeValue, c]));
         visible.forEach(r => {
           let depth = 0, cur = r.parentCodeValue ? byValue.get(r.parentCodeValue) : null;
@@ -70,7 +70,7 @@ window.SyCodeMng = {
       }
       flatTree.splice(0);
       if (!uiState.selectedGrp) return;
-      const visible = gridRows.filter(r => r._row_status !== 'D');
+      const visible = uiState.gridRows.filter(r => r._row_status !== 'D');
       const byValue = new Map(visible.map(c => [c.codeValue, c]));
       const childMap = new Map();
       visible.forEach(c => {
@@ -99,9 +99,6 @@ window.SyCodeMng = {
     };
     watch(() => window.sfGetBoCodeStore?.()?.svCodes?.length, checkAndLoadCodes);
 
-    watch(() => uiState.grpSelectedPath, () => { uiState.selectedGrp = ''; handleLoadAllGroups(); });
-    watch(() => uiState.selectedGrp, () => { handleSearchList(); });
-
     // ── 초기화 ────────────────────────────────────────────────────────────────
 
     const fnLoadCodes = async () => {
@@ -128,6 +125,11 @@ window.SyCodeMng = {
       Object.assign(searchParam, _initSearchParam());
       uiState.grpSortKey = '';
       uiState.grpSortDir = 'asc';
+      uiState.grpSelectedPath = '';
+      uiState.selectedGrp = '';
+      uiState.grpRows = [];
+      uiState.gridRows = [];
+      uiState.focusedIdx = null;
       handleLoadAllGroups();
     };
 
@@ -160,14 +162,14 @@ window.SyCodeMng = {
     const onDragOver  = (e, idx) => {
       e.preventDefault();
       if (uiState.dragSrc === null || uiState.dragSrc === idx) return;
-      const moved = gridRows.splice(uiState.dragSrc, 1)[0];
-      gridRows.splice(idx, 0, moved);
+      const moved = uiState.gridRows.splice(uiState.dragSrc, 1)[0];
+      uiState.gridRows.splice(idx, 0, moved);
       uiState.dragSrc = idx; uiState.dragMoved = true;
     };
     const onDragEnd = () => {
       if (uiState.dragMoved) {
         // 드래그 후 sortOrd 재부여 + 변경된 행 U 마킹 (즉시 저장 아님)
-        gridRows.forEach((r, i) => {
+        uiState.gridRows.forEach((r, i) => {
           const newOrd = i + 1;
           if (r.sortOrd !== newOrd) {
             r.sortOrd = newOrd;
@@ -178,7 +180,7 @@ window.SyCodeMng = {
       uiState.dragSrc = null; uiState.dragMoved = false;
     };
 
-    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
+    const toggleCheckAll = () => { uiState.gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
     // ── 일반 함수 ─────────────────────────────────────────────────────────────
 
@@ -195,13 +197,14 @@ window.SyCodeMng = {
       return { sort: GRP_SORT_MAP[grpSortKey][grpSortDir] };
     };
 
-    const applyGrpSort = () => {
-      visibleGrpRows.splice(0, visibleGrpRows.length, ...grpRows);
-    };
-
     const onGrpSort = (key) => {
       if (uiState.grpSortKey === key) {
-        uiState.grpSortDir = uiState.grpSortDir === 'asc' ? 'desc' : 'asc';
+        if (uiState.grpSortDir === 'asc') {
+          uiState.grpSortDir = 'desc';
+        } else {
+          uiState.grpSortKey = '';
+          uiState.grpSortDir = 'asc';
+        }
       } else {
         uiState.grpSortKey = key;
         uiState.grpSortDir = 'asc';
@@ -215,24 +218,26 @@ window.SyCodeMng = {
     };
 
     const handleLoadAllGroups = async () => {
+      const seq = ++_grpLoadSeq;
       try {
         const grpParams = {
           ...Object.fromEntries(Object.entries(searchParam).filter(([k, v]) => k !== 'dateRange' && v !== '' && v !== null && v !== undefined)),
           ...(uiState.grpSelectedPath ? { pathId: uiState.grpSelectedPath } : {}),
           ...cfGrpSortParam(),
-          _t: Date.now(),
         };
 
         const [grpRes, codeRes] = await Promise.all([
           boApiSvc.syCodeGrp.getAll(grpParams, '코드관리', '그룹목록조회'),
           boApiSvc.syCode.getPage({ pageNo: 1, pageSize: 100000 }, '코드관리', '코드수집계'),
         ]);
+
+        if (seq !== _grpLoadSeq) return;
+
         const grpList  = grpRes.data?.data  || [];
         const codeList = codeRes.data?.data?.pageList || codeRes.data?.data?.list || [];
         const countMap = new Map();
         codeList.forEach(c => countMap.set(c.codeGrp, (countMap.get(c.codeGrp) || 0) + 1));
-        grpRows.splice(0);
-        grpList.forEach(g => grpRows.push({
+        const newGrpRows = grpList.map(g => ({
           codeGrpId:   g.codeGrpId,
           siteId:      g.siteId    || null,
           codeGrp:     g.codeGrp,
@@ -244,21 +249,25 @@ window.SyCodeMng = {
           codeCount: countMap.get(g.codeGrp) ?? 0,
           _row_org: { codeGrp: g.codeGrp, grpNm: g.grpNm, pathId: g.pathId || null, description: g.codeGrpDesc || '', useYn: g.useYn || 'Y' },
         }));
+        uiState.grpRows = [];
+        uiState.gridRows = [];
+        await nextTick();
+        if (seq !== _grpLoadSeq) return;
+        uiState.grpRows = newGrpRows;
         syncGrpDirty();
-        applyGrpSort();
-        gridRows.splice(0); uiState.focusedIdx = null;
+        uiState.focusedIdx = null;
       } catch (_) {}
     };
 
     const handleSearchList = async () => {
-      if (!uiState.selectedGrp) { gridRows.splice(0); uiState.isTreeType = false; rebuildTree(); return; }
+      if (!uiState.selectedGrp) { uiState.gridRows = []; uiState.isTreeType = false; rebuildTree(); return; }
       try {
         uiState.loading = true;
         const res = await boApiSvc.syCode.getPage({ pageNo: 1, pageSize: 10000, codeGrp: uiState.selectedGrp }, '코드관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
-        gridRows.splice(0, gridRows.length, ...list.map(c => makeRow(c)));
+        uiState.gridRows = list.map(c => makeRow(c));
         uiState.focusedIdx = null;
-        const grp = grpRows.find(r => r.codeGrp === uiState.selectedGrp);
+        const grp = uiState.grpRows.find(r => r.codeGrp === uiState.selectedGrp);
         uiState.isTreeType = grp?.type === '트리';
         rebuildTree();
       } catch (_) {} finally { uiState.loading = false; }
@@ -274,57 +283,57 @@ window.SyCodeMng = {
 
     const addRow = () => {
       const grp = uiState.selectedGrp;
-      const maxSort = gridRows.reduce((m, r) => r._row_status !== 'D' ? Math.max(m, r.sortOrd || 0) : m, 0);
-      const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
+      const maxSort = uiState.gridRows.reduce((m, r) => r._row_status !== 'D' ? Math.max(m, r.sortOrd || 0) : m, 0);
+      const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : uiState.gridRows.length;
       const newRow = {
         codeId: _tempId--, codeGrp: grp, codeLabel: '', codeValue: '',
         sortOrd: maxSort + 1, useYn: 'Y', remark: '', parentCodeValue: null,
         _row_status: 'I', _row_check: false,
         _row_org: { codeGrp: grp, codeLabel: '', codeValue: '', sortOrd: maxSort + 1, useYn: 'Y', remark: '', parentCodeValue: null },
       };
-      gridRows.splice(insertAt, 0, newRow);
+      uiState.gridRows.splice(insertAt, 0, newRow);
       uiState.focusedIdx = insertAt;
     };
 
     const deleteRow = (idx) => {
-      const row = gridRows[idx];
+      const row = uiState.gridRows[idx];
       if (row._row_status === 'I') {
-        gridRows.splice(idx, 1);
+        uiState.gridRows.splice(idx, 1);
         if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
       } else { row._row_status = 'D'; }
     };
 
     const cancelRow = (idx) => {
-      const row = gridRows[idx];
+      const row = uiState.gridRows[idx];
       if (row._row_status === 'I') {
-        gridRows.splice(idx, 1);
+        uiState.gridRows.splice(idx, 1);
         if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
       } else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
     };
 
     const cancelChecked = () => {
-      const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.codeId));
+      const ids = new Set(uiState.gridRows.filter(r => r._row_check).map(r => r.codeId));
       if (!ids.size) { props.showToast('취소할 행을 선택해주세요.', 'info'); return; }
-      for (let i = gridRows.length - 1; i >= 0; i--) {
-        const row = gridRows[i];
+      for (let i = uiState.gridRows.length - 1; i >= 0; i--) {
+        const row = uiState.gridRows[i];
         if (!ids.has(row.codeId) || row._row_status === 'N') continue;
-        if (row._row_status === 'I') { gridRows.splice(i, 1); }
+        if (row._row_status === 'I') { uiState.gridRows.splice(i, 1); }
         else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
       }
     };
 
     const deleteRows = () => {
-      for (let i = gridRows.length - 1; i >= 0; i--) {
-        if (!gridRows[i]._row_check) continue;
-        if (gridRows[i]._row_status === 'I') gridRows.splice(i, 1);
-        else gridRows[i]._row_status = 'D';
+      for (let i = uiState.gridRows.length - 1; i >= 0; i--) {
+        if (!uiState.gridRows[i]._row_check) continue;
+        if (uiState.gridRows[i]._row_status === 'I') uiState.gridRows.splice(i, 1);
+        else uiState.gridRows[i]._row_status = 'D';
       }
     };
 
     const handleSave = async () => {
-      const iRows = gridRows.filter(r => r._row_status === 'I');
-      const uRows = gridRows.filter(r => r._row_status === 'U');
-      const dRows = gridRows.filter(r => r._row_status === 'D');
+      const iRows = uiState.gridRows.filter(r => r._row_status === 'I');
+      const uRows = uiState.gridRows.filter(r => r._row_status === 'U');
+      const dRows = uiState.gridRows.filter(r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) { props.showToast('변경된 데이터가 없습니다.', 'error'); return; }
       for (const r of [...iRows, ...uRows]) {
         if (!r.codeGrp || !r.codeLabel || !r.codeValue) { props.showToast('코드그룹, 코드라벨, 코드값은 필수 항목입니다.', 'error'); return; }
@@ -353,35 +362,34 @@ window.SyCodeMng = {
     };
 
     const addGrp = () => {
-      grpRows.push({
+      uiState.grpRows = [...uiState.grpRows, {
         codeGrp: 'NEW_GRP', grpNm: '신규 그룹', pathId: 'new.path', description: '', type: '일반', useYn: 'Y',
         _row_status: 'I', _tempId: _grpTempId--, _row_org: {},
-      });
+      }];
       syncGrpDirty();
-      applyGrpSort();
     };
 
     const handleDeleteGrp = (idx) => {
-      const r = visibleGrpRows[idx];
-      if (r._row_status === 'I') { grpRows.splice(grpRows.indexOf(r), 1); }
+      const rows = uiState.grpRows;
+      const r = rows[idx];
+      if (r._row_status === 'I') { uiState.grpRows = rows.filter((_, i) => i !== idx); }
       else { r._row_status = r._row_status === 'D' ? 'N' : 'D'; }
       syncGrpDirty();
-      applyGrpSort();
     };
 
     const cancelGrp = (idx) => {
-      const r = visibleGrpRows[idx];
-      if (r._row_status === 'I') { grpRows.splice(grpRows.indexOf(r), 1); }
+      const rows = uiState.grpRows;
+      const r = rows[idx];
+      if (r._row_status === 'I') { uiState.grpRows = rows.filter((_, i) => i !== idx); }
       else { Object.assign(r, r._row_org); r._row_status = 'N'; }
       syncGrpDirty();
-      applyGrpSort();
     };
 
     const handleSaveGrp = async () => {
       if (!uiState.grpDirtyCount) { props.showToast('변경된 행이 없습니다.', 'warning'); return; }
       const ok = await props.showConfirm('저장', `${uiState.grpDirtyCount}건 저장하시겠습니까?`);
       if (!ok) return;
-      const saveRows = grpRows
+      const saveRows = uiState.grpRows
         .filter(r => r._row_status !== 'N')
         .map(r => ({
           codeGrpId: r.codeGrpId || null,
@@ -405,9 +413,17 @@ window.SyCodeMng = {
     const openPathPick  = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
 
-    const openGrpSetting = (g, e) => { e.stopPropagation(); uiState.selectedGrp = g.codeGrp; };
+    const openGrpSetting = (g, e) => {
+      e.stopPropagation();
+      uiState.selectedGrp = g.codeGrp;
+      handleSearchList();
+    };
 
-    const grpSelectNode = (path) => { uiState.grpSelectedPath = path; };
+    const grpSelectNode = (path) => {
+      uiState.grpSelectedPath = path;
+      uiState.selectedGrp = '';
+      handleLoadAllGroups();
+    };
 
     const codeToggleNode = (codeValue) => {
       if (treeExpanded.has(codeValue)) treeExpanded.delete(codeValue);
@@ -421,7 +437,7 @@ window.SyCodeMng = {
     const statusBadgeCls = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
     const exportExcel = () => boUtil.exportCsv(
-      gridRows.filter(r => r._row_status !== 'D'),
+      uiState.gridRows.filter(r => r._row_status !== 'D'),
       [{ label: 'ID', key: 'codeId' }, { label: '코드그룹', key: 'codeGrp' }, { label: '코드라벨', key: 'codeLabel' },
        { label: '코드값', key: 'codeValue' }, { label: '순서', key: 'sortOrd' }, { label: '사용여부', key: 'useYn' }, { label: '비고', key: 'remark' }],
       '공통코드목록.csv'
@@ -435,7 +451,7 @@ window.SyCodeMng = {
       uiState, pageCodes, siteNm,
       codeTotal, grpCount,
       searchParam, handleDateRangeChange,
-      gridRows, visibleGrpRows, onSearch, onReset, onCellChange,
+      onSearch, onReset, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
       onDragStart, onDragOver, onDragEnd, toggleCheckAll, statusBadgeCls, exportExcel,
       addGrp, handleDeleteGrp, cancelGrp, handleSaveGrp, onGrpChange,
@@ -522,10 +538,10 @@ window.SyCodeMng = {
           </tr>
         </thead>
         <tbody>
-          <tr v-if="visibleGrpRows.length===0">
+          <tr v-if="uiState.grpRows.length===0">
             <td colspan="11" style="text-align:center;color:#999;padding:20px;">데이터가 없습니다.</td>
           </tr>
-          <tr v-else v-for="(g, idx) in visibleGrpRows" :key="g.codeGrp + (g._tempId || '')"
+          <tr v-else v-for="(g, idx) in uiState.grpRows" :key="g.codeGrp + (g._tempId || '')"
             class="crud-row"
             :class="['status-'+g._row_status, uiState.selectedGrp===g.codeGrp ? 'focused' : '']"
             style="cursor:pointer;"
@@ -642,10 +658,10 @@ window.SyCodeMng = {
           </tr>
         </thead>
         <tbody>
-          <tr v-if="gridRows.length===0">
+          <tr v-if="uiState.gridRows.length===0">
             <td :colspan="uiState.isTreeType ? 14 : 13" style="text-align:center;color:#999;padding:30px;">{{ uiState.selectedGrp ? '데이터가 없습니다.' : '그룹을 선택해주세요.' }}</td>
           </tr>
-          <tr v-for="(row, idx) in gridRows" :key="row.codeId"
+          <tr v-for="(row, idx) in uiState.gridRows" :key="row.codeId"
             class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
             draggable="true"
             @click="setFocused(idx)"
@@ -728,7 +744,7 @@ window.SyCodeMng = {
           <tr v-for="(row, idx) in flatTree" :key="row.node.value"
             class="crud-row" :class="['status-'+row.node.code._row_status]"
             style="user-select:none;"
-            @click="setFocused(gridRows.indexOf(row.node.code))">
+            @click="setFocused(uiState.gridRows.indexOf(row.node.code))">
             <td class="col-status-val">
               <span class="badge badge-xs" :class="statusBadgeCls(row.node.code._row_status)">{{ row.node.code._row_status }}</span>
             </td>
@@ -763,11 +779,11 @@ window.SyCodeMng = {
             <td style="font-size:11px;color:#2563eb;text-align:center;">{{ siteNm }}</td>
             <td class="col-act-cancel-val">
               <button v-if="['U','I','D'].includes(row.node.code._row_status)"
-                class="btn btn-secondary btn-xs" @click.stop="cancelRow(gridRows.indexOf(row.node.code))">취소</button>
+                class="btn btn-secondary btn-xs" @click.stop="cancelRow(uiState.gridRows.indexOf(row.node.code))">취소</button>
             </td>
             <td class="col-act-delete-val">
               <button v-if="['N','U'].includes(row.node.code._row_status)"
-                class="btn btn-danger btn-xs" @click.stop="deleteRow(gridRows.indexOf(row.node.code))">삭제</button>
+                class="btn btn-danger btn-xs" @click.stop="deleteRow(uiState.gridRows.indexOf(row.node.code))">삭제</button>
             </td>
           </tr>
         </tbody>

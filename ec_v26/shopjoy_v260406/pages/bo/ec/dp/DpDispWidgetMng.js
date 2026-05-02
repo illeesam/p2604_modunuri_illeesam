@@ -5,7 +5,7 @@ window.DpDispWidgetMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const codes = reactive({ disp_widget_types: [], active_statuses: [] });
-    const uiState = reactive({ loading: false, isPageCodeLoad: false, selectedPath: null });
+    const uiState = reactive({ loading: false, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const widgetLibs = reactive([]);
     const widgets = reactive([]);
 
@@ -39,6 +39,22 @@ window.DpDispWidgetMng = {
     const _initSearchParam = () => ({ kw: '', type: '', status: '' });
     const searchParam = reactive(_initSearchParam());
 
+    const SORT_MAP = { reg: { asc: 'reg_asc', desc: 'reg_desc' } };
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchData('DEFAULT');
+    };
+    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
     // onMounted에서 API 로드
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
@@ -46,6 +62,7 @@ window.DpDispWidgetMng = {
         const { type, kw, ...restParam } = searchParam;
         const libParams = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
+          ...getSortParam(),
           ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
           ...(kw   ? { kw: kw.trim() }      : {}),
           ...(type ? { widgetType: type }    : {}),
@@ -97,6 +114,7 @@ window.DpDispWidgetMng = {
 
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
+      uiState.sortKey = ''; uiState.sortDir = 'asc';
       pager.pageNo = 1;
       handleSearchData('DEFAULT');
     };
@@ -147,7 +165,7 @@ window.DpDispWidgetMng = {
       handleLoadDetail, openNew, closeDetail, inlineNavigate,
       cfDetailEditId, cfDetailKey,
       selectNode,
-      fnStatusCls, contentSummary, handleDelete,
+      fnStatusCls, contentSummary, handleDelete, onSort, sortIcon,
     };
   },
   template: /* html */`
@@ -212,7 +230,7 @@ window.DpDispWidgetMng = {
       <thead>
         <tr>
           <th style="width:56px;">ID</th>
-          <th>위젯 정보</th>
+          <th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">위젯 정보 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th>
           <th style="width:120px;text-align:right;">관리</th>
         </tr>
       </thead>

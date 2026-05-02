@@ -5,7 +5,7 @@ window.CmBlogMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const blogs = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({
       blog_display_statuses: [],
       open_yn_opts: [{ codeValue: 'Y', codeLabel: '공개' }, { codeValue: 'N', codeLabel: '비공개' }],
@@ -41,11 +41,27 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
 
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
+    const SORT_MAP = { nm: { asc: 'nm_asc', desc: 'nm_desc' }, reg: { asc: 'reg_asc', desc: 'reg_desc' } };
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchList();
+    };
+    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await boApiSvc.cmBlog.getPage({
             pageNo: pager.pageNo, pageSize: pager.pageSize,
+            ...getSortParam(),
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           }, '블로그관리', '목록조회');
         const data = res.data?.data;
@@ -152,7 +168,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
     };
 
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
+    const onReset = () => { Object.assign(searchParam, _initSearchParam()); uiState.sortKey = ''; uiState.sortDir = 'asc'; onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
@@ -163,7 +179,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       selectedId: computed(() => detailModal.editId), blogs, uiState, codes,
       searchParam, pager, setPage,
       onSearch, onReset, cfSelectedRow, detailModal, openDetail, openNew, closeDetail,
-      handleSave, handleDelete, toggleUse, fnYnBadge, onSizeChange,
+      handleSave, handleDelete, toggleUse, fnYnBadge, onSizeChange, onSort, sortIcon,
     };
   },
   template: `
@@ -197,11 +213,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       </div>
       <table class="bo-table">
         <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th><th>제목</th><th style="width:80px">작성자</th>
+          <th style="width:36px;text-align:center;">번호</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">제목 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th style="width:80px">작성자</th>
           <th style="width:80px;text-align:right">조회수</th>
           <th style="width:70px;text-align:center">공지</th>
           <th style="width:70px;text-align:center">공개</th>
-          <th style="width:140px">등록일</th>
+          <th @click="onSort('reg')" style="width:140px;cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th>
           <th style="width:80px;text-align:center">공개전환</th>
         </tr></thead>
         <tbody>

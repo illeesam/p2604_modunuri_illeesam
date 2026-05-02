@@ -5,7 +5,7 @@ window.DpDispPanelMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const panels = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cardPreviewItem: null, panelDragSrc: null, panelDragOverIdx: -1, widgetDragPanel: null, widgetDragSrcWi: null, widgetDragOverWi: null, selectedTreeKey: '', selectedPath: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cardPreviewItem: null, panelDragSrc: null, panelDragOverIdx: -1, widgetDragPanel: null, widgetDragSrcWi: null, widgetDragOverWi: null, selectedTreeKey: '', selectedPath: null, sortKey: '', sortDir: 'asc' });
     const displays = reactive([]);
     const codes = reactive({
       layout_types: [],
@@ -54,10 +54,26 @@ window.DpDispPanelMng = {
       }
     });
 
+    const SORT_MAP = { nm: { asc: 'nm_asc', desc: 'nm_desc' }, reg: { asc: 'reg_asc', desc: 'reg_desc' } };
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchData(buildSearchParams?.() || {});
+    };
+    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
     const handleSearchData = async (uiParams = {}) => {
       uiState.loading = true;
       try {
-        const params = { pageNo: 1, pageSize: 10000, ...uiParams };
+        const params = { pageNo: 1, pageSize: 10000, ...getSortParam(), ...uiParams };
         const [panelsRes, displaysRes] = await Promise.all([
           boApiSvc.dpPanel.getPage({ pageNo: 1, pageSize: 10000 }, '전시패널관리', '조회'),
           boApiSvc.dpUi.getPage(params, '전시패널관리', '조회'),
@@ -208,6 +224,7 @@ window.DpDispPanelMng = {
 
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
+      uiState.sortKey = ''; uiState.sortDir = 'asc';
       pager.pageNo = 1;
       handleSearchData({});
     };
@@ -382,7 +399,7 @@ window.DpDispPanelMng = {
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), panels, uiState, fnPathLabel, displays, codes,
       cfPanelTree, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll,
       selectPathNode,
-      onDateRangeChange: handleDateRangeChange, cfSiteNm, searchParam, pager, cfFiltered, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, fnWLabel, openCardPreview, closeCardPreview, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd, setDispNow };
+      onDateRangeChange: handleDateRangeChange, cfSiteNm, searchParam, pager, cfFiltered, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, fnWLabel, openCardPreview, closeCardPreview, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd, setDispNow, onSort, sortIcon };
   },
   template: /* html */`
 <div>
@@ -451,7 +468,7 @@ window.DpDispPanelMng = {
           <th style="width:24px;"></th>
           <th style="width:28px;"></th>
           <th style="width:44px;">ID</th>
-          <th>패널 정보</th>
+          <th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">패널 정보 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th>
           <th style="width:240px;text-align:right;">관리</th>
         </tr>
       </thead>

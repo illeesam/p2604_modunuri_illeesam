@@ -7,7 +7,7 @@ window.DpDispUiMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const displays = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({
       disp_ui_types: [],
       use_yn: [],
@@ -48,12 +48,29 @@ window.DpDispUiMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
+    const SORT_MAP = { nm: { asc: 'nm_asc', desc: 'nm_desc' }, reg: { asc: 'reg_asc', desc: 'reg_desc' } };
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchList();
+    };
+    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const { type, kw, ...restParam } = searchParam;
         const params = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
+          ...getSortParam(),
           ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
           ...(kw       ? { kw: kw.trim() } : {}),
           ...(type     ? { uiType: type }  : {}),
@@ -111,7 +128,7 @@ window.DpDispUiMng = {
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
-    const onReset  = () => { Object.assign(searchParam, _initSearchParam()); pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onReset  = () => { Object.assign(searchParam, _initSearchParam()); uiState.sortKey = ''; uiState.sortDir = 'asc'; pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
 
@@ -120,7 +137,8 @@ window.DpDispUiMng = {
     return { displays, uiState, codes, pager, searchParam,
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange, cfSiteNm,
       selectNode, pathLabel,
-      uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId };
+      uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
+      onSort, sortIcon };
   },
   template: /* html */`
 <div>
@@ -157,7 +175,7 @@ window.DpDispUiMng = {
       </div>
       <table class="bo-table">
         <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th><th>UI명</th><th>유형</th><th>사용여부</th><th>등록일</th><th>액션</th>
+          <th style="width:36px;text-align:center;">번호</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">UI명 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>유형</th><th>사용여부</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>액션</th>
         </tr></thead>
         <tbody>
           <tr v-if="uiState.loading"><td colspan="6" style="text-align:center;padding:30px;color:#aaa;">로딩 중...</td></tr>

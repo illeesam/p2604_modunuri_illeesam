@@ -5,7 +5,7 @@ window.CmChattMng = {
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const chatts = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ chatt_message_types: [], chatt_statuses: [], date_range_opts: [] });
 
     const handleDateRangeChange = () => {
@@ -44,11 +44,27 @@ const isAppReady = computed(() => {
     };
     const searchParam = reactive(_initSearchParam());
 
+    const SORT_MAP = { reg: { asc: 'reg_asc', desc: 'reg_desc' } };
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchList();
+    };
+    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const res = await boApiSvc.cmChatt.getPage({
             pageNo: pager.pageNo, pageSize: pager.pageSize,
+            ...getSortParam(),
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           }, '채팅관리', '목록조회');
         const data = res.data?.data;
@@ -93,7 +109,7 @@ const isAppReady = computed(() => {
     const fnStatusBadge = s => ({ '진행중': 'badge-green', '종료': 'badge-gray' }[s] || 'badge-gray');
 
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
+    const onReset = () => { Object.assign(searchParam, _initSearchParam()); uiState.sortKey = ''; uiState.sortDir = 'asc'; onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
@@ -126,7 +142,7 @@ const isAppReady = computed(() => {
       onSearch, onReset, setPage, onSizeChange, handleDelete,
       uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId),
       cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail,
-      inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel
+      inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon
     };
   },
   template: /* html */`
@@ -156,7 +172,7 @@ const isAppReady = computed(() => {
     </div>
     <table class="bo-table">
       <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th><th>회원</th><th>제목</th><th>마지막 메시지</th><th>메시지수</th><th>미읽음</th><th>상태</th><th>일시</th><th>사이트명</th><th style="text-align:right">관리</th>
+        <th style="width:36px;text-align:center;">번호</th><th>회원</th><th>제목</th><th>마지막 메시지</th><th>메시지수</th><th>미읽음</th><th>상태</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">일시 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>사이트명</th><th style="text-align:right">관리</th>
       </tr></thead>
       <tbody>
         <tr v-if="chatts.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>

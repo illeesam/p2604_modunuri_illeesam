@@ -5,7 +5,7 @@ window.PdDlivTmpltMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const dlivTmplts = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null, descOpen: false});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null, descOpen: false, sortKey: '', sortDir: 'asc' });
     const codes = reactive({
       dliv_template_types: [],
       use_yn: [],
@@ -42,9 +42,24 @@ window.PdDlivTmpltMng = {
     const _initSearchParam = () => ({ kw: '', method: '', use: '' });
     const searchParam = reactive(_initSearchParam());
 
+    const SORT_MAP = { nm: { asc: 'nm_asc', desc: 'nm_desc' } };
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchList();
+    };
+    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await boApiSvc.pdDlivTmplt.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '배송템플릿관리', '목록조회');
+        const res = await boApiSvc.pdDlivTmplt.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '배송템플릿관리', '목록조회');
         const data = res.data?.data;
         dlivTmplts.splice(0, dlivTmplts.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
@@ -122,6 +137,7 @@ window.PdDlivTmpltMng = {
 
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
+      uiState.sortKey = ''; uiState.sortDir = 'asc';
       pager.pageNo = 1;
       await handleSearchList();
     };
@@ -136,7 +152,7 @@ window.PdDlivTmpltMng = {
     return { uiState, codes, searchParam,
              pager, setPage, onSearch, onReset,
              form, openDetail, openNew, closeDetail, handleSave, handleDelete,
-             fnYnBadge, fnMethodBadge, METHOD_LABELS, PAY_LABELS, onSizeChange, dlivTmplts};
+             fnYnBadge, fnMethodBadge, METHOD_LABELS, PAY_LABELS, onSizeChange, dlivTmplts, onSort, sortIcon};
   },
   template: `
 <div>
@@ -178,7 +194,7 @@ window.PdDlivTmpltMng = {
       </div>
       <table class="bo-table">
         <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th><th>템플릿명</th>
+          <th style="width:36px;text-align:center;">번호</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">템플릿명 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th>
           <th style="width:90px">배송방법</th>
           <th style="width:80px">결제유형</th>
           <th style="width:100px;text-align:right">기본배송비</th>
