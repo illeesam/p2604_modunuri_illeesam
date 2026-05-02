@@ -159,10 +159,8 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
       return filterRows(cfHistList.value, 'histId');
     });
 
-    const cfTotal    = computed(() => cfFiltered.value.length);
-    const cfTotPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.pageSize)));
-    const cfPageList = computed(() => cfFiltered.value.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize));
-    const cfPageNums = computed(() => { const c=pager.pageNo,l=cfTotPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfFiltered.value.length / pager.pageSize)));
+    const cfPageNums   = computed(() => { const c=pager.pageNo,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const cfSummary = computed(() => {
       const all = filterRows(cfLogList.value, 'logId');
@@ -191,7 +189,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
 
     const onSearch     = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
     const onReset      = async () => { uiState.searchKw=''; uiState.searchResult=''; uiState.searchIp=''; uiState.searchTokenAction=''; uiState.dateRange='이번달'; onDateRangeChange(); pager.pageNo=1; await handleSearchList(); };
-    const setPage      = n => { if (n >= 1 && n <= cfTotPages.value) pager.pageNo = n; };
+    const setPage      = n => { if (n >= 1 && n <= cfTotalPages.value) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
     const onTabChange  = tab => { uiState.activeTab = tab; pager.pageNo = 1; };
 
@@ -203,7 +201,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
       uiState, onTabChange,
       onDateRangeChange,
       codes,
-      pager, cfFiltered, cfTotal, cfTotPages, cfPageList, cfPageNums, cfSummary,
+      pager, cfFiltered, cfTotalPages, cfPageNums, cfSummary,
       expandedRows, toggleRow, isExpanded,
       fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge,
       onSearch, onReset, setPage, onSizeChange,
@@ -274,11 +272,11 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
   <!-- ── 탭 + 목록 ───────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="tab-nav" style="margin-bottom:16px">
-      <button class="tab-btn" :class="{active:uiState.activeTab==='log'}"   @click="onTabChange('log')">로그인 로그 <span class="tab-count" v-if="uiState.activeTab==='log'">{{ cfTotal }}</span></button>
-      <button class="tab-btn" :class="{active:uiState.activeTab==='hist'}"  @click="onTabChange('hist')">로그인 이력 <span class="tab-count" v-if="uiState.activeTab==='hist'">{{ cfTotal }}</span></button>
-      <button class="tab-btn" :class="{active:uiState.activeTab==='token'}" @click="onTabChange('token')">토큰 이력 <span class="tab-count" v-if="uiState.activeTab==='token'">{{ cfTotal }}</span></button>
+      <button class="tab-btn" :class="{active:uiState.activeTab==='log'}"   @click="onTabChange('log')">로그인 로그 <span class="tab-count" v-if="uiState.activeTab==='log'">{{ cfFiltered.length }}</span></button>
+      <button class="tab-btn" :class="{active:uiState.activeTab==='hist'}"  @click="onTabChange('hist')">로그인 이력 <span class="tab-count" v-if="uiState.activeTab==='hist'">{{ cfFiltered.length }}</span></button>
+      <button class="tab-btn" :class="{active:uiState.activeTab==='token'}" @click="onTabChange('token')">토큰 이력 <span class="tab-count" v-if="uiState.activeTab==='token'">{{ cfFiltered.length }}</span></button>
     </div>
-    <div class="toolbar"><span class="list-count">총 {{ cfTotal }}건</span></div>
+    <div class="toolbar"><span class="list-count">총 {{ cfFiltered.length }}건</span></div>
 
     <!-- ── 로그인 로그 탭 ── -->
     <div v-if="uiState.activeTab==='log'">
@@ -291,7 +289,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
           </tr>
         </thead>
         <tbody>
-          <template v-for="(r, idx) in cfPageList" :key="r.logId">
+          <template v-for="(r, idx) in cfFiltered.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize)" :key="r.logId">
             <tr style="cursor:pointer" :style="isExpanded(r.logId)?'background:#fafbff':''" @click="toggleRow(r.logId)">
               <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
               <td style="text-align:center;color:#bbb;font-size:11px;user-select:none">{{ isExpanded(r.logId)?'▲':'▼' }}</td>
@@ -348,7 +346,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
               </td>
             </tr>
           </template>
-          <tr v-if="!cfPageList.length"><td colspan="12" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+          <tr v-if="!cfFiltered.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize).length"><td colspan="12" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
     </div>
@@ -358,7 +356,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
       <table class="bo-table">
         <thead><tr><th style="width:36px;text-align:center;">번호</th><th>이력ID</th><th>로그인일시</th><th>회원</th><th>IP</th><th>디바이스</th><th>결과</th></tr></thead>
         <tbody>
-          <tr v-for="(r, idx) in cfPageList" :key="r.histId">
+          <tr v-for="(r, idx) in cfFiltered.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize)" :key="r.histId">
             <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td style="font-size:11px;color:#888;font-family:monospace">{{ r.histId }}</td>
             <td style="white-space:nowrap">{{ r.loginDate }}</td>
@@ -367,7 +365,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
             <td style="font-size:12px;color:#666;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.device }}</td>
             <td><span class="badge" :class="fnResultBadge(r.resultCd)">{{ fnResultLabel(r.resultCd) }}</span></td>
           </tr>
-          <tr v-if="!cfPageList.length"><td colspan="7" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+          <tr v-if="!cfFiltered.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize).length"><td colspan="7" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
     </div>
@@ -383,7 +381,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
           </tr>
         </thead>
         <tbody>
-          <template v-for="(r, idx) in cfPageList" :key="r.tokenLogId">
+          <template v-for="(r, idx) in cfFiltered.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize)" :key="r.tokenLogId">
             <tr style="cursor:pointer" :style="isExpanded(r.tokenLogId)?'background:#fafbff':''" @click="toggleRow(r.tokenLogId)">
               <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
               <td style="text-align:center;color:#bbb;font-size:11px;user-select:none">{{ isExpanded(r.tokenLogId)?'▲':'▼' }}</td>
@@ -424,7 +422,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
               </td>
             </tr>
           </template>
-          <tr v-if="!cfPageList.length"><td colspan="11" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
+          <tr v-if="!cfFiltered.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize).length"><td colspan="11" style="text-align:center;color:#999;padding:24px">데이터가 없습니다.</td></tr>
         </tbody>
       </table>
     </div>
@@ -435,8 +433,8 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
         <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
         <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
         <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-        <button :disabled="pager.pageNo===cfTotPages" @click="setPage(pager.pageNo+1)">›</button>
-        <button :disabled="pager.pageNo===cfTotPages" @click="setPage(cfTotPages)">»</button>
+        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
+        <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
       </div>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">

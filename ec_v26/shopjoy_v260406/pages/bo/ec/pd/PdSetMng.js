@@ -54,6 +54,7 @@ window.PdSetMng = {
         sets.splice(0, sets.length);
         products.splice(0, products.length, ...(prodsRes.data?.data?.pageList || prodsRes.data?.data?.list || []));
         categories.splice(0, categories.length, ...(catsRes.data?.data?.pageList || catsRes.data?.data?.list || []));
+        fnBuildSetList();
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -150,30 +151,25 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const getBrandNm = id => { const b = (brands||[]).find(b=>b.brandId==id); return b ? (b.brandNm||id) : id; };
 
     /* ── 세트상품 목록 ── */
-    const cfSetList = computed(() => {
+    const setList = reactive([]);
+
+    const fnBuildSetList = () => {
       const kw = searchParam.nm.toLowerCase();
       const ids = [...new Set((sets || []).map(s => s.setProdId))];
-      return ids
+      const result = ids
         .map(id => {
           const items = (sets || [])
             .filter(s => s.setProdId === id)
             .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-          const prod = getProd(id);
-
-    // ── return ───────────────────────────────────────────────────────────────
-
-          return { setProdId: id, prodNm: getProdNm(id), prod, items, itemCount: items.length };
+          return { setProdId: id, prodNm: getProdNm(id), prod: getProd(id), items, itemCount: items.length };
         })
         .filter(g => !kw || g.prodNm.toLowerCase().includes(kw));
-    });
+      setList.splice(0, setList.length, ...result);
+      pager.pageTotalCount = setList.length;
+      pager.pageTotalPage  = Math.max(1, Math.ceil(setList.length / pager.pageSize));
+    };
 
-    const cfTotal      = computed(() => cfSetList.value.length);
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.pageSize)));
-    const cfPageList   = computed(() => cfSetList.value.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
-    const cfPageNums   = computed(() => {
-      const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      return Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    });
+    const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const onSearch = async () => {
       pager.pageNo = 1;
@@ -353,7 +349,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     return {
       codes, uiState,
-      searchParam, searchParamOrg, pager, cfPageNums, cfTotalPages, setPage, cfTotal, cfPageList,
+      setList, searchParam, searchParamOrg, pager, cfPageNums, setPage,
       onSearch, onReset, getProdNm, getProd, getBrandNm,
       getCategoryNm, getCategoryDepth,
       dtlCategories, cfCatExcludeSet,
@@ -396,7 +392,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
   <div class="card">
     <div class="toolbar">
       <span class="list-title">세트상품 목록</span>
-      <span class="list-count">총 {{ cfTotal }}건</span>
+      <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
       <div class="pager-right">
         <button class="btn btn-green btn-sm" @click="openNew">+ 신규등록</button>
       </div>
@@ -412,7 +408,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         <th style="width:110px;text-align:center">관리</th>
       </tr></thead>
       <tbody>
-        <template v-for="(g, idx) in cfPageList" :key="g?.setProdId">
+        <template v-for="(g, idx) in setList.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize)" :key="g?.setProdId">
           <tr :style="(uiState.dtlMode==='edit' && uiState.editSetId===g.setProdId) ? 'background:#e6f4ff' : ''">
             <td style="text-align:center;font-size:11px;color:#999;vertical-align:top;padding-top:12px;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td>
@@ -452,7 +448,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
             </td>
           </tr>
         </template>
-        <tr v-if="!cfPageList.length">
+        <tr v-if="!setList.length">
           <td colspan="7" style="text-align:center;padding:30px;color:#aaa">데이터가 없습니다.</td>
         </tr>
       </tbody>
@@ -463,8 +459,8 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
            <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
            <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
            <button v-for="n in cfPageNums" :key="Math.random()" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-           <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
-           <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+           <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
          </div>
          <div class="pager-right">
            <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">

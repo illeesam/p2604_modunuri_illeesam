@@ -64,12 +64,11 @@ window.SyPathMng = {
 
     /* ── 그리드 ── */
     const gridRows = reactive([]);
-    const pager = reactive({ pageNo: 1, pageSize: 20, totalCount: 0, pageSizes: [10, 20, 50, 100] });
+    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [10, 20, 50, 100] });
     let _newId = -1;
 
-    const cfTotalPages = computed(() => Math.max(1, Math.ceil(pager.totalCount / pager.pageSize)));
     const cfPageNums = computed(() => {
-      const c = pager.pageNo, l = cfTotalPages.value;
+      const c = pager.pageNo, l = pager.pageTotalPage;
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       return Array.from({ length: e - s + 1 }, (_, i) => s + i);
     });
@@ -94,7 +93,8 @@ window.SyPathMng = {
         const data = res.data?.data || {};
         const list = data.pageList || data.list || [];
         gridRows.splice(0, gridRows.length, ...list.map(r => ({ ...r, _status: null, _row_org: { ...r } })));
-        pager.totalCount = data.totalCount ?? list.length;
+        pager.pageTotalCount = data.pageTotalCount ?? data.totalCount ?? list.length;
+        pager.pageTotalPage  = data.pageTotalPage  ?? Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
       } catch (e) { console.error('[handleGridSearch]', e); }
     };
 
@@ -113,7 +113,7 @@ window.SyPathMng = {
       pager.pageNo = 1;
       await handleGridSearch();
     };
-    const setPage = async (n) => { if (n >= 1 && n <= cfTotalPages.value) { pager.pageNo = n; await handleGridSearch(); } };
+    const setPage = async (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleGridSearch(); } };
     const onSizeChange = async () => { pager.pageNo = 1; await handleGridSearch(); };
 
     /* ── 행 편집 ── */
@@ -223,7 +223,7 @@ window.SyPathMng = {
     return {
       uiState, searchParam, codes,
       cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
-      gridRows, cfDirtyRows, pager, cfTotalPages, cfPageNums, setPage, onSizeChange,
+      gridRows, cfDirtyRows, pager, cfPageNums, setPage, onSizeChange,
       onSearch, onReset, onCellChange, addRow, cancelRow, deleteRow, handleSave,
       parentModal, cfParentTree, openParentModal, closeParentModal, toggleParentNode, selectParent, getParentLabel,
     };
@@ -279,7 +279,7 @@ window.SyPathMng = {
           <span v-if="uiState.selectedPathId != null" style="font-size:12px;color:#1677ff;margin-left:6px">
             — {{ getParentLabel(uiState.selectedPathId) }} 하위
           </span>
-          <span class="list-count">{{ pager.totalCount }}건</span>
+          <span class="list-count">{{ pager.pageTotalCount }}건</span>
         </span>
         <div style="display:flex;gap:6px">
           <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
@@ -361,8 +361,8 @@ window.SyPathMng = {
           <button :disabled="pager.pageNo===1" @click="setPage(1)">«</button>
           <button :disabled="pager.pageNo===1" @click="setPage(pager.pageNo-1)">‹</button>
           <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="setPage(n)">{{ n }}</button>
-          <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(pager.pageNo+1)">›</button>
-          <button :disabled="pager.pageNo===cfTotalPages" @click="setPage(cfTotalPages)">»</button>
+          <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageNo+1)">›</button>
+          <button :disabled="pager.pageNo===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)">»</button>
         </div>
         <div class="pager-right">
           <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">

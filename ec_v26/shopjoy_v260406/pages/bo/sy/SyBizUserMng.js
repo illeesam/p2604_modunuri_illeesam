@@ -191,8 +191,8 @@ window.SyBizUserMng = {
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(vendorUsers.length / pager.pageSize)));
-    const cfPageNums   = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
-    const setPage    = n => { if(n>=1&&n<=pager.pageTotalPage) pager.pageNo=n; };
+    const cfPageNums   = computed(() => { const c=pager.pageNo,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const setPage    = n => { if(n>=1&&n<=cfTotalPages.value) pager.pageNo=n; };
     const onSizeChange = () => { pager.pageNo=1; };
     const cfPagedRows  = computed(() => vendorUsers.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize));
 
