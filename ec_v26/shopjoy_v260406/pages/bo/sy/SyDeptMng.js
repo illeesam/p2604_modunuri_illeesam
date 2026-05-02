@@ -49,12 +49,10 @@ window.SyDeptMng = {
       await handleGridSearch();
     };
     /* ── 검색 ── */
-    const searchParam = reactive({
-      kw: '', type: '', useYn: ''
-    });
-    const searchParamOrg = reactive({
-      kw: '', type: '', useYn: ''
-    });
+    const _initSearchParam = () => {
+      return { kw: '', type: '', useYn: 'Y' };
+    };
+    const searchParam = reactive(_initSearchParam());
 
     /* 좌측 부서 트리 */
     const expanded = reactive(new Set([null]));
@@ -86,7 +84,6 @@ window.SyDeptMng = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
-      Object.assign(searchParamOrg, searchParam);
       await handleSearchTree();
       expanded.add(null);
       await handleGridSearch();
@@ -151,7 +148,7 @@ window.SyDeptMng = {
       await handleSearchList('DEFAULT');
     };
     const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       handleSearchList();
     };
 
@@ -273,7 +270,7 @@ window.SyDeptMng = {
     // ── return ───────────────────────────────────────────────────────────────
 
     return { depts, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
-      searchParam, searchParamOrg, cfTypeOptions,
+      searchParam, cfTypeOptions,
       cfSiteNm,
       gridRows,
       setFocused, onSearch, onReset, onCellChange,
@@ -290,7 +287,7 @@ window.SyDeptMng = {
 
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="부서코드 / 부서명 검색" />
+      <input v-model="searchParam.kw" placeholder="부서코드 / 부서명 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">유형 전체</option>
         <option v-for="t in cfTypeOptions" :key="t">{{ t }}</option>
@@ -355,7 +352,7 @@ window.SyDeptMng = {
         <tr v-if="gridRows.length===0">
           <td colspan="14" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <tr v-for="(row, idx) in gridRows" :key="row.deptId"
+        <tr v-else v-for="(row, idx) in gridRows" :key="row.deptId"
           class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
           @click="setFocused(idx)">
 

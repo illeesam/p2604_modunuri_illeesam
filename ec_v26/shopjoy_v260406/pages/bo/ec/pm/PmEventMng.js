@@ -57,9 +57,13 @@ window.PmEventMng = {
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    const _initSearchParam = () => {
+      const today = new Date(); const thisYear = today.getFullYear();
+      return { kw: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
+    };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
-    Object.assign(searchParamOrg, searchParam); });
+    });
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
@@ -69,20 +73,7 @@ window.PmEventMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 /* 하단 상세 */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
-  const searchParam = reactive({
-    kw: '',
-    dateRange: '',
-    dateStart: '',
-    dateEnd: '',
-    status: ''
-  });
-  const searchParamOrg = reactive({
-    kw: '',
-    dateRange: '',
-    dateStart: '',
-    dateEnd: '',
-    status: ''
-  }); // 'view' | 'edit'
+  const searchParam = reactive(_initSearchParam());
     const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
     const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
@@ -104,7 +95,7 @@ window.PmEventMng = {
     };
 
     const onReset = async () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       pager.pageNo = 1;
       await handleSearchList();
     };
@@ -137,14 +128,14 @@ window.PmEventMng = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), events, uiState, codes, searchParam, searchParamOrg, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, viewMode, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), events, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, viewMode, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
   <div class="page-title">이벤트관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="이벤트 제목 검색" />
+      <input v-model="searchParam.kw" placeholder="이벤트 제목 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.status"><option value="">상태 전체</option><option v-for="c in codes.event_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
       <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
       <div class="search-actions">
@@ -172,7 +163,7 @@ window.PmEventMng = {
       <thead><tr><th style="width:36px;text-align:center;">번호</th><th>이벤트 제목</th><th>대상상품</th><th>인증필요</th><th>시작일</th><th>종료일</th><th>상태</th><th>등록일</th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
         <tr v-if="events.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="(e, idx) in events" :key="e?.eventId" :style="uiStateDetail.selectedId===e.eventId?'background:#fff8f9;':''">
+        <tr v-else v-for="(e, idx) in events" :key="e?.eventId" :style="uiStateDetail.selectedId===e.eventId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><span class="title-link" @click="handleLoadDetail(e.eventId)" :style="uiStateDetail.selectedId===e.eventId?'color:#e8587a;font-weight:700;':''">{{ e.title }}<span v-if="uiStateDetail.selectedId===e.eventId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td>{{ (e.targetProducts||[]).length }}개 상품</td>

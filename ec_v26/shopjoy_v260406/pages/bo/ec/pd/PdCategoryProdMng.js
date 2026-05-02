@@ -92,8 +92,8 @@ window.PdCategoryProdMng = {
 
     /* ── 검색 ── */
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const searchParam = reactive({ prodNm: '', categoryId: '' });
-    const searchParamOrg = reactive({ prodNm: '', categoryId: '' });
+    const _initSearchParam = () => ({ prodNm: '', categoryId: '' });
+    const searchParam = reactive(_initSearchParam());
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
@@ -121,9 +121,9 @@ window.PdCategoryProdMng = {
     };
   
     const onReset = () => {
-    Object.assign(searchParam, searchParamOrg);
-    onSearch();
-  };
+      Object.assign(searchParam, _initSearchParam());
+      onSearch();
+    };
 
     /* 카테고리 목록 로드 (getCategoryNm 등 로컬 lookup용) */
     const handleSearchCategoriesList = async () => {
@@ -150,7 +150,6 @@ window.PdCategoryProdMng = {
     /* ★ onMounted — 진입 시 카테고리·상품 목록 조회 */
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
-      Object.assign(searchParamOrg, searchParam);
       await Promise.all([handleSearchCategoriesList(), handleSearchProductsList()]);
       try {
         await handleSearchList('DEFAULT');
@@ -280,7 +279,7 @@ window.PdCategoryProdMng = {
       codes, uiState, categories, categoryProds,
       TYPE_TABS, EMPHASIS_OPTS, parseEmphasis, hasEmphasis, toggleEmphasis,
       defaultDispStartDate, defaultDispEndDate,
-      searchParam, searchParamOrg, onSearch, onReset,
+      searchParam, onSearch, onReset,
       pager,
       cfFilteredRows, cfPickerList,
       cfSelectedCatId, cfSelectedCat, cfIsLeafCat, selectNode,

@@ -30,8 +30,10 @@ window.SyPathMng = {
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     /* ── 검색 파라미터 ── */
-    const searchParam = reactive({ bizCd: '', kw: '', useYn: '' });
-    const searchParamOrg = reactive({ bizCd: '', kw: '', useYn: '' });
+    const _initSearchParam = () => {
+      return { bizCd: '', kw: '', useYn: 'Y' };
+    };
+    const searchParam = reactive(_initSearchParam());
 
     /* ── 트리용 전체 경로 (path_id + parent_path_id 기반) ── */
     const allPaths = reactive([]);
@@ -100,7 +102,6 @@ window.SyPathMng = {
     };
 
     onMounted(async () => {
-      Object.assign(searchParamOrg, searchParam);
       await handleSearchTree();
       await handleGridSearch();
     });
@@ -109,7 +110,7 @@ window.SyPathMng = {
 
     const onSearch = async () => { pager.pageNo = 1; await handleGridSearch(); };
     const onReset = async () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       uiState.selectedPathId = null;
       pager.pageNo = 1;
       await handleGridSearch();
@@ -316,7 +317,7 @@ window.SyPathMng = {
           <tr v-if="!gridRows.length">
             <td colspan="10" style="text-align:center;color:#aaa;padding:30px">데이터가 없습니다.</td>
           </tr>
-          <tr v-for="(r, idx) in gridRows" :key="r.pathId" :class="'status-' + (r._status || '')">
+          <tr v-else v-for="(r, idx) in gridRows" :key="r.pathId" :class="'status-' + (r._status || '')">
             <td style="text-align:center;font-size:11px;color:#999">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
             <td style="text-align:center">
               <span class="badge badge-xs"

@@ -48,7 +48,6 @@ window.SyTemplateMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
     });
 
     const isAppReady = computed(() => {
@@ -78,22 +77,12 @@ window.SyTemplateMng = {
       }
     });
 
-  const searchParam = reactive({
-    kw: '',
-    type: '',
-    useYn: '',
-    dateRange: '',
-    dateStart: '',
-    dateEnd: ''
-  });
-  const searchParamOrg = reactive({
-    kw: '',
-    type: '',
-    useYn: '',
-    dateRange: '',
-    dateStart: '',
-    dateEnd: ''
-  });
+  const _initSearchParam = () => {
+    const today = new Date();
+    const thisYear = today.getFullYear();
+    return { kw: '', type: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+  };
+  const searchParam = reactive(_initSearchParam());
 
     const onDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
@@ -137,7 +126,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const fnUseYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
@@ -173,7 +162,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 <div>
   <div class="page-title">템플릿관리</div>  <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="템플릿명 / 제목 검색" />
+      <input v-model="searchParam.kw" placeholder="템플릿명 / 제목 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">유형 전체</option>
         <option v-for="t in codes.template_types" :key="t">{{ t }}</option>
@@ -219,7 +208,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       </tr></thead>
       <tbody>
         <tr v-if="templates.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="(t, idx) in templates" :key="t.templateId" :style="selectedId===t.templateId?'background:#fff8f9;':''">
+        <tr v-else v-for="(t, idx) in templates" :key="t.templateId" :style="selectedId===t.templateId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:t.pathId!=null?'#374151':'#9ca3af',fontWeight:t.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(t.pathId) || '경로 선택...' }}</span><button type="button" @click="openPathPick(t)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
           <td>{{ t.templateId }}</td>

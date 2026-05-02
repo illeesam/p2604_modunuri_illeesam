@@ -37,8 +37,12 @@ const isAppReady = computed(() => {
 
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
-    const searchParam = reactive({ kw: '', dateRange: '', dateStart: '', dateEnd: '', status: '' });
-    const searchParamOrg = reactive({ kw: '', dateRange: '', dateStart: '', dateEnd: '', status: '' });
+    const _initSearchParam = () => {
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      return { kw: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
+    };
+    const searchParam = reactive(_initSearchParam());
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
@@ -66,7 +70,6 @@ const isAppReady = computed(() => {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
     });
 
     /* 하단 상세 */
@@ -90,7 +93,7 @@ const isAppReady = computed(() => {
     const fnStatusBadge = s => ({ '진행중': 'badge-green', '종료': 'badge-gray' }[s] || 'badge-gray');
 
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
@@ -117,7 +120,7 @@ const isAppReady = computed(() => {
     // ── return ───────────────────────────────────────────────────────────────
 
     return {
-      chatts, uiState, codes, searchParam, searchParamOrg,
+      chatts, uiState, codes, searchParam,
       handleDateRangeChange, cfSiteNm,
       pager, fnStatusBadge,
       onSearch, onReset, setPage, onSizeChange, handleDelete,
@@ -131,7 +134,7 @@ const isAppReady = computed(() => {
   <div class="page-title">채팅관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="회원명 / 제목 검색" />
+      <input v-model="searchParam.kw" placeholder="회원명 / 제목 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.status">
         <option value="">상태 전체</option>
         <option v-for="c in codes.chatt_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
@@ -157,7 +160,7 @@ const isAppReady = computed(() => {
       </tr></thead>
       <tbody>
         <tr v-if="chatts.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="(c, idx) in chatts" :key="c?.chatId" :style="uiStateDetail.selectedId===c.chatId?'background:#fff8f9;':''">
+        <tr v-else v-for="(c, idx) in chatts" :key="c?.chatId" :style="uiStateDetail.selectedId===c.chatId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
           <td><span class="title-link" @click="handleLoadDetail(c.chatId)" :style="uiStateDetail.selectedId===c.chatId?'color:#e8587a;font-weight:700;':''">{{ c.subject }}<span v-if="uiStateDetail.selectedId===c.chatId" style="font-size:10px;margin-left:3px;">▼</span></span></td>

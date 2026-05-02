@@ -93,7 +93,6 @@ window.SyRoleMng = {
       fnLoadMenusAndUsers();
       const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
-      Object.assign(searchParamOrg, searchParam);
     });
 
     const isAppReady = computed(() => {
@@ -161,20 +160,10 @@ window.SyRoleMng = {
     const depthColor  = (d) => DEPTH_COLORS[d % 5];
 
     /* ── 검색 ── */
-    const searchParam = reactive({
-      kw: '',
-      type: '',
-      useYn: '',
-      cat: '',
-      treeCatFilter: ''
-    });
-    const searchParamOrg = reactive({
-      kw: '',
-      type: '',
-      useYn: '',
-      cat: '',
-      treeCatFilter: ''
-    });
+    const _initSearchParam = () => {
+      return { kw: '', type: '', useYn: 'Y', cat: '', treeCatFilter: '' };
+    };
+    const searchParam = reactive(_initSearchParam());
 
     /* ── CRUD 그리드 ── */
     const gridRows   = reactive([]);
@@ -221,7 +210,7 @@ window.SyRoleMng = {
       await handleSearchList('DEFAULT');
     };
     const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       handleSearchList();
     };
 
@@ -517,7 +506,7 @@ window.SyRoleMng = {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       cfSiteNm, ROLE_TYPES, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, fnPermColor, depthBullet, depthColor, fnStatusClass,
-      searchParam, searchParamOrg, onSearch, onReset,
+      searchParam, onSearch, onReset,
       gridRows,
       setFocused, onOpenSetting, onCellChange,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
@@ -535,7 +524,7 @@ window.SyRoleMng = {
   <div class="page-title">역할관리</div>  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="역할코드 / 역할명 검색" />
+      <input v-model="searchParam.kw" placeholder="역할코드 / 역할명 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.cat">
         <option value="">역할구분 전체</option>
         <option v-for="c in codes.role_cats" :key="c[0]" :value="c[0]">{{ c[1] }}</option>
@@ -611,7 +600,7 @@ window.SyRoleMng = {
         <tr v-if="gridRows.length===0">
           <td colspan="15" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <tr v-for="(row, idx) in gridRows" :key="row.roleId"
+        <tr v-else v-for="(row, idx) in gridRows" :key="row.roleId"
           class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
           @click="setFocused(idx)">
           <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>

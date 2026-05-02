@@ -10,8 +10,8 @@ window.MbMemberMng = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ member_statuses: [], member_grades: [] });
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const searchParam = reactive({ kw: '', grade: '', status: '' });
-    const searchParamOrg = reactive({ kw: '', grade: '', status: '' });
+    const _initSearchParam = () => ({ kw: '', grade: '', status: '' });
+    const searchParam = reactive(_initSearchParam());
     const detailModal = reactive({
       show: false,
       isNew: false,
@@ -155,7 +155,7 @@ window.MbMemberMng = {
     const fnGradeBadge = g => ({ 'VIP': 'badge-purple', '우수': 'badge-blue', '일반': 'badge-gray' }[g] || 'badge-gray');
     const fnStatusBadge = s => ({ '활성': 'badge-green', '정지': 'badge-red' }[s] || 'badge-gray');
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
@@ -166,13 +166,12 @@ window.MbMemberMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
     });
 
     // ── return ───────────────────────────────────────────────────────────────
     return {
       selectedId: computed(() => detailModal.editId), members, uiState, codes,
-      searchParam, searchParamOrg, pager, setPage,
+      searchParam, pager, setPage,
       onSearch, onReset, cfSelectedRow, detailModal, openDetail, openNew, closeDetail,
       handleSave, handleDelete, fnGradeBadge, fnStatusBadge, fnFmtDate, onSizeChange
     };

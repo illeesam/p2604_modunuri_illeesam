@@ -61,19 +61,11 @@ window.PdReviewMng = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
-    Object.assign(searchParamOrg, searchParam); });
+    });
 const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId   = ref(null);
-  const searchParam = reactive({
-    kw: '',
-    status: '',
-    rating: ''
-  });
-  const searchParamOrg = reactive({
-    kw: '',
-    status: '',
-    rating: ''
-  });
+    const _initSearchParam = () => ({ kw: '', status: '', rating: '' });
+    const searchParam = reactive(_initSearchParam());
 
     const STATUS_LABEL = { ACTIVE:'공개', HIDDEN:'숨김', DELETED:'삭제' };
     const fnStatusBadge  = s => ({ ACTIVE:'badge-green', HIDDEN:'badge-orange', DELETED:'badge-red' }[s] || 'badge-gray');
@@ -106,7 +98,7 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
     };
 
     const onReset = async () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       pager.pageNo = 1;
       await handleSearchList();
     };
@@ -117,7 +109,7 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { reviews, uiState, searchParam, searchParamOrg, pager, setPage, onSearch, onReset,
+    return { reviews, uiState, searchParam, pager, setPage, onSearch, onReset,
               selectedId, cfSelectedRow, openDetail, changeStatus, fnStatusBadge, STATUS_LABEL, getProdNm, getMemNm, starStr, onSizeChange, codes };
   },
   template: `

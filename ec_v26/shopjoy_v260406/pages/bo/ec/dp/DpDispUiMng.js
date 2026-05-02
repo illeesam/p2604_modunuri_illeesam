@@ -42,8 +42,11 @@ window.DpDispUiMng = {
       }
     });
 
-    const searchParam    = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateEnd: '', dateRange: '' });
-    const searchParamOrg = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateEnd: '', dateRange: '' });
+    const _initSearchParam = () => {
+      const today = new Date(); const thisYear = today.getFullYear();
+      return { kw: '', type: '', useYn: 'Y', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, dateRange: '' };
+    };
+    const searchParam = reactive(_initSearchParam());
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
@@ -75,7 +78,6 @@ window.DpDispUiMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
     });
 
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
@@ -109,7 +111,7 @@ window.DpDispUiMng = {
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
-    const onReset  = () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onReset  = () => { Object.assign(searchParam, _initSearchParam()); pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
 

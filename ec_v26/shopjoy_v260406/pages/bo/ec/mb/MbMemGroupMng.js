@@ -34,7 +34,7 @@ window.MbMemGroupMng = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
-    Object.assign(searchParamOrg, searchParam); });
+    });
 const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
       const codeStore = window.sfGetBoCodeStore?.();
@@ -61,14 +61,8 @@ const isAppReady = computed(() => {
       }
     });
 
-  const searchParam = reactive({
-    kw: '',
-    use: ''
-  });
-  const searchParamOrg = reactive({
-    kw: '',
-    use: ''
-  });
+  const _initSearchParam = () => ({ kw: '', use: '' });
+  const searchParam = reactive(_initSearchParam());
     const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -122,7 +116,7 @@ const isAppReady = computed(() => {
     };
 
     const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       onSearch();
     };
 
@@ -132,7 +126,7 @@ const isAppReady = computed(() => {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { groups, uiState, codes, searchParam, searchParamOrg, pager, setPage, onSearch, onReset,
+    return { groups, uiState, codes, searchParam, pager, setPage, onSearch, onReset,
              gridRows, addRow, onCellChange, handleDeleteRow, handleSaveAll, fnYnBadge, onSizeChange };
   },
   template: `

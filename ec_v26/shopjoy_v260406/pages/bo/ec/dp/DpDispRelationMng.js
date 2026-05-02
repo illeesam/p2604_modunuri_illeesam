@@ -46,19 +46,16 @@ window.DpDispRelationMng = {
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    const _initSearchParam = () => {
+      const today = new Date(); const thisYear = today.getFullYear();
+      return { dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT');
-    Object.assign(searchParamOrg, searchParam); });
+    });
 
     /* 검색 */
-  const searchParam = reactive({
-    dateStart: '',
-    dateEnd: ''
-  });
-  const searchParamOrg = reactive({
-    dateStart: '',
-    dateEnd: ''
-  });
+  const searchParam = reactive(_initSearchParam());
     const onSearch = async () => {
     try {
       const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
@@ -72,7 +69,7 @@ window.DpDispRelationMng = {
   };
   
     const onReset = () => {
-    Object.assign(searchParam, searchParamOrg);
+    Object.assign(searchParam, _initSearchParam());
     onSearch();
   };
 
@@ -144,7 +141,7 @@ window.DpDispRelationMng = {
     // ── return ───────────────────────────────────────────────────────────────
 
     return {
-      codes, searchParam, searchParamOrg,
+      codes, searchParam,
       onSearch, onReset,
       expandedNodes, toggleNode, isNodeExpanded,
       cfTreeData, fnGetVisibilityBadges, fnGetBadgeColor, fnGetUseYnBadge,

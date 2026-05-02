@@ -51,7 +51,6 @@ window.SyAlarmMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
     });
 
     const isAppReady = computed(() => {
@@ -82,12 +81,12 @@ window.SyAlarmMng = {
     });
 
     const cfSiteNm = computed(() => boUtil.getSiteNm());
-    const searchParam = reactive({
-      kw: '', type: '', status: '', dateRange: '', dateStart: '', dateEnd: ''
-    });
-    const searchParamOrg = reactive({
-      kw: '', type: '', status: '', dateRange: '', dateStart: '', dateEnd: ''
-    });
+    const _initSearchParam = () => {
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      return { kw: '', type: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    };
+    const searchParam = reactive(_initSearchParam());
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.getDateRange(searchParam.dateRange);
@@ -122,7 +121,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const fnTypeBadge = t => ({ '푸시': 'badge-blue', '이메일': 'badge-orange', 'SMS': 'badge-green', '인앱': 'badge-gray' }[t] || 'badge-gray');
     const fnTargetBadge = t => ({ '전체': 'badge-red', 'VIP': 'badge-orange', '우수': 'badge-blue', '일반': 'badge-gray' }[t] || 'badge-gray');
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const handleDelete = async (a) => {
@@ -157,7 +156,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 <div>
   <div class="page-title">알림관리</div>  <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="제목 / 메시지 검색" />
+      <input v-model="searchParam.kw" placeholder="제목 / 메시지 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">유형 전체</option>
         <option v-for="c in codes.alarm_type" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
@@ -204,7 +203,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           <th style="width:36px;text-align:center;">번호</th><th style="min-width:140px;">표시경로</th><th>유형</th><th>제목</th><th>메시지</th><th>대상</th><th>발송일</th><th>상태</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
         <tr v-if="alarms.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="(a, idx) in alarms" :key="a.alarmId" :style="detailModal.editId===a.alarmId?'background:#fff8f9;':''">
+        <tr v-else v-for="(a, idx) in alarms" :key="a.alarmId" :style="detailModal.editId===a.alarmId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:a.pathId!=null?'#374151':'#9ca3af',fontWeight:a.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}"><span style="flex:1;">{{ pathLabel(a.pathId) || '경로 선택...' }}</span><button type="button" @click="openPathPick(a)" title="표시경로 선택" :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0'}" @mouseover="$event.currentTarget.style.background='#eef2ff'" @mouseout="$event.currentTarget.style.background='#fff'">🔍</button></div></td>
           <td><span class="badge" :class="fnTypeBadge(a.alarmTypeCd)">{{ a.alarmTypeCd }}</span></td>

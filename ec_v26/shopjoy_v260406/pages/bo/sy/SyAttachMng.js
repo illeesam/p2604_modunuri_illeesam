@@ -259,7 +259,7 @@ window.SyAttachMng = {
             </span>
           </b>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input v-model="searchParam.kw" placeholder="파일명 / RefID 검색" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:160px;" />
+            <input v-model="searchParam.kw" placeholder="파일명 / RefID 검색" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:160px;" @keyup.enter="onSearch" />
             <span class="search-label">등록일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" /><select v-model="searchParam.dateRange" @change="onDateRangeChange" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
             <div class="search-actions">
               <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
@@ -316,7 +316,7 @@ window.SyAttachMng = {
           </tr></thead>
           <tbody>
             <tr v-if="attaches.length===0"><td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-            <tr v-for="(a, idx) in attaches" :key="a.attachId">
+            <tr v-else v-for="(a, idx) in attaches" :key="a.attachId">
               <td style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
               <td><span style="font-size:11px;color:#666;">{{ a.attachGrpNm }}</span></td>
               <td style="font-size:12px;word-break:break-all;">{{ a.fileNm }}</td>

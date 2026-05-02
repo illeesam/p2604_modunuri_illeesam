@@ -221,24 +221,8 @@ window.DpDispAreaPreview = {
     const wTypeLabel = (v) => codes.disp_widget_types.find(t => t.codeValue === v)?.codeLabel || v;
 
     /* ── 조회 조건 ── */
-    const searchParam = reactive({
-      previewDate: today,
-      previewTime: nowTime,
-      filterType: '',
-      filterStatus: '활성',
-      filterVisibility: '',
-      filterDispEnv: 'PROD',
-      kw: ''});
-
-    const searchParamOrg = reactive({
-      previewDate: today,
-      previewTime: nowTime,
-      filterType: '',
-      filterStatus: '활성',
-      filterVisibility: '',
-      filterDispEnv: 'PROD',
-      kw: '',
-    });
+    const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterVisibility: '', filterDispEnv: 'PROD', kw: '' });
+    const searchParam = reactive(_initSearchParam());
 
     const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', kw: '', visibility: '' });
 
@@ -253,7 +237,7 @@ window.DpDispAreaPreview = {
     };
 
     const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       Object.assign(applied, { type: '', status: '활성', dispEnv: 'PROD', kw: '', visibility: '' });
     };
 
@@ -556,7 +540,7 @@ window.DpDispAreaPreview = {
       cfSiteNm, today,
       VIEWPORT,
       wIcon, wTypeLabel,
-      searchParam, searchParamOrg,
+      searchParam,
       applied, onSearch, onReset,
       cfFilteredLibs,
       onTreeSelect,

@@ -71,7 +71,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchData('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
     });
 
     const adjList = reactive([]);
@@ -83,15 +82,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const form = reactive({});
     const errors = reactive({});
     const isNew  = ref(false);
-  const searchParam = reactive({
-    kw: '',
-    type: '',
-    status: '', dateEnd: '', isNew: false});;
-  const searchParamOrg = reactive({
-    kw: '',
-    type: '',
-    status: ''
-  });
+  const _initSearchParam = () => ({ kw: '', type: '', status: '' });
+  const searchParam = reactive(_initSearchParam());
 
     const schema = window.yup.object({
       vendorId: window.yup.number().required('업체를 선택하세요.').min(1, '업체를 선택하세요.'),
@@ -169,7 +161,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const fmtW = n => (n >= 0 ? '' : '-') + Math.abs(Number(n)).toLocaleString() + '원';
 
     const onSearch = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
-    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
 

@@ -186,29 +186,11 @@ window.DpDispWidgetLibPreview = {
     const wTypeLabel = (v) => cfDispWidgetTypes.value.find(t => t.codeValue === v)?.codeLabel || v;
 
     /* ── 조회 조건 ── */
-    const searchParam = reactive({
-      previewDate: today,
-      previewTime: nowTime,
-      filterType: '',
-      filterStatus: '활성',
-      filterCondition: '',
-      filterAuthReq: '',
-      filterAuthGrade: '',
-      kw: ''});
-
-    const searchParamOrg = reactive({
-      previewDate: today,
-      previewTime: nowTime,
-      filterType: '',
-      filterStatus: '활성',
-      filterCondition: '',
-      filterAuthReq: '',
-      filterAuthGrade: '',
-      kw: '',
-    });
+    const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterCondition: '', filterAuthReq: '', filterAuthGrade: '', kw: '' });
+    const searchParam = reactive(_initSearchParam());
 
     const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
     };
 
     const cfFilteredLibs = computed(() => {

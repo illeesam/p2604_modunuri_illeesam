@@ -57,18 +57,13 @@ window.PdRestockNotiMng = {
       }
     };
 
+    const _initSearchParam = () => ({ prod: '', noti: '' });
+    const searchParam = reactive(_initSearchParam());
+
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
-    Object.assign(searchParamOrg, searchParam); });
-const searchParam = reactive({
-    prod: '',
-    noti: ''
-  });
-  const searchParamOrg = reactive({
-    prod: '',
-    noti: ''
-  });
+    });
     const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const checkedIds = reactive(new Set());
 
@@ -105,7 +100,7 @@ const searchParam = reactive({
     };
 
     const onReset = async () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       pager.pageNo = 1;
       await handleSearchList();
     };
@@ -116,7 +111,7 @@ const searchParam = reactive({
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { restockNotis, uiState, searchParam, searchParamOrg, pager, setPage, onSearch, onReset,
+    return { restockNotis, uiState, searchParam, pager, setPage, onSearch, onReset,
              checkedIds, checkedCount, allChecked, toggleAll, toggleOne, handleSend, fnYnBadge, getProdNm, getMemNm, onSizeChange,
              codes };
   },

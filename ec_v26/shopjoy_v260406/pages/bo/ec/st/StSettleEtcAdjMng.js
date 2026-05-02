@@ -71,7 +71,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchData('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
     });
 
     const etcAdjList = reactive([]);
@@ -82,15 +81,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const form = reactive({});
     const errors = reactive({});
     const isNew  = ref(false);
-  const searchParam = reactive({
-    kw: '',
-    type: '',
-    status: '', dateEnd: '', isNew: false});;
-  const searchParamOrg = reactive({
-    kw: '',
-    type: '',
-    status: ''
-  });
+  const _initSearchParam = () => ({ kw: '', type: '', status: '' });
+  const searchParam = reactive(_initSearchParam());
 
     const openNew = () => {
       Object.assign(form, { adjId: null, adjDate: new Date().toISOString().slice(0,10), vendorId: '', vendorNm: '', adjType: '기타', adjAmt: 0, reason: '', aprvStatus: '대기', regUserNm: '관리자' });
@@ -145,7 +137,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const fnTypeBadge = t => ({ '위약금':'badge-red', '인센티브':'badge-green', '세금조정':'badge-orange', '기타':'badge-gray' }[t] || 'badge-gray');
     const fmtW = n => (n >= 0 ? '' : '-') + Math.abs(Number(n)).toLocaleString() + '원';
     const onSearch = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
-    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
 

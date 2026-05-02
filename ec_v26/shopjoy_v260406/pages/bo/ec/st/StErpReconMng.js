@@ -45,8 +45,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     (() => { const r = boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     const reconList = reactive([]);
-    const searchParam = reactive({ diff: '', type: '', dateEnd: '' });
-    const searchParamOrg = reactive({ diff: '', type: '' });
+    const _initSearchParam = () => ({ diff: '', type: '' });
+    const searchParam = reactive(_initSearchParam());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const cfSummary = computed(() => ({
@@ -73,7 +73,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT'); Object.assign(searchParamOrg, searchParam); });
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT'); });
 
     const doFix = async (r) => {
       const ok = await props.showConfirm('조정처리', '해당 전표 대사 차이를 조정처리 하시겠습니까?');
@@ -95,7 +95,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const fnTypeBadge = t => ({ '정산':'badge-blue', '수수료':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
     const fmtW = n => Number(n||0).toLocaleString() + '원';
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 

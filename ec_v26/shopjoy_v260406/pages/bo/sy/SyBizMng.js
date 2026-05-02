@@ -153,7 +153,7 @@ window.SyBizMng = {
 
   <div class="card">
     <div class="search-bar">
-      <input class="form-control" v-model="searchParam.kw" placeholder="사업자번호 / 상호 / 대표자 검색" style="min-width:240px;flex:1;max-width:380px;" />
+      <input class="form-control" v-model="searchParam.kw" placeholder="사업자번호 / 상호 / 대표자 검색" style="min-width:240px;flex:1;max-width:380px;" @keyup.enter="onSearch" />
       <select class="form-control" v-model="searchParam.vendorTypeFlt" style="width:140px;">
         <option value="">업체유형 전체</option>
         <option v-for="v in codes.vendor_types" :key="v[0]" :value="v[0]">{{ v[1] }}</option>
@@ -196,7 +196,7 @@ window.SyBizMng = {
           </tr></thead>
           <tbody>
             <tr v-if="bizs.length===0"><td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-            <tr v-for="(b, idx) in bizs" :key="b.vendorId">
+            <tr v-else v-for="(b, idx) in bizs" :key="b.vendorId">
               <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
               <td><span style="font-family:monospace;font-size:11.5px;color:#374151;">{{ pathLabel(b.pathId) || '-' }}</span></td>
               <td><span class="badge" :class="fnVendorTypeBadge(b.vendorType)" style="font-size:10px;">{{ fnVendorTypeLabel(b.vendorType) }}</span></td>

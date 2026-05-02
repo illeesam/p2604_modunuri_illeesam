@@ -32,26 +32,15 @@ window.PdProdMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
     });
 
     /* ── 검색 파라미터 ── */
-    const searchParam = reactive({
-      kw: '',
-      dateRange: '',
-      dateStart: '',
-      dateEnd: '',
-      cate: '',
-      status: ''
-    });
-    const searchParamOrg = reactive({
-      kw: '',
-      dateRange: '',
-      dateStart: '',
-      dateEnd: '',
-      cate: '',
-      status: ''
-    });
+    const _initSearchParam = () => {
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      return { kw: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, cate: '', status: '' };
+    };
+    const searchParam = reactive(_initSearchParam());
 
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
@@ -125,7 +114,7 @@ const isAppReady = computed(() => {
       await handleSearchList('DEFAULT');
     };
     const onReset = async () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       pager.pageNo = 1;
       await handleSearchList();
     };
@@ -162,7 +151,7 @@ const isAppReady = computed(() => {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiStateDetail, selectedId, products, uiState, codes, searchParam, searchParamOrg, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel };
+    return { uiStateDetail, selectedId, products, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel };
   },
   template: /* html */`
 <div>
@@ -179,7 +168,7 @@ const isAppReady = computed(() => {
   </div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="상품명 / ID 검색" />
+      <input v-model="searchParam.kw" placeholder="상품명 / ID 검색" @keyup.enter="onSearch" />
       <div style="display:flex;align-items:center;gap:4px;">
         <input class="form-control" v-model="searchParam.cate" placeholder="카테고리 선택" readonly
           style="width:120px;cursor:pointer;background:#fafafa;" @click="openCatModal" />
@@ -208,7 +197,7 @@ const isAppReady = computed(() => {
       </tr></thead>
       <tbody>
         <tr v-if="products.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="(p, idx) in products" :key="p?.prodId" :style="selectedId===p.prodId?'background:#fff8f9;':''">
+        <tr v-else v-for="(p, idx) in products" :key="p?.prodId" :style="selectedId===p.prodId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><span class="title-link" @click="handleLoadDetail(p.prodId)" :style="selectedId===p.prodId?'color:#e8587a;font-weight:700;':''">{{ p.prodNm }}<span v-if="selectedId===p.prodId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td>{{ p.cateNm }}</td>

@@ -32,7 +32,6 @@ window.SyContactMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
     });
 
     const isAppReady = computed(() => {
@@ -61,12 +60,12 @@ window.SyContactMng = {
         fnLoadCodes();
       }
     });
-    const searchParam = reactive({
-      kw: '', category: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
-    });
-    const searchParamOrg = reactive({
-      kw: '', category: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
-    });
+    const _initSearchParam = () => {
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      return { kw: '', category: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    };
+    const searchParam = reactive(_initSearchParam());
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
@@ -97,7 +96,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const fnStatusBadge = s => ({ '요청': 'badge-orange', '처리중': 'badge-blue', '답변완료': 'badge-green', '취소됨': 'badge-gray' }[s] || 'badge-gray');
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
@@ -130,7 +129,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
   <div class="page-title">문의관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="제목 / 회원명 검색" />
+      <input v-model="searchParam.kw" placeholder="제목 / 회원명 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.category">
         <option value="">카테고리 전체</option>
         <option v-for="c in codes.contact_categories" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
@@ -160,7 +159,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
       </tr></thead>
       <tbody>
         <tr v-if="contacts.length===0"><td colspan="8" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="(c, idx) in contacts" :key="c.inquiryId" :style="detailModal.editId===c.inquiryId?'background:#fff8f9;':''">
+        <tr v-else v-for="(c, idx) in contacts" :key="c.inquiryId" :style="detailModal.editId===c.inquiryId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
           <td><span class="tag">{{ c.categoryCd }}</span></td>

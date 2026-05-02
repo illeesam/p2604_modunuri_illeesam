@@ -55,19 +55,19 @@ window.PdQnaMng = {
         uiState.loading = false;
       }
     };
-    const searchParam = reactive({ kw: '', status: '', prod: '' });
-    const searchParamOrg = reactive({ kw: '', status: '', prod: '' });
+    const _initSearchParam = () => ({ kw: '', status: '', prod: '' });
+    const searchParam = reactive(_initSearchParam());
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
-    Object.assign(searchParamOrg, searchParam); });
+    });
 const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
-    const onReset  = async () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; await handleSearchList(); };
+    const onReset  = async () => { Object.assign(searchParam, _initSearchParam()); pager.pageNo = 1; await handleSearchList(); };
     const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const getProdNm = id => { const p = (products||[]).find(p => p.prodId === id); return p ? p.prodNm : (id||''); };

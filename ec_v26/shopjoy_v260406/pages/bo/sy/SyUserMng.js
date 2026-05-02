@@ -67,17 +67,16 @@ window.SyUserMng = {
       }
     };
     /* 검색 파라미터 */
-    const searchParam = reactive({
-      kw: '', role: '', status: '', dateRange: '', dateStart: '', dateEnd: ''
-    });
-    const searchParamOrg = reactive({
-      kw: '', role: '', status: '', dateRange: '', dateStart: '', dateEnd: ''
-    });
+    const _initSearchParam = () => {
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      return { kw: '', role: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    };
+    const searchParam = reactive(_initSearchParam());
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
-      Object.assign(searchParamOrg, searchParam);
       await handleSearchTree();
       expanded.add(null);
       await handleSearchData('DEFAULT');
@@ -146,7 +145,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const fnRoleBadge = r => ({ '슈퍼관리자': 'badge-red', '관리자': 'badge-purple', '운영자': 'badge-blue' }[r] || 'badge-gray');
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
     const onSearch = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
-    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
 
@@ -172,7 +171,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), users, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, searchParamOrg, handleDateRangeChange, cfSiteNm, pager, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), users, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, handleDateRangeChange, cfSiteNm, pager, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel };
   },
   template: /* html */`
 <div>
@@ -180,7 +179,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="이름 / 로그인ID / 이메일 검색" />
+      <input v-model="searchParam.kw" placeholder="이름 / 로그인ID / 이메일 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.role">
         <option value="">권한 전체</option>
         <option v-for="c in codes.user_roles" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
@@ -223,7 +222,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       </tr></thead>
       <tbody>
         <tr v-if="users.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="(u, idx) in users" :key="u.userId" :style="uiStateDetail.selectedId===u.userId?'background:#fff8f9;':''">
+        <tr v-else v-for="(u, idx) in users" :key="u.userId" :style="uiStateDetail.selectedId===u.userId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><code style="font-size:12px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ u.loginId }}</code></td>
           <td><span class="title-link" @click="handleLoadDetail(u.userId)" :style="uiStateDetail.selectedId===u.userId?'color:#e8587a;font-weight:700;':''">{{ u.userNm }}<span v-if="uiStateDetail.selectedId===u.userId" style="font-size:10px;margin-left:3px;">▼</span></span></td>

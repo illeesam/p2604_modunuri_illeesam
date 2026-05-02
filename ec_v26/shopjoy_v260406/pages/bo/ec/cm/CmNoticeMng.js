@@ -16,12 +16,12 @@ window.CmNoticeMng = {
       pageTotalCount: 0, pageTotalPage: 1,
       pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {}
     });                                                                              // 페이징 상태
-    const searchParam = reactive({
-      kw: '', type: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
-    });                                                                              // 현재 검색 조건
-    const searchParamOrg = reactive({
-      kw: '', type: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
-    });                                                                              // 초기화용 검색 조건 스냅샷
+    const _initSearchParam = () => {
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      return { kw: '', type: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    };
+    const searchParam = reactive(_initSearchParam());                              // 현재 검색 조건
 
     // 날짜범위 옵션은 codes.date_range_opts에서 로드
 
@@ -64,7 +64,6 @@ window.CmNoticeMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
     });
 
     // ── 이벤트 함수 모음 ──────────────────────────────────────────────────────
@@ -77,7 +76,7 @@ window.CmNoticeMng = {
 
     // 초기화 버튼 클릭 — 검색 조건을 초기값으로 되돌린 후 재조회
     const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       onSearch();
     };
 
@@ -191,7 +190,7 @@ window.CmNoticeMng = {
 
     return {
       uiStateDetail, notices, uiState, codes, pager,
-      searchParam, searchParamOrg,
+      searchParam,
       selectedId: computed(() => uiStateDetail.selectedId),
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,
       onSearch, onReset, onDateRangeChange, onSizeChange, setPage,
@@ -207,7 +206,7 @@ window.CmNoticeMng = {
   <!-- ── 검색 영역 ─────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="제목 검색" />
+      <input v-model="searchParam.kw" placeholder="제목 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">유형 전체</option>
         <option v-for="c in codes.noticeTypes" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
@@ -256,7 +255,7 @@ window.CmNoticeMng = {
         <tr v-if="notices.length===0">
           <td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <tr v-for="(n, idx) in notices" :key="n?.noticeId" :style="selectedId===n.noticeId?'background:#fff8f9;':''">
+        <tr v-else v-for="(n, idx) in notices" :key="n?.noticeId" :style="selectedId===n.noticeId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><span class="badge" :class="fnTypeBadge(n.noticeTypeCd)">{{ n.noticeTypeCd }}</span></td>
           <td>

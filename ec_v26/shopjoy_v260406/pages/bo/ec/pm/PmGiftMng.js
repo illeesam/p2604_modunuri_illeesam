@@ -59,33 +59,22 @@ window.PmGiftMng = {
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    const _initSearchParam = () => {
+      const today = new Date(); const thisYear = today.getFullYear();
+      return { kw: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, type: '', status: '' };
+    };
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
-    Object.assign(searchParamOrg, searchParam); });
+    });
     const handleDateRangeChange = () => {
-      if (searchDateRange.value) { const r = boUtil.getDateRange(searchDateRange.value); searchDateStart.value = r ? r.from : ''; searchDateEnd.value = r ? r.to : ''; }
+      if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
     };
     const cfSiteNm = computed(() => boUtil.getSiteNm());
      // 'list' | 'card'
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
-  const searchParam = reactive({
-    kw: '',
-    dateRange: '',
-    dateStart: '',
-    dateEnd: '',
-    type: '',
-    status: ''
-  });
-  const searchParamOrg = reactive({
-    kw: '',
-    dateRange: '',
-    dateStart: '',
-    dateEnd: '',
-    type: '',
-    status: ''
-  });
+  const searchParam = reactive(_initSearchParam());
     const loadView   = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
     const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
     const openNew    = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
@@ -110,7 +99,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
     };
 
     const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       onSearch();
     };
 
@@ -143,7 +132,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), gifts, uiState, codes, searchParam, searchParamOrg, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), gifts, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
       get viewMode() { return uiState.viewMode; }, set viewMode(v) { uiState.viewMode = v; } };
   },
   template: /* html */`
@@ -151,7 +140,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
   <div class="page-title">사은품관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="사은품명 / ID 검색" />
+      <input v-model="searchParam.kw" placeholder="사은품명 / ID 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.type"><option value="">유형 전체</option><option v-for="c in codes.gift_cond_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
       <select v-model="searchParam.status"><option value="">상태 전체</option><option v-for="c in codes.gift_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option></select>
       <span class="search-label">시작일</span><input type="date" v-model="searchParam.dateStart" class="date-range-input" /><span class="date-range-sep">~</span><input type="date" v-model="searchParam.dateEnd" class="date-range-input" /><select v-model="searchParam.dateRange" @change="onDateRangeChange"><option value="">옵션선택</option><option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option></select>
@@ -179,7 +168,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
       <thead><tr><th style="width:36px;text-align:center;">번호</th><th>사은품명</th><th>조건유형</th><th>조건값</th><th>재고</th><th>시작일</th><th>종료일</th><th>상태</th><th>사이트</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
         <tr v-if="gifts.length===0"><td colspan="10" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="(g, idx) in gifts" :key="g?.giftId" :style="selectedId===g.giftId?'background:#fff8f9;':''">
+        <tr v-else v-for="(g, idx) in gifts" :key="g?.giftId" :style="selectedId===g.giftId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><span class="title-link" @click="handleLoadDetail(g.giftId)" :style="selectedId===g.giftId?'color:#e8587a;font-weight:700;':''">{{ g.giftNm }}<span v-if="selectedId===g.giftId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><span class="badge" :class="fnTypeBadge(g.giftType)">{{ g.giftType }}</span></td>

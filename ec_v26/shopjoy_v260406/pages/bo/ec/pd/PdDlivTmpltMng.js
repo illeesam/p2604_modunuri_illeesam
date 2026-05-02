@@ -39,16 +39,8 @@ window.PdDlivTmpltMng = {
       }
     });
 
-    const searchParam = reactive({
-      kw: '',
-      method: '',
-      use: ''
-    });
-    const searchParamOrg = reactive({
-      kw: '',
-      method: '',
-      use: ''
-    });
+    const _initSearchParam = () => ({ kw: '', method: '', use: '' });
+    const searchParam = reactive(_initSearchParam());
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
@@ -66,7 +58,7 @@ window.PdDlivTmpltMng = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
-    Object.assign(searchParamOrg, searchParam); });
+    });
     const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId   = ref(null);
 
@@ -129,7 +121,7 @@ window.PdDlivTmpltMng = {
     };
 
     const onReset = async () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       pager.pageNo = 1;
       await handleSearchList();
     };
@@ -141,7 +133,7 @@ window.PdDlivTmpltMng = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, codes, searchParam, searchParamOrg,
+    return { uiState, codes, searchParam,
              pager, setPage, onSearch, onReset,
              form, openDetail, openNew, closeDetail, handleSave, handleDelete,
              fnYnBadge, fnMethodBadge, METHOD_LABELS, PAY_LABELS, onSizeChange, dlivTmplts};

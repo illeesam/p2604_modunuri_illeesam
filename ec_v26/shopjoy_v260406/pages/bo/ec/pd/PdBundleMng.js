@@ -73,18 +73,13 @@ window.PdBundleMng = {
       }
     };
     /* ── 검색 파라미터 ── */
-    const searchParam = reactive({
-      nm: ''
-    });
-    const searchParamOrg = reactive({
-      nm: ''
-    });
+    const _initSearchParam = () => ({ nm: '' });
+    const searchParam = reactive(_initSearchParam());
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchData('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
     });
 
 const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -197,7 +192,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     };
 
     const onReset = async () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       pager.pageNo = 1;
       await handleSearchData();
     };
@@ -385,7 +380,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     return {
       codes, uiState, bundles, bundleList,
-      searchParam, searchParamOrg, pager, setPage,
+      searchParam, pager, setPage,
       onSearch, onReset, rateSum, fnRateSumBadge, getProdNm, getProdPrice,
       getCategoryNm, getCategoryDepth, getBrandNm,
       categories, products, brands, categoryProds,

@@ -71,23 +71,12 @@ window.DpDispAreaMng = {
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchData(); };
 
     /* ── 검색 ── */
+    const _initSearchParam = () => {
+      const today = new Date(); const thisYear = today.getFullYear();
+      return { kw: '', areaType: '', useYn: 'Y', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, dateRange: '' };
+    };
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-const searchParam = reactive({
-    kw: '',
-    areaType: '',
-    useYn: '',
-    dateStart: '',
-    dateEnd: '',
-    dateRange: ''
-  });
-  const searchParamOrg = reactive({
-    kw: '',
-    areaType: '',
-    useYn: '',
-    dateStart: '',
-    dateEnd: '',
-    dateRange: ''
-  });
+const searchParam = reactive(_initSearchParam());
 
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
@@ -100,7 +89,7 @@ const searchParam = reactive({
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData(); };
 
     const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       pager.pageNo = 1;
       handleSearchData();
     };

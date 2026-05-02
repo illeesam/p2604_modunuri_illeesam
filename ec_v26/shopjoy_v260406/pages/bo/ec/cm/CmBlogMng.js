@@ -15,8 +15,10 @@ window.CmBlogMng = {
 const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId = ref(null);
 
-    const searchParam = reactive({ kw: '', use: '', notice: '' });
-    const searchParamOrg = reactive({ kw: '', use: '', notice: '' });
+    const _initSearchParam = () => {
+      return { kw: '', use: '', notice: '' };
+    };
+    const searchParam = reactive(_initSearchParam());
 
     const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
@@ -65,7 +67,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
     });
 
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -151,7 +152,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
     };
 
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
@@ -160,7 +161,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
 
     return {
       selectedId: computed(() => detailModal.editId), blogs, uiState, codes,
-      searchParam, searchParamOrg, pager, setPage,
+      searchParam, pager, setPage,
       onSearch, onReset, cfSelectedRow, detailModal, openDetail, openNew, closeDetail,
       handleSave, handleDelete, toggleUse, fnYnBadge, onSizeChange,
     };

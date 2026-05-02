@@ -27,16 +27,10 @@ window.SyMenuMng = {
       }
     };
     /* ── 검색 ── */
-    const searchParam = reactive({
-      kw: '',
-      type: '',
-      useYn: ''
-    });
-    const searchParamOrg = reactive({
-      kw: '',
-      type: '',
-      useYn: ''
-    });
+    const _initSearchParam = () => {
+      return { kw: '', type: '', useYn: 'Y' };
+    };
+    const searchParam = reactive(_initSearchParam());
 
     /* 좌측 메뉴 트리 */
     const selectNode = (id) => { uiState.selectedTreeId = id; };
@@ -45,7 +39,6 @@ window.SyMenuMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
     });
 
     const isAppReady = computed(() => {
@@ -120,7 +113,7 @@ window.SyMenuMng = {
       await handleSearchList('DEFAULT');
     };
     const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       handleSearchList();
     };
 
@@ -243,7 +236,7 @@ window.SyMenuMng = {
     // ── return ───────────────────────────────────────────────────────────────
 
     return { menus, uiState, codes, selectNode,
-      searchParam, searchParamOrg,
+      searchParam,
       cfSiteNm,
       gridRows,
       setFocused, onSearch, onReset, onCellChange,
@@ -261,7 +254,7 @@ window.SyMenuMng = {
 
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="메뉴코드 / 메뉴명 검색" />
+      <input v-model="searchParam.kw" placeholder="메뉴코드 / 메뉴명 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">유형 전체</option>
         <option v-for="t in codes.menu_types" :key="t">{{ t }}</option>
@@ -326,7 +319,7 @@ window.SyMenuMng = {
         <tr v-if="gridRows.length===0">
           <td colspan="15" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <tr v-for="(row, idx) in gridRows" :key="row.menuId"
+        <tr v-else v-for="(row, idx) in gridRows" :key="row.menuId"
           class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
           @click="setFocused(idx)">
 

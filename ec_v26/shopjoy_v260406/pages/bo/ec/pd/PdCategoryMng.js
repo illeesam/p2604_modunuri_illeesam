@@ -39,16 +39,8 @@ window.PdCategoryMng = {
     });
 
     /* ── 검색 파라미터 ── */
-    const searchParam = reactive({
-      kw: '',
-      categoryDepth: '',
-      categoryStatusCd: ''
-    });
-    const searchParamOrg = reactive({
-      kw: '',
-      categoryDepth: '',
-      categoryStatusCd: ''
-    });
+    const _initSearchParam = () => ({ kw: '', categoryDepth: '', categoryStatusCd: '' });
+    const searchParam = reactive(_initSearchParam());
 
     /* 좌측 트리용 전체 카테고리 조회 (그리드/트리 캐시 갱신) */
     const handleSearchList = async () => {
@@ -87,7 +79,6 @@ window.PdCategoryMng = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
-      Object.assign(searchParamOrg, searchParam);
       await handleSearchList();
       await handleGridSearch();
     });
@@ -142,7 +133,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     };
 
     const onReset = async () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       await handleGridSearch();
     };
     const catPickerModal = reactive({ show: false, search: '', forCategoryId: null, forRowIdx: null });
@@ -319,7 +310,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     return {
       codes, uiState,
       selectNode, handleGridSearch,
-      searchParam, searchParamOrg,
+      searchParam,
       gridRows, pager, setPage, onSizeChange, getRealIdx,
       onSearch, onReset,
       catPickerModal, cfCatPickerList, onParentSelect, openParentModal, fnDepthColor, fnDepthBullet, parentNm,
@@ -431,7 +422,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
               {{ uiState.selectedCatId ? '하위 카테고리가 없습니다. [+ 행추가]로 추가하세요.' : '데이터가 없습니다.' }}
             </td>
           </tr>
-          <tr v-for="(row, idx) in pager.pageList" :key="row?.categoryId"
+          <tr v-else v-for="(row, idx) in pager.pageList" :key="row?.categoryId"
               :class="[uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '', 'status-'+row._row_status]"
               draggable="true"
               @dragstart="onRowDragStart(getRealIdx(idx))"

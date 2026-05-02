@@ -76,11 +76,7 @@ window.DpDispPanelMng = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      if (isAppReady.value) {
-        fnLoadCodes();
-      }
       handleSearchData('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
     });
     const fnPathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
@@ -211,7 +207,7 @@ window.DpDispPanelMng = {
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData(buildSearchParams()); };
 
     const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       pager.pageNo = 1;
       handleSearchData({});
     };
@@ -332,29 +328,12 @@ window.DpDispPanelMng = {
     const selectPathNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; };
 
     /* ── 표시경로 (영역별 그룹) ── */
-      const searchParam = reactive({
-    kw: '',
-    dateRange: '',
-    dateStart: '',
-    dateEnd: '',
-    area: '',
-    status: '',
-    dispDate: '',
-    dispTime: '',
-    visibility: '',
-    layoutType: ''});
-  const searchParamOrg = reactive({
-    kw: '',
-    dateRange: '',
-    dateStart: '',
-    dateEnd: '',
-    area: '',
-    status: '',
-    dispDate: '',
-    dispTime: '',
-    visibility: '',
-    layoutType: ''
-  });   /* '' = 전체, '<areaCode>' = 특정 영역 */
+    const _initSearchParam = () => {
+      const today = new Date(); const thisYear = today.getFullYear();
+      return { kw: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, area: '', status: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' };
+    };
+      const searchParam = reactive(_initSearchParam());
+  /* '' = 전체, '<areaCode>' = 특정 영역 */
     const treeOpen = reactive(new Set(['__root__']));
     const toggleTree = (k) => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
     const isTreeOpen = (k) => treeOpen.has(k);
@@ -403,14 +382,14 @@ window.DpDispPanelMng = {
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), panels, uiState, fnPathLabel, displays, codes,
       cfPanelTree, toggleTree, isTreeOpen, selectTree, expandAll, collapseAll,
       selectPathNode,
-      onDateRangeChange: handleDateRangeChange, cfSiteNm, searchParam, searchParamOrg, pager, cfFiltered, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, fnWLabel, openCardPreview, closeCardPreview, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd, setDispNow };
+      onDateRangeChange: handleDateRangeChange, cfSiteNm, searchParam, pager, cfFiltered, cfAreas, fnStatusBadge, fnTypeBadge, fnTypeLabel, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewDisp, fnDispSummary, exportExcel, fnAreaLabel, expandedIds, toggleExpand, isExpanded, fnWLabel, openCardPreview, closeCardPreview, onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd, setDispNow };
   },
   template: /* html */`
 <div>
   <div class="page-title">전시패널관리 <span style="font-size:13px;font-weight:400;color:#888;">화면 영역별 전시패널 관리</span></div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="패널명 / 영역코드 검색" />
+      <input v-model="searchParam.kw" placeholder="패널명 / 영역코드 검색" @keyup.enter="onSearch" />
       <span class="search-label">화면영역</span>
       <select v-model="searchParam.area" style="min-width:160px;">
         <option value="">전체 영역</option>
@@ -478,7 +457,7 @@ window.DpDispPanelMng = {
       </thead>
       <tbody>
         <tr v-if="!pager.pageList?.length"><td colspan="6" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <template v-for="(d, pageIdx) in pager.pageList" :key="d?.dispId">
+        <template v-else v-for="(d, pageIdx) in pager.pageList" :key="d?.dispId">
           <tr draggable="true"
             @dragstart="onPanelDragStart($event, pageIdx)"
             @dragover="onPanelDragOver($event, pageIdx)"

@@ -36,8 +36,8 @@ window.DpDispWidgetMng = {
       }
     });
 
-    const searchParam = reactive({ kw: '', type: '', status: '' });
-    const searchParamOrg = reactive({ kw: '', type: '', status: '' });
+    const _initSearchParam = () => ({ kw: '', type: '', status: '' });
+    const searchParam = reactive(_initSearchParam());
 
     // onMounted에서 API 로드
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -72,7 +72,7 @@ window.DpDispWidgetMng = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT');
-    Object.assign(searchParamOrg, searchParam); });
+    });
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfSiteNm = computed(() => boUtil.getSiteNm());
@@ -96,7 +96,7 @@ window.DpDispWidgetMng = {
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData('DEFAULT'); };
 
     const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       pager.pageNo = 1;
       handleSearchData('DEFAULT');
     };
@@ -220,7 +220,7 @@ window.DpDispWidgetMng = {
         <tr v-if="widgetLibs.length===0">
           <td colspan="3" style="text-align:center;padding:30px;color:#ccc;">등록된 위젯 리소스가 없습니다.</td>
         </tr>
-        <tr v-for="(d, idx) in widgetLibs" :key="d?.libId"
+        <tr v-else v-for="(d, idx) in widgetLibs" :key="d?.libId"
           :style="selectedId===d.libId ? 'background:#fff8f8;' : ''">
           <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">#{{ String(d.libId).padStart(4,'0') }}</td>
           <td style="padding:10px 12px;">

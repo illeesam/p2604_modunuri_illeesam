@@ -34,7 +34,7 @@ window.MbMemGradeMng = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
-    Object.assign(searchParamOrg, searchParam); });
+    });
 const isAppReady = computed(() => {
       const initStore = window.useBoAppInitStore?.();
       const codeStore = window.sfGetBoCodeStore?.();
@@ -67,14 +67,8 @@ const isAppReady = computed(() => {
 
     const gridRows   = reactive([]);
     let   _tempId    = -1;
-      const searchParam = reactive({
-    kw: '',
-    use: ''
-  });
-  const searchParamOrg = reactive({
-    kw: '',
-    use: ''
-  });
+    const _initSearchParam = () => ({ kw: '', use: '' });
+    const searchParam = reactive(_initSearchParam());
     const FIELDS     = ['gradeCd','gradeNm','gradeRank','minPurchaseAmt','saveRate','useYn'];
 
 
@@ -127,7 +121,7 @@ const isAppReady = computed(() => {
     };
 
     const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       onSearch();
     };
 
@@ -137,7 +131,7 @@ const isAppReady = computed(() => {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { grades, uiState, codes, searchParam, searchParamOrg, pager, setPage, onSearch, onReset,
+    return { grades, uiState, codes, searchParam, pager, setPage, onSearch, onReset,
              gridRows, addRow, onCellChange, handleDeleteRow, handleSaveAll, fnYnBadge, onSizeChange };
   },
   template: `

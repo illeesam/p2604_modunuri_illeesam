@@ -69,17 +69,8 @@ window.DpDispUiSimul = {
     watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     /* ── 검색/필터 조건 ── */
-    const searchParam = reactive({
-      previewDate: today,
-      previewTime: new Date().toTimeString().slice(0, 5),
-      status: '활성',
-      visibility: '', structColCount: 1, dispUiAreaErr: false, dispUiSiteSearch: '', dispUiMemberSearch: '' });
-    const searchParamOrg = reactive({
-      previewDate: today,
-      previewTime: new Date().toTimeString().slice(0, 5),
-      status: '활성',
-      visibility: '',
-    });
+    const _initSearchParam = () => ({ previewDate: today, previewTime: new Date().toTimeString().slice(0, 5), status: '활성', visibility: '', structColCount: 1, dispUiAreaErr: false, dispUiSiteSearch: '', dispUiMemberSearch: '' });
+    const searchParam = reactive(_initSearchParam());
 
     const selectedAreas = reactive(new Set());
 
@@ -159,7 +150,7 @@ window.DpDispUiSimul = {
       (Array.isArray(displays) ? displays : []).filter(p => panelFilter(p)).length
     );
     const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
     };
     const resetDate = () => {
       searchParam.previewDate = today;
@@ -814,7 +805,7 @@ window.DpDispUiSimul = {
     return {
       today, cfSiteNm, codes,
       uiState, switchTab,
-      searchParam, searchParamOrg,
+      searchParam,
       selectedAreas, cfAllAreaListRaw, cfAreaList,
       onReset,
       toggleArea, selectAllAreas, clearAllAreas, cfAreaBtnLabel,

@@ -49,35 +49,8 @@ window.StRawMng = {
     (() => { const r = boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     // 검색 필드
-  const searchParam = reactive({
-    kw: '',
-    type: '',
-    status: '',
-    vendorType: '',
-    payMethod: '',
-    buyConfirm: '',
-    closeYn: '',
-    erpSend: '',
-    period: '',
-    orderStatus: '',
-    amtFrom: '',
-    amtTo: '',
-    moreOpen: '', dateEnd: ''});;
-  const searchParamOrg = reactive({
-    kw: '',
-    type: '',
-    status: '',
-    vendorType: '',
-    payMethod: '',
-    buyConfirm: '',
-    closeYn: '',
-    erpSend: '',
-    period: '',
-    orderStatus: '',
-    amtFrom: '',
-    amtTo: '',
-    moreOpen: ''
-  });
+  const _initSearchParam = () => ({ kw: '', type: '', status: '', vendorType: '', payMethod: '', buyConfirm: '', closeYn: '', erpSend: '', period: '', orderStatus: '', amtFrom: '', amtTo: '', moreOpen: '' });
+  const searchParam = reactive(_initSearchParam());
 
     const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const rawList = reactive([]);
@@ -109,7 +82,6 @@ const rawList = reactive([]);
         fnLoadCodes();
         handleSearchList('DEFAULT');
       }
-      Object.assign(searchParamOrg, searchParam);
     });
 
 
@@ -128,7 +100,7 @@ const rawList = reactive([]);
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
 
     const expandedRows = reactive(new Set());
     const toggleRow = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };

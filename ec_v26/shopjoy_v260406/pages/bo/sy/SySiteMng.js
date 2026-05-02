@@ -48,7 +48,6 @@ window.SySiteMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
     });
 
     const isAppReady = computed(() => {
@@ -77,22 +76,12 @@ window.SySiteMng = {
         fnLoadCodes();
       }
     });
-  const searchParam = reactive({
-    kw: '',
-    type: '',
-    status: '',
-    dateRange: '',
-    dateStart: '',
-    dateEnd: ''
-  });
-  const searchParamOrg = reactive({
-    kw: '',
-    type: '',
-    status: '',
-    dateRange: '',
-    dateStart: '',
-    dateEnd: ''
-  });
+  const _initSearchParam = () => {
+    const today = new Date();
+    const thisYear = today.getFullYear();
+    return { kw: '', type: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+  };
+  const searchParam = reactive(_initSearchParam());
 
     const onDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
@@ -130,7 +119,7 @@ const detailModal = reactive({
     }[t] || 'badge-gray');
 
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
@@ -175,7 +164,7 @@ const detailModal = reactive({
 <div>
   <div class="page-title">사이트관리</div>  <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="사이트코드 / 사이트명 / 도메인 검색" />
+      <input v-model="searchParam.kw" placeholder="사이트코드 / 사이트명 / 도메인 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">유형 전체</option>
         <option v-for="t in cfTypeOptions" :key="t">{{ t }}</option>
@@ -222,7 +211,7 @@ const detailModal = reactive({
       </tr></thead>
       <tbody>
         <tr v-if="sites.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="(s, idx) in sites" :key="s.siteId" :style="detailModal.editId===s.siteId?'background:#fff8f9;':''">
+        <tr v-else v-for="(s, idx) in sites" :key="s.siteId" :style="detailModal.editId===s.siteId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td style="font-size:12px;"><div style="display:flex;align-items:center;gap:6px;"><span style="flex:1;padding:4px 6px;background:#f3f4f6;border-radius:4px;color:#666;font-weight:500;">{{ pathLabel(s.pathId) || '미설정' }}</span><button type="button" @click="openPathPick(s)" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;hover:background:#eef2ff;">🔍</button></div></td>
           <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;">{{ s.siteCode }}</code></td>

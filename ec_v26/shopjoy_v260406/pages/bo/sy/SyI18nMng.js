@@ -9,8 +9,10 @@ window.SyI18nMng = {
     const uiState = reactive({ isPageCodeLoad: false, selectedId: null});
     const codes = reactive({ lang_code: [], use_yn: [], i18n_scopes: ['COMMON','FO','BO'] });
 
-    const searchParam = reactive({ kw: '', scope: '', use: '' });
-    const searchParamOrg = reactive({ kw: '', scope: '', use: '' });
+    const _initSearchParam = () => {
+      return { kw: '', scope: '', use: '' };
+    };
+    const searchParam = reactive(_initSearchParam());
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
@@ -115,7 +117,7 @@ window.SyI18nMng = {
       return m ? m.i18nMsg : '';
     };
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData('DEFAULT'); };
-    const onReset  = () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; handleSearchData('DEFAULT'); };
+    const onReset  = () => { Object.assign(searchParam, _initSearchParam()); pager.pageNo = 1; handleSearchData('DEFAULT'); };
     const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';

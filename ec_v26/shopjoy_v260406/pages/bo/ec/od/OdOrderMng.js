@@ -39,26 +39,17 @@ window.OdOrderMng = {
     };
 
     /* ── 검색 파라미터 ── */
-    const searchParam = reactive({
-      kw: '',
-      dateRange: '',
-      dateStart: '',
-      dateEnd: '',
-      status: ''
-    });
-    const searchParamOrg = reactive({
-      kw: '',
-      dateRange: '',
-      dateStart: '',
-      dateEnd: '',
-      status: ''
-    });
+    const _initSearchParam = () => {
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      return { kw: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
+    };
+    const searchParam = reactive(_initSearchParam());
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchData('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
     });
 
     const handleDateRangeChange = () => {
@@ -130,7 +121,7 @@ const isAppReady = computed(() => {
       await handleSearchData('DEFAULT');
     };
     const onReset = async () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       pager.pageNo = 1;
       await handleSearchData();
     };
@@ -282,14 +273,14 @@ const isAppReady = computed(() => {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), orders, members, claims, uiState, codes, searchParam, searchParamOrg, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
+    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), orders, members, claims, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg };
   },
   template: /* html */`
 <div>
   <div class="page-title">주문관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="주문ID / 회원명 / 상품명 검색" />
+      <input v-model="searchParam.kw" placeholder="주문ID / 회원명 / 상품명 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.status">
         <option value="">상태 전체</option>
         <option v-for="c in codes.order_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
@@ -319,7 +310,7 @@ const isAppReady = computed(() => {
       </tr></thead>
       <tbody>
         <tr v-if="orders.length===0"><td colspan="13" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="(o, idx) in orders" :key="o?.orderId"
+        <tr v-else v-for="(o, idx) in orders" :key="o?.orderId"
           :style="(selectedId===o.orderId?'background:#fff8f9;':'') + (isChecked(o.orderId)?'background:#eef6fd;':'')">
           <td style="text-align:center;"><input type="checkbox" :checked="isChecked(o.orderId)" @change="toggleCheck(o.orderId)" /></td>
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>

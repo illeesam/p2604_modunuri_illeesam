@@ -34,7 +34,6 @@ window.SyBbmMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
     });
 
     const isAppReady = computed(() => {
@@ -69,12 +68,10 @@ window.SyBbmMng = {
     const onPathPicked = (pathId) => { if (pathPickModal.row) pathPickModal.row.pathId = pathId; };
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
     const cfSiteNm = computed(() => boUtil.getSiteNm());
-    const searchParam = reactive({
-      kw: '', type: '', useYn: ''
-    });
-    const searchParamOrg = reactive({
-      kw: '', type: '', useYn: ''
-    });
+    const _initSearchParam = () => {
+      return { kw: '', type: '', useYn: 'Y' };
+    };
+    const searchParam = reactive(_initSearchParam());
 const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const detailModal = reactive({
@@ -104,7 +101,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const fnContentBadge = v => ({ '불가': 'badge-gray', 'textarea': 'badge-blue', 'htmleditor': 'badge-green' }[v] || 'badge-gray');
     const fnScopeBadge   = v => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[v] || 'badge-gray');
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const handleDelete = async (b) => {
@@ -137,7 +134,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   <div class="page-title">게시판관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="게시판명 / 코드 검색" />
+      <input v-model="searchParam.kw" placeholder="게시판명 / 코드 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">유형 전체</option>
         <option v-for="c in codes.bbm_type" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
@@ -178,7 +175,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           </tr></thead>
           <tbody>
             <tr v-if="bbms.length===0"><td colspan="16" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-            <tr v-for="(b, idx) in bbms" :key="b.bbmId" :style="detailModal.editId===b.bbmId?'background:#fff8f9;':''">
+            <tr v-else v-for="(b, idx) in bbms" :key="b.bbmId" :style="detailModal.editId===b.bbmId?'background:#fff8f9;':''">
               <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
               <td>
                 <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:b.pathId!=null?'#374151':'#9ca3af',fontWeight:b.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">

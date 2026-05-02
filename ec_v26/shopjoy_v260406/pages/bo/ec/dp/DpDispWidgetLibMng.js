@@ -36,8 +36,8 @@ window.DpDispWidgetLibMng = {
     });
 
     /* ── 검색 ── */
-    const searchParam    = reactive({ kw: '', type: '', status: '' });
-    const searchParamOrg = reactive({ kw: '', type: '', status: '' });
+    const _initSearchParam = () => ({ kw: '', type: '', status: '' });
+    const searchParam = reactive(_initSearchParam());
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -96,7 +96,7 @@ window.DpDispWidgetLibMng = {
       await handleSearchList('DEFAULT');
     };
     const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       pager.pageNo = 1;
       handleSearchList('DEFAULT');
     };
@@ -149,7 +149,7 @@ window.DpDispWidgetLibMng = {
   <div class="page-title">위젯라이브러리관리</div>
   <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="이름/설명/태그 검색" />
+      <input v-model="searchParam.kw" placeholder="이름/설명/태그 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.type">
         <option value="">타입 전체</option>
         <option v-for="t in codes.disp_widget_types" :key="t.codeValue" :value="t.codeValue">{{ t.codeLabel }}</option>
@@ -184,7 +184,7 @@ window.DpDispWidgetLibMng = {
           <thead><tr><th style="width:36px;text-align:center;">번호</th><th>이름</th><th>타입</th><th>상태</th><th style="text-align:right">관리</th></tr></thead>
           <tbody>
             <tr v-if="widgetLibs.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-            <tr v-for="(lib, idx) in widgetLibs" :key="lib.libId">
+            <tr v-else v-for="(lib, idx) in widgetLibs" :key="lib.libId">
               <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
               <td><span class="title-link" @click="handleLoadDetail(lib.libId)">{{ wIcon(lib.widgetType) }} {{ lib.name }}</span></td>
               <td><span class="tag">{{ wTypeLabel(lib.widgetType) }}</span></td>

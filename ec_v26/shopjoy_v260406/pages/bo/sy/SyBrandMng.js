@@ -58,11 +58,12 @@ window.SyBrandMng = {
     /* 트리 선택 path (loadGrid 보다 먼저 선언) */
     
     /* ── 검색 ── */
-    const searchParam = reactive({
-      bizCd: '', kw: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''});
-    const searchParamOrg = reactive({
-      bizCd: '', kw: '', useYn: '', dateRange: '', dateStart: '', dateEnd: ''
-    });
+    const _initSearchParam = () => {
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      return { bizCd: '', kw: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    };
+    const searchParam = reactive(_initSearchParam());
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.getDateRange(searchParam.dateRange);
@@ -117,7 +118,7 @@ window.SyBrandMng = {
       await handleSearchList('DEFAULT');
     };
     const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
+      Object.assign(searchParam, _initSearchParam());
       handleSearchList();
     };
 
@@ -255,7 +256,6 @@ window.SyBrandMng = {
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-      Object.assign(searchParamOrg, searchParam);
     });
 
     watch(() => uiState.selectedPath, () => handleSearchList());
@@ -263,7 +263,7 @@ window.SyBrandMng = {
     // ── return ───────────────────────────────────────────────────────────────
 
     return { brands, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      searchParam, searchParamOrg, handleDateRangeChange,
+      searchParam, handleDateRangeChange,
       gridRows,
       setFocused, onSearch, onReset, onCellChange, cfIsLocalMode,
       addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
@@ -354,7 +354,7 @@ window.SyBrandMng = {
         <tr v-if="gridRows.length===0">
           <td colspan="14" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
         </tr>
-        <tr v-for="(row, idx) in gridRows" :key="row.brandId"
+        <tr v-else v-for="(row, idx) in gridRows" :key="row.brandId"
           class="crud-row" :class="['status-'+row._row_status, uiState.focusedIdx===idx ? 'focused' : '']"
           draggable="true"
           @click="setFocused(idx)"

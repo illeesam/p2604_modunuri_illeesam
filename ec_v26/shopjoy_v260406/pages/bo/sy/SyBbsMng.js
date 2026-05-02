@@ -68,7 +68,6 @@ window.SyBbsMng = {
       await handleSearchBbs('DEFAULT');
       const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
-      Object.assign(searchParamOrg, searchParam);
     });
 
     const isAppReady = computed(() => {
@@ -99,12 +98,12 @@ window.SyBbsMng = {
     });
 
     const cfSiteNm = computed(() => boUtil.getSiteNm());
-    const searchParam = reactive({
-      kw: '', bbmId: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
-    });
-    const searchParamOrg = reactive({
-      kw: '', bbmId: '', status: '', dateStart: '', dateEnd: '', dateRange: ''
-    });
+    const _initSearchParam = () => {
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      return { kw: '', bbmId: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    };
+    const searchParam = reactive(_initSearchParam());
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.getDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
@@ -135,7 +134,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const fnStatusBadge = s => ({ '게시': 'badge-green', '임시': 'badge-gray', '삭제': 'badge-red', '비공개': 'badge-orange' }[s] || 'badge-gray');
     const onSearch = () => { pager.pageNo = 1; handleSearchBbs('DEFAULT'); };
-    const onReset = () => { Object.assign(searchParam, searchParamOrg); onSearch(); };
+    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchBbs('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchBbs('DEFAULT'); };
     const handleDelete = async (b) => {
@@ -170,7 +169,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 <div>
   <div class="page-title">게시글관리</div>  <div class="card">
     <div class="search-bar">
-      <input v-model="searchParam.kw" placeholder="제목 / 작성자 검색" />
+      <input v-model="searchParam.kw" placeholder="제목 / 작성자 검색" @keyup.enter="onSearch" />
       <select v-model="searchParam.bbmId">
         <option value="">게시판 전체</option>
         <option v-for="o in cfBbmOptions" :key="o.value" :value="o.value">{{ o.label }}</option>
@@ -202,7 +201,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           <th style="width:36px;text-align:center;">번호</th><th>게시판</th><th>제목</th><th>작성자</th><th>조회수</th><th>댓글</th><th>첨부그룹</th><th>상태</th><th>사이트명</th><th>등록일</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
         <tr v-if="bbss.length===0"><td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-for="(b, idx) in bbss" :key="b.bbsId" :style="detailModal.editId===b.bbsId?'background:#fff8f9;':''">
+        <tr v-else v-for="(b, idx) in bbss" :key="b.bbsId" :style="detailModal.editId===b.bbsId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><span class="badge badge-gray">{{ bbmNm(b.bbmId) }}</span></td>
           <td><span class="title-link" @click="handleLoadDetail(b.bbsId)" :style="detailModal.editId===b.bbsId?'color:#e8587a;font-weight:700;':''">{{ b.title }}<span v-if="detailModal.editId===b.bbsId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
