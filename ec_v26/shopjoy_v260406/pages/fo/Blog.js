@@ -39,14 +39,8 @@ window.Blog = {
         pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;
         posts.splice(0, posts.length, ...(res.data?.data?.pageList || []));
       } catch (e) {
-        posts.splice(0, posts.length, ...[
-          { id: 1, title: 'Anteposuerit litterarum formas.', category: 'fashion', author: '김민지', date: '2026.04.10', readTime: '5분', excerpt: '고급 코튼 소재로 제작된 프리미엄 티셔츠. 통기성이 우수하고 세탁 후에도 형태가 유지됩니다. 올봄 스타일링의 핵심 아이템을 만나보세요.', thumb: 'assets/cdn/prod/img/blog/blog-1.jpg', tags: ['패션', '신상품', '코튼100%'], viewCount: 1240, commentCount: 8 },
-          { id: 2, title: '2026 봄 트렌드 컬러 가이드', category: 'trend', author: '이수진', date: '2026.04.08', readTime: '7분', excerpt: '올 봄 주목해야 할 트렌드 컬러와 컬러 매칭 방법을 알아봅니다. 파스텔부터 비비드까지 시즌 컬러를 완벽하게 활용하세요.', thumb: 'assets/cdn/prod/img/blog/blog-2.jpg', tags: ['트렌드', '컬러', '2026SS'], viewCount: 890, commentCount: 5 },
-          { id: 3, title: '미니멀 라이프를 위한 옷장 정리법', category: 'lifestyle', author: '박지현', date: '2026.04.05', readTime: '4분', excerpt: '효율적인 옷장 정리 방법과 캡슐 워드로브 구성 팁. 적은 아이템으로 다양한 코디를 완성하는 비결을 공개합니다.', thumb: 'assets/cdn/prod/img/blog/blog-3.jpg', tags: ['미니멀', '정리', '캡슐워드로브'], viewCount: 2100, commentCount: 15 },
-          { id: 4, title: '데님 스타일링 A to Z', category: 'howto', author: '정다운', date: '2026.04.03', readTime: '6분', excerpt: '계절별 데님 스타일링 팁과 데님 케어 방법까지. 기본 아이템 데님을 200% 활용하는 방법을 알려드립니다.', thumb: 'assets/cdn/prod/img/blog/blog-4.jpg', tags: ['데님', '스타일링', '가이드'], viewCount: 1560, commentCount: 12 },
-          { id: 5, title: '지속 가능한 패션의 시작', category: 'lifestyle', author: '최예린', date: '2026.03.28', readTime: '8분', excerpt: '환경을 생각하는 패션 소비, 어디서부터 시작할 수 있을까요? 지속 가능한 소재와 브랜드를 소개합니다.', thumb: 'assets/cdn/prod/img/blog/blog-5.jpg', tags: ['지속가능', '친환경', '윤리패션'], viewCount: 780, commentCount: 3 },
-          { id: 6, title: '봄 아우터 베스트 5', category: 'fashion', author: '강하늘', date: '2026.03.25', readTime: '5분', excerpt: '환절기 필수 아우터 추천! 트렌치코트부터 라이트 재킷까지, 올봄 꼭 갖춰야 할 아우터 5가지를 엄선했습니다.', thumb: 'assets/cdn/prod/img/blog/blog-6.jpg', tags: ['아우터', '추천', '봄패션'], viewCount: 1890, commentCount: 9 },
-        ]);
+        console.error('[handleSearchList]', e);
+        posts.splice(0, posts.length);
       }
     };
 

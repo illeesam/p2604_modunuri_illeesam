@@ -97,11 +97,14 @@ window.PdCategoryProdMng = {
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        // Backend mapper not implemented - use mock data
-        const mockData = [];
-        categoryProds.splice(0, categoryProds.length, ...mockData);
-        pager.pageTotalCount = 0;
-        pager.pageTotalPage = 1;
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize };
+        if (searchParam.categoryId) params.categoryId = searchParam.categoryId;
+        if (searchParam.prodNm)     params.prodNm     = searchParam.prodNm.trim();
+        const res = await boApiSvc.pdCategory.getProds(params, '카테고리상품관리', '목록조회');
+        const data = res.data?.data;
+        categoryProds.splice(0, categoryProds.length, ...(data?.pageList || data?.list || []));
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
       } catch (err) {
         console.error('[handleSearchList]', err);
         categoryProds.splice(0, categoryProds.length);
@@ -130,11 +133,22 @@ window.PdCategoryProdMng = {
       }
     };
 
-    /* ★ onMounted — 진입 시 카테고리 목록 조회 */
+    /* 상품 목록 로드 (피커/헬퍼용) */
+    const handleSearchProductsList = async () => {
+      try {
+        const res = await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 10000 }, '카테고리상품관리', '상품목록조회');
+        const list = res.data?.data?.pageList || res.data?.data?.list || [];
+        products.splice(0, products.length, ...list);
+      } catch (e) {
+        console.error('[handleSearchProductsList]', e);
+      }
+    };
+
+    /* ★ onMounted — 진입 시 카테고리·상품 목록 조회 */
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
       Object.assign(searchParamOrg, searchParam);
-      await handleSearchCategoriesList(); // lookup용
+      await Promise.all([handleSearchCategoriesList(), handleSearchProductsList()]);
       try {
         await handleSearchList('DEFAULT');
       } catch (err) {
@@ -186,10 +200,10 @@ window.PdCategoryProdMng = {
 
     /* ── 상품 정보 조회 헬퍼 ── */
     const getProdNm = (prodId) => {
-      const prod = window.adminData?.products?.find(p => p.productId === prodId);
+      const prod = products.find(p => p.prodId === prodId || p.productId === prodId);
       return prod?.prodNm || prod?.productName || `[${prodId}]`;
     };
-    const getProd = (prodId) => window.adminData?.products?.find(p => p.productId === prodId);
+    const getProd = (prodId) => products.find(p => p.prodId === prodId || p.productId === prodId);
     const getCatPath = (catId) => {
       const cat = categories.find(c => c.categoryId === catId);
       if (!cat) return '-';
@@ -234,11 +248,10 @@ window.PdCategoryProdMng = {
 
     /* ── 피커 검색 ── */
     const cfPickerList = computed(() => {
-      const filtered = (window.adminData?.products || []).filter(p => {
+      return products.filter(p => {
         const q = pickerSearch.value.toLowerCase();
-        return !q || p.prodNm?.toLowerCase().includes(q) || p.productId?.toString().includes(q);
-      });
-      return filtered.slice(0, 50);
+        return !q || p.prodNm?.toLowerCase().includes(q) || String(p.prodId || p.productId || '').includes(q);
+      }).slice(0, 50);
     });
 
     const pickerOpen = ref(false);

@@ -24,7 +24,8 @@ window.Prod02View = {
         const res = await foApiSvc.pdProd.getById(productId, '상품상세', '상세조회');
         svProduct.value = res.data?.data || res.data;
       } catch (e) {
-        svProduct.value = props.product;
+        console.error('[handleSearchList]', e);
+        svProduct.value = null;
       }
     };
 

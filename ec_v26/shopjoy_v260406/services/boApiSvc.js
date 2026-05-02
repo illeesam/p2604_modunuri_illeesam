@@ -174,6 +174,7 @@
     create(body, uiNm, cmdNm) { return global.boApi.post('/bo/ec/pd/category', body, hdr(uiNm, cmdNm)); },
     update(categoryId, body, uiNm, cmdNm) { return global.boApi.put(`/bo/ec/pd/category/${categoryId}`, body, hdr(uiNm, cmdNm)); },
     remove(categoryId, uiNm, cmdNm) { return global.boApi.delete(`/bo/ec/pd/category/${categoryId}`, hdr(uiNm, cmdNm)); },
+    getProds(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/pd/category-prod/page', { params, ...hdr(uiNm, cmdNm) }); },
     updateProds(body, uiNm, cmdNm) { return global.boApi.put('/bo/ec/pd/category-prod', body, hdr(uiNm, cmdNm)); },
   };
 

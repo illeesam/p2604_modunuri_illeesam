@@ -84,11 +84,8 @@ window.Prod03List = {
           }
         } catch (e) {}
       } catch (e) {
-        /* 폴백: config 상품 사용 */
-        allProducts.splice(0, allProducts.length, ...(props.config && props.config.products || []).map(p => assignImage({
-          ...p,
-          priceNum: parseInt(String(p.price).replace(/[^0-9]/g, ''), 10) || 0,
-        })));
+        console.error('[handleSearchList]', e);
+        allProducts.splice(0, allProducts.length);
       } finally {
         uiState.loading = false;
       }

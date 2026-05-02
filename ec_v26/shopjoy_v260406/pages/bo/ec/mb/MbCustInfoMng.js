@@ -71,14 +71,13 @@
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, customer: null, searchMode: 'member', searchInput: '' });
     const tab = Vue.toRef(uiState, 'tab');
 
-    /* adminData 참조 */
-    const members    = (props.adminData?.members    || window.adminData?.members    || []);
-    const orders     = (props.adminData?.orders     || window.adminData?.orders     || []);
-    const claims     = (props.adminData?.claims     || window.adminData?.claims     || []);
-    const deliveries = (props.adminData?.deliveries || window.adminData?.deliveries || []);
-    const cacheList  = (props.adminData?.cacheList  || window.adminData?.cacheList  || []);
-    const contacts   = (props.adminData?.contacts   || window.adminData?.contacts   || []);
-    const chats      = (props.adminData?.chats      || window.adminData?.chats      || []);
+    const members    = reactive([]);
+    const orders     = reactive([]);
+    const claims     = reactive([]);
+    const deliveries = reactive([]);
+    const cacheList  = reactive([]);
+    const contacts   = reactive([]);
+    const chats      = reactive([]);
     const codes = reactive({
       member_statuses: [],
       member_grades: [],
@@ -116,16 +115,30 @@
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const [resCust, resLogin, resCoupon, resSend] = await Promise.all([
+        const [resCust, resLogin, resCoupon, resSend, resMember, resOrder, resClaim, resDliv, resCache, resContact, resChatt] = await Promise.all([
           boApiSvc.mbCustInfo.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '조회'),
           boApiSvc.syUserLoginLog.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '조회'),
           boApiSvc.pmCouponUsage.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '조회'),
           boApiSvc.syAlarm.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '조회'),
+          boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '회원조회'),
+          boApiSvc.odOrder.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '주문조회'),
+          boApiSvc.odClaim.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '클레임조회'),
+          boApiSvc.odDliv.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '배송조회'),
+          boApiSvc.pmCache.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '캐쉬조회'),
+          boApiSvc.syContact.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '문의조회'),
+          boApiSvc.cmChatt.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '채팅조회'),
         ]);
         custInfos.splice(0, custInfos.length, ...(resCust.data?.data?.pageList || []));
         loginHistory.splice(0, loginHistory.length, ...(resLogin.data?.data?.pageList || []));
         couponUsage.splice(0, couponUsage.length, ...(resCoupon.data?.data?.pageList || []));
         sendHistory.splice(0, sendHistory.length, ...(resSend.data?.data?.pageList || []));
+        members.splice(0, members.length, ...(resMember.data?.data?.pageList || resMember.data?.data?.list || []));
+        orders.splice(0, orders.length, ...(resOrder.data?.data?.pageList || resOrder.data?.data?.list || []));
+        claims.splice(0, claims.length, ...(resClaim.data?.data?.pageList || resClaim.data?.data?.list || []));
+        deliveries.splice(0, deliveries.length, ...(resDliv.data?.data?.pageList || resDliv.data?.data?.list || []));
+        cacheList.splice(0, cacheList.length, ...(resCache.data?.data?.pageList || resCache.data?.data?.list || []));
+        contacts.splice(0, contacts.length, ...(resContact.data?.data?.pageList || resContact.data?.data?.list || []));
+        chats.splice(0, chats.length, ...(resChatt.data?.data?.pageList || resChatt.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
