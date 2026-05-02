@@ -42,10 +42,20 @@ window.DpDispUiMng = {
       }
     });
 
+    const searchParam    = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateEnd: '', dateRange: '' });
+    const searchParamOrg = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateEnd: '', dateRange: '' });
+
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.dpUi.getPage({ pageNo: 1, pageSize: 10000 }, '전시UI관리', '조회');
+        const params = { pageNo: 1, pageSize: 10000 };
+        if (uiState.selectedPath)  params.pathId    = uiState.selectedPath;
+        if (searchParam.kw)        params.kw        = searchParam.kw.trim();
+        if (searchParam.type)      params.uiType    = searchParam.type;
+        if (searchParam.useYn)     params.useYn     = searchParam.useYn;
+        if (searchParam.dateStart) params.dateStart = searchParam.dateStart;
+        if (searchParam.dateEnd)   params.dateEnd   = searchParam.dateEnd;
+        const res = await boApiSvc.dpUi.getPage(params, '전시UI관리', '조회');
         displays.splice(0, displays.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
@@ -66,7 +76,7 @@ window.DpDispUiMng = {
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* ── 표시경로 트리 ── */
-    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; };
+    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
@@ -78,8 +88,6 @@ window.DpDispUiMng = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-const searchParam = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateEnd: '', dateRange: '' });
-  const searchParamOrg = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateEnd: '', dateRange: '' });
 
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
     const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
@@ -93,31 +101,20 @@ const searchParam = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateE
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
 
-    const applied = reactive({ kw: '', type: '', useYn: '', dateStart: '', dateEnd: '', dateRange: '' });
-
-    const cfFiltered = computed(() => {
-      const kw = applied.kw.toLowerCase();
-      return (displays || []).filter(d => {
-        if (kw && !(d.name||'').toLowerCase().includes(kw)) return false;
-        if (applied.type && d.uiType !== applied.type) return false;
-        if (applied.useYn && d.useYn !== applied.useYn) return false;
-        return true;
-      });
-    });
-    const cfTotal      = computed(() => cfFiltered.value.length);
+    const cfTotal      = computed(() => displays.length);
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.pageSize)));
-    const cfPageList   = computed(() => cfFiltered.value.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
+    const cfPageList   = computed(() => displays.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
     const cfPageNums   = computed(() => { const c=pager.pageNo,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
-    const onSearch = async () => { Object.assign(applied, searchParam); pager.pageNo = 1; await handleSearchList('DEFAULT'); };
-    const onReset  = () => { Object.assign(searchParam, searchParamOrg); Object.assign(applied, searchParamOrg); pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
+    const onReset  = () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { displays, uiState, codes, pager, searchParam, applied,
-      cfFiltered, cfTotal, cfTotalPages, cfPageList, cfPageNums,
+    return { displays, uiState, codes, pager, searchParam,
+      cfTotal, cfTotalPages, cfPageList, cfPageNums,
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange, cfSiteNm,
       selectNode, pathLabel,
       uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId };

@@ -75,7 +75,10 @@ window.SyBizUserMng = {
     const handleLoadDetail = async () => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '업체사용자관리', '조회');
+        const params = { pageNo: 1, pageSize: 10000 };
+        if (uiState.bizKw)        params.kw             = uiState.bizKw.trim();
+        if (uiState.bizVendorFlt) params.vendorTypeCd   = uiState.bizVendorFlt;
+        const res = await boApiSvc.syVendor.getPage(params, '업체사용자관리', '조회');
         const list = res.data?.data?.pageList || res.data?.data || [];
         vendors.splice(0, vendors.length, ...list);
       } catch(e) {
@@ -128,18 +131,12 @@ window.SyBizUserMng = {
       return '['+vt+'] '+v.vendorNm;
     };
 
-                  const applied = reactive({ vendorId: null });
+    const applied = reactive({ vendorId: null });
 
-    const cfVendorList = computed(() => vendors.filter(v => {
-      const kw = (uiState.bizKw || '').trim().toLowerCase();
-      if (kw && !(v.vendorNm||'').toLowerCase().includes(kw) && !(v.bizNo||'').includes(kw)) return false;
-      if (uiState.bizVendorFlt && v.vendorTypeCd !== uiState.bizVendorFlt) return false;
-      return true;
-    }));
     const bizPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const cfBizTotalPages = computed(() => Math.max(1, Math.ceil(cfVendorList.value.length / bizPager.pageSize)));
+    const cfBizTotalPages = computed(() => Math.max(1, Math.ceil(vendors.length / bizPager.pageSize)));
     const cfBizPageNums   = computed(() => { const c=bizPager.pageNo,l=cfBizTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
-    const cfBizPagedRows  = computed(() => cfVendorList.value.slice((bizPager.pageNo-1)*bizPager.pageSize, bizPager.pageNo*bizPager.pageSize));
+    const cfBizPagedRows  = computed(() => vendors.slice((bizPager.pageNo-1)*bizPager.pageSize, bizPager.pageNo*bizPager.pageSize));
     const setBizPage    = n => { if(n>=1&&n<=cfBizTotalPages.value) bizPager.pageNo=n; };
 
     const fnVendorStatusBadge = (s) => ({ ACTIVE:'badge-green', SUSPENDED:'badge-orange', TERMINATED:'badge-red' }[s] || 'badge-gray');
@@ -158,12 +155,13 @@ window.SyBizUserMng = {
       pager.pageNo = 1;
     };
 
-    const onSearch = () => { bizPager.pageNo = 1; };
+    const onSearch = () => { bizPager.pageNo = 1; handleLoadDetail(); };
     const onReset = () => {
       uiState.bizKw = '';
       uiState.bizVendorFlt = '';
       uiState.bizStatusFlt = '';
       bizPager.pageNo = 1;
+      handleLoadDetail();
     };
 
     const onVendorPicked = (v) => { uiState.vendorPickOpen=false; pickVendorRow(v); };
@@ -396,7 +394,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     return {
       uiState, codes,
       vendorUsers, cfVendorMap, fnVendorNm, fnVendorTypeCd, fnVendorSummary,
-      vendors, cfVendorList, bizPager, cfBizTotalPages, cfBizPageNums, cfBizPagedRows, setBizPage,
+      vendors, bizPager, cfBizTotalPages, cfBizPageNums, cfBizPagedRows, setBizPage,
       onSearch, onReset,
       applied,
       pickVendorRow, fnVendorStatusBadge, fnVendorStatusLabel, fnVendorTypeBadge, fnVendorTypeLabel,
@@ -447,7 +445,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   <!-- ── 업체 목록 ────────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>업체목록 <span class="list-count">{{ cfVendorList.length }}건</span></span>
+      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>업체목록 <span class="list-count">{{ vendors.length }}건</span></span>
     </div>
     <table class="bo-table">
       <thead><tr>

@@ -50,7 +50,6 @@ window.SyPropMng = {
 
     /* ── 검색 ── */
     const searchParam = reactive({ kw: '', useFlt: '', typeFlt: '' });
-    const applied = reactive({ kw: '', useFlt: '', typeFlt: '' });
 
     /* ── 데이터 (작업 상태 포함) ── */
     const rows = reactive([]);
@@ -61,7 +60,6 @@ window.SyPropMng = {
 
     // 검색/조회 함수
     const fetchData = async (searchType = 'DEFAULT') => {
-      Object.assign(applied, searchParam);
       try {
         const params = { pageNo: 1, pageSize: 10000 };
         if (cfSiteId.value)          params.siteId  = cfSiteId.value;
@@ -151,7 +149,6 @@ window.SyPropMng = {
 
     const onReset = () => {
       searchParam.kw = ''; searchParam.useFlt = ''; searchParam.typeFlt = '';
-      applied.kw = ''; applied.useFlt = ''; applied.typeFlt = '';
       uiState.selectedPath = '';
       reload();
     };
@@ -175,7 +172,7 @@ window.SyPropMng = {
     return {
       uiState, codes,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      searchParam, applied,
+      searchParam,
       selectNode, cfGridRows, cfDirtyRows,
       fetchData,
       onChange, addRow, delRow, cancelRow, handleSave, onReset, exportCsv,

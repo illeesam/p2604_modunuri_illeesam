@@ -35,11 +35,20 @@ window.DpDispWidgetLibMng = {
       }
     });
 
+    /* ── 검색 ── */
+    const searchParam    = reactive({ kw: '', type: '', status: '' });
+    const searchParamOrg = reactive({ kw: '', type: '', status: '' });
+
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.dpWidgetLib.getPage({ pageNo: 1, pageSize: 10000 }, '전시위젯라이브러리', '조회');
+        const params = { pageNo: 1, pageSize: 10000 };
+        if (uiState.selectedPath) params.pathId      = uiState.selectedPath;
+        if (searchParam.kw)       params.kw          = searchParam.kw.trim();
+        if (searchParam.type)     params.widgetType   = searchParam.type;
+        if (searchParam.status)   params.status       = searchParam.status;
+        const res = await boApiSvc.dpWidgetLib.getPage(params, '전시위젯라이브러리', '조회');
         widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
@@ -57,6 +66,7 @@ window.DpDispWidgetLibMng = {
     });
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
+
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const WIDGET_ICONS = {
       'image_banner':'🖼', 'product_slider':'🛒', 'product':'📦',
@@ -72,43 +82,22 @@ window.DpDispWidgetLibMng = {
     const wTypeLabel = (v) => window.safeArrayUtils.safeFind(codes.disp_widget_types, t => t.codeValue === v)?.codeLabel || v;
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
 
-    /* ── 검색 ── */
-    const searchParam = reactive({ kw: '', type: '', status: '' });
-    const searchParamOrg = reactive({ kw: '', type: '', status: '' });
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-const applied = reactive({ kw: '', type: '', status: '' });
     const onSearch = async () => {
-      applied.kw     = searchParam.kw.trim().toLowerCase();
-      applied.type   = searchParam.type;
-      applied.status = searchParam.status;
       pager.pageNo = 1;
-      await Object.assign(pager.pageCond, searchParam); handleSearchList('DEFAULT');
+      await handleSearchList('DEFAULT');
     };
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);
-      Object.assign(applied, { kw: '', type: '', status: '' });
       pager.pageNo = 1;
       handleSearchList('DEFAULT');
     };
 
-    /* 검색 필터만 적용한 리스트 (트리 그룹화용) */
-    const cfSearchedLibs = computed(() => {
-      if (!Array.isArray(widgetLibs)) return [];
-      return widgetLibs.filter(d => {
-        if (applied.kw && !d.name.toLowerCase().includes(applied.kw) && !(d.desc||'').toLowerCase().includes(applied.kw) && !(d.tags||'').toLowerCase().includes(applied.kw)) return false;
-        if (applied.type   && d.widgetType !== applied.type)   return false;
-        if (applied.status && d.status     !== applied.status) return false;
-        return true;
-      });
-    });
-
     /* ── 표시경로 트리 ── */
-    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; };
+    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* 최종 리스트 */
-    const cfFiltered = computed(() => {
-      return [...cfSearchedLibs.value].sort((a, b) => b.libId - a.libId);
-    });
+    const cfFiltered = computed(() => [...widgetLibs].sort((a, b) => b.libId - a.libId));
 
     const cfTotalCount  = computed(() => cfFiltered.value.length);
     const cfPageList    = computed(() => {
@@ -153,7 +142,7 @@ const applied = reactive({ kw: '', type: '', status: '' });
     // ── return ───────────────────────────────────────────────────────────────
 
     return { widgetLibs, uiState, codes, searchParam, pager,
-      applied, onSearch, onReset, setPage, onSizeChange,
+      onSearch, onReset, setPage, onSizeChange,
       selectNode,
       cfFiltered, cfTotalCount, cfPageList, cfTotalPages, cfPageNumbers,
       wIcon, wTypeLabel,

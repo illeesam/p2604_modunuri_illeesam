@@ -243,7 +243,6 @@ window.PdCategoryProdMng = {
 
     const pickerOpen = ref(false);
     const pickerSearch = ref('');
-    const applied = searchParam;
     const onSave = async () => {
       const ok = await props.showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
@@ -265,7 +264,7 @@ window.PdCategoryProdMng = {
       codes, uiState, categories, categoryProds,
       TYPE_TABS, EMPHASIS_OPTS, parseEmphasis, hasEmphasis, toggleEmphasis,
       defaultDispStartDate, defaultDispEndDate,
-      searchParam, searchParamOrg, onSearch, onReset, applied,
+      searchParam, searchParamOrg, onSearch, onReset,
       pager,
       cfFilteredRows, cfPickerList,
       cfSelectedCatId, cfSelectedCat, cfIsLeafCat, selectNode,
@@ -432,7 +431,7 @@ window.PdCategoryProdMng = {
             </tr>
             <tr v-if="!cfFilteredRows.length">
               <td :colspan="uiState.activeTypeCd!=='NORMAL' ? 11 : 9" style="text-align:center;padding:32px;color:#aaa">
-                {{ applied.prodNm ? '검색 결과가 없습니다.' : '등록된 상품이 없습니다. [+ 상품추가] 버튼으로 추가하세요.' }}
+                {{ searchParam.prodNm ? '검색 결과가 없습니다.' : '등록된 상품이 없습니다. [+ 상품추가] 버튼으로 추가하세요.' }}
               </td>
             </tr>
           </tbody>

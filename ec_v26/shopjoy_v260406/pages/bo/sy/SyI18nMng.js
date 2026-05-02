@@ -9,11 +9,22 @@ window.SyI18nMng = {
     const uiState = reactive({ isPageCodeLoad: false, selectedId: null});
     const codes = reactive({ lang_code: [], use_yn: [], i18n_scopes: ['COMMON','FO','BO'] });
 
+    const searchParam = reactive({ kw: '', scope: '', use: '' });
+    const searchParamOrg = reactive({ kw: '', scope: '', use: '' });
+
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
+        const params = { pageNo: 1, pageSize: 10000 };
+        if (searchParam.kw)    params.kw           = searchParam.kw.trim();
+        if (searchParam.scope) params.i18nScopeCd  = searchParam.scope;
+        if (searchParam.use)   params.useYn        = searchParam.use;
+        const res = await boApiSvc.syI18n.getPage(params, '다국어관리', '조회');
+        const list = res.data?.data?.pageList || res.data?.data?.list || [];
+        i18nKeys.splice(0, i18nKeys.length, ...list);
+      } catch (err) {
+        console.error('[handleSearchData]', err);
         i18nKeys.splice(0, i18nKeys.length);
-        i18nMsgs.splice(0, i18nMsgs.length);
-      } catch (_) {}
+      }
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
@@ -45,8 +56,6 @@ window.SyI18nMng = {
         fnLoadCodes();
       }
     });
-const searchParam = reactive({ kw: '', scope: '', use: '' });
-    const applied     = reactive({ kw: '', scope: '', use: '' });
     const pager       = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId  = ref(null);
 
@@ -54,19 +63,10 @@ const searchParam = reactive({ kw: '', scope: '', use: '' });
     const LANG_LABELS = { ko:'한국어', en:'English', ja:'日本語', in:'Indonesia' };
     const fnScopeBadge  = s => ({ COMMON:'badge-blue', FO:'badge-green', BO:'badge-orange' }[s] || 'badge-gray');
 
-    const cfFiltered = computed(() => {
-      const kw = applied.kw.toLowerCase();
-      return (i18nKeys || []).filter(k => {
-        if (kw && !k.i18nKey.toLowerCase().includes(kw) && !(k.i18nDesc||'').toLowerCase().includes(kw)) return false;
-        if (applied.scope && k.i18nScopeCd !== applied.scope) return false;
-        if (applied.use && k.useYn !== applied.use) return false;
-        return true;
-      });
-    });
-    const cfTotal      = computed(() => cfFiltered.value.length);
+    const cfTotal      = computed(() => i18nKeys.length);
     const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.pageSize)));
-    const cfPageList   = computed(() => cfFiltered.value.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
-    const cfPageNums   = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const cfPageList   = computed(() => i18nKeys.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
+    const cfPageNums   = computed(() => { const c=pager.pageNo,l=cfTotalPages.value,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
 
     const cfSelectedKey = computed(() => (i18nKeys||[]).find(k => k.i18nId === uiState.selectedId) || null);
     const cfSelectedMsgs = computed(() => {
@@ -111,9 +111,9 @@ const searchParam = reactive({ kw: '', scope: '', use: '' });
       const m = (i18nMsgs||[]).find(m => m.i18nId === i18nId && m.langCd === lang);
       return m ? m.i18nMsg : '';
     };
-    const onSearch = async () => { Object.assign(applied, { kw: searchParam.kw, scope: searchParam.scope, use: searchParam.use }); pager.pageNo = 1; await Object.assign(pager.pageCond, searchParam); handleSearchData('DEFAULT'); };
-    const onReset  = () => { searchParam.kw = ''; searchParam.scope = ''; searchParam.use = ''; Object.assign(applied, { kw: '', scope: '', use: '' }); pager.pageNo = 1; };
-    const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const onSearch = async () => { pager.pageNo = 1; await handleSearchData('DEFAULT'); };
+    const onReset  = () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; handleSearchData('DEFAULT'); };
+    const setPage  = n => { if (n >= 1 && n <= cfTotalPages.value) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
