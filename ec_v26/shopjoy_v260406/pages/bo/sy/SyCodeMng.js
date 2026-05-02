@@ -167,12 +167,10 @@ window.SyCodeMng = {
 
     const handleLoadAllGroups = async () => {
       try {
-        const grpParams = {};
-        if (uiState.grpSelectedPath) grpParams.pathId = uiState.grpSelectedPath;
-        if (searchParam.kw)        grpParams.kw        = searchParam.kw;
-        if (searchParam.useYn)     grpParams.useYn     = searchParam.useYn;
-        if (searchParam.dateStart) grpParams.dateStart = searchParam.dateStart;
-        if (searchParam.dateEnd)   grpParams.dateEnd   = searchParam.dateEnd;
+        const grpParams = {
+          ...Object.fromEntries(Object.entries(searchParam).filter(([k, v]) => k !== 'dateRange' && v !== '' && v !== null && v !== undefined)),
+          ...(uiState.grpSelectedPath ? { pathId: uiState.grpSelectedPath } : {}),
+        };
 
         const [grpRes, codeRes] = await Promise.all([
           boApiSvc.syCodeGrp.getAll(grpParams, '코드관리', '그룹목록조회'),

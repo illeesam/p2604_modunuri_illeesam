@@ -13,11 +13,11 @@ window.SyAttachMng = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const attachParams = { pageNo: 1, pageSize: 10000 };
-        if (uiState.selectedGrpId) attachParams.attachGrpId = uiState.selectedGrpId;
-        if (searchParam.kw)        attachParams.kw           = searchParam.kw;
-        if (searchParam.dateStart) attachParams.dateStart    = searchParam.dateStart;
-        if (searchParam.dateEnd)   attachParams.dateEnd      = searchParam.dateEnd;
+        const attachParams = {
+          pageNo: 1, pageSize: 10000,
+          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+          ...(uiState.selectedGrpId ? { attachGrpId: uiState.selectedGrpId } : {}),
+        };
 
         const [attachRes, grpRes] = await Promise.all([
           boApiSvc.syAttach.getPage(attachParams, '첨부파일관리', '조회'),

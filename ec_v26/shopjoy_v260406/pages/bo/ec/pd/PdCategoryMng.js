@@ -66,8 +66,11 @@ window.PdCategoryMng = {
     /* 우측 그리드 조회 — 선택 카테고리의 직계 자식을 API로 조회 */
     const handleGridSearch = async () => {
       try {
-        const params = { pageNo: 1, pageSize: 10000, ...searchParam };
-        if (uiState.selectedCatId) params.parentCategoryId = uiState.selectedCatId;
+        const params = {
+          pageNo: 1, pageSize: 10000,
+          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+          ...(uiState.selectedCatId ? { parentCategoryId: uiState.selectedCatId } : {}),
+        };
         const res = await boApiSvc.pdCategory.getPage(params, '카테고리관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         gridRows.splice(0);

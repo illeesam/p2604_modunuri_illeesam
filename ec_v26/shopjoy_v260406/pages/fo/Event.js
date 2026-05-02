@@ -23,9 +23,11 @@ window.EventPage = {
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize };
-        if (uiState.activeTab) params.status = uiState.activeTab;
-        if (uiState.sortBy === 'deadline') params.sortBy = 'endDate';
+        const params = {
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          ...(uiState.activeTab             ? { status: uiState.activeTab } : {}),
+          ...(uiState.sortBy === 'deadline' ? { sortBy: 'endDate' }         : {}),
+        };
         const res = await foApiSvc.pmEvent.getPage(params, '이벤트', '목록조회');
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;

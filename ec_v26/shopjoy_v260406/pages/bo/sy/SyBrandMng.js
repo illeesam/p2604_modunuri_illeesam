@@ -23,12 +23,10 @@ window.SyBrandMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: 1, pageSize: 10000 };
-        if (searchParam.bizCd)    params.bizCd    = searchParam.bizCd;
-        if (searchParam.kw)       params.kw       = searchParam.kw;
-        if (searchParam.useYn)    params.useYn    = searchParam.useYn;
-        if (searchParam.dateStart) params.dateStart = searchParam.dateStart;
-        if (searchParam.dateEnd)   params.dateEnd   = searchParam.dateEnd;
+        const params = {
+          pageNo: 1, pageSize: 10000,
+          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+        };
         const res = await boApiSvc.syBrand.getPage(params, '브랜드관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         brands.splice(0, brands.length, ...list);

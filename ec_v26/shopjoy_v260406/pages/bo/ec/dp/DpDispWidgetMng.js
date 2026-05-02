@@ -43,10 +43,13 @@ window.DpDispWidgetMng = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const libParams = { pageNo: 1, pageSize: 10000 };
-        if (searchParam.kw)     libParams.kw         = searchParam.kw;
-        if (searchParam.type)   libParams.widgetType  = searchParam.type;
-        if (searchParam.status) libParams.status      = searchParam.status;
+        const { type, kw, ...restParam } = searchParam;
+        const libParams = {
+          pageNo: 1, pageSize: 10000,
+          ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+          ...(kw   ? { kw: kw.trim() }      : {}),
+          ...(type ? { widgetType: type }    : {}),
+        };
         const [res, resLibs] = await Promise.all([
           boApiSvc.dpWidget.getPage({ pageNo: 1, pageSize: 10000 }, '전시위젯관리', '조회'),
           boApiSvc.dpWidgetLib.getPage(libParams, '전시위젯관리', '조회'),

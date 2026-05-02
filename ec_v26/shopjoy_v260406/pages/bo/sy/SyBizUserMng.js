@@ -75,9 +75,11 @@ window.SyBizUserMng = {
     const handleLoadDetail = async () => {
       uiState.loading = true;
       try {
-        const params = { pageNo: 1, pageSize: 10000 };
-        if (uiState.bizKw)        params.kw             = uiState.bizKw.trim();
-        if (uiState.bizVendorFlt) params.vendorTypeCd   = uiState.bizVendorFlt;
+        const params = {
+          pageNo: 1, pageSize: 10000,
+          ...(uiState.bizKw        ? { kw: uiState.bizKw.trim() }          : {}),
+          ...(uiState.bizVendorFlt ? { vendorTypeCd: uiState.bizVendorFlt } : {}),
+        };
         const res = await boApiSvc.syVendor.getPage(params, '업체사용자관리', '조회');
         const list = res.data?.data?.pageList || res.data?.data || [];
         vendors.splice(0, vendors.length, ...list);

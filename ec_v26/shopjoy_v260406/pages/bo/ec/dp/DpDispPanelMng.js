@@ -205,19 +205,8 @@ window.DpDispPanelMng = {
       searchParam.dispTime = now.toTimeString().slice(0, 5);
     };
 
-    const buildSearchParams = () => {
-      const p = {};
-      if (searchParam.kw)         p.kw         = searchParam.kw;
-      if (searchParam.area)       p.area        = searchParam.area;
-      if (searchParam.status)     p.status      = searchParam.status;
-      if (searchParam.dateStart)  p.dateStart   = searchParam.dateStart;
-      if (searchParam.dateEnd)    p.dateEnd     = searchParam.dateEnd;
-      if (searchParam.dispDate)   p.dispDate    = searchParam.dispDate;
-      if (searchParam.dispTime)   p.dispTime    = searchParam.dispTime;
-      if (searchParam.visibility) p.visibility  = searchParam.visibility;
-      if (searchParam.layoutType) p.layoutType  = searchParam.layoutType;
-      return p;
-    };
+    const buildSearchParams = () =>
+      Object.fromEntries(Object.entries(searchParam).filter(([k, v]) => k !== 'dateRange' && v !== '' && v !== null && v !== undefined));
 
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData(buildSearchParams()); };
 

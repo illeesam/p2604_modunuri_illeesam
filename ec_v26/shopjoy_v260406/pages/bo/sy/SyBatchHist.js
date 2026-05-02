@@ -13,9 +13,11 @@ window.SyBatchHist = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const logParams = { pageNo: 1, pageSize: 10000 };
-        if (uiState.searchBatchId) logParams.batchId   = uiState.searchBatchId;
-        if (uiState.searchStatus)  logParams.runStatus = uiState.searchStatus;
+        const logParams = {
+          pageNo: 1, pageSize: 10000,
+          ...(uiState.searchBatchId ? { batchId: uiState.searchBatchId }   : {}),
+          ...(uiState.searchStatus  ? { runStatus: uiState.searchStatus }  : {}),
+        };
 
         const [resBatch, resLogs] = await Promise.all([
           boApiSvc.syBatch.getPage({ pageNo: 1, pageSize: 10000 }, '배치이력', '목록조회'),

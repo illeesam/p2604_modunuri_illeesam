@@ -61,12 +61,15 @@ window.SyPropMng = {
     // 검색/조회 함수
     const fetchData = async (searchType = 'DEFAULT') => {
       try {
-        const params = { pageNo: 1, pageSize: 10000 };
-        if (cfSiteId.value)          params.siteId  = cfSiteId.value;
-        if (uiState.selectedPath)    params.pathId  = uiState.selectedPath;
-        if (searchParam.kw)          params.kw      = searchParam.kw;
-        if (searchParam.useFlt)      params.useYn   = searchParam.useFlt;
-        if (searchParam.typeFlt)     params.propType = searchParam.typeFlt;
+        const { kw, useFlt, typeFlt } = searchParam;
+        const params = {
+          pageNo: 1, pageSize: 10000,
+          ...(cfSiteId.value          ? { siteId: cfSiteId.value }       : {}),
+          ...(uiState.selectedPath    ? { pathId: uiState.selectedPath } : {}),
+          ...(kw      ? { kw }                    : {}),
+          ...(useFlt  ? { useYn: useFlt }         : {}),
+          ...(typeFlt ? { propType: typeFlt }      : {}),
+        };
         const res = await boApiSvc.syProp.getPage(params, '속성관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         _rawProps.splice(0, _rawProps.length, ...list);

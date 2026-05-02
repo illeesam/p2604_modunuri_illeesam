@@ -48,8 +48,10 @@ window.PdBundleMng = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const bundleParams = { pageNo: 1, pageSize: 10000 };
-        if (searchParam.nm) bundleParams.nm = searchParam.nm.trim();
+        const bundleParams = {
+          pageNo: 1, pageSize: 10000,
+          ...(searchParam.nm ? { nm: searchParam.nm.trim() } : {}),
+        };
         const [bundlesRes, prodsRes, catsRes] = await Promise.all([
           boApiSvc.pdBundle.getPage(bundleParams, '상품번들관리', '목록조회'),
           boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 10000 }, '상품번들관리', '목록조회'),

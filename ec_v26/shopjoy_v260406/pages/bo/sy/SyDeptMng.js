@@ -24,11 +24,13 @@ window.SyDeptMng = {
     const handleGridSearch = async () => {
       uiState.loading = true;
       try {
-        const params = { pageNo: 1, pageSize: 10000 };
-        if (searchParam.kw) params.kw = searchParam.kw;
-        if (searchParam.type) params.typeCd = searchParam.type;
-        if (searchParam.useYn) params.useYn = searchParam.useYn;
-        if (uiState.selectedTreeId != null) params.parentDeptId = uiState.selectedTreeId;
+        const { type, ...restParam } = searchParam;
+        const params = {
+          pageNo: 1, pageSize: 10000,
+          ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+          ...(type ? { typeCd: type } : {}),
+          ...(uiState.selectedTreeId != null ? { parentDeptId: uiState.selectedTreeId } : {}),
+        };
         const res = await boApiSvc.syDept.getPage(params, '부서관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         gridRows.splice(0);

@@ -62,13 +62,15 @@ window.Prod02List = {
     const handleLoadProducts = async () => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize };
-        if (uiState.searchText) params.kw = uiState.searchText;
-        if (selCats.size > 0) params.categoryIds = [...selCats].join(',');
-        if (uiState.priceMin) params.priceMin = uiState.priceMin;
-        if (uiState.priceMax) params.priceMax = uiState.priceMax;
-        if (selColors.size > 0) params.colors = [...selColors].join(',');
-        if (selSizes.size > 0) params.sizes = [...selSizes].join(',');
+        const params = {
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          ...(uiState.searchText   ? { kw: uiState.searchText }                : {}),
+          ...(uiState.priceMin     ? { priceMin: uiState.priceMin }            : {}),
+          ...(uiState.priceMax     ? { priceMax: uiState.priceMax }            : {}),
+          ...(selCats.size   > 0   ? { categoryIds: [...selCats].join(',') }   : {}),
+          ...(selColors.size > 0   ? { colors: [...selColors].join(',') }      : {}),
+          ...(selSizes.size  > 0   ? { sizes: [...selSizes].join(',') }        : {}),
+        };
         const res = await foApiSvc.pdProd.getPage(params, '상품목록', '목록조회');
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;

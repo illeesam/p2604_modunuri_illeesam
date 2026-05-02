@@ -97,9 +97,12 @@ window.PdCategoryProdMng = {
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize };
-        if (searchParam.categoryId) params.categoryId = searchParam.categoryId;
-        if (searchParam.prodNm)     params.prodNm     = searchParam.prodNm.trim();
+        const { prodNm, ...restParam } = searchParam;
+        const params = {
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+          ...(prodNm ? { prodNm: prodNm.trim() } : {}),
+        };
         const res = await boApiSvc.pdCategory.getProds(params, '카테고리상품관리', '목록조회');
         const data = res.data?.data;
         categoryProds.splice(0, categoryProds.length, ...(data?.pageList || data?.list || []));

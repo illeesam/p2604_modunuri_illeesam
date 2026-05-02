@@ -48,13 +48,14 @@ window.DpDispUiMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: 1, pageSize: 10000 };
-        if (uiState.selectedPath)  params.pathId    = uiState.selectedPath;
-        if (searchParam.kw)        params.kw        = searchParam.kw.trim();
-        if (searchParam.type)      params.uiType    = searchParam.type;
-        if (searchParam.useYn)     params.useYn     = searchParam.useYn;
-        if (searchParam.dateStart) params.dateStart = searchParam.dateStart;
-        if (searchParam.dateEnd)   params.dateEnd   = searchParam.dateEnd;
+        const { type, kw, ...restParam } = searchParam;
+        const params = {
+          pageNo: 1, pageSize: 10000,
+          ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+          ...(kw       ? { kw: kw.trim() } : {}),
+          ...(type     ? { uiType: type }  : {}),
+          ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
+        };
         const res = await boApiSvc.dpUi.getPage(params, '전시UI관리', '조회');
         displays.splice(0, displays.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;

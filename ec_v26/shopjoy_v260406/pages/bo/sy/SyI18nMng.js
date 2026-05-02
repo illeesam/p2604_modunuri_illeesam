@@ -14,10 +14,13 @@ window.SyI18nMng = {
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
-        const params = { pageNo: 1, pageSize: 10000 };
-        if (searchParam.kw)    params.kw           = searchParam.kw.trim();
-        if (searchParam.scope) params.i18nScopeCd  = searchParam.scope;
-        if (searchParam.use)   params.useYn        = searchParam.use;
+        const { kw, scope, use } = searchParam;
+        const params = {
+          pageNo: 1, pageSize: 10000,
+          ...(kw    ? { kw: kw.trim() }         : {}),
+          ...(scope ? { i18nScopeCd: scope }     : {}),
+          ...(use   ? { useYn: use }             : {}),
+        };
         const res = await boApiSvc.syI18n.getPage(params, '다국어관리', '조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         i18nKeys.splice(0, i18nKeys.length, ...list);

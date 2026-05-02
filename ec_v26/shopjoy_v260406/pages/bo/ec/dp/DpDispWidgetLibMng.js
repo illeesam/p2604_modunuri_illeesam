@@ -43,11 +43,14 @@ window.DpDispWidgetLibMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: 1, pageSize: 10000 };
-        if (uiState.selectedPath) params.pathId      = uiState.selectedPath;
-        if (searchParam.kw)       params.kw          = searchParam.kw.trim();
-        if (searchParam.type)     params.widgetType   = searchParam.type;
-        if (searchParam.status)   params.status       = searchParam.status;
+        const { type, kw, ...restParam } = searchParam;
+        const params = {
+          pageNo: 1, pageSize: 10000,
+          ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+          ...(kw   ? { kw: kw.trim() }       : {}),
+          ...(type ? { widgetType: type }     : {}),
+          ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
+        };
         const res = await boApiSvc.dpWidgetLib.getPage(params, '전시위젯라이브러리', '조회');
         widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;

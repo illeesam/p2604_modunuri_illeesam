@@ -40,13 +40,11 @@ window.DpDispAreaMng = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: 1, pageSize: 10000 };
-        if (uiState.selectedPath)    params.pathId    = uiState.selectedPath;
-        if (searchParam.kw)          params.kw        = searchParam.kw;
-        if (searchParam.areaType)    params.areaType  = searchParam.areaType;
-        if (searchParam.useYn)       params.useYn     = searchParam.useYn;
-        if (searchParam.dateStart)   params.dateStart = searchParam.dateStart;
-        if (searchParam.dateEnd)     params.dateEnd   = searchParam.dateEnd;
+        const params = {
+          pageNo: 1, pageSize: 10000,
+          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+          ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
+        };
         const res = await boApiSvc.dpArea.getPage(params, '전시영역관리', '목록조회');
         areas.splice(0, areas.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         uiState.error = null;
