@@ -58,7 +58,23 @@ window.Prod01List = {
 
     /* ── 상품 데이터 ── */
     const allProducts = reactive([]);
-    
+
+    const fnBuildPagerNums = () => {
+      const t = Math.max(1, Math.ceil(allProducts.length / PAGE_SIZE));
+      pager.pageTotalPage = t;
+      pager.pageTotalCount = allProducts.length;
+      const c = uiState.currentPage;
+      if (t <= 7) { pager.pageNums = Array.from({ length: t }, (_, i) => i + 1); return; }
+      const set = new Set([1, t, c-2, c-1, c, c+1, c+2].filter(n => n >= 1 && n <= t));
+      const sorted = [...set].sort((a, b) => a - b);
+      const result = [];
+      for (let i = 0; i < sorted.length; i++) {
+        if (i > 0 && sorted[i] - sorted[i-1] > 1) result.push('…');
+        result.push(sorted[i]);
+      }
+      pager.pageNums = result;
+    };
+
     const handleLoadProducts = async () => {
       uiState.loading = true;
       try {
@@ -85,6 +101,7 @@ window.Prod01List = {
             window.SITE_CONFIG.products.splice(0, window.SITE_CONFIG.products.length, ...allProducts);
           }
         } catch (e) {}
+        fnBuildPagerNums();
       } catch (e) {
         console.error('[handleSearchList]', e);
         allProducts.splice(0, allProducts.length);
@@ -142,23 +159,9 @@ window.Prod01List = {
     };
 
     /* ── PC 페이지네이션 ── */
-    const cfTotalPages  = computed(() => Math.max(1, Math.ceil(allProducts.length / PAGE_SIZE)));
     const cfPagedProducts = computed(() => {
       const s = (uiState.currentPage - 1) * PAGE_SIZE;
       return allProducts.slice(s, s + PAGE_SIZE);
-    });
-    const cfPageNums = computed(() => {
-      const t = cfTotalPages.value;
-      const c = uiState.currentPage;
-      if (t <= 7) return Array.from({ length: t }, (_, i) => i + 1);
-      const set = new Set([1, t, c-2, c-1, c, c+1, c+2].filter(n => n >= 1 && n <= t));
-      const sorted = [...set].sort((a, b) => a - b);
-      const result = [];
-      for (let i = 0; i < sorted.length; i++) {
-        if (i > 0 && sorted[i] - sorted[i-1] > 1) result.push('…');
-        result.push(sorted[i]);
-      }
-      return result;
     });
 
     /* ── 모바일 무한스크롤 ── */
@@ -226,7 +229,7 @@ window.Prod01List = {
       cfAllColors, cfAllSizes, cfAllCats,
       toggleColor, toggleSize, toggleCat, cfHasFilter, clearFilters,
       fnDiscountRate, fnFmtPrice, fnCategoryLabel,
-      cfTotalPages, cfPagedProducts, cfPageNums, PAGE_SIZE,
+      cfPagedProducts, PAGE_SIZE,
       cfMobileProducts, cfHasMore,
       codes, onSearch,
       onResize,
@@ -477,25 +480,25 @@ window.Prod01List = {
   </div>
 
   <!-- ── PC 페이지네이션 ── -->
-  <div v-if="!uiState.loading && !uiState.isMobile && cfTotalPages > 1"
+  <div v-if="!uiState.loading && !uiState.isMobile && pager.pageTotalPage > 1"
     style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:32px;flex-wrap:wrap;">
-    <button @click="currentPage=Math.max(1,currentPage-1)" :disabled="currentPage===1"
+    <button @click="uiState.currentPage=Math.max(1,uiState.currentPage-1)" :disabled="uiState.currentPage===1"
       style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.85rem;"
-      :style="currentPage===1?'opacity:0.4;cursor:not-allowed;':''">‹</button>
-    <template v-for="n in cfPageNums" :key="n">
+      :style="uiState.currentPage===1?'opacity:0.4;cursor:not-allowed;':''">‹</button>
+    <template v-for="n in pager.pageNums" :key="n">
       <span v-if="n==='…'" style="padding:8px 4px;color:var(--text-muted);font-size:0.85rem;">…</span>
-      <button v-else @click="currentPage=n;$el.scrollIntoView({behavior:'smooth',block:'start'})"
+      <button v-else @click="uiState.currentPage=n;$el.scrollIntoView({behavior:'smooth',block:'start'})"
         style="min-width:38px;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;transition:all 0.15s;"
-        :style="currentPage===n
+        :style="uiState.currentPage===n
           ? 'background:var(--blue);color:#fff;border:1px solid var(--blue);'
           : 'background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border);'">
         {{ n }}
       </button>
     </template>
-    <button @click="currentPage=Math.min(cfTotalPages,currentPage+1)" :disabled="currentPage===cfTotalPages"
+    <button @click="uiState.currentPage=Math.min(pager.pageTotalPage,uiState.currentPage+1)" :disabled="uiState.currentPage===pager.pageTotalPage"
       style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.85rem;"
-      :style="currentPage===cfTotalPages?'opacity:0.4;cursor:not-allowed;':''">›</button>
-    <span style="font-size:0.78rem;color:var(--text-muted);margin-left:8px;">{{ currentPage }} / {{ cfTotalPages }}</span>
+      :style="uiState.currentPage===pager.pageTotalPage?'opacity:0.4;cursor:not-allowed;':''">›</button>
+    <span style="font-size:0.78rem;color:var(--text-muted);margin-left:8px;">{{ uiState.currentPage }} / {{ pager.pageTotalPage }}</span>
   </div>
 
   <!-- ── 모바일 무한스크롤 센티넬 ── -->

@@ -18,7 +18,7 @@ window.EventPage = {
 
     
     const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageType: 'PAGE', pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const cfPageNums = computed(() => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); return Array.from({length:e-s+1},(_,i)=>s+i); });
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const setPage = n => { if (n>=1 && n<=pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -32,6 +32,7 @@ window.EventPage = {
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;
         events.splice(0, events.length, ...(res.data?.data?.pageList || []));
+        fnBuildPagerNums();
       } catch (e) {
         console.error('[handleSearchList]', e);
         events.splice(0, events.length);
@@ -61,7 +62,7 @@ window.EventPage = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { pager, cfPageNums, setPage, onSizeChange, events, cfOngoingCount, cfEndedCount, uiState, codes };
+    return { pager, setPage, onSizeChange, events, cfOngoingCount, cfEndedCount, uiState, codes };
   },
   template: /* html */ `
 <div class="page-wrap">

@@ -214,13 +214,12 @@ window.XsSample02 = {
     const fnStatusBadge = s => ({ N: 'background:#f0f0f0;color:#666;', I: 'background:#dbeafe;color:#1e40af;', U: 'background:#fef3c7;color:#92400e;', D: 'background:#fee2e2;color:#991b1b;' }[s] || '');
     const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
 
-    const cfTotal        = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
     // ── return ───────────────────────────────────────────────────────────────
 
     return {
       toast, searchParam, onSearch, onReset,
-      gridRows, cfVisibleRows, cfTotal, visibleCount, cfHasMore, loadMore: handleLoadMore, sentinelEl,
+      gridRows, cfVisibleRows, visibleCount, cfHasMore, loadMore: handleLoadMore, sentinelEl,
       setFocused, onCellChange,
       addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
       onDragStart, onDragOver, onDragEnd,
@@ -266,7 +265,7 @@ window.XsSample02 = {
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #f0f0f0;">
       <span style="font-size:12px;font-weight:700;">
         상품 목록
-        <span style="color:#e8587a;margin-left:4px;">{{ cfTotal }}건</span>
+        <span style="color:#e8587a;margin-left:4px;">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span>
         <span style="font-size:11px;color:#aaa;font-weight:400;margin-left:6px;">{{ visibleCount }}개 표시 중</span>
       </span>
       <div style="display:flex;gap:5px;">
