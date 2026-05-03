@@ -127,7 +127,7 @@ app:
       physical-root: src/main/resources/static/cdn
       base-path: attach
       upload-dir: uploads
-    cdn-host: ${CDN_HOST:http://localhost:8080/cdn}
+    cdn-host: ${CDN_HOST:http://localhost:3000/cdn}
     thumbnail-enabled: true
     thumbnail-sizes: 200x200,400x400,800x800
 
