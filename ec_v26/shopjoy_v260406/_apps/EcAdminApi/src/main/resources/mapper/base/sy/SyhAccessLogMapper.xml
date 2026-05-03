@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.base.sy.mapper.SyhAccessLogMapper">
+
+    <sql id="syhAccessLogCond">
+        <where>
+            <if test="dateStart != null and dateStart != ''">AND l.reg_date &gt;= #{dateStart}::DATE</if>
+            <if test="dateEnd   != null and dateEnd   != ''">AND l.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="method    != null and method    != ''">AND l.req_method = #{method}</if>
+            <if test="status    != null and status    != ''">AND l.resp_status = #{status}::INTEGER</if>
+            <if test="path      != null and path      != ''">AND l.req_path LIKE '%'||#{path}||'%'</if>
+            <if test="kw        != null and kw        != ''">AND (l.req_ip LIKE '%'||#{kw}||'%' OR l.user_id LIKE '%'||#{kw}||'%')</if>
+        </where>
+    </sql>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyhAccessLogDto">
+        SELECT /* base.sy :: SyhAccessLogMapper :: selectPageList */
+              l.log_id
+            , l.req_method
+            , l.req_host
+            , l.req_path
+            , l.req_query
+            , l.req_ip
+            , l.req_ua
+            , l.user_type_cd
+            , l.user_id
+            , l.role_id
+            , l.dept_id
+            , l.vendor_id
+            , l.locale_id
+            , l.resp_status
+            , l.resp_time_ms
+            , l.server_nm
+            , l.profile
+            , l.thread_nm
+            , l.ui_nm
+            , l.cmd_nm
+            , l.file_nm
+            , l.func_nm
+            , l.line_no
+            , l.trace_id
+            , l.req_dt
+            , l.reg_date
+        FROM shopjoy_2604.syh_access_log l
+        <include refid="syhAccessLogCond"/>
+        ORDER BY l.req_dt DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(l.*) /* base.sy :: SyhAccessLogMapper :: selectPageCount */
+        FROM shopjoy_2604.syh_access_log l
+        <include refid="syhAccessLogCond"/>
+    </select>
+
+</mapper>
