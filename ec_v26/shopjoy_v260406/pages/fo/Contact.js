@@ -1,7 +1,12 @@
 /* ShopJoy - Contact */
 window.Contact = {
   name: 'Contact',
-  props: ['navigate', 'config', 'showToast', 'showAlert'],
+  props: {
+    navigate:  { type: Function, required: true },        // 페이지 이동
+    config:    { type: Object,   default: () => ({}) },   // 사이트 설정
+    showToast: { type: Function, default: () => {} },      // 토스트 알림
+    showAlert: { type: Function, default: () => {} },      // 알림 모달
+  },
   emits: [],
   setup(props) {
     const { reactive, ref, computed, watch, onMounted } = Vue;

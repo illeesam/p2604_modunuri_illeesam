@@ -1,7 +1,13 @@
 /* ShopJoy - My 취소/반품/교환 페이지 (#page=myClaim) */
 window.MyClaim = {
   name: 'MyClaim',
-  props: ['navigate', 'config', 'cartCount', 'showToast', 'showConfirm'],
+  props: {
+    navigate:    { type: Function, required: true },                    // 페이지 이동
+    config:      { type: Object,   default: () => ({}) },               // 사이트 설정
+    cartCount:   { type: Number,   default: 0 },                        // 장바구니 수량
+    showToast:   { type: Function, default: () => {} },                  // 토스트 알림
+    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+  },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
 

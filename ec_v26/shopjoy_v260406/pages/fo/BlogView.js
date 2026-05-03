@@ -1,7 +1,11 @@
 /* ShopJoy - BlogView (블로그 상세) */
 window.BlogView = {
   name: 'BlogView',
-  props: ['navigate', 'config', 'editId'],
+  props: {
+    navigate: { type: Function, required: true },        // 페이지 이동
+    config:   { type: Object,   default: () => ({}) },   // 사이트 설정
+    editId:   { type: String,   default: null },          // 대상 ID
+  },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
 

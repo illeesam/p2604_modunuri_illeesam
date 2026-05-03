@@ -2,7 +2,11 @@
 window._ecMemberHistState = window._ecMemberHistState || { tab: 'orders', viewMode: 'tab' };
 window.MbMemberHist = {
   name: 'MbMemberHist',
-  props: ['navigate', 'showRefModal', 'memberId'],
+  props: {
+    navigate:     { type: Function, required: true }, // 페이지 이동
+    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
+    memberId:     { type: String, default: null }, // 대상 ID
+  },
   setup(props) {
     const { computed, reactive, watch, onMounted } = Vue;
     const uiState = reactive({ loading: false, isPageCodeLoad: false, tab: window._ecMemberHistState.tab || 'orders', viewMode2: window._ecMemberHistState.viewMode || 'tab'});

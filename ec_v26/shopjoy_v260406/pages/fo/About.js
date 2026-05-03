@@ -1,7 +1,10 @@
 /* ShopJoy - About Page (회사소개) */
 window.About = {
   name: 'About',
-  props: ['navigate', 'config'],
+  props: {
+    navigate: { type: Function, required: true },        // 페이지 이동
+    config:   { type: Object,   default: () => ({}) },   // 사이트 설정
+  },
   setup(props) {
     const { ref, reactive, watch, onMounted } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });

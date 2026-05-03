@@ -2,7 +2,15 @@
 window._odClaimDtlState = window._odClaimDtlState || { activeTab: 'info', viewMode: 'tab' };
 window.OdClaimDtl = {
   name: 'OdClaimDtl',
-  props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes', 'viewMode'],
+  props: {
+    navigate:     { type: Function, required: true }, // 페이지 이동
+    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
+    showToast:    { type: Function, default: () => {} }, // 토스트 알림
+    editId:       { type: String, default: null }, // 수정 대상 ID
+    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
+    viewMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+  },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: window._odClaimDtlState.activeTab || 'info', viewMode2: window._odClaimDtlState.viewMode || 'tab'});

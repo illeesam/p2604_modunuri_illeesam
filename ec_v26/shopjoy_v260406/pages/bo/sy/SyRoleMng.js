@@ -1,7 +1,11 @@
 /* ShopJoy Admin - 역할관리 (Tree CRUD 그리드 + 하단 메뉴/사용자 배분) */
 window.SyRoleMng = {
   name: 'SyRoleMng',
-  props: ['navigate', 'showToast', 'showConfirm'],
+  props: {
+    navigate:    { type: Function, required: true }, // 페이지 이동
+    showToast:   { type: Function, default: () => {} }, // 토스트 알림
+    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+  },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, watch, onMounted } = Vue;

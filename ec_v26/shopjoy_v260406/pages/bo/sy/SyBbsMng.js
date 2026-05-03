@@ -1,7 +1,13 @@
 /* ShopJoy Admin - 게시글관리 */
 window.SyBbsMng = {
   name: 'SyBbsMng',
-  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: {
+    navigate:     { type: Function, required: true }, // 페이지 이동
+    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
+    showToast:    { type: Function, default: () => {} }, // 토스트 알림
+    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
+  },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const bbss = reactive([]);

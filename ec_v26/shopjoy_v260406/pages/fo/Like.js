@@ -1,7 +1,14 @@
 /* ShopJoy - Like (좋아요 / 위시리스트) */
 window.Like = {
   name: 'Like',
-  props: ['navigate', 'config', 'products', 'likes', 'toggleLike', 'selectProduct'],
+  props: {
+    navigate:      { type: Function, required: true },        // 페이지 이동
+    config:        { type: Object,   default: () => ({}) },   // 사이트 설정
+    products:      { type: Array,    default: () => ([]) },   // 상품 목록
+    likes:         { type: Array,    default: () => ([]) },   // 찜 목록
+    toggleLike:    { type: Function, default: () => {} },      // 찜 토글
+    selectProduct: { type: Function, default: () => {} },      // 상품 선택
+  },
   setup(props) {
     const { reactive, computed, watch, onMounted } = Vue;
 

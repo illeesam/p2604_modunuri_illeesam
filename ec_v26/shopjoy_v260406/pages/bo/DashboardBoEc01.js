@@ -28,8 +28,10 @@
 
   window.DashboardBoEc01 = {
     name: 'DashboardBoEc01',
-    props: ['navigate', 'showToast'],
-
+    props: {
+      navigate:  { type: Function, required: true }, // 페이지 이동
+      showToast: { type: Function, default: () => {} }, // 토스트 알림
+    },
     setup() {
       const { ref, reactive, computed } = Vue;
 

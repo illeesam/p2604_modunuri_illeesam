@@ -1,7 +1,10 @@
 /* ShopJoy Admin - 대시보드 */
 window.SyDashboardMng = {
   name: 'SyDashboardMng',
-  props: ['navigate', 'showToast'],
+  props: {
+    navigate:  { type: Function, required: true }, // 페이지 이동
+    showToast: { type: Function, default: () => {} }, // 토스트 알림
+  },
   setup(props) {
     const { computed, reactive, watch, onMounted } = Vue;
     const uiState = reactive({ isPageCodeLoad: false });

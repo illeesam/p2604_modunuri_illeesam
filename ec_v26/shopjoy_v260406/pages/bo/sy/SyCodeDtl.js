@@ -1,7 +1,13 @@
 /* ShopJoy Admin - 공통코드 상세/등록 */
 window.SyCodeDtl = {
   name: 'SyCodeDtl',
-  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId'],
+  props: {
+    navigate:    { type: Function, required: true }, // 페이지 이동
+    showToast:   { type: Function, default: () => {} }, // 토스트 알림
+    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+    setApiRes:   { type: Function, default: () => {} }, // API 결과 전달
+    editId:      { type: String, default: null }, // 수정 대상 ID
+  },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { reactive, computed, watch, onMounted, ref } = Vue;

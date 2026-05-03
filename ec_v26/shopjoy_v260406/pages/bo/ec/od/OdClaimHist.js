@@ -2,7 +2,12 @@
 window._odClaimHistState = window._odClaimHistState || { tab: 'items', viewMode: 'tab' };
 window.OdClaimHist = {
   name: 'OdClaimHist',
-  props: ['navigate', 'showRefModal', 'showToast', 'claimId'],
+  props: {
+    navigate:     { type: Function, required: true }, // 페이지 이동
+    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
+    showToast:    { type: Function, default: () => {} }, // 토스트 알림
+    claimId:      { type: String, default: null }, // 대상 ID
+  },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const uiState = reactive({isPageCodeLoad: false, botTab: window._odClaimHistState.tab || 'items', viewMode2: 'tab', claimType: '취소', claimStatus: '', relatedOrder: null, relatedDliv: null});

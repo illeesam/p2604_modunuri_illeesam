@@ -1,7 +1,12 @@
 /* ShopJoy Admin - 배송템플릿관리 */
 window.PdDlivTmpltMng = {
   name: 'PdDlivTmpltMng',
-  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
+  props: {
+    navigate:    { type: Function, required: true }, // 페이지 이동
+    showToast:   { type: Function, default: () => {} }, // 토스트 알림
+    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+    setApiRes:   { type: Function, default: () => {} }, // API 결과 전달
+  },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const dlivTmplts = reactive([]);

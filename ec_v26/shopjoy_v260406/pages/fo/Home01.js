@@ -1,7 +1,14 @@
 /* ShopJoy - Home */
 window.Home01 = {
   name: 'Home',
-  props: ['navigate', 'config', 'products', 'selectProduct', 'toggleLike', 'isLiked'],
+  props: {
+    navigate:      { type: Function, required: true },        // 페이지 이동
+    config:        { type: Object,   default: () => ({}) },   // 사이트 설정
+    products:      { type: Array,    default: () => ([]) },   // 상품 목록
+    selectProduct: { type: Function, default: () => {} },      // 상품 선택
+    toggleLike:    { type: Function, default: () => {} },      // 찜 토글
+    isLiked:       { type: Function, default: () => false },   // 찜 여부 확인
+  },
   emits: [],
   setup(props) {
     const { computed, ref, onMounted, onBeforeUnmount, reactive, watch } = Vue;
@@ -64,8 +71,8 @@ window.Home01 = {
       { img: 'assets/cdn/prod/img/slider/slider-3.jpg', title: '특별한 혜택', sub: '시즌 세일 진행중', desc: '인기 상품 최대 50% 할인! 한정 수량으로 준비된 특별 혜택을 놓치지 마세요.' },
     ];
     let bannerTimer = null;
-    const startBannerTimer = () => { bannerTimer = setInterval(() => { uiState.uiState.bannerIdx = (uiState.uiState.bannerIdx + 1) % banners.length; }, 20000); };
-    const setBanner = (i) => { uiState.uiState.bannerIdx = i; clearInterval(bannerTimer); startBannerTimer(); };
+    const startBannerTimer = () => { bannerTimer = setInterval(() => { uiState.bannerIdx = (uiState.bannerIdx + 1) % banners.length; }, 20000); };
+    const setBanner = (i) => { uiState.bannerIdx = i; clearInterval(bannerTimer); startBannerTimer(); };
 
     // ★ onMounted
     onMounted(() => {

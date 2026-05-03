@@ -1,7 +1,9 @@
 /* ShopJoy - Login / Signup Modal */
 window.Login = {
   name: 'Login',
-  props: ['showToast'],
+  props: {
+    showToast: { type: Function, default: () => {} }, // 토스트 알림
+  },
   emits: ['close'],
   setup(props, { emit }) {
     const { ref, reactive, watch, onMounted } = Vue;

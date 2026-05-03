@@ -1,7 +1,14 @@
 /* ShopJoy Admin - 전시UI 상세/등록 (탭 + 우측 미리보기) */
 window.DpDispUiDtl = {
   name: 'DpDispUiDtl',
-  props: ['navigate', 'showRefModal', 'showToast', 'editId', 'showConfirm', 'setApiRes'],
+  props: {
+    navigate:     { type: Function, required: true }, // 페이지 이동
+    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
+    showToast:    { type: Function, default: () => {} }, // 토스트 알림
+    editId:       { type: String, default: null }, // 수정 대상 ID
+    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
+  },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;

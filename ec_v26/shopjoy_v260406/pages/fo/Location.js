@@ -1,7 +1,10 @@
 /* ShopJoy - Location Page (위치안내) */
 window.Location = {
   name: 'Location',
-  props: ['navigate', 'config'],
+  props: {
+    navigate: { type: Function, required: true },        // 페이지 이동
+    config:   { type: Object,   default: () => ({}) },   // 사이트 설정
+  },
   setup() {
     const { ref, reactive, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, mapProvider: 'kakao', mapSrc: '' });

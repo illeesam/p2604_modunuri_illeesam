@@ -1,7 +1,11 @@
 ﻿/* ShopJoy Admin - 공통코드관리 (CRUD 그리드) */
 window.SyCodeMng = {
   name: 'SyCodeMng',
-  props: ['navigate', 'showToast', 'showConfirm'],
+  props: {
+    navigate:    { type: Function, required: true }, // 페이지 이동
+    showToast:   { type: Function, default: () => {} }, // 토스트 알림
+    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+  },
   setup(props) {
     const { reactive, watch, onMounted, nextTick } = Vue;
 

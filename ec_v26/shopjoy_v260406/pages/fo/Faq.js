@@ -1,7 +1,10 @@
 /* ShopJoy - Faq */
 window.Faq = {
   name: 'Faq',
-  props: ['navigate', 'config'],
+  props: {
+    navigate: { type: Function, required: true },        // 페이지 이동
+    config:   { type: Object,   default: () => ({}) },   // 사이트 설정
+  },
   emits: [],
   setup() {
     const { ref, reactive, watch, onMounted } = Vue;

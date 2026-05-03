@@ -1,7 +1,16 @@
 /* ShopJoy - My 주문 페이지 (#page=myOrder) */
 window.MyOrder = {
   name: 'MyOrder',
-  props: ['navigate', 'config', 'cart', 'cartCount', 'showToast', 'showConfirm', 'removeFromCart', 'updateCartQty'],
+  props: {
+    navigate:       { type: Function, required: true },                    // 페이지 이동
+    config:         { type: Object,   default: () => ({}) },               // 사이트 설정
+    cart:           { type: Array,    default: () => ([]) },               // 장바구니 목록
+    cartCount:      { type: Number,   default: 0 },                        // 장바구니 수량
+    showToast:      { type: Function, default: () => {} },                  // 토스트 알림
+    showConfirm:    { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+    removeFromCart: { type: Function, default: () => {} },                  // 장바구니 삭제
+    updateCartQty:  { type: Function, default: () => {} },                  // 장바구니 수량 변경
+  },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, helpTab: 'order', flowHelpOpen: false });

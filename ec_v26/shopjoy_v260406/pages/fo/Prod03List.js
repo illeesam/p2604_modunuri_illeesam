@@ -1,7 +1,14 @@
 /* ShopJoy - Prod03List (API 로드 + 고급 필터 + PC 페이지네이션 + 모바일 무한스크롤) */
 window.Prod03List = {
   name: "Prod03List",
-  props: ['navigate', 'config', 'products', 'selectProduct', 'toggleLike', 'isLiked'],
+  props: {
+    navigate:      { type: Function, required: true },        // 페이지 이동
+    config:        { type: Object,   default: () => ({}) },   // 사이트 설정
+    products:      { type: Array,    default: () => ([]) },   // 상품 목록
+    selectProduct: { type: Function, default: () => {} },      // 상품 선택
+    toggleLike:    { type: Function, default: () => {} },      // 찜 토글
+    isLiked:       { type: Function, default: () => false },   // 찜 여부 확인
+  },
   setup(props) {
 
     const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;

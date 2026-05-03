@@ -1,7 +1,12 @@
 /* ShopJoy Admin - 첨부관리 (좌30% 그룹 + 우70% 파일) */
 window.SyAttachMng = {
   name: 'SyAttachMng',
-  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm'],
+  props: {
+    navigate:     { type: Function, required: true }, // 페이지 이동
+    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
+    showToast:    { type: Function, default: () => {} }, // 토스트 알림
+    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+  },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const attaches = reactive([]);

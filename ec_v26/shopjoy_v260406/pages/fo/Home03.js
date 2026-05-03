@@ -1,7 +1,14 @@
 /* ShopJoy - Home */
 window.Home03 = {
   name: 'Home',
-  props: ['navigate', 'config', 'products', 'selectProduct', 'toggleLike', 'isLiked'],
+  props: {
+    navigate:      { type: Function, required: true },        // 페이지 이동
+    config:        { type: Object,   default: () => ({}) },   // 사이트 설정
+    products:      { type: Array,    default: () => ([]) },   // 상품 목록
+    selectProduct: { type: Function, default: () => {} },      // 상품 선택
+    toggleLike:    { type: Function, default: () => {} },      // 찜 토글
+    isLiked:       { type: Function, default: () => false },   // 찜 여부 확인
+  },
   emits: [],
   setup(props) {
     const { ref, reactive, computed, onMounted, onBeforeUnmount, watch } = Vue;

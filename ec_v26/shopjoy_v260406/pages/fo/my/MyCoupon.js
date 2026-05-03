@@ -1,7 +1,11 @@
 /* ShopJoy - My 쿠폰 페이지 (#page=myCoupon) */
 window.MyCoupon = {
   name: 'MyCoupon',
-  props: ['navigate', 'cartCount', 'showToast'],
+  props: {
+    navigate:  { type: Function, required: true },        // 페이지 이동
+    cartCount: { type: Number,   default: 0 },             // 장바구니 수량
+    showToast: { type: Function, default: () => {} },      // 토스트 알림
+  },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
 

@@ -1,7 +1,12 @@
 /* ShopJoy - BlogEdit (블로그 작성/수정) */
 window.BlogEdit = {
   name: 'BlogEdit',
-  props: ['navigate', 'config', 'editId', 'showToast'],
+  props: {
+    navigate:  { type: Function, required: true },        // 페이지 이동
+    config:    { type: Object,   default: () => ({}) },   // 사이트 설정
+    editId:    { type: String,   default: null },          // 대상 ID
+    showToast: { type: Function, default: () => {} },      // 토스트 알림
+  },
   setup(props) {
     const { ref, computed, reactive, onMounted, watch } = Vue;
 

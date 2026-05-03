@@ -1,8 +1,13 @@
 ﻿/* ShopJoy Admin - 프로퍼티 관리 (좌측 트리 + 우측 CRUD 그리드) */
 window.SyPropMng = {
   name: 'SyPropMng',
-  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
-
+  props: {
+    navigate:     { type: Function, required: true }, // 페이지 이동
+    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
+    showToast:    { type: Function, default: () => {} }, // 토스트 알림
+    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
+  },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const uiState = reactive({ isPageCodeLoad: false, _newId: -1, selectedPath: ''});
@@ -288,7 +293,14 @@ window.SyPropMng = {
 /* -- 트리 노드 재귀 컴포넌트 -- */
 window.PropTreeNode = {
   name: 'PropTreeNode',
-  props: ['node', 'expanded', 'selected', 'onToggle', 'onSelect', 'depth'],
+  props: {
+    node:     { type: Object, default: () => ({}) }, // 전달값
+    expanded: { type: Boolean, default: false }, // 전달값
+    selected: { type: Boolean, default: false }, // 전달값
+    onToggle: { type: Function, default: () => {} }, // 콜백 함수
+    onSelect: { type: Function, default: () => {} }, // 콜백 함수
+    depth:    { type: Number, default: 0 }, // 전달값
+  },
   template: /* html */`
 <div>
   <div :style="{display:'flex',alignItems:'center',gap:'4px',padding:'5px 6px',cursor:'pointer',borderRadius:'4px',

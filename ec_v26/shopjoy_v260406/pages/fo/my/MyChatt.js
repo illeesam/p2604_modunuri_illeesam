@@ -1,7 +1,10 @@
 /* ShopJoy - My 채팅 페이지 (#page=myChatt) */
 window.MyChatt = {
   name: 'MyChatt',
-  props: ['navigate', 'cartCount'],
+  props: {
+    navigate:  { type: Function, required: true }, // 페이지 이동
+    cartCount: { type: Number,   default: 0 },      // 장바구니 수량
+  },
   setup(props) {
     const { reactive, computed, onMounted, watch } = Vue;
 

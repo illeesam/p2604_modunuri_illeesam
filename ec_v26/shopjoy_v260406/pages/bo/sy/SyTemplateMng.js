@@ -1,7 +1,13 @@
 /* ShopJoy Admin - 템플릿관리 목록 */
 window.SyTemplateMng = {
   name: 'SyTemplateMng',
-  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: {
+    navigate:     { type: Function, required: true }, // 페이지 이동
+    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
+    showToast:    { type: Function, default: () => {} }, // 토스트 알림
+    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
+  },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const templates = reactive([]);

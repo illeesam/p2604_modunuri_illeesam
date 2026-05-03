@@ -1,7 +1,12 @@
 /* ShopJoy Admin - 회원관리 상세/등록 */
 window.MbMemberDtl = {
   name: 'MbMemberDtl',
-  props: ['detailModal', 'handleSave', 'handleDelete', 'closeDetail'],
+  props: {
+    detailModal:  { type: Object, default: () => ({}) }, // 전달값
+    handleSave:   { type: Function, default: () => {} }, // 콜백 함수
+    handleDelete: { type: Function, default: () => {} }, // 콜백 함수
+    closeDetail:  { type: Function, default: () => {} }, // 콜백 함수
+  },
   setup(props) {
     const { watch, ref, reactive, onMounted } = Vue;
     const currentId = ref(props.detailModal.editId);

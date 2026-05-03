@@ -1,7 +1,11 @@
 /* ShopJoy Admin - 부서관리 (Tree CRUD 그리드) */
 window.SyDeptMng = {
   name: 'SyDeptMng',
-  props: ['navigate', 'showToast', 'showConfirm'],
+  props: {
+    navigate:    { type: Function, required: true }, // 페이지 이동
+    showToast:   { type: Function, default: () => {} }, // 토스트 알림
+    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+  },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, watch, onMounted } = Vue;
@@ -408,7 +412,14 @@ window.SyDeptMng = {
 
 window.DeptTreeNode = {
   name: 'DeptTreeNode',
-  props: ['node', 'expanded', 'selected', 'onToggle', 'onSelect', 'depth'],
+  props: {
+    node:     { type: Object, default: () => ({}) }, // 전달값
+    expanded: { type: Boolean, default: false }, // 전달값
+    selected: { type: Boolean, default: false }, // 전달값
+    onToggle: { type: Function, default: () => {} }, // 콜백 함수
+    onSelect: { type: Function, default: () => {} }, // 콜백 함수
+    depth:    { type: Number, default: 0 }, // 전달값
+  },
   components: { 'dept-tree-node': null },
   created() { this.$options.components['dept-tree-node'] = window.DeptTreeNode; },
   template: `

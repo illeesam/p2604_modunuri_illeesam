@@ -2,7 +2,11 @@
 window._ecDlivHistState = window._ecDlivHistState || { tab: 'order', viewMode: 'tab' };
 window.OdDlivHist = {
   name: 'OdDlivHist',
-  props: ['navigate', 'showRefModal', 'orderId'],
+  props: {
+    navigate:     { type: Function, required: true }, // 페이지 이동
+    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
+    orderId:      { type: String, default: null }, // 대상 ID
+  },
   setup(props) {
     const { ref, computed, reactive, watch, onMounted } = Vue;
     const deliveries = reactive([]);

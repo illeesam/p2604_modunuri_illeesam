@@ -12,7 +12,10 @@
 */
 window.BoRefModal = {
   name: 'BoRefModal',
-  props: ['state', 'reloadTrigger'],
+  props: {
+    state:         { type: Object, default: () => ({}) }, // 공유 상태
+    reloadTrigger: { type: Number, default: 0 }, // 재조회 트리거
+  },
   emits: ['close'],
   setup(props, { emit }) {
     const { reactive, watch } = Vue;

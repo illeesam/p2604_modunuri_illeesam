@@ -1,7 +1,16 @@
 /* ShopJoy - Prod01View (상품 상세 리뉴얼) */
 window.Prod02View = {
   name: "Prod02View",
-  props: ['navigate', 'config', 'product', 'addToCart', 'showToast', 'showAlert', 'toggleLike', 'isLiked'],
+  props: {
+    navigate:   { type: Function, required: true },        // 페이지 이동
+    config:     { type: Object,   default: () => ({}) },   // 사이트 설정
+    product:    { type: Object,   default: () => ({}) },   // 상품 정보
+    addToCart:  { type: Function, default: () => {} },      // 장바구니 추가
+    showToast:  { type: Function, default: () => {} },      // 토스트 알림
+    showAlert:  { type: Function, default: () => {} },      // 알림 모달
+    toggleLike: { type: Function, default: () => {} },      // 찜 토글
+    isLiked:    { type: Function, default: () => false },   // 찜 여부 확인
+  },
   setup(props) {
 
     const { ref, reactive, computed, onMounted, onBeforeUnmount, watch } = Vue;

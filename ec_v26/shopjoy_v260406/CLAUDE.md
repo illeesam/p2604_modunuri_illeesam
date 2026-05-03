@@ -459,10 +459,79 @@ sy 도메인 Entity는 `_apps/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/ba
 
 ### Props 표준
 
-- **Mng**: `['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes']`
-- **Dtl**: Mng + `'editId'`, `'viewMode'`
-- **Hist**: `['navigate', 'adminData', 'showRefModal', 'showToast', '<entityId>']`
+props는 **배열 형식 금지**, 반드시 **객체 형식**으로 type·required·default를 명시한다.  
+각 항목 끝에 `// 한 줄 주석` 으로 역할을 표시한다.
+
+#### BO props 항목별 타입 및 default 규칙
+
+| prop 이름 | type | required | default | 주석 |
+|---|---|---|---|---|
+| `navigate` | Function | true | — | `// 페이지 이동` |
+| `showToast` | Function | false | `() => {}` | `// 토스트 알림` |
+| `showConfirm` | Function | false | `() => Promise.resolve(true)` | `// 확인 모달` |
+| `showRefModal` | Function | false | `() => {}` | `// 참조 모달 열기` |
+| `setApiRes` | Function | false | `() => {}` | `// API 결과 전달` |
+| `editId` | String | false | `null` | `// 수정 대상 ID` |
+| `viewMode` | String | false | `'tab'` | `// 뷰모드 (tab/1col/2col/3col/4col)` |
+| `adminData` / `boData` | Object | false | `() => ({})` | `// 목업/BO 공통 데이터` |
+| `reloadTrigger` | Number | false | `0` | `// 재조회 트리거` |
+| `*Id` / `*Code` 형식 | String | false | `null` | `// 대상 ID/코드` |
+
+#### BO 컴포넌트 유형별 표준 props 선언
+
+```js
+// Mng
+props: {
+  navigate:     { type: Function, required: true },                       // 페이지 이동
+  showRefModal: { type: Function, default: () => {} },                    // 참조 모달 열기
+  showToast:    { type: Function, default: () => {} },                    // 토스트 알림
+  showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+  setApiRes:    { type: Function, default: () => {} },                    // API 결과 전달
+},
+
+// Dtl
+props: {
+  navigate:     { type: Function, required: true },                       // 페이지 이동
+  showRefModal: { type: Function, default: () => {} },                    // 참조 모달 열기
+  showToast:    { type: Function, default: () => {} },                    // 토스트 알림
+  showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+  setApiRes:    { type: Function, default: () => {} },                    // API 결과 전달
+  editId:       { type: String,   default: null },                        // 수정 대상 ID
+  viewMode:     { type: String,   default: 'tab' },                       // 뷰모드 (tab/1col/2col/3col/4col)
+},
+
+// Hist (xxxId 자리에 실제 ID명 사용, 예: batchId, orderId 등)
+props: {
+  navigate:     { type: Function, required: true },                       // 페이지 이동
+  showRefModal: { type: Function, default: () => {} },                    // 참조 모달 열기
+  showToast:    { type: Function, default: () => {} },                    // 토스트 알림
+  xxxId:        { type: String,   default: null },                        // 대상 ID
+},
+```
+
 - Mng 내 Dtl 인라인 임베드 시: `:show-confirm` + `:set-api-res` 반드시 전달
+
+#### FO props 항목별 타입 및 default 규칙
+
+| prop 이름 | type | required | default | 주석 |
+|---|---|---|---|---|
+| `navigate` | Function | true | — | `// 페이지 이동` |
+| `config` | Object | false | `() => ({})` | `// 사이트 설정` |
+| `showToast` | Function | false | `() => {}` | `// 토스트 알림` |
+| `showAlert` | Function | false | `() => {}` | `// 알림 모달` |
+| `showConfirm` | Function | false | `() => Promise.resolve(true)` | `// 확인 모달` |
+| `editId` | String | false | `null` | `// 대상 ID` |
+| `products` | Array | false | `() => ([])` | `// 상품 목록` |
+| `product` | Object | false | `() => ({})` | `// 상품 정보` |
+| `cart` | Array | false | `() => ([])` | `// 장바구니 목록` |
+| `cartCount` | Number | false | `0` | `// 장바구니 수량` |
+| `selectProduct` | Function | false | `() => {}` | `// 상품 선택` |
+| `toggleLike` | Function | false | `() => {}` | `// 찜 토글` |
+| `isLiked` | Function | false | `() => false` | `// 찜 여부 확인` |
+| `addToCart` | Function | false | `() => {}` | `// 장바구니 추가` |
+| `removeFromCart` | Function | false | `() => {}` | `// 장바구니 삭제` |
+| `updateCartQty` | Function | false | `() => {}` | `// 장바구니 수량 변경` |
+| `clearCart` | Function | false | `() => {}` | `// 장바구니 비우기` |
 
 ### 저장/삭제 표준 패턴
 

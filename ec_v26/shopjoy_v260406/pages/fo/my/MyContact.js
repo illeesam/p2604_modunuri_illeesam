@@ -1,7 +1,12 @@
 /* ShopJoy - My 문의 페이지 (#page=myContact) */
 window.MyContact = {
   name: 'MyContact',
-  props: ['navigate', 'cartCount', 'showToast', 'showConfirm'],
+  props: {
+    navigate:    { type: Function, required: true },                    // 페이지 이동
+    cartCount:   { type: Number,   default: 0 },                        // 장바구니 수량
+    showToast:   { type: Function, default: () => {} },                  // 토스트 알림
+    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+  },
   setup(props) {
     const { reactive, computed, onMounted, watch } = Vue;
 

@@ -3,7 +3,10 @@
  */
 window.XsLocalStorage = {
   name: 'XsLocalStorage',
-  props: ['navigate', 'showToast'],
+  props: {
+    navigate:  { type: Function, required: true },        // 페이지 이동
+    showToast: { type: Function, default: () => {} },      // 토스트 알림
+  },
   setup(props) {
     const { ref, reactive, computed, onMounted, onUnmounted, watch } = Vue;
     const uiStateGlobal = reactive({ loading: false, error: null, isPageCodeLoad: false, filterKey: '', editingKey: null, editingValue: '', valueColWidth: 65, startX: 0, startWidth: 0});

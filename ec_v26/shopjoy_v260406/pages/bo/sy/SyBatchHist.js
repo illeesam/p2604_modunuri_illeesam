@@ -1,7 +1,13 @@
 /* ShopJoy Admin - 배치 실행이력 */
 window.SyBatchHist = {
   name: 'SyBatchHist',
-  props: ['navigate', 'boData', 'showRefModal', 'showToast', 'batchCode'],
+  props: {
+    navigate:     { type: Function, required: true }, // 페이지 이동
+    boData:       { type: Object, default: () => ({}) }, // BO 공통 데이터
+    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
+    showToast:    { type: Function, default: () => {} }, // 토스트 알림
+    batchCode:    { type: String, default: null }, // 대상 코드
+  },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const batches = reactive([]);

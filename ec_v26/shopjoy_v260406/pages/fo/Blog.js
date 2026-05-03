@@ -1,7 +1,10 @@
 /* ShopJoy - Blog (블로그 목록) */
 window.Blog = {
   name: 'Blog',
-  props: ['navigate', 'config'],
+  props: {
+    navigate: { type: Function, required: true },        // 페이지 이동
+    config:   { type: Object,   default: () => ({}) },   // 사이트 설정
+  },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });

@@ -1,7 +1,14 @@
 /* ShopJoy Admin - 공지사항관리 상세/등록 */
 window.CmNoticeDtl = {
   name: 'CmNoticeDtl',
-  props: ['navigate', 'showToast', 'showConfirm', 'editId', 'setApiRes', 'viewMode'],
+  props: {
+    navigate:    { type: Function, required: true }, // 페이지 이동
+    showToast:   { type: Function, default: () => {} }, // 토스트 알림
+    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+    editId:      { type: String, default: null }, // 수정 대상 ID
+    setApiRes:   { type: Function, default: () => {} }, // API 결과 전달
+    viewMode:    { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+  },
   setup(props) {
     const { ref, reactive, computed, onMounted, onBeforeUnmount, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });

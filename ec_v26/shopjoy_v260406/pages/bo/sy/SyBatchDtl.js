@@ -1,7 +1,14 @@
 /* ShopJoy Admin - 배치스케즐 상세/등록 */
 window.SyBatchDtl = {
   name: 'SyBatchDtl',
-  props: ['navigate', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode'],
+  props: {
+    navigate:    { type: Function, required: true }, // 페이지 이동
+    showToast:   { type: Function, default: () => {} }, // 토스트 알림
+    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+    setApiRes:   { type: Function, default: () => {} }, // API 결과 전달
+    editId:      { type: String, default: null }, // 수정 대상 ID
+    viewMode:    { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+  },
   setup(props) {
     const { reactive, computed, watch, onMounted, ref } = Vue;
 
