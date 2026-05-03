@@ -2,7 +2,7 @@ package com.shopjoy.ecadminapi.common.config;
 
 import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.co.auth.security.JwtAuthFilter;
-import com.shopjoy.ecadminapi.common.license.LicenseFilter;
+//import com.shopjoy.ecadminapi.common.license.LicenseFilter;
 import com.shopjoy.ecadminapi.common.log.ErrorLogQueue;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhAccessErrorLog;
 import lombok.RequiredArgsConstructor;
@@ -73,7 +73,7 @@ import java.util.Map;
 public class SecurityConfig {
 
     private final JwtAuthFilter   jwtAuthFilter;
-    private final LicenseFilter   licenseFilter;
+//    private final LicenseFilter   licenseFilter;
     private final UserDetailsService userDetailsService;
     private final ErrorLogQueue   errorLogQueue;
 
@@ -186,7 +186,7 @@ public class SecurityConfig {
                 })
             )
             .authenticationProvider(authenticationProvider())
-            .addFilterBefore(licenseFilter, UsernamePasswordAuthenticationFilter.class)
+//            .addFilterBefore(licenseFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         SecurityFilterChain chain = http.build();

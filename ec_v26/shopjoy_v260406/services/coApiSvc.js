@@ -108,7 +108,7 @@
 
   /* ── cm: 첨부파일 그룹 조회 (/co/cm/upload) ─────────────── */
   coApiSvc.cmAttach = {
-    getFiles(attachGrpId, uiNm, cmdNm) {
+    getFiles(attachGrpId, uiNm = '첨부파일', cmdNm = '목록조회') {
       return client().get(`/co/cm/upload/attach-grp/${attachGrpId}/files`, hdr(uiNm, cmdNm));
     },
   };
