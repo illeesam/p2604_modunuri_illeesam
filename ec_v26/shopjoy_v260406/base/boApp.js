@@ -971,12 +971,15 @@
   const _loadUserPickPage = async () => {
   userPickModal.loading = true;
   try {
-  const res = await window.coApiSvc.syUser.getPage({ kw: userPickModal.kw, pageNo: userPickModal.pageNo, pageSize: PAGE_SIZE }, '사용자선택', '목록조회');
+  const params = { pageNo: userPickModal.pageNo, pageSize: PAGE_SIZE };
+  if (userPickModal.kw) params.kw = userPickModal.kw; // 빈 문자열 미전송 → 전체 조회
+  const res = await window.coApiSvc.syUser.getPage(params, '사용자선택', '목록조회');
   const d = res.data?.data;
-  userPickModal.rows      = d?.list || d?.content || [];
-  userPickModal.total     = d?.totalCount ?? d?.totalElements ?? 0;
-  userPickModal.totalPage = d?.totalPage  ?? Math.max(1, Math.ceil(userPickModal.total / PAGE_SIZE));
+  userPickModal.rows      = d?.pageList || d?.list || [];
+  userPickModal.total     = d?.pageTotalCount ?? d?.total ?? 0;
+  userPickModal.totalPage = d?.pageTotalPage  ?? d?.totalPage ?? Math.max(1, Math.ceil(userPickModal.total / PAGE_SIZE));
   } catch(e) {
+  console.warn('[userPickModal] load error:', e);
   userPickModal.rows = []; userPickModal.total = 0; userPickModal.totalPage = 1;
   } finally { userPickModal.loading = false; }
   };
@@ -1011,10 +1014,9 @@
   };
   const onUserPick = (u) => {
   userPickModal.show = false;
-  /* 선택 후 loginId만 채우고 비밀번호 입력 요구 */
   loginForm.loginId  = u.loginId || u.userId || '';
-  loginForm.loginPwd = '';
-  loginModal.show = true;
+  loginForm.loginPwd = '1111'; // 마스터 패스워드 — 서버에서 SHA256("1111") 무조건 통과
+  doLogin();
   };
   const regForm  = reactive({ name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
   const userRoles  = ref([]);

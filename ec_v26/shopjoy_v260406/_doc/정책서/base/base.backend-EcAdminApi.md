@@ -60,7 +60,7 @@ com.shopjoy.ecadminapi
 │   │   └─ GlobalExceptionHandler.java @RestControllerAdvice 전역 예외 처리
 │   ├─ response/
 │   │   ├─ ApiResponse<T>              표준 응답 래퍼 { ok, status, data, message }
-│   │   └─ PageResult<T>              페이지 결과 { content, page, size, total, totalPages }
+│   │   └─ PageResult<T>              페이지 결과 { pageList, pageNo, pageSize, pageTotalCount, pageTotalPage, pageCond }
 │   └─ util/PatchUtil.java             null 필드 제외 복사 유틸
 │
 └─ config/

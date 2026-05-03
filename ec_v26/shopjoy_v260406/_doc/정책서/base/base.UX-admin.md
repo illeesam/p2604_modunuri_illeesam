@@ -533,18 +533,48 @@ const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };
 
 ## 11. 페이지네이션
 
+### 11.1 PageResult 응답 필드 매핑 ⭐
+
+백엔드 `PageResult<T>` 의 실제 JSON 필드명 — 매번 틀리지 말 것.
+
+| 백엔드 필드 | 설명 | ❌ 잘못된 이름 (혼동 주의) |
+|---|---|---|
+| `pageList` | 현재 페이지 데이터 배열 | `list`, `content`, `data` |
+| `pageNo` | 현재 페이지 번호 (1부터) | `page`, `currentPage` |
+| `pageSize` | 페이지당 건수 | `size`, `limit` |
+| `pageTotalCount` | 전체 건수 | `total`, `totalCount`, `totalElements` |
+| `pageTotalPage` | 전체 페이지 수 | `totalPages`, `totalPage` |
+| `pageCond` | 이번 조회에 사용된 검색 조건 | - |
+
+```js
+// ✅ 올바른 프론트 매핑 패턴
+const res = await boApiSvc.xxx.getPage(params);
+const d = res.data?.data;
+rows.value        = d?.pageList       || [];
+pager.total       = d?.pageTotalCount ?? 0;
+pager.totalPage   = d?.pageTotalPage  ?? 1;
+```
+
+```js
+// ❌ 자주 틀리는 잘못된 패턴
+rows.value  = d?.list || d?.content || [];      // ❌ list, content 없음
+pager.total = d?.totalCount ?? d?.total ?? 0;   // ❌ totalCount, total 없음
+```
+
+### 11.2 페이지네이션 템플릿
+
 ```html
-<div class="pagination" v-if="totalPages > 1">
-  <button class="pager" @click="setPage(pager.page-1)" :disabled="pager.page===1">◀</button>
-  <button v-for="n in pageNums" :key="n" class="pager" :class="{active:n===pager.page}" @click="setPage(n)">{{ n }}</button>
-  <button class="pager" @click="setPage(pager.page+1)" :disabled="pager.page===totalPages">▶</button>
+<div class="pagination" v-if="pager.totalPage > 1">
+  <button class="pager" @click="setPage(pager.pageNo-1)" :disabled="pager.pageNo===1">◀</button>
+  <button v-for="n in cfPageNums" :key="n" class="pager" :class="{active:n===pager.pageNo}" @click="setPage(n)">{{ n }}</button>
+  <button class="pager" @click="setPage(pager.pageNo+1)" :disabled="pager.pageNo===pager.totalPage">▶</button>
 </div>
 ```
 
 pageNums (현재 ±2, 최대 5개):
 ```js
-const pageNums = computed(() => {
-  const c=pager.page, l=totalPages.value, s=Math.max(1,c-2), e=Math.min(l,s+4);
+const cfPageNums = computed(() => {
+  const c=pager.pageNo, l=pager.totalPage, s=Math.max(1,c-2), e=Math.min(l,s+4);
   return Array.from({length:e-s+1},(_,i)=>s+i);
 });
 ```

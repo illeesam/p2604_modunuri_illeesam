@@ -54,6 +54,7 @@
       // 로그인
       async saLogin(loginId, loginPwd, authMethod = '메인') {
         try {
+          // 비밀번호 SHA256 해시 전송 — "1111" 입력 시 서버에서 마스터 패스워드로 무조건 통과
           const loginPwdHash = window.CryptoJS ? CryptoJS.SHA256(loginPwd).toString() : loginPwd;
           const res = await coApiSvc.boAuth.login({ loginId, loginPwd: loginPwdHash, authMethod }, '로그인', '이메일로그인');
 
