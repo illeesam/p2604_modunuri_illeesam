@@ -36,7 +36,7 @@ public class FileUploadUtil {
     @Value("${app.file.local.physical-root:src/main/resources/static/cdn}")
     private String physicalRoot;
 
-    @Value("${app.file.local.base-path:attch}")
+    @Value("${app.file.local.base-path:attach}")
     private String basePath;
 
     private static final Set<String> IMAGE_EXTENSIONS = new HashSet<>(

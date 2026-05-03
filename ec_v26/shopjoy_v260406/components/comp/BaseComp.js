@@ -43,11 +43,13 @@ window.BaseAttachGrp = {
         const res = await window.coApiSvc.cmAttach.getFiles(attachGrpId);
         const list = res.data?.data || [];
         files.splice(0, files.length, ...list.map(f => ({
-          attachId:  f.attachId,
-          fileNm:    f.fileNm,
-          fileSize:  f.fileSize,
-          fileExt:   f.fileExt,
-          attachUrl: f.attachUrl || f.storagePath,
+          attachId:   f.attachId,
+          fileNm:     f.fileNm,
+          fileSize:   f.fileSize,
+          fileExt:    f.fileExt,
+          attachUrl:  f.attachUrl || f.storagePath,
+          cdnImgUrl:  f.cdnImgUrl || '',
+          storagePath: f.storagePath || '',
         })));
       } catch (err) {
         console.error('[BaseAttachGrp] 파일 목록 조회 실패', err);
@@ -125,11 +127,13 @@ window.BaseAttachGrp = {
         /* 파일 목록 추가 */
         (d.files || []).forEach(f => {
           files.push({
-            attachId:  f.attachId,
-            fileNm:    f.originalName,
-            fileSize:  f.fileSize,
-            fileExt:   f.fileExt,
-            attachUrl: f.filePath,
+            attachId:   f.attachId,
+            fileNm:     f.originalName,
+            fileSize:   f.fileSize,
+            fileExt:    f.fileExt,
+            attachUrl:  f.filePath,
+            cdnImgUrl:  f.cdnImgUrl || '',
+            storagePath: f.storagePath || '',
           });
         });
 
@@ -182,7 +186,7 @@ window.BaseAttachGrp = {
     const fnIsImage = (ext) => IMAGE_EXTS.has(ext?.toLowerCase());
 
     const thumbState = reactive({ show: false, url: '', nm: '' });
-    const fnOpenThumb = (f) => { thumbState.url = f.attachUrl; thumbState.nm = f.fileNm; thumbState.show = true; };
+    const fnOpenThumb = (f) => { thumbState.url = f.cdnImgUrl || f.attachUrl; thumbState.nm = f.fileNm; thumbState.show = true; };
     const fnCloseThumb = () => { thumbState.show = false; };
 
     return { uiState, files, cfAcceptAttr, fileInputRef, openPicker, onFileChange, removeFile, fnFmtSize, fnExtIcon, loadFiles, fnIsImage, thumbState, fnOpenThumb, fnCloseThumb };
@@ -204,15 +208,18 @@ window.BaseAttachGrp = {
       </span>
       <!-- 액션 아이콘: 다운로드 / 팝업보기 / 썸네일보기 -->
       <span style="display:inline-flex;align-items:center;gap:3px;flex-shrink:0;">
-        <a :href="f.attachUrl" :download="f.fileNm" :title="'다운로드: '+f.fileNm"
+        <a :href="f.cdnImgUrl || f.attachUrl" :download="f.fileNm"
+          :title="'다운로드\n' + (f.cdnImgUrl || f.attachUrl)"
           style="width:22px;height:22px;border:1px solid #e0e0e0;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#666;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;transition:all .15s;"
           @mouseenter="e=>{e.currentTarget.style.borderColor='#4a90d9';e.currentTarget.style.color='#4a90d9';}"
           @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';e.currentTarget.style.color='#666';}">⬇</a>
-        <button @click.stop="window.open(f.attachUrl,'_blank')" :title="'새창보기: '+f.fileNm" type="button"
+        <button @click.stop="window.open(f.cdnImgUrl || f.attachUrl,'_blank')"
+          :title="'새창보기\n' + (f.cdnImgUrl || f.attachUrl)" type="button"
           style="width:22px;height:22px;border:1px solid #e0e0e0;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#666;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
           @mouseenter="e=>{e.currentTarget.style.borderColor='#7c5cbf';e.currentTarget.style.color='#7c5cbf';}"
           @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';e.currentTarget.style.color='#666';}">↗</button>
-        <button v-if="fnIsImage(f.fileExt)" @click.stop="fnOpenThumb(f)" :title="'썸네일보기: '+f.fileNm" type="button"
+        <button v-if="fnIsImage(f.fileExt)" @click.stop="fnOpenThumb(f)"
+          :title="'썸네일보기\n' + (f.cdnImgUrl || f.attachUrl)" type="button"
           style="width:22px;height:22px;border:1px solid #e0e0e0;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#666;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
           @mouseenter="e=>{e.currentTarget.style.borderColor='#e8587a';e.currentTarget.style.color='#e8587a';}"
           @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';e.currentTarget.style.color='#666';}">🖼</button>

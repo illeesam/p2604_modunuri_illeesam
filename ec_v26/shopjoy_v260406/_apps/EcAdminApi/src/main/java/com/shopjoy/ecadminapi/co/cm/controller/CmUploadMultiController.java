@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import net.coobird.thumbnailator.Thumbnailator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -45,6 +46,9 @@ public class CmUploadMultiController {
     private final SyAttachGrpService syAttachGrpService;
     private final SyAttachService syAttachService;
     private final VideoConvertUtil videoConvertUtil;
+
+    @Value("${app.file.cdn-host:http://localhost:8080/cdn}")
+    private String cdnHost;
 
     /// 다중 파일 업로드 (확장자/용량 검증, 썸네일 옵션, DB 저장)
     @Operation(summary = "다중 파일 업로드", description = "최대 10개의 파일을 한 번에 업로드합니다. 동영상은 자동으로 변환되고 썸네일이 생성됩니다.")
@@ -153,6 +157,9 @@ public class CmUploadMultiController {
                         storageFilePath = storageFolderPath + "/" + mp4Name;
                     }
 
+                    String cdnBase = cdnHost.endsWith("/") ? cdnHost.substring(0, cdnHost.length() - 1) : cdnHost;
+                    String cdnImgUrl = cdnBase + "/" + storageFilePath;
+
                     SyAttach syAttach = SyAttach.builder()
                             .attachGrpId(savedGrp.getAttachGrpId())
                             .fileNm(originalName)
@@ -162,6 +169,8 @@ public class CmUploadMultiController {
                             .storedNm(finalStoredNm)
                             .storageType("LOCAL")
                             .storagePath(storageFilePath)
+                            .physicalPath(filePath)
+                            .cdnImgUrl(cdnImgUrl)
                             .thumbGeneratedYn(thumbGeneratedYn)
                             .sortOrd(i + 1)
                             .build();

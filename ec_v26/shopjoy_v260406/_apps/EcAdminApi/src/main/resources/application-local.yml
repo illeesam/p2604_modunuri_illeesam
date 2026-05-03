@@ -125,7 +125,7 @@ app:
     storage-type: ${STORAGE_TYPE:LOCAL}
     local:
       physical-root: src/main/resources/static/cdn
-      base-path: attch
+      base-path: attach
       upload-dir: uploads
     cdn-host: ${CDN_HOST:http://localhost:8080/cdn}
     thumbnail-enabled: true

@@ -88,6 +88,7 @@
             <if test="mimeTypeCd != null">mime_type_cd = #{mimeTypeCd},</if>
             <if test="storedNm != null">stored_nm = #{storedNm},</if>
             <if test="attachUrl != null">attach_url = #{attachUrl},</if>
+            <if test="physicalPath != null">physical_path = #{physicalPath},</if>
             <if test="cdnHost != null">cdn_host = #{cdnHost},</if>
             <if test="cdnImgUrl != null">cdn_img_url = #{cdnImgUrl},</if>
             <if test="cdnThumbUrl != null">cdn_thumb_url = #{cdnThumbUrl},</if>

@@ -59,6 +59,9 @@ public class SyAttach extends BaseEntity {
     @Column(name = "storage_path", length = 500)
     private String storagePath;
 
+    @Column(name = "physical_path", length = 700)
+    private String physicalPath;
+
     @Column(name = "thumb_file_nm", length = 300)
     private String thumbFileNm;
 

@@ -20,6 +20,7 @@ public class SyAttachDto {
     private String storedNm;
     private String attachUrl;
     private String storagePath;
+    private String physicalPath;
     private String cdnHost;
     private String cdnImgUrl;
     private String cdnThumbUrl;
