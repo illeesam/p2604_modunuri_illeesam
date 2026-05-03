@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -114,13 +115,27 @@ public class LicenseFilter extends OncePerRequestFilter {
         String licenseCode = request.getHeader("X-License-Code");
         String buyerId     = request.getHeader("X-Buyer-Id");
 
+        // MDC 기본 요청 정보 설정 (JwtAuthFilter보다 먼저 실행되므로 직접 세팅)
+        String method = request.getMethod();
+        String host   = request.getHeader("Host");
+        if (host == null) host = request.getServerName();
+        String path   = request.getRequestURI();
+        String query  = request.getQueryString();
+        String ip     = resolveClientIp(request);
+        MDC.put("reqMethod", method);
+        MDC.put("reqHost",   host);
+        MDC.put("reqPath",   path);
+        MDC.put("reqQuery",  query != null ? query : "");
+        MDC.put("reqIp",     ip);
+        MDC.put("reqStartMs", String.valueOf(System.currentTimeMillis()));
+
         try {
             LicensePayload payload = LicenseUtil.verify(secret, licenseCode, buyerId);
             printReportIfLocal(request, payload, buyerId);
             chain.doFilter(request, response);
         } catch (LicenseException e) {
-            log.warn("[LicenseFilter] 라이선스 검증 실패: {} - {} | uri={} buyerId={}",
-                e.getReason(), e.getMessage(), request.getRequestURI(), buyerId);
+            log.error("[LicenseFilter] 라이선스 검증 실패: {} - {} | uri={} ip={} buyerId={}",
+                e.getReason(), e.getMessage(), path, ip, buyerId);
             sendError(response, e);
         }
     }
@@ -143,6 +158,17 @@ public class LicenseFilter extends OncePerRequestFilter {
         log.info("  │  expireDate: {}", payload.getExpireDate());
         log.info("  │  서명      : ✅ OK  (HMAC-SHA256)");
         log.info("  └{}", line);
+    }
+
+    private static String resolveClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isBlank() || "unknown".equalsIgnoreCase(ip))
+            ip = request.getHeader("X-Real-IP");
+        if (ip == null || ip.isBlank() || "unknown".equalsIgnoreCase(ip))
+            ip = request.getRemoteAddr();
+        if (ip != null && ip.contains(","))
+            ip = ip.split(",")[0].trim();
+        return ip != null ? ip : "-";
     }
 
     private void sendError(HttpServletResponse response, LicenseException e) throws IOException {

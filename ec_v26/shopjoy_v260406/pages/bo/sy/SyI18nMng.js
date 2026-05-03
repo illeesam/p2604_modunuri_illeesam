@@ -116,7 +116,7 @@ window.SyI18nMng = {
     // -- return ---------------------------------------------------------------
 
     return { uiState, codes, searchParam, pager, setPage, onSearch, onReset,
-             selectedId, cfSelectedKey, cfSelectedMsgs, msgForm, openDetail, saveMsgs, getLangMsg,
+             i18nKeys, i18nMsgs, selectedId, cfSelectedKey, cfSelectedMsgs, msgForm, openDetail, saveMsgs, getLangMsg,
              LANGS, LANG_LABELS, fnScopeBadge, fnYnBadge, onSizeChange };
   },
   template: `

@@ -8,6 +8,7 @@
     <sql id="syAttachCond">
         <where>
             <if test="siteId != null and siteId != ''">AND a.site_id = #{siteId}</if>
+            <if test="attachGrpId != null and attachGrpId != ''">AND a.attach_grp_id = #{attachGrpId}</if>
             <if test="typeCd != null and typeCd != ''">AND a.mime_type_cd = #{typeCd}</if>
             <if test="kw != null and kw != ''">
                 AND (a.file_nm ILIKE '%' || #{kw} || '%'

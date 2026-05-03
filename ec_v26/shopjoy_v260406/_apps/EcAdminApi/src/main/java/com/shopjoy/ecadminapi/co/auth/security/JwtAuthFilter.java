@@ -78,11 +78,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             String token = extractToken(request);
 
-            if (StringUtils.hasText(token) && jwtProvider.validate(token)) {
-                String tokenType = jwtProvider.getTokenType(token);
+            // 로그아웃 경로는 만료된 토큰도 클레임 파싱 시도 (AccessLog에 userId/userTypeCd 기록 목적)
+            boolean isLogoutPath = path.equals("/api/co/bo-auth/logout") || path.equals("/api/co/fo-auth/logout");
+
+            boolean tokenValid = StringUtils.hasText(token) && jwtProvider.validate(token);
+            boolean tokenParseable = !tokenValid && isLogoutPath && StringUtils.hasText(token);
+
+            if (tokenValid || tokenParseable) {
+                String tokenType = tokenParseable ? "access" : jwtProvider.getTokenType(token);
                 if ("access".equals(tokenType)) {
                     try {
-                        Claims claims     = jwtProvider.getClaims(token);
+                        Claims claims = tokenParseable
+                                ? jwtProvider.getClaimsAllowExpired(token)
+                                : jwtProvider.getClaims(token);
                         String authId     = claims.getSubject();        // authId: BO=user_id, FO=member_id
                         String userTypeCd = claims.get("userTypeCd", String.class);
                         String siteId     = claims.get("siteId",     String.class);
@@ -120,13 +128,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                 CmUtil.nvl(isStaffYn, "N")              // isStaffYn
                         );
 
-                        List<SimpleGrantedAuthority> grantedAuthorities = roles == null ? List.of() :
-                            roles.stream().map(SimpleGrantedAuthority::new).toList();
-
-                        UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(principal, null, grantedAuthorities);
-                        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext().setAuthentication(auth);
+                        // 만료 토큰 파싱(로그아웃 경로)은 AccessLog 기록 용도만 — SecurityContext 등록 안 함
+                        if (!tokenParseable) {
+                            List<SimpleGrantedAuthority> grantedAuthorities = roles == null ? List.of() :
+                                roles.stream().map(SimpleGrantedAuthority::new).toList();
+                            UsernamePasswordAuthenticationToken auth =
+                                new UsernamePasswordAuthenticationToken(principal, null, grantedAuthorities);
+                            auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                            SecurityContextHolder.getContext().setAuthentication(auth);
+                        }
 
                         // MDC — 로그에 인증 사용자 정보 삽입
                         MDC.put("siteId",   CmUtil.nvl(siteId, "-"));

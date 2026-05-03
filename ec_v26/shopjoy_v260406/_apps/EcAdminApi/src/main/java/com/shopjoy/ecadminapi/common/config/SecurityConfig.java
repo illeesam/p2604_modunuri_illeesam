@@ -3,11 +3,15 @@ package com.shopjoy.ecadminapi.common.config;
 import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.co.auth.security.JwtAuthFilter;
 import com.shopjoy.ecadminapi.common.license.LicenseFilter;
+import com.shopjoy.ecadminapi.common.log.ErrorLogQueue;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyhAccessErrorLog;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -30,7 +34,12 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Spring Security 설정.
@@ -66,6 +75,9 @@ public class SecurityConfig {
     private final JwtAuthFilter   jwtAuthFilter;
     private final LicenseFilter   licenseFilter;
     private final UserDetailsService userDetailsService;
+    private final ErrorLogQueue   errorLogQueue;
+
+    private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
     /** BO만 허용 */
     private static final AuthorizationManager<RequestAuthorizationContext> BO_ONLY =
@@ -136,6 +148,42 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/**").access(BO_ONLY)
 
                 .anyRequest().authenticated()
+            )
+            .exceptionHandling(ex -> ex
+                .accessDeniedHandler((request, response, e) -> {
+                    String uri = request.getRequestURI();
+                    String msg = "접근 권한이 없습니다. (" + (uri.contains("/api/bo/") ? "BO" : uri.contains("/api/fo/") ? "FO" : "-") + ")";
+                    // 에러 큐에 직접 적재
+                    Map<String, String> mdc = MDC.getCopyOfContextMap();
+                    if (mdc == null) mdc = Map.of();
+                    String logId = "EL" + LocalDateTime.now().format(ID_FMT)
+                        + String.format("%04d", (int)(Math.random() * 10000));
+                    errorLogQueue.offer(SyhAccessErrorLog.builder()
+                        .logId(logId)
+                        .reqMethod(mdc.getOrDefault("reqMethod", request.getMethod()))
+                        .reqHost(mdc.getOrDefault("reqHost", request.getServerName()))
+                        .reqPath(mdc.getOrDefault("reqPath", uri))
+                        .reqQuery(mdc.getOrDefault("reqQuery", request.getQueryString()))
+                        .reqIp(mdc.getOrDefault("reqIp", request.getRemoteAddr()))
+                        .userTypeCd(mdc.getOrDefault("userTypeCd", "-"))
+                        .userId(mdc.getOrDefault("authId", "-"))
+                        .roleId(mdc.getOrDefault("roleId", null))
+                        .deptId(mdc.getOrDefault("deptId", null))
+                        .vendorId(mdc.getOrDefault("vendorId", null))
+                        .uiNm(mdc.getOrDefault("uiNm", null))
+                        .cmdNm(mdc.getOrDefault("cmdNm", null))
+                        .traceId(mdc.getOrDefault("traceId", null))
+                        .errorType("AccessDeniedException")
+                        .errorMsg(msg)
+                        .logDt(LocalDateTime.now())
+                        .regDate(LocalDateTime.now())
+                        .build());
+                    log.warn("[SecurityConfig] AccessDenied [403]: {} | uri={}", msg, uri);
+                    response.setStatus(403);
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+                    response.getWriter().write("{\"status\":403,\"message\":\"" + msg + "\"}");
+                })
             )
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(licenseFilter, UsernamePasswordAuthenticationFilter.class)

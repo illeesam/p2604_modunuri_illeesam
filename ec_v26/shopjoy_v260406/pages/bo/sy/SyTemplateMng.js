@@ -237,7 +237,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </table>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
-  <div v-if="selectedId" style="margin-top:4px;">
+  <div v-if="selectedId" style="grid-column:1/-1;margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
@@ -255,7 +255,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   <template-send-modal v-if="sendModal && sendModal.show"
     :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm"
     @close="closeSend" />
-</div></div>
+</div>
 
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_template"
     :value="pathPickModal.row ? pathPickModal.row.pathId : null"

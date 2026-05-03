@@ -92,6 +92,7 @@ public class GlobalExceptionHandler {
         else if (uri.contains("/api/fo/")) required = "FO"; // FO 전용 API에 접근 시도
         else required = "-";
         String msg = "접근 권한이 없습니다. (" + required + ")";
+        log.error("AccessDeniedException [403]: {} | {}", msg, buildUserInfo(req));
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
             .body(ApiResponse.<Void>error(403, msg)
                 .withDebug(buildStack(ex), buildUserInfo(req)));
