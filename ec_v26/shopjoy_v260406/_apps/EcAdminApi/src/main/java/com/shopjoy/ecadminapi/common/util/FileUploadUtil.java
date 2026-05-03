@@ -33,7 +33,10 @@ public class FileUploadUtil {
     @Value("${app.file.max-video-size:104857600}")
     private long maxVideoSize;
 
-    @Value("${app.file.local.base-path:cdn}")
+    @Value("${app.file.local.physical-root:src/main/resources/static/cdn}")
+    private String physicalRoot;
+
+    @Value("${app.file.local.base-path:attch}")
     private String basePath;
 
     private static final Set<String> IMAGE_EXTENSIONS = new HashSet<>(
@@ -134,20 +137,30 @@ public class FileUploadUtil {
         return BLOCKED_EXTENSIONS.contains(ext.toLowerCase());
     }
 
-    /// 폴더 경로 생성 (정책: {basePath}/업무명/YYYY/YYYYMM/YYYYMMDD)
-    public String generateFolderPath(String businessCode) {
+    /// 논리 경로 세그먼트 생성 (정책: {basePath}/업무명/YYYY/YYYYMM/YYYYMMDD) — DB storage_path 저장용
+    public String generateStoragePath(String businessCode) {
         LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter yyyy = DateTimeFormatter.ofPattern("yyyy");
-        DateTimeFormatter yyyymm = DateTimeFormatter.ofPattern("yyyyMM");
-        DateTimeFormatter yyyymmdd = DateTimeFormatter.ofPattern("yyyyMMdd");
-
         String base = basePath.endsWith("/") ? basePath.substring(0, basePath.length() - 1) : basePath;
         return String.format("%s/%s/%s/%s/%s",
                 base,
                 businessCode,
-                now.format(yyyy),
-                now.format(yyyymm),
-                now.format(yyyymmdd));
+                now.format(DateTimeFormatter.ofPattern("yyyy")),
+                now.format(DateTimeFormatter.ofPattern("yyyyMM")),
+                now.format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+    }
+
+    /// 물리 폴더 경로 생성 ({physicalRoot}/{storagePath}) — 실제 파일 저장용
+    public String generateFolderPath(String businessCode) {
+        String root = physicalRoot.endsWith("/") ? physicalRoot.substring(0, physicalRoot.length() - 1) : physicalRoot;
+        return root + "/" + generateStoragePath(businessCode);
+    }
+
+    /// DB의 논리 storagePath → 실제 물리 파일 경로 변환
+    public String toPhysicalPath(String storagePath) {
+        if (storagePath == null) return null;
+        String root = physicalRoot.endsWith("/") ? physicalRoot.substring(0, physicalRoot.length() - 1) : physicalRoot;
+        String sp = storagePath.startsWith("/") ? storagePath.substring(1) : storagePath;
+        return root + "/" + sp;
     }
 
     /// 파일명 생성 (정책: YYYYMMDD + "_" + hhmmss + "_" + 순서번호 + "_" + random(4) + 확장자)

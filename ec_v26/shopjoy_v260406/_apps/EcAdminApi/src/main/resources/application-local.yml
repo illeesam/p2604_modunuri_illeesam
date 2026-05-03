@@ -124,7 +124,8 @@ app:
     max-video-size: 104857600
     storage-type: ${STORAGE_TYPE:LOCAL}
     local:
-      base-path: cdn
+      physical-root: src/main/resources/static/cdn
+      base-path: attch
       upload-dir: uploads
     cdn-host: ${CDN_HOST:http://localhost:8080/cdn}
     thumbnail-enabled: true

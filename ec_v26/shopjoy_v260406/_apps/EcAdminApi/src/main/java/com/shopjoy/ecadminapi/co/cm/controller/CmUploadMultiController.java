@@ -58,8 +58,7 @@ public class CmUploadMultiController {
             @RequestParam("files") MultipartFile[] files,
             @RequestParam(value = "businessCode", defaultValue = "common") String businessCode,
             @RequestParam(value = "grpNm", defaultValue = "") String grpNm,
-            @RequestParam(value = "attachGrpId", required = false) String attachGrpId,
-            @RequestParam(value = "createThumbnail", defaultValue = "false") boolean createThumbnail) {
+            @RequestParam(value = "attachGrpId", required = false) String attachGrpId) {
 
         if (files == null || files.length == 0) {
             throw new CmBizException("업로드할 파일을 선택해주세요.");
@@ -95,7 +94,8 @@ public class CmUploadMultiController {
             List<String> attachIds = new ArrayList<>();
             long totalSize = 0;
 
-            String folderPath = fileUploadUtil.generateFolderPath(businessCode);
+            String storageFolderPath = fileUploadUtil.generateStoragePath(businessCode);  // DB 저장 논리경로
+            String folderPath = fileUploadUtil.generateFolderPath(businessCode);           // 실제 물리경로
 
             for (int i = 0; i < files.length; i++) {
                 MultipartFile file = files[i];
@@ -108,6 +108,7 @@ public class CmUploadMultiController {
                     String ext = fileUploadUtil.getFileExtension(originalName);
                     String savedName = fileUploadUtil.generateFileName(ext, i + 1);
                     String filePath = folderPath + "/" + savedName;
+                    String storageFilePath = storageFolderPath + "/" + savedName;  // DB 저장용
 
                     Files.write(Paths.get(filePath), file.getBytes());
 
@@ -149,6 +150,7 @@ public class CmUploadMultiController {
 
                         finalStoredNm = mp4Name;
                         filePath = mp4Path;
+                        storageFilePath = storageFolderPath + "/" + mp4Name;
                     }
 
                     SyAttach syAttach = SyAttach.builder()
@@ -159,7 +161,7 @@ public class CmUploadMultiController {
                             .mimeTypeCd(file.getContentType())
                             .storedNm(finalStoredNm)
                             .storageType("LOCAL")
-                            .storagePath(filePath)
+                            .storagePath(storageFilePath)
                             .thumbGeneratedYn(thumbGeneratedYn)
                             .sortOrd(i + 1)
                             .build();
@@ -167,10 +169,10 @@ public class CmUploadMultiController {
                     if (thumbFileNm != null) {
                         syAttach.setThumbFileNm(thumbFileNm);
                         syAttach.setThumbStoredNm(thumbStoredNm);
-                        syAttach.setThumbUrl(thumbUrl);
+                        syAttach.setThumbUrl(storageFolderPath + "/" + thumbStoredNm);
                     }
 
-                    if (createThumbnail && !fileUploadUtil.isVideo(ext) && fileUploadUtil.canGenerateThumbnail(ext)) {
+                    if (!fileUploadUtil.isVideo(ext) && fileUploadUtil.canGenerateThumbnail(ext)) {
                         try {
                             String thumbFileName = fileUploadUtil.generateThumbFileName(finalStoredNm);
                             String thumbFilePath = folderPath + "/" + thumbFileName;
@@ -182,7 +184,7 @@ public class CmUploadMultiController {
 
                             syAttach.setThumbFileNm(originalName + " (thumbnail)");
                             syAttach.setThumbStoredNm(thumbFileName);
-                            syAttach.setThumbUrl(thumbFilePath);
+                            syAttach.setThumbUrl(storageFolderPath + "/" + thumbFileName);
                             syAttach.setThumbGeneratedYn("Y");
 
                             log.info("이미지 썸네일 생성 성공: {}", thumbFileName);
@@ -197,13 +199,13 @@ public class CmUploadMultiController {
                     fileInfo.put("attachId", savedAttach.getAttachId());
                     fileInfo.put("originalName", originalName);
                     fileInfo.put("savedName", savedName);
-                    fileInfo.put("filePath", filePath);
+                    fileInfo.put("filePath", storageFilePath);
                     fileInfo.put("fileSize", file.getSize());
                     fileInfo.put("fileType", file.getContentType());
                     fileInfo.put("fileExt", ext);
                     fileInfo.put("uploadedAt", LocalDateTime.now());
                     fileInfo.put("storageType", "LOCAL");
-                    fileInfo.put("storagePath", filePath);
+                    fileInfo.put("storagePath", storageFilePath);
                     fileInfo.put("thumbGeneratedYn", savedAttach.getThumbGeneratedYn());
                     if ("Y".equals(savedAttach.getThumbGeneratedYn())) {
                         fileInfo.put("thumbFileNm", savedAttach.getThumbFileNm());
@@ -267,7 +269,7 @@ public class CmUploadMultiController {
 
         if (dto.getStoragePath() != null) {
             try {
-                Files.deleteIfExists(Paths.get(dto.getStoragePath()));
+                Files.deleteIfExists(Paths.get(fileUploadUtil.toPhysicalPath(dto.getStoragePath())));
             } catch (Exception e) {
                 log.warn("실제 파일 삭제 실패 (계속 진행): {}", dto.getStoragePath(), e);
             }
