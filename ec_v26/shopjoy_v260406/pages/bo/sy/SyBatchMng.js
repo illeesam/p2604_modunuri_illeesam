@@ -498,12 +498,7 @@ window.SyBatchMng = {
     </div>
   </div>
 
-  <!-- -- 배치 실행이력 -- -->
-  <div class="card" style="margin-top:4px;">
-    <sy-batch-hist />
-  </div>
-
-  <!-- -- Cron 편집 모달 -- -->
+  <!-- -- Cron 편집 모달 (position:fixed, grid 위치 무관) -- -->
   <div v-if="cronPicker && cronPicker.show"
     style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;"
     @click.self="cronPicker.show=false">
@@ -565,7 +560,12 @@ window.SyBatchMng = {
       </div>
     </div>
   </div>
-</div></div>
+</div>
+
+  <!-- -- 배치 실행이력 (grid 직접 자식 → 전체 폭) -- -->
+  <div class="card" style="margin-top:4px;">
+    <sy-batch-hist />
+  </div>
 
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_batch"
     :value="pathPickModal.row ? pathPickModal.row.pathId : null"

@@ -237,6 +237,18 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </table>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
+
+  <!-- -- 미리보기/발송 모달 (position:fixed) ---------------------------------- -->
+  <template-preview-modal v-if="previewModal && previewModal.show"
+    :tmpl="previewModal.template"
+    :sample-params="previewModal.template?.sampleParams || '{}'"
+    @close="closePreview" />
+  <template-send-modal v-if="sendModal && sendModal.show"
+    :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm"
+    @close="closeSend" />
+</div>
+
+  <!-- -- 수정 패널 (grid 직접 자식 → 전체 폭) --------------------------------- -->
   <div v-if="selectedId" style="grid-column:1/-1;margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
@@ -244,18 +256,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     <sy-template-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'" />
   </div>
-
-  <!-- -- 미리보기 모달 -------------------------------------------------------- -->
-  <template-preview-modal v-if="previewModal && previewModal.show"
-    :tmpl="previewModal.template"
-    :sample-params="previewModal.template?.sampleParams || '{}'"
-    @close="closePreview" />
-
-  <!-- -- 발송하기 모달 -------------------------------------------------------- -->
-  <template-send-modal v-if="sendModal && sendModal.show"
-    :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm"
-    @close="closeSend" />
-</div>
 
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_template"
     :value="pathPickModal.row ? pathPickModal.row.pathId : null"

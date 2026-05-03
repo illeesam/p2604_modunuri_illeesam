@@ -263,8 +263,9 @@ public class CmUploadMultiController {
                     failedFiles.add(file.getOriginalFilename() + " - " + e.getMessage());
                     log.warn("파일 검증 실패: {}", file.getOriginalFilename());
                 } catch (Exception e) {
-                    failedFiles.add(file.getOriginalFilename() + " - 저장 실패");
-                    log.error("파일 업로드 실패", e);
+                    String errMsg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+                    failedFiles.add(file.getOriginalFilename() + " - " + errMsg);
+                    log.error("파일 업로드 실패: {}", file.getOriginalFilename(), e);
                 }
             }
 
@@ -284,7 +285,7 @@ public class CmUploadMultiController {
 
         } catch (Exception e) {
             log.error("파일 업로드 실패", e);
-            throw new RuntimeException("파일 업로드 중 오류가 발생했습니다.");
+            throw new RuntimeException("파일 업로드 중 오류가 발생했습니다: " + e.getMessage(), e);
         }
     }
 }

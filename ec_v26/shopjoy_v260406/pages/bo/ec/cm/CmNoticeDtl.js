@@ -149,7 +149,10 @@ window.CmNoticeDtl = {
       <div v-else id="notice-editor" style="min-height:200px;background:#fff;"></div>
     </div>
     <div class="form-group">
-      <label class="form-label">첨부파일 <span v-if="form.attachGrpId" style="font-size:11px;font-weight:400;color:#aaa;margin-left:6px;">첨부그룹ID: {{ form.attachGrpId }}</span></label>
+      <label class="form-label">첨부파일
+        <span style="font-size:11px;font-weight:400;color:#aaa;margin-left:6px;">#NOTICE_ATTACH</span>
+        <span v-if="form.attachGrpId" style="font-size:11px;font-weight:400;color:#aaa;margin-left:4px;">#{{ form.attachGrpId }}</span>
+      </label>
       <base-attach-grp
         :model-value="form.attachGrpId"
         @update:model-value="form.attachGrpId = $event" :ref-id="dtlId ? 'NOTICE-'+dtlId : ''"

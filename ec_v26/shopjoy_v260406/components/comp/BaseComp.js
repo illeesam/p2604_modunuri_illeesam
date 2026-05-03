@@ -92,6 +92,7 @@ window.BaseAttachGrp = {
 
         const d = res.data?.data;
         if (!d) throw new Error('업로드 응답이 없습니다.');
+        console.log('[BaseAttachGrp] upload response:', JSON.stringify(d));
 
         /* attachGrpId emit (첫 업로드 or 기존 그룹에 추가) */
         const grpId = d.attachGrpId;
@@ -108,10 +109,16 @@ window.BaseAttachGrp = {
           });
         });
 
-        const uploaded = d.uploadedCount || validFiles.length;
+        const uploaded = d.uploadedCount || 0;
         const failed   = d.failedCount   || 0;
-        if (failed > 0) props.showToast(`${uploaded}개 업로드 완료, ${failed}개 실패`, 'warning', 0);
-        else            props.showToast(`${uploaded}개 파일이 업로드되었습니다.`, 'success');
+        if (failed > 0 && uploaded === 0) {
+          const errDetail = (d.failedFiles || []).join(', ');
+          props.showToast(`업로드 실패: ${errDetail || '파일 검증 오류'}`, 'error', 0);
+        } else if (failed > 0) {
+          props.showToast(`${uploaded}개 업로드 완료, ${failed}개 실패`, 'warning', 0);
+        } else {
+          props.showToast(`${uploaded}개 파일이 업로드되었습니다.`, 'success');
+        }
 
       } catch (err) {
         console.error('[BaseAttachGrp] 업로드 실패', err);

@@ -33,6 +33,9 @@ public class FileUploadUtil {
     @Value("${app.file.max-video-size:104857600}")
     private long maxVideoSize;
 
+    @Value("${app.file.local.base-path:static/cdn}")
+    private String basePath;
+
     private static final Set<String> IMAGE_EXTENSIONS = new HashSet<>(
             Arrays.asList("jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"));
     private static final Set<String> DOCUMENT_EXTENSIONS = new HashSet<>(
@@ -131,14 +134,16 @@ public class FileUploadUtil {
         return BLOCKED_EXTENSIONS.contains(ext.toLowerCase());
     }
 
-    /// 폴더 경로 생성 (정책: /cdn/업무명/YYYY/YYYYMM/YYYYMMDD)
+    /// 폴더 경로 생성 (정책: {basePath}/업무명/YYYY/YYYYMM/YYYYMMDD)
     public String generateFolderPath(String businessCode) {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter yyyy = DateTimeFormatter.ofPattern("yyyy");
         DateTimeFormatter yyyymm = DateTimeFormatter.ofPattern("yyyyMM");
         DateTimeFormatter yyyymmdd = DateTimeFormatter.ofPattern("yyyyMMdd");
 
-        return String.format("/cdn/%s/%s/%s/%s",
+        String base = basePath.endsWith("/") ? basePath.substring(0, basePath.length() - 1) : basePath;
+        return String.format("%s/%s/%s/%s/%s",
+                base,
                 businessCode,
                 now.format(yyyy),
                 now.format(yyyymm),

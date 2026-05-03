@@ -246,7 +246,9 @@ const detailModal = reactive({
     </table>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
+</div>
 
+  <!-- -- 수정 패널 (grid 직접 자식 → 전체 폭) --------------------------------- -->
   <div v-if="detailModal.show" style="grid-column:1/-1;margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
@@ -254,7 +256,6 @@ const detailModal = reactive({
     <sy-site-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
       :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'" />
   </div>
-</div>
 
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_site"
     :value="pathPickModal.row ? pathPickModal.row.pathId : null"
