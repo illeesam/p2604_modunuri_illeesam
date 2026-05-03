@@ -16,12 +16,15 @@
  *   BO → utils/boApiAxios.js (boApi) + utils/coUtil.js
  *
  * 사용법:
+ *   const res = await coApiSvc.boAuth.login(body);
  *   const res = await coApiSvc.cmBoAppStore.getInitData('ALL');
  *   const res = await coApiSvc.cmFoAppStore.getInitData('syAuth^syCodes');
+ *   const res = await coApiSvc.cmUpload.uploadMulti(formData);
+ *   const res = await coApiSvc.foAuth.login(body);
  *   const res = await coApiSvc.syCode.getGrpCodes('ORDER_STATUS');
  *   const res = await coApiSvc.syCode.getGrpCodes('ORDER_STATUS', '주문관리', '상태조회');
- *   const res = await coApiSvc.sySite.getSiteList();
  *   const res = await coApiSvc.syPath.getPage({ bizCd: 'sy_brand' });
+ *   const res = await coApiSvc.sySite.getSiteList();
  */
 (function (global) {
   'use strict';
@@ -38,6 +41,24 @@
 
   const coApiSvc = {};
 
+  /* ── bo-auth: BO 인증 (/co/bo-auth) ─────────────────────────
+   * boAuthStore.js 에서 사용. 로그인/토큰갱신/로그아웃.
+   * ─────────────────────────────────────────────────────────── */
+  coApiSvc.boAuth = {
+    login(body, uiNm, cmdNm)          { return global.boApi.post(  '/co/bo-auth/login',           body, hdr(uiNm, cmdNm)); },
+    tokenRefresh(body, uiNm, cmdNm)   { return global.boApi.post(  '/co/bo-auth/token-refresh',   body, hdr(uiNm, cmdNm)); },
+    logout(body, uiNm, cmdNm)         { return global.boApi.post(  '/co/bo-auth/logout',          body, hdr(uiNm, cmdNm)); },
+    join(body, uiNm, cmdNm)           { return global.boApi.post(  '/co/bo-auth/join',            body, hdr(uiNm, cmdNm)); },
+    changePassword(body, uiNm, cmdNm) { return global.boApi.post(  '/co/bo-auth/change-password', body, hdr(uiNm, cmdNm)); },
+  };
+
+  /* ── cm: 앱 정보 (/co/cm/app-info) ──────────────────────── */
+  coApiSvc.cmAppInfo = {
+    getInfo(uiNm, cmdNm) {
+      return client().get('/co/cm/app-info/info', hdr(uiNm, cmdNm));
+    },
+  };
+
   /* ── cm: BO 앱 초기화 데이터 (/co/cm/bo-app-store) ──────────
    * boAppInitStore.js 에서 사용. names="ALL" 또는 "^" 구분 조합.
    * 개별 키: syAuth / syRoles / syMenus / syCodes / syProps / syApp
@@ -53,6 +74,12 @@
     getCodes(uiNm, cmdNm) { return global.boApi.get(   '/co/cm/bo-app-store/getCodes', hdr(uiNm, cmdNm)); },
     getProps(uiNm, cmdNm) { return global.boApi.get(   '/co/cm/bo-app-store/getProps', hdr(uiNm, cmdNm)); },
     getApp(uiNm, cmdNm)   { return global.boApi.get(   '/co/cm/bo-app-store/getApp',   hdr(uiNm, cmdNm)); },
+  };
+
+  /* ── cm: 파일 다운로드 (/co/cm/download) ─────────────────── */
+  coApiSvc.cmDownload = {
+    getUrl(filePath) { return `/co/cm/download/${filePath}`; },
+    getSecureUrl(fileId) { return `/co/cm/download/secure/${fileId}`; },
   };
 
   /* ── cm: FO 앱 초기화 데이터 (/co/cm/fo-app-store) ──────────
@@ -73,6 +100,30 @@
     getApp(uiNm, cmdNm)      { return global.foApi.get('/co/cm/fo-app-store/getApp',   hdr(uiNm, cmdNm)); },
   };
 
+  /* ── cm: 이미지 뷰 (/co/cm/image) ───────────────────────── */
+  coApiSvc.cmImage = {
+    getViewUrl(imageUrl) { return `/co/cm/image/view/${imageUrl}`; },
+    getThumbUrl(thumbUrl) { return `/co/cm/image/thumb/${thumbUrl}`; },
+  };
+
+  /* ── cm: 파일 업로드 (/co/cm/upload) ────────────────────── */
+  coApiSvc.cmUpload = {
+    uploadOne(formData, uiNm, cmdNm) {
+      return client().post('/co/cm/upload/one', formData, hdr(uiNm, cmdNm));
+    },
+    uploadMulti(formData, uiNm, cmdNm) {
+      return client().post('/co/cm/upload/multi', formData, hdr(uiNm, cmdNm));
+    },
+  };
+
+  /* ── cm: 동영상 스트리밍 (/co/cm/video) ─────────────────── */
+  coApiSvc.cmVideo = {
+    getPlayUrl(videoPath) { return `/co/cm/video/play/${videoPath}`; },
+    getInfo(videoPath, uiNm, cmdNm) {
+      return client().get(`/co/cm/video/info/${videoPath}`, hdr(uiNm, cmdNm));
+    },
+  };
+
   /* ── fo-auth: FO 인증 (/co/fo-auth) ─────────────────────────
    * foAuth.js 에서 사용. 로그인/회원가입/비밀번호변경.
    * ─────────────────────────────────────────────────────────── */
@@ -82,17 +133,6 @@
     logout(body, uiNm, cmdNm)         { return global.foApi.post('/co/fo-auth/logout',  body, hdr(uiNm, cmdNm)); },
     join(body, uiNm, cmdNm)           { return global.foApi.post('/co/fo-auth/join',    body, hdr(uiNm, cmdNm)); },
     changePassword(body, uiNm, cmdNm) { return global.foApi.post('/co/fo-auth/change-password', body, hdr(uiNm, cmdNm)); },
-  };
-
-  /* ── bo-auth: BO 인증 (/co/bo-auth) ─────────────────────────
-   * boAuthStore.js 에서 사용. 로그인/토큰갱신/로그아웃.
-   * ─────────────────────────────────────────────────────────── */
-  coApiSvc.boAuth = {
-    login(body, uiNm, cmdNm)          { return global.boApi.post(  '/co/bo-auth/login',           body, hdr(uiNm, cmdNm)); },
-    tokenRefresh(body, uiNm, cmdNm)   { return global.boApi.post(  '/co/bo-auth/token-refresh',   body, hdr(uiNm, cmdNm)); },
-    logout(body, uiNm, cmdNm)         { return global.boApi.post(  '/co/bo-auth/logout',          body, hdr(uiNm, cmdNm)); },
-    join(body, uiNm, cmdNm)           { return global.boApi.post(  '/co/bo-auth/join',            body, hdr(uiNm, cmdNm)); },
-    changePassword(body, uiNm, cmdNm) { return global.boApi.post(  '/co/bo-auth/change-password', body, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 공통코드 (FO·BO 모두 코드 조회 시 사용) ────────── */

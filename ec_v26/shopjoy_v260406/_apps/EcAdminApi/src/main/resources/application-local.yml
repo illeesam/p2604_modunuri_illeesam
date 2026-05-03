@@ -16,7 +16,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: false   # p6spy 사용 중 — hibernate show-sql 중복 출력 방지
     properties:
       hibernate:

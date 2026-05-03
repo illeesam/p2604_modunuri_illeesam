@@ -77,7 +77,7 @@ window.BaseAttachGrp = {
       }
       if (!validFiles.length) return;
 
-      /* FormData 구성 → /api/cm/upload/multi */
+      /* FormData 구성 → /api/co/cm/upload/multi */
       uiState.uploading = true;
       try {
         const fd = new FormData();
@@ -88,7 +88,7 @@ window.BaseAttachGrp = {
         const hdr = window.coUtil.apiHdr('첨부파일', '업로드');
         // Content-Type은 axios가 FormData boundary 포함해서 자동 설정
         // boApi.post는 path 앞에 http://host:3000/api/ 자동 추가
-        const res = await window.boApi.post('cm/upload/multi', fd, hdr);
+        const res = await window.boApi.post('co/cm/upload/multi', fd, hdr);
 
         const d = res.data?.data;
         if (!d) throw new Error('업로드 응답이 없습니다.');
