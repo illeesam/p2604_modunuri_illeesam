@@ -97,7 +97,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()           // CORS preflight
                 .requestMatchers(HttpMethod.GET, "/cdn/**", "/zz/**").permitAll() // static 리소스
-                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/actuator/**").permitAll()       // Spring Boot Actuator (헬스체크·메트릭 등)
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll() // Swagger UI
 
                 .requestMatchers("/api/co/**").permitAll()      // 공통 API: 누구나
                 .requestMatchers("/api/fo/**").access(FO_ONLY)  // FO 전용: 회원만
@@ -110,7 +111,7 @@ public class SecurityConfig {
             .exceptionHandling(ex -> ex
                 .accessDeniedHandler((request, response, e) -> {
                     String uri = request.getRequestURI();
-                    String msg = "접근 권한이 없습니다. (" + (uri.contains("/api/bo/") ? "BO" : uri.contains("/api/fo/") ? "FO" : "-") + ")";
+                    String msg = "접근 권한이 없습니다. (" + (uri.contains("/api/bo/") ? "BO" : uri.contains("/api/fo/") ? "FO" : uri.contains("/api/base/") ? "BASE" : "-") + ")";
                     // 에러 큐에 직접 적재
                     Map<String, String> mdc = MDC.getCopyOfContextMap();
                     if (mdc == null) mdc = Map.of();
@@ -118,20 +119,20 @@ public class SecurityConfig {
                         + String.format("%04d", (int)(Math.random() * 10000));
                     errorLogQueue.offer(SyhAccessErrorLog.builder()
                         .logId(logId)
-                        .reqMethod(mdc.getOrDefault("reqMethod", request.getMethod()))
-                        .reqHost(mdc.getOrDefault("reqHost", request.getServerName()))
-                        .reqPath(mdc.getOrDefault("reqPath", uri))
-                        .reqQuery(mdc.getOrDefault("reqQuery", request.getQueryString()))
-                        .reqIp(mdc.getOrDefault("reqIp", request.getRemoteAddr()))
-                        .userTypeCd(mdc.getOrDefault("userTypeCd", "-"))
-                        .userId(mdc.getOrDefault("authId", "-"))
-                        .roleId(mdc.getOrDefault("roleId", null))
-                        .deptId(mdc.getOrDefault("deptId", null))
-                        .vendorId(mdc.getOrDefault("vendorId", null))
-                        .uiNm(mdc.getOrDefault("uiNm", null))
-                        .cmdNm(mdc.getOrDefault("cmdNm", null))
-                        .traceId(mdc.getOrDefault("traceId", null))
-                        .errorType("AccessDeniedException")
+                        .reqMethod(mdc.getOrDefault("reqMethod", request.getMethod()))   // HTTP 메서드 (GET/POST 등)
+                        .reqHost(mdc.getOrDefault("reqHost", request.getServerName()))   // 요청 호스트명
+                        .reqPath(mdc.getOrDefault("reqPath", uri))                       // 요청 경로
+                        .reqQuery(mdc.getOrDefault("reqQuery", request.getQueryString())) // 쿼리스트링
+                        .reqIp(mdc.getOrDefault("reqIp", request.getRemoteAddr()))       // 클라이언트 IP
+                        .userTypeCd(mdc.getOrDefault("userTypeCd", "-"))                 // 사용자 유형 (BO/FO/-)
+                        .userId(mdc.getOrDefault("authId", "-"))                         // 인증된 사용자 ID
+                        .roleId(mdc.getOrDefault("roleId", null))                        // 권한 ID
+                        .deptId(mdc.getOrDefault("deptId", null))                        // 부서 ID
+                        .vendorId(mdc.getOrDefault("vendorId", null))                    // 업체 ID
+                        .uiNm(mdc.getOrDefault("uiNm", null))                            // 화면명 (X-UI-Nm 헤더)
+                        .cmdNm(mdc.getOrDefault("cmdNm", null))                          // 커맨드명 (X-Cmd-Nm 헤더)
+                        .traceId(mdc.getOrDefault("traceId", null))                      // 요청 추적 ID
+                        .errorType("AccessDeniedException")                               // 에러 유형: 접근 거부
                         .errorMsg(msg)
                         .logDt(LocalDateTime.now())
                         .regDate(LocalDateTime.now())
