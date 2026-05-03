@@ -100,11 +100,12 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/**").permitAll()       // Spring Boot Actuator (헬스체크·메트릭 등)
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll() // Swagger UI
 
-                .requestMatchers("/api/co/**").permitAll()      // 공통 API: 누구나
-                .requestMatchers("/api/fo/**").access(FO_ONLY)  // FO 전용: 회원만
-                .requestMatchers("/api/bo/**").access(BO_ONLY)  // BO 전용: 관리자만
-                .requestMatchers("/api/base/**").denyAll()       // 내부 레이어: 완전 차단
-                .requestMatchers("/api/ext/**").access(EXT_ONLY) // 외부 시스템만
+                .requestMatchers("/api/co/**").permitAll()          // 공통 API: 누구나
+                .requestMatchers("/api/autoRest/**").permitAll()   // 자동 REST: 누구나
+                .requestMatchers("/api/fo/**").access(FO_ONLY)     // FO 전용: 회원만 (userTypeCd=FO)
+                .requestMatchers("/api/bo/**").access(BO_ONLY)     // BO 전용: 관리자만 (userTypeCd=BO)
+                .requestMatchers("/api/base/**").denyAll()          // 내부 레이어: 완전 차단
+                .requestMatchers("/api/ext/**").access(EXT_ONLY)   // 외부 시스템만 (userTypeCd=EXT)
 
                 .anyRequest().authenticated()
             )
