@@ -39,6 +39,10 @@
     return uiNm && cmdNm ? coUtil.apiHdr(uiNm, cmdNm) : {};
   }
 
+  /* _id / saveList rows 검증은 coUtil.chkId / coUtil.chkRowIds 위임 */
+  const chkId     = (...a) => coUtil.chkId(...a);
+  const chkRowIds = (...a) => coUtil.chkRowIds(...a);
+
   const coApiSvc = {};
 
   /* ── bo-auth: BO 인증 (/co/bo-auth) ─────────────────────────
@@ -109,10 +113,10 @@
   /* ── cm: 첨부파일 조회/삭제 (/co/cm/upload) ─────────────── */
   coApiSvc.cmAttach = {
     getFiles(attachGrpId, uiNm = '첨부파일', cmdNm = '목록조회') {
-      return client().get(`/co/cm/upload/attach-grp/${attachGrpId}/files`, hdr(uiNm, cmdNm));
+      return chkId(attachGrpId, uiNm, cmdNm) || client().get(`/co/cm/upload/attach-grp/${attachGrpId}/files`, hdr(uiNm, cmdNm));
     },
     deleteFile(attachId, uiNm = '첨부파일', cmdNm = '삭제') {
-      return client().delete(`/co/cm/upload/attach/${attachId}`, hdr(uiNm, cmdNm));
+      return chkId(attachId, uiNm, cmdNm) || client().delete(`/co/cm/upload/attach/${attachId}`, hdr(uiNm, cmdNm));
     },
   };
 
@@ -171,7 +175,7 @@
       return client().get('/co/sy/site/list', { params, ...hdr(uiNm, cmdNm) });
     },
     getSiteById(_id, uiNm, cmdNm) {
-      return client().get(`/co/sy/site/${_id}`, hdr(uiNm, cmdNm));
+      return chkId(_id, uiNm, cmdNm) || client().get(`/co/sy/site/${_id}`, hdr(uiNm, cmdNm));
     },
   };
 

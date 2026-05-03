@@ -37,19 +37,19 @@ window.SyUserDtl = {
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     const form = reactive({
-      boUserId: null, loginId: '', name: '', email: '', phone: '',
-      role: '운영자', dept: '', deptId: null,
+      userId: null, loginId: '', userNm: '', userEmail: '', userPhone: '',
+      deptNm: '', deptId: null, roleId: null,
       zipcode: '', address: '', addressDetail: '',
-      statusCd: '활성', password: '',
+      userStatusCd: 'ACTIVE', password: '',
       profileAttachId: null,
     });
     const errors = reactive({});
     const addrDetailRef = ref(null);
 
     const schema = yup.object({
-      loginId: yup.string().required('로그인ID를 입력해주세요.'),
-      name:    yup.string().required('이름을 입력해주세요.'),
-      email:   yup.string().required('이메일을 입력해주세요.'),
+      loginId:  yup.string().required('로그인ID를 입력해주세요.'),
+      userNm:   yup.string().required('이름을 입력해주세요.'),
+      userEmail: yup.string().required('이메일을 입력해주세요.'),
     });
 
     const handleLoadDetail = async () => {
@@ -57,8 +57,8 @@ window.SyUserDtl = {
       uiState.loading = true;
       try {
         const res = await boApiSvc.syUser.getById(props.dtlId, '사용자관리', '상세조회');
-        const data = res.data?.data;
-        if (data) Object.assign(form, { ...data, password: '' });
+        const d = res.data?.data;
+        if (d) Object.assign(form, { ...d, password: '' });
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -96,11 +96,11 @@ window.SyUserDtl = {
     const deptModal = reactive({ show: false });
     const openDeptModal = () => { deptModal.show = true; };
     const onDeptSelect = (dept) => {
-      form.deptId   = dept.deptId;
-      form.dept     = dept.deptNm;
+      form.deptId  = dept.deptId;
+      form.deptNm  = dept.deptNm;
       deptModal.show = false;
     };
-    const clearDept = () => { form.deptId = null; form.dept = ''; };
+    const clearDept = () => { form.deptId = null; form.deptNm = ''; };
 
     /* ── 현재 적용 역할 목록 ── */
     const cfUserRoles = computed(() => []);
@@ -123,7 +123,10 @@ window.SyUserDtl = {
       const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
-        const res = await (cfIsNew.value ? boApiSvc.syUser.create({ ...form }, '사용자관리', '등록') : boApiSvc.syUser.update(form.boUserId, { ...form }, '사용자관리', '저장'));
+        const { password, ...rest } = form;
+        const body = { ...rest };
+        if (password) body.loginPwdHash = password;
+        const res = await (cfIsNew.value ? boApiSvc.syUser.create(body, '사용자관리', '등록') : boApiSvc.syUser.update(form.userId, body, '사용자관리', '저장'));
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
         if (showToast) showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syUserMng', { reload: true });
@@ -147,7 +150,7 @@ window.SyUserDtl = {
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '사용자 등록' : (cfDtlMode ? '사용자 상세' : '사용자 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.boUserId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '사용자 등록' : (cfDtlMode ? '사용자 상세' : '사용자 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.userId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
@@ -171,44 +174,44 @@ window.SyUserDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">이름 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.name" placeholder="이름" :readonly="cfDtlMode" :class="errors.name ? 'is-invalid' : ''" />
-        <span v-if="errors.name" class="field-error">{{ errors.name }}</span>
+        <input class="form-control" v-model="form.userNm" placeholder="이름" :readonly="cfDtlMode" :class="errors.userNm ? 'is-invalid' : ''" />
+        <span v-if="errors.userNm" class="field-error">{{ errors.userNm }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">이메일 <span v-if="!cfDtlMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.email" placeholder="이메일" :readonly="cfDtlMode" :class="errors.email ? 'is-invalid' : ''" />
-        <span v-if="errors.email" class="field-error">{{ errors.email }}</span>
+        <input class="form-control" v-model="form.userEmail" placeholder="이메일" :readonly="cfDtlMode" :class="errors.userEmail ? 'is-invalid' : ''" />
+        <span v-if="errors.userEmail" class="field-error">{{ errors.userEmail }}</span>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">연락처</label>
-        <input class="form-control" v-model="form.phone" placeholder="010-0000-0000" :readonly="cfDtlMode" />
+        <input class="form-control" v-model="form.userPhone" placeholder="010-0000-0000" :readonly="cfDtlMode" />
       </div>
       <div class="form-group">
         <label class="form-label">부서</label>
-        <div v-if="cfDtlMode" class="readonly-field">{{ form.dept || '-' }}</div>
+        <div v-if="cfDtlMode" class="readonly-field">{{ form.deptNm || '-' }}</div>
         <div v-else style="display:flex;gap:8px;align-items:center;">
           <div class="form-control" style="flex:1;cursor:pointer;background:#fafafa;display:flex;align-items:center;min-height:36px;"
             @click="openDeptModal">
-            <span v-if="form.dept" style="color:#1a1a2e;">{{ form.dept }}</span>
+            <span v-if="form.deptNm" style="color:#1a1a2e;">{{ form.deptNm }}</span>
             <span v-else style="color:#bbb;font-size:12px;">부서를 선택하세요</span>
           </div>
           <button type="button" class="btn btn-blue btn-sm" @click="openDeptModal" style="white-space:nowrap;">🏢 선택</button>
-          <button v-if="form.deptId" type="button" class="btn btn-secondary btn-sm" @click="clearDept">✕</button>
+          <button v-if="form.deptId" type="button" class="btn btn-secondary btn-sm" @click="clearDept" >✕</button>
         </div>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">역할</label>
-        <select class="form-control" v-model="form.role" :disabled="cfDtlMode">
+        <select class="form-control" v-model="form.roleId" :disabled="cfDtlMode">
           <option v-for="c in codes.user_roles" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.statusCd" :disabled="cfDtlMode">
+        <select class="form-control" v-model="form.userStatusCd" :disabled="cfDtlMode">
           <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>

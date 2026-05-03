@@ -79,16 +79,7 @@ window.DpDispUiDtl = {
     const handleInitForm = async () => {
       if (!cfIsNew.value) {
         const u = (codes || []).find(c => c.codeId === props.dtlId && c.codeGrp === 'DISP_UI');
-        if (u) {
-          Object.assign(form, {
-            codeId: u.codeId, codeGrp: u.codeGrp,
-            codeValue: u.codeValue || '', codeLabel: u.codeLabel || '',
-            uiType: u.uiType || 'FO',
-            remark: u.remark || '', sortOrd: u.sortOrd || 0, useYn: u.useYn || 'Y', useStartDate: u.useStartDate || '', useEndDate: u.useEndDate || '', displayPath: u.displayPath || '', pathId: u.pathId == null ? null : u.pathId,
-            regDate: u.regDate || '',
-            titleYn: u.titleYn || 'N', title: u.title || '', htmlDesc: u.htmlDesc || '',
-          });
-        }
+        if (u) Object.assign(form, { ...u });
       } else {
         const uis = (Array.isArray(codes) ? codes : []).filter(c => c.codeGrp === 'DISP_UI');
         form.sortOrd = uis.length ? Math.max(...uis.map(c => c.sortOrd || 0)) + 1 : 1;

@@ -91,22 +91,7 @@ window.DpDispAreaDtl = {
     const handleInitForm = async () => {
       if (!cfIsNew.value) {
         const a = areas.find(c => c.codeId === props.dtlId && c.codeGrp === 'DISP_AREA');
-        if (a) {
-          Object.assign(form, {
-            codeId: a.codeId, codeGrp: a.codeGrp,
-            codeValue: a.codeValue || '', codeLabel: a.codeLabel || '',
-            areaType: a.areaType || '', layoutType: a.layoutType || 'grid',
-            gridCols: a.gridCols || 1, titleYn: a.titleYn || 'N', title: a.title || '',
-            remark: a.remark || '', sortOrd: a.sortOrd || 0, useYn: a.useYn || 'Y', useStartDate: a.useStartDate || '', useEndDate: a.useEndDate || '',
-            regDate: a.regDate || '', displayPath: a.displayPath || '', pathId: a.pathId == null ? null : a.pathId,
-            htmlDesc: a.htmlDesc || '',
-            areaBaseDispYn: a.areaBaseDispYn || 'Y',
-            areaBaseDispStartDate: a.areaBaseDispStartDate || '',
-            areaBaseDispEndDate: a.areaBaseDispEndDate || '',
-            areaBaseDispEnv: a.areaBaseDispEnv || '^PROD^',
-            areaBaseVisibilityTargets: a.areaBaseVisibilityTargets || '^PUBLIC^',
-          });
-        }
+        if (a) Object.assign(form, { ...a });
       } else {
         const areas = (Array.isArray(codes) ? codes : (codes?.disp_areas || [])).filter(c => c.codeGrp === 'DISP_AREA');
         form.sortOrd = areas.length ? Math.max(...areas.map(c => c.sortOrd || 0)) + 1 : 1;

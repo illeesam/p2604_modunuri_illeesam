@@ -64,6 +64,7 @@ public class BoSyUserService {
     @Transactional
     public SyUserDto update(String id, SyUser body) {
         SyUser entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        VoUtil.voCopyExclude(body, entity, "userId^loginId^loginPwdHash^regBy^regDate^lastLogin^lastLoginDate^loginFailCnt");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyUser saved = repository.save(entity);

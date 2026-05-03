@@ -17,6 +17,10 @@
     return uiNm && cmdNm ? coUtil.apiHdr(uiNm, cmdNm) : {};
   }
 
+  /* _id / saveList rows 검증은 coUtil.chkId / coUtil.chkRowIds 위임 */
+  const chkId     = (...a) => coUtil.chkId(...a);
+  const chkRowIds = (...a) => coUtil.chkRowIds(...a);
+
   const foApiSvc = {};
 
   /* ── cm: 블로그/게시물 ──────────────────────────────────────── */
@@ -25,7 +29,7 @@
       return global.foApi.get('/fo/ec/cm/bltn/page', { params, ...hdr(uiNm, cmdNm) });
     },
     getById(_id, uiNm, cmdNm) {
-      return global.foApi.get(`/fo/ec/cm/bltn/${_id}`, hdr(uiNm, cmdNm));
+      return chkId(_id, uiNm, cmdNm) || global.foApi.get(`/fo/ec/cm/bltn/${_id}`, hdr(uiNm, cmdNm));
     },
   };
 
@@ -75,7 +79,7 @@
       return global.foApi.get('/fo/ec/pd/prod/page', { params, ...hdr(uiNm, cmdNm) });
     },
     getById(_id, uiNm, cmdNm) {
-      return global.foApi.get(`/fo/ec/pd/prod/${_id}`, hdr(uiNm, cmdNm));
+      return chkId(_id, uiNm, cmdNm) || global.foApi.get(`/fo/ec/pd/prod/${_id}`, hdr(uiNm, cmdNm));
     },
   };
 
@@ -85,7 +89,7 @@
       return global.foApi.get('/fo/ec/pm/event/page', { params, ...hdr(uiNm, cmdNm) });
     },
     getById(_id, uiNm, cmdNm) {
-      return global.foApi.get(`/fo/ec/pm/event/${_id}`, hdr(uiNm, cmdNm));
+      return chkId(_id, uiNm, cmdNm) || global.foApi.get(`/fo/ec/pm/event/${_id}`, hdr(uiNm, cmdNm));
     },
   };
 

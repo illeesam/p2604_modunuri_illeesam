@@ -220,10 +220,54 @@
     };
   }
 
+  /**
+   * API 호출 전 _id 검증 유틸
+   *
+   * _id 가 null/undefined/빈문자열이면 toast 출력 후 rejected Promise 반환.
+   * 정상이면 null 반환 → 호출부에서 `chkId(...) || api.xxx(...)` 패턴으로 사용.
+   *
+   * 사용법 (boApiSvc.js / coApiSvc.js / foApiSvc.js 내부):
+   *   getById(_id, uiNm, cmdNm) {
+   *     return coUtil.chkId(_id, uiNm, cmdNm) || global.boApi.get(`/path/${_id}`, hdr(uiNm, cmdNm));
+   *   }
+   */
+  function chkId(_id, uiNm, cmdNm) {
+    if (_id != null && _id !== '') return null;
+    const label = [uiNm, cmdNm].filter(Boolean).join(' > ');
+    const msg = `[${label || 'API'}] ID 값이 없습니다.`;
+    const toast = global.boApp?.showToast || global.foApp?.showToast;
+    if (toast) toast(msg, 'error');
+    else console.error(msg);
+    return Promise.reject(new Error(msg));
+  }
+
+  /**
+   * saveList rows 에서 U/D rowStatus 인 행에 ID 가 없으면 toast 출력 후 rejected Promise 반환.
+   * idKey : 각 row 에서 ID 를 담고 있는 프로퍼티 이름 (예: 'gradeId', 'batchId' …)
+   *
+   * 사용법:
+   *   saveList(rows, uiNm, cmdNm) {
+   *     return coUtil.chkRowIds(rows, 'gradeId', uiNm, cmdNm) ||
+   *            global.boApi.post('/path/save-list', rows, hdr(uiNm, cmdNm));
+   *   }
+   */
+  function chkRowIds(rows, idKey, uiNm, cmdNm) {
+    const bad = (rows || []).filter(r => (r.rowStatus === 'U' || r.rowStatus === 'D') && !r[idKey]);
+    if (!bad.length) return null;
+    const label = [uiNm, cmdNm].filter(Boolean).join(' > ');
+    const msg = `[${label || 'saveList'}] ${bad.length}건 행에 ID(${idKey})가 없습니다.`;
+    const toast = global.boApp?.showToast || global.foApp?.showToast;
+    if (toast) toast(msg, 'error');
+    else console.error(msg);
+    return Promise.reject(new Error(msg));
+  }
+
   // 공개 API: window.coUtil 에 등록
   global.coUtil = global.coUtil || {};
   global.coUtil.apiHdr = global.coUtil.apiHdr || apiHdr;
   global.coUtil.getCallerInfo = global.coUtil.getCallerInfo || getCallerInfo;
   global.coUtil.generateTraceId = global.coUtil.generateTraceId || (() => apiInfo.generateTraceId());
   global.coUtil.apiInfo = global.coUtil.apiInfo || apiInfo;
+  global.coUtil.chkId = global.coUtil.chkId || chkId;
+  global.coUtil.chkRowIds = global.coUtil.chkRowIds || chkRowIds;
 })(typeof window !== 'undefined' ? window : this);
