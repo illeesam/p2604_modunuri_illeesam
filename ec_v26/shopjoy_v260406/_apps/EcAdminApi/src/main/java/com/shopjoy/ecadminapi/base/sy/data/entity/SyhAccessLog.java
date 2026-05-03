@@ -79,6 +79,25 @@ public class SyhAccessLog {
     @Column(name = "thread_nm", length = 100)
     private String threadNm;
 
+    // ── X-헤더 (클라이언트 호출 추적) ────────────────────
+    @Column(name = "ui_nm", length = 200)
+    private String uiNm;
+
+    @Column(name = "cmd_nm", length = 200)
+    private String cmdNm;
+
+    @Column(name = "file_nm", length = 200)
+    private String fileNm;
+
+    @Column(name = "func_nm", length = 200)
+    private String funcNm;
+
+    @Column(name = "line_no", length = 10)
+    private String lineNo;
+
+    @Column(name = "trace_id", length = 50)
+    private String traceId;
+
     // ── 시각 ─────────────────────────────────────────────
     @Column(name = "req_dt", nullable = false)
     private LocalDateTime reqDt;

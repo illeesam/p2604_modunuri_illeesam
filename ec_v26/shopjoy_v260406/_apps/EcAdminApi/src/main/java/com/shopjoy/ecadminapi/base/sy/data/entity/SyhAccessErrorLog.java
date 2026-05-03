@@ -70,6 +70,25 @@ public class SyhAccessErrorLog {
     @Column(name = "stack_trace", columnDefinition = "TEXT")
     private String stackTrace;
 
+    // ── X-헤더 (클라이언트 호출 추적) ────────────────────
+    @Column(name = "ui_nm", length = 200)
+    private String uiNm;
+
+    @Column(name = "cmd_nm", length = 200)
+    private String cmdNm;
+
+    @Column(name = "file_nm", length = 200)
+    private String fileNm;
+
+    @Column(name = "func_nm", length = 200)
+    private String funcNm;
+
+    @Column(name = "line_no", length = 10)
+    private String lineNo;
+
+    @Column(name = "trace_id", length = 50)
+    private String traceId;
+
     // ── 실행 환경 ────────────────────────────────────────
     @Column(name = "server_nm", length = 100)
     private String serverNm;

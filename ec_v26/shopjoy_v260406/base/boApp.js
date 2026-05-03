@@ -139,6 +139,7 @@
   { group: '이력조회' },
   { id: 'syMemberLoginHist', label: '회원로그인이력' },
   { id: 'syUserLoginHist',  label: '사용자로그인이력' },
+  { id: 'syApiLogMng',      label: 'API로그조회' },
   { id: 'syPostman',  label: 'postman' },
   ],
   devtools:  [
@@ -328,6 +329,7 @@
   'cmBltnMng':'cm-bltn-mng',
   'syMemberLoginHist':'sy-member-login-hist',
   'syUserLoginHist':'sy-user-login-hist',
+  'syApiLogMng':'sy-api-log-mng',
   'syPostman':'sy-postman',
   'zdStore':'zd-store',
   'zdLocalStorage':'zd-local-storage',
@@ -1553,6 +1555,7 @@
   <st-erp-recon-mng  v-else-if="page==='stErpReconMng'"  :navigate="navigate" />
   <sy-member-login-hist v-else-if="page==='syMemberLoginHist'" :navigate="navigate" />
   <sy-user-login-hist  v-else-if="page==='syUserLoginHist'"  :navigate="navigate" />
+  <sy-api-log-mng      v-else-if="page==='syApiLogMng'"      :navigate="navigate" />
   <sy-postman  v-else-if="page==='syPostman'"  :navigate="navigate" />
   <zd-store  v-else-if="page==='zdStore'"  :navigate="navigate" />
   <zd-local-storage  v-else-if="page==='zdLocalStorage'"  :navigate="navigate" />
@@ -2198,6 +2201,7 @@
   .component('TemplateSendModal',  window.TemplateSendModal)
   .component('SyMemberLoginHist',  window.SyMemberLoginHist)
   .component('SyUserLoginHist',  window.SyUserLoginHist)
+  .component('SyApiLogMng',      window.SyApiLogMng)
   .component('SyPostman',  window.SyPostman)
   /* ── pages/bo/zd/ — 개발도구 ── */
   .component('ZdStore',  window.ZdStore)

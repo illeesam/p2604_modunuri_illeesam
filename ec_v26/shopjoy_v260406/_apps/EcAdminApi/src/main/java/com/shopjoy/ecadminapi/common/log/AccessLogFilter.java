@@ -82,6 +82,14 @@ public class AccessLogFilter extends OncePerRequestFilter {
                     String ua    = request.getHeader("User-Agent");
                     String query = request.getQueryString();
 
+                    // x- 헤더 수집 (한글 URI 인코딩 디코딩)
+                    String uiNm   = decodeHdr(request.getHeader("X-UI-Nm"));
+                    String cmdNm  = decodeHdr(request.getHeader("X-Cmd-Nm"));
+                    String fileNm = request.getHeader("X-File-Nm");
+                    String funcNm = request.getHeader("X-Func-Nm");
+                    String lineNo = request.getHeader("X-Line-No");
+                    String traceId = request.getHeader("X-Trace-Id");
+
                     SyhAccessLog entry = SyhAccessLog.builder()
                             .logId(generateId())
                             .reqMethod(request.getMethod())
@@ -103,6 +111,12 @@ public class AccessLogFilter extends OncePerRequestFilter {
                             .serverNm(serverNm)
                             .profile(activeProfile)
                             .threadNm(Thread.currentThread().getName())
+                            .uiNm(truncate(uiNm, 200))
+                            .cmdNm(truncate(cmdNm, 200))
+                            .fileNm(truncate(fileNm, 200))
+                            .funcNm(truncate(funcNm, 200))
+                            .lineNo(truncate(lineNo, 10))
+                            .traceId(truncate(traceId, 50))
                             .reqDt(reqDt)
                             .regDate(LocalDateTime.now())
                             .build();
@@ -134,6 +148,11 @@ public class AccessLogFilter extends OncePerRequestFilter {
     private static String truncate(String s, int max) {
         if (s == null) return null;
         return s.length() <= max ? s : s.substring(0, max);
+    }
+
+    private static String decodeHdr(String s) {
+        if (s == null) return null;
+        try { return java.net.URLDecoder.decode(s, StandardCharsets.UTF_8); } catch (Exception e) { return s; }
     }
 
     private static String resolveIp(HttpServletRequest request) {

@@ -541,6 +541,16 @@
     getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/user-login-log/page', { params, ...hdr(uiNm, cmdNm) }); },
   };
 
+  /* ── sy: API요청로그 ────────────────────────────────────────── */
+  boApiSvc.syAccessLog = {
+    getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/access-log/page', { params, ...hdr(uiNm, cmdNm) }); },
+  };
+
+  /* ── sy: API오류로그 ────────────────────────────────────────── */
+  boApiSvc.syAccessErrorLog = {
+    getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/access-error-log/page', { params, ...hdr(uiNm, cmdNm) }); },
+  };
+
   /* ── sy: 업체(Vendor) ───────────────────────────────────────── */
   boApiSvc.syVendor = {
     getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/sy/vendor/page', { params, ...hdr(uiNm, cmdNm) }); },

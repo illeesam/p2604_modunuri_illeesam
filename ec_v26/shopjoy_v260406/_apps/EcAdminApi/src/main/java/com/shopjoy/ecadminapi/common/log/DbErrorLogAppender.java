@@ -69,6 +69,13 @@ public class DbErrorLogAppender extends UnsynchronizedAppenderBase<ILoggingEvent
                     .errorType(extractErrorType(event))
                     .errorMsg (truncate(event.getFormattedMessage(), MAX_MSG_LEN))
                     .stackTrace(formatStackTrace(event.getThrowableProxy()))
+                    // X-헤더
+                    .uiNm    (truncate(mdc.getOrDefault("uiNm",    null), 200))
+                    .cmdNm   (truncate(mdc.getOrDefault("cmdNm",   null), 200))
+                    .fileNm  (truncate(mdc.getOrDefault("fileNm",  null), 200))
+                    .funcNm  (truncate(mdc.getOrDefault("funcNm",  null), 200))
+                    .lineNo  (truncate(mdc.getOrDefault("lineNo",  null), 10))
+                    .traceId (truncate(mdc.getOrDefault("traceId", null), 50))
                     // 실행 환경
                     .serverNm (serverNm)
                     .profile  (activeProfile)

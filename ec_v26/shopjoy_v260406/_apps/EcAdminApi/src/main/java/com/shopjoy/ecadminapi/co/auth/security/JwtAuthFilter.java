@@ -62,11 +62,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             MDC.put("req",        method + " " + host + path);  // logback 패턴 표시용
             MDC.put("reqStartMs", String.valueOf(System.currentTimeMillis()));  // 경과 시간 계산용
 
-            // 화면명·작업명 MDC (프론트에서 X-UI-Nm / X-Cmd-Nm 헤더로 전달)
-            String uiNm  = request.getHeader("X-UI-Nm");
-            String cmdNm = request.getHeader("X-Cmd-Nm");
-            MDC.put("uiNm",  uiNm  != null ? uiNm  : "");
-            MDC.put("cmdNm", cmdNm != null ? cmdNm : "");
+            // 화면명·작업명·추적 MDC (프론트에서 X-* 헤더로 전달)
+            String uiNm   = request.getHeader("X-UI-Nm");
+            String cmdNm  = request.getHeader("X-Cmd-Nm");
+            String fileNm = request.getHeader("X-File-Nm");
+            String funcNm = request.getHeader("X-Func-Nm");
+            String lineNo = request.getHeader("X-Line-No");
+            String traceId = request.getHeader("X-Trace-Id");
+            MDC.put("uiNm",   uiNm   != null ? uiNm   : "");
+            MDC.put("cmdNm",  cmdNm  != null ? cmdNm  : "");
+            MDC.put("fileNm", fileNm != null ? fileNm : "");
+            MDC.put("funcNm", funcNm != null ? funcNm : "");
+            MDC.put("lineNo", lineNo != null ? lineNo : "");
+            MDC.put("traceId", traceId != null ? traceId : "");
 
             String token = extractToken(request);
 
