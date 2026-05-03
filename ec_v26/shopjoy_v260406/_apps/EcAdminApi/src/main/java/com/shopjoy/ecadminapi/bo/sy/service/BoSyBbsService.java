@@ -86,24 +86,39 @@ public class BoSyBbsService {
     public void saveList(List<SyBbs> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
+
+        // 1단계: DELETE 일괄 처리
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getBbsId() != null)
+            .map(SyBbs::getBbsId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            repository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        // 2단계: UPDATE 처리
         for (SyBbs row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setBbsId("BS" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getBbsId(), "bbsId must not be null");
-                SyBbs entity = repository.findById(id).orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "bbsId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getBbsId(), "bbsId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
-            }
+            if (!"U".equals(row.getRowStatus())) continue;
+            String id = row.getBbsId();
+            SyBbs entity = repository.findById(id)
+                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            VoUtil.voCopyExclude(row, entity, "bbsId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            repository.save(entity);
         }
         em.flush();
+
+        // 3단계: INSERT 처리
+        for (SyBbs row : rows) {
+            if (!"I".equals(row.getRowStatus())) continue;
+            row.setBbsId("BS" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            repository.save(row);
+        }
+        em.flush();
+        em.clear();
     }
 }

@@ -80,27 +80,41 @@ public class BoSyCodeService {
     public void saveList(List<SyCode> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
+
+        // 1단계: DELETE 일괄 처리
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getCodeId() != null)
+            .map(SyCode::getCodeId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            repository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        // 2단계: UPDATE 처리
         for (SyCode row : rows) {
-            String status = row.getRowStatus();
-            if ("I".equals(status)) {
-                row.setCodeId("CD" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
-            } else if ("U".equals(status)) {
-                String codeId = row.getCodeId();
-                if (codeId == null) throw new CmBizException("수정 행에 codeId가 없습니다.");
-                SyCode entity = repository.findById(codeId)
-                    .orElseThrow(() -> new CmBizException("존재하지 않는 코드: " + codeId));
-                VoUtil.voCopy(row, entity, "codeId", "regBy", "regDate");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
-            } else if ("D".equals(status)) {
-                String codeId = row.getCodeId();
-                if (codeId != null) repository.findById(codeId).ifPresent(repository::delete);
-            }
+            if (!"U".equals(row.getRowStatus())) continue;
+            String codeId = row.getCodeId();
+            if (codeId == null) throw new CmBizException("수정 행에 codeId가 없습니다.");
+            SyCode entity = repository.findById(codeId)
+                .orElseThrow(() -> new CmBizException("존재하지 않는 코드: " + codeId));
+            VoUtil.voCopy(row, entity, "codeId", "regBy", "regDate");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            repository.save(entity);
         }
         em.flush();
+
+        // 3단계: INSERT 처리
+        for (SyCode row : rows) {
+            if (!"I".equals(row.getRowStatus())) continue;
+            row.setCodeId("CD" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            repository.save(row);
+        }
+        em.flush();
+        em.clear();
         codeCache.evictAll();
     }
 
