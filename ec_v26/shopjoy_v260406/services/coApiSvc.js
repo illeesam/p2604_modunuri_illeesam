@@ -106,6 +106,13 @@
     getThumbUrl(thumbUrl) { return `/co/cm/image/thumb/${thumbUrl}`; },
   };
 
+  /* ── cm: 첨부파일 그룹 조회 (/co/cm/upload) ─────────────── */
+  coApiSvc.cmAttach = {
+    getFiles(attachGrpId, uiNm, cmdNm) {
+      return client().get(`/co/cm/upload/attach-grp/${attachGrpId}/files`, hdr(uiNm, cmdNm));
+    },
+  };
+
   /* ── cm: 파일 업로드 (/co/cm/upload) ────────────────────── */
   coApiSvc.cmUpload = {
     uploadOne(formData, uiNm, cmdNm) {

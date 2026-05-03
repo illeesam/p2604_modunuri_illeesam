@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.co.cm.controller;
 
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttachGrp;
 import com.shopjoy.ecadminapi.base.sy.service.SyAttachGrpService;
@@ -14,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnailator;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -225,5 +228,14 @@ public class CmUploadMultiController {
             log.error("파일 업로드 실패", e);
             throw new RuntimeException("파일 업로드 중 오류가 발생했습니다: " + e.getMessage(), e);
         }
+    }
+
+    /// 첨부 그룹 ID로 파일 목록 조회
+    @Operation(summary = "첨부 그룹 파일 목록 조회", description = "attachGrpId에 속한 파일 목록을 sort_ord ASC 순으로 반환합니다.")
+    @GetMapping("/attach-grp/{attachGrpId}/files")
+    public ResponseEntity<ApiResponse<List<SyAttachDto>>> getAttachGrpFiles(
+            @PathVariable String attachGrpId) {
+        List<SyAttachDto> files = syAttachService.getList(Map.of("attachGrpId", attachGrpId));
+        return ResponseEntity.ok(ApiResponse.ok(files));
     }
 }

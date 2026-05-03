@@ -44,7 +44,7 @@
             <when test="sort == 'nm_desc'">ORDER BY a.file_nm DESC</when>
             <when test="sort == 'reg_asc'">ORDER BY a.reg_date ASC</when>
             <when test="sort == 'reg_desc'">ORDER BY a.reg_date DESC</when>
-            <otherwise>ORDER BY a.reg_date DESC</otherwise>
+            <otherwise>ORDER BY a.sort_ord ASC, a.reg_date ASC</otherwise>
         </choose>
         <if test="limit != null and offset != null">LIMIT #{limit} OFFSET #{offset}</if>
     </select>

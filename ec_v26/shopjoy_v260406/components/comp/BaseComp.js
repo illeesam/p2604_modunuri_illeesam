@@ -30,11 +30,34 @@ window.BaseAttachGrp = {
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
-    const { computed, ref, reactive } = Vue;
-    const uiState = reactive({ uploading: false });
+    const { computed, ref, reactive, watch, onMounted } = Vue;
+    const uiState = reactive({ uploading: false, loading: false });
 
     /* 업로드된 파일 목록 (로컬 상태) */
     const files = reactive([]);
+
+    const loadFiles = async (attachGrpId) => {
+      if (!attachGrpId) return;
+      uiState.loading = true;
+      try {
+        const res = await window.coApiSvc.cmAttach.getFiles(attachGrpId);
+        const list = res.data?.data || [];
+        files.splice(0, files.length, ...list.map(f => ({
+          attachId:  f.attachId,
+          fileNm:    f.fileNm,
+          fileSize:  f.fileSize,
+          fileExt:   f.fileExt,
+          attachUrl: f.attachUrl || f.storagePath,
+        })));
+      } catch (err) {
+        console.error('[BaseAttachGrp] 파일 목록 조회 실패', err);
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    onMounted(() => { if (props.modelValue) loadFiles(props.modelValue); });
+    watch(() => props.modelValue, (val) => { if (val) loadFiles(val); });
 
     /* 허용 확장자 accept 문자열 변환 */
     const cfAcceptAttr = computed(() => {
@@ -147,7 +170,7 @@ window.BaseAttachGrp = {
       return map[ext?.toLowerCase()] || '📎';
     };
 
-    return { uiState, files, cfAcceptAttr, fileInputRef, openPicker, onFileChange, removeFile, fnFmtSize, fnExtIcon };
+    return { uiState, files, cfAcceptAttr, fileInputRef, openPicker, onFileChange, removeFile, fnFmtSize, fnExtIcon, loadFiles };
   },
   template: /* html */`
 <div style="border:1px solid #e8e8e8;border-radius:8px;background:#fafafa;padding:12px 14px;">
@@ -167,6 +190,9 @@ window.BaseAttachGrp = {
         @mouseenter="e=>e.currentTarget.style.background='#fde8e8'"
         @mouseleave="e=>e.currentTarget.style.background='#f0f0f0'">✕</button>
     </div>
+  </div>
+  <div v-else-if="uiState.loading" style="font-size:12px;color:#c0c0c0;padding:6px 2px 10px;display:flex;align-items:center;gap:5px;">
+    <span style="font-size:14px;">⏳</span> 파일 목록 불러오는 중...
   </div>
   <div v-else style="font-size:12px;color:#c0c0c0;padding:6px 2px 10px;display:flex;align-items:center;gap:5px;">
     <span style="font-size:14px;">📂</span> 첨부된 파일이 없습니다.
