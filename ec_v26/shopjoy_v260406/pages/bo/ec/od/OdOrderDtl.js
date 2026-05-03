@@ -51,33 +51,16 @@ window.OdOrderDtl = {
       }
     };
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.claim_statuses = await codeStore.snGetGrpCodes('CLAIM_STATUS') || [];
-        codes.order_statuses = await codeStore.snGetGrpCodes('ORDER_STATUS') || [];
-        codes.payment_methods = await codeStore.snGetGrpCodes('PAYMENT_METHOD') || [];
-        codes.pay_statuses = await codeStore.snGetGrpCodes('PAY_STATUS') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.claim_statuses = codeStore.sgGetGrpCodes('CLAIM_STATUS');
+      codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
+      codes.payment_methods = codeStore.sgGetGrpCodes('PAYMENT_METHOD');
+      codes.pay_statuses = codeStore.sgGetGrpCodes('PAY_STATUS');
+      uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     const ORDER_STEPS = ['입금대기', '결제완료', '상품준비중', '배송중', '배송완료', '구매확정'];
 
@@ -170,7 +153,7 @@ window.OdOrderDtl = {
         const sale = Math.round(paid / (1 - discRates[i]));
         const disc = sale - paid;
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
         return { ...d, salePrice: sale, discInfo: discLabels[i], discAmount: disc, price: paid };
       }).filter(Boolean);
@@ -266,7 +249,7 @@ window.OdOrderDtl = {
       if (!cfRelatedClaim.value || cfRelatedClaim.value.type !== '교환') return null;
       const swapColor = { '블랙':'네이비','네이비':'차콜','화이트':'아이보리' };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
       return {
         prodNm: it.prodNm + ' (교환품)',
@@ -293,7 +276,7 @@ window.OdOrderDtl = {
 
     watch(memoEl, (el) => { uiState.memoEl = el; });
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { cfIsNew, form, errors, handleSave, ORDER_STEPS, cfCurrentStepIdx, cfIsCanceled, memoEl, activeTab, orderItems, fmt, cfRelatedClaim, cfRelatedDelivery, cfRelatedVendor, CLAIM_FLOWS, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, PAY_STATUS_FALLBACK, fnPayStatusBadge, viewMode2, showTab, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, codes };
   },
@@ -301,7 +284,7 @@ window.OdOrderDtl = {
 <div>
   <div class="page-title">{{ cfIsNew ? '주문 등록' : (viewMode ? '주문 상세' : '주문 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.orderId }}</span></div>
 
-  <!-- ── 탭 ────────────────────────────────────────────────────────────── -->
+  <!-- -- 탭 -------------------------------------------------------------- -->
   <div v-if="!cfIsNew" style="display:flex;gap:8px;margin-bottom:14px;align-items:stretch;">
     <div style="flex:1;display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
       <button v-for="t in cfTabs" :key="t?.id"
@@ -346,7 +329,7 @@ window.OdOrderDtl = {
   <div v-if="cfIsNew || showTab('info')" class="card">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
 
-    <!-- ── 주문 진행 상태 흐름 ────────────────────────────────────────────────── -->
+    <!-- -- 주문 진행 상태 흐름 -------------------------------------------------- -->
     <div v-if="!cfIsNew" style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
         <span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:10px;color:#fff;background:#16a34a;">주문</span>
@@ -385,7 +368,7 @@ window.OdOrderDtl = {
       </div>
     </div>
 
-    <!-- ── 클레임 진행 흐름 (있을 때만) ──────────────────────────────────────────── -->
+    <!-- -- 클레임 진행 흐름 (있을 때만) -------------------------------------------- -->
     <div v-if="!cfIsNew && cfRelatedClaim" style="margin-bottom:20px;padding:16px;border-radius:10px;border:1px dashed #e8e8e8;"
       :style="{
         background: 'linear-gradient(135deg,'+CLAIM_TYPE_COLOR[cfRelatedClaim.type]+'15 0%,#fff 70%)',
@@ -436,7 +419,7 @@ window.OdOrderDtl = {
       </div>
     </div>
 
-    <!-- ── 기본정보 폼 ─────────────────────────────────────────────────────── -->
+    <!-- -- 기본정보 폼 ------------------------------------------------------- -->
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">주문ID <span v-if="!viewMode" class="req">*</span></label>
@@ -525,7 +508,7 @@ window.OdOrderDtl = {
 
   </div>
 
-  <!-- ── 주문항목목록 탭 ─────────────────────────────────────────────────────── -->
+  <!-- -- 주문항목목록 탭 ------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('items')" class="card" style="padding:20px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📦 주문항목 <span class="tab-count">{{ orderItems.length }}</span></div>
     <div v-if="cfRelatedClaim && cfRelatedClaim.type==='교환'" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
@@ -615,7 +598,7 @@ window.OdOrderDtl = {
     <div v-else style="text-align:center;color:#bbb;padding:30px;">주문 항목 정보가 없습니다.</div>
   </div>
 
-  <!-- ── 결제정보 탭 ───────────────────────────────────────────────────────── -->
+  <!-- -- 결제정보 탭 --------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('payment')" class="card" style="padding:20px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ cfPaymentList.length }}</span></div>
     <table class="bo-table" v-if="cfPaymentList.length">
@@ -639,13 +622,13 @@ window.OdOrderDtl = {
     <div v-else style="text-align:center;color:#bbb;padding:30px;">결제정보가 없습니다.</div>
   </div>
 
-  <!-- ── 상태변경이력 탭 ─────────────────────────────────────────────────────── -->
+  <!-- -- 상태변경이력 탭 ------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('hist')" class="card">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">🕒 상태변경이력 <span class="tab-count">{{ cfStatusHistList.length }}</span></div>
     <od-order-hist :order-id="form.orderId" :navigate="navigate" :show-ref-modal="showRefModal" :show-toast="showToast" />
   </div>
 
-  <!-- ── 정보수정이력 탭 ─────────────────────────────────────────────────────── -->
+  <!-- -- 정보수정이력 탭 ------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('editHist')" class="card" style="padding:20px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ cfEditHistList.length }}</span></div>
     <table class="bo-table" v-if="cfEditHistList.length">

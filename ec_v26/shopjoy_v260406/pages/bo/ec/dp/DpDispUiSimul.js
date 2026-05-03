@@ -33,9 +33,6 @@ window.DpDispUiSimul = {
       } catch (_) {}
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
-
     /* ── 오늘 날짜 ── */
     const today = new Date().toISOString().slice(0, 10);
 
@@ -47,26 +44,20 @@ window.DpDispUiSimul = {
       showAreaDrop: false, sourceCopied: false, structLayoutType: 'grid', structColCount: 1, structViewport: 'desktop', structShowReal: false, structDashDragOver: false, structSpanPopupIdx: -1, structDragOverIdx: -1, dispUiLayerOpen: true, dispUiModalOpen: false, dispUiAreaErr: false, dispUiSiteModalOpen: false, dispUiSiteSearch: '', dispUiMemberModalOpen: false, dispUiMemberSearch: '', dispUiAreaDrop: false, otherMenuOpen: false});
     const tab = Vue.toRef(uiState, 'tab');
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
 
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (codeStore?.snGetGrpCodes) {
-          codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
-        }
-      } catch (err) { console.error('[fnLoadCodes]', err); }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
       uiState.isPageCodeLoad = true;
-      handleSearchData();
     };
+
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
 
     // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     /* ── 검색/필터 조건 ── */
     const _initSearchParam = () => ({ previewDate: today, previewTime: new Date().toTimeString().slice(0, 5), status: '활성', visibility: '', structColCount: 1, dispUiAreaErr: false, dispUiSiteSearch: '', dispUiMemberSearch: '' });
@@ -177,7 +168,11 @@ window.DpDispUiSimul = {
 
     // ── return ───────────────────────────────────────────────────────────────
 
-        return { ...area, panels };
+        onMounted(() => {
+      handleSearchData();
+    });
+
+    return { ...area, panels };
       }).filter(a => selectedAreas.size === 0 || selectedAreas.has(a.codeValue))
     );
 

@@ -29,35 +29,18 @@ window.PmCacheDtl = {
     };
     const cfIsNew = computed(() => !props.editId);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-        watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
+watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
 
         watch(() => uiState.viewMode2, v => { window._pmCacheDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.cache_trans_types = await codeStore.snGetGrpCodes('CACHE_TRANS_TYPE') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.cache_trans_types = codeStore.sgGetGrpCodes('CACHE_TRANS_TYPE');
+      uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     const form = reactive({
       cacheId: null, userId: '', userNm: '', date: '', type: '충전', amount: 0, balance: 0, desc: '',
@@ -70,10 +53,9 @@ window.PmCacheDtl = {
       desc: yup.string().required('내용을 입력해주세요.'),
     });
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleSearchDetail();
     });
 
     /* 같은 회원의 캐쉬 내역 */
@@ -125,7 +107,7 @@ window.PmCacheDtl = {
 
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { uiState, codes, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, viewMode2, showTab, cfSelectedVendorNm, selectVendor, showVendorModal };
   },
@@ -149,7 +131,7 @@ window.PmCacheDtl = {
     </div>
     <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
-    <!-- ── 기본정보 ───────────────────────────────────────────────────────── -->
+    <!-- -- 기본정보 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <div class="form-row">
@@ -210,7 +192,7 @@ window.PmCacheDtl = {
         </div>
       </div>
 
-      <!-- ── 판매업체 선택 모달 ───────────────────────────────────────────────── -->
+      <!-- -- 판매업체 선택 모달 ------------------------------------------------- -->
       <div v-if="showVendorModal" class="modal-overlay" @click.self="showVendorModal=false">
         <div class="modal-box" style="width:400px;">
           <div class="modal-header">
@@ -247,7 +229,7 @@ window.PmCacheDtl = {
       </div>
     </div>
 
-    <!-- ── 회원 캐쉬 내역 ───────────────────────────────────────────────────── -->
+    <!-- -- 회원 캐쉬 내역 ----------------------------------------------------- -->
     <div class="card" v-show="showTab('history')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 캐쉬 내역 <span class="tab-count">{{ cfMemberCacheHistory.length }}</span></div>
       <div style="margin-bottom:12px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">

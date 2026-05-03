@@ -12,18 +12,16 @@ window.MbMemberDtl = {
     }, { immediate: true });
 
     onMounted(() => {
-      const codeStore = window.sfGetBoCodeStore?.();
-      if (codeStore?.snGetGrpCodes) {
-        codes.member_grades = codeStore.snGetGrpCodes('MEMBER_GRADE') || [];
-        codes.member_statuses = codeStore.snGetGrpCodes('MEMBER_STATUS') || [];
-      }
+      const codeStore = window.sfGetBoCodeStore();
+      codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
+      codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS');
     });
 
     return { currentId, codes };
   },
   template: /* html */`
 <div v-if="detailModal.show">
-  <!-- ── 상세/수정 카드 ───────────────────────────────────────────────────── -->
+  <!-- -- 상세/수정 카드 ----------------------------------------------------- -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title">{{ detailModal.isNew ? '신규 등록' : '상세 / 수정' }}</span>
@@ -52,7 +50,7 @@ window.MbMemberDtl = {
     </div>
   </div>
 
-  <!-- ── 이력정보 카드 ─────────────────────────────────────────────────────── -->
+  <!-- -- 이력정보 카드 ------------------------------------------------------- -->
   <div v-if="!detailModal.isNew" class="card">
     <mb-member-hist :member-id="currentId" :key="currentId" />
   </div>

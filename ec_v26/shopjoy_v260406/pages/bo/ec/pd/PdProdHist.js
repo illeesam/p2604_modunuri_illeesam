@@ -22,14 +22,9 @@ window.PdProdHist = {
 
     watch(() => uiState.viewMode2, v => { window._ecProdHistState.viewMode = v; });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
 
     const fnLoadCodes = () => { uiState.isPageCodeLoad = true; };
-    watch(isAppReady, (v) => { if (v) fnLoadCodes(); });
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.botTab === id;
 
@@ -80,8 +75,8 @@ window.PdProdHist = {
     };
 
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      handleLoadTab(uiState.botTab);
+            if (isAppReady.value) fnLoadCodes();
+handleLoadTab(uiState.botTab);
       if (uiState.viewMode2 !== 'tab') {
         ['orders', 'stock', 'price', 'status', 'changes']
           .forEach(t => t !== uiState.botTab && handleLoadTab(t));
@@ -138,7 +133,7 @@ window.PdProdHist = {
   </div>
   <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
-  <!-- ── 연관 주문 ────────────────────────────────────────────────────────── -->
+  <!-- -- 연관 주문 ---------------------------------------------------------- -->
   <div class="card" v-show="showTab('orders')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ relatedOrders.length }}</span></div>
     <table class="bo-table" v-if="relatedOrders.length">
@@ -158,7 +153,7 @@ window.PdProdHist = {
     <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">연관 주문이 없습니다.</div>
   </div>
 
-  <!-- ── 재고 이력 ────────────────────────────────────────────────────────── -->
+  <!-- -- 재고 이력 ---------------------------------------------------------- -->
   <div class="card" v-show="showTab('stock')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📦 재고 이력 <span class="tab-count">{{ stockHistory.length }}</span></div>
     <table class="bo-table" v-if="stockHistory.length">
@@ -179,7 +174,7 @@ window.PdProdHist = {
     <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">재고 이력이 없습니다.</div>
   </div>
 
-  <!-- ── 가격변경이력 ───────────────────────────────────────────────────────── -->
+  <!-- -- 가격변경이력 --------------------------------------------------------- -->
   <div class="card" v-show="showTab('price')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💰 가격변경이력 <span class="tab-count">{{ priceHistory.length }}</span></div>
     <table class="bo-table" v-if="priceHistory.length">
@@ -197,7 +192,7 @@ window.PdProdHist = {
     <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">가격 변경 이력이 없습니다.</div>
   </div>
 
-  <!-- ── 상품상태 이력 ──────────────────────────────────────────────────────── -->
+  <!-- -- 상품상태 이력 -------------------------------------------------------- -->
   <div class="card" v-show="showTab('status')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🏷 상품상태 이력 <span class="tab-count">{{ statusHistory.length }}</span></div>
     <table class="bo-table" v-if="statusHistory.length">
@@ -214,7 +209,7 @@ window.PdProdHist = {
     <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">상태 변경 이력이 없습니다.</div>
   </div>
 
-  <!-- ── 상품정보 변경이력 ────────────────────────────────────────────────────── -->
+  <!-- -- 상품정보 변경이력 ------------------------------------------------------ -->
   <div class="card" v-show="showTab('changes')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 상품정보 변경이력 <span class="tab-count">{{ changeHistory.length }}</span></div>
     <table class="bo-table" v-if="changeHistory.length">

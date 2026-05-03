@@ -8,28 +8,16 @@ window.MyClaim = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
-    const isAppReady = computed(() => {
-      const initStore = window.useFoAppInitStore?.();
-      const codeStore = window.useFoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleSearchData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
     const myStore = window.useFoMyStore();
     const { claims, claimFilter, cfFilteredClaims, orders } = Pinia.storeToRefs(myStore);
     const filteredClaims = cfFilteredClaims;
@@ -101,7 +89,11 @@ window.MyClaim = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    // ── return ───────────────────────────────────────────────────────────────
+    onMounted(() => {
+      handleSearchData();
+    });
+
+    // -- return ---------------------------------------------------------------
 
     return {
       myStore, claims, claimFilter, filteredClaims, orders,
@@ -116,7 +108,7 @@ window.MyClaim = {
 
   <MyDateFilter @search="onSearch" @reset="claimStatusFilter.splice(0)" />
 
-  <!-- ── 유형 필터 ────────────────────────────────────────────────────────── -->
+  <!-- -- 유형 필터 ---------------------------------------------------------- -->
   <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
     <button v-for="f in ['전체','취소','반품','교환']" :key="f"
       @click="claimFilter=f;claimStatusFilter.splice(0);pager.page=1"
@@ -130,16 +122,16 @@ window.MyClaim = {
     </button>
   </div>
 
-  <!-- ── 처리 흐름 (취소/반품/교환) ─────────────────────────────────────────────── -->
+  <!-- -- 처리 흐름 (취소/반품/교환) ----------------------------------------------- -->
   <template v-for="claimType in (claimFilter==='전체' ? ['취소','반품','교환'] : [claimFilter])" :key="claimType">
     <div v-if="claims.filter(c=>c.type===claimType).length>0"
       style="background:#f4f5f7;border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;margin-bottom:8px;">
       <div style="display:flex;align-items:center;gap:6px;overflow-x:auto;flex-wrap:nowrap;">
-        <!-- ── 유형 배지 ──────────────────────────────────────────────────── -->
+        <!-- -- 유형 배지 ---------------------------------------------------- -->
         <span style="font-size:0.72rem;font-weight:800;padding:3px 10px;border-radius:10px;color:#fff;flex-shrink:0;"
           :style="'background:' + myStore.CLAIM_TYPE_COLOR[claimType]">{{ claimType }}</span>
         <span style="font-size:0.75rem;color:var(--border);flex-shrink:0;">›</span>
-        <!-- ── 흐름 단계 ──────────────────────────────────────────────────── -->
+        <!-- -- 흐름 단계 ---------------------------------------------------- -->
         <template v-for="(step, si) in myStore.CLAIM_FLOWS[claimType]" :key="step">
           <button @click="claims.filter(c=>c.type===claimType&&c.status===step).length>0 && (toggleClaimStatus(step), pager.page=1)"
             style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:1.5px solid transparent;white-space:nowrap;flex-shrink:0;transition:all 0.15s;"
@@ -164,7 +156,7 @@ window.MyClaim = {
           <span v-if="si < myStore.CLAIM_FLOWS[claimType].length-1"
             style="font-size:0.75rem;color:var(--border);flex-shrink:0;">›</span>
         </template>
-        <!-- ── 필터해제 ───────────────────────────────────────────────────── -->
+        <!-- -- 필터해제 ----------------------------------------------------- -->
         <button v-if="claimStatusFilter.length"
           @click="claimStatusFilter.splice(0)"
           style="margin-left:4px;font-size:0.68rem;padding:2px 7px;border-radius:6px;border:1px solid var(--border);background:var(--bg-base);color:var(--text-secondary);cursor:pointer;flex-shrink:0;">✕</button>
@@ -178,7 +170,7 @@ window.MyClaim = {
   <div v-for="c in paginate(cfDateFilteredClaims, pager)" :key="c.claimId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;">
 
-    <!-- ── 카드 헤더 ──────────────────────────────────────────────────────── -->
+    <!-- -- 카드 헤더 -------------------------------------------------------- -->
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin:-16px -16px 12px;padding:12px 16px;border-bottom:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;"
       :style="'background:linear-gradient(135deg,'+({'취소':'rgba(220,38,38,0.22)','반품':'rgba(255,187,0,0.22)','교환':'rgba(59,130,246,0.13)'}[c.type]||'rgba(156,95,163,0.13)')+' 0%,rgba(255,255,255,0.6) 60%,rgba(255,255,255,0) 100%);'">
       <div>
@@ -208,7 +200,7 @@ window.MyClaim = {
       </div>
     </div>
 
-    <!-- ── 진행 흐름 바 ────────────────────────────────────────────────────── -->
+    <!-- -- 진행 흐름 바 ------------------------------------------------------ -->
     <div style="background:#f6f6f6;border-radius:8px;padding:12px 14px;margin-bottom:12px;overflow-x:auto;">
       <div style="display:flex;align-items:center;min-width:320px;">
         <template v-for="(step, si) in myStore.CLAIM_FLOWS[c.type]" :key="step">
@@ -243,7 +235,7 @@ window.MyClaim = {
       </div>
     </div>
 
-    <!-- ── 상품 목록 ──────────────────────────────────────────────────────── -->
+    <!-- -- 상품 목록 -------------------------------------------------------- -->
     <div v-for="(item, ii) in c.items" :key="ii"
       style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px dashed var(--border);">
       <span style="font-size:1.4rem;">{{ item.emoji }}</span>
@@ -260,7 +252,7 @@ window.MyClaim = {
       <div style="font-size:0.88rem;font-weight:700;color:var(--blue);">{{ item.price.toLocaleString() }}원</div>
     </div>
 
-    <!-- ── 사유 + 교환 정보 ─────────────────────────────────────────────────── -->
+    <!-- -- 사유 + 교환 정보 --------------------------------------------------- -->
     <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;font-size:0.82rem;">
       <div style="display:flex;gap:8px;align-items:flex-start;">
         <span style="color:var(--text-muted);flex-shrink:0;min-width:44px;">사유</span>

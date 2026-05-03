@@ -3,31 +3,19 @@ window.Location = {
   name: 'Location',
   props: ['navigate', 'config'],
   setup() {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const { ref, reactive, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, mapProvider: 'kakao', mapSrc: '' });
     const codes = reactive({});
 
-    const isAppReady = computed(() => {
-      const initStore = window.useFoAppInitStore?.();
-      const codeStore = window.useFoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     const LAT  = 37.4407;
     const LNG  = 127.1468;
@@ -59,22 +47,21 @@ window.Location = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      /* 카카오 MAP SDK 동적 로드 시도 — appkey 없으면 Google로 fallback */
       const appKey = (window.SITE_CONFIG && window.SITE_CONFIG.kakaoMapKey) || '';
       if (appKey) {
-        const s = document.createElement('script');
-        s.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&autoload=false`;
-        s.onload = () => {
-          kakao.maps.load(() => {
-            const el = document.getElementById('shopjoy-map');
-            if (!el) return;
-            const map = new kakao.maps.Map(el, {
-              center: new kakao.maps.LatLng(LAT, LNG),
-              level: 4,
-            });
+      const s = document.createElement('script');
+      s.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&autoload=false`;
+      s.onload = () => {
+      kakao.maps.load(() => {
+      const el = document.getElementById('shopjoy-map');
+      if (!el) return;
+      const map = new kakao.maps.Map(el, {
+      center: new kakao.maps.LatLng(LAT, LNG),
+      level: 4,
+    });
             new kakao.maps.Marker({
               map,
               position: new kakao.maps.LatLng(LAT, LNG),
@@ -95,7 +82,7 @@ window.Location = {
       }
     });
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return {
       uiState, codes, onMapError,
@@ -106,7 +93,7 @@ window.Location = {
 
   template: /* html */ `
 <div class="page-wrap">
-  <!-- ── 페이지 타이틀 배너 ───────────────────────────────────────────────────── -->
+  <!-- -- 페이지 타이틀 배너 ----------------------------------------------------- -->
   <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-1.jpg" alt="위치안내"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
@@ -121,16 +108,16 @@ window.Location = {
     </div>
   </div>
 
-  <!-- ── 지도 영역 ────────────────────────────────────────────────────────── -->
+  <!-- -- 지도 영역 ---------------------------------------------------------- -->
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:24px;">
 
-    <!-- ── 카카오 SDK 모드: div 컨테이너 ───────────────────────────────────────── -->
+    <!-- -- 카카오 SDK 모드: div 컨테이너 ----------------------------------------- -->
     <div v-if="uiState.mapProvider==='kakao_sdk'"
       id="shopjoy-map"
       style="width:100%;height:clamp(220px,40vw,320px);">
     </div>
 
-    <!-- ── iframe 모드 (Google / OSM) ───────────────────────────────────── -->
+    <!-- -- iframe 모드 (Google / OSM) ------------------------------------- -->
     <iframe v-else-if="!uiState.mapError && uiState.mapSrc"
       :src="uiState.mapSrc"
       width="100%"
@@ -140,13 +127,13 @@ window.Location = {
       @error="onMapError">
     </iframe>
 
-    <!-- ── 로딩 중 (mapSrc 아직 미설정) ───────────────────────────────────────── -->
+    <!-- -- 로딩 중 (mapSrc 아직 미설정) ----------------------------------------- -->
     <div v-else-if="!uiState.mapError && !uiState.mapSrc"
       style="height:clamp(220px,40vw,320px);display:flex;align-items:center;justify-content:center;background:var(--bg-base);color:var(--text-muted);font-size:13px;gap:8px;">
       <span style="animation:spin .8s linear infinite;display:inline-block;">⏳</span> 지도 로딩 중…
     </div>
 
-    <!-- ── 에러 fallback ────────────────────────────────────────────────── -->
+    <!-- -- 에러 fallback -------------------------------------------------- -->
     <div v-else
       style="height:clamp(220px,40vw,320px);display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg-base);gap:12px;">
       <div style="font-size:2.5rem;">🗺️</div>
@@ -157,7 +144,7 @@ window.Location = {
       </a>
     </div>
 
-    <!-- ── 하단 바: 주소 + 지도앱 링크 ──────────────────────────────────────────── -->
+    <!-- -- 하단 바: 주소 + 지도앱 링크 -------------------------------------------- -->
     <div style="padding:12px 20px;background:var(--bg-card);border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <span style="font-size:0.83rem;color:var(--text-secondary);flex:1;min-width:0;">
         📍 {{ ADDR }} 201호
@@ -179,10 +166,10 @@ window.Location = {
     </div>
   </div>
 
-  <!-- ── 상세 정보 ────────────────────────────────────────────────────────── -->
+  <!-- -- 상세 정보 ---------------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:clamp(10px,2vw,16px);margin-bottom:24px;">
 
-    <!-- ── 주소 ─────────────────────────────────────────────────────────── -->
+    <!-- -- 주소 ----------------------------------------------------------- -->
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
         <div style="width:40px;height:40px;border-radius:10px;background:var(--blue-dim);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">📍</div>
@@ -195,7 +182,7 @@ window.Location = {
       </div>
     </div>
 
-    <!-- ── 영업시간 ───────────────────────────────────────────────────────── -->
+    <!-- -- 영업시간 --------------------------------------------------------- -->
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
         <div style="width:40px;height:40px;border-radius:10px;background:var(--green-dim);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🕐</div>
@@ -214,7 +201,7 @@ window.Location = {
       </div>
     </div>
 
-    <!-- ── 연락처 ────────────────────────────────────────────────────────── -->
+    <!-- -- 연락처 ---------------------------------------------------------- -->
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
         <div style="width:40px;height:40px;border-radius:10px;background:var(--blue-dim);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">📞</div>
@@ -240,7 +227,7 @@ window.Location = {
 
   </div>
 
-  <!-- ── 교통편 안내 ───────────────────────────────────────────────────────── -->
+  <!-- -- 교통편 안내 --------------------------------------------------------- -->
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:clamp(16px,3vw,24px);">
     <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:16px;">🚌 교통편 안내</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:clamp(8px,1.5vw,12px);">

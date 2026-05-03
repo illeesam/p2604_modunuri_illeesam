@@ -3,34 +3,22 @@ window.PdTagMng = {
   name: 'PdTagMng',
   props: ['navigate', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, watch, onMounted } = Vue;
+    const { ref, reactive, watch, onMounted } = Vue;
     const tags = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ use_yn: [] });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
+        codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -51,11 +39,11 @@ window.PdTagMng = {
         uiState.loading = false;
       }
     };
-    /* ── 검색 파라미터 ── */
+    /* -- 검색 파라미터 -- */
     const _initSearchParam = () => ({ kw: '', use: '' });
     const searchParam = reactive(_initSearchParam());
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -120,7 +108,7 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { tags, uiState, codes, searchParam, pager, setPage, onSearch, onReset,
              gridRows, addRow, onCellChange, deleteRow, saveAll, fnYnBadge, onSizeChange };

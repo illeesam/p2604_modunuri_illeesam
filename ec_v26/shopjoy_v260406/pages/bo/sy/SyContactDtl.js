@@ -13,36 +13,19 @@ window.SyContactDtl = {
     const cfIsNew = computed(() => !props.editId);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-        watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
+watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
 
         watch(() => uiState.viewMode2, v => { window._syContactDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.contact_categories = await codeStore.snGetGrpCodes('CONTACT_CATEGORY_KR') || [];
-        codes.contact_statuses = await codeStore.snGetGrpCodes('CONTACT_STATUS_KR') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.contact_categories = codeStore.sgGetGrpCodes('CONTACT_CATEGORY_KR');
+      codes.contact_statuses = codeStore.sgGetGrpCodes('CONTACT_STATUS_KR');
+      uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     const form = reactive({
       inquiryId: null, userId: '', userNm: '', date: '', categoryCd: '배송 문의',
@@ -164,7 +147,7 @@ window.SyContactDtl = {
     const answerEl = Vue.toRef(uiState, 'answerEl');
     const contentEl = Vue.toRef(uiState, 'contentEl');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { uiState, codes, cfIsNew, tab, viewMode2, showTab, form, errors, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm, contentEl, answerEl };
   },
@@ -194,7 +177,7 @@ window.SyContactDtl = {
     </div>
     <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
-    <!-- ── 문의 내용 ──────────────────────────────────────────────────────── -->
+    <!-- -- 문의 내용 -------------------------------------------------------- -->
     <div class="card" v-show="showTab('content')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 문의 내용</div>
       <div class="form-row">
@@ -247,7 +230,7 @@ window.SyContactDtl = {
       </div>
     </div>
 
-    <!-- ── 답변 ─────────────────────────────────────────────────────────── -->
+    <!-- -- 답변 ----------------------------------------------------------- -->
     <div class="card" v-show="showTab('answer')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💬 답변</div>
       <div v-if="!cfIsNew" style="margin-bottom:16px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
@@ -273,7 +256,7 @@ window.SyContactDtl = {
       </div>
     </div>
 
-    <!-- ── 회원 문의 이력 ───────────────────────────────────────────────────── -->
+    <!-- -- 회원 문의 이력 ----------------------------------------------------- -->
     <div class="card" v-show="showTab('history')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 문의 이력</div>
       <div style="text-align:center;color:#aaa;padding:30px;font-size:13px;">회원 문의 이력은 목록에서 확인하세요.</div>

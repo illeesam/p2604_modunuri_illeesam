@@ -11,32 +11,15 @@ window.DpDispUiDtl = {
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
-    // App 초기화 준비 상태
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading
-          && codeStore?.svCodes?.length > 0
-          && !uiState.isPageCodeLoad;
-    });
-
-    // 코드 주입
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
-      codes.disp_ui_types = codeStore.snGetGrpCodes('DISP_UI_TYPE') || [];
-      codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
+      codes.disp_ui_types = codeStore.sgGetGrpCodes('DISP_UI_TYPE');
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // App 초기화 감시
-
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (ready) => {
-      if (ready) {
-        fnLoadCodes();
-      }
-    });
+    // 코드 주입
 
     // onMounted에서 API 로드
     const handleLoadData = async () => {
@@ -56,7 +39,7 @@ window.DpDispUiDtl = {
         uiState.loading = false;
       }
     };
-    /* ── 표시경로 선택 모달 (sy_path) ── */
+    /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, target: null });
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
@@ -65,7 +48,7 @@ window.DpDispUiDtl = {
 
     const cfIsNew = computed(() => !props.editId);
 
-    /* ── 기본 기간: 오늘 ~ +10년 ── */
+    /* -- 기본 기간: 오늘 ~ +10년 -- */
     const _today = new Date();
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START_DATE = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
@@ -111,11 +94,11 @@ window.DpDispUiDtl = {
       initQuillDesc();
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleLoadData();
       handleInitForm();
+      handleLoadData();
     });
 
     const areas = reactive([]);
@@ -225,7 +208,7 @@ window.DpDispUiDtl = {
       });
     };
 
-    /* ── 공개 대상 (UI-Area 매핑) ── */
+    /* -- 공개 대상 (UI-Area 매핑) -- */
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
     const hasAreaVisibility = (code) => {
       if (!cfActiveArea.value) return false;
@@ -246,7 +229,7 @@ window.DpDispUiDtl = {
       cfActiveArea.value.visibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
-    /* ── UI-영역 전시 환경 멀티체크 토글 ── */
+    /* -- UI-영역 전시 환경 멀티체크 토글 -- */
     const uiDispEnvOptions = [
       { code: 'PROD', label: 'PROD' },
       { code: 'DEV', label: 'DEV' },
@@ -319,7 +302,7 @@ window.DpDispUiDtl = {
     };
     const doCancel = () => { props.navigate('dpDispUiMng'); };
 
-    /* ── Quill (UI코멘트) ── */
+    /* -- Quill (UI코멘트) -- */
         let quillDesc = null;
     const QUILL_OPTS = {
       theme: 'snow',
@@ -349,7 +332,7 @@ window.DpDispUiDtl = {
     const previewPaneWidth = Vue.toRef(uiState, 'previewPaneWidth');
     const showComponentTooltip = Vue.toRef(uiState, 'showComponentTooltip');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { codes, displays, areas, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       form, errors, cfIsNew,
@@ -364,7 +347,7 @@ window.DpDispUiDtl = {
   },
   template: /* html */`
 <div class="card" style="padding:0;overflow:hidden;">
-  <!-- ── 헤더 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 헤더 ------------------------------------------------------------- -->
   <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #eee;background:#fafafa;">
     <div style="font-size:16px;font-weight:700;color:#222;">
       전시 <span style="color:#e8587a;">UI</span> {{ cfIsNew ? '등록' : '수정' }}
@@ -388,7 +371,7 @@ window.DpDispUiDtl = {
     </div>
   </div>
 
-  <!-- ── 안내 배너 ────────────────────────────────────────────────────────── -->
+  <!-- -- 안내 배너 ---------------------------------------------------------- -->
   <div style="background:linear-gradient(135deg,#e3f2fd 0%,#f3e5f5 100%);border:1px solid #90caf9;border-radius:8px;padding:12px 14px;margin:12px 20px;font-size:11px;color:#444;line-height:1.6;">
     <div style="font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
       <span>ℹ️ 여부 및 기간 관리 안내</span>
@@ -399,9 +382,9 @@ window.DpDispUiDtl = {
     </ul>
   </div>
 
-  <!-- ── 본문 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 본문 ------------------------------------------------------------- -->
   <div style="display:flex;min-height:520px;">
-    <!-- ── 좌측 탭 ───────────────────────────────────────────────────────── -->
+    <!-- -- 좌측 탭 --------------------------------------------------------- -->
     <div style="width:160px;background:#f4f5f8;border-right:1px solid #e8ebef;padding:12px 8px;flex-shrink:0;">
       <div @click="selectTab('base')"
         :style="{
@@ -443,11 +426,11 @@ window.DpDispUiDtl = {
       </div>
     </div>
 
-    <!-- ── 중앙 본문 ──────────────────────────────────────────────────────── -->
+    <!-- -- 중앙 본문 -------------------------------------------------------- -->
     <div style="flex:1;padding:20px;min-width:0;overflow-y:auto;">
-      <!-- ── 기본정보 탭 ── -->
+      <!-- -- 기본정보 탭 -- -->
       <div v-if="activeTab==='base'">
-        <!-- ── ■ 설정 ───────────────────────────────────────────────────── -->
+        <!-- -- ■ 설정 ----------------------------------------------------- -->
         <div style="margin-bottom:14px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
           <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
             <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
@@ -509,7 +492,7 @@ window.DpDispUiDtl = {
           </div>
         </div>
 
-        <!-- ── ■ 제목 ───────────────────────────────────────────────────── -->
+        <!-- -- ■ 제목 ----------------------------------------------------- -->
         <div style="margin-bottom:14px;padding:14px;background:#faf8ff;border:1px solid #e9d5ff;border-radius:8px;">
           <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
             <span style="display:inline-block;width:4px;height:16px;background:#7c3aed;border-radius:2px;"></span>
@@ -528,9 +511,9 @@ window.DpDispUiDtl = {
             <label style="font-size:12px;font-weight:600;color:#555;width:50px;flex-shrink:0;">타이틀</label>
             <input class="form-control" v-model="form.title" placeholder="타이틀 텍스트" style="margin:0;flex:1;" />
           </div>
-        </div><!-- ── /제목 ────────────────────────────────────────────────────────────── -->
+        </div><!-- -- /제목 -------------------------------------------------------------- -->
 
-        <!-- ── ■ 내용 ───────────────────────────────────────────────────── -->
+        <!-- -- ■ 내용 ----------------------------------------------------- -->
         <div style="margin-bottom:14px;padding:14px;background:#fff8fa;border:1px solid #fce4ec;border-radius:8px;">
           <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
             <span style="display:inline-block;width:4px;height:16px;background:#e8587a;border-radius:2px;"></span>
@@ -538,11 +521,11 @@ window.DpDispUiDtl = {
           </div>
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">📝 UI코멘트</div>
           <div ref="htmlDescEl"></div>
-        </div><!-- ── /내용 ────────────────────────────────────────────────────────────── -->
+        </div><!-- -- /내용 -------------------------------------------------------------- -->
 
       </div>
 
-      <!-- ── 영역 탭 ── -->
+      <!-- -- 영역 탭 -- -->
       <div v-else-if="cfActiveArea">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
           <div>
@@ -562,7 +545,7 @@ window.DpDispUiDtl = {
           <span v-if="cfActiveArea.remark" style="flex:1 1 100%;"><b style="color:#888;">설명:</b> {{ cfActiveArea.remark }}</span>
         </div>
 
-        <!-- ── ■ 설정 ───────────────────────────────────────────────────── -->
+        <!-- -- ■ 설정 ----------------------------------------------------- -->
         <div style="margin-bottom:14px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
           <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
             <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
@@ -626,9 +609,9 @@ window.DpDispUiDtl = {
             </label>
           </div>
           <div v-if="!cfActiveArea.visibilityTargets" style="font-size:11px;color:#d32f2f;">⚠ 선택 없음 — 아무에게도 노출되지 않습니다.</div>
-        </div><!-- ── /설정 ────────────────────────────────────────────────────────────── -->
+        </div><!-- -- /설정 -------------------------------------------------------------- -->
 
-        <!-- ── ■ 내용 ───────────────────────────────────────────────────── -->
+        <!-- -- ■ 내용 ----------------------------------------------------- -->
         <div style="margin-bottom:14px;padding:14px;background:#fff8fa;border:1px solid #fce4ec;border-radius:8px;">
           <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
             <span style="display:inline-block;width:4px;height:16px;background:#e8587a;border-radius:2px;"></span>
@@ -649,18 +632,18 @@ window.DpDispUiDtl = {
           <div v-else style="padding:16px;text-align:center;color:#bbb;font-size:12px;border:1px dashed #e0e4ea;border-radius:8px;">
             연결된 패널이 없습니다.
           </div>
-        </div><!-- ── /내용 ────────────────────────────────────────────────────────────── -->
+        </div><!-- -- /내용 -------------------------------------------------------------- -->
       </div>
     </div>
 
-    <!-- ── 스플리터 ───────────────────────────────────────────────────────── -->
+    <!-- -- 스플리터 --------------------------------------------------------- -->
     <div @mousedown="onSplitDrag"
       style="width:6px;cursor:col-resize;background:#e8e8e8;flex-shrink:0;position:relative;"
       title="드래그로 폭 조절">
       <div style="position:absolute;top:50%;left:1px;transform:translateY(-50%);width:4px;height:32px;background:#bbb;border-radius:2px;"></div>
     </div>
 
-    <!-- ── 우측 미리보기 ────────────────────────────────────────────────────── -->
+    <!-- -- 우측 미리보기 ------------------------------------------------------ -->
     <div :style="{
       width: previewPaneWidth + 'px',
       background:'#fafafa',borderLeft:'1px solid #e8ebef',padding:'14px',flexShrink:0,
@@ -676,7 +659,7 @@ window.DpDispUiDtl = {
         </span>
         <span style="font-size:10px;color:#aaa;">{{ cfRelatedAreas.length }}개 영역</span>
       </div>
-      <!-- ── 디바이스 모드 ──────────────────────────────────────────────────── -->
+      <!-- -- 디바이스 모드 ---------------------------------------------------- -->
       <div style="display:flex;gap:4px;margin-bottom:10px;padding:3px;background:#eef0f3;border-radius:6px;">
         <button v-for="m in PREVIEW_MODES" :key="m?.value"
           @click="previewMode = m.value"
@@ -688,12 +671,12 @@ window.DpDispUiDtl = {
             boxShadow: previewMode===m.value ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
           }">{{ m.label }}</button>
       </div>
-      <!-- ── 디바이스 프레임 ─────────────────────────────────────────────────── -->
+      <!-- -- 디바이스 프레임 --------------------------------------------------- -->
       <div :style="{
         width: cfPreviewFrameWidth, margin:'0 auto', border:'1px solid #d0d7de', borderRadius:'8px',
         background:'#fff', padding:'8px', transition:'width .2s',
       }">
-        <!-- ── UI 기본정보: 모든 영역 렌더 ──────────────────────────────────────── -->
+        <!-- -- UI 기본정보: 모든 영역 렌더 ---------------------------------------- -->
         <div v-if="activeTab==='base'" style="max-height:560px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;">
           <div v-if="!cfRelatedAreas.length" style="padding:20px 8px;text-align:center;color:#bbb;font-size:11px;">
             연결된 영역이 없습니다.
@@ -711,7 +694,7 @@ window.DpDispUiDtl = {
             </div>
           </div>
         </div>
-        <!-- ── 영역 탭: 선택 영역만 렌더 ────────────────────────────────────────── -->
+        <!-- -- 영역 탭: 선택 영역만 렌더 ------------------------------------------ -->
         <div v-else-if="cfActiveArea" style="max-height:560px;overflow-y:auto;">
           <disp-x02-area
             :params="{ date: form.regDate || '', time: '00:00', status: '활성' }"
@@ -722,7 +705,7 @@ window.DpDispUiDtl = {
     </div>
   </div>
 
-  <!-- ── 영역 선택 팝업 ─────────────────────────────────────────────────────── -->
+  <!-- -- 영역 선택 팝업 ------------------------------------------------------- -->
   <area-pick-modal v-if="pickOpen"
     :title="'전시영역 추가 [' + form.codeValue + ']'"
     :areas="([]||[]).filter(c => c.codeGrp==='DISP_AREA')"

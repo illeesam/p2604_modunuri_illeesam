@@ -155,24 +155,15 @@ window.ZdStore = {
       }
     };
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       uiState.isPageCodeLoad = true;
-      loadAllStoreData();
-    };
-
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+};
 
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
       if (storeList.length > 0 && !uiState.selectedStore) {
         selectStore(storeList[0].name);
       }
+      loadAllStoreData();
     });
 
     return {

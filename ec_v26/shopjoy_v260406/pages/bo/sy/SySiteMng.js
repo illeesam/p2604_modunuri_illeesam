@@ -43,7 +43,7 @@ window.SySiteMng = {
         uiState.loading = false;
       }
     };
-    /* ── 표시경로 선택 모달 (sy_path) ── */
+    /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
@@ -57,42 +57,18 @@ window.SySiteMng = {
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
-    /* ── 좌측 표시경로 트리 ── */
+    /* -- 좌측 표시경로 트리 -- */
     const selectNode = (path) => { uiState.selectedPath = path; pager.pageNo = 1; handleSearchList(); };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      pager.pageNo = 1;
-      handleSearchList('DEFAULT');
-    });
-
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (codeStore?.snGetGrpCodes) {
-          codes.site_oper_statuses = codeStore.snGetGrpCodes('SITE_OPER_STATUS') || [];
-          codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
-        }
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.site_oper_statuses = codeStore.sgGetGrpCodes('SITE_OPER_STATUS');
+        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
     };
 
-    // ── watch ────────────────────────────────────────────────────────────────
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
   const _initSearchParam = () => {
     const today = new Date();
     const thisYear = today.getFullYear();
@@ -168,7 +144,13 @@ const detailModal = reactive({
 
 
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // ★ onMounted
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      handleSearchList('DEFAULT');
+    });
+
+    // -- return ---------------------------------------------------------------
 
     return { sites, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectNode,
@@ -205,7 +187,7 @@ const detailModal = reactive({
 
 
 
-  <!-- ── 좌 트리 + 우 영역 ──────────────────────────────────────────────────── -->
+  <!-- -- 좌 트리 + 우 영역 ---------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:6px;">

@@ -7,28 +7,22 @@ window.SyVendorDtl = {
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, memoEl: null });
     const codes = reactive({ active_statuses: [], vendor_type_kr: [] });
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
 
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (codeStore?.snGetGrpCodes) {
-          codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
-          codes.vendor_type_kr = codeStore.snGetGrpCodes('VENDOR_TYPE_KR') || [];
-        }
+        const codeStore = window.sfGetBoCodeStore();
+        codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
+        codes.vendor_type_kr = codeStore.sgGetGrpCodes('VENDOR_TYPE_KR');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
       uiState.isPageCodeLoad = true;
     };
 
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+
     // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());

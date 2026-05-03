@@ -8,13 +8,7 @@ window.EventView = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 0});
     const codes = reactive({});
 
-    const isAppReady = computed(() => {
-      const initStore = window.useFoAppInitStore?.();
-      const codeStore = window.useFoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    /* ── 이벤트 데이터 ── */
+    /* -- 이벤트 데이터 -- */
     const events = reactive([]);
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -27,22 +21,15 @@ window.EventView = {
       }
     };
 
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleSearchData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
@@ -76,7 +63,11 @@ window.EventView = {
     /* 더 많은 프로모션 (현재 이벤트 제외) */
     const cfPromoEvents = computed(() => events.filter(e => e.id !== cfEventId.value));
 
-    // ── return ───────────────────────────────────────────────────────────────
+    onMounted(() => {
+      handleSearchData();
+    });
+
+    // -- return ---------------------------------------------------------------
 
     return { cfEvent, setTab, cfTabProducts, cfPromoEvents, uiState, codes };
   },
@@ -84,7 +75,7 @@ window.EventView = {
   template: /* html */ `
 <div v-if="cfEvent" style="background:var(--bg-base);">
 
-  <!-- ── ① 히어로 배너 ─────────────────────────────────────────────────────── -->
+  <!-- -- ① 히어로 배너 ------------------------------------------------------- -->
   <div :style="{
     background: cfEvent.heroBg,
     minHeight: '400px',
@@ -93,7 +84,7 @@ window.EventView = {
     textAlign:'center', padding:'clamp(40px,8vw,72px) clamp(16px,4vw,24px) clamp(32px,6vw,60px)',
     position:'relative', overflow:'hidden',
   }">
-    <!-- ── 장식 원 ───────────────────────────────────────────────────────── -->
+    <!-- -- 장식 원 --------------------------------------------------------- -->
     <div style="position:absolute;top:-60px;right:-60px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,0.18);"></div>
     <div style="position:absolute;bottom:-40px;left:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.12);"></div>
 
@@ -119,7 +110,7 @@ window.EventView = {
 
   <div class="page-wrap" style="max-width:960px;">
 
-    <!-- ── ② 뒤로 ───────────────────────────────────────────────────────── -->
+    <!-- -- ② 뒤로 --------------------------------------------------------- -->
     <button @click="navigate('event')"
       style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.82rem;margin-bottom:32px;padding:0;"
       @mouseenter="$event.currentTarget.style.color='var(--blue)'"
@@ -127,7 +118,7 @@ window.EventView = {
       ← 이벤트 목록으로
     </button>
 
-    <!-- ── ③ 혜택 카드 ────────────────────────────────────────────────────── -->
+    <!-- -- ③ 혜택 카드 ------------------------------------------------------ -->
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:clamp(20px,4vw,36px) clamp(16px,3vw,32px);margin-bottom:36px;text-align:center;">
       <div style="font-size:0.72rem;font-weight:700;color:var(--blue);letter-spacing:2px;margin-bottom:10px;">SHOPJOY BENEFIT</div>
       <h2 style="font-size:1.4rem;font-weight:900;color:var(--text-primary);margin-bottom:6px;">이벤트 혜택</h2>
@@ -143,11 +134,11 @@ window.EventView = {
       </div>
     </div>
 
-    <!-- ── ④ 이벤트 상품 ───────────────────────────────────────────────────── -->
+    <!-- -- ④ 이벤트 상품 ----------------------------------------------------- -->
     <div style="margin-bottom:36px;">
       <h2 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:18px;">이벤트 상품</h2>
 
-      <!-- ── 탭 ────────────────────────────────────────────────────────── -->
+      <!-- -- 탭 ---------------------------------------------------------- -->
       <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:24px;">
         <button v-for="(tab, ti) in cfEvent.tabs" :key="ti"
           @click="setTab(ti)"
@@ -161,7 +152,7 @@ window.EventView = {
           }">{{ tab }}</button>
       </div>
 
-      <!-- ── 상품 그리드 ───────────────────────────────────────────────────── -->
+      <!-- -- 상품 그리드 ----------------------------------------------------- -->
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:20px;">
         <div v-for="p in cfTabProducts" :key="p.id"
           style="cursor:pointer;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;overflow:hidden;transition:transform .15s,box-shadow .15s;"
@@ -186,7 +177,7 @@ window.EventView = {
       </div>
     </div>
 
-    <!-- ── ⑤ 더 많은 프로모션 ────────────────────────────────────────────────── -->
+    <!-- -- ⑤ 더 많은 프로모션 -------------------------------------------------- -->
     <div style="margin-bottom:36px;">
       <h2 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:18px;">더 많은 프로모션 보기</h2>
       <div style="display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;">
@@ -215,7 +206,7 @@ window.EventView = {
       </div>
     </div>
 
-    <!-- ── ⑥ 유의사항 ─────────────────────────────────────────────────────── -->
+    <!-- -- ⑥ 유의사항 ------------------------------------------------------- -->
     <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:12px;padding:clamp(16px,3vw,24px) clamp(16px,3vw,28px);margin-bottom:32px;">
       <h3 style="font-size:0.85rem;font-weight:700;color:var(--text-secondary);margin-bottom:14px;">유의사항</h3>
       <ul style="list-style:none;padding:0;margin:0;">
@@ -226,7 +217,7 @@ window.EventView = {
       </ul>
     </div>
 
-    <!-- ── 목록으로 (하단) ──────────────────────────────────────────────────── -->
+    <!-- -- 목록으로 (하단) ---------------------------------------------------- -->
     <div style="text-align:center;padding-bottom:8px;">
       <button @click="navigate('event')"
         style="padding:11px 32px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-secondary);font-size:0.85rem;cursor:pointer;font-weight:600;"

@@ -9,32 +9,26 @@ window.SyBbmDtl = {
     const codes = reactive({ bbm_types: [], bbm_comment_types: [], bbm_attach_types: [], bbm_content_types: [], bbm_scope_types: [], use_yn: [],
       allow_yn_opts: [{codeValue:'Y',codeLabel:'허용'},{codeValue:'N',codeLabel:'불가'}],
     });
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
 
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (codeStore?.snGetGrpCodes) {
-          codes.bbm_types = await codeStore.snGetGrpCodes('BBM_TYPE') || [];
-          codes.bbm_comment_types = await codeStore.snGetGrpCodes('BBM_COMMENT_TYPE') || [];
-          codes.bbm_attach_types = await codeStore.snGetGrpCodes('BBM_ATTACH_TYPE') || [];
-          codes.bbm_content_types = await codeStore.snGetGrpCodes('BBM_CONTENT_TYPE') || [];
-          codes.bbm_scope_types = await codeStore.snGetGrpCodes('BBM_SCOPE_TYPE') || [];
-          codes.use_yn = await codeStore.snGetGrpCodes('USE_YN') || [];
-        }
+        const codeStore = window.sfGetBoCodeStore();
+        codes.bbm_types = codeStore.sgGetGrpCodes('BBM_TYPE');
+        codes.bbm_comment_types = codeStore.sgGetGrpCodes('BBM_COMMENT_TYPE');
+        codes.bbm_attach_types = codeStore.sgGetGrpCodes('BBM_ATTACH_TYPE');
+        codes.bbm_content_types = codeStore.sgGetGrpCodes('BBM_CONTENT_TYPE');
+        codes.bbm_scope_types = codeStore.sgGetGrpCodes('BBM_SCOPE_TYPE');
+        codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
       uiState.isPageCodeLoad = true;
     };
 
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+
     // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());

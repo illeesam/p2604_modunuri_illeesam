@@ -44,38 +44,23 @@ window.SyContactMng = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.contact_status = codeStore.sgGetGrpCodes('CONTACT_STATUS');
+      codes.contact_categories = codeStore.sgGetGrpCodes('CONTACT_CATEGORY_KR');
+      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+
+
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.contact_status = await codeStore.snGetGrpCodes('CONTACT_STATUS') || [];
-        codes.contact_categories = await codeStore.snGetGrpCodes('CONTACT_CATEGORY_KR') || [];
-        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
@@ -136,7 +121,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
 
     const exportExcel = () => boUtil.exportCsv(contacts, [{label:'ID',key:'inquiryId'},{label:'회원명',key:'userNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'title'},{label:'상태',key:'statusCd'},{label:'등록일',key:'date'}], '문의목록.csv');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { contacts, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon };
   },
@@ -193,7 +178,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
-  <!-- ── 하단 상세: ContactDtl 임베드 ────────────────────────────────────────── -->
+  <!-- -- 하단 상세: ContactDtl 임베드 ------------------------------------------ -->
   <div v-if="detailModal.show" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

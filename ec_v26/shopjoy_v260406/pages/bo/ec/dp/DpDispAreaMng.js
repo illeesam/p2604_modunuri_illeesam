@@ -8,33 +8,16 @@ window.DpDispAreaMng = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ layout_types: [], use_yn: [], date_range_opts: [] });
 
-    // App 초기화 준비 상태
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading
-          && codeStore?.svCodes?.length > 0
-          && !uiState.isPageCodeLoad;
-    });
-
-    // 코드 주입
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
-      codes.layout_types = codeStore.snGetGrpCodes('LAYOUT_TYPE') || [];
-      codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
-      codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
+      codes.layout_types = codeStore.sgGetGrpCodes('LAYOUT_TYPE');
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // App 초기화 감시
-
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (ready) => {
-      if (ready) {
-        fnLoadCodes();
-      }
-    });
+    // 코드 주입
 
     const SORT_MAP = { nm: { asc: 'nm_asc', desc: 'nm_desc' }, reg: { asc: 'reg_asc', desc: 'reg_desc' } };
     const getSortParam = () => {
@@ -77,17 +60,17 @@ window.DpDispAreaMng = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchData('DEFAULT');
     });
     const fnPathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    /* ── 표시경로 트리 ── */
+    /* -- 표시경로 트리 -- */
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchData(); };
 
-    /* ── 검색 ── */
+    /* -- 검색 -- */
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
       return { kw: '', areaType: '', useYn: 'Y', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, dateRange: '' };
@@ -114,7 +97,7 @@ const searchParam = reactive(_initSearchParam());
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
-    /* ── 하단 상세 임베드 ── */
+    /* -- 하단 상세 임베드 -- */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
     const loadView = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'view') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; };
     const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id && uiStateDetail.openMode === 'edit') { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
@@ -128,7 +111,7 @@ const searchParam = reactive(_initSearchParam());
 
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { areas, uiState, codes, pager, searchParam,
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange,

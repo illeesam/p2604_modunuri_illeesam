@@ -11,31 +11,19 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       date_range_opts: [],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.settle_adj_types = codeStore.snGetGrpCodes('SETTLE_ADJ_TYPE_KR') || [];
-        codes.settle_adj_statuses = codeStore.snGetGrpCodes('SETTLE_ADJ_STATUS') || [];
-        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
+        codes.settle_adj_types = codeStore.sgGetGrpCodes('SETTLE_ADJ_TYPE_KR');
+        codes.settle_adj_statuses = codeStore.sgGetGrpCodes('SETTLE_ADJ_STATUS');
+        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
             const dateEnd   = ref('');
     const handleDateRangeChange = () => {
@@ -67,7 +55,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchData('DEFAULT');
@@ -165,7 +153,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { uiState, codes, handleDateRangeChange, pager, adjList, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, doApprove, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },
@@ -232,7 +220,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
-  <!-- ── 편집 폼 ─────────────────────────────────────────────────────────── -->
+  <!-- -- 편집 폼 ----------------------------------------------------------- -->
   <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
     <div style="font-weight:700;margin-bottom:16px">{{ uiState.isNew ? '조정 추가' : '조정 수정' }}</div>
     <div class="form-row">

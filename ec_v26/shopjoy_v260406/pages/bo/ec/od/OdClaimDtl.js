@@ -12,31 +12,14 @@ window.OdClaimDtl = {
 
     const cfIsNew = computed(() => !props.editId);
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.claim_statuses = await codeStore.snGetGrpCodes('CLAIM_STATUS') || [];
-        codes.claim_types = await codeStore.snGetGrpCodes('CLAIM_TYPE') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.claim_statuses = codeStore.sgGetGrpCodes('CLAIM_STATUS');
+      codes.claim_types = codeStore.sgGetGrpCodes('CLAIM_TYPE');
+      uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     const form = reactive({
       claimId: '', userId: '', userNm: '', orderId: '', prodNm: '',
@@ -137,7 +120,7 @@ window.OdClaimDtl = {
         const paid = Math.round(amount * shares[i]);
         const sale = Math.round(paid / (1 - discRates[i]));
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
         return { ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
       });
@@ -160,7 +143,7 @@ window.OdClaimDtl = {
       if (form.type !== '교환') return null;
       const swapColor = { '블랙':'네이비','네이비':'차콜','화이트':'아이보리','차콜':'블랙' };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
       return {
         prodNm: it.prodNm + ' (교환품)',
@@ -211,7 +194,7 @@ window.OdClaimDtl = {
       { id:'editHist', label:'정보수정이력',  icon:'📝', count: cfEditHistList.value.length },
     ]);
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { cfIsNew, form, errors, cfStatusOptions, cfClaimSteps, cfCurrentStepIdx, handleSave, activeTab, claimItems, fmt, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, viewMode2, showTab, codes };
   },
@@ -219,7 +202,7 @@ window.OdClaimDtl = {
 <div>
   <div class="page-title">{{ cfIsNew ? '클레임 등록' : (viewMode ? '클레임 상세' : '클레임 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.claimId }}</span></div>
 
-  <!-- ── 탭 ────────────────────────────────────────────────────────────── -->
+  <!-- -- 탭 -------------------------------------------------------------- -->
   <div v-if="!cfIsNew" style="display:flex;gap:8px;margin-bottom:14px;align-items:stretch;">
     <div style="flex:1;display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
       <button v-for="t in cfTabs" :key="t?.id"
@@ -264,7 +247,7 @@ window.OdClaimDtl = {
   <div v-if="cfIsNew || showTab('info')" class="card">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
 
-    <!-- ── 클레임 진행 상태 흐름 ───────────────────────────────────────────────── -->
+    <!-- -- 클레임 진행 상태 흐름 ------------------------------------------------- -->
     <div v-if="!cfIsNew" style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
         <span :style="{
@@ -310,7 +293,7 @@ window.OdClaimDtl = {
       </div>
     </div>
 
-    <!-- ── 기본정보 폼 ─────────────────────────────────────────────────────── -->
+    <!-- -- 기본정보 폼 ------------------------------------------------------- -->
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">클레임ID <span v-if="!viewMode" class="req">*</span></label>
@@ -384,7 +367,7 @@ window.OdClaimDtl = {
 
   </div>
 
-  <!-- ── 클레임항목목록 탭 ────────────────────────────────────────────────────── -->
+  <!-- -- 클레임항목목록 탭 ------------------------------------------------------ -->
   <div v-if="!cfIsNew && showTab('items')" class="card" style="padding:20px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">↩ 클레임항목 <span class="tab-count">{{ claimItems.length }}</span></div>
     <div v-if="form.type==='교환'" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
@@ -478,7 +461,7 @@ window.OdClaimDtl = {
     <div v-else style="text-align:center;color:#bbb;padding:30px;">클레임 항목 정보가 없습니다.</div>
   </div>
 
-  <!-- ── 결제정보 탭 ───────────────────────────────────────────────────────── -->
+  <!-- -- 결제정보 탭 --------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('payment')" class="card" style="padding:20px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ cfPaymentList.length }}</span></div>
     <table class="bo-table" v-if="cfPaymentList.length">
@@ -502,13 +485,13 @@ window.OdClaimDtl = {
     <div v-else style="text-align:center;color:#bbb;padding:30px;">결제·환불 정보가 없습니다.</div>
   </div>
 
-  <!-- ── 상태변경이력 탭 ─────────────────────────────────────────────────────── -->
+  <!-- -- 상태변경이력 탭 ------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('hist')" class="card">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">🕒 상태변경이력 <span class="tab-count">{{ cfStatusHistList.length }}</span></div>
     <od-claim-hist :claim-id="form.claimId" :navigate="navigate" :show-ref-modal="showRefModal" :show-toast="showToast" />
   </div>
 
-  <!-- ── 정보수정이력 탭 ─────────────────────────────────────────────────────── -->
+  <!-- -- 정보수정이력 탭 ------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('editHist')" class="card" style="padding:20px;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ cfEditHistList.length }}</span></div>
     <table class="bo-table" v-if="cfEditHistList.length">

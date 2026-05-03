@@ -6,36 +6,27 @@ window.SyPathMng = {
   setup(props) {
     const { reactive, computed, watch, onMounted } = Vue;
 
-    /* ── 코드 ── */
+    /* -- 코드 -- */
     const codes = reactive({ use_yn: [] });
     const uiStateCode = reactive({ isPageCodeLoad: false });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiStateCode.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
+        const codeStore = window.sfGetBoCodeStore();
+        codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
         uiStateCode.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
 
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
-
-    /* ── 검색 파라미터 ── */
+    /* -- 검색 파라미터 -- */
     const _initSearchParam = () => {
       return { bizCd: '', kw: '', useYn: 'Y' };
     };
     const searchParam = reactive(_initSearchParam());
 
-    /* ── 트리용 전체 경로 (path_id + parent_path_id 기반) ── */
+    /* -- 트리용 전체 경로 (path_id + parent_path_id 기반) -- */
     const allPaths = reactive([]);
 
     const cfTree = computed(() => {
@@ -68,7 +59,7 @@ window.SyPathMng = {
     };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
 
-    /* ── 그리드 ── */
+    /* -- 그리드 -- */
     const gridRows = reactive([]);
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [10, 20, 50, 100], pageCond: {} });
     let _newId = -1;
@@ -79,7 +70,7 @@ window.SyPathMng = {
       pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
 
-    /* ── 트리 전체 조회 (path_id / parent_path_id 기반) ── */
+    /* -- 트리 전체 조회 (path_id / parent_path_id 기반) -- */
     const handleSearchTree = async () => {
       try {
         const res = await boApiSvc.syPath.getPage({ pageNo: 1, pageSize: 10000 }, '경로관리', '트리조회');
@@ -90,7 +81,7 @@ window.SyPathMng = {
       } catch (e) { console.error('[handleSearchTree]', e); }
     };
 
-    /* ── 그리드 조회 ── */
+    /* -- 그리드 조회 -- */
     const handleGridSearch = async () => {
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...searchParam };
@@ -120,7 +111,7 @@ window.SyPathMng = {
     const setPage = async (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleGridSearch(); } };
     const onSizeChange = async () => { pager.pageNo = 1; await handleGridSearch(); };
 
-    /* ── 행 편집 ── */
+    /* -- 행 편집 -- */
     const onCellChange = (row, field, val) => {
       row[field] = val;
       if (!row._status) row._status = 'U';
@@ -187,7 +178,7 @@ window.SyPathMng = {
       }
     };
 
-    /* ── 부모경로 선택 모달 ── */
+    /* -- 부모경로 선택 모달 -- */
     const parentModal = reactive({ show: false, targetRow: null, expanded: new Set([null]) });
 
     const cfParentTree = computed(() => {
@@ -222,8 +213,6 @@ window.SyPathMng = {
       return allPaths.find(r => r.pathId === pathId)?.pathLabel || String(pathId);
     };
 
-    if (isAppReady.value) fnLoadCodes();
-
     return {
       uiState, searchParam, codes,
       cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
@@ -237,7 +226,7 @@ window.SyPathMng = {
 <div>
   <div class="page-title">표시경로</div>
 
-  <!-- ── 검색 ── -->
+  <!-- -- 검색 -- -->
   <div class="card">
     <div class="search-bar">
       <label class="search-label">업무코드</label>
@@ -256,7 +245,7 @@ window.SyPathMng = {
     </div>
   </div>
 
-  <!-- ── 좌 트리 + 우 그리드 ── -->
+  <!-- -- 좌 트리 + 우 그리드 -- -->
   <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:flex-start">
 
     <!-- 트리 -->
@@ -363,7 +352,7 @@ window.SyPathMng = {
     </div>
   </div>
 
-  <!-- ── 부모경로 선택 모달 ── -->
+  <!-- -- 부모경로 선택 모달 -- -->
   <teleport to="body" v-if="parentModal.show">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
          @click.self="closeParentModal">

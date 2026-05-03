@@ -7,25 +7,16 @@ window.SyDashboardMng = {
     const uiState = reactive({ isPageCodeLoad: false });
     const codes = reactive({});
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
+
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
     });

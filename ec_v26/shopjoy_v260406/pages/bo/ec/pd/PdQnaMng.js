@@ -12,29 +12,17 @@ window.PdQnaMng = {
       qna_statuses: [],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.qna_statuses = codeStore.snGetGrpCodes('QNA_STATUS') || [];
+        codes.qna_statuses = codeStore.sgGetGrpCodes('QNA_STATUS');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     // onMounted에서 API 로드
     const SORT_MAP = { reg: { asc: 'reg_asc', desc: 'reg_desc' } };
@@ -73,8 +61,9 @@ window.PdQnaMng = {
     const _initSearchParam = () => ({ kw: '', status: '', prod: '' });
     const searchParam = reactive(_initSearchParam());
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     });
 const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -90,7 +79,7 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
     const fnStatusBadge = s => ({ WAIT:'badge-orange', ANSWER:'badge-green', CLOSE:'badge-gray' }[s] || 'badge-gray');
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { qnas, uiState, codes, pager, searchParam,
       onSearch, onReset, setPage, onSizeChange, getProdNm, getMemNm, fnStatusBadge, cfSiteNm, onSort, sortIcon };

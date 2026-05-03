@@ -4,14 +4,14 @@
 
   const fmt = n => Number(n || 0).toLocaleString('ko-KR');
 
-  /* ── 날짜 유틸 ── */
+  /* -- 날짜 유틸 -- */
   const pad = n => String(n).padStart(2, '0');
   const toYmd  = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
   const toYm   = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}`;
   const addMonths = (d, n) => { const x = new Date(d); x.setMonth(x.getMonth()+n); return x; };
   const endOfMonth = d => new Date(d.getFullYear(), d.getMonth()+1, 0);
 
-  /* ── SVG 헬퍼 ── */
+  /* -- SVG 헬퍼 -- */
   const maxOf = arr => Math.max(1, ...arr);
   const linePoints = (vals, w, h, pad = 10) => {
     const max = maxOf(vals);
@@ -33,7 +33,7 @@
     setup() {
       const { ref, reactive, computed } = Vue;
 
-      /* ── 필터 상태 ── */
+      /* -- 필터 상태 -- */
       const today   = new Date();
       const endDef  = toYmd(endOfMonth(today));
       const startDef= toYmd(new Date(addMonths(today, -13).getFullYear(), addMonths(today, -13).getMonth(), 1));
@@ -91,7 +91,7 @@
         filters.categories  = [...CATEGORIES];
       };
 
-      /* ── UI 상태 ── */
+      /* -- UI 상태 -- */
       const uiState = reactive({
         filterExpand: false,
         activeTab: 'sales',
@@ -129,7 +129,7 @@
       });
       const showPanel = (key) => uiState.viewMode === 'tab' ? uiState.activeTab === key : true;
 
-      /* ── 보조 대시보드 (원본 KPI 섹션) ── */
+      /* -- 보조 대시보드 (원본 KPI 섹션) -- */
       const cfTotalSales    = computed(() => cfMonthlySales.value.reduce((a,b)=>a+b,0));
       const cfTotalQtyComp  = computed(() => cfMonthlyOrders.value.reduce((a,b)=>a+b,0));
       const marginRate    = 7.7;
@@ -205,7 +205,7 @@
       ];
       const pct = n => (Math.round(n * 10) / 10).toFixed(1) + '%';
 
-      /* ── 월별 레이블 (14개월) ── */
+      /* -- 월별 레이블 (14개월) -- */
       const cfMonthLabels = computed(() => {
         try {
           const s = new Date(filters.startDt);
@@ -222,7 +222,7 @@
         }
       });
 
-      /* ── 필터 강도 계수 (0~1) — 필터를 줄일수록 값 감소 ── */
+      /* -- 필터 강도 계수 (0~1) — 필터를 줄일수록 값 감소 -- */
       const cfFilterFactor = computed(() => {
         const ratio = (list, all) => list.length === 0 ? 0 : list.length / all.length;
         return (
@@ -234,7 +234,7 @@
         );
       });
 
-      /* ── 월별 시드 데이터 (목업) ── */
+      /* -- 월별 시드 데이터 (목업) -- */
       const seededBase = (seed, len, min, max) => {
         const arr = [];
         let s = seed;

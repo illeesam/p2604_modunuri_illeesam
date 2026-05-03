@@ -8,11 +8,6 @@ window.SySiteDtl = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ site_oper_statuses: [], site_types: ['이커머스','숙박공유','전문가연결','IT매칭','부동산','교육','중고거래','영화예매','음식배달','가격비교','시각화','홈페이지','기타'] });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
 
@@ -48,21 +43,20 @@ window.SySiteDtl = {
       }
     };
 
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (codeStore?.snGetGrpCodes) {
-          codes.site_oper_statuses = codeStore.snGetGrpCodes('SITE_OPER_STATUS') || [];
-        }
+        const codeStore = window.sfGetBoCodeStore();
+        codes.site_oper_statuses = codeStore.sgGetGrpCodes('SITE_OPER_STATUS');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
       uiState.isPageCodeLoad = true;
     };
 
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+
     // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     // ★ onMounted — 코드 로드 + 상세 조회
     onMounted(async () => {

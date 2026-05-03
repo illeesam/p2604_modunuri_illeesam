@@ -26,7 +26,7 @@ window.SyMenuMng = {
         uiState.loading = false;
       }
     };
-    /* ── 검색 ── */
+    /* -- 검색 -- */
     const _initSearchParam = () => {
       return { kw: '', type: '', useYn: 'Y' };
     };
@@ -35,37 +35,21 @@ window.SyMenuMng = {
     /* 좌측 메뉴 트리 */
     const selectNode = (id) => { uiState.selectedTreeId = id; handleSearchList(); };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.menu_type = codeStore.sgGetGrpCodes('MENU_TYPE');
+      codes.menu_status = codeStore.sgGetGrpCodes('MENU_STATUS');
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+
+
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-    });
-
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.menu_type = await codeStore.snGetGrpCodes('MENU_TYPE') || [];
-        codes.menu_status = await codeStore.snGetGrpCodes('MENU_STATUS') || [];
-        codes.use_yn = await codeStore.snGetGrpCodes('USE_YN') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
     });
 
     const cfAllowedTreeIds = computed(() => {
@@ -76,14 +60,14 @@ window.SyMenuMng = {
 
 
 
-    /* ── CRUD 그리드 ── */
+    /* -- CRUD 그리드 -- */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
     
 
     const EDIT_FIELDS = ['menuCode', 'menuNm', 'parentId', 'menuUrl', 'menuType', 'sortOrd', 'useYn', 'remark'];
 
-    /* ── 트리 정렬 ── */
+    /* -- 트리 정렬 -- */
     const buildTreeRows = (items) => {
       const map = {};
       items.forEach(m => { map[m.menuId] = { ...m, _children: [] }; });
@@ -232,7 +216,7 @@ window.SyMenuMng = {
       '메뉴목록.csv'
     );
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { menus, uiState, codes, selectNode,
       searchParam,
@@ -328,7 +312,7 @@ window.SyMenuMng = {
           <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
           <td><input class="grid-input grid-mono" v-model="row.menuCode" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
 
-          <!-- ── 메뉴명 (블릿 트리) ──────────────────────────────────────────── -->
+          <!-- -- 메뉴명 (블릿 트리) -------------------------------------------- -->
           <td style="padding:3px 6px;">
             <div style="display:flex;align-items:center;">
               <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
@@ -339,7 +323,7 @@ window.SyMenuMng = {
             </div>
           </td>
 
-          <!-- ── 상위메뉴 ─────────────────────────────────────────────────── -->
+          <!-- -- 상위메뉴 --------------------------------------------------- -->
           <td style="padding:3px 8px;">
             <div style="display:flex;align-items:center;gap:5px;">
               <span v-if="row.parentId"

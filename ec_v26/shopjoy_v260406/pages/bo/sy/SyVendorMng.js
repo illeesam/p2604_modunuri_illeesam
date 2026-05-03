@@ -43,7 +43,7 @@ window.SyVendorMng = {
         uiState.loading = false;
       }
     };
-    /* ── 표시경로 선택 모달 (sy_path) ── */
+    /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
@@ -57,40 +57,24 @@ window.SyVendorMng = {
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
-    /* ── 좌측 표시경로 트리 ── */
+    /* -- 좌측 표시경로 트리 -- */
     const selectNode = (path) => { uiState.selectedPath = path; pager.pageNo = 1; handleSearchList(); };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.vendor_status = codeStore.sgGetGrpCodes('VENDOR_STATUS');
+      codes.vendor_type_kr = codeStore.sgGetGrpCodes('VENDOR_TYPE_KR');
+      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+
+
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-    });
-
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.vendor_status = await codeStore.snGetGrpCodes('VENDOR_STATUS') || [];
-        codes.vendor_type_kr = await codeStore.snGetGrpCodes('VENDOR_TYPE_KR') || [];
-        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
     });
 
   const _initSearchParam = () => {
@@ -152,7 +136,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), vendors, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectNode, codes, searchParam, onDateRangeChange, cfSiteNm, pager, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon };
@@ -180,7 +164,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
 
 
-  <!-- ── 좌 트리 + 우 영역 ──────────────────────────────────────────────────── -->
+  <!-- -- 좌 트리 + 우 영역 ---------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:6px;">

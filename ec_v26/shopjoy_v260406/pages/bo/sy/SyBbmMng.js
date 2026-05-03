@@ -30,38 +30,23 @@ window.SyBbmMng = {
     /* 표시경로 트리/픽커 (sy_path biz_cd=sy_bbm) */
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchList(); };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.bbm_type = codeStore.sgGetGrpCodes('BBM_TYPE');
+      codes.bbm_status = codeStore.sgGetGrpCodes('BBM_STATUS');
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+
+
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.bbm_type = await codeStore.snGetGrpCodes('BBM_TYPE') || [];
-        codes.bbm_status = await codeStore.snGetGrpCodes('BBM_STATUS') || [];
-        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
@@ -123,7 +108,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     };
     const exportExcel = () => boUtil.exportCsv(bbms, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmType'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { bbms, uiState, codes, cfSiteNm, searchParam, pager, fnTypeBadge, fnYnBadge, fnCommentBadge, fnAttachBadge, fnContentBadge, fnScopeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
       selectNode,
@@ -148,7 +133,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   </div>
 
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
-    <!-- ── 좌: 표시경로 트리 ─────────────────────────────────────────────────── -->
+    <!-- -- 좌: 표시경로 트리 --------------------------------------------------- -->
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:6px;">
         <span class="list-title" style="font-size:13px;">📂 표시경로 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#sy_bbm</span></span>
@@ -159,7 +144,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       </div>
     </div>
 
-    <!-- ── 우: 목록 + 상세 ─────────────────────────────────────────────────── -->
+    <!-- -- 우: 목록 + 상세 --------------------------------------------------- -->
     <div>
       <div class="card">
         <div class="toolbar">

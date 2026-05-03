@@ -8,27 +8,15 @@ window.Like = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
-    const isAppReady = computed(() => {
-      const initStore = window.useFoAppInitStore?.();
-      const codeStore = window.useFoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
@@ -37,14 +25,14 @@ window.Like = {
       return (props.products || []).filter(p => likeSet.has(p.productId));
     });
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { cfLikedProducts , uiState, codes };
   },
   template: /* html */ `
 <div class="page-wrap">
 
-  <!-- ── 페이지 타이틀 배너 ───────────────────────────────────────────────────── -->
+  <!-- -- 페이지 타이틀 배너 ----------------------------------------------------- -->
   <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-2.jpg" alt="위시리스트"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
@@ -59,26 +47,26 @@ window.Like = {
     </div>
   </div>
 
-  <!-- ── 상품 목록 ────────────────────────────────────────────────────────── -->
+  <!-- -- 상품 목록 ---------------------------------------------------------- -->
   <div v-if="cfLikedProducts.length" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));gap:20px;">
     <div v-for="p in cfLikedProducts" :key="p.productId"
       style="background:var(--bg-card);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;transition:box-shadow .2s;"
       @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'"
       @mouseleave="$event.currentTarget.style.boxShadow=''">
 
-      <!-- ── 이미지 ──────────────────────────────────────────────────────── -->
+      <!-- -- 이미지 -------------------------------------------------------- -->
       <div style="position:relative;aspect-ratio:1;background:#fff;padding:clamp(8px,2vw,16px);overflow:hidden;" @click="selectProduct(p)">
         <img v-if="p.image" :src="p.image" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
         <span v-if="p.badge" style="position:absolute;top:10px;left:10px;font-size:0.68rem;font-weight:600;padding:3px 8px;border-radius:2px;color:#fff;"
           :style="{ background: p.badge==='NEW' ? '#1a1a1a' : '#8b7355' }">{{ p.badge }}</span>
-        <!-- ── 좋아요 해제 ─────────────────────────────────────────────────── -->
+        <!-- -- 좋아요 해제 --------------------------------------------------- -->
         <button @click.stop="toggleLike(p.productId)"
           style="position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
         </button>
       </div>
 
-      <!-- ── 정보 ───────────────────────────────────────────────────────── -->
+      <!-- -- 정보 --------------------------------------------------------- -->
       <div style="padding:14px 16px;" @click="selectProduct(p)">
         <div style="font-size:0.88rem;font-weight:600;color:var(--text-primary);margin-bottom:4px;">{{ p.prodNm }}</div>
         <div style="font-size:0.85rem;color:var(--text-muted);">{{ p.price }}</div>
@@ -86,7 +74,7 @@ window.Like = {
     </div>
   </div>
 
-  <!-- ── 빈 상태 ─────────────────────────────────────────────────────────── -->
+  <!-- -- 빈 상태 ----------------------------------------------------------- -->
   <div v-else style="text-align:center;padding:clamp(40px,8vw,80px) 0;">
     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" style="margin-bottom:16px;">
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>

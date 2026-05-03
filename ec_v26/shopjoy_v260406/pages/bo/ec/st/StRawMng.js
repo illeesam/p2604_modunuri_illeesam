@@ -12,35 +12,25 @@ window.StRawMng = {
       date_range_opts: [],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
 
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.raw_types = codeStore.snGetGrpCodes('RAW_TYPE_KR') || [];
-        codes.raw_collect_statuses = codeStore.snGetGrpCodes('RAW_COLLECT_STATUS') || [];
-        codes.raw_vendor_divs = codeStore.snGetGrpCodes('RAW_VENDOR_DIV') || [];
-        codes.pay_methods = codeStore.snGetGrpCodes('PAY_METHOD_KR') || [];
-        codes.order_statuses_kr = codeStore.snGetGrpCodes('ORDER_STATUS_KR') || [];
-        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
+        codes.raw_types = codeStore.sgGetGrpCodes('RAW_TYPE_KR');
+        codes.raw_collect_statuses = codeStore.sgGetGrpCodes('RAW_COLLECT_STATUS');
+        codes.raw_vendor_divs = codeStore.sgGetGrpCodes('RAW_VENDOR_DIV');
+        codes.pay_methods = codeStore.sgGetGrpCodes('PAY_METHOD_KR');
+        codes.order_statuses_kr = codeStore.sgGetGrpCodes('ORDER_STATUS_KR');
+        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-        handleSearchList('DEFAULT');
-      }
-    });
+    // -- watch ----------------------------------------------------------------
 
             const dateEnd   = ref('');
     const handleDateRangeChange = () => {
@@ -126,7 +116,7 @@ const rawList = reactive([]);
       }
     };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
   return {
       uiState, handleDateRangeChange,
@@ -150,9 +140,9 @@ const rawList = reactive([]);
 • 수집 상태: COLLECTED(수집완료) / EXCLUDED(제외) / SETTLED(정산완료)</div>
   </div>
 
-  <!-- ── 검색 카드 ── -->
+  <!-- -- 검색 카드 -- -->
   <div class="card">
-    <!-- ── 1행: 기간 + 기본 필터 ─────────────────────────────────────────────── -->
+    <!-- -- 1행: 기간 + 기본 필터 ----------------------------------------------- -->
     <div class="search-bar" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">
       <select v-model="uiState.dateRange" @change="handleDateRangeChange" style="min-width:110px">
         <option value="">기간 선택</option>
@@ -170,7 +160,7 @@ const rawList = reactive([]);
       </select>
       <input v-model="searchParam.kw" placeholder="원장ID / 소스ID / 업체명 / 상품명 / 브랜드" style="width:230px" @keyup.enter="() => onSearch?.()" />
     </div>
-    <!-- ── 2행: 추가 필터 ──────────────────────────────────────────────────── -->
+    <!-- -- 2행: 추가 필터 ---------------------------------------------------- -->
     <div class="search-bar" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">
       <select v-model="searchParam.vendorType" style="width:110px">
         <option value="">업체구분 전체</option>
@@ -201,7 +191,7 @@ const rawList = reactive([]);
         </button>
       </div>
     </div>
-    <!-- ── 3행: 상세검색 펼치기 ───────────────────────────────────────────────── -->
+    <!-- -- 3행: 상세검색 펼치기 ------------------------------------------------- -->
     <div v-if="uiState.searchMoreOpen" class="search-bar" style="flex-wrap:wrap;gap:8px;padding-top:8px;border-top:1px solid #f0f0f0">
       <select v-model="searchParam.orderStatus" style="width:120px">
         <option value="">주문상태 전체</option>
@@ -214,7 +204,7 @@ const rawList = reactive([]);
     </div>
   </div>
 
-  <!-- ── 집계 카드 ── -->
+  <!-- -- 집계 카드 -- -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr) repeat(3,1fr);gap:8px;margin-bottom:12px">
     <div class="card" style="text-align:center;padding:10px;background:#f0f4ff;margin-bottom:0">
       <div style="font-size:11px;color:#888">수집건수</div>
@@ -246,7 +236,7 @@ const rawList = reactive([]);
     </div>
   </div>
 
-  <!-- ── 목록 카드 ── -->
+  <!-- -- 목록 카드 -- -->
   <div class="card">
     <div class="toolbar">
       <span class="list-count">총 {{ pager.pageTotalCount.toLocaleString() }}건</span>
@@ -278,7 +268,7 @@ const rawList = reactive([]);
       </thead>
       <tbody>
         <template v-for="(r, idx) in rawList" :key="r?.settleRawId">
-          <!-- ── 기본 행 ─────────────────────────────────────────────────── -->
+          <!-- -- 기본 행 --------------------------------------------------- -->
           <tr :style="isExpanded(r.settleRawId) ? 'background:#fafbff' : ''" style="cursor:pointer" @click="toggleRow(r.settleRawId)">
             <td style="text-align:center;color:#aaa;font-size:11px;user-select:none">
               {{ isExpanded(r.settleRawId) ? '▲' : '▼' }}
@@ -304,11 +294,11 @@ const rawList = reactive([]);
             <td><span class="badge" :class="r.closeYn==='Y'?'badge-purple':'badge-gray'">{{ r.closeYn==='Y'?'마감':'미마감' }}</span></td>
             <td><span class="badge" :class="r.erpSendYn==='Y'?'badge-green':'badge-gray'">{{ r.erpSendYn==='Y'?'전송':'미전송' }}</span></td>
           </tr>
-          <!-- ── 펼침 상세 행 ──────────────────────────────────────────────── -->
+          <!-- -- 펼침 상세 행 ------------------------------------------------ -->
           <tr v-if="isExpanded(r.settleRawId)">
             <td colspan="14" style="background:#f4f6fb;padding:12px 20px;border-top:none">
               <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;font-size:12px">
-                <!-- ── 주문정보 ───────────────────────────────────────────── -->
+                <!-- -- 주문정보 --------------------------------------------- -->
                 <div>
                   <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">주문 정보</div>
                   <table style="width:100%;border-collapse:collapse">
@@ -323,7 +313,7 @@ const rawList = reactive([]);
                     <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">정산기간</td><td>{{ r.settlePeriod }}</td></tr>
                   </table>
                 </div>
-                <!-- ── 상품/가격 정보 ───────────────────────────────────────── -->
+                <!-- -- 상품/가격 정보 ----------------------------------------- -->
                 <div>
                   <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">상품 · 가격</div>
                   <table style="width:100%;border-collapse:collapse">
@@ -336,7 +326,7 @@ const rawList = reactive([]);
                     <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">소계</td><td style="font-weight:600">{{ fmtW(r.itemPrice) }}</td></tr>
                   </table>
                 </div>
-                <!-- ── 할인/혜택 ──────────────────────────────────────────── -->
+                <!-- -- 할인/혜택 -------------------------------------------- -->
                 <div>
                   <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">할인 · 혜택</div>
                   <table style="width:100%;border-collapse:collapse">
@@ -350,7 +340,7 @@ const rawList = reactive([]);
                     <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">적립예정</td><td style="color:#27ae60">{{ r.saveSchdAmt ? fmtW(r.saveSchdAmt) : '-' }}</td></tr>
                   </table>
                 </div>
-                <!-- ── 정산/마감/ERP ──────────────────────────────────────── -->
+                <!-- -- 정산/마감/ERP ---------------------------------------- -->
                 <div>
                   <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">정산 · 마감 · ERP</div>
                   <table style="width:100%;border-collapse:collapse">

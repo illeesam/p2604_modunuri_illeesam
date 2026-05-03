@@ -8,12 +8,6 @@ window.BlogEdit = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
-    const isAppReady = computed(() => {
-      const initStore = window.useFoAppInitStore?.();
-      const codeStore = window.useFoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const cfIsEdit = computed(() => !!props.editId);
     const form = reactive({
       title: '',
@@ -47,22 +41,15 @@ window.BlogEdit = {
       }
     };
 
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleSearchDetail();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
@@ -83,14 +70,18 @@ window.BlogEdit = {
     };
     const removeImage = (id) => { const idx = images.findIndex(img => img.id === id); if (idx !== -1) images.splice(idx, 1); };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    onMounted(() => {
+      handleSearchDetail();
+    });
+
+    // -- return ---------------------------------------------------------------
 
     return { cfIsEdit, form, categories, images, handleSave, cancel, addImage, removeImage , uiState, codes };
   },
   template: /* html */ `
 <div class="page-wrap" style="max-width:760px;">
 
-  <!-- ── 헤더 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 헤더 ------------------------------------------------------------- -->
   <div style="margin-bottom:28px;">
     <button @click="cancel"
       style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.825rem;margin-bottom:16px;padding:0;">
@@ -99,17 +90,17 @@ window.BlogEdit = {
     <h1 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);">{{ cfIsEdit ? '글 수정' : '새 글 작성' }}</h1>
   </div>
 
-  <!-- ── 폼 ────────────────────────────────────────────────────────────── -->
+  <!-- -- 폼 -------------------------------------------------------------- -->
   <div class="card" style="padding:clamp(16px,3vw,28px);">
 
-    <!-- ── 제목 ─────────────────────────────────────────────────────────── -->
+    <!-- -- 제목 ----------------------------------------------------------- -->
     <div style="margin-bottom:20px;">
       <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">제목 <span style="color:#ef4444;">*</span></label>
       <input v-model="form.title" type="text" placeholder="제목을 입력하세요"
         style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.92rem;outline:none;background:var(--bg-card);color:var(--text-primary);" />
     </div>
 
-    <!-- ── 카테고리 ───────────────────────────────────────────────────────── -->
+    <!-- -- 카테고리 --------------------------------------------------------- -->
     <div style="margin-bottom:20px;">
       <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">카테고리</label>
       <select v-model="form.category"
@@ -118,21 +109,21 @@ window.BlogEdit = {
       </select>
     </div>
 
-    <!-- ── 요약 ─────────────────────────────────────────────────────────── -->
+    <!-- -- 요약 ----------------------------------------------------------- -->
     <div style="margin-bottom:20px;">
       <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">요약</label>
       <input v-model="form.excerpt" type="text" placeholder="한 줄 요약"
         style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;outline:none;background:var(--bg-card);color:var(--text-primary);" />
     </div>
 
-    <!-- ── 본문 ─────────────────────────────────────────────────────────── -->
+    <!-- -- 본문 ----------------------------------------------------------- -->
     <div style="margin-bottom:20px;">
       <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">본문 <span style="color:#ef4444;">*</span></label>
       <textarea v-model="form.body" rows="14" placeholder="본문을 입력하세요..."
         style="width:100%;padding:14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;outline:none;background:var(--bg-card);color:var(--text-primary);resize:vertical;line-height:1.8;"></textarea>
     </div>
 
-    <!-- ── 이미지 첨부 ─────────────────────────────────────────────────────── -->
+    <!-- -- 이미지 첨부 ------------------------------------------------------- -->
     <div style="margin-bottom:20px;">
       <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">이미지 첨부</label>
       <button @click="addImage" class="btn-outline" style="padding:8px 16px;font-size:0.82rem;margin-bottom:10px;">+ 이미지 추가</button>
@@ -144,7 +135,7 @@ window.BlogEdit = {
       </div>
     </div>
 
-    <!-- ── 태그 ─────────────────────────────────────────────────────────── -->
+    <!-- -- 태그 ----------------------------------------------------------- -->
     <div style="margin-bottom:28px;">
       <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">태그 (쉼표로 구분)</label>
       <input v-model="form.tags" type="text" placeholder="패션, 트렌드, 2026SS"
@@ -155,7 +146,7 @@ window.BlogEdit = {
       </div>
     </div>
 
-    <!-- ── 버튼 ─────────────────────────────────────────────────────────── -->
+    <!-- -- 버튼 ----------------------------------------------------------- -->
     <div style="display:flex;gap:10px;justify-content:flex-end;">
       <button class="btn-outline" @click="cancel" style="padding:11px 28px;font-size:0.88rem;">취소</button>
       <button class="btn-blue" @click="handleSave" style="padding:11px 28px;font-size:0.88rem;">{{ cfIsEdit ? '수정' : '등록' }}</button>

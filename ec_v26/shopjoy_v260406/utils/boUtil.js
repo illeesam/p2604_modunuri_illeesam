@@ -270,6 +270,24 @@
     return labels.join(' > ');
   };
 
+  /* ── 공통 코드 로드 헬퍼 ──
+   * setup() 안에서 호출. watch(isAppReady) 등록 + isAppReady computed 반환.
+   * onMounted의 초기 체크는 각 페이지에서 반환값으로 직접 처리.
+   * 사용법:
+   *   const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+   *   onMounted(() => { if (isAppReady.value) fnLoadCodes(); ... });
+   */
+  boUtil.useAppCodeReady = function(uiState, fnLoadCodes) {
+    const { computed, watch } = Vue;
+    const isAppReady = computed(() => {
+      const i = window.useBoAppInitStore?.();
+      const c = window.sfGetBoCodeStore?.();
+      return !i?.svIsLoading && c?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+    watch(isAppReady, v => { if (v) fnLoadCodes(); });
+    return isAppReady;
+  };
+
   global.boUtil = boUtil;
   global.boCommonFilter = boCommonFilter;
 })(typeof window !== 'undefined' ? window : globalThis);

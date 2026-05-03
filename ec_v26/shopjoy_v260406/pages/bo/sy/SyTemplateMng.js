@@ -43,7 +43,7 @@ window.SyTemplateMng = {
         uiState.loading = false;
       }
     };
-    /* ── 표시경로 선택 모달 (sy_path) ── */
+    /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
@@ -57,40 +57,24 @@ window.SyTemplateMng = {
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
-    /* ── 좌측 표시경로 트리 ── */
+    /* -- 좌측 표시경로 트리 -- */
     const selectNode = (path) => { uiState.selectedPath = path; pager.pageNo = 1; handleSearchList(); };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.template_type = codeStore.sgGetGrpCodes('TEMPLATE_TYPE');
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+
+
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
-    });
-
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.template_type = await codeStore.snGetGrpCodes('TEMPLATE_TYPE') || [];
-        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
-        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
     });
 
   const _initSearchParam = () => {
@@ -170,7 +154,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
 
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), templates, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       selectNode, searchParam, onDateRangeChange, cfSiteNm, pager, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnUseYnBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewModal, showPreview, closePreview, sendModal, openSend, closeSend, exportExcel, onSort, sortIcon };
@@ -198,7 +182,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
 
 
-  <!-- ── 좌 트리 + 우 영역 ──────────────────────────────────────────────────── -->
+  <!-- -- 좌 트리 + 우 영역 ---------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:6px;">
@@ -254,13 +238,13 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     <sy-template-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="cfDetailEditId" />
   </div>
 
-  <!-- ── 미리보기 모달 ──────────────────────────────────────────────────────── -->
+  <!-- -- 미리보기 모달 -------------------------------------------------------- -->
   <template-preview-modal v-if="previewModal && previewModal.show"
     :tmpl="previewModal.template"
     :sample-params="previewModal.template?.sampleParams || '{}'"
     @close="closePreview" />
 
-  <!-- ── 발송하기 모달 ──────────────────────────────────────────────────────── -->
+  <!-- -- 발송하기 모달 -------------------------------------------------------- -->
   <template-send-modal v-if="sendModal && sendModal.show"
     :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm"
     @close="closeSend" />

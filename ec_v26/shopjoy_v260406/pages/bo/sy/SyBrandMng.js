@@ -42,7 +42,7 @@ window.SyBrandMng = {
       }
     };
 
-    /* ── 표시경로 선택 모달 (sy_path) ── */
+    /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
@@ -58,7 +58,7 @@ window.SyBrandMng = {
 
     /* 트리 선택 path (loadGrid 보다 먼저 선언) */
     
-    /* ── 검색 ── */
+    /* -- 검색 -- */
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
@@ -73,39 +73,22 @@ window.SyBrandMng = {
       }
     };
 
-    /* ── CRUD 그리드 ── */
+    /* -- CRUD 그리드 -- */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
     
 
     const EDIT_FIELDS = ['brandCode', 'brandNm', 'brandEnNm', 'pathId', 'logoUrl', 'sortOrd', 'useYn', 'remark'];
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.brand_status = await codeStore.snGetGrpCodes('BRAND_STATUS') || [];
-        codes.use_yn = await codeStore.snGetGrpCodes('USE_YN') || [];
-        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.brand_status = codeStore.sgGetGrpCodes('BRAND_STATUS');
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     const makeRow = (b) => ({
       ...b,
@@ -213,7 +196,7 @@ window.SyBrandMng = {
       }
     };
 
-    /* ── 드래그 ── */
+    /* -- 드래그 -- */
     const dragSrc   = ref(null);
     const onDragStart = (idx) => { uiState.dragSrc = idx; uiState.dragMoved = false; };
     const onDragOver  = (e, idx) => {
@@ -229,7 +212,7 @@ window.SyBrandMng = {
       uiState.dragSrc = null; uiState.dragMoved = false;
     };
 
-    /* ── 전체 체크 ── */
+    /* -- 전체 체크 -- */
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
     const fnStatusClass  = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
@@ -260,7 +243,7 @@ window.SyBrandMng = {
     });
 
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { brands, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       searchParam, handleDateRangeChange,
@@ -275,7 +258,7 @@ window.SyBrandMng = {
 <div>
   <div class="page-title">브랜드관리</div>
 
-  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
     <div class="search-bar">
       <label class="search-label">업무코드</label>
@@ -300,7 +283,7 @@ window.SyBrandMng = {
     </div>
   </div>
 
-  <!-- ── 좌 트리 + 우 그리드 ─────────────────────────────────────────────────── -->
+  <!-- -- 좌 트리 + 우 그리드 --------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:6px;">
@@ -312,7 +295,7 @@ window.SyBrandMng = {
       </div>
     </div>
 
-  <!-- ── CRUD 그리드 ─────────────────────────────────────────────────────── -->
+  <!-- -- CRUD 그리드 ------------------------------------------------------- -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title">
@@ -430,7 +413,7 @@ window.SyBrandMng = {
     </table>
     </div>
   </div>
-  </div><!-- ── /grid 25/75 ────────────────────────────────────────────────────── -->
+  </div><!-- -- /grid 25/75 ------------------------------------------------------ -->
 
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_brand"
     :value="pathPickModal.row ? pathPickModal.row.pathId : null"

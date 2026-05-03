@@ -11,30 +11,18 @@ window.PmEventMng = {
       date_range_opts: [],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.event_statuses = codeStore.snGetGrpCodes('EVENT_STATUS_KR') || [];
-        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
+        codes.event_statuses = codeStore.sgGetGrpCodes('EVENT_STATUS_KR');
+        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     // onMounted에서 API 로드
     const SORT_MAP = { nm: { asc: 'nm_asc', desc: 'nm_desc' }, reg: { asc: 'reg_asc', desc: 'reg_desc' } };
@@ -77,6 +65,7 @@ window.PmEventMng = {
       return { kw: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
     };
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     });
     const handleDateRangeChange = () => {
@@ -142,7 +131,7 @@ window.PmEventMng = {
 
     const viewMode = ref('list');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), events, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, viewMode, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon };
   },
@@ -174,7 +163,7 @@ window.PmEventMng = {
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <!-- ── 리스트 뷰 ──────────────────────────────────────────────────────── -->
+    <!-- -- 리스트 뷰 -------------------------------------------------------- -->
     <table class="bo-table" v-if="viewMode==='list'">
       <thead><tr><th style="width:36px;text-align:center;">번호</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">이벤트 제목 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>대상상품</th><th>인증필요</th><th>시작일</th><th>종료일</th><th>상태</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
@@ -197,13 +186,13 @@ window.PmEventMng = {
       </tbody>
     </table>
 
-    <!-- ── 카드 뷰 ───────────────────────────────────────────────────────── -->
+    <!-- -- 카드 뷰 --------------------------------------------------------- -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="events.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
       <div v-for="e in events" :key="e?.eventId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="uiStateDetail.selectedId===e.eventId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleLoadDetail(e.eventId)">
-        <!-- ── 배너 이미지 ─────────────────────────────────────────────────── -->
+        <!-- -- 배너 이미지 --------------------------------------------------- -->
         <div v-if="e.bannerImage" style="padding:12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;" v-html="e.bannerImage"></div>
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">이벤트 #{{ e.eventId }}</div>
@@ -228,7 +217,7 @@ window.PmEventMng = {
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
-  <!-- ── 하단 상세: EventDtl 임베드 ──────────────────────────────────────────── -->
+  <!-- -- 하단 상세: EventDtl 임베드 -------------------------------------------- -->
   <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

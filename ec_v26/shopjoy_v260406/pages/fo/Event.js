@@ -8,12 +8,6 @@ window.EventPage = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'ongoing', sortBy: 'latest'});;
     const codes = reactive({});
 
-    const isAppReady = computed(() => {
-      const initStore = window.useFoAppInitStore?.();
-      const codeStore = window.useFoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const events = reactive([]);
 
     
@@ -39,18 +33,16 @@ window.EventPage = {
       }
     };
 
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleSearchList();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
     watch(() => uiState.activeTab, () => { pager.pageNo = 1; handleSearchList('DEFAULT'); });
     watch(() => uiState.sortBy,    () => { pager.pageNo = 1; handleSearchList('DEFAULT'); });
 
@@ -60,14 +52,18 @@ window.EventPage = {
     const cfOngoingCount = computed(() => events.filter(e => e.status === 'ongoing').length);
     const cfEndedCount   = computed(() => events.filter(e => e.status === 'ended').length);
 
-    // ── return ───────────────────────────────────────────────────────────────
+    onMounted(() => {
+      handleSearchList();
+    });
+
+    // -- return ---------------------------------------------------------------
 
     return { pager, setPage, onSizeChange, events, cfOngoingCount, cfEndedCount, uiState, codes };
   },
   template: /* html */ `
 <div class="page-wrap">
 
-  <!-- ── 페이지 타이틀 배너 ───────────────────────────────────────────────────── -->
+  <!-- -- 페이지 타이틀 배너 ----------------------------------------------------- -->
   <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-1.jpg" alt="이벤트"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
@@ -82,9 +78,9 @@ window.EventPage = {
     </div>
   </div>
 
-  <!-- ── 탭 + 정렬 ───────────────────────────────────────────────────────── -->
+  <!-- -- 탭 + 정렬 --------------------------------------------------------- -->
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:28px;">
-    <!-- ── 탭 ──────────────────────────────────────────────────────────── -->
+    <!-- -- 탭 ------------------------------------------------------------ -->
     <div style="display:flex;gap:0;">
       <button @click="uiState.activeTab='ongoing'"
         :style="{
@@ -103,7 +99,7 @@ window.EventPage = {
           marginBottom: '-1px',
         }">당첨자 발표</button>
     </div>
-    <!-- ── 정렬 ─────────────────────────────────────────────────────────── -->
+    <!-- -- 정렬 ----------------------------------------------------------- -->
     <div style="display:flex;gap:0;padding-bottom:2px;">
       <button @click="uiState.sortBy='latest'"
         :style="{
@@ -123,7 +119,7 @@ window.EventPage = {
     </div>
   </div>
 
-  <!-- ── 이벤트 그리드 ──────────────────────────────────────────────────────── -->
+  <!-- -- 이벤트 그리드 -------------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;">
     <div v-for="ev in events" :key="ev.id"
       style="background:var(--bg-card);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;"
@@ -131,10 +127,10 @@ window.EventPage = {
       @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 6px 20px rgba(0,0,0,0.1)'"
       @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow=''">
 
-      <!-- ── 이벤트 배너 썸네일 ───────────────────────────────────────────────── -->
+      <!-- -- 이벤트 배너 썸네일 ------------------------------------------------- -->
       <div :style="{ height:'170px', background: ev.bannerBg, position:'relative', overflow:'hidden',
                      display:'flex', flexDirection:'column', alignItems:'flex-start', justifyContent:'flex-end', padding:'16px' }">
-        <!-- ── 배너 텍스트 ─────────────────────────────────────────────────── -->
+        <!-- -- 배너 텍스트 --------------------------------------------------- -->
         <div :style="{ color: ev.bannerText, position:'relative', zIndex:1 }">
           <div style="font-size:0.72rem;opacity:0.7;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">
             {{ ev.startDate }} ~ {{ ev.endDate }}
@@ -146,14 +142,14 @@ window.EventPage = {
             {{ ev.bannerLine2 }}
           </div>
         </div>
-        <!-- ── 종료 오버레이 ────────────────────────────────────────────────── -->
+        <!-- -- 종료 오버레이 -------------------------------------------------- -->
         <div v-if="ev.status==='ended'"
           style="position:absolute;inset:0;background:rgba(0,0,0,0.52);display:flex;align-items:center;justify-content:center;">
           <span style="color:#fff;font-size:0.85rem;font-weight:700;letter-spacing:3px;border:1px solid rgba(255,255,255,0.6);padding:5px 14px;">CLOSED</span>
         </div>
       </div>
 
-      <!-- ── 카드 정보 ────────────────────────────────────────────────────── -->
+      <!-- -- 카드 정보 ------------------------------------------------------ -->
       <div style="padding:14px 14px 16px;">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;">
           <span :style="{ padding:'2px 7px', borderRadius:'2px', fontSize:'0.68rem', fontWeight:'700', color:'#fff', background: ev.tagColor }">{{ ev.tag }}</span>
@@ -166,7 +162,7 @@ window.EventPage = {
     </div>
   </div>
 
-  <!-- ── 빈 상태 ─────────────────────────────────────────────────────────── -->
+  <!-- -- 빈 상태 ----------------------------------------------------------- -->
   <div v-if="events.length === 0" style="text-align:center;padding:clamp(32px,6vw,60px) 0;color:var(--text-muted);">
     <div style="font-size:2rem;margin-bottom:12px;">📭</div>
     <div style="font-size:0.95rem;">{{ uiState.activeTab === 'ongoing' ? '진행 중인 이벤트가 없습니다.' : '종료된 이벤트가 없습니다.' }}</div>

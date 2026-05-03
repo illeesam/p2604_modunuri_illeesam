@@ -8,35 +8,26 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const codes = reactive({ st_order_statuses: [], claim_types_kr: [], claim_statuses_kr: [], promo_types_kr: [], date_range_opts: [] });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
 
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.st_order_statuses = codeStore.snGetGrpCodes('ST_STATUS_ORDER') || [];
-        codes.claim_types_kr = codeStore.snGetGrpCodes('CLAIM_TYPE_KR') || [];
-        codes.claim_statuses_kr = codeStore.snGetGrpCodes('CLAIM_STATUS_KR') || [];
-        codes.promo_types_kr = codeStore.snGetGrpCodes('PROMO_TYPE_KR') || [];
-        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
+        codes.st_order_statuses = codeStore.sgGetGrpCodes('ST_STATUS_ORDER');
+        codes.claim_types_kr = codeStore.sgGetGrpCodes('CLAIM_TYPE_KR');
+        codes.claim_statuses_kr = codeStore.sgGetGrpCodes('CLAIM_STATUS_KR');
+        codes.promo_types_kr = codeStore.sgGetGrpCodes('PROMO_TYPE_KR');
+        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
+    // -- watch ----------------------------------------------------------------
 
-    /* ── 탭 ── */
+    /* -- 탭 -- */
         const TABS = [
       { id: 'vendor',    label: '업체별현황' },
       { id: 'order',     label: '주문별현황' },
@@ -45,7 +36,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { id: 'settle',    label: '정산별현황' },
     ];
 
-    /* ── 공통 날짜 필터 ── */
+    /* -- 공통 날짜 필터 -- */
             const dateEnd   = ref('');
     const onDateRangeChange = () => {
       if (uiState.dateRange) {
@@ -57,7 +48,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* 초기 날짜 설정 */
     (() => { const r = boUtil.getDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
-    /* ── 원본 데이터 ── */
+    /* -- 원본 데이터 -- */
     const orderList = reactive([]);
     const claimList = reactive([]);
     const vendorList = reactive([]);
@@ -113,7 +104,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const netSales = sales - refund;
         const comm     = Math.round(netSales * COMM_RATE);
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
         return { vendorId: v.vendorId, vendorNm: v.vendorNm, orderCnt: vOrders.length, sales, refund, netSales, comm, settle: netSales - comm };
       }).filter(r => !uiState.vendorSearchKw || r.vendorNm.includes(uiState.vendorSearchKw));
@@ -142,7 +133,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const comm   = isCancelled ? 0 : Math.round((o.totalPrice || 0) * COMM_RATE);
         const settle = isCancelled ? 0 : (o.totalPrice || 0) - comm;
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
         return { ...o, vendorNm: vendor ? vendor.vendorNm : '-', comm, settle, isCancelled };
       });
@@ -153,7 +144,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const cfOrderSummary  = computed(() => {
       const valid = window.safeArrayUtils.safeFilter(cfOrderRows.value, r => !r.isCancelled);
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
       return { cnt: valid.length, sales: valid.reduce((s, r) => s + r.totalPrice, 0), comm: valid.reduce((s, r) => s + r.comm, 0), settle: valid.reduce((s, r) => s + r.settle, 0) };
     });
@@ -174,7 +165,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const isCompleted = ['환불완료','취소완료','교환완료'].includes(c.status);
         const settleImpact = ['환불완료','취소완료'].includes(c.status) ? -(c.refundAmount || 0) : 0;
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
         return { ...c, isCompleted, settleImpact };
       });
@@ -204,7 +195,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
           : c.discountType === 'rate' ? Math.round(50000 * (c.discountValue / 100) * c.useCount) // 평균 주문금액 가정
           : 3000 * c.useCount;
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
         return {
           promoId: 'CPN-' + c.couponId, promoType: '쿠폰', promoNm: c.name,
@@ -255,7 +246,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const promo = Math.round(net * 0.03); // 프로모션 비용 가정 3%
         const settle = net - comm - promo;
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
         return { ...r, net, comm, promo, settle, statusCd: settle > 0 ? '정산예정' : '마감' };
       }).filter(r => !uiState.settleSearchMonth || r.month.includes(uiState.settleSearchMonth));
@@ -265,7 +256,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const cfSettlePageList = computed(() => cfSettleRows.value.slice((settlePager.page - 1) * settlePager.size, settlePager.page * settlePager.size));
     const cfSettleSummary  = computed(() => cfSettleRows.value.reduce((a, r) => ({ sales: a.sales + r.sales, refund: a.refund + r.refund, comm: a.comm + r.comm, settle: a.settle + r.settle }), { sales: 0, refund: 0, comm: 0, settle: 0 }));
 
-    /* ── 공통 유틸 ── */
+    /* -- 공통 유틸 -- */
     const fmt  = n => Number(n || 0).toLocaleString();
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
     const fnStatusBadge = s => ({
@@ -303,7 +294,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       props.showToast && props.showToast(`${tab.label} 데이터를 Excel로 내보냅니다.`, 'info');
     };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return {
       uiState, TABS,
@@ -333,7 +324,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 • CSV 내보내기를 지원합니다.</div>
   </div>
 
-  <!-- ── 공통 날짜 필터 ─────────────────────────────────────────────────────── -->
+  <!-- -- 공통 날짜 필터 ------------------------------------------------------- -->
   <div class="card" style="margin-bottom:12px">
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
       <select v-model="uiState.dateRange" @change="onDateRangeChange" style="min-width:110px">
@@ -351,16 +342,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
   </div>
 
-  <!-- ── 탭 ────────────────────────────────────────────────────────────── -->
+  <!-- -- 탭 -------------------------------------------------------------- -->
   <div class="tab-bar-row" style="margin-bottom:0">
     <div class="tab-nav">
       <button v-for="t in TABS" :key="t?.id" class="tab-btn" :class="{active: uiState.activeTab===t.id}" @click="uiState.activeTab=t.id">{{ t.label }}</button>
     </div>
   </div>
 
-  <!-- ── ══ 1. 업체별현황 ══ ───────────────────────────────────────────────── -->
+  <!-- -- ══ 1. 업체별현황 ══ ------------------------------------------------- -->
   <div v-if="uiState.activeTab==='vendor'" class="card" style="border-radius:0 8px 8px 8px">
-    <!-- ── 요약 카드 ──────────────────────────────────────────────────────── -->
+    <!-- -- 요약 카드 -------------------------------------------------------- -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:12px 8px;background:#f8f9fa">
         <div style="font-size:11px;color:#888;margin-bottom:4px">총 매출</div>
@@ -379,11 +370,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <div style="font-size:18px;font-weight:700;color:#27ae60">{{ fmtW(cfVendorSummary.settle) }}</div>
       </div>
     </div>
-    <!-- ── 검색 ─────────────────────────────────────────────────────────── -->
+    <!-- -- 검색 ----------------------------------------------------------- -->
     <div class="search-bar" style="margin-bottom:12px">
       <input v-model="uiState.vendorSearchKw" placeholder="업체명 검색" style="width:200px" @keyup.enter="() => onSearch?.()" />
     </div>
-    <!-- ── 테이블 ────────────────────────────────────────────────────────── -->
+    <!-- -- 테이블 ---------------------------------------------------------- -->
     <div class="toolbar"><span class="list-count">총 {{ cfVendorTotal }}개 업체</span></div>
     <table class="bo-table">
       <thead><tr>
@@ -406,7 +397,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
-  <!-- ── ══ 2. 주문별현황 ══ ───────────────────────────────────────────────── -->
+  <!-- -- ══ 2. 주문별현황 ══ ------------------------------------------------- -->
   <div v-if="uiState.activeTab==='order'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:12px 8px;background:#f8f9fa">
@@ -457,7 +448,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
-  <!-- ── ══ 3. 클레임별현황 ══ ──────────────────────────────────────────────── -->
+  <!-- -- ══ 3. 클레임별현황 ══ ------------------------------------------------ -->
   <div v-if="uiState.activeTab==='claim'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:12px 8px;background:#f8f9fa">
@@ -511,7 +502,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
-  <!-- ── ══ 4. 프로모션별현황 ══ ─────────────────────────────────────────────── -->
+  <!-- -- ══ 4. 프로모션별현황 ══ ----------------------------------------------- -->
   <div v-if="uiState.activeTab==='promo'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:12px 8px;background:#f8f9fa">
@@ -556,7 +547,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
-  <!-- ── ══ 5. 정산별현황 ══ ───────────────────────────────────────────────── -->
+  <!-- -- ══ 5. 정산별현황 ══ ------------------------------------------------- -->
   <div v-if="uiState.activeTab==='settle'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:12px 8px;background:#f8f9fa">

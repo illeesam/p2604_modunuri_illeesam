@@ -12,25 +12,12 @@ window.MbMemGradeMng = {
 
     const EDIT_FIELDS = ['gradeCd', 'gradeNm', 'gradeRank', 'minPurchaseAmt', 'saveRate', 'useYn'];
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.member_grades = codeStore.snGetGrpCodes('MEMBER_GRADE') || [];
-        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      uiState.isPageCodeLoad = true;
     };
-
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const makeRow = (b) => ({
       ...b,
@@ -59,7 +46,6 @@ window.MbMemGradeMng = {
     };
 
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
       handleSearchList();
     });
 

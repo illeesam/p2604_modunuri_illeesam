@@ -7,31 +7,14 @@ window.CmNoticeDtl = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ noticeTypes: [], noticeStatuses: [] });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.noticeTypes    = await codeStore.snGetGrpCodes('NOTICE_TYPE')   || [];
-        codes.noticeStatuses = await codeStore.snGetGrpCodes('NOTICE_STATUS') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.noticeTypes    = codeStore.sgGetGrpCodes('NOTICE_TYPE');
+      codes.noticeStatuses = codeStore.sgGetGrpCodes('NOTICE_STATUS');
+      uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const fnToday = () => new Date().toISOString().slice(0, 10);
@@ -63,11 +46,11 @@ window.CmNoticeDtl = {
       if (isAppReady.value) fnLoadCodes();
       await handleSearchDetail();
       if (typeof Quill !== 'undefined' && !props.viewMode && document.getElementById('notice-editor')) {
-        try {
-          quill = new Quill('#notice-editor', { theme: 'snow', placeholder: '공지 내용을 입력하세요.' });
-          if (form.contentHtml) quill.root.innerHTML = form.contentHtml;
-          quill.on('text-change', () => { form.contentHtml = quill.root.innerHTML; });
-        } catch (e) { console.warn('[Quill init]', e); }
+      try {
+      quill = new Quill('#notice-editor', { theme: 'snow', placeholder: '공지 내용을 입력하세요.' });
+      if (form.contentHtml) quill.root.innerHTML = form.contentHtml;
+      quill.on('text-change', () => { form.contentHtml = quill.root.innerHTML; });
+      } catch (e) { console.warn('[Quill init]', e); }
       }
     });
     onBeforeUnmount(() => { quill = null; });
@@ -103,7 +86,7 @@ window.CmNoticeDtl = {
       }
     };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { cfIsNew, form, errors, handleSave, codes, navigate: props.navigate, viewMode: props.viewMode };
   },

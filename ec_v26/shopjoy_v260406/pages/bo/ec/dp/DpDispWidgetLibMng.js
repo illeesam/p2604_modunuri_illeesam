@@ -8,34 +8,17 @@ window.DpDispWidgetLibMng = {
     const uiState = reactive({ loading: false, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ disp_widget_types: [], active_statuses: [] });
 
-    // App 초기화 준비 상태
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading
-          && codeStore?.svCodes?.length > 0
-          && !uiState.isPageCodeLoad;
-    });
-
-    // 코드 주입
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
-      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
-      codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
+      codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
+      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
       uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // App 초기화 감시
+    // 코드 주입
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (ready) => {
-      if (ready) {
-        fnLoadCodes();
-      }
-    });
-
-    /* ── 검색 ── */
+    /* -- 검색 -- */
     const _initSearchParam = () => ({ kw: '', type: '', status: '' });
     const searchParam = reactive(_initSearchParam());
 
@@ -83,7 +66,7 @@ window.DpDispWidgetLibMng = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -117,12 +100,12 @@ window.DpDispWidgetLibMng = {
       handleSearchList('DEFAULT');
     };
 
-    /* ── 표시경로 트리 ── */
+    /* -- 표시경로 트리 -- */
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    /* ── 하단 인라인 Dtl ── */
+    /* -- 하단 인라인 Dtl -- */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
     const handleLoadDetail = (id) => { if (uiStateDetail.selectedId === id) { uiStateDetail.selectedId = null; return; } uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; };
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; };
@@ -150,7 +133,7 @@ window.DpDispWidgetLibMng = {
       }
     };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { widgetLibs, uiState, codes, searchParam, pager,
       onSearch, onReset, setPage, onSizeChange,

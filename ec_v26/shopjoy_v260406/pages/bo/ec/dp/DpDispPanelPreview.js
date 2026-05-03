@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 전시패널미리보기 (#page=ecDispWidgetLibPreview) */
 
-/* ── 위젯미리보기 서브컴포넌트 (grid · dashboard 공용) ── */
+/* -- 위젯미리보기 서브컴포넌트 (grid · dashboard 공용) -- */
 const _WP_DispPanelPreview = {
   name: 'WidgetPreview',
   props: { lib: Object, compact: { type: Boolean, default: false } },
@@ -18,13 +18,13 @@ const _WP_DispPanelPreview = {
     });
     const selectedLibId = Vue.toRef(uiState, 'selectedLibId');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { codes, cfChartBars };
   },
   template: /* html */`
 <div style="padding:10px;">
-  <!-- ── 이미지 배너 ───────────────────────────────────────────────────────── -->
+  <!-- -- 이미지 배너 --------------------------------------------------------- -->
   <template v-if="lib.widgetType==='image_banner'">
     <div style="border-radius:6px;overflow:hidden;background:#f0f0f0;">
       <img v-if="lib.imageUrl" :src="lib.imageUrl" style="width:100%;display:block;max-height:130px;object-fit:cover;" />
@@ -33,7 +33,7 @@ const _WP_DispPanelPreview = {
     <div v-if="lib.linkUrl" style="font-size:10px;color:#aaa;margin-top:4px;">🔗 {{ lib.linkUrl }}</div>
   </template>
 
-  <!-- ── 상품 슬라이더 / 상품 ─────────────────────────────────────────────────── -->
+  <!-- -- 상품 슬라이더 / 상품 --------------------------------------------------- -->
   <template v-else-if="lib.widgetType==='product_slider'||lib.widgetType==='product'">
     <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:7px;">{{ lib.name }}</div>
     <div style="display:flex;gap:6px;overflow-x:auto;">
@@ -44,7 +44,7 @@ const _WP_DispPanelPreview = {
     </div>
   </template>
 
-  <!-- ── 차트 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 차트 ------------------------------------------------------------- -->
   <template v-else-if="lib.widgetType&&lib.widgetType.startsWith('chart_')">
     <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:8px;">{{ lib.chartTitle||lib.name }}</div>
     <div v-if="cfChartBars.length" style="display:flex;align-items:flex-end;gap:4px;height:60px;">
@@ -56,7 +56,7 @@ const _WP_DispPanelPreview = {
     <div v-else style="height:50px;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:11px;">데이터 없음</div>
   </template>
 
-  <!-- ── 텍스트 배너 ───────────────────────────────────────────────────────── -->
+  <!-- -- 텍스트 배너 --------------------------------------------------------- -->
   <template v-else-if="lib.widgetType==='text_banner'">
     <div :style="{background:lib.bgColor||'#fff',color:lib.textColor||'#222',padding:'10px',borderRadius:'5px',border:'1px solid #eee',fontSize:'12px'}">
       <span v-if="lib.textContent" v-html="lib.textContent"></span>
@@ -64,7 +64,7 @@ const _WP_DispPanelPreview = {
     </div>
   </template>
 
-  <!-- ── 정보 카드 ────────────────────────────────────────────────────────── -->
+  <!-- -- 정보 카드 ---------------------------------------------------------- -->
   <template v-else-if="lib.widgetType==='info_card'">
     <div style="background:#f8f9fa;border-radius:5px;padding:10px;border:1px solid #eee;">
       <div style="font-size:12px;font-weight:700;margin-bottom:4px;">{{ lib.infoTitle||'카드 제목' }}</div>
@@ -72,7 +72,7 @@ const _WP_DispPanelPreview = {
     </div>
   </template>
 
-  <!-- ── 쿠폰 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 쿠폰 ------------------------------------------------------------- -->
   <template v-else-if="lib.widgetType==='coupon'">
     <div style="background:linear-gradient(135deg,#e8587a,#f97316);border-radius:6px;padding:12px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:8px;">
       <div>
@@ -85,7 +85,7 @@ const _WP_DispPanelPreview = {
     </div>
   </template>
 
-  <!-- ── 캐시 배너 ────────────────────────────────────────────────────────── -->
+  <!-- -- 캐시 배너 ---------------------------------------------------------- -->
   <template v-else-if="lib.widgetType==='cache_banner'">
     <div style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:6px;padding:12px;color:#fff;display:flex;align-items:center;gap:10px;">
       <span style="font-size:22px;">💰</span>
@@ -97,19 +97,19 @@ const _WP_DispPanelPreview = {
     </div>
   </template>
 
-  <!-- ── HTML 에디터 ─────────────────────────────────────────────────────── -->
+  <!-- -- HTML 에디터 ------------------------------------------------------- -->
   <template v-else-if="lib.widgetType==='html_editor'">
     <div v-if="lib.htmlContent" v-html="lib.htmlContent" style="font-size:12px;overflow:hidden;max-height:120px;"></div>
     <div v-else style="color:#ccc;font-size:11px;padding:8px 0;">HTML 미리보기</div>
   </template>
 
-  <!-- ── 위젯 임베드 ───────────────────────────────────────────────────────── -->
+  <!-- -- 위젯 임베드 --------------------------------------------------------- -->
   <template v-else-if="lib.widgetType==='widget_embed'">
     <div v-if="lib.embedCode" v-html="lib.embedCode" style="overflow:hidden;max-height:140px;"></div>
     <div v-else style="color:#ccc;font-size:11px;padding:8px 0;">임베드 미리보기</div>
   </template>
 
-  <!-- ── 팝업 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 팝업 ------------------------------------------------------------- -->
   <template v-else-if="lib.widgetType==='popup'">
     <div style="border:2px solid #e0e0e0;border-radius:6px;overflow:hidden;">
       <div style="background:#444;color:#fff;padding:5px 10px;font-size:11px;display:flex;justify-content:space-between;"><span>팝업</span><span>✕</span></div>
@@ -117,7 +117,7 @@ const _WP_DispPanelPreview = {
     </div>
   </template>
 
-  <!-- ── 파일 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 파일 ------------------------------------------------------------- -->
   <template v-else-if="lib.widgetType==='file'">
     <div style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #e5e7eb;border-radius:6px;background:#f9fafb;">
       <span style="font-size:20px;">📎</span>
@@ -128,7 +128,7 @@ const _WP_DispPanelPreview = {
     </div>
   </template>
 
-  <!-- ── 기타 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 기타 ------------------------------------------------------------- -->
   <template v-else>
     <div style="background:#f5f5f5;border-radius:6px;padding:16px;text-align:center;color:#bbb;">
       <div style="font-size:24px;margin-bottom:4px;">▪</div>
@@ -139,7 +139,7 @@ const _WP_DispPanelPreview = {
   `,
 };
 
-/* ── 메인 컴포넌트 ── */
+/* -- 메인 컴포넌트 -- */
 window.DpDispPanelPreview = {
   name: 'DpDispPanelPreview',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
@@ -162,33 +162,16 @@ window.DpDispPanelPreview = {
     const tab = Vue.toRef(uiState, 'tab');
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
-    // App 초기화 준비 상태
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading
-          && codeStore?.svCodes?.length > 0
-          && !uiState.isPageCodeLoad;
-    });
-
-    // 코드 주입
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
-      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
-      codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
-      codes.disp_envs = codeStore.snGetGrpCodes('DISP_ENV') || [];
+      codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
+      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
+      codes.disp_envs = codeStore.sgGetGrpCodes('DISP_ENV');
       uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // App 초기화 감시
-
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (ready) => {
-      if (ready) {
-        fnLoadCodes();
-      }
-    });
+    // 코드 주입
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
@@ -201,7 +184,7 @@ window.DpDispPanelPreview = {
       } catch (_) {}
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchData('DEFAULT');
@@ -224,7 +207,7 @@ window.DpDispPanelPreview = {
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
     const wTypeLabel = (v) => codes.disp_widget_types.find(t => t.codeValue === v)?.codeLabel || v;
 
-    /* ── 조회 조건 ── */
+    /* -- 조회 조건 -- */
     const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterVisibility: '', filterDispEnv: 'PROD', kw: '' });
     const searchParam = reactive(_initSearchParam());
 
@@ -258,11 +241,11 @@ window.DpDispPanelPreview = {
       });
     });
 
-    /* ── 트리 선택 ── */
+    /* -- 트리 선택 -- */
         const onTreeSelect  = (lib) => { uiState.selectedLibId = lib.libId; };
 
-    /* ── 트리 상태 ── */
-    /* ── 패널 트리: prefix > 영역명 > 패널명 ── */
+    /* -- 트리 상태 -- */
+    /* -- 패널 트리: prefix > 영역명 > 패널명 -- */
     const cfTree = computed(() => {
       const codesData = codes || [];
       const areaNm = (code) => {
@@ -340,7 +323,7 @@ window.DpDispPanelPreview = {
     };
     const onNodeDragEnd = () => { window._dragWidgetLibs = null; };
 
-    /* ── UI 상태 ── */
+    /* -- UI 상태 -- */
     const gridState = reactive({
       previewGrid: 'grid1',
       viewportMode: 'desktop',
@@ -374,7 +357,7 @@ window.DpDispPanelPreview = {
       return map[gridState.previewGrid] || 'repeat(1,1fr)';
     });
 
-    /* ── 그리드 슬롯 (탭별 동적 배열) ── */
+    /* -- 그리드 슬롯 (탭별 동적 배열) -- */
     const makeInit = (cols) => Array(cols * 2).fill(null);
     const tabSlots = reactive({
       grid1: makeInit(1),
@@ -395,14 +378,14 @@ window.DpDispPanelPreview = {
       }
     };
 
-    /* ── 드래그·드롭 (그리드) ── */
+    /* -- 드래그·드롭 (그리드) -- */
     const dragState = reactive({ dragOverIdx: -1 });
     const onDragOver  = (e, idx) => { e.preventDefault(); dragState.dragOverIdx = idx; };
     const onDragLeave = () => { dragState.dragOverIdx = -1; };
     const onDrop = (e, idx) => {
       e.preventDefault(); dragState.dragOverIdx = -1;
 
-      /* ── 노드 일괄 배치 ── */
+      /* -- 노드 일괄 배치 -- */
       const nodeLibs = window._dragWidgetLibs;
       if (nodeLibs) {
         window._dragWidgetLibs = null;
@@ -425,7 +408,7 @@ window.DpDispPanelPreview = {
         return;
       }
 
-      /* ── 단일 위젯 배치 ── */
+      /* -- 단일 위젯 배치 -- */
       const lib = window._dragWidgetLib;
       if (!lib) return;
       const tabId = gridState.previewGrid;
@@ -434,7 +417,7 @@ window.DpDispPanelPreview = {
     };
     const removeSlot = (idx) => { tabSlots[gridState.previewGrid].splice(idx, 1, null); };
 
-    /* ── colspan / rowspan 조절 ── */
+    /* -- colspan / rowspan 조절 -- */
     const setSpan = (idx, axis, delta) => {
       const slot = tabSlots[gridState.previewGrid][idx];
       if (!slot) return;
@@ -443,14 +426,14 @@ window.DpDispPanelPreview = {
       if (axis === 'row') slot.rowSpan = Math.max(1, Math.min(4,      (slot.rowSpan || 1) + delta));
     };
 
-    /* ── span 팝업 ── */
+    /* -- span 팝업 -- */
     const toggleSpanPopup = (e, idx) => {
       e.stopPropagation();
       gridState.spanPopupIdx = gridState.spanPopupIdx === idx ? -1 : idx;
     };
     const closeSpanPopup = () => { gridState.spanPopupIdx = -1; };
 
-    /* ── 대시보드: 자유 배치 + 크기 조절 ── */
+    /* -- 대시보드: 자유 배치 + 크기 조절 -- */
     const dashCanvas = ref(null);
     const dashItems  = reactive([]); // { id, lib, x, y, w, h }
 
@@ -461,7 +444,7 @@ window.DpDispPanelPreview = {
       if (!dashCanvas.value) return;
       const rect = dashCanvas.value.getBoundingClientRect();
 
-      /* ── 노드 일괄 배치 ── */
+      /* -- 노드 일괄 배치 -- */
       const nodeLibs = window._dragWidgetLibs;
       if (nodeLibs) {
         window._dragWidgetLibs = null;
@@ -480,7 +463,7 @@ window.DpDispPanelPreview = {
         return;
       }
 
-      /* ── 단일 위젯 배치 ── */
+      /* -- 단일 위젯 배치 -- */
       const lib = window._dragWidgetLib;
       if (!lib) return;
       const x = Math.max(0, e.clientX - rect.left - 110);
@@ -526,7 +509,7 @@ window.DpDispPanelPreview = {
       document.addEventListener('mouseup', onUp);
     };
 
-    /* ── 배치 수 / 초기화 ── */
+    /* -- 배치 수 / 초기화 -- */
     const cfPlacedCount = computed(() =>
       gridState.previewGrid === 'dashboard'
         ? dashItems.length
@@ -542,7 +525,7 @@ window.DpDispPanelPreview = {
       }
     };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return {
       cfSiteNm, today,
@@ -567,7 +550,7 @@ window.DpDispPanelPreview = {
   },
   template: /* html */`
 <div>
-  <!-- ── 페이지 타이틀 ──────────────────────────────────────────────────────── -->
+  <!-- -- 페이지 타이틀 -------------------------------------------------------- -->
   <div class="page-title" style="display:flex;align-items:center;justify-content:space-between;">
     <div>
       전시패널미리보기
@@ -578,7 +561,7 @@ window.DpDispPanelPreview = {
     </span>
   </div>
 
-  <!-- ── 조회 조건 ────────────────────────────────────────────────────────── -->
+  <!-- -- 조회 조건 ---------------------------------------------------------- -->
   <div class="card" style="padding:14px 18px;margin-bottom:12px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <div style="display:flex;align-items:center;gap:5px;">
@@ -623,16 +606,16 @@ window.DpDispPanelPreview = {
     </div>
   </div>
 
-  <!-- ── 2단 레이아웃 ──────────────────────────────────────────────────────── -->
+  <!-- -- 2단 레이아웃 -------------------------------------------------------- -->
   <div style="display:flex;gap:12px;height:calc(100vh - 240px);min-height:500px;align-items:stretch;">
 
-    <!-- ── 왼쪽: 트리 (카드) ────────────────────────────────────────────────── -->
+    <!-- -- 왼쪽: 트리 (카드) -------------------------------------------------- -->
     <div class="card" style="width:340px;flex-shrink:0;display:flex;flex-direction:column;padding:0;overflow:hidden;">
       <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;font-size:12px;font-weight:700;color:#555;background:#fafafa;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
         <span>표시경로</span>
         <span style="font-size:10px;color:#aaa;font-weight:400;">⠿ 드래그하여 배치</span>
       </div>
-      <!-- ── 전체펼치기 / 전체닫기 ─────────────────────────────────────────────── -->
+      <!-- -- 전체펼치기 / 전체닫기 ----------------------------------------------- -->
       <div style="padding:6px 12px;display:flex;gap:4px;border-bottom:1px solid #f0f0f0;background:#fff;flex-shrink:0;">
         <button @click="expandAll"
           style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">
@@ -644,7 +627,7 @@ window.DpDispPanelPreview = {
         </button>
       </div>
       <div style="flex:1;overflow-y:auto;padding:4px 0;">
-        <!-- ── 루트 노드 ──────────────────────────────────────────────────── -->
+        <!-- -- 루트 노드 ---------------------------------------------------- -->
         <div @click="toggleNode('__root__')"
           style="display:flex;align-items:center;gap:6px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:700;color:#222;user-select:none;background:#f8f9fb;border-radius:4px;margin:1px 4px;"
           :style="isOpen('__root__') ? 'background:#f0f4ff;' : ''">
@@ -700,15 +683,15 @@ window.DpDispPanelPreview = {
             </div>
           </template>
         </div>
-        </div><!-- ── /root children ─────────────────────────────────────────────────── -->
+        </div><!-- -- /root children --------------------------------------------------- -->
         <div v-if="!cfTree.length" style="padding:24px;text-align:center;color:#ccc;font-size:12px;">위젯이 없습니다.</div>
       </div>
     </div>
 
-    <!-- ── 오른쪽 (카드) ───────────────────────────────────────────────────── -->
+    <!-- -- 오른쪽 (카드) ----------------------------------------------------- -->
     <div class="card" style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:#f0f2f5;min-width:0;padding:0;">
 
-      <!-- ── 탭바 + 뷰포트 토글 + 배치수 ────────────────────────────────────────── -->
+      <!-- -- 탭바 + 뷰포트 토글 + 배치수 ------------------------------------------ -->
       <div style="display:flex;align-items:stretch;background:#f8f9fa;border-bottom:1px solid #e8e8e8;flex-shrink:0;padding:0 12px;">
         <div style="display:flex;gap:2px;align-items:flex-end;padding-top:8px;flex:1;">
           <button v-for="tab in GRID_TABS" :key="tab?.id" @click="gridState.previewGrid=tab.id"
@@ -719,7 +702,7 @@ window.DpDispPanelPreview = {
             {{ tab.label }}
           </button>
         </div>
-        <!-- ── 실제컨텐츠 + 뷰포트 토글 (dashboard 제외) ──────────────────────────── -->
+        <!-- -- 실제컨텐츠 + 뷰포트 토글 (dashboard 제외) ---------------------------- -->
         <div v-if="gridState.previewGrid!=='dashboard'" style="display:flex;align-items:center;gap:4px;padding:6px 0 6px 12px;border-left:1px solid #e5e7eb;margin-left:8px;">
           <button @click="gridState.showRealContent=!gridState.showRealContent"
             style="font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;margin-right:4px;"
@@ -742,16 +725,16 @@ window.DpDispPanelPreview = {
         </div>
       </div>
 
-      <!-- ── 그리드 캔버스 (grid1~4) ── -->
+      <!-- -- 그리드 캔버스 (grid1~4) -- -->
       <div v-if="gridState.previewGrid!=='dashboard'" @click="closeSpanPopup" style="flex:1;overflow-y:auto;overflow-x:auto;padding:16px;">
-        <!-- ── 뷰포트 래퍼 ─────────────────────────────────────────────────── -->
+        <!-- -- 뷰포트 래퍼 --------------------------------------------------- -->
         <div :style="{
           width: VIEWPORT[gridState.viewportMode].width || '100%',
           maxWidth: VIEWPORT[gridState.viewportMode].width || '100%',
           margin: '0 auto',
           transition: 'width .3s',
         }">
-          <!-- ── 디바이스 프레임 표시 ──────────────────────────────────────────── -->
+          <!-- -- 디바이스 프레임 표시 -------------------------------------------- -->
           <div v-if="gridState.viewportMode!=='desktop'"
             style="text-align:center;margin-bottom:8px;font-size:11px;color:#9ca3af;font-weight:600;">
             {{ gridState.viewportMode==='mobile' ? '📱 375px' : '📟 768px' }}
@@ -784,27 +767,27 @@ window.DpDispPanelPreview = {
                   slot && (slot.rowSpan||1) > 1 ? { gridRow:    'span ' + slot.rowSpan } : {},
                 ]">
 
-                <!-- ── 비어있음 ───────────────────────────────────────────── -->
+                <!-- -- 비어있음 --------------------------------------------- -->
                 <div v-if="!slot && dragState.dragOverIdx!==idx"
                   style="height:100%;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:#d1d5db;padding:10px;">
                   <span style="font-size:20px;">+</span>
                   <span style="font-size:11px;">드래그하여 추가</span>
                 </div>
 
-                <!-- ── 드롭 오버 ──────────────────────────────────────────── -->
+                <!-- -- 드롭 오버 -------------------------------------------- -->
                 <div v-else-if="!slot && dragState.dragOverIdx===idx"
                   style="min-height:60px;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:12px;font-weight:700;padding:10px;">
                   ▼ 여기에 추가
                 </div>
 
-                <!-- ── 배치됨 ────────────────────────────────────────────── -->
+                <!-- -- 배치됨 ---------------------------------------------- -->
                 <template v-else-if="slot">
-                  <!-- ── 슬롯 헤더 (실제컨텐츠 OFF) ────────────────────────────── -->
+                  <!-- -- 슬롯 헤더 (실제컨텐츠 OFF) ------------------------------ -->
                   <div v-if="!gridState.showRealContent" style="display:flex;align-items:center;gap:5px;padding:6px 10px 5px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
                     <span style="font-size:12px;">{{ wIcon(slot.widgetType) }}</span>
                     <span style="font-size:10px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:4px;padding:0 5px;white-space:nowrap;">{{ wTypeLabel(slot.widgetType) }}</span>
                     <span style="font-size:11px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ slot.name }}</span>
-                    <!-- ── span 설정 아이콘 ────────────────────────────────── -->
+                    <!-- -- span 설정 아이콘 ---------------------------------- -->
                     <button @click="toggleSpanPopup($event, idx)"
                       :title="'열 ' + (slot.colSpan||1) + ' × 행 ' + (slot.rowSpan||1)"
                       style="flex-shrink:0;width:22px;height:22px;border-radius:4px;border:1px solid #e5e7eb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
@@ -813,15 +796,15 @@ window.DpDispPanelPreview = {
                       style="flex-shrink:0;width:17px;height:17px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
                   </div>
 
-                  <!-- ── span 설정 레이어 팝업 ───────────────────────────────── -->
+                  <!-- -- span 설정 레이어 팝업 --------------------------------- -->
 <div v-if="gridState.spanPopupIdx===idx" @click.stop
                     style="position:absolute;top:36px;right:6px;z-index:20;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);padding:12px 14px;min-width:170px;">
-                    <!-- ── 닫기 ─────────────────────────────────────────── -->
+                    <!-- -- 닫기 ------------------------------------------- -->
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                       <span style="font-size:11px;font-weight:700;color:#374151;">그리드 스팬 설정</span>
                       <button @click="closeSpanPopup" style="border:none;background:none;cursor:pointer;font-size:13px;color:#9ca3af;padding:0;line-height:1;">✕</button>
                     </div>
-                    <!-- ── 열(colspan) ─────────────────────────────────── -->
+                    <!-- -- 열(colspan) ----------------------------------- -->
                     <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
                       <span style="font-size:11px;color:#6b7280;width:36px;">열 span</span>
                       <button @click="setSpan(idx,'col',-1)" :disabled="(slot.colSpan||1)<=1"
@@ -833,7 +816,7 @@ window.DpDispPanelPreview = {
                         :style="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)?'opacity:.3;cursor:default;':''">+</button>
                       <span style="font-size:10px;color:#9ca3af;">/ {{ GRID_COLS[gridState.previewGrid]||1 }}</span>
                     </div>
-                    <!-- ── 행(rowspan) ─────────────────────────────────── -->
+                    <!-- -- 행(rowspan) ----------------------------------- -->
                     <div style="display:flex;align-items:center;gap:6px;">
                       <span style="font-size:11px;color:#6b7280;width:36px;">행 span</span>
                       <button @click="setSpan(idx,'row',-1)" :disabled="(slot.rowSpan||1)<=1"
@@ -846,12 +829,12 @@ window.DpDispPanelPreview = {
                       <span style="font-size:10px;color:#9ca3af;">/ 4</span>
                     </div>
                   </div>
-                  <!-- ── 실제컨텐츠 ON: ×버튼만 ───────────────────────────────── -->
+                  <!-- -- 실제컨텐츠 ON: ×버튼만 --------------------------------- -->
                   <div v-else style="position:relative;">
                     <button @click="removeSlot(idx)"
                       style="position:absolute;top:4px;right:4px;z-index:5;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.3);color:#fff;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
                   </div>
-                  <!-- ── 위젯미리보기 ───────────────────────────────────────── -->
+                  <!-- -- 위젯미리보기 ----------------------------------------- -->
                   <disp-x03-panel v-if="slot.panelId"
                     :params="{ date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }"
                     :disp-opt="{ layout:'vertical', showBadges:false }"
@@ -860,14 +843,14 @@ window.DpDispPanelPreview = {
                   <widget-preview v-else :lib="slot" />
                 </template>
 
-              </div><!-- ── /slot ──────────────────────────────────────────────────────────── -->
+              </div><!-- -- /slot ------------------------------------------------------------ -->
               </template>
-            </div><!-- ── /grid ──────────────────────────────────────────────────────────── -->
-          </div><!-- ── /device frame ──────────────────────────────────────────────────── -->
-        </div><!-- ── /viewport wrapper ──────────────────────────────────────────────── -->
-      </div><!-- ── /grid canvas ───────────────────────────────────────────────────── -->
+            </div><!-- -- /grid ------------------------------------------------------------ -->
+          </div><!-- -- /device frame ---------------------------------------------------- -->
+        </div><!-- -- /viewport wrapper ------------------------------------------------ -->
+      </div><!-- -- /grid canvas ----------------------------------------------------- -->
 
-      <!-- ── 대시보드 캔버스 (자유 배치) ── -->
+      <!-- -- 대시보드 캔버스 (자유 배치) -- -->
       <div v-else style="flex:1;overflow:auto;padding:16px;">
         <div
           ref="dashCanvas"
@@ -877,7 +860,7 @@ window.DpDispPanelPreview = {
           style="position:relative;min-height:560px;min-width:600px;background:#fff;border-radius:8px;border:2px dashed #e5e7eb;transition:border-color .15s;"
           :style="gridState.dashDragOver ? 'border-color:#1d4ed8;background:#eff6ff;' : ''">
 
-          <!-- ── 빈 상태 ─────────────────────────────────────────────────── -->
+          <!-- -- 빈 상태 --------------------------------------------------- -->
           <div v-if="!dashItems.length && !gridState.dashDragOver"
             style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#d1d5db;pointer-events:none;">
             <span style="font-size:48px;">🧩</span>
@@ -888,7 +871,7 @@ window.DpDispPanelPreview = {
             ▼ 여기에 배치
           </div>
 
-          <!-- ── 배치된 아이템 ──────────────────────────────────────────────── -->
+          <!-- -- 배치된 아이템 ------------------------------------------------ -->
           <div v-for="item in dashItems" :key="item?.id"
             :style="{
               position:'absolute',
@@ -904,7 +887,7 @@ window.DpDispPanelPreview = {
               zIndex: 1,
             }">
 
-            <!-- ── 이동 핸들 헤더 ───────────────────────────────────────────── -->
+            <!-- -- 이동 핸들 헤더 --------------------------------------------- -->
             <div
               @mousedown="startItemMove($event, item)"
               style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;border-radius:8px 8px 0 0;cursor:move;">
@@ -916,7 +899,7 @@ window.DpDispPanelPreview = {
                 style="flex-shrink:0;width:18px;height:18px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
             </div>
 
-            <!-- ── 위젯미리보기 ─────────────────────────────────────────────── -->
+            <!-- -- 위젯미리보기 ----------------------------------------------- -->
             <div style="overflow:hidden;" :style="{maxHeight:(item.h-40)+'px'}">
               <disp-x03-panel v-if="item.lib.panelId"
                 :params="{ date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }"
@@ -926,24 +909,24 @@ window.DpDispPanelPreview = {
               <widget-preview v-else :lib="item.lib" />
             </div>
 
-            <!-- ── 크기 조절 핸들 ───────────────────────────────────────────── -->
+            <!-- -- 크기 조절 핸들 --------------------------------------------- -->
             <div
               @mousedown="startItemResize($event, item)"
               style="position:absolute;right:0;bottom:0;width:18px;height:18px;cursor:se-resize;border-radius:0 0 8px 0;overflow:hidden;">
               <div style="width:0;height:0;border-style:solid;border-width:0 0 18px 18px;border-color:transparent transparent #d1d5db transparent;position:absolute;right:0;bottom:0;"></div>
             </div>
 
-            <!-- ── 크기 표시 ──────────────────────────────────────────────── -->
+            <!-- -- 크기 표시 ------------------------------------------------ -->
             <div style="position:absolute;right:22px;bottom:3px;font-size:9px;color:#c4c4c4;pointer-events:none;user-select:none;">
               {{ Math.round(item.w) }}×{{ Math.round(item.h) }}
             </div>
           </div>
 
-        </div><!-- ── /dashCanvas ────────────────────────────────────────────────────── -->
-      </div><!-- ── /dashboard ─────────────────────────────────────────────────────── -->
+        </div><!-- -- /dashCanvas ------------------------------------------------------ -->
+      </div><!-- -- /dashboard ------------------------------------------------------- -->
 
-    </div><!-- ── /오른쪽 ───────────────────────────────────────────────────────────── -->
-  </div><!-- ── /2단 ────────────────────────────────────────────────────────────── -->
+    </div><!-- -- /오른쪽 ------------------------------------------------------------- -->
+  </div><!-- -- /2단 -------------------------------------------------------------- -->
 </div>
   `,
   components: {

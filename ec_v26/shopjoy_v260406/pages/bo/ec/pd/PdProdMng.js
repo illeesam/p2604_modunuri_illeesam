@@ -43,13 +43,8 @@ window.PdProdMng = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      handleSearchList('DEFAULT');
-    });
 
-    /* ── 검색 파라미터 ── */
+    /* -- 검색 파라미터 -- */
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
@@ -67,32 +62,21 @@ window.PdProdMng = {
     };
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.product_statuses = await codeStore.snGetGrpCodes('PRODUCT_STATUS') || [];
-        codes.option_types = await codeStore.snGetGrpCodes('OPTION_TYPE') || [];
-        codes.category_depths = await codeStore.snGetGrpCodes('CATEGORY_DEPTH') || [];
-        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
+      codes.option_types = codeStore.sgGetGrpCodes('OPTION_TYPE');
+      codes.category_depths = codeStore.sgGetGrpCodes('CATEGORY_DEPTH');
+      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
+    // ★ onMounted
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      handleSearchList('DEFAULT');
     });
 
     /* 하단 상세 */
@@ -114,7 +98,7 @@ const isAppReady = computed(() => {
 
     const cfCategories = computed(() => []);
 
-    /* ── 카테고리 선택 모달 ── */
+    /* -- 카테고리 선택 모달 -- */
     const catModal = reactive({ show: false });
     const openCatModal = async () => { await handleSearchList('DEFAULT'); catModal.show = true; };
     const onCatSelect = (cat) => {
@@ -165,7 +149,7 @@ const isAppReady = computed(() => {
 
     const selectedId = computed(() => uiStateDetail.selectedId);
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { uiStateDetail, selectedId, products, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewProduct, catModal, openCatModal, onCatSelect, clearCate, exportExcel, onSort, sortIcon };
   },
@@ -234,14 +218,14 @@ const isAppReady = computed(() => {
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
-  <!-- ── 카테고리 선택 모달 ───────────────────────────────────────────────────── -->
+  <!-- -- 카테고리 선택 모달 ----------------------------------------------------- -->
   <category-tree-modal
     v-if="catModal && catModal.show"
     :exclude-id="null"
     @select="onCatSelect"
     @close="catModal.show=false" />
 
-  <!-- ── 하단 상세: ProdDtl 임베드 ───────────────────────────────────────────── -->
+  <!-- -- 하단 상세: ProdDtl 임베드 --------------------------------------------- -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

@@ -9,31 +9,13 @@ window.PdCategoryDtl = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ category_statuses: [] });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (codeStore?.snGetGrpCodes) {
-          codes.category_statuses = codeStore.snGetGrpCodes('CATEGORY_STATUS') || [];
-        }
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.category_statuses = codeStore.sgGetGrpCodes('CATEGORY_STATUS');
+      uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -70,11 +52,11 @@ window.PdCategoryDtl = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleSearchList('DEFAULT');
       handleSearchDetail();
+      handleSearchList('DEFAULT');
     });
 
     const cfParentOptions = computed(() => window.safeArrayUtils.safeFilter(categories, c => {
@@ -117,7 +99,7 @@ window.PdCategoryDtl = {
       }
     };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { cfIsNew, form, errors, handleSave, cfParentOptions, onParentChange, codes };
   },

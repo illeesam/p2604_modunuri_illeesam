@@ -9,27 +9,15 @@ window.DispUi06 = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
-    const isAppReady = computed(() => {
-      const initStore = window.useFoAppInitStore?.();
-      const codeStore = window.useFoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
@@ -62,13 +50,13 @@ window.DispUi06 = {
       return params.areas.reduce((s, a) => s + displays.filter(p => p.area === a).length, 0);
     });
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { params, dispDataset, dispOpt, cfTotalPanels , uiState, codes };
   },
   template: /* html */`
 <div>
-  <!-- ── 페이지 헤더 ───────────────────────────────────────────────────────── -->
+  <!-- -- 페이지 헤더 --------------------------------------------------------- -->
   <div style="background:linear-gradient(135deg,#0097a7,#00838f);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.2);">
     <div>
       <span style="font-size:16px;font-weight:700;">👤 DispUi04 - MY_PAGE / FOOTER</span>
@@ -77,7 +65,7 @@ window.DispUi06 = {
     <span style="font-size:13px;opacity:.8;">패널 {{ cfTotalPanels }}개</span>
   </div>
 
-  <!-- ── 본문: DispUi 컴포넌트 ──────────────────────────────────────────────── -->
+  <!-- -- 본문: DispUi 컴포넌트 ------------------------------------------------ -->
   <disp-x01-ui :params="params" :disp-dataset="dispDataset" :disp-opt="dispOpt" />
 </div>
 `,

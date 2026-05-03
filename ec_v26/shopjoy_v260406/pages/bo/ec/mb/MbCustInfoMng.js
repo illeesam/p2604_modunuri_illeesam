@@ -86,30 +86,18 @@
     const couponUsage = reactive([]);
     const sendHistory = reactive([]);
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.member_statuses = codeStore.snGetGrpCodes('MEMBER_STATUS') || [];
-        codes.member_grades = codeStore.snGetGrpCodes('MEMBER_GRADE') || [];
+        codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS');
+        codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     // onMounted에서 API 로드
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -148,21 +136,23 @@
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      Object.assign(searchParamOrg, searchParam);
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT');
-    Object.assign(searchParamOrg, searchParam); });
-      /* ── 검색 상태 ── */
+    });
+      /* -- 검색 상태 -- */
       const memberModal  = reactive({ show: false, keyword: '', list: [] });
 
-      /* ── 기간 필터 (searchParam 통합) ── */
+      /* -- 기간 필터 (searchParam 통합) -- */
       const searchParam = reactive({ period: '1y', customFrom: '', customTo: today() });
       const searchParamOrg = reactive({ period: '1y', customFrom: '', customTo: today() });
 
       const cfDateFrom = computed(() => calcFrom(searchParam.period, searchParam.customFrom));
       const cfDateTo   = computed(() => searchParam.period === 'custom' ? searchParam.customTo : today());
 
-      /* ── 탭 / 뷰모드 (영속화) ── */
+      /* -- 탭 / 뷰모드 (영속화) -- */
       const histTab  = Vue.ref(window._mbCustInfoState.tab      || 'orders');
       const viewMode2 = Vue.ref(window._mbCustInfoState.viewMode || '3col');
 
@@ -171,7 +161,7 @@
       watch(() => uiState.viewMode2, v => { window._mbCustInfoState.viewMode = v; });
       const showTab = (id) => viewMode2.value !== 'tab' || histTab.value === id;
 
-      /* ── 고객 초기화 ── */
+      /* -- 고객 초기화 -- */
       const clearCustomer = () => { uiState.customer = null; uiState.searchInput = ''; };
 
       /* period 변경 시 custom 초기값 세팅 */
@@ -184,13 +174,13 @@
         }
       });
 
-      /* ── 현재 고객 ── */
+      /* -- 현재 고객 -- */
       
       /* 날짜 필터 헬퍼 */
       const filtered = (list, dateField) =>
         list.filter(r => inRange(r[dateField], cfDateFrom.value, cfDateTo.value));
 
-      /* ── 파생 데이터 (computed) ── */
+      /* -- 파생 데이터 (computed) -- */
       const cfCustOrders = computed(() =>
         !uiState.customer ? [] : filtered(
           orders.filter(o => o.userId === uiState.customer.userId), 'orderDate')
@@ -236,7 +226,7 @@
         return all.slice().sort((a, b) => a.cacheId - b.cacheId).at(-1)?.balance ?? 0;
       });
 
-      /* ── 고객선택 모달 ── */
+      /* -- 고객선택 모달 -- */
       const openMemberModal = async () => {
         memberModal.keyword = '';
         await handleSearchData('DEFAULT');
@@ -256,12 +246,12 @@
         uiState.searchInput = '';
       };
 
-      /* ── 검색 실행 ── */
+      /* -- 검색 실행 -- */
       const onSearch = async () => {
         await handleSearchData('DEFAULT');
       };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
   return { custInfos, uiState, SEARCH_MODES, memberModal,
         searchParam, searchParamOrg, PERIOD_OPTS, cfDateFrom, cfDateTo,
@@ -280,9 +270,9 @@
     <h2 class="page-title">고객종합정보</h2>
   </div>
 
-  <!-- ── 검색 바 ── -->
+  <!-- -- 검색 바 -- -->
   <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;padding:14px 20px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-    <!-- ── 모드 세그먼트 ────────────────────────────────────────────────────── -->
+    <!-- -- 모드 세그먼트 ------------------------------------------------------ -->
     <div style="display:flex;background:#f0f2f5;border-radius:8px;padding:3px;gap:2px;flex-shrink:0;">
       <button v-for="m in SEARCH_MODES" :key="m?.id"
         @click="uiState.searchMode=m.id;uiState.searchInput=''"
@@ -293,7 +283,7 @@
       </button>
     </div>
 
-    <!-- ── 고객 선택 ──────────────────────────────────────────────────────── -->
+    <!-- -- 고객 선택 -------------------------------------------------------- -->
     <template v-if="uiState.searchMode==='member'">
       <button @click="openMemberModal"
         style="display:flex;align-items:center;gap:6px;background:#fff;border:1.5px solid #1976d2;color:#1976d2;border-radius:8px;padding:7px 18px;font-size:13px;font-weight:600;cursor:pointer;">
@@ -302,7 +292,7 @@
       <span style="font-size:12px;color:#aaa;">이름 · 이메일 · 전화번호로 검색</span>
     </template>
 
-    <!-- ── 번호 입력 ──────────────────────────────────────────────────────── -->
+    <!-- -- 번호 입력 -------------------------------------------------------- -->
     <template v-else>
       <div style="display:flex;align-items:center;gap:0;background:#f8f9fa;border:1.5px solid #ddd;border-radius:8px;overflow:hidden;flex:1;max-width:360px;">
         <input type="text" v-model="uiState.searchInput"
@@ -323,7 +313,7 @@
     </button>
   </div>
 
-  <!-- ── 기간 필터 바 ── -->
+  <!-- -- 기간 필터 바 -- -->
   <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;padding:10px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
     <span style="font-size:12px;color:#888;font-weight:500;white-space:nowrap;">조회기간</span>
     <div style="display:flex;background:#f0f2f5;border-radius:8px;padding:3px;gap:2px;">
@@ -347,7 +337,7 @@
     </span>
   </div>
 
-  <!-- ── 고객 없음 안내 ── -->
+  <!-- -- 고객 없음 안내 -- -->
   <div v-if="!uiState.customer"
     style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 0;color:#ccc;gap:12px;">
     <div style="font-size:48px;line-height:1;">👤</div>
@@ -357,16 +347,16 @@
 
   <template v-else>
 
-    <!-- ── 1. 고객 프로필 카드 ── -->
+    <!-- -- 1. 고객 프로필 카드 -- -->
     <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);overflow:hidden;">
-      <!-- ── 상단 컬러 배너 ─────────────────────────────────────────────────── -->
+      <!-- -- 상단 컬러 배너 --------------------------------------------------- -->
       <div :style="'height:6px;background:'+(uiState.customer.grade==='VIP'?'linear-gradient(90deg,#9c27b0,#e040fb)':uiState.customer.grade==='우수'?'linear-gradient(90deg,#1976d2,#42a5f5)':'linear-gradient(90deg,#78909c,#b0bec5)')"></div>
       <div style="display:flex;align-items:flex-start;gap:20px;padding:20px 24px;">
-        <!-- ── 아바타 ────────────────────────────────────────────────────── -->
+        <!-- -- 아바타 ------------------------------------------------------ -->
         <div :style="'width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;flex-shrink:0;'+(uiState.customer.grade==='VIP'?'background:linear-gradient(135deg,#9c27b0,#e040fb);':uiState.customer.grade==='우수'?'background:linear-gradient(135deg,#1976d2,#42a5f5);':'background:linear-gradient(135deg,#78909c,#b0bec5);')">
           {{ uiState.customer.memberNm ? uiState.customer.memberNm[0] : '' }}
         </div>
-        <!-- ── 이름/등급/상태 ───────────────────────────────────────────────── -->
+        <!-- -- 이름/등급/상태 ------------------------------------------------- -->
         <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
             <span style="font-size:20px;font-weight:700;color:#212121;">{{ uiState.customer.memberNm }}</span>
@@ -380,7 +370,7 @@
             <span style="color:#999;">최근로그인 {{ uiState.customer.lastLogin }}</span>
           </div>
         </div>
-        <!-- ── 핵심 지표 ──────────────────────────────────────────────────── -->
+        <!-- -- 핵심 지표 ---------------------------------------------------- -->
         <div style="display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap;">
           <div style="background:#f0f7ff;border:1px solid #bbdefb;border-radius:8px;padding:10px 18px;text-align:center;min-width:88px;">
             <div style="font-size:11px;color:#1976d2;font-weight:600;margin-bottom:2px;">총 주문</div>
@@ -401,7 +391,7 @@
       </div>
     </div>
 
-    <!-- ── 이력 탭바 + 뷰모드 ── -->
+    <!-- -- 이력 탭바 + 뷰모드 -- -->
     <div class="tab-bar-row">
       <div class="tab-nav">
         <button class="tab-btn" :class="{active:histTab==='orders'}"   :disabled="viewMode2!=='tab'" @click="histTab='orders'">🛒 주문이력 <span class="tab-count">{{ cfCustOrders.length }}</span></button>
@@ -423,10 +413,10 @@
       </div>
     </div>
 
-    <!-- ── 이력 패널 ── -->
+    <!-- -- 이력 패널 -- -->
     <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
-      <!-- ── 주문이력 ── -->
+      <!-- -- 주문이력 -- -->
       <div v-show="showTab('orders')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#1976d2;border-radius:2px;display:inline-block;"></span>
@@ -454,7 +444,7 @@
         </div>
       </div>
 
-      <!-- ── 클레임이력 ── -->
+      <!-- -- 클레임이력 -- -->
       <div v-show="showTab('claims')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#ef5350;border-radius:2px;display:inline-block;"></span>
@@ -482,7 +472,7 @@
         </div>
       </div>
 
-      <!-- ── 배송이력 ── -->
+      <!-- -- 배송이력 -- -->
       <div v-show="showTab('dliv')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#00897b;border-radius:2px;display:inline-block;"></span>
@@ -510,7 +500,7 @@
         </div>
       </div>
 
-      <!-- ── 캐쉬내역 ── -->
+      <!-- -- 캐쉬내역 -- -->
       <div v-show="showTab('cache')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#f57c00;border-radius:2px;display:inline-block;"></span>
@@ -539,7 +529,7 @@
         </div>
       </div>
 
-      <!-- ── 문의이력 ── -->
+      <!-- -- 문의이력 -- -->
       <div v-show="showTab('contacts')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#5c6bc0;border-radius:2px;display:inline-block;"></span>
@@ -566,7 +556,7 @@
         </div>
       </div>
 
-      <!-- ── 채팅이력 ── -->
+      <!-- -- 채팅이력 -- -->
       <div v-show="showTab('chats')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#26a69a;border-radius:2px;display:inline-block;"></span>
@@ -593,7 +583,7 @@
         </div>
       </div>
 
-      <!-- ── 로그인이력 ── -->
+      <!-- -- 로그인이력 -- -->
       <div v-show="showTab('login')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#546e7a;border-radius:2px;display:inline-block;"></span>
@@ -620,7 +610,7 @@
         </div>
       </div>
 
-      <!-- ── 쿠폰사용이력 ── -->
+      <!-- -- 쿠폰사용이력 -- -->
       <div v-show="showTab('coupon')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#e91e63;border-radius:2px;display:inline-block;"></span>
@@ -648,7 +638,7 @@
         </div>
       </div>
 
-      <!-- ── 발송이력 ── -->
+      <!-- -- 발송이력 -- -->
       <div v-show="showTab('send')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#ff7043;border-radius:2px;display:inline-block;"></span>
@@ -675,10 +665,10 @@
         </div>
       </div>
 
-    </div><!-- ── /grid ──────────────────────────────────────────────────────────── -->
+    </div><!-- -- /grid ------------------------------------------------------------ -->
   </template>
 
-  <!-- ── 고객 선택 모달 ── -->
+  <!-- -- 고객 선택 모달 -- -->
   <div v-if="memberModal && memberModal.show" class="modal-overlay" @click.self="memberModal.show=false">
     <div class="modal-box" style="max-width:760px;width:96%;max-height:85vh;display:flex;flex-direction:column;">
       <div class="modal-header">

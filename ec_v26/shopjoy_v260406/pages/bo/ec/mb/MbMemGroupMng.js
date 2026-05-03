@@ -12,24 +12,11 @@ window.MbMemGroupMng = {
 
     const EDIT_FIELDS = ['groupNm', 'groupMemo', 'useYn'];
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      uiState.isPageCodeLoad = true;
     };
-
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const makeRow = (b) => ({
       ...b,
@@ -58,7 +45,6 @@ window.MbMemGroupMng = {
     };
 
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
       handleSearchList();
     });
 

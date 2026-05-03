@@ -9,32 +9,26 @@ window.OdClaimHist = {
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
 
     const codes = reactive({ refund_methods: [] });
 
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (codeStore?.snGetGrpCodes) {
-          codes.refund_methods = codeStore.snGetGrpCodes('REFUND_METHOD_KR') || [];
-        }
+        const codeStore = window.sfGetBoCodeStore();
+        codes.refund_methods = codeStore.sgGetGrpCodes('REFUND_METHOD_KR');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
       uiState.isPageCodeLoad = true;
     };
 
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+
     // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
         watch(botTab, v => { window._odClaimHistState.tab = v; });
-        const cfCodes = Vue.computed(() => window.sfGetBoCodeStore?.()?.svCodes || []);
+        const cfCodes = Vue.computed(() => window.sfGetBoCodeStore()?.svCodes || []);
 
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.botTab === id;
 

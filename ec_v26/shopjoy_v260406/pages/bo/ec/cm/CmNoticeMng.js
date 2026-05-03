@@ -5,7 +5,7 @@ window.CmNoticeMng = {
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
-    // ── 선언부 ────────────────────────────────────────────────────────────────
+    // -- 선언부 ----------------------------------------------------------------
 
     const notices       = reactive([]);                                              // 공지사항 목록
     const uiState       = reactive({ loading: false, error: null, isPageCodeLoad: false, sortKey: '', sortDir: 'asc' }); // 로딩·에러·코드로드 상태
@@ -25,40 +25,30 @@ window.CmNoticeMng = {
 
     // 날짜범위 옵션은 codes.date_range_opts에서 로드
 
-    // ── computed ──────────────────────────────────────────────────────────────
+    // -- computed --------------------------------------------------------------
 
     const cfSiteNm       = computed(() => boUtil.getSiteNm());             // 현재 사이트명
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId); // 신규 시 null, 수정 시 ID
     const cfIsViewMode   = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__'); // 조회 모드 여부
     const cfDetailKey    = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`); // 상세 컴포넌트 강제 재마운트 키
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-    const isAppReady     = computed(() => {                                         // 앱 초기화 + 코드 로드 완료 여부
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
 
-    // ── watch ─────────────────────────────────────────────────────────────────
+    // -- watch -----------------------------------------------------------------
 
     // 앱 준비 완료 시 코드 로드 트리거
 
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
-
-    // ── 초기화부 ──────────────────────────────────────────────────────────────
+    // -- 초기화부 --------------------------------------------------------------
 
     // 공통코드 스토어에서 유형·상태 코드 로드
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.noticeTypes    = await codeStore.snGetGrpCodes('NOTICE_TYPE')   || [];
-        codes.noticeStatuses = await codeStore.snGetGrpCodes('NOTICE_STATUS') || [];
-        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.noticeTypes    = codeStore.sgGetGrpCodes('NOTICE_TYPE');
+      codes.noticeStatuses = codeStore.sgGetGrpCodes('NOTICE_STATUS');
+      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
     };
+
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
@@ -66,7 +56,7 @@ window.CmNoticeMng = {
       handleSearchList('DEFAULT');
     });
 
-    // ── 이벤트 함수 모음 ──────────────────────────────────────────────────────
+    // -- 이벤트 함수 모음 ------------------------------------------------------
 
     // 조회 버튼 클릭 — 1페이지부터 재조회
     const onSearch = async () => {
@@ -99,7 +89,7 @@ window.CmNoticeMng = {
       if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); }
     };
 
-    // ── 일반 함수 모음 ────────────────────────────────────────────────────────
+    // -- 일반 함수 모음 --------------------------------------------------------
 
     const SORT_MAP = { nm: { asc: 'nm_asc', desc: 'nm_desc' }, reg: { asc: 'reg_asc', desc: 'reg_desc' } };
     const getSortParam = () => {
@@ -198,7 +188,7 @@ window.CmNoticeMng = {
       '공지목록.csv'
     );
 
-    // ── return ────────────────────────────────────────────────────────────────
+    // -- return ----------------------------------------------------------------
 
     return {
       uiStateDetail, notices, uiState, codes, pager,
@@ -215,7 +205,7 @@ window.CmNoticeMng = {
 <div>
   <div class="page-title">공지사항관리</div>
 
-  <!-- ── 검색 영역 ─────────────────────────────────────────────────────── -->
+  <!-- -- 검색 영역 ------------------------------------------------------- -->
   <div class="card">
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="제목 검색" @keyup.enter="onSearch" />
@@ -242,10 +232,10 @@ window.CmNoticeMng = {
     </div>
   </div>
 
-  <!-- ── 목록 영역 ─────────────────────────────────────────────────────── -->
+  <!-- -- 목록 영역 ------------------------------------------------------- -->
   <div class="card">
 
-    <!-- ── 툴바 ─────────────────────────────────────────────────────────── -->
+    <!-- -- 툴바 ----------------------------------------------------------- -->
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>공지사항목록 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
       <div style="display:flex;gap:6px;">
@@ -254,7 +244,7 @@ window.CmNoticeMng = {
       </div>
     </div>
 
-    <!-- ── 테이블 ────────────────────────────────────────────────────────── -->
+    <!-- -- 테이블 ---------------------------------------------------------- -->
     <table class="bo-table">
       <thead>
         <tr>
@@ -293,13 +283,13 @@ window.CmNoticeMng = {
       </tbody>
     </table>
 
-    <!-- ── 페이징 ────────────────────────────────────────────────────────── -->
+    <!-- -- 페이징 ---------------------------------------------------------- -->
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
   </div>
 
-  <!-- ── 상세 패널 (인라인 임베드) ─────────────────────────────────────── -->
+  <!-- -- 상세 패널 (인라인 임베드) --------------------------------------- -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

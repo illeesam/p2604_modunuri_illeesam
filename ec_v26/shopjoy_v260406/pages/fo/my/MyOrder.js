@@ -7,37 +7,25 @@ window.MyOrder = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, helpTab: 'order', flowHelpOpen: false });
     const codes = reactive({});
 
-    const isAppReady = computed(() => {
-      const initStore = window.useFoAppInitStore?.();
-      const codeStore = window.useFoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleSearchData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
     const myStore = window.useFoMyStore();
     const { orders, cfClaimsByOrderId, coupons } = Pinia.storeToRefs(myStore);
     const claimsByOrderId = cfClaimsByOrderId;
 
-    /* ── 로컬 페이저 ── */
+    /* -- 로컬 페이저 -- */
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const paginate = myStore.paginate;
 
-    /* ── 배송조회 ── */
+    /* -- 배송조회 -- */
     const COURIER_URLS = {
       'CJ대한통운': no => `https://trace.cjlogistics.com/next/tracking.html?wblNo=${no}`,
       '롯데택배':   no => `https://www.lotteglogis.com/open/tracking?invno=${no}`,
@@ -59,7 +47,7 @@ window.MyOrder = {
       Number(o.cashPaid) > 0 ||
       Number(o.transferPaid) > 0;
 
-    /* ── 주문 액션 ── */
+    /* -- 주문 액션 -- */
     const cancelOrder = async orderId => {
       const ok = await props.showConfirm('주문 취소', '이 주문을 취소하시겠습니까?', 'warning');
       if (!ok) return;
@@ -73,7 +61,7 @@ window.MyOrder = {
       props.showToast('구매가 확정되었습니다. 감사합니다! 🎉', 'success');
     };
 
-    /* ── 클레임 신청 모달 ── */
+    /* -- 클레임 신청 모달 -- */
     const CLAIM_SHIPPING_FEE = 5000;
     const CLAIM_FREE_REASONS = ['상품불량', '오배송'];
     const EXCHANGE_REASONS = ['사이즈 불일치', '색상 변경', '상품불량', '오배송', '단순변심'];
@@ -130,7 +118,7 @@ window.MyOrder = {
       props.showToast(label + ' 신청이 완료되었습니다. 곧 연락드리겠습니다.', 'success');
     };
 
-    /* ── 공유 모달 ── */
+    /* -- 공유 모달 -- */
     const cfAuthUser = computed(() => window.foAuth.state.user);
     const findProduct = name => props.config.products.find(p => p.prodNm === name) || null;
     const openProductModal = name => {
@@ -143,7 +131,7 @@ window.MyOrder = {
       myStore.customerModal.show = true;
     };
 
-    /* ── 리뷰 ── */
+    /* -- 리뷰 -- */
     const reviews = reactive({});
     const reviewModal = reactive({ show: false, orderId: '', itemIdx: 0, item: null, rating: 5, text: '', isEdit: false, files: [] });
     const onReviewFileChange = (e) => {
@@ -199,7 +187,11 @@ window.MyOrder = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    // ── return ───────────────────────────────────────────────────────────────
+    onMounted(() => {
+      handleSearchData();
+    });
+
+    // -- return ---------------------------------------------------------------
 
     return {
       myStore, orders, claimsByOrderId, cfDateFilteredOrders, onDateSearch, onSearch,
@@ -219,7 +211,7 @@ window.MyOrder = {
 
   <MyDateFilter @search="onSearch" @reset="flowStatusFilter.splice(0)" />
 
-  <!-- ── 주문 처리 흐름 (토글 필터) ─────────────────────────────────────────────── -->
+  <!-- -- 주문 처리 흐름 (토글 필터) ----------------------------------------------- -->
   <div style="background:#f4f5f7;border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;margin-bottom:14px;">
     <div style="display:flex;align-items:center;gap:6px;overflow-x:auto;flex-wrap:nowrap;">
       <span style="font-size:0.72rem;font-weight:800;padding:3px 10px;border-radius:10px;color:#fff;background:#16a34a;flex-shrink:0;">주문</span>
@@ -259,7 +251,7 @@ window.MyOrder = {
   <div v-for="o in paginate(cfDateFilteredOrders, pager)" :key="o.orderId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;">
 
-    <!-- ── 주문 헤더 ──────────────────────────────────────────────────────── -->
+    <!-- -- 주문 헤더 -------------------------------------------------------- -->
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:-16px -16px 12px;padding:12px 16px;border-bottom:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;"
       style="background:linear-gradient(135deg,rgba(34,197,94,0.15) 0%,rgba(255,255,255,0.6) 60%,rgba(255,255,255,0) 100%);">
       <div>
@@ -289,7 +281,7 @@ window.MyOrder = {
       </div>
     </div>
 
-    <!-- ── 주문 진행 프로세스 (취소됨 포함) ────────────────────────────────────────── -->
+    <!-- -- 주문 진행 프로세스 (취소됨 포함) ------------------------------------------ -->
     <div v-if="myStore.ORDER_FLOW.findIndex(f=>f.status===o.status) >= 0 || o.status==='취소됨'"
       style="background:#f6f6f6;border-radius:8px;padding:10px 14px;margin-bottom:12px;overflow-x:auto;">
       <div style="display:flex;align-items:flex-start;min-width:320px;">
@@ -318,7 +310,7 @@ window.MyOrder = {
       </div>
     </div>
 
-    <!-- ── 클레임 정보 ─────────────────────────────────────────────────────── -->
+    <!-- -- 클레임 정보 ------------------------------------------------------- -->
     <template v-if="claimsByOrderId[o.orderId]">
       <div :style="'border-left:3px solid '+myStore.CLAIM_TYPE_COLOR[claimsByOrderId[o.orderId].type]+';background:#FAFAFA;border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:12px;'">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
@@ -411,7 +403,7 @@ window.MyOrder = {
       </div>
     </template>
 
-    <!-- ── 상품 목록 ──────────────────────────────────────────────────────── -->
+    <!-- -- 상품 목록 -------------------------------------------------------- -->
     <div v-for="(item, iix) in o.items" :key="iix">
       <div style="display:flex;align-items:center;gap:10px;padding:6px 0;">
         <span style="font-size:1.4rem;">{{ item.emoji }}</span>
@@ -449,7 +441,7 @@ window.MyOrder = {
       </div>
     </div>
 
-    <!-- ── 결제 내역 ──────────────────────────────────────────────────────── -->
+    <!-- -- 결제 내역 -------------------------------------------------------- -->
     <div v-if="showOrderPayBreakdown(o)" style="border-top:1px dashed var(--border);margin-top:10px;padding-top:12px;display:flex;flex-direction:column;gap:6px;">
       <div v-if="o.shippingFee != null && o.shippingFee > 0" style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text-secondary);">
         <span>배송비</span><span style="font-weight:600;color:var(--text-primary);">{{ o.shippingFee.toLocaleString() }}원</span>
@@ -469,7 +461,7 @@ window.MyOrder = {
       </div>
     </div>
 
-    <!-- ── 입금 내역 ──────────────────────────────────────────────────────── -->
+    <!-- -- 입금 내역 -------------------------------------------------------- -->
     <div v-if="o.paymentDetails && o.paymentDetails.length" style="border-top:1px dashed var(--border);margin-top:8px;padding-top:8px;">
       <div style="font-size:0.68rem;font-weight:700;color:var(--text-muted);letter-spacing:0.04em;margin-bottom:5px;">💳 입금 내역</div>
       <div v-for="(pd, pdi) in o.paymentDetails" :key="pdi"
@@ -486,7 +478,7 @@ window.MyOrder = {
       </div>
     </div>
 
-    <!-- ── 합계 + 택배 ────────────────────────────────────────────────────── -->
+    <!-- -- 합계 + 택배 ------------------------------------------------------ -->
     <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
         <div v-if="myStore.SHOW_COURIER.includes(o.status) && o.courier" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -506,14 +498,14 @@ window.MyOrder = {
   </div>
   <Pagination :total="orders.length" :pager="pager" />
 
-  <!-- ── Teleport 모달들 ── -->
+  <!-- -- Teleport 모달들 -- -->
   <Teleport to="body">
 
-  <!-- ── 리뷰 작성/수정 모달 ──────────────────────────────────────────────────── -->
+  <!-- -- 리뷰 작성/수정 모달 ---------------------------------------------------- -->
   <div v-if="reviewModal.show" @click.self="reviewModal.show=false"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px;">
     <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,0.25);border:1px solid var(--border);" @click.stop>
-      <!-- ── 헤더 ───────────────────────────────────────────────────────── -->
+      <!-- -- 헤더 --------------------------------------------------------- -->
       <div style="padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
         <div>
           <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">{{ reviewModal.isEdit ? '리뷰 수정' : '리뷰 작성' }}</div>
@@ -529,7 +521,7 @@ window.MyOrder = {
         </div>
         <button @click="reviewModal.show=false" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--text-muted);">✕</button>
       </div>
-      <!-- ── 별점 ───────────────────────────────────────────────────────── -->
+      <!-- -- 별점 --------------------------------------------------------- -->
       <div style="padding:18px 20px 0;">
         <div style="font-size:0.82rem;font-weight:700;color:var(--text-secondary);margin-bottom:8px;">별점</div>
         <div style="display:flex;gap:6px;margin-bottom:16px;">
@@ -540,12 +532,12 @@ window.MyOrder = {
             {{ ['','매우 불만족','불만족','보통','만족','매우 만족'][reviewModal.rating] }}
           </span>
         </div>
-        <!-- ── 리뷰 텍스트 ─────────────────────────────────────────────────── -->
+        <!-- -- 리뷰 텍스트 --------------------------------------------------- -->
         <div style="font-size:0.82rem;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">리뷰 내용</div>
         <textarea v-model="reviewModal.text" placeholder="상품에 대한 솔직한 리뷰를 작성해주세요. (10자 이상)"
           style="width:100%;min-height:110px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.85rem;resize:vertical;outline:none;box-sizing:border-box;font-family:inherit;line-height:1.6;"></textarea>
         <div style="text-align:right;font-size:0.72rem;color:var(--text-muted);margin-top:3px;">{{ reviewModal.text.length }}자</div>
-        <!-- ── 첨부 ─────────────────────────────────────────────────────── -->
+        <!-- -- 첨부 ------------------------------------------------------- -->
         <div style="margin-top:14px;">
           <div style="font-size:0.82rem;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">
             첨부 파일 <span style="font-size:0.72rem;font-weight:400;color:var(--text-muted);">(이미지 최대 5개)</span>
@@ -563,7 +555,7 @@ window.MyOrder = {
           </div>
         </div>
       </div>
-      <!-- ── 푸터 ───────────────────────────────────────────────────────── -->
+      <!-- -- 푸터 --------------------------------------------------------- -->
       <div style="padding:14px 20px 18px;display:flex;gap:8px;justify-content:flex-end;">
         <button @click="reviewModal.show=false"
           style="padding:8px 18px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-secondary);cursor:pointer;font-size:0.85rem;font-weight:600;">취소</button>
@@ -575,7 +567,7 @@ window.MyOrder = {
     </div>
   </div>
 
-  <!-- ── 도움말 모달 ───────────────────────────────────────────────────────── -->
+  <!-- -- 도움말 모달 --------------------------------------------------------- -->
   <div v-if="uiState.flowHelpOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="uiState.flowHelpOpen=false">
     <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:520px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.25);border:1px solid var(--border);overflow:hidden;" @click.stop>
       <div style="padding:18px 20px 0;flex-shrink:0;">
@@ -640,7 +632,7 @@ window.MyOrder = {
     </div>
   </div>
 
-  <!-- ── 교환·반품 신청 모달 ──────────────────────────────────────────────────── -->
+  <!-- -- 교환·반품 신청 모달 ---------------------------------------------------- -->
   <div v-if="claimModal.show" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="claimModal.show=false">
     <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:480px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.25);border:1px solid var(--border);overflow:hidden;" @click.stop>
       <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
@@ -751,11 +743,11 @@ window.MyOrder = {
     </div>
   </div>
 
-  <!-- ── 주문 상세 모달 ─────────────────────────────────────────────────────── -->
+  <!-- -- 주문 상세 모달 ------------------------------------------------------- -->
   <OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" @close="myStore.orderDetailModal.show=false" />
-  <!-- ── 상품 모달 ────────────────────────────────────────────────────────── -->
+  <!-- -- 상품 모달 ---------------------------------------------------------- -->
   <ProductModal :show="myStore.productModal.show" :product="myStore.productModal.product" @close="myStore.productModal.show=false" />
-  <!-- ── 주문자 모달 ───────────────────────────────────────────────────────── -->
+  <!-- -- 주문자 모달 --------------------------------------------------------- -->
   <CustomerModal :show="myStore.customerModal.show" :user="myStore.customerModal.user" :order="myStore.customerModal.order" @close="myStore.customerModal.show=false" />
 
   </Teleport>

@@ -82,7 +82,7 @@ window.SyPostman = {
         children: tables.map(tbl => {
           const pascal = toPascal(tbl);
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
           return {
             id: `ac_${tbl}`, label: tbl, type: 'folder', open: false,
@@ -170,7 +170,7 @@ window.SyPostman = {
       } catch {}
     };
 
-    // ── watch ────────────────────────────────────────────────────────────────
+    // -- watch ----------------------------------------------------------------
 
     watch([hostUrl, token, defHeaders], saveSettings, { deep: true });
 
@@ -527,7 +527,7 @@ window.SyPostman = {
 
     const autoPopupTabId = Vue.toRef(uiState, 'autoPopupTabId');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return {
       uiState,
@@ -546,7 +546,7 @@ window.SyPostman = {
   template: /* html */`
 <div style="display:flex;height:calc(100vh - 94px);margin:-20px;width:calc(100% + 40px);overflow:hidden;font-size:12px;background:#fff;">
 
-  <!-- ── ━━━ 1. Tree Panel (좌측) ━━━ ───────────────────────────────────── -->
+  <!-- -- ━━━ 1. Tree Panel (좌측) ━━━ ------------------------------------- -->
   <div style="width:220px;flex-shrink:0;border-right:1px solid #e0e0e0;display:flex;flex-direction:column;background:#f7f8fa;overflow:hidden;">
     <div style="padding:7px 10px 6px;border-bottom:1px solid #e0e0e0;background:#f0f2f5;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
@@ -595,7 +595,7 @@ window.SyPostman = {
     </div>
   </div>
 
-  <!-- ── ━━━ 2. 열린탭 바 (세로 좌측면) ━━━ ────────────────────────────────────── -->
+  <!-- -- ━━━ 2. 열린탭 바 (세로 좌측면) ━━━ -------------------------------------- -->
   <div style="width:172px;flex-shrink:0;border-right:1px solid #e0e0e0;display:flex;flex-direction:column;background:#f4f5f7;overflow:hidden;">
     <div style="padding:5px 8px 4px;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between;background:#eeeff2;">
       <span style="font-size:10px;font-weight:800;color:#555;">열린 탭
@@ -643,7 +643,7 @@ window.SyPostman = {
     </div>
   </div>
 
-  <!-- ── ━━━ 자동실행 주기 선택 팝업 ━━━ ────────────────────────────────────────── -->
+  <!-- -- ━━━ 자동실행 주기 선택 팝업 ━━━ ------------------------------------------ -->
   <template v-if="uiState.autoPopupTabId">
     <div @click="closeAutoPopup" style="position:fixed;inset:0;z-index:8000;"></div>
     <div style="position:fixed;z-index:8001;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.18);min-width:230px;overflow:hidden;"
@@ -700,10 +700,10 @@ window.SyPostman = {
     </div>
   </template>
 
-  <!-- ── ━━━ 3. Main Panel (우측) ━━━ ───────────────────────────────────── -->
+  <!-- -- ━━━ 3. Main Panel (우측) ━━━ ------------------------------------- -->
   <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">
 
-    <!-- ── ⚙ Settings Panel ───────────────────────────────────────────── -->
+    <!-- -- ⚙ Settings Panel --------------------------------------------- -->
     <div v-show="uiState.settingsOpen" style="border-bottom:2px solid #e8587a;background:#fff;flex-shrink:0;padding:10px 14px 12px;">
       <div style="font-size:11px;font-weight:800;color:#e8587a;margin-bottom:8px;">
         ⚙ 공통 설정
@@ -747,16 +747,16 @@ window.SyPostman = {
       </div>
     </div>
 
-    <!-- ── 탭 없을 때 빈 상태 ────────────────────────────────────────────────── -->
+    <!-- -- 탭 없을 때 빈 상태 -------------------------------------------------- -->
     <div v-if="!cfActiveTab" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#ccc;background:#fafafa;">
       <span style="font-size:40px;">🚀</span>
       <div style="font-size:14px;font-weight:600;color:#bbb;">좌측 API Endpoints에서 항목을 선택하세요</div>
       <div style="font-size:11px;color:#ccc;">선택하면 여기에 탭으로 열립니다</div>
     </div>
 
-    <!-- ── 활성 탭 내용 ────────────────────────────────────────────────────── -->
+    <!-- -- 활성 탭 내용 ------------------------------------------------------ -->
     <template v-if="cfActiveTab">
-      <!-- ── Request Bar ──────────────────────────────────────────────── -->
+      <!-- -- Request Bar ------------------------------------------------ -->
       <div style="padding:8px 12px;border-bottom:1px solid #e0e0e0;background:#fff;flex-shrink:0;">
         <div style="font-size:10px;color:#aaa;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="cfActiveTab.tabLabel">
           📌 {{ cfActiveTab.tabLabel }}
@@ -783,10 +783,10 @@ window.SyPostman = {
         </div>
       </div>
 
-      <!-- ── Middle: Params + Response ────────────────────────────────── -->
+      <!-- -- Middle: Params + Response ---------------------------------- -->
       <div style="flex:1;display:flex;overflow:hidden;min-height:0;">
 
-        <!-- ── Params / Headers / Body ────────────────────────────────── -->
+        <!-- -- Params / Headers / Body ---------------------------------- -->
         <div style="width:42%;flex-shrink:0;border-right:1px solid #e0e0e0;display:flex;flex-direction:column;overflow:hidden;">
           <div style="display:flex;border-bottom:1px solid #e0e0e0;background:#f8f8f8;flex-shrink:0;">
             <button v-for="t in [{id:'params',nm:'Params'},{id:'headers',nm:'Headers'},{id:'body',nm:'Body'}]" :key="t.id"
@@ -820,7 +820,7 @@ window.SyPostman = {
           </div>
         </div>
 
-        <!-- ── Response ───────────────────────────────────────────────── -->
+        <!-- -- Response ------------------------------------------------- -->
         <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">
           <div style="display:flex;border-bottom:1px solid #e0e0e0;background:#f8f8f8;flex-shrink:0;align-items:center;">
             <button v-for="t in [{id:'json',nm:'응답 JSON'},{id:'grid',nm:'Grid'}]" :key="t.id"
@@ -868,7 +868,7 @@ window.SyPostman = {
       </div>
     </template>
 
-    <!-- ── History ────────────────────────────────────────────────────── -->
+    <!-- -- History ------------------------------------------------------ -->
     <div style="border-top:2px solid #e0e0e0;background:#fafafa;flex-shrink:0;">
       <div style="padding:4px 12px;border-bottom:1px solid #ebebeb;display:flex;align-items:center;justify-content:space-between;">
         <span style="font-size:11px;font-weight:700;color:#555;">전송 이력
@@ -918,7 +918,7 @@ window.SyPostman = {
       </div>
     </div>
 
-    <!-- ── History 상세 모달 ──────────────────────────────────────────────── -->
+    <!-- -- History 상세 모달 ------------------------------------------------ -->
     <template v-if="histModal">
       <div @click="closeHistModal" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);"></div>
       <div style="position:fixed;z-index:9001;top:50%;left:50%;transform:translate(-50%,-50%);width:900px;max-width:96vw;max-height:86vh;background:#fff;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.28);display:flex;flex-direction:column;overflow:hidden;">
@@ -1042,9 +1042,9 @@ window.SyPostman = {
       </div>
     </template>
 
-  </div><!-- ── /Main Panel ────────────────────────────────────────────────────── -->
+  </div><!-- -- /Main Panel ------------------------------------------------------ -->
 
-  <!-- ── ━━━ Toast 알림 (우측 하단) ━━━ ─────────────────────────────────────── -->
+  <!-- -- ━━━ Toast 알림 (우측 하단) ━━━ --------------------------------------- -->
   <div style="position:fixed;right:16px;bottom:16px;z-index:9500;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none;">
     <div v-for="t in toasts" :key="t.id"
       style="pointer-events:all;width:380px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.22);overflow:hidden;font-size:11px;"

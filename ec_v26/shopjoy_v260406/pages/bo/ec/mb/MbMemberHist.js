@@ -9,23 +9,17 @@ window.MbMemberHist = {
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
 
-    // ── watch ────────────────────────────────────────────────────────────────
+    // -- watch ----------------------------------------------------------------
 
     watch(() => uiState.tab, v => { window._ecMemberHistState.tab = v; });
 
     watch(() => uiState.viewMode2, v => { window._ecMemberHistState.viewMode = v; });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       uiState.isPageCodeLoad = true;
     };
 
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     watch(() => props.memberId, () => {
       // 회원ID 변경시 자동으로 computed 값 갱신 (별도 로드 불필요 - 목업 데이터)
@@ -51,7 +45,7 @@ window.MbMemberHist = {
       return sampleClaims[props.memberId] || [];
     });
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return {
       uiState,
@@ -82,7 +76,7 @@ window.MbMemberHist = {
   </div>
   <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
-  <!-- ── 연관 주문 ────────────────────────────────────────────────────────── -->
+  <!-- -- 연관 주문 ---------------------------------------------------------- -->
   <div class="card" v-show="showTab('orders')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ cfMemberOrders.length }}</span></div>
     <table class="bo-table" v-if="cfMemberOrders.length">
@@ -101,7 +95,7 @@ window.MbMemberHist = {
     <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">주문 내역이 없습니다.</div>
   </div>
 
-  <!-- ── 연관 클레임 ───────────────────────────────────────────────────────── -->
+  <!-- -- 연관 클레임 --------------------------------------------------------- -->
   <div class="card" v-show="showTab('claims')" style="margin:0;">
     <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfMemberClaims.length }}</span></div>
     <table class="bo-table" v-if="cfMemberClaims.length">

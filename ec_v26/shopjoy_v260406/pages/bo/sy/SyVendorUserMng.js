@@ -15,7 +15,7 @@ window.SyVendorUserMng = {
       user_employ_status: [['ACTIVE','재직'],['LEFT','퇴직'],['SUSPENDED','중지']],
     });
 
-    /* ── 역할 트리 (좌측 패널) ── */
+    /* -- 역할 트리 (좌측 패널) -- */
         const expanded = reactive(new Set([null]));
     const roles = reactive([]);
     const menus = reactive([]);
@@ -61,7 +61,7 @@ window.SyVendorUserMng = {
         kids = kids.filter(k => k._raw && k._raw.roleCode === wantRoot);
       }
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
       return { pathId: null, path: null, name: '전체', pathLabel: '전체', children: kids };
     });
@@ -69,7 +69,7 @@ window.SyVendorUserMng = {
     const selectNode = (id) => { uiState.selectedPath = id; };
     const expandAll = () => { expanded.add(null); roles.forEach(r => expanded.add(r.roleCode)); };
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
-    /* ── 업체 목록 (상단 검색/선택) ── */
+    /* -- 업체 목록 (상단 검색/선택) -- */
 
     const vendors = reactive([]);
     const bizPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -93,26 +93,13 @@ window.SyVendorUserMng = {
       }
     };
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.user_status = await codeStore.snGetGrpCodes('USER_STATUS') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.user_status = codeStore.sgGetGrpCodes('USER_STATUS');
+      uiState.isPageCodeLoad = true;
     };
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
@@ -160,7 +147,7 @@ window.SyVendorUserMng = {
 
     const onVendorPicked = (v) => { uiState.vendorPickOpen=false; pickVendorRow(v); };
 
-    /* ── 사용자 목록 API 로드 ── */
+    /* -- 사용자 목록 API 로드 -- */
     const loadVendorUsers = async (vendorId) => {
       uiState.loading = true;
       try {
@@ -190,7 +177,7 @@ window.SyVendorUserMng = {
     const setPage    = n => { if(n>=1&&n<=pager.pageTotalPage) { pager.pageNo=n; fnBuildPagerNums(); } };
     const onSizeChange = () => { pager.pageNo=1; fnBuildPagerNums(); };
 
-    /* ── 인라인 폼 (사용자 등록/수정) ── */
+    /* -- 인라인 폼 (사용자 등록/수정) -- */
         const formData = reactive({});
     const blank = () => ({
       vendorUserId: null, vendorId: null, userId: null,
@@ -254,7 +241,7 @@ window.SyVendorUserMng = {
       }
     };
 
-    /* ── 역할 관리 (sy_vendor_user_role) ── */
+    /* -- 역할 관리 (sy_vendor_user_role) -- */
     const userRoles = reactive([]);
 
     const loadUserRoles = async (vendorUserId) => {
@@ -285,7 +272,7 @@ window.SyVendorUserMng = {
           const isAllowedRoot = r.parentId===null && r.roleCode===allowedRootCode;
           const branchAllowed = allowed || isAllowedRoot;
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
           return { roleId:r.roleId, roleCode:r.roleCode, roleNm:r.roleNm,
                    isRoot:r.parentId===null, allowed: branchAllowed && r.parentId!==null,
@@ -375,7 +362,7 @@ window.SyVendorUserMng = {
     });
     const fnPermBadgeColor = (p) => ({관리:'#f59e0b',쓰기:'#16a34a',읽기:'#2563eb',차단:'#e8587a'}[p]||'#9ca3af');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return {
       uiState, codes,
@@ -406,7 +393,7 @@ window.SyVendorUserMng = {
 <div>
   <div class="page-title">업체사용자</div>
 
-  <!-- ── 업체 검색 ────────────────────────────────────────────────────────── -->
+  <!-- -- 업체 검색 ---------------------------------------------------------- -->
   <div class="card">
     <div class="search-bar">
       <span class="search-label">업체</span>
@@ -427,7 +414,7 @@ window.SyVendorUserMng = {
     </div>
   </div>
 
-  <!-- ── 업체 목록 ────────────────────────────────────────────────────────── -->
+  <!-- -- 업체 목록 ---------------------------------------------------------- -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>업체목록 <span class="list-count">{{ vendors.length }}건</span></span>
@@ -456,7 +443,7 @@ window.SyVendorUserMng = {
     <bo-pager :pager="bizPager" :on-set-page="setBizPage" />
   </div>
 
-  <!-- ── 사용자 목록 ─────────────────────────────────────────────────────── -->
+  <!-- -- 사용자 목록 ------------------------------------------------------- -->
   <div v-if="uiState.searchVendorId != null" class="card" style="margin-top:16px;">
     <div class="toolbar">
       <span class="list-title">
@@ -501,7 +488,7 @@ window.SyVendorUserMng = {
     상단 목록에서 업체를 선택하면 사용자 목록이 표시됩니다.
   </div>
 
-      <!-- ── 인라인 폼 ────────────────────────────────────────────────────── -->
+      <!-- -- 인라인 폼 ------------------------------------------------------ -->
       <div v-if="uiState.formMode" class="card" style="margin-top:16px;border:2px solid #e8587a;">
         <div class="toolbar">
           <span class="list-title">
@@ -566,7 +553,7 @@ window.SyVendorUserMng = {
           </div>
         </div>
 
-        <!-- ── 역할 목록 (수정 모드에서만) ───────────────────────────────────────── -->
+        <!-- -- 역할 목록 (수정 모드에서만) ----------------------------------------- -->
         <div v-if="uiState.formMode==='edit'" style="padding:0 16px 16px;">
           <div class="toolbar" style="margin-bottom:8px;">
             <span class="list-title" style="font-size:13px;">🎭 부여된 역할 <span class="list-count">{{ userRoles.length }}개</span></span>
@@ -595,7 +582,7 @@ window.SyVendorUserMng = {
     </div>
   </div>
 
-  <!-- ── 역할 선택 모달 ─────────────────────────────────────────────────────── -->
+  <!-- -- 역할 선택 모달 ------------------------------------------------------- -->
   <div v-if="uiState.roleModalOpen" class="modal-overlay" @click.self="closeRoleModal">
     <div style="background:#fff;border-radius:16px;width:min(1000px,95vw);height:min(720px,90vh);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25);">
       <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 22px;background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 60%,#bfdbfe 100%);border-bottom:1px solid #bfdbfe;">
@@ -612,7 +599,7 @@ window.SyVendorUserMng = {
           @mouseout="$event.currentTarget.style.background='transparent';$event.currentTarget.style.color='#6b7280'">✕</span>
       </div>
       <div style="display:grid;grid-template-columns:300px 1fr;flex:1;overflow:hidden;background:#fafbfc;">
-        <!-- ── 좌: 역할 트리 ───────────────────────────────────────────────── -->
+        <!-- -- 좌: 역할 트리 ------------------------------------------------- -->
         <div style="border-right:1px solid #eef0f3;background:#fff;overflow:auto;">
           <div style="position:sticky;top:0;background:#fff;padding:12px 14px 8px;border-bottom:1px solid #f3f4f6;font-size:12px;font-weight:700;color:#374151;">📂 역할 트리</div>
           <div style="padding:6px 8px;">
@@ -643,7 +630,7 @@ window.SyVendorUserMng = {
             </template>
           </div>
         </div>
-        <!-- ── 우: 메뉴 접근권한 ─────────────────────────────────────────────── -->
+        <!-- -- 우: 메뉴 접근권한 ----------------------------------------------- -->
         <div style="overflow:auto;background:#fff;">
           <div style="position:sticky;top:0;background:#fff;padding:12px 16px 8px;border-bottom:1px solid #f3f4f6;">
             <div style="font-size:12px;font-weight:700;color:#374151;">🔐 메뉴 접근권한

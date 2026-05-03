@@ -9,32 +9,15 @@ window.DpDispWidgetMng = {
     const widgetLibs = reactive([]);
     const widgets = reactive([]);
 
-    // App 초기화 준비 상태
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading
-          && codeStore?.svCodes?.length > 0
-          && !uiState.isPageCodeLoad;
-    });
-
-    // 코드 주입
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
-      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
-      codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
+      codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
+      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
       uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // App 초기화 감시
-
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (ready) => {
-      if (ready) {
-        fnLoadCodes();
-      }
-    });
+    // 코드 주입
 
     const _initSearchParam = () => ({ kw: '', type: '', status: '' });
     const searchParam = reactive(_initSearchParam());
@@ -87,8 +70,9 @@ window.DpDispWidgetMng = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT');
     });
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
@@ -109,7 +93,7 @@ window.DpDispWidgetMng = {
     const wTypeLabel = (v) => codes.disp_widget_types.find(t => t.codeValue === v)?.codeLabel || v;
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
 
-    /* ── 검색 ── */
+    /* -- 검색 -- */
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData('DEFAULT'); };
 
@@ -140,7 +124,7 @@ window.DpDispWidgetMng = {
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
-    /* ── 표시경로 트리 ── */
+    /* -- 표시경로 트리 -- */
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchData(); };
     const handleDelete = async (d) => {
       const ok = await props.showConfirm('삭제', '삭제하시겠습니까?');
@@ -154,7 +138,7 @@ window.DpDispWidgetMng = {
       }
     };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { widgets, widgetLibs, uiState, pathLabel,
       codes, wTypeLabel, wIcon,
@@ -178,7 +162,7 @@ window.DpDispWidgetMng = {
     <span style="font-size:13px;font-weight:400;color:#888;display:block;margin-top:4px;">위젯 유형별 리소스 등록·재활용</span>
   </div>
 
-  <!-- ── 검색 필터 ────────────────────────────────────────────────────────── -->
+  <!-- -- 검색 필터 ---------------------------------------------------------- -->
   <div class="card" style="padding:14px 18px;margin-bottom:14px;">
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
       <div class="form-group" style="margin:0;min-width:180px;flex:1;">
@@ -205,10 +189,10 @@ window.DpDispWidgetMng = {
     </div>
   </div>
 
-  <!-- ── 본문: 좌측 트리 + 우측 목록 ────────────────────────────────────────────── -->
+  <!-- -- 본문: 좌측 트리 + 우측 목록 ---------------------------------------------- -->
   <div style="display:flex;gap:12px;align-items:flex-start;">
 
-  <!-- ── 좌측 표시경로 ──────────────────────────────────────────────────────── -->
+  <!-- -- 좌측 표시경로 -------------------------------------------------------- -->
   <div class="card" style="width:240px;min-width:180px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
     <div class="toolbar" style="margin-bottom:6px;">
       <span class="list-title" style="font-size:13px;">📂 표시경로 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#ec_disp_widget</span></span>
@@ -219,9 +203,9 @@ window.DpDispWidgetMng = {
     </div>
   </div>
 
-  <!-- ── 우측 목록 ────────────────────────────────────────────────────────── -->
+  <!-- -- 우측 목록 ---------------------------------------------------------- -->
   <div style="flex:1;min-width:0;">
-  <!-- ── 목록 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 목록 ------------------------------------------------------------- -->
   <div class="card" style="padding:0;">
     <div style="padding:12px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;">
       <span style="font-size:13px;color:#555;">총 <b>{{ pager.pageTotalCount }}</b>건</span>
@@ -287,10 +271,10 @@ window.DpDispWidgetMng = {
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
-  </div><!-- ── /우측 목록 ─────────────────────────────────────────────────────────── -->
-  </div><!-- ── /본문 flex ───────────────────────────────────────────────────────── -->
+  </div><!-- -- /우측 목록 ----------------------------------------------------------- -->
+  </div><!-- -- /본문 flex --------------------------------------------------------- -->
 
-  <!-- ── 인라인 상세 ───────────────────────────────────────────────────────── -->
+  <!-- -- 인라인 상세 --------------------------------------------------------- -->
   <div v-if="selectedId !== null" style="margin-top:16px;">
     <dp-disp-widget-dtl
       :key="cfDetailKey"

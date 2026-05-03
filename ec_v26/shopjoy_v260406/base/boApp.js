@@ -921,7 +921,7 @@
         }, 100);
         checkWidth(); window.addEventListener('resize', checkWidth);
         const codeStore = window.sfGetBoCodeStore?.();
-        if (codeStore?.snGetGrpCodes) userRoles.value = codeStore.snGetGrpCodes('USER_ROLE') || [];
+        if (codeStore?.sgGetGrpCodes) userRoles.value = codeStore.sgGetGrpCodes('USER_ROLE');
       });
       watch(currentAuthUser, (u) => {
         try {

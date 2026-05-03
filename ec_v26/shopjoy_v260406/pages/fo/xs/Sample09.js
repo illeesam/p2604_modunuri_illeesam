@@ -6,7 +6,7 @@
 window.XsSample09 = {
   name: 'XsSample09',
   setup() {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const { ref, reactive, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dragSrc: null, focusedIdx: null, dragMoved: false, checkAll: false});
     const codes = reactive({
@@ -14,28 +14,16 @@ window.XsSample09 = {
       open_opts:        [{ value: '공개', label: '공개' }, { value: '비공개', label: '비공개' }],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useFoAppInitStore?.();
-      const codeStore = window.useFoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleSearchList();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
     const api = window.axiosApi || window.adminApi;
     const API = 'api/base/sy/zz-sample1';
     const CD_GRP = 'S09_FAQ';
@@ -72,10 +60,10 @@ window.XsSample09 = {
       fnBuildPagerNums();
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      Object.assign(searchParamOrg, searchParam);
+      handleSearchList();
     });
     const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
     const onReset  = async () => { Object.assign(searchParam, { kw: '', category: '', status: '' }); pager.pageNo = 1; await handleSearchList('DEFAULT'); };
@@ -124,7 +112,7 @@ window.XsSample09 = {
     const fnStatusBadge = s => ({ N: 'background:#f0f0f0;color:#666;', I: 'background:#dbeafe;color:#1e40af;', U: 'background:#fef3c7;color:#92400e;', D: 'background:#fee2e2;color:#991b1b;' }[s] || '');
     const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return {
       toast, searchParam, onSearch, onReset,

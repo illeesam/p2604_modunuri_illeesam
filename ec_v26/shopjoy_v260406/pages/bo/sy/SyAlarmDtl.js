@@ -7,29 +7,23 @@ window.SyAlarmDtl = {
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ alarm_types: [], alarm_statuses: [], alarm_target_types: [] });
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
 
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (codeStore?.snGetGrpCodes) {
-          codes.alarm_types = codeStore.snGetGrpCodes('ALARM_TYPE') || [];
-          codes.alarm_statuses = codeStore.snGetGrpCodes('ALARM_STATUS') || [];
-          codes.alarm_target_types = codeStore.snGetGrpCodes('ALARM_TARGET_TYPE') || [];
-        }
+        const codeStore = window.sfGetBoCodeStore();
+        codes.alarm_types = codeStore.sgGetGrpCodes('ALARM_TYPE');
+        codes.alarm_statuses = codeStore.sgGetGrpCodes('ALARM_STATUS');
+        codes.alarm_target_types = codeStore.sgGetGrpCodes('ALARM_TARGET_TYPE');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
       uiState.isPageCodeLoad = true;
     };
 
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+
     // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());

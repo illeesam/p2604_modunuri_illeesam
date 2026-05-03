@@ -54,7 +54,7 @@ window.OdOrderMng = {
       }
     };
 
-    /* ── 검색 파라미터 ── */
+    /* -- 검색 파라미터 -- */
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
@@ -62,11 +62,6 @@ window.OdOrderMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      handleSearchData('DEFAULT');
-    });
 
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
@@ -78,32 +73,21 @@ window.OdOrderMng = {
     };
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.order_statuses = await codeStore.snGetGrpCodes('ORDER_STATUS') || [];
-        codes.payment_methods = await codeStore.snGetGrpCodes('PAYMENT_METHOD') || [];
-        codes.dliv_statuses = await codeStore.snGetGrpCodes('DLIV_STATUS') || [];
-        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
+      codes.payment_methods = codeStore.sgGetGrpCodes('PAYMENT_METHOD');
+      codes.dliv_statuses = codeStore.sgGetGrpCodes('DLIV_STATUS');
+      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
+    // ★ onMounted
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      handleSearchData('DEFAULT');
     });
 
     /* 하단 상세 */
@@ -288,7 +272,7 @@ const isAppReady = computed(() => {
 
     const bulkOpen = Vue.toRef(uiState, 'bulkOpen');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), orders, members, claims, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon };
   },
@@ -377,7 +361,7 @@ const isAppReady = computed(() => {
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
-  <!-- ── 하단 상세: OrderDtl 임베드 ──────────────────────────────────────────── -->
+  <!-- -- 하단 상세: OrderDtl 임베드 -------------------------------------------- -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
@@ -392,7 +376,7 @@ const isAppReady = computed(() => {
     />
   </div>
 
-  <!-- ── 변경작업 모달 ──────────────────────────────────────────────────────── -->
+  <!-- -- 변경작업 모달 -------------------------------------------------------- -->
   <div v-if="bulkOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;display:flex;align-items:center;justify-content:center;" @click.self="bulkOpen=false">
     <div style="background:#fff;border-radius:12px;width:640px;max-width:94vw;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;max-height:90vh;display:flex;flex-direction:column;">
       <div style="padding:14px 18px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">

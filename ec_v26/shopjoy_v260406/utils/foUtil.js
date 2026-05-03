@@ -37,4 +37,21 @@
     codesByGroupOrRows: codesByGroupOrRows,
     listImgSrc: listImgSrc,
   };
+
+  /* ── 공통 코드 로드 헬퍼 ──
+   * setup() 안에서 호출. watch(isAppReady) 등록 + isAppReady computed 반환.
+   * 사용법:
+   *   const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
+   *   onMounted(() => { if (isAppReady.value) fnLoadCodes(); ... });
+   */
+  global.foUtil.useAppCodeReady = function(uiState, fnLoadCodes) {
+    var computed = Vue.computed, watch = Vue.watch;
+    var isAppReady = computed(function() {
+      var i = window.useFoAppInitStore?.();
+      var c = window.useFoCodeStore?.();
+      return !i?.svIsLoading && c?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
+    });
+    watch(isAppReady, function(v) { if (v) fnLoadCodes(); });
+    return isAppReady;
+  };
 })(typeof window !== 'undefined' ? window : globalThis);

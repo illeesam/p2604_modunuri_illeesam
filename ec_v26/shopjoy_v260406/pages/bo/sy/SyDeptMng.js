@@ -48,7 +48,7 @@ window.SyDeptMng = {
       await handleSearchTree();
       await handleGridSearch();
     };
-    /* ── 검색 ── */
+    /* -- 검색 -- */
     const _initSearchParam = () => {
       return { kw: '', type: '', useYn: 'Y' };
     };
@@ -83,43 +83,28 @@ window.SyDeptMng = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
       await handleSearchTree();
       expanded.add(null);
       await handleGridSearch();
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.dept_status = await codeStore.snGetGrpCodes('DEPT_STATUS') || [];
-        codes.use_yn = await codeStore.snGetGrpCodes('USE_YN') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.dept_status = codeStore.sgGetGrpCodes('DEPT_STATUS');
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      uiState.isPageCodeLoad = true;
     };
-
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
-
 
     const cfTypeOptions = computed(() => [...new Set(depts.map(d => d.deptTypeCd))].sort());
 
-    /* ── CRUD 그리드 ── */
+    /* -- CRUD 그리드 -- */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
     
     const EDIT_FIELDS = ['deptCode', 'deptNm', 'parentDeptId', 'deptTypeCd', 'sortOrd', 'useYn', 'deptRemark'];
 
 
-    /* ── 트리 정렬 ── */
+    /* -- 트리 정렬 -- */
     const buildTreeRows = (items) => {
       const map = {};
       items.forEach(d => { map[d.deptId] = { ...d, _children: [] }; });
@@ -267,7 +252,7 @@ window.SyDeptMng = {
       '부서목록.csv'
     );
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { depts, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       searchParam, cfTypeOptions,
@@ -362,7 +347,7 @@ window.SyDeptMng = {
           <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
           <td><input class="grid-input grid-mono" v-model="row.deptCode" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
 
-          <!-- ── 부서명 (불릿 트리) ──────────────────────────────────────────── -->
+          <!-- -- 부서명 (불릿 트리) -------------------------------------------- -->
           <td style="padding:3px 6px;">
             <div style="display:flex;align-items:center;">
               <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
@@ -373,7 +358,7 @@ window.SyDeptMng = {
             </div>
           </td>
 
-          <!-- ── 상위부서 ─────────────────────────────────────────────────── -->
+          <!-- -- 상위부서 --------------------------------------------------- -->
           <td style="padding:3px 8px;">
             <div style="display:flex;align-items:center;gap:5px;">
               <span v-if="row.parentDeptId"

@@ -9,11 +9,6 @@ window.SyCodeDtl = {
     const pageCodes = reactive({ use_yn: [] });
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
@@ -44,21 +39,20 @@ window.SyCodeDtl = {
       }
     };
 
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (codeStore?.snGetGrpCodes) {
-          pageCodes.use_yn = await codeStore.snGetGrpCodes('USE_YN') || [];
-        }
+        const codeStore = window.sfGetBoCodeStore();
+        pageCodes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
       uiState.isPageCodeLoad = true;
     };
 
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+
     // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     // ★ onMounted — 코드 로드 + 상세 조회
     onMounted(async () => {

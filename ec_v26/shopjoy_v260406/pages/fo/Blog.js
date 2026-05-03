@@ -7,12 +7,6 @@ window.Blog = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
-    const isAppReady = computed(() => {
-      const initStore = window.useFoAppInitStore?.();
-      const codeStore = window.useFoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const searchParam = reactive({ kw: '', cat: 'all' });
     const searchParamOrg = reactive({ kw: '', cat: 'all' });
 
@@ -45,22 +39,15 @@ window.Blog = {
       }
     };
 
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleSearchList();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     const onSearch = async () => { await Object.assign(pager.pageCond, searchParam); handleSearchList('DEFAULT'); };
 
@@ -82,20 +69,20 @@ window.Blog = {
 
     const cfLatestPosts = computed(() => [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4));
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      Object.assign(searchParamOrg, searchParam);
+      handleSearchList();
     });
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { pager, setPage, onSizeChange, searchParam, categories, posts, cfLatestPosts, postBg, onSearch, onReset, uiState, codes };
   },
   template: /* html */ `
 <div class="page-wrap">
 
-  <!-- ── 페이지 타이틀 배너 ───────────────────────────────────────────────────── -->
+  <!-- -- 페이지 타이틀 배너 ----------------------------------------------------- -->
   <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-2.jpg" alt="블로그"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
@@ -111,7 +98,7 @@ window.Blog = {
     </div>
   </div>
 
-  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 검색 ------------------------------------------------------------- -->
   <div style="display:flex;justify-content:center;margin-bottom:32px;gap:8px;">
     <div style="position:relative;width:100%;max-width:480px;">
       <input v-model="searchParam.kw" type="text" placeholder="검색어를 입력하세요..."
@@ -128,12 +115,12 @@ window.Blog = {
     </button>
   </div>
 
-  <!-- ── 레이아웃: 사이드바 + 본문 ──────────────────────────────────────────────── -->
+  <!-- -- 레이아웃: 사이드바 + 본문 ------------------------------------------------ -->
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(16px,3vw,32px);" class="blog-grid">
 
-    <!-- ── 사이드바 ───────────────────────────────────────────────────────── -->
+    <!-- -- 사이드바 --------------------------------------------------------- -->
     <aside>
-      <!-- ── 카테고리 ─────────────────────────────────────────────────────── -->
+      <!-- -- 카테고리 ------------------------------------------------------- -->
       <div style="margin-bottom:28px;">
         <h3 style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid var(--border);">Product Categories</h3>
         <ul style="list-style:none;padding:0;margin:0;">
@@ -149,7 +136,7 @@ window.Blog = {
         </ul>
       </div>
 
-      <!-- ── 최신 글 ─────────────────────────────────────────────────────── -->
+      <!-- -- 최신 글 ------------------------------------------------------- -->
       <div>
         <h3 style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid var(--border);">Latest Posts</h3>
         <div v-for="p in cfLatestPosts" :key="p.id" @click="navigate('blogView', { editId: p.id })"
@@ -167,7 +154,7 @@ window.Blog = {
       </div>
     </aside>
 
-    <!-- ── 포스트 목록 ─────────────────────────────────────────────────────── -->
+    <!-- -- 포스트 목록 ------------------------------------------------------- -->
     <div>
       <div v-for="post in posts" :key="post.id"
         class="card" style="display:flex;flex-wrap:wrap;gap:clamp(12px,2vw,24px);padding:0;margin-bottom:clamp(12px,2vw,24px);overflow:hidden;cursor:pointer;transition:box-shadow .2s;"
@@ -175,13 +162,13 @@ window.Blog = {
         @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)'"
         @mouseleave="$event.currentTarget.style.boxShadow=''">
 
-        <!-- ── 썸네일 ────────────────────────────────────────────────────── -->
+        <!-- -- 썸네일 ------------------------------------------------------ -->
         <div style="width:clamp(200px,30%,280px);min-height:180px;flex-shrink:0;overflow:hidden;background:var(--bg-base);">
           <img v-if="post.thumb" :src="post.thumb" :alt="post.title" style="width:100%;height:100%;object-fit:cover;transition:transform .3s;"
             @mouseenter="$event.target.style.transform='scale(1.05)'" @mouseleave="$event.target.style.transform=''" />
         </div>
 
-        <!-- ── 내용 ─────────────────────────────────────────────────────── -->
+        <!-- -- 내용 ------------------------------------------------------- -->
         <div style="flex:1;min-width:200px;padding:clamp(14px,2vw,24px) clamp(14px,2vw,24px) clamp(14px,2vw,24px) 0;display:flex;flex-direction:column;justify-content:center;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
             <span style="font-size:0.72rem;color:var(--blue);font-weight:600;">{{ categories.find(c => c.id === post.category)?.name || post.category }}</span>
@@ -198,7 +185,7 @@ window.Blog = {
         </div>
       </div>
 
-      <!-- ── 빈 상태 ─────────────────────────────────────────────────────── -->
+      <!-- -- 빈 상태 ------------------------------------------------------- -->
       <div v-if="posts.length === 0" style="text-align:center;padding:60px 0;color:var(--text-muted);">
         <div style="font-size:2rem;margin-bottom:12px;">📝</div>
         <div style="font-size:0.95rem;">검색 결과가 없습니다.</div>

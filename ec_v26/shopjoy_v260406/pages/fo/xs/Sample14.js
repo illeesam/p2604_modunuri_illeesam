@@ -12,27 +12,15 @@ window.XsSample14 = {
       auth_grade_opts:    ['일반', '우수', 'VIP'],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useFoAppInitStore?.();
-      const codeStore = window.useFoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
@@ -82,7 +70,7 @@ window.XsSample14 = {
     const wLabel = (t) => WIDGET_LABELS[t] || t || '-';
     const wIcon  = (t) => WIDGET_ICONS[t] || '▪';
     const cfAllAreas = computed(() =>
-      window.sfGetBoCodeStore?.()?.codes||[]
+      window.sfGetBoCodeStore()?.codes||[]
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
@@ -118,7 +106,7 @@ window.XsSample14 = {
             .filter(p => p.area === area.codeValue && panelFilter(p))
             .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
           return { ...area, panels , uiState, codes };
         });
@@ -240,7 +228,7 @@ window.XsSample14 = {
       evt.dataTransfer.setData('text/plain', 'panel:' + widgets.length);
     };
     const onDragEnd = () => { uiState.dragSrc = null; uiState.dragSrcList = null; uiState.dropZoneIdx = -1; };
-    /* ── span 팝업 ── */
+    /* -- span 팝업 -- */
      // 'tab_ci' 형태 키
     const toggleSpanPopup = (e, tab, ci) => {
       e.stopPropagation();
@@ -384,7 +372,7 @@ window.XsSample14 = {
       uiState.popoverKey    = key;
     };
     const closePopover = () => { uiState.popoverKey = null; };
-    /* ── 반응형 뷰포트 ── */
+    /* -- 반응형 뷰포트 -- */
         /* auto-fill 기반 반응형: 뷰포트 너비 제약이 걸리면 자동으로 컬럼 축소 */
     const cfAutoGridCols = computed(() => {
       const map = {
@@ -404,7 +392,7 @@ window.XsSample14 = {
     /* 초기화 */
     initExpand();
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return {
       uiState, previewDate, previewTime,
@@ -437,12 +425,12 @@ window.XsSample14 = {
   },
   template: /* html */`
 <div style="padding:clamp(12px,3vw,24px);">
-  <!-- ── 제목 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 제목 ------------------------------------------------------------- -->
   <div style="font-size:16px;font-weight:700;margin-bottom:12px;">
     14. 전시영역 구조 트리 보기
     <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">영역 &gt; 패널 &gt; 위젯 구조 선택</span>
   </div>
-  <!-- ── 필터 바 ─────────────────────────────────────────────────────────── -->
+  <!-- -- 필터 바 ----------------------------------------------------------- -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <div style="display:flex;align-items:center;gap:5px;">
@@ -452,7 +440,7 @@ window.XsSample14 = {
         <button @click="resetDate" style="font-size:11px;padding:3px 8px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;color:#555;">현재</button>
       </div>
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>
-      <!-- ── 상태 ───────────────────────────────────────────────────────── -->
+      <!-- -- 상태 --------------------------------------------------------- -->
       <div style="display:flex;align-items:center;gap:4px;">
         <span style="font-size:12px;font-weight:600;color:#555;">상태</span>
         <select v-model="searchParam.status" style="font-size:12px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;width:76px;">
@@ -460,7 +448,7 @@ window.XsSample14 = {
           <option v-for="o in codes.active_status_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
-      <!-- ── 노출조건 ─────────────────────────────────────────────────────── -->
+      <!-- -- 노출조건 ------------------------------------------------------- -->
       <div style="display:flex;align-items:center;gap:4px;">
         <span style="font-size:12px;font-weight:600;color:#555;">노출조건</span>
         <select v-model="searchParam.condition" style="font-size:12px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;width:112px;">
@@ -468,7 +456,7 @@ window.XsSample14 = {
           <option v-for="c in codes.condition_opts" :key="c" :value="c">{{ c }}</option>
         </select>
       </div>
-      <!-- ── 인증필요 ─────────────────────────────────────────────────────── -->
+      <!-- -- 인증필요 ------------------------------------------------------- -->
       <div style="display:flex;align-items:center;gap:4px;">
         <span style="font-size:12px;font-weight:600;color:#555;">인증필요</span>
         <select v-model="searchParam.authrequired" style="font-size:12px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;width:72px;">
@@ -476,7 +464,7 @@ window.XsSample14 = {
           <option v-for="o in codes.need_yn_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
-      <!-- ── 등급제한 ─────────────────────────────────────────────────────── -->
+      <!-- -- 등급제한 ------------------------------------------------------- -->
       <div style="display:flex;align-items:center;gap:4px;">
         <span style="font-size:12px;font-weight:600;color:#555;">등급제한</span>
         <select v-model="searchParam.authgrade" style="font-size:12px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;width:72px;">
@@ -484,13 +472,13 @@ window.XsSample14 = {
           <option v-for="g in codes.auth_grade_opts" :key="g" :value="g">{{ g }}↑</option>
         </select>
       </div>
-      <!-- ── 카테고리 ─────────────────────────────────────────────────────── -->
+      <!-- -- 카테고리 ------------------------------------------------------- -->
       <button @click="showCatModal=true"
         style="font-size:12px;padding:3px 10px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:4px;"
         :style="selectedCatIds.size>0?'border-color:#e8587a;color:#e8587a;font-weight:600;':''">
         📂 {{ cfCatBtnLabel }}
       </button>
-      <!-- ── 화면영역 멀티선택 ────────────────────────────────────────────────── -->
+      <!-- -- 화면영역 멀티선택 -------------------------------------------------- -->
       <div style="margin-left:auto;position:relative;">
         <button @click="showAreaDrop=!showAreaDrop"
           style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;"
@@ -520,7 +508,7 @@ window.XsSample14 = {
         </div>
       </div>
     </div>
-    <!-- ── 현재 사용자 정보 ──────────────────────────────────────────────────── -->
+    <!-- -- 현재 사용자 정보 ---------------------------------------------------- -->
     <div style="margin-top:8px;padding:7px 12px;background:#f8f9fa;border-radius:6px;border-left:3px solid #aaa;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <span style="font-size:11px;color:#888;font-weight:600;">현재 사용자</span>
       <span v-if="isLoggedIn" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:6px;padding:1px 7px;font-weight:600;">로그인</span>
@@ -532,9 +520,9 @@ window.XsSample14 = {
     </div>
   </div>
   <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;">
-    <!-- ── 좌: 구조 트리 ───────────────────────────────────────────────────── -->
+    <!-- -- 좌: 구조 트리 ----------------------------------------------------- -->
     <div style="flex:3;min-width:280px;">
-      <!-- ── 조작 바 ─────────────────────────────────────────────────────── -->
+      <!-- -- 조작 바 ------------------------------------------------------- -->
       <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:8px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <span style="font-size:12px;font-weight:600;color:#555;">패널</span>
         <button @click="checkAll" style="font-size:11px;padding:2px 8px;border:1px solid #1565c0;border-radius:6px;background:#e3f2fd;color:#1565c0;cursor:pointer;">전체선택</button>
@@ -545,10 +533,10 @@ window.XsSample14 = {
         <span style="font-size:11px;color:#aaa;">{{ checkedWidgets.size }}개 선택됨</span>
         <button @click="initExpand" style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#666;cursor:pointer;margin-left:auto;">전체 펼치기</button>
       </div>
-      <!-- ── 트리 ───────────────────────────────────────────────────────── -->
+      <!-- -- 트리 --------------------------------------------------------- -->
       <div v-if="cfStructAreaList.length===0" style="text-align:center;padding:40px;color:#ccc;font-size:13px;">등록된 영역이 없습니다.</div>
       <div v-for="area in cfStructAreaList" :key="area.codeValue" style="background:#fff;border:1px solid #e0e0e0;border-radius:6px;margin-bottom:8px;overflow:hidden;">
-        <!-- ── 영역 헤더 ──────────────────────────────────────────────────── -->
+        <!-- -- 영역 헤더 ---------------------------------------------------- -->
         <div style="display:flex;align-items:center;gap:8px;padding:9px 14px;background:linear-gradient(90deg,#2d2d2d,#444);color:#fff;cursor:grab;user-select:none;"
           draggable="true"
           @dragstart="onAreaNodeDragStart(area, $event)"
@@ -564,7 +552,7 @@ window.XsSample14 = {
           <span style="margin-left:auto;font-size:11px;opacity:.6;">패널 {{ area.panels.length }}개</span>
           <span style="font-size:11px;opacity:.5;">{{ expandedAreas.has(area.codeValue) ? '▲' : '▼' }}</span>
         </div>
-        <!-- ── 패널 목록 ──────────────────────────────────────────────────── -->
+        <!-- -- 패널 목록 ---------------------------------------------------- -->
         <div v-show="expandedAreas.has(area.codeValue)">
           <div v-if="area.panels.length===0" style="padding:12px 18px;font-size:12px;color:#bbb;">해당 날짜 활성 패널 없음</div>
           <div v-for="(p, pi) in area.panels" :key="p.dispId" @click="togglePanel(p)"
@@ -573,21 +561,21 @@ window.XsSample14 = {
             @dragend="onDragEnd"
             style="display:flex;align-items:flex-start;gap:8px;padding:8px 14px;cursor:grab;user-select:none;border-top:1px solid #f0f0f0;transition:background .1s;"
             :style="checkedPanels.has(p.dispId)?'background:#fff8e1;':''">
-            <!-- ── 패널 체크박스 ────────────────────────────────────────────── -->
+            <!-- -- 패널 체크박스 ---------------------------------------------- -->
             <div style="margin-top:2px;width:14px;height:14px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
               :style="isPanelAllChecked(p)?'border-color:#f59e0b;background:#f59e0b;':checkedPanels.has(p.dispId)?'border-color:#f59e0b;background:#fde68a;':'border-color:#ccc;background:#fff;'">
               <span v-if="isPanelAllChecked(p)" style="color:#fff;font-size:9px;">✓</span>
               <span v-else-if="checkedPanels.has(p.dispId)" style="color:#f59e0b;font-size:9px;font-weight:900;">−</span>
             </div>
             <div style="flex:1;min-width:0;">
-              <!-- ── 패널 정보 ────────────────────────────────────────────── -->
+              <!-- -- 패널 정보 ---------------------------------------------- -->
               <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px;flex-wrap:wrap;">
                 <span style="font-size:9px;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:3px;padding:0 4px;">패널</span>
                 <code style="font-size:9px;background:#f5f5f5;padding:1px 4px;border-radius:3px;color:#666;">#{{ String(p.dispId).padStart(4,'0') }}</code>
                 <span style="font-size:12px;font-weight:700;color:#222;">{{ p.name }}</span>
                 <span style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 6px;">{{ p.condition || '항상 표시' }}</span>
               </div>
-              <!-- ── 위젯 목록 ────────────────────────────────────────────── -->
+              <!-- -- 위젯 목록 ---------------------------------------------- -->
               <div style="display:flex;flex-direction:column;gap:2px;padding-left:2px;">
                 <span v-if="!p.rows || p.rows.length===0" style="font-size:11px;color:#ccc;">(위젯 없음)</span>
                 <div v-for="(w, wi) in (p.rows||[])" :key="wi" @click.stop="toggleWidget(p.dispId, wi, $event)"
@@ -615,10 +603,10 @@ window.XsSample14 = {
         </div>
       </div>
     </div>
-    <!-- ── 우: 위젯 컨텐츠 미리보기 (드래그&드롭) ────────────────────────────────────── -->
+    <!-- -- 우: 위젯 컨텐츠 미리보기 (드래그&드롭) -------------------------------------- -->
     <div style="flex:6;min-width:280px;max-height:80vh;overflow-y:auto;">
       <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;margin-bottom:8px;position:sticky;top:0;z-index:10;overflow:hidden;">
-        <!-- ── 타이틀 + 초기화 ──────────────────────────────────────────────── -->
+        <!-- -- 타이틀 + 초기화 ------------------------------------------------ -->
         <div style="display:flex;align-items:center;padding:10px 14px 6px;">
           <span style="font-size:13px;font-weight:700;color:#333;">🧩 위젯 컨텐츠 미리보기</span>
           <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
@@ -627,7 +615,7 @@ window.XsSample14 = {
               style="font-size:11px;padding:2px 10px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">초기화</button>
           </div>
         </div>
-        <!-- ── 탭 + 뷰포트 토글 ─────────────────────────────────────────────── -->
+        <!-- -- 탭 + 뷰포트 토글 ----------------------------------------------- -->
         <div style="display:flex;align-items:center;border-top:1px solid #f0f0f0;padding:0 10px;">
           <div style="display:flex;flex:1;">
             <button v-for="tab in TABS" :key="tab" @click="activeTab=tab"
@@ -636,7 +624,7 @@ window.XsSample14 = {
               {{ tab }}
             </button>
           </div>
-          <!-- ── 실제컨텐츠 토글 + 뷰포트 토글 (dashboard 제외) ─────────────────────── -->
+          <!-- -- 실제컨텐츠 토글 + 뷰포트 토글 (dashboard 제외) ----------------------- -->
           <div v-if="activeTab!=='dashboard'" style="display:flex;gap:3px;padding:4px 0 4px 10px;border-left:1px solid #f0f0f0;margin-left:4px;flex-shrink:0;align-items:center;">
             <button @click="showRealContent=!showRealContent"
               style="font-size:11px;padding:2px 8px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;margin-right:6px;"
@@ -656,7 +644,7 @@ window.XsSample14 = {
           </div>
         </div>
       </div>
-      <!-- ── 뷰포트 래퍼 (dashboard 제외) ────────────────────────────────────── -->
+      <!-- -- 뷰포트 래퍼 (dashboard 제외) -------------------------------------- -->
       <template v-if="activeTab!=='dashboard'">
       <div :style="{
         width: cfViewportWidth || '100%',
@@ -674,7 +662,7 @@ window.XsSample14 = {
         background: '#fff',
         boxShadow: cfViewportWidth ? '0 4px 16px rgba(0,0,0,.1)' : 'none',
       }">
-      <!-- ── ===== grid1 / grid2 / grid3 / grid4 ===== ────────────────── -->
+      <!-- -- ===== grid1 / grid2 / grid3 / grid4 ===== ------------------ -->
       <template v-if="GRID_COLS[activeTab]">
         <div @click="closeSpanPopup" :style="{ display:'grid', gridTemplateColumns: cfAutoGridCols, gap: '8px' }">
           <template v-for="(cell, ci) in gridCells[activeTab]" :key="ci">
@@ -691,9 +679,9 @@ window.XsSample14 = {
               cell.widget && (cell.rowSpan||1) > 1 ? { gridRow:    'span ' + (cell.rowSpan||1) } : {},
             ]"
             style="border-radius:8px;overflow:hidden;transition:border .15s,background .15s;position:relative;">
-            <!-- ── 위젯 있음 ──────────────────────────────────────────────── -->
+            <!-- -- 위젯 있음 ------------------------------------------------ -->
             <template v-if="cell.widget">
-              <!-- ── 관리자 헤더 (실제컨텐츠 OFF 시) ─────────────────────────────── -->
+              <!-- -- 관리자 헤더 (실제컨텐츠 OFF 시) ------------------------------- -->
               <template v-if="!showRealContent">
                 <div :style="'height:4px;background:'+wColor(cell.widget.widgetType)+';'"></div>
                 <div style="display:flex;align-items:center;gap:4px;padding:5px 8px 0;margin-bottom:4px;">
@@ -706,7 +694,7 @@ window.XsSample14 = {
                   <button @click="removeCellWidget(activeTab, ci)" style="border:none;background:none;color:#ccc;cursor:pointer;font-size:15px;padding:0;line-height:1;flex-shrink:0;">×</button>
                 </div>
                 <div style="font-size:9px;color:#bbb;margin-bottom:4px;padding:0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ cell.widget._area }} · {{ cell.widget._panelNm }}</div>
-                <!-- ── span 설정 팝업 ─────────────────────────────────────── -->
+                <!-- -- span 설정 팝업 --------------------------------------- -->
                 <div v-if="spanPopupIdx===activeTab+'_'+ci" @click.stop
                   style="position:absolute;top:34px;right:6px;z-index:20;background:#fff;border:1px solid #e0e0e0;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);padding:12px 14px;min-width:170px;">
                   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -737,7 +725,7 @@ window.XsSample14 = {
                   </div>
                 </div>
               </template>
-              <!-- ── 실제컨텐츠 ON 시 ×버튼만 ──────────────────────────────────── -->
+              <!-- -- 실제컨텐츠 ON 시 ×버튼만 ------------------------------------ -->
               <template v-else>
                 <div style="position:relative;">
                   <button @click="removeCellWidget(activeTab, ci)"
@@ -745,7 +733,7 @@ window.XsSample14 = {
                 </div>
               </template>
               <div :style="showRealContent?'padding:0':'padding:0 8px 8px'" style="overflow:hidden;">
-                <!-- ── 컨텐츠 ────────────────────────────────────────────── -->
+                <!-- -- 컨텐츠 ---------------------------------------------- -->
                 <div v-if="cell.widget.widgetType==='image_banner'" style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:6px;padding:14px 10px;text-align:center;color:#fff;">
                   <div style="font-size:20px;">🖼</div><div style="font-size:10px;font-weight:700;margin-top:4px;">{{ cell.widget.widgetNm }}</div>
                 </div>
@@ -832,31 +820,31 @@ window.XsSample14 = {
                 </div>
               </div>
             </template>
-            <!-- ── 빈 셀 ────────────────────────────────────────────────── -->
+            <!-- -- 빈 셀 -------------------------------------------------- -->
             <div v-else style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:60px;">
               <div style="font-size:22px;margin-bottom:5px;opacity:.25;">{{ dropZoneIdx===ci ? '📥' : '+' }}</div>
               <div style="font-size:10px;color:#ccc;">{{ dropZoneIdx===ci ? '여기에 놓기' : '드래그하여 추가' }}</div>
             </div>
           </div>
-          </template><!-- ── /cell ──────────────────────────────────────────────────────────── -->
+          </template><!-- -- /cell ------------------------------------------------------------ -->
         </div>
-      </template><!-- ── /grid1~4 ───────────────────────────────────────────────────────── -->
-      </div><!-- ── /device frame ──────────────────────────────────────────────────── -->
-      </div><!-- ── /viewport wrapper ──────────────────────────────────────────────── -->
-      </template><!-- ── /뷰포트 래퍼 ────────────────────────────────────────────────────────── -->
-      <!-- ── ===== dashboard ===== ────────────────────────────────────── -->
+      </template><!-- -- /grid1~4 --------------------------------------------------------- -->
+      </div><!-- -- /device frame ---------------------------------------------------- -->
+      </div><!-- -- /viewport wrapper ------------------------------------------------ -->
+      </template><!-- -- /뷰포트 래퍼 ---------------------------------------------------------- -->
+      <!-- -- ===== dashboard ===== -------------------------------------- -->
       <template v-else-if="activeTab==='dashboard'">
         <div style="position:relative;width:100%;height:640px;border:2px dashed #ddd;border-radius:8px;overflow:hidden;background-color:#f8f9fa;background-image:radial-gradient(circle,#d0d0d0 1px,transparent 1px);background-size:20px 20px;"
           @mousemove="onDashMm" @mouseup="onDashMu" @mouseleave="onDashMu"
           @dragover.prevent @drop="onDashDrop">
-          <!-- ── 빈 상태 힌트 ──────────────────────────────────────────────── -->
+          <!-- -- 빈 상태 힌트 ------------------------------------------------ -->
           <div v-if="dashItems.length===0"
             style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;color:#bbb;">
             <div style="font-size:36px;margin-bottom:12px;">📐</div>
             <div style="font-size:13px;">좌측 위젯을 드래그하여 배치하세요</div>
             <div style="font-size:11px;margin-top:5px;opacity:.7;">이동 · 크기 조절 가능</div>
           </div>
-          <!-- ── 위젯 아이템 ───────────────────────────────────────────────── -->
+          <!-- -- 위젯 아이템 ------------------------------------------------- -->
           <div v-for="(item, idx) in dashItems" :key="idx"
             style="position:absolute;background:#fff;border-radius:8px;overflow:hidden;user-select:none;box-shadow:0 2px 10px rgba(0,0,0,.1);"
             :style="{ left:item.x+'px', top:item.y+'px', width:item.w+'px', height:item.h+'px',
@@ -864,14 +852,14 @@ window.XsSample14 = {
                       zIndex:(dashDrag.on&&dashDrag.idx===idx)||(dashResize.on&&dashResize.idx===idx)?10:1,
                       cursor:dashDrag.on&&dashDrag.idx===idx?'grabbing':'grab' }"
             @mousedown="onDashItemMd(idx, $event)">
-            <!-- ── 타이틀 바 ──────────────────────────────────────────────── -->
+            <!-- -- 타이틀 바 ------------------------------------------------ -->
             <div :style="'height:28px;background:'+wColor(item.widget.widgetType)+';display:flex;align-items:center;padding:0 8px;gap:6px;cursor:grab;'">
               <span style="font-size:12px;">{{ wIcon(item.widget.widgetType) }}</span>
               <span style="font-size:11px;font-weight:600;color:#fff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ item.widget.widgetNm }}</span>
               <button @mousedown.stop @click.stop="removeDashItem(idx)"
                 style="background:rgba(255,255,255,.25);border:none;color:#fff;cursor:pointer;border-radius:3px;width:16px;height:16px;padding:0;font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;">×</button>
             </div>
-            <!-- ── 내용 ─────────────────────────────────────────────────── -->
+            <!-- -- 내용 --------------------------------------------------- -->
             <div style="padding:8px 10px;overflow-y:auto;height:calc(100% - 28px);">
               <div v-if="item.widget.widgetType==='image_banner'" style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:8px;padding:18px 12px;text-align:center;color:#fff;">
                 <div style="font-size:26px;">🖼</div><div style="font-size:12px;font-weight:700;margin-top:5px;">{{ item.widget.widgetNm }}</div>
@@ -963,7 +951,7 @@ window.XsSample14 = {
                 <div style="font-size:20px;margin-bottom:3px;">{{ wIcon(item.widget.widgetType) }}</div><div style="font-size:10px;">{{ wLabel(item.widget.widgetType) }}</div>
               </div>
             </div>
-            <!-- ── 리사이즈 핸들 ────────────────────────────────────────────── -->
+            <!-- -- 리사이즈 핸들 ---------------------------------------------- -->
             <div @mousedown.stop="onDashResizeMd(idx, $event)"
               style="position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:se-resize;display:flex;align-items:center;justify-content:center;opacity:.4;">
               <svg width="10" height="10" viewBox="0 0 10 10" style="pointer-events:none;">
@@ -974,16 +962,16 @@ window.XsSample14 = {
             </div>
           </div>
         </div>
-      </template><!-- ── /dashboard ─────────────────────────────────────────────────────── -->
+      </template><!-- -- /dashboard ------------------------------------------------------- -->
     </div>
   </div>
-  <!-- ── 위젯 정보 팝오버 backdrop ───────────────────────────────────────────── -->
+  <!-- -- 위젯 정보 팝오버 backdrop --------------------------------------------- -->
   <div v-if="popoverKey" @click="closePopover" style="position:fixed;inset:0;z-index:199;"></div>
-  <!-- ── 위젯 정보 팝오버 ────────────────────────────────────────────────────── -->
+  <!-- -- 위젯 정보 팝오버 ------------------------------------------------------ -->
   <div v-if="popoverKey && popoverWidget"
     style="position:fixed;z-index:200;background:#fff;border:1px solid #e0e0e0;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.16);width:300px;max-height:460px;overflow-y:auto;"
     :style="{ top: popoverPos.top + 'px', left: popoverPos.left + 'px' }">
-    <!-- ── 팝오버 헤더 ─────────────────────────────────────────────────────── -->
+    <!-- -- 팝오버 헤더 ------------------------------------------------------- -->
     <div :style="'padding:10px 14px;background:'+wColor(popoverWidget.widgetType)+';border-radius:10px 10px 0 0;display:flex;align-items:center;gap:8px;'">
       <span style="font-size:18px;">{{ wIcon(popoverWidget.widgetType) }}</span>
       <div style="flex:1;overflow:hidden;">
@@ -992,12 +980,12 @@ window.XsSample14 = {
       </div>
       <button @click="closePopover" style="background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;border-radius:4px;width:20px;height:20px;padding:0;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;">×</button>
     </div>
-    <!-- ── 메타 정보 ──────────────────────────────────────────────────────── -->
+    <!-- -- 메타 정보 -------------------------------------------------------- -->
     <div style="padding:7px 14px;border-bottom:1px solid #f0f0f0;display:flex;flex-direction:column;gap:2px;">
       <div style="font-size:10px;color:#888;">영역: <span style="color:#333;font-weight:600;">{{ popoverArea ? popoverArea.codeLabel : '' }}</span></div>
       <div style="font-size:10px;color:#888;">패널: <span style="color:#333;font-weight:600;">{{ popoverPanel ? popoverPanel.name : '' }}</span></div>
     </div>
-    <!-- ── 컨텐츠 미리보기 ───────────────────────────────────────────────────── -->
+    <!-- -- 컨텐츠 미리보기 ----------------------------------------------------- -->
     <div style="padding:12px 14px;">
       <div v-if="popoverWidget.widgetType==='image_banner'" style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:8px;padding:24px 16px;text-align:center;color:#fff;">
         <div style="font-size:28px;">🖼</div>
@@ -1097,7 +1085,7 @@ window.XsSample14 = {
       </div>
     </div>
   </div>
-  <!-- ── 카테고리 선택 모달 ───────────────────────────────────────────────────── -->
+  <!-- -- 카테고리 선택 모달 ----------------------------------------------------- -->
   <category-select-modal :show="showCatModal" :selected-ids="[...selectedCatIds]" @close="showCatModal=false" @apply="onCatApply" />
 </div>
   `,

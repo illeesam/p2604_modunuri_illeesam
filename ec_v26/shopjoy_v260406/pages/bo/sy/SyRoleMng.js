@@ -36,7 +36,7 @@ window.SyRoleMng = {
         uiState.loading = false;
       }
     };
-    /* ── 표시경로 선택 모달 (sy_path) ── */
+    /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
@@ -50,7 +50,7 @@ window.SyRoleMng = {
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
 
-    /* ── 좌측 표시경로 트리 ── */
+    /* -- 좌측 표시경로 트리 -- */
         const expanded = reactive(new Set(['']));
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
     const selectNode = (path) => { uiState.selectedPath = path; handleSearchList(); };
@@ -86,39 +86,23 @@ window.SyRoleMng = {
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.role_status = codeStore.sgGetGrpCodes('ROLE_STATUS');
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+
+
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleSearchList('DEFAULT');
       fnLoadMenusAndUsers();
       const initSet = boUtil.collectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
-    });
-
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.role_status = codeStore.snGetGrpCodes('ROLE_STATUS') || [];
-        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
+      handleSearchList('DEFAULT');
     });
 
     const cfSiteNm  = computed(() => boUtil.getSiteNm());
@@ -159,20 +143,20 @@ window.SyRoleMng = {
     const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
     const depthColor  = (d) => DEPTH_COLORS[d % 5];
 
-    /* ── 검색 ── */
+    /* -- 검색 -- */
     const _initSearchParam = () => {
       return { kw: '', type: '', useYn: 'Y', cat: '', treeCatFilter: '' };
     };
     const searchParam = reactive(_initSearchParam());
 
-    /* ── CRUD 그리드 ── */
+    /* -- CRUD 그리드 -- */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
         
 
     const EDIT_FIELDS = ['roleCode', 'roleNm', 'parentId', 'roleType', 'sortOrd', 'useYn', 'restrictPerm', 'roleCat', 'remark'];
 
-    /* ── 트리 정렬 ── */
+    /* -- 트리 정렬 -- */
     const buildTreeRows = (items) => {
       const map = {};
       items.forEach(r => { map[r.roleId] = { ...r, _children: [] }; });
@@ -193,7 +177,7 @@ window.SyRoleMng = {
     const makeRow = (r) => {
       const cat = Array.isArray(r.roleCat) ? [...r.roleCat] : [];
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
       return { ...r, _depth: r._depth || 0, _row_status: 'N', _row_check: false,
         restrictPerm: r.restrictPerm || '없음',
@@ -214,7 +198,7 @@ window.SyRoleMng = {
       handleSearchList();
     };
 
-    /* ── 메뉴·사용자 초기 로드 ── */
+    /* -- 메뉴·사용자 초기 로드 -- */
     const fnLoadMenusAndUsers = async () => {
       try {
         const [mRes, uRes] = await Promise.all([
@@ -230,7 +214,7 @@ window.SyRoleMng = {
       }
     };
 
-    /* ── 역할 선택 시 메뉴권한·사용자 조회 ── */
+    /* -- 역할 선택 시 메뉴권한·사용자 조회 -- */
     const handleLoadRoleDetail = async (roleId) => {
       if (!roleId || roleId <= 0) { roleMenus.splice(0); roleUsers.splice(0); return; }
       uiState.detailLoading = true;
@@ -255,7 +239,7 @@ window.SyRoleMng = {
       }
     };
 
-    /* ── 메뉴권한·대상사용자 설정 저장 ── */
+    /* -- 메뉴권한·대상사용자 설정 저장 -- */
     const handleSaveRoleConfig = async () => {
       if (!uiState.selectedRoleId) return;
       const ok = await props.showConfirm('설정 저장', '메뉴 접근권한과 대상사용자를 저장하시겠습니까?');
@@ -400,7 +384,7 @@ window.SyRoleMng = {
       roleTreeModal.show = false;
     };
 
-    /* ── 하단: 메뉴 배분 ── */
+    /* -- 하단: 메뉴 배분 -- */
         const buildMenuTree = (items, parentId, depth) => {
       return items
         .filter(m => (m.parentId || null) === (parentId || null) && m.useYn === 'Y')
@@ -457,7 +441,7 @@ window.SyRoleMng = {
       return cfMenuTree.value.every(m => getMenuPerm(m.menuId) !== '없음');
     });
 
-    /* ── 하단: 대상사용자 (모달 선택) ── */
+    /* -- 하단: 대상사용자 (모달 선택) -- */
     const cfRoleUsersList = computed(() => {
       if (!uiState.selectedRoleId) return [];
       return roleUsers
@@ -495,7 +479,7 @@ window.SyRoleMng = {
     const onTreeCatChange = () => { handleSearchList(); };
 
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return {
       uiState, codes,
@@ -517,7 +501,7 @@ window.SyRoleMng = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">역할관리</div>  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
+  <div class="page-title">역할관리</div>  <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="역할코드 / 역할명 검색" @keyup.enter="onSearch" />
@@ -541,7 +525,7 @@ window.SyRoleMng = {
 
 
 
-  <!-- ── 좌 트리 + 우 영역 ──────────────────────────────────────────────────── -->
+  <!-- -- 좌 트리 + 우 영역 ---------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:20fr 80fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 역할</span></div>
@@ -558,7 +542,7 @@ window.SyRoleMng = {
       </div>
     </div>
     <div>
-<!-- ── CRUD 그리드 ───────────────────────────────────────────────────────── -->
+<!-- -- CRUD 그리드 --------------------------------------------------------- -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>역할목록 <span class="list-count">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span></span>
@@ -605,7 +589,7 @@ window.SyRoleMng = {
           <td class="col-check-val"><input type="checkbox" v-model="row._row_check" /></td>
           <td><input class="grid-input grid-mono" v-model="row.roleCode" :disabled="row._row_status==='D'" @input="onCellChange(row)" /></td>
 
-          <!-- ── 역할명 (블릿 트리) ──────────────────────────────────────────── -->
+          <!-- -- 역할명 (블릿 트리) -------------------------------------------- -->
           <td style="padding:3px 6px;">
             <div style="display:flex;align-items:center;">
               <span :style="{ marginLeft:(row._depth*14)+'px', marginRight:'6px', fontWeight:'700',
@@ -616,7 +600,7 @@ window.SyRoleMng = {
             </div>
           </td>
 
-          <!-- ── 상위역할 ─────────────────────────────────────────────────── -->
+          <!-- -- 상위역할 --------------------------------------------------- -->
           <td style="padding:3px 8px;">
             <div style="display:flex;align-items:center;gap:5px;">
               <span v-if="row.parentId"
@@ -667,10 +651,10 @@ window.SyRoleMng = {
     </div>
   </div>
 
-  <!-- ── 하단: 메뉴 배분 + 사용자 배분 ───────────────────────────────────────────── -->
+  <!-- -- 하단: 메뉴 배분 + 사용자 배분 --------------------------------------------- -->
   <div id="role-config-panel" style="display:flex;gap:16px;align-items:flex-start;">
 
-    <!-- ── 좌: 메뉴목록 ────────────────────────────────────────────────────── -->
+    <!-- -- 좌: 메뉴목록 ------------------------------------------------------ -->
     <div style="flex:1;">
       <div class="card" style="margin-bottom:0;">
         <div class="toolbar" style="flex-wrap:wrap;gap:6px;">
@@ -692,19 +676,19 @@ window.SyRoleMng = {
           </div>
         </div>
 
-        <!-- ── 메뉴 검색 ──────────────────────────────────────────────────── -->
+        <!-- -- 메뉴 검색 ---------------------------------------------------- -->
         <div v-if="uiState.selectedRoleId" style="padding:8px 0 6px;">
           <input class="form-control" v-model="uiState.menuSearchKw" placeholder="메뉴명 또는 메뉴코드 검색"
             style="font-size:12px;padding:5px 10px;" />
         </div>
 
-        <!-- ── 메뉴 트리 목록 ───────────────────────────────────────────────── -->
+        <!-- -- 메뉴 트리 목록 ------------------------------------------------- -->
         <div v-if="uiState.selectedRoleId" style="max-height:340px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px;">
           <div v-if="!cfMenuTree.length" style="text-align:center;color:#bbb;padding:20px;font-size:13px;">메뉴가 없습니다.</div>
           <div v-for="m in cfMenuTree" :key="m.menuId"
             style="display:flex;align-items:center;padding:6px 10px;border-bottom:1px solid #f8f8f8;transition:background .1s;"
             :style="{ background: isMenuChecked(m.menuId) ? '#fff8f9' : '' }">
-            <!-- ── 블릿 트리 들여쓰기 ─────────────────────────────────────────── -->
+            <!-- -- 블릿 트리 들여쓰기 ------------------------------------------- -->
             <span :style="{ marginLeft:(m._depth*14)+'px', marginRight:'5px', fontWeight:'700',
                             fontSize: m._depth===0?'7px':'11px', flexShrink:0,
                             color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(m._depth,3)] }">
@@ -712,7 +696,7 @@ window.SyRoleMng = {
             </span>
             <span style="font-size:13px;color:#333;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ m.menuNm }}</span>
             <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin:0 8px;flex-shrink:0;">{{ m.menuCode }}</code>
-            <!-- ── 권한 레벨 토글 버튼 ────────────────────────────────────────── -->
+            <!-- -- 권한 레벨 토글 버튼 ------------------------------------------ -->
             <div style="display:flex;gap:2px;flex-shrink:0;">
               <button v-for="p in codes.perm_levels" :key="p"
                 style="font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid;cursor:pointer;font-weight:600;transition:all .1s;"
@@ -729,7 +713,7 @@ window.SyRoleMng = {
       </div>
     </div>
 
-    <!-- ── 우: 대상사용자 ───────────────────────────────────────────────────── -->
+    <!-- -- 우: 대상사용자 ----------------------------------------------------- -->
     <div style="flex:1;">
       <div class="card" style="margin-bottom:0;">
         <div class="toolbar">
@@ -742,7 +726,7 @@ window.SyRoleMng = {
             @click="uiState.userSelectOpen=true">+ 사용자 추가</button>
         </div>
 
-        <!-- ── 선택된 사용자 목록 ─────────────────────────────────────────────── -->
+        <!-- -- 선택된 사용자 목록 ----------------------------------------------- -->
         <div v-if="uiState.selectedRoleId">
           <div v-if="!cfRoleUsersList.length"
             style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;border:1px dashed #e0e0e0;border-radius:6px;">
@@ -773,11 +757,11 @@ window.SyRoleMng = {
     </div>
   </div>
 
-  <!-- ── 사용자 선택 모달 ────────────────────────────────────────────────────── -->
+  <!-- -- 사용자 선택 모달 ------------------------------------------------------ -->
   <bo-user-select-modal v-if="uiState.userSelectOpen" @select="onUserSelect"
     @close="uiState.userSelectOpen=false" />
 
-  <!-- ── 상위역할 선택 모달 ───────────────────────────────────────────────────── -->
+  <!-- -- 상위역할 선택 모달 ----------------------------------------------------- -->
   <role-tree-modal
     v-if="roleTreeModal && roleTreeModal.show" :exclude-id="roleTreeModal.targetRow && roleTreeModal.targetRow.roleId > 0 ? roleTreeModal.targetRow.roleId : null"
     @select="onParentSelect"

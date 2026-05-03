@@ -12,32 +12,21 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       date_range_opts: [],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.payment_methods = codeStore.snGetGrpCodes('PAYMENT_METHOD') || [];
-        codes.payment_statuses = codeStore.snGetGrpCodes('PAYMENT_STATUS') || [];
-        codes.recon_results = codeStore.snGetGrpCodes('RECON_RESULT_PAY') || [];
-        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
+        codes.payment_methods = codeStore.sgGetGrpCodes('PAYMENT_METHOD');
+        codes.payment_statuses = codeStore.sgGetGrpCodes('PAYMENT_STATUS');
+        codes.recon_results = codeStore.sgGetGrpCodes('RECON_RESULT_PAY');
+        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
             const dateEnd   = ref('');
     const handleDateRangeChange = () => {
       if (uiState.dateRange) { const r = boUtil.getDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
@@ -73,7 +62,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -87,7 +76,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { uiState, handleDateRangeChange, codes, pager, rows, cfSummary, fnDiffBadge, fnPayBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },

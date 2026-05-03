@@ -29,7 +29,7 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
       return code?.codeNm || codeVal;
     },
     // 코드 그룹을 { codeValue, codeLabel } 형식으로 변환
-    snGetGrpCodes: (s) => (grpVal) => {
+    sgGetGrpCodes: (s) => (grpVal) => {
       if (!Array.isArray(s.svCodes)) return [];
       return s.svCodes
         .filter(c => c.codeGrp === grpVal && c.useYn !== 'N')
@@ -37,7 +37,7 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
         .map(c => ({ codeValue: c.codeVal, codeLabel: (c.codeNm || c.codeVal) + ' (' + grpVal + ':' + c.codeVal + ')' }));
     },
     // 코드 그룹을 { codeValue, codeLabel } 형식으로 + 초기 항목 추가
-    snGetGrpCodesFirstOpt: (s) => (grpVal, initVal, initLabel) => {
+    sgGetGrpCodesFirstOpt: (s) => (grpVal, initVal, initLabel) => {
       if (!Array.isArray(s.svCodes)) return initVal && initLabel ? [{ codeValue: initVal, codeLabel: initLabel }] : [];
       const codes = s.svCodes
         .filter(c => c.codeGrp === grpVal && c.useYn !== 'N')
@@ -103,19 +103,15 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
 });
 
 // 함수형 유틸리티 제공
+const _boCodeStoreFallback = {
+  svCodes: [], svIsLoading: false, sgIsEmpty: true,
+  sgGetGrpCodes: () => [],
+  sgGetGrpCodesFirstOpt: (g, iv, il) => iv && il ? [{ codeValue: iv, codeLabel: il }] : [],
+};
 window.sfGetBoCodeStore = () => {
   try {
-    return window.useBoCodeStore?.() || {
-      svCodes: [],
-      sgIsEmpty: true,
-      svIsLoading: false,
-    };
+    return window.useBoCodeStore?.() || _boCodeStoreFallback;
   } catch (e) {
-    console.error('[sfGetBoCodeStore] error:', e);
-    return {
-      svCodes: [],
-      sgIsEmpty: true,
-      svIsLoading: false,
-    };
+    return _boCodeStoreFallback;
   }
 };

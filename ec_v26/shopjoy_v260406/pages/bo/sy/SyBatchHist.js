@@ -38,28 +38,21 @@ window.SyBatchHist = {
         uiState.loading = false;
       }
     };
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
 
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (codeStore?.snGetGrpCodes) {
-          codes.batch_run_statuses = codeStore.snGetGrpCodes('BATCH_RUN_STATUS') || [];
-        }
+        const codeStore = window.sfGetBoCodeStore();
+        codes.batch_run_statuses = codeStore.sgGetGrpCodes('BATCH_RUN_STATUS');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
       uiState.isPageCodeLoad = true;
-      handleSearchData();
     };
+
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
@@ -91,6 +84,10 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const expandedId = Vue.toRef(uiState, 'expandedId');
 
     // ── return ───────────────────────────────────────────────────────────────
+
+    onMounted(() => {
+      handleSearchData();
+    });
 
     return { batches, batchLogs, uiState, cfBatchOptions,
       pager,

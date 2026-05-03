@@ -14,30 +14,18 @@ window.PdDlivTmpltMng = {
       couriers: [{value:'CJ',label:'CJ'},{value:'LOGEN',label:'LOGEN'},{value:'LOTTE',label:'LOTTE'},{value:'HANJIN',label:'HANJIN'},{value:'POST',label:'POST'},{value:'EPOST',label:'EPOST'},{value:'KGB',label:'KGB'}],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.dliv_template_types = codeStore.snGetGrpCodes('DLIV_TEMPLATE_TYPE') || [];
-        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
+        codes.dliv_template_types = codeStore.sgGetGrpCodes('DLIV_TEMPLATE_TYPE');
+        codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     const _initSearchParam = () => ({ kw: '', method: '', use: '' });
     const searchParam = reactive(_initSearchParam());
@@ -70,8 +58,9 @@ window.PdDlivTmpltMng = {
       console.error('[catch-info]', _);}
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     });
     const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -147,7 +136,7 @@ window.PdDlivTmpltMng = {
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
     const fnMethodBadge = v => ({ COURIER:'badge-blue', DIRECT:'badge-orange', PICKUP:'badge-green' }[v] || 'badge-gray');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { uiState, codes, searchParam,
              pager, setPage, onSearch, onReset,
@@ -220,7 +209,7 @@ window.PdDlivTmpltMng = {
       </table>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
     </div>
-    <!-- ── 상세 폼 ───────────────────────────────────────────────────────── -->
+    <!-- -- 상세 폼 --------------------------------------------------------- -->
     <div class="card" v-if="uiState.selectedId">
       <div class="toolbar">
         <span class="list-title">{{ uiState.isNew ? '신규 등록' : '상세 / 수정' }}</span>

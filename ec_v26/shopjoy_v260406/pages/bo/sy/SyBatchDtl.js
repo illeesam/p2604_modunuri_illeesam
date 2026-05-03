@@ -7,27 +7,21 @@ window.SyBatchDtl = {
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ active_statuses: [] });
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
 
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (codeStore?.snGetGrpCodes) {
-          codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
-        }
+        const codeStore = window.sfGetBoCodeStore();
+        codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
       uiState.isPageCodeLoad = true;
     };
 
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+
     // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());

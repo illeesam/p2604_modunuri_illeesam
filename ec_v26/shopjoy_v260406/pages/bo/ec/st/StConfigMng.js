@@ -3,7 +3,7 @@ window.StConfigMng = {
   name: 'StConfigMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
-    const { ref, reactive, computed, watch, onMounted } = Vue;
+    const { ref, reactive, watch, onMounted } = Vue;
     const uiState = reactive({ descOpen: false, isNew: false, error: null, loading: false, selectedId: null });
     const configs = reactive([]);
 
@@ -24,6 +24,7 @@ window.StConfigMng = {
 
     // ★ onMounted — 진입 시 목록 초기 조회
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleLoadList();
     });
 
@@ -122,31 +123,24 @@ window.StConfigMng = {
     const fnCycleCdToLabel = (cd) => ({ 'DAILY': '일정산', 'WEEKLY': '주정산', 'MONTHLY': '월정산' }[cd] || cd);
     const fnCycleBadge = (cd) => ({ 'DAILY': 'badge-orange', 'WEEKLY': 'badge-green', 'MONTHLY': 'badge-blue' }[cd] || 'badge-gray');
 
-    // ── 공통코드 ─────────────────────────────────────────────────────────────
+    // -- 공통코드 -------------------------------------------------------------
     const codes = reactive({ settle_cycles: [], use_yn: [] });
 
     const fnLoadCodes = () => {
       try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.settle_cycles = codeStore.snGetGrpCodes('SETTLE_CYCLE') || [];
-        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
+        const codeStore = window.sfGetBoCodeStore();
+        codes.settle_cycles = codeStore.sgGetGrpCodes('SETTLE_CYCLE');
+        codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0;
-    });
-
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { uiState, configs, codes, form, errors, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge, fnCycleCdToLabel, handleLoadList, fnMapUiToApi, fnMapApiToUi };
   },
@@ -189,7 +183,7 @@ window.StConfigMng = {
     </table>
   </div>
 
-  <!-- ── 편집 폼 ─────────────────────────────────────────────────────────── -->
+  <!-- -- 편집 폼 ----------------------------------------------------------- -->
   <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
     <div class="card-title" style="font-weight:700;margin-bottom:16px">{{ uiState.isNew ? '정산기준 추가' : '정산기준 수정' }}</div>
     <div class="form-row">

@@ -17,32 +17,20 @@ window.PdBundleMng = {
       use_yn: [],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.product_statuses = codeStore.snGetGrpCodes('PRODUCT_STATUS') || [];
-        codes.bundle_types = codeStore.snGetGrpCodes('BUNDLE_TYPE') || [];
-        codes.bundle_statuses = codeStore.snGetGrpCodes('BUNDLE_STATUS') || [];
-        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
+        codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
+        codes.bundle_types = codeStore.sgGetGrpCodes('BUNDLE_TYPE');
+        codes.bundle_statuses = codeStore.sgGetGrpCodes('BUNDLE_STATUS');
+        codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     // onMounted에서 API 로드
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -72,11 +60,11 @@ window.PdBundleMng = {
         uiState.loading = false;
       }
     };
-    /* ── 검색 파라미터 ── */
+    /* -- 검색 파라미터 -- */
     const _initSearchParam = () => ({ nm: '' });
     const searchParam = reactive(_initSearchParam());
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchData('DEFAULT');
@@ -86,7 +74,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     // 'edit' 시 bundleId는 uiState.editBundleId 사용
 
-    /* ── 신규등록 폼 (pd_prod 기본정보) ── */
+    /* -- 신규등록 폼 (pd_prod 기본정보) -- */
     const newForm = reactive({
       prodNm: '', brandId: '', vendorId: '',
       listPrice: 0, salePrice: 0,
@@ -94,7 +82,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     });
     const newErrors = reactive({});
 
-    /* ── 카테고리 N개 (pd_category_prod) — 신규/편집 공통 ── */
+    /* -- 카테고리 N개 (pd_category_prod) — 신규/편집 공통 -- */
     const dtlCategories  = reactive([]);  // [{ categoryId, categoryNm, depth }]
     const cfCatExcludeSet = computed(() => new Set(dtlCategories.map(c => String(c.categoryId))));
 
@@ -129,13 +117,13 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       return c ? (c.depth || 1) : 1;
     };
 
-    /* ── 구성품 목록 (신규/편집 공통) ── */
+    /* -- 구성품 목록 (신규/편집 공통) -- */
     const dtlItems = reactive([]);
     let _seq = 1;
 
-    /* ── 구성품 추가 피커 / 드래그 상태는 uiState에서 관리 ── */
+    /* -- 구성품 추가 피커 / 드래그 상태는 uiState에서 관리 -- */
     
-    /* ── helpers ── */
+    /* -- helpers -- */
     const getProd     = id => (products || []).find(p => p.productId === id);
     const getProdNm   = id => { const p = getProd(id); return p ? (p.prodNm || p.productName || '상품#' + id) : '상품#' + id; };
     const getProdPrice = id => { const p = getProd(id); return p ? (p.salePrice || p.price || 0) : 0; };
@@ -145,14 +133,14 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       return b ? (b.brandNm || b.brandName || id) : id;
     };
 
-    /* ── 안분율 합계 ── */
+    /* -- 안분율 합계 -- */
     const rateSum = bundleProdId =>
       (bundles)
         .filter(b => b.bundleProdId === bundleProdId)
         .reduce((s, b) => s + (b.priceRate || 0), 0);
     const fnRateSumBadge = id => Math.abs(rateSum(id) - 100) < 0.01 ? 'badge-green' : 'badge-red';
 
-    /* ── 묶음상품 목록 ── */
+    /* -- 묶음상품 목록 -- */
     const bundleList = reactive([]);
     const updateBundleList = () => {
       try {
@@ -200,7 +188,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchData(); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
-    /* ── 신규등록 열기 ── */
+    /* -- 신규등록 열기 -- */
     const openNew = () => {
       uiState.dtlMode = 'new';
       uiState.editBundleId = null;
@@ -210,7 +198,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       dtlItems.length = 0;
     };
 
-    /* ── 편집 열기 ── */
+    /* -- 편집 열기 -- */
     const openDtl = bundleProdId => {
       uiState.dtlMode = 'edit';
       uiState.editBundleId = bundleProdId;
@@ -234,16 +222,16 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     const closeDtl = () => { uiState.dtlMode = null; uiState.editBundleId = null; dtlItems.length = 0; };
 
-    /* ── 편집 모드에서 표시할 묶음상품명 ── */
+    /* -- 편집 모드에서 표시할 묶음상품명 -- */
     const cfDtlProdNm = computed(() => uiState.dtlMode === 'new' ? (newForm.prodNm || '(신규 묶음상품)') : getProdNm(uiState.editBundleId));
     const cfDtlBundleId = computed(() => uiState.dtlMode === 'edit' ? uiState.editBundleId : null);
 
-    /* ── 안분율 ── */
+    /* -- 안분율 -- */
     const cfDtlRateSum  = computed(() => dtlItems.reduce((s, b) => s + (parseFloat(b.priceRate) || 0), 0));
     const cfDtlRateOk   = computed(() => Math.abs(cfDtlRateSum.value - 100) < 0.01);
     const cfDtlRateDiff = computed(() => parseFloat((100 - cfDtlRateSum.value).toFixed(2)));
 
-    /* ── 피커 목록 ── */
+    /* -- 피커 목록 -- */
     const cfCurrentBundleId = computed(() => uiState.dtlMode === 'edit' ? uiState.editBundleId : -1);
     const cfPickerList = computed(() => {
       const q    = (uiState.pickerSearch || '').trim().toLowerCase();
@@ -268,7 +256,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     };
     const removeItem = idx => dtlItems.splice(idx, 1);
 
-    /* ── 드래그 ── */
+    /* -- 드래그 -- */
     const onDragStart = idx => { uiState.dragIdx = idx; };
     const onDragOver  = idx => { uiState.dragoverIdx = idx; };
     const onDrop = () => {
@@ -283,7 +271,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       uiState.dragIdx = uiState.dragoverIdx = null;
     };
 
-    /* ── 저장 ── */
+    /* -- 저장 -- */
     const handleSave = async () => {
       /* 유효성 */
       Object.keys(newErrors).forEach(k => delete newErrors[k]);
@@ -357,7 +345,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       }
     };
 
-    /* ── 삭제 ── */
+    /* -- 삭제 -- */
     const handleDelete = async bundleProdId => {
       const ok = await props.showConfirm('삭제', '묶음상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
       if (!ok) return;
@@ -376,7 +364,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     };
 
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return {
       codes, uiState, bundles, bundleList,
@@ -408,7 +396,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     </div>
   </div>
 
-  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
     <div class="search-bar">
       <label class="search-label">묶음상품명</label>
@@ -421,7 +409,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     </div>
   </div>
 
-  <!-- ── 목록 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 목록 ------------------------------------------------------------- -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title">묶음상품 목록</span>
@@ -491,11 +479,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
-  <!-- ── 신규등록 / 구성관리 (인라인 Dtl) ────────────────────────────────────────── -->
+  <!-- -- 신규등록 / 구성관리 (인라인 Dtl) ------------------------------------------ -->
   <div v-if="uiState.dtlMode !== null" class="card"
        :style="uiState.dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #1677ff'">
 
-    <!-- ── Dtl 헤더 ─────────────────────────────────────────────────────── -->
+    <!-- -- Dtl 헤더 ------------------------------------------------------- -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0">
       <div style="display:flex;align-items:center;gap:10px">
         <span :class="['badge', uiState.dtlMode==='new' ? 'badge-green' : 'badge-blue']">
@@ -518,7 +506,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       </div>
     </div>
 
-    <!-- ── ① 기본정보 (신규 시만 표시) ──────────────────────────────────────────── -->
+    <!-- -- ① 기본정보 (신규 시만 표시) -------------------------------------------- -->
     <div v-if="uiState.dtlMode==='new'" style="background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:16px 20px;margin-bottom:20px">
       <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:12px">묶음상품 기본정보 (pd_prod)</div>
       <div class="form-row">
@@ -571,7 +559,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     </div>
 
-    <!-- ── ② 카테고리 N개 (신규/편집 공통) ───────────────────────────────────────── -->
+    <!-- -- ② 카테고리 N개 (신규/편집 공통) ----------------------------------------- -->
     <div class="form-row" style="margin-bottom:16px">
       <div class="form-group">
         <label class="form-label">카테고리 <span style="font-size:11px;color:#aaa;font-weight:400">N개 등록 · 첫 번째 = 대표</span></label>
@@ -593,7 +581,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       </div>
     </div>
 
-    <!-- ── ③ 구성품 목록 ───────────────────────────────────────────────────── -->
+    <!-- -- ③ 구성품 목록 ----------------------------------------------------- -->
     <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:10px">
       구성품 목록 (pd_prod_bundle_item)
       <span style="font-weight:400;color:#aaa;margin-left:6px">※ 안분율 합계 = 100% 필수</span>
@@ -661,7 +649,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       </tbody>
     </table>
 
-    <!-- ── 구성품 추가 / 안분율 안내 ────────────────────────────────────────────── -->
+    <!-- -- 구성품 추가 / 안분율 안내 ---------------------------------------------- -->
     <div style="margin-top:12px;display:flex;align-items:flex-start;gap:12px">
       <button class="btn btn-secondary btn-sm" style="flex-shrink:0" @click="uiState.pickerOpen=true;uiState.pickerSearch=''">
         + 구성품 추가
@@ -678,7 +666,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     </div>
   </div>
 
-  <!-- ── 구성품 Picker Modal ─────────────────────────────────────────────── -->
+  <!-- -- 구성품 Picker Modal ----------------------------------------------- -->
   <teleport to="body" v-if="uiState.pickerOpen">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
          @click.self="uiState.pickerOpen=false">
@@ -718,7 +706,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     </div>
   </teleport>
 
-  <!-- ── 카테고리 피커 모달 ───────────────────────────────────────────────────── -->
+  <!-- -- 카테고리 피커 모달 ----------------------------------------------------- -->
   <category-tree mode="picker" :show="uiState.catPickerOpen" :exclude-ids="cfCatExcludeSet"
                  @select="addCategory" @close="uiState.catPickerOpen=false" />
 </div>`

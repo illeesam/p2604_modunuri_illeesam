@@ -28,37 +28,20 @@ window.PmDiscntDtl = {
     };
     const cfIsNew = computed(() => !props.editId);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-        watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
+watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
 
         watch(() => uiState.viewMode2, v => { window._pmDiscntDtlState.viewMode = v; });
     const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.discnt_types = await codeStore.snGetGrpCodes('DISCNT_TYPE_KR') || [];
-        codes.promo_statuses = await codeStore.snGetGrpCodes('PROMO_STATUS') || [];
-        codes.discnt_apply_targets = await codeStore.snGetGrpCodes('DISCNT_APPLY_TARGET') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.discnt_types = codeStore.sgGetGrpCodes('DISCNT_TYPE_KR');
+      codes.promo_statuses = codeStore.sgGetGrpCodes('PROMO_STATUS');
+      codes.discnt_apply_targets = codeStore.sgGetGrpCodes('DISCNT_APPLY_TARGET');
+      uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     const _today = new Date();
     const _pad = n => String(n).padStart(2, '0');
@@ -79,10 +62,9 @@ window.PmDiscntDtl = {
       discntVal: yup.number().min(0, '할인값은 0 이상이어야 합니다.').required('할인값을 입력해주세요.'),
     });
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      handleSearchDetail();
     });
 
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
@@ -131,7 +113,7 @@ window.PmDiscntDtl = {
 
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { uiState, codes, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfSelectedVendorNm, selectVendor };
   },
@@ -155,7 +137,7 @@ window.PmDiscntDtl = {
   </div>
   <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
 
-    <!-- ── 기본정보 ───────────────────────────────────────────────────────── -->
+    <!-- -- 기본정보 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <div class="form-group">
@@ -193,7 +175,7 @@ window.PmDiscntDtl = {
         </div>
       </div>
 
-      <!-- ── 판매업체 선택 모달 ───────────────────────────────────────────────── -->
+      <!-- -- 판매업체 선택 모달 ------------------------------------------------- -->
       <div v-if="showVendorModal" class="modal-overlay" @click.self="showVendorModal=false">
         <div class="modal-box" style="width:400px;">
           <div class="modal-header">
@@ -224,11 +206,11 @@ window.PmDiscntDtl = {
       </div>
     </div>
 
-    <!-- ── 상세정보 ───────────────────────────────────────────────────────── -->
+    <!-- -- 상세정보 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('detail')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
 
-      <!-- ── 공개대상 ─────────────────────────────────────────────────────── -->
+      <!-- -- 공개대상 ------------------------------------------------------- -->
       <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">🔒 공개대상</h3>
         <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">하나라도 해당하면 노출</div>
@@ -241,7 +223,7 @@ window.PmDiscntDtl = {
         </div>
       </div>
 
-      <!-- ── 할인적용 ─────────────────────────────────────────────────────── -->
+      <!-- -- 할인적용 ------------------------------------------------------- -->
       <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">💰 할인적용</h3>
         <div class="form-row">
@@ -256,7 +238,7 @@ window.PmDiscntDtl = {
         </div>
       </div>
 
-      <!-- ── 기간설정 ─────────────────────────────────────────────────────── -->
+      <!-- -- 기간설정 ------------------------------------------------------- -->
       <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">📅 기간설정</h3>
         <div class="form-row">
@@ -271,7 +253,7 @@ window.PmDiscntDtl = {
         </div>
       </div>
 
-      <!-- ── 상태 및 비고 ──────────────────────────────────────────────────── -->
+      <!-- -- 상태 및 비고 ---------------------------------------------------- -->
       <div>
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">⚙️ 상태 및 비고</h3>
         <div class="form-group">
@@ -292,7 +274,7 @@ window.PmDiscntDtl = {
       </div>
     </div>
 
-    <!-- ── 적용대상 ───────────────────────────────────────────────────────── -->
+    <!-- -- 적용대상 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('target')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🎯 적용대상</div>
 
@@ -343,7 +325,7 @@ window.PmDiscntDtl = {
       </div>
     </div>
 
-    <!-- ── 미리보기 ───────────────────────────────────────────────────────── -->
+    <!-- -- 미리보기 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('preview')" style="margin:0;">
       <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
       <div style="background:#f9f9f9;border-radius:10px;padding:20px;border:1px solid #e8e8e8;max-width:600px;">

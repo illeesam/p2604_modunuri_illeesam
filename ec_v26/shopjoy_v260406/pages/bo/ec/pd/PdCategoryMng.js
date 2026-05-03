@@ -12,33 +12,21 @@ window.PdCategoryMng = {
       category_statuses: [],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.category_depths = codeStore.snGetGrpCodes('CATEGORY_DEPTH') || [];
-        codes.product_statuses = codeStore.snGetGrpCodes('PRODUCT_STATUS') || [];
-        codes.category_statuses = codeStore.snGetGrpCodes('CATEGORY_STATUS') || [];
+        codes.category_depths = codeStore.sgGetGrpCodes('CATEGORY_DEPTH');
+        codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
+        codes.category_statuses = codeStore.sgGetGrpCodes('CATEGORY_STATUS');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
-
-    /* ── 검색 파라미터 ── */
+    /* -- 검색 파라미터 -- */
     const _initSearchParam = () => ({ kw: '', categoryDepth: '', categoryStatusCd: '' });
     const searchParam = reactive(_initSearchParam());
 
@@ -83,7 +71,7 @@ window.PdCategoryMng = {
       await handleGridSearch();
     });
 
-    /* ── 선택된 카테고리 (좌측 트리 클릭) ── */
+    /* -- 선택된 카테고리 (좌측 트리 클릭) -- */
     const selectNode = id => {
       if (id === null) { uiState.selectedCatId = null; return; }
       uiState.selectedCatId = (uiState.selectedCatId === id) ? null : id;
@@ -92,7 +80,7 @@ window.PdCategoryMng = {
     watch(() => uiState.selectedCatId, () => handleGridSearch());
 
 
-    /* ── 그리드 ── */
+    /* -- 그리드 -- */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
         const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -186,7 +174,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       });
     };
 
-    /* ── 행 편집 ── */
+    /* -- 행 편집 -- */
     const focusedIdx = ref(-1);
     const setFocused = (idx) => { focusedIdx.value = idx; };
     const addRow = () => {
@@ -305,7 +293,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       await handleGridSearch();   // 그리드 갱신
     };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return {
       codes, uiState,
@@ -335,7 +323,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     </div>
   </div>
 
-  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
     <div class="search-bar">
       <label class="search-label">카테고리명</label>
@@ -357,10 +345,10 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     </div>
   </div>
 
-  <!-- ── 좌 트리 + 우 그리드 ─────────────────────────────────────────────────── -->
+  <!-- -- 좌 트리 + 우 그리드 --------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:flex-start">
 
-    <!-- ── 좌측: 카테고리 트리 ────────────────────────────────────────────────── -->
+    <!-- -- 좌측: 카테고리 트리 -------------------------------------------------- -->
     <div class="card" style="padding:12px;position:sticky;top:0">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <span style="font-size:13px;font-weight:600;color:#555">📁 카테고리</span>
@@ -369,7 +357,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       <category-tree mode="tree" :selected="uiState.selectedCatId" @select="selectNode" />
     </div>
 
-    <!-- ── 우측: 카테고리 그리드 ───────────────────────────────────────────────── -->
+    <!-- -- 우측: 카테고리 그리드 ------------------------------------------------- -->
     <div class="card">
       <div class="toolbar">
         <span class="list-title">
@@ -389,18 +377,18 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
 
       <table class="bo-table" style="table-layout:fixed">
         <colgroup>
-          <col style="width:36px"><!-- ── 번호 -->
-          <col style="width:28px"><!-- ── 드래그 핸들 ─────────────────────────────────────────────────────────── -->
-          <col style="width:36px"><!-- ── 상태 ─────────────────────────────────────────────────────────────── -->
-          <col style="width:32px"><!-- ── 체크 ─────────────────────────────────────────────────────────────── -->
-          <col style="min-width:140px"><!-- ── 카테고리명 ──────────────────────────────────────────────────────────── -->
-          <col style="min-width:120px"><!-- ── 상위 ─────────────────────────────────────────────────────────────── -->
-          <col style="width:64px"><!-- ── 순서 ─────────────────────────────────────────────────────────────── -->
-          <col><!-- ── 설명 ─────────────────────────────────────────────────────────────── -->
-          <col style="width:70px"><!-- ── 상태 ─────────────────────────────────────────────────────────────── -->
-          <col style="width:32px"><!-- ── 하위추가 ───────────────────────────────────────────────────────────── -->
-          <col style="width:44px"><!-- ── 취소 ─────────────────────────────────────────────────────────────── -->
-          <col style="width:44px"><!-- ── 삭제 ─────────────────────────────────────────────────────────────── -->
+          <col style="width:36px"><!-- -- 번호 -->
+          <col style="width:28px"><!-- -- 드래그 핸들 ----------------------------------------------------------- -->
+          <col style="width:36px"><!-- -- 상태 --------------------------------------------------------------- -->
+          <col style="width:32px"><!-- -- 체크 --------------------------------------------------------------- -->
+          <col style="min-width:140px"><!-- -- 카테고리명 ------------------------------------------------------------ -->
+          <col style="min-width:120px"><!-- -- 상위 --------------------------------------------------------------- -->
+          <col style="width:64px"><!-- -- 순서 --------------------------------------------------------------- -->
+          <col><!-- -- 설명 --------------------------------------------------------------- -->
+          <col style="width:70px"><!-- -- 상태 --------------------------------------------------------------- -->
+          <col style="width:32px"><!-- -- 하위추가 ------------------------------------------------------------- -->
+          <col style="width:44px"><!-- -- 취소 --------------------------------------------------------------- -->
+          <col style="width:44px"><!-- -- 삭제 --------------------------------------------------------------- -->
         </colgroup>
         <thead><tr>
           <th style="width:36px;text-align:center;">번호</th>
@@ -431,21 +419,21 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
               :style="dragoverRowIdx===getRealIdx(idx) ? 'background:#e6f4ff' : ''"
               @click="setFocused(getRealIdx(idx))">
 
-            <!-- ── 번호 ───────────────────────────────────────────────────── -->
+            <!-- -- 번호 ----------------------------------------------------- -->
             <td style="text-align:center;font-size:11px;color:#999;">{{ getRealIdx(idx) + 1 }}</td>
 
-            <!-- ── 드래그 핸들 ─────────────────────────────────────────────── -->
+            <!-- -- 드래그 핸들 ----------------------------------------------- -->
             <td style="text-align:center;cursor:grab;color:#ccc;font-size:16px;user-select:none">≡</td>
 
-            <!-- ── 행 상태 뱃지 ────────────────────────────────────────────── -->
+            <!-- -- 행 상태 뱃지 ---------------------------------------------- -->
             <td style="text-align:center">
               <span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span>
             </td>
 
-            <!-- ── 체크박스 ───────────────────────────────────────────────── -->
+            <!-- -- 체크박스 ------------------------------------------------- -->
             <td style="text-align:center"><input type="checkbox" v-model="row._row_check" @click.stop></td>
 
-            <!-- ── 카테고리명 (들여쓰기 트리 표현) ─────────────────────────────────── -->
+            <!-- -- 카테고리명 (들여쓰기 트리 표현) ----------------------------------- -->
             <td style="padding:3px 6px">
               <div style="display:flex;align-items:center">
                 <span :style="{ marginLeft:(row._depth*12)+'px', marginRight:'5px', fontWeight:700,
@@ -457,7 +445,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
               </div>
             </td>
 
-            <!-- ── 상위카테고리 ─────────────────────────────────────────────── -->
+            <!-- -- 상위카테고리 ----------------------------------------------- -->
             <td style="padding:3px 8px">
               <div style="display:flex;align-items:center;gap:4px">
                 <span style="flex:1;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
@@ -470,19 +458,19 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
               </div>
             </td>
 
-            <!-- ── 순서 ─────────────────────────────────────────────────── -->
+            <!-- -- 순서 --------------------------------------------------- -->
             <td style="padding:3px 4px">
               <input class="grid-input grid-num" type="number" v-model.number="row.sortOrd"
                      :disabled="row._row_status==='D'" @input="onCellChange(row)" style="text-align:center">
             </td>
 
-            <!-- ── 설명 ─────────────────────────────────────────────────── -->
+            <!-- -- 설명 --------------------------------------------------- -->
             <td style="padding:3px 6px">
               <input class="grid-input" v-model="row.categoryDesc"
                      :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="설명">
             </td>
 
-            <!-- ── 활성 ─────────────────────────────────────────────────── -->
+            <!-- -- 활성 --------------------------------------------------- -->
             <td style="padding:3px 4px;text-align:center">
               <select class="grid-select" v-model="row.categoryStatusCd"
                       :disabled="row._row_status==='D'" @change="onCellChange(row)" style="width:58px">
@@ -490,20 +478,20 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
               </select>
             </td>
 
-            <!-- ── 하위 추가 ──────────────────────────────────────────────── -->
+            <!-- -- 하위 추가 ------------------------------------------------ -->
             <td style="text-align:center;padding:2px">
               <button v-if="row._row_status!=='D' && row.categoryId>0"
                       class="btn btn-xs" style="padding:1px 5px;font-size:11px;background:#f0f7ff;color:#1677ff;border:1px solid #91caff"
                       title="하위 카테고리 추가" @click.stop="addChildRow(row, getRealIdx(idx))">+하위</button>
             </td>
 
-            <!-- ── 취소 ─────────────────────────────────────────────────── -->
+            <!-- -- 취소 --------------------------------------------------- -->
             <td style="text-align:center;padding:2px">
               <button v-if="['U','I','D'].includes(row._row_status)"
                       class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">취소</button>
             </td>
 
-            <!-- ── 삭제 ─────────────────────────────────────────────────── -->
+            <!-- -- 삭제 --------------------------------------------------- -->
             <td style="text-align:center;padding:2px">
               <button v-if="row._row_status !== 'D'"
                       class="btn btn-danger btn-xs" @click.stop="deleteRow(getRealIdx(idx))">삭제</button>
@@ -512,12 +500,12 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         </tbody>
       </table>
 
-      <!-- ── 페이지네이션 ───────────────────────────────────────────────────── -->
+      <!-- -- 페이지네이션 ----------------------------------------------------- -->
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
     </div>
   </div>
 
-  <!-- ── 상위카테고리 선택 모달 ─────────────────────────────────────────────────── -->
+  <!-- -- 상위카테고리 선택 모달 --------------------------------------------------- -->
   <teleport to="body" v-if="catPickerModal.show">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
          @click.self="catPickerModal.show=false">

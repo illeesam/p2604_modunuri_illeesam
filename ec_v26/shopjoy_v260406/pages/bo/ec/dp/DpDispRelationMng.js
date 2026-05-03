@@ -10,30 +10,18 @@ window.DpDispRelationMng = {
       date_range_opts: [],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.disp_relation_types = codeStore.snGetGrpCodes('DISP_RELATION_TYPE') || [];
-        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
+        codes.disp_relation_types = codeStore.sgGetGrpCodes('DISP_RELATION_TYPE');
+        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     const displays = reactive([]);
 
@@ -51,6 +39,7 @@ window.DpDispRelationMng = {
       return { dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT');
     });
 
@@ -86,7 +75,7 @@ window.DpDispRelationMng = {
         children: (ui.areas || []).map(area => {
           const areaPanels = (area.panels || []);
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
           return {
             type: 'area',
@@ -138,7 +127,7 @@ window.DpDispRelationMng = {
                             : { bg: '#f1f1f1', color: '#666', text: '미사용' };
     };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return {
       codes, searchParam,
@@ -151,7 +140,7 @@ window.DpDispRelationMng = {
 <div>
   <div class="page-title">전시관계도 <span style="font-size:13px;font-weight:400;color:#888;">UI · 영역 · 패널 계층 구조</span></div>
 
-  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
     <div class="search-bar">
       <span class="search-label">등록기간</span>
@@ -165,12 +154,12 @@ window.DpDispRelationMng = {
     </div>
   </div>
 
-  <!-- ── 내용 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 내용 ------------------------------------------------------------- -->
   <div class="card" style="padding:12px;">
     <div v-if="!cfTreeData.length" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</div>
 
     <div v-for="ui in cfTreeData" :key="ui?.id" style="margin-bottom:12px;border:1px solid #f0f0f0;border-radius:6px;overflow:hidden;">
-      <!-- ── UI 행 ─────────────────────────────────────────────────────── -->
+      <!-- -- UI 행 ------------------------------------------------------- -->
       <div @click="toggleNode('ui_'+ui.id)"
         style="display:flex;align-items:center;gap:8px;padding:10px;background:#f9f9fb;cursor:pointer;user-select:none;">
         <span style="font-size:12px;color:#999;width:20px;text-align:center;">{{ isNodeExpanded('ui_'+ui.id) ? '▼' : '▶' }}</span>
@@ -183,7 +172,7 @@ window.DpDispRelationMng = {
         <span style="font-size:10px;color:#aaa;">하위: {{ ui.childCount }}</span>
       </div>
 
-      <!-- ── 영역들 ──────────────────────────────────────────────────────── -->
+      <!-- -- 영역들 -------------------------------------------------------- -->
       <div v-if="isNodeExpanded('ui_'+ui.id)" style="background:#fafafa;">
         <div v-for="area in ui.children" :key="area?.id" style="border-top:1px solid #f0f0f0;">
           <div @click="toggleNode('area_'+area.id)"
@@ -198,7 +187,7 @@ window.DpDispRelationMng = {
             <span style="font-size:10px;color:#aaa;">하위: {{ area.childCount }}</span>
           </div>
 
-          <!-- ── 패널들 ──────────────────────────────────────────────────── -->
+          <!-- -- 패널들 ---------------------------------------------------- -->
           <div v-if="isNodeExpanded('area_'+area.id)" style="background:#fff;">
             <div v-for="panel in area.children" :key="panel?.id"
               style="display:flex;align-items:center;gap:8px;padding:6px 12px 6px 68px;border-top:1px solid #f5f5f5;font-size:11px;">

@@ -9,34 +9,17 @@ window.DpDispWidgetLibDtl = {
     const uiState = reactive({ isPageCodeLoad: false, loading: false, error: null, previewMode: 'default', previewPaneWidth: 460, htmlContentEl: null});
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
-    // App 초기화 준비 상태
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading
-          && codeStore?.svCodes?.length > 0
-          && !uiState.isPageCodeLoad;
-    });
-
-    // 코드 주입
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
-      codes.disp_widget_types = codeStore.snGetGrpCodes('DISP_WIDGET_TYPE') || [];
-      codes.active_statuses = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
+      codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
+      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
       uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // App 초기화 감시
+    // 코드 주입
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (ready) => {
-      if (ready) {
-        fnLoadCodes();
-      }
-    });
-
-    /* ── 표시경로 선택 모달 (sy_path, 다중) ── */
+    /* -- 표시경로 선택 모달 (sy_path, 다중) -- */
     const pathPickModal = reactive({ show: false });
     const openPathPick = () => { pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; };
@@ -45,7 +28,7 @@ window.DpDispWidgetLibDtl = {
     const widgetLibs = reactive([]);
     const cfIsNew = computed(() => !props.editId);
 
-    /* ── 폼 초기값 ── */
+    /* -- 폼 초기값 -- */
     const makeForm = () => ({
       libId: null, libCode: '', name: '', widgetType: 'image_banner', desc: '', tags: '', status: '활성',
       titleYn: 'N', title: '',
@@ -105,7 +88,7 @@ window.DpDispWidgetLibDtl = {
     const form   = reactive(makeForm());
     const errors = reactive({});
 
-    /* ── 기존 데이터 로드 ── */
+    /* -- 기존 데이터 로드 -- */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -141,7 +124,7 @@ window.DpDispWidgetLibDtl = {
       handleInitNewForm();
     });
 
-    /* ── 위젯 유형별 표시 여부 ── */
+    /* -- 위젯 유형별 표시 여부 -- */
     const cfIsImage       = computed(() => form.widgetType === 'image_banner');
     const cfIsProduct     = computed(() => ['product_slider', 'product'].includes(form.widgetType));
     const cfIsCondProduct = computed(() => form.widgetType === 'cond_product');
@@ -168,7 +151,7 @@ window.DpDispWidgetLibDtl = {
     const cfIsCache       = computed(() => form.widgetType === 'cache_banner');
     const cfIsEmbed       = computed(() => form.widgetType === 'widget_embed');
 
-    /* ── 파일목록 헬퍼 ── */
+    /* -- 파일목록 헬퍼 -- */
     const cfFileListItems = computed(() => {
       try { return JSON.parse(form.fileListJson || '[]'); } catch { return []; }
     });
@@ -178,7 +161,7 @@ window.DpDispWidgetLibDtl = {
     const updateFileItem = (idx, field, val) =>
       saveFileList(cfFileListItems.value.map((item, i) => i === idx ? { ...item, [field]: val } : item));
 
-    /* ── 동적 공통 입력 행 정의 ── */
+    /* -- 동적 공통 입력 행 정의 -- */
     const cfDisplayRows = computed(() => {
       if (cfIsImage.value) return [
         { key: 'imageUrl', label: '이미지 URL',  type: 'input',  ph: 'https://...' },
@@ -294,7 +277,7 @@ window.DpDispWidgetLibDtl = {
       return [];
     });
 
-    /* ── 샘플 JSON ── */
+    /* -- 샘플 JSON -- */
     const cfSampleJson = computed(() => {
       const obj = { ...form };
       // 유형과 무관한 빈 필드 제거 (가독성)
@@ -310,7 +293,7 @@ window.DpDispWidgetLibDtl = {
       });
     };
 
-    /* ── 디바이스 모드 + 스플리터 ── */
+    /* -- 디바이스 모드 + 스플리터 -- */
         const PREVIEW_MODES = [
       { value: 'default', label: '기본',   width: 420  },
       { value: 'pc',      label: 'PC',     width: 1200 },
@@ -341,7 +324,7 @@ window.DpDispWidgetLibDtl = {
       window.addEventListener('mouseup', onUp);
     };
 
-    /* ── 위젯Lib미리보기용 위젯 객체 ── */
+    /* -- 위젯Lib미리보기용 위젯 객체 -- */
     const cfPreviewWidget = computed(() => ({
       ...form,
       dispId: form.libId || 0,
@@ -355,7 +338,7 @@ window.DpDispWidgetLibDtl = {
       authGrade: '',
     }));
 
-    /* ── Quill 에디터 (HTML 에디터 유형) ── */
+    /* -- Quill 에디터 (HTML 에디터 유형) -- */
     const htmlContentEl  = ref(null);
     let quillInst = null;
 
@@ -405,14 +388,14 @@ window.DpDispWidgetLibDtl = {
       initQuill();
     });
 
-    /* ── Yup 유효성 ── */
+    /* -- Yup 유효성 -- */
     const schema = window.yup.object({
       libCode:    window.yup.string().required('Lib코드를 입력하세요.'),
       name:       window.yup.string().required('라이브러리명을 입력하세요.'),
       widgetType: window.yup.string().required('위젯 유형을 선택하세요.'),
     });
 
-    /* ── 저장 ── */
+    /* -- 저장 -- */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try { await schema.validate(form, { abortEarly: false }); }
@@ -434,7 +417,7 @@ window.DpDispWidgetLibDtl = {
       }
     };
 
-    /* ── 삭제 ── */
+    /* -- 삭제 -- */
     const handleDelete = async () => {
       if (cfIsNew.value) return;
       const ok = await props.showConfirm('삭제', '이 위젯 Lib를 삭제하시겠습니까?');
@@ -452,7 +435,7 @@ window.DpDispWidgetLibDtl = {
       props.navigate('dpDispWidgetLibMng', { reload: true });
     };
 
-    /* ── 위젯Lib 내용복사 팝업 ── */
+    /* -- 위젯Lib 내용복사 팝업 -- */
     const openLibPick = () => { uiState.libPickOpen = true; };
     const onLibPicked = (lib) => {
       uiState.libPickOpen = false;
@@ -463,7 +446,7 @@ window.DpDispWidgetLibDtl = {
 
     const previewPaneWidth = Vue.toRef(uiState, 'previewPaneWidth');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
@@ -479,7 +462,7 @@ window.DpDispWidgetLibDtl = {
   },
   template: /* html */`
 <div class="card" style="padding:0;">
-  <!-- ── 헤더 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 헤더 ------------------------------------------------------------- -->
   <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
     <div style="display:flex;align-items:center;gap:10px;">
       <span style="font-size:15px;font-weight:700;color:#222;">
@@ -500,10 +483,10 @@ window.DpDispWidgetLibDtl = {
   </div>
 
   <div style="display:flex;gap:0;">
-    <!-- ── 왼쪽: 폼 ──────────────────────────────────────────────────────── -->
+    <!-- -- 왼쪽: 폼 -------------------------------------------------------- -->
     <div style="flex:1;padding:20px;min-width:0;overflow-y:auto;">
 
-      <!-- ── ■ 설정 ─────────────────────────────────────────────────────── -->
+      <!-- -- ■ 설정 ------------------------------------------------------- -->
       <div style="margin-bottom:14px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
         <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
           <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
@@ -552,9 +535,9 @@ window.DpDispWidgetLibDtl = {
         </div>
         <button @click="(form.usedPathIds = form.usedPathIds || []).push(null); openPathPick(form.usedPathIds.length-1);"
           style="padding:4px 12px;border:1px solid #d1d5db;background:#fff;color:#555;border-radius:4px;cursor:pointer;font-size:12px;">+ 경로 추가</button>
-      </div><!-- ── /설정 ────────────────────────────────────────────────────────────── -->
+      </div><!-- -- /설정 -------------------------------------------------------------- -->
 
-      <!-- ── ■ 제목 ─────────────────────────────────────────────────────── -->
+      <!-- -- ■ 제목 ------------------------------------------------------- -->
       <div style="margin-bottom:14px;padding:14px;background:#faf8ff;border:1px solid #e9d5ff;border-radius:8px;">
         <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
           <span style="display:inline-block;width:4px;height:16px;background:#7c3aed;border-radius:2px;"></span>
@@ -573,9 +556,9 @@ window.DpDispWidgetLibDtl = {
           <label style="font-size:12px;font-weight:600;color:#555;width:50px;flex-shrink:0;">타이틀</label>
           <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" class="form-control" style="margin:0;flex:1;" />
         </div>
-      </div><!-- ── /제목 ────────────────────────────────────────────────────────────── -->
+      </div><!-- -- /제목 -------------------------------------------------------------- -->
 
-      <!-- ── ■ 내용 ─────────────────────────────────────────────────────── -->
+      <!-- -- ■ 내용 ------------------------------------------------------- -->
       <div style="margin-bottom:14px;padding:14px;background:#fff8fa;border:1px solid #fce4ec;border-radius:8px;">
         <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
           <span style="display:inline-block;width:4px;height:16px;background:#e8587a;border-radius:2px;flex-shrink:0;"></span>
@@ -590,7 +573,7 @@ window.DpDispWidgetLibDtl = {
         </div>
         <div v-if="errors.widgetType" class="field-error" style="margin-bottom:8px;">{{ errors.widgetType }}</div>
 
-        <!-- ── 클릭동작 ───────────────────────────────────────────────────── -->
+        <!-- -- 클릭동작 ----------------------------------------------------- -->
         <div v-if="!cfIsHtmlEditor && !cfIsFileList && !cfIsEmbed" style="margin-bottom:14px;">
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">👆 클릭동작</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -607,7 +590,7 @@ window.DpDispWidgetLibDtl = {
           </div>
         </div>
 
-        <!-- ── 공통 동적 행 ────────────────────────────────────────────────── -->
+        <!-- -- 공통 동적 행 -------------------------------------------------- -->
         <div v-if="cfDisplayRows.length" style="display:flex;flex-direction:column;gap:10px;">
           <div v-for="row in cfDisplayRows" :key="row?.key" class="form-group" style="margin:0;">
             <label class="form-label">{{ row.label }}</label>
@@ -622,7 +605,7 @@ window.DpDispWidgetLibDtl = {
           </div>
         </div>
 
-        <!-- ── HTML 에디터 ───────────────────────────────────────────────── -->
+        <!-- -- HTML 에디터 ------------------------------------------------- -->
         <div v-else-if="cfIsHtmlEditor" class="form-group" style="margin:0;">
           <div style="display:flex;justify-content:flex-end;margin-bottom:4px;">
             <button @click="toggleHtmlSource"
@@ -638,7 +621,7 @@ window.DpDispWidgetLibDtl = {
           </div>
         </div>
 
-        <!-- ── 파일목록 ───────────────────────────────────────────────────── -->
+        <!-- -- 파일목록 ----------------------------------------------------- -->
         <div v-else-if="cfIsFileList">
           <div v-for="(item, idx) in cfFileListItems" :key="Math.random()"
             style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
@@ -654,17 +637,17 @@ window.DpDispWidgetLibDtl = {
         <div v-else style="font-size:12px;color:#aaa;text-align:center;padding:10px;">
           위젯 유형을 선택하면 입력 필드가 표시됩니다.
         </div>
-      </div><!-- ── /내용 ────────────────────────────────────────────────────────────── -->
+      </div><!-- -- /내용 -------------------------------------------------------------- -->
 
     </div>
 
-    <!-- ── 스플리터 ───────────────────────────────────────────────────────── -->
+    <!-- -- 스플리터 --------------------------------------------------------- -->
     <div @mousedown="onSplitDrag"
       style="width:6px;cursor:col-resize;background:#e8e8e8;flex-shrink:0;position:relative;"
       title="드래그로 폭 조절">
       <div style="position:absolute;top:50%;left:1px;transform:translateY(-50%);width:4px;height:32px;background:#bbb;border-radius:2px;"></div>
     </div>
-    <!-- ── 오른쪽: 위젯Lib미리보기 ─────────────────────────────────────────────── -->
+    <!-- -- 오른쪽: 위젯Lib미리보기 ----------------------------------------------- -->
     <div :style="{ width: previewPaneWidth + 'px', flexShrink:0, padding:'20px', background:'#f8f8f8', overflowX:'auto', transition:'width .2s' }">
       <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;cursor:help;position:relative;"
         @mouseenter="showComponentTooltip=true" @mouseleave="showComponentTooltip=false">
@@ -673,7 +656,7 @@ window.DpDispWidgetLibDtl = {
           &lt;disp-x04-widget /&gt;
         </span>
       </div>
-      <!-- ── 디바이스 모드 버튼 ───────────────────────────────────────────────── -->
+      <!-- -- 디바이스 모드 버튼 ------------------------------------------------- -->
       <div style="display:flex;gap:4px;margin-bottom:10px;padding:3px;background:#eef0f3;border-radius:6px;">
         <button v-for="m in PREVIEW_MODES" :key="m?.value"
           @click="previewMode = m.value"
@@ -685,7 +668,7 @@ window.DpDispWidgetLibDtl = {
             boxShadow: previewMode===m.value ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
           }">{{ m.label }}</button>
       </div>
-      <!-- ── 디바이스 프레임 ─────────────────────────────────────────────────── -->
+      <!-- -- 디바이스 프레임 --------------------------------------------------- -->
       <div :style="{ width: cfPreviewFrameWidth, margin:'0 auto', background:'#fff', border:'1px solid #e4e4e4', borderRadius:'8px', padding:'12px', minHeight:'100px', transition:'width .2s' }">
         <disp-x04-widget
           :params="{ }"
@@ -699,7 +682,7 @@ window.DpDispWidgetLibDtl = {
         <div v-if="!cfIsNew">ID: #{{ String(form.libId).padStart(4,'0') }}</div>
       </div>
 
-      <!-- ── 샘플 JSON ──────────────────────────────────────────────────── -->
+      <!-- -- 샘플 JSON ---------------------------------------------------- -->
       <div style="margin-top:16px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
           <span style="font-size:12px;font-weight:700;color:#555;">📋 샘플 JSON</span>

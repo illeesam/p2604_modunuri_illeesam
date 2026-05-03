@@ -10,30 +10,20 @@ window.StErpGenMng = {
       erp_voucher_types: [],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
 
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.erp_statuses = codeStore.snGetGrpCodes('ERP_STATUS') || [];
-        codes.erp_voucher_types = codeStore.snGetGrpCodes('ERP_VOUCHER_TYPE_KR') || [];
+        codes.erp_statuses = codeStore.sgGetGrpCodes('ERP_STATUS');
+        codes.erp_voucher_types = codeStore.sgGetGrpCodes('ERP_VOUCHER_TYPE_KR');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     const targetMon = ref(new Date().toISOString().slice(0, 7));
     const slipType  = ref('정산');
@@ -66,7 +56,7 @@ window.StErpGenMng = {
         const comm    = Math.round(sales * 0.10);
         const settle  = sales - comm;
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
         return { vendorNm: v.vendorNm, debit: '미지급금', credit: '현금', debitAmt: settle, creditAmt: settle, description: `${uiState.targetMon} ${v.vendorNm} 정산지급` };
       }).filter(r => r.debitAmt > 0);
@@ -101,7 +91,7 @@ window.StErpGenMng = {
 
     const onSearch = async () => { await handleSearchData('DEFAULT'); };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { uiState, targetMon, slipType, cfPreviewRows, genHistory, doGenerate, fnStatusBadge, fmtW, onSearch, codes };
   },
@@ -117,7 +107,7 @@ window.StErpGenMng = {
 • 전표 내용 확인은 ERP 전표조회(StErpViewMng)에서 합니다.</div>
   </div>
 
-  <!-- ── 생성 설정 ────────────────────────────────────────────────────────── -->
+  <!-- -- 생성 설정 ---------------------------------------------------------- -->
   <div class="card">
     <div style="font-weight:700;margin-bottom:12px">전표 생성 설정</div>
     <div class="form-row">
@@ -137,7 +127,7 @@ window.StErpGenMng = {
       </div>
     </div>
 
-    <!-- ── 미리보기 ───────────────────────────────────────────────────────── -->
+    <!-- -- 미리보기 --------------------------------------------------------- -->
     <div v-if="cfPreviewRows.length" style="margin-top:16px">
       <div style="font-weight:600;margin-bottom:8px;color:#555">전표 미리보기 ({{ cfPreviewRows.length }}건)</div>
       <table class="bo-table">
@@ -155,7 +145,7 @@ window.StErpGenMng = {
     <div v-else style="color:#999;margin-top:12px">해당 월의 생성 대상 전표가 없습니다.</div>
   </div>
 
-  <!-- ── 생성 이력 ────────────────────────────────────────────────────────── -->
+  <!-- -- 생성 이력 ---------------------------------------------------------- -->
   <div class="card" style="margin-top:12px">
     <div class="toolbar"><span class="list-title">전표생성 이력</span><span class="list-count">총 {{ genHistory.length }}건</span></div>
     <table class="bo-table">

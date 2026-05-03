@@ -2480,7 +2480,7 @@ window.RowPickModal = {
 
     Vue.onMounted(() => {
       const codeStore = window.sfGetBoCodeStore?.();
-      if (codeStore?.snGetGrpCodes) activeStatuses.value = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
+      if (codeStore?.sgGetGrpCodes) activeStatuses.value = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
     });
 
     return {
@@ -2611,7 +2611,7 @@ window.AreaPickModal = {
     onMounted(() => {
       try {
         const s = window.sfGetBoCodeStore?.();
-        if (s?.snGetGrpCodes) useYnOpts.value = s.snGetGrpCodes('USE_YN') || [];
+        if (s?.sgGetGrpCodes) useYnOpts.value = s.sgGetGrpCodes('USE_YN');
       } catch(e) {}
     });
     const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
@@ -2882,7 +2882,7 @@ window.PanelPickModal = {
 
     Vue.onMounted(() => {
       const codeStore = window.sfGetBoCodeStore?.();
-      if (codeStore?.snGetGrpCodes) activeStatuses.value = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
+      if (codeStore?.sgGetGrpCodes) activeStatuses.value = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
     });
 
     return {
@@ -3070,7 +3070,7 @@ window.WidgetLibPickModal = {
     const activeStatuses = Vue.ref([]);
     Vue.onMounted(() => {
       const codeStore = window.sfGetBoCodeStore?.();
-      if (codeStore?.snGetGrpCodes) activeStatuses.value = codeStore.snGetGrpCodes('ACTIVE_STATUS') || [];
+      if (codeStore?.sgGetGrpCodes) activeStatuses.value = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
     });
 
     return {

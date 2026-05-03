@@ -8,28 +8,16 @@ window.MyCache = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
-    const isAppReady = computed(() => {
-      const initStore = window.useFoAppInitStore?.();
-      const codeStore = window.useFoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleSearchData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
     const myStore = window.useFoMyStore();
     const { cashBalance, cashHistory, chargeAmount } = Pinia.storeToRefs(myStore);
 
@@ -69,7 +57,11 @@ window.MyCache = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    // ── return ───────────────────────────────────────────────────────────────
+    onMounted(() => {
+      handleSearchData();
+    });
+
+    // -- return ---------------------------------------------------------------
 
     return {
       myStore, cashBalance, cashHistory, chargeAmount,
@@ -81,20 +73,20 @@ window.MyCache = {
 
   <MyDateFilter @search="onSearch" />
 
-  <!-- ── 보유 캐쉬 ────────────────────────────────────────────────────────── -->
+  <!-- -- 보유 캐쉬 ---------------------------------------------------------- -->
   <div style="background:linear-gradient(135deg,#fbbf24,#f59e0b);border-radius:var(--radius);padding:24px;margin-bottom:20px;color:#1a1a1a;">
     <div style="font-size:0.85rem;font-weight:600;opacity:0.7;">보유 캐쉬</div>
     <div style="font-size:2.2rem;font-weight:900;margin-top:4px;">{{ cashBalance.toLocaleString() }}<span style="font-size:1rem;margin-left:4px;">원</span></div>
   </div>
 
-  <!-- ── 충전 입력 ────────────────────────────────────────────────────────── -->
+  <!-- -- 충전 입력 ---------------------------------------------------------- -->
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;display:flex;gap:10px;align-items:center;">
     <input v-model="chargeAmount" type="number" placeholder="충전 금액 입력 (최소 1,000원)" @keyup.enter="addCash"
       style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.9rem;outline:none;">
     <button @click="addCash" class="btn-blue" style="padding:10px 20px;white-space:nowrap;">충전하기</button>
   </div>
 
-  <!-- ── 빠른 금액 버튼 ─────────────────────────────────────────────────────── -->
+  <!-- -- 빠른 금액 버튼 ------------------------------------------------------- -->
   <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
     <button v-for="amt in [5000,10000,30000,50000]" :key="amt" @click="chargeAmount=amt"
       style="padding:8px 14px;border:1.5px solid var(--border);border-radius:20px;background:var(--bg-card);cursor:pointer;font-size:0.82rem;font-weight:600;color:var(--text-secondary);">
@@ -111,7 +103,7 @@ window.MyCache = {
       :style="h.type==='환불'?'background:#ffedd5;':h.type==='충전'?'background:#dcfce7;':'background:#fee2e2;'">
       {{ h.type==='환불' ? '↩' : h.type==='충전' ? '↑' : '↓' }}
     </div>
-    <!-- ── 1열: 설명 + 날짜 ────────────────────────────────────────────────── -->
+    <!-- -- 1열: 설명 + 날짜 -------------------------------------------------- -->
     <div style="min-width:160px;flex:0 0 auto;">
       <div style="font-weight:600;font-size:0.88rem;color:var(--text-primary);">
         <template v-if="myStore.extractOrderId(h.desc)">
@@ -125,9 +117,9 @@ window.MyCache = {
       </div>
       <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;">{{ h.date }}</div>
     </div>
-    <!-- ── 2열: 결제/환불 정보 ───────────────────────────────────────────────── -->
+    <!-- -- 2열: 결제/환불 정보 ------------------------------------------------- -->
     <div style="flex:1;min-width:0;padding:0 8px;">
-      <!-- ── 직접 충전 결제정보 ───────────────────────────────────────────────── -->
+      <!-- -- 직접 충전 결제정보 ------------------------------------------------- -->
       <div v-if="h.payMethod" style="display:inline-flex;flex-direction:column;gap:3px;padding:5px 10px;background:var(--bg-base);border-radius:6px;border:1px solid var(--border);">
         <div style="display:flex;gap:8px;align-items:center;">
           <span style="font-size:0.7rem;color:var(--text-muted);min-width:42px;flex-shrink:0;">충전금액</span>
@@ -146,7 +138,7 @@ window.MyCache = {
           <span style="font-size:0.75rem;font-weight:600;color:var(--text-primary);">{{ h.approvalNo }}</span>
         </div>
       </div>
-      <!-- ── 캐쉬 환불 정보 ─────────────────────────────────────────────────── -->
+      <!-- -- 캐쉬 환불 정보 --------------------------------------------------- -->
       <div v-else-if="h.refundBank" style="display:inline-flex;flex-direction:column;gap:3px;padding:5px 10px;background:#fff7ed;border-radius:6px;border:1px solid #fed7aa;">
         <div style="display:flex;gap:8px;align-items:center;">
           <span style="font-size:0.7rem;color:#92400e;min-width:42px;flex-shrink:0;">환불계좌</span>
@@ -166,12 +158,12 @@ window.MyCache = {
         </div>
       </div>
     </div>
-    <!-- ── 3열: 거래금액 ───────────────────────────────────────────────────── -->
+    <!-- -- 3열: 거래금액 ----------------------------------------------------- -->
     <div style="font-weight:800;font-size:0.95rem;text-align:right;min-width:80px;flex-shrink:0;"
       :style="h.type==='환불'?'color:#f97316;':h.type==='충전'?'color:#22c55e;':'color:#ef4444;'">
       {{ h.type==='충전' ? '+' : h.type==='환불' ? '-' : '' }}{{ Math.abs(h.amount).toLocaleString() }}원
     </div>
-    <!-- ── 4열: 잔액 ─────────────────────────────────────────────────────── -->
+    <!-- -- 4열: 잔액 ------------------------------------------------------- -->
     <div v-if="h.balance != null" style="text-align:right;min-width:90px;flex-shrink:0;border-left:1px solid var(--border);padding-left:14px;">
       <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:2px;">잔액</div>
       <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">{{ h.balance.toLocaleString() }}원</div>

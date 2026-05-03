@@ -12,31 +12,21 @@ window.PmCouponMng = {
       date_range_opts: [],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
 
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.coupon_types = codeStore.snGetGrpCodes('COUPON_TYPE') || [];
-        codes.coupon_statuses = codeStore.snGetGrpCodes('COUPON_STATUS_KR') || [];
-        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
+        codes.coupon_types = codeStore.sgGetGrpCodes('COUPON_TYPE');
+        codes.coupon_statuses = codeStore.sgGetGrpCodes('COUPON_STATUS_KR');
+        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -146,7 +136,7 @@ window.PmCouponMng = {
 
     const viewMode = Vue.toRef(uiState, 'viewMode');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), coupons, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, discountLabel, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       get viewMode() { return uiState.viewMode; }, set viewMode(v) { uiState.viewMode = v; },
@@ -203,7 +193,7 @@ window.PmCouponMng = {
       </tbody>
     </table>
 
-    <!-- ── 카드 뷰 ───────────────────────────────────────────────────────── -->
+    <!-- -- 카드 뷰 --------------------------------------------------------- -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="coupons.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
       <div v-for="c in coupons" :key="c?.couponId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
@@ -232,7 +222,7 @@ window.PmCouponMng = {
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
-  <!-- ── 하단 상세: CouponDtl 임베드 ─────────────────────────────────────────── -->
+  <!-- -- 하단 상세: CouponDtl 임베드 ------------------------------------------- -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

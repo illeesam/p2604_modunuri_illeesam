@@ -20,27 +20,16 @@ window.MbMemberMng = {
     });
 
     // 2️⃣ computed 선언
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const cfSelectedRow = computed(() => members.find(m => m.memberId === detailModal.editId) || null);
 
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     // 3️⃣ 함수 정의
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.member_statuses = await codeStore.snGetGrpCodes('MEMBER_STATUS') || [];
-        codes.member_grades = await codeStore.snGetGrpCodes('MEMBER_GRADE') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS');
+      codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
+      uiState.isPageCodeLoad = true;
     };
 
     const SORT_MAP = { nm: { asc: 'nm_asc', desc: 'nm_desc' }, reg: { asc: 'reg_asc', desc: 'reg_desc' } };
@@ -177,15 +166,12 @@ window.MbMemberMng = {
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     // 4️⃣ watch 선언
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
-
     // 5️⃣ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
     });
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
     return {
       selectedId: computed(() => detailModal.editId), members, uiState, codes,
       searchParam, pager, setPage,

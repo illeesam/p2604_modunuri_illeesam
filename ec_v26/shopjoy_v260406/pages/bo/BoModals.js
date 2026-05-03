@@ -1,5 +1,5 @@
 /* ShopJoy Admin - 공통 참조 모달 (회원/상품/주문/클레임/쿠폰)
-   ───────────────────────────────────────────────────────────────────────
+   -----------------------------------------------------------------------
    [공통 props: reloadTrigger]
    상세 사용법은 components/modals/BaseModal.js 상단 주석 참조.
 
@@ -8,7 +8,7 @@
      - 부모: const modal = reactive({ show:false, reloadTrigger:0 });
              refresh() { modal.reloadTrigger++; }
      - 모달 내부: watch(() => props.reloadTrigger, () => handleSearchData());
-   ───────────────────────────────────────────────────────────────────────
+   -----------------------------------------------------------------------
 */
 window.BoRefModal = {
   name: 'BoRefModal',
@@ -20,7 +20,7 @@ window.BoRefModal = {
     const close = () => emit('close');
     const s = props.state;
 
-    /* ── 각 타입별 데이터 ── */
+    /* -- 각 타입별 데이터 -- */
     const member = reactive({});
     const product = reactive({});
     const order = reactive({});

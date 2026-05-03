@@ -6,16 +6,16 @@ window.Home02 = {
   template: /* html */ `
 <div>
 
-  <!-- ── ══ Site 02 Edition Ribbon ══ ─────────────────────────────────── -->
+  <!-- -- ══ Site 02 Edition Ribbon ══ ----------------------------------- -->
   <div style="background:linear-gradient(135deg,#2e7d6b 0%,#4a9b7e 50%,#5b9279 100%);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
     <span style="font-size:10px;letter-spacing:3px;padding:3px 10px;border:1px solid rgba(255,255,255,0.4);border-radius:2px;">MINT EDITION</span>
     <span style="font-size:13px;font-weight:600;letter-spacing:0.5px;">🌿 자연에서 영감받은 세이지 그린 컬렉션</span>
     <span style="margin-left:auto;font-size:11px;opacity:0.85;">FO_SITE_NO=02</span>
   </div>
 
-  <!-- ── ══ Hero Banner Slider ══ ─────────────────────────────────────── -->
+  <!-- -- ══ Hero Banner Slider ══ --------------------------------------- -->
   <section style="position:relative;overflow:hidden;background:#f5f3f0;min-height:320px;display:flex;align-items:center;flex-wrap:wrap;">
-    <!-- ── 좌: 텍스트 (슬라이드별) ─────────────────────────────────────────────── -->
+    <!-- -- 좌: 텍스트 (슬라이드별) ----------------------------------------------- -->
     <div style="position:relative;z-index:2;flex:1 1 260px;padding:clamp(28px,6vw,80px) clamp(20px,5vw,60px) clamp(28px,6vw,80px) clamp(20px,5vw,48px);min-width:0;">
       <h1 style="font-size:clamp(1.4rem,3.5vw,2.6rem);font-weight:300;line-height:1.3;color:#1a1a1a;margin-bottom:16px;letter-spacing:-0.5px;">
         {{ banners[uiState.bannerIdx].title }}<br><span style="font-weight:700;">{{ banners[uiState.bannerIdx].sub }}</span>
@@ -29,7 +29,7 @@ window.Home02 = {
         @mouseleave="$event.target.style.background='transparent';$event.target.style.color='#1a1a1a'">
         쇼핑 시작하기
       </button>
-      <!-- ── 인디케이터 (클릭 가능) ────────────────────────────────────────────── -->
+      <!-- -- 인디케이터 (클릭 가능) ---------------------------------------------- -->
       <div style="display:flex;gap:8px;margin-top:28px;">
         <span v-for="(b, i) in banners" :key="i" @click="setBanner(i)"
           :style="{
@@ -38,7 +38,7 @@ window.Home02 = {
           }"></span>
       </div>
     </div>
-    <!-- ── 우: 이미지 (페이드 전환) ────────────────────────────────────────────── -->
+    <!-- -- 우: 이미지 (페이드 전환) ---------------------------------------------- -->
     <div style="flex:1 1 160px;position:relative;min-height:280px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
       <img v-for="(b, i) in banners" :key="i" :src="b.img" :alt="b.title"
         :style="{
@@ -50,7 +50,7 @@ window.Home02 = {
     </div>
   </section>
 
-  <!-- ── ══ Category Cards (Outstock 스타일) ══ ──────────────────────────── -->
+  <!-- -- ══ Category Cards (Outstock 스타일) ══ ---------------------------- -->
   <div style="padding:0 clamp(12px,3vw,32px);margin:-40px auto 0;max-width:820px;position:relative;z-index:3;">
     <div class="home-cat-grid">
       <div v-for="(cat, ci) in (config.categorys || []).slice(0,3)" :key="cat.categoryId"
@@ -69,7 +69,7 @@ window.Home02 = {
     </div>
   </div>
 
-  <!-- ── ══ 인기 상품 (8개) ══ ─────────────────────────────────────────────── -->
+  <!-- -- ══ 인기 상품 (8개) ══ ----------------------------------------------- -->
   <div style="max-width:1080px;margin:0 auto;padding:48px clamp(12px,3vw,32px) 40px;">
     <div style="text-align:center;margin-bottom:28px;">
       <h2 style="font-size:1.5rem;font-weight:700;color:#1a1a1a;margin-bottom:8px;">인기 상품</h2>
@@ -87,13 +87,13 @@ window.Home02 = {
           <img v-if="p.image" :src="p.image" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
           <span v-if="p.badge" style="position:absolute;top:10px;left:10px;font-size:0.68rem;font-weight:600;padding:3px 8px;border-radius:2px;"
             :style="{ background: p.badge==='NEW' ? '#1a1a1a' : '#8b7355', color:'#fff' }">{{ p.badge }}</span>
-          <!-- ── 좋아요 (좋아요 상태면 항상 표시) ──────────────────────────────────── -->
+          <!-- -- 좋아요 (좋아요 상태면 항상 표시) ------------------------------------ -->
           <button @click.stop="toggleLike(p.productId)"
             :style="{ position:'absolute', right:'12px', top:'12px', width:'32px', height:'32px', borderRadius:'50%', border:'none', background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', zIndex:2 }"
             class="prod-like" title="위시리스트">
             <svg width="16" height="16" viewBox="0 0 24 24" :fill="isLiked(p.productId)?'#ef4444':'none'" :stroke="isLiked(p.productId)?'#ef4444':'#555'" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
           </button>
-          <!-- ── 장바구니 + 빠른보기 (hover 시에만) ──────────────────────────────── -->
+          <!-- -- 장바구니 + 빠른보기 (hover 시에만) -------------------------------- -->
           <div class="prod-hover" style="opacity:0;transition:opacity .25s;position:absolute;right:12px;top:48px;display:flex;flex-direction:column;gap:6px;">
             <button @click.stop="uiState.quickViewProduct=p; uiState.cartModalMode=true" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="장바구니">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
@@ -121,10 +121,10 @@ window.Home02 = {
     </div>
   </div>
 
-  <!-- ── ══ 2열 프로모션 배너 ══ ─────────────────────────────────────────────── -->
+  <!-- -- ══ 2열 프로모션 배너 ══ ----------------------------------------------- -->
   <div style="max-width:1100px;margin:0 auto;padding:0 clamp(12px,3vw,32px) 48px;">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(12px,2vw,24px);">
-      <!-- ── 배너 1 ─────────────────────────────────────────────────────── -->
+      <!-- -- 배너 1 ------------------------------------------------------- -->
       <div style="position:relative;overflow:hidden;border-radius:4px;display:flex;align-items:flex-end;min-height:300px;">
         <img src="assets/cdn/prod/img/shop/banner/banner-big-1.jpg" alt="프로모션"
           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" />
@@ -140,7 +140,7 @@ window.Home02 = {
           </button>
         </div>
       </div>
-      <!-- ── 배너 2 ─────────────────────────────────────────────────────── -->
+      <!-- -- 배너 2 ------------------------------------------------------- -->
       <div style="position:relative;overflow:hidden;border-radius:4px;display:flex;align-items:flex-end;min-height:300px;">
         <img src="assets/cdn/prod/img/shop/banner/banner-big-2.jpg" alt="프로모션"
           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" />
@@ -159,7 +159,7 @@ window.Home02 = {
     </div>
   </div>
 
-  <!-- ── ══ 할인 상품 (Sale Off) ══ ───────────────────────────────────────── -->
+  <!-- -- ══ 할인 상품 (Sale Off) ══ ----------------------------------------- -->
   <div style="max-width:1080px;margin:0 auto;padding:0 clamp(12px,3vw,32px) 40px;">
     <div style="text-align:center;margin-bottom:28px;">
       <h2 style="font-size:1.5rem;font-weight:700;color:#1a1a1a;font-style:italic;margin-bottom:8px;">할인 상품</h2>
@@ -186,14 +186,14 @@ window.Home02 = {
     </div>
   </div>
 
-  <!-- ── ══ 브랜드 로고 ══ ─────────────────────────────────────────────────── -->
+  <!-- -- ══ 브랜드 로고 ══ --------------------------------------------------- -->
   <div style="max-width:900px;margin:0 auto;padding:20px clamp(12px,3vw,32px) 40px;border-top:1px solid #eee;border-bottom:1px solid #eee;">
     <div style="display:flex;align-items:center;justify-content:center;gap:clamp(20px,5vw,48px);flex-wrap:wrap;opacity:0.45;">
       <img v-for="i in 5" :key="i" :src="'assets/cdn/prod/img/client/brand-' + i + '.webp'" style="height:30px;object-fit:contain;filter:grayscale(1);" />
     </div>
   </div>
 
-  <!-- ── ══ 블로그 포스트 ══ ────────────────────────────────────────────────── -->
+  <!-- -- ══ 블로그 포스트 ══ -------------------------------------------------- -->
   <div style="max-width:1080px;margin:0 auto;padding:40px clamp(12px,3vw,32px) 48px;">
     <div style="text-align:center;margin-bottom:28px;">
       <h2 style="font-size:1.5rem;font-weight:700;color:#1a1a1a;font-style:italic;margin-bottom:8px;">블로그</h2>
@@ -219,7 +219,7 @@ window.Home02 = {
     </div>
   </div>
 
-  <!-- ── ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ────────────────────────────── -->
+  <!-- -- ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ------------------------------ -->
   <product-modal
     :show="!!uiState.quickViewProduct"
     :product="uiState.quickViewProduct"
@@ -234,18 +234,12 @@ window.Home02 = {
 </div>
   `,
   setup(props) {
-    const { ref, reactive, computed, onMounted, onBeforeUnmount, watch } = Vue;
+    const { ref, reactive, computed, onMounted, onBeforeUnmount } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, quickViewProduct: null, bannerIdx: 0, cartModalMode: false});
     const codes = reactive({});
 
-    const isAppReady = computed(() => {
-      const initStore = window.useFoAppInitStore?.();
-      const codeStore = window.useFoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
       } catch (err) {
@@ -253,13 +247,7 @@ window.Home02 = {
       }
     };
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     function fnCategoryLabel(p) {
       if (!p) return '';
@@ -281,26 +269,26 @@ window.Home02 = {
       (props.products || []).filter(p => p.badge === '인기').slice(0, 3)
     );
 
-    /* ── 할인 상품 ── */
+    /* -- 할인 상품 -- */
     const cfSaleProducts = computed(() =>
       (props.products || []).filter(p => p.originalPrice && p.priceNum && p.originalPrice > p.priceNum).slice(0, 4)
     );
 
-    /* ── 빠른보기 모달 ── */
+    /* -- 빠른보기 모달 -- */
 
-    /* ── 홈 그리드 반응형 CSS 주입 ── */
+    /* -- 홈 그리드 반응형 CSS 주입 -- */
     /* max-width 컨테이너가 최대 열 수를 자연 제한:
        카테고리 max-width:820px  / minmax(240px) → 최대 3열, 좁아지면 2→1열
        상품     max-width:1080px / minmax(220px) → 최대 4열, 좁아지면 3→2→1열
        블로그   max-width:1080px / minmax(300px) → 최대 3열, 좁아지면 2→1열  */
 
-    /* ── 홈 상품 8개 ── */
+    /* -- 홈 상품 8개 -- */
     const cfAllHomeProducts = computed(() => {
       const all = props.products || [];
       return all.slice(0, 8);
     });
 
-    /* ── 배너 슬라이더 ── */
+    /* -- 배너 슬라이더 -- */
         const banners = [
       { img: 'assets/cdn/prod/img/slider/slider-1.jpg', title: '나만의 스타일을', sub: '완성하세요', desc: '트렌디한 의류를 합리적인 가격으로. 색상과 사이즈를 직접 선택해 나만의 스타일을 만들어보세요.' },
       { img: 'assets/cdn/prod/img/slider/slider-2.jpg', title: '2026 S/S', sub: '신상품 컬렉션', desc: '올 봄·여름 시즌을 빛낼 새로운 컬렉션이 도착했습니다. 지금 만나보세요.' },
@@ -328,7 +316,7 @@ window.Home02 = {
     });
     onBeforeUnmount(() => clearInterval(bannerTimer));
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { fnCategoryLabel, fnCatEmoji, cfNewProducts, cfBestProducts, cfAllHomeProducts, cfSaleProducts, uiState, banners, setBanner, codes };
   }

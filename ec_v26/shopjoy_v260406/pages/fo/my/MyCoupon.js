@@ -8,41 +8,29 @@ window.MyCoupon = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'unused'});
     const codes = reactive({});
 
-    const isAppReady = computed(() => {
-      const initStore = window.useFoAppInitStore?.();
-      const codeStore = window.useFoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleSearchData();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
     const myStore = window.useFoMyStore();
     const { coupons, couponCode } = Pinia.storeToRefs(myStore);
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const paginate = myStore.paginate;
 
-    /* ── 탭: 미사용 | 사용 ── */
+    /* -- 탭: 미사용 | 사용 -- */
      // 'unused' | 'used'
 
-    /* ── 날짜 필터 ── */
+    /* -- 날짜 필터 -- */
     const { inRange, onDateSearch } = window.myDateFilterHelper();
 
-    /* ── 탭 + 날짜 필터 적용 목록 ── */
+    /* -- 탭 + 날짜 필터 적용 목록 -- */
     const cfDateFilteredCoupons = computed(() =>
       coupons.value
         .filter(c => uiState.activeTab === 'unused' ? !c.used : c.used)
@@ -80,7 +68,11 @@ window.MyCoupon = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    // ── return ───────────────────────────────────────────────────────────────
+    onMounted(() => {
+      handleSearchData();
+    });
+
+    // -- return ---------------------------------------------------------------
 
     return {
       myStore, coupons, couponCode, pager, paginate,
@@ -93,14 +85,14 @@ window.MyCoupon = {
 
   <MyDateFilter @search="onSearch" />
 
-  <!-- ── 쿠폰 등록 ────────────────────────────────────────────────────────── -->
+  <!-- -- 쿠폰 등록 ---------------------------------------------------------- -->
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;display:flex;gap:10px;align-items:center;">
     <input v-model="couponCode" type="text" placeholder="쿠폰 코드 입력 (예: SPRING5000)" @keyup.enter="addCoupon"
       style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.9rem;outline:none;text-transform:uppercase;">
     <button @click="addCoupon" class="btn-blue" style="padding:10px 20px;white-space:nowrap;">쿠폰 등록</button>
   </div>
 
-  <!-- ── 탭 ────────────────────────────────────────────────────────────── -->
+  <!-- -- 탭 -------------------------------------------------------------- -->
   <div style="display:flex;border-bottom:2px solid var(--border);margin-bottom:20px;">
     <button @click="onTabChange('unused')"
       :style="{
@@ -128,14 +120,14 @@ window.MyCoupon = {
   <div v-for="c in paginate(cfDateFilteredCoupons, pager)" :key="c.couponId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:14px;">
 
-    <!-- ── 쿠폰 아이콘 ─────────────────────────────────────────────────────── -->
+    <!-- -- 쿠폰 아이콘 ------------------------------------------------------- -->
     <div style="font-size:2rem;flex-shrink:0;margin-top:2px;">🎟️</div>
 
-    <!-- ── 메인 정보 ──────────────────────────────────────────────────────── -->
+    <!-- -- 메인 정보 -------------------------------------------------------- -->
     <div style="flex:1;min-width:0;">
       <div style="font-weight:700;color:var(--text-primary);margin-bottom:4px;">{{ c.name }}</div>
 
-      <!-- ── 배지 ───────────────────────────────────────────────────────── -->
+      <!-- -- 배지 --------------------------------------------------------- -->
       <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">
         <span style="font-size:0.72rem;padding:2px 8px;border-radius:10px;font-weight:600;"
           :style="c.discountType==='shipping' ? 'background:#dbeafe;color:#1d4ed8;' : 'background:#dcfce7;color:#15803d;'">
@@ -151,7 +143,7 @@ window.MyCoupon = {
         </span>
       </div>
 
-      <!-- ── 기본 정보 ────────────────────────────────────────────────────── -->
+      <!-- -- 기본 정보 ------------------------------------------------------ -->
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:3px 16px;margin-bottom:6px;">
         <div style="font-size:0.78rem;color:var(--text-muted);">
           쿠폰코드 <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;font-family:monospace;letter-spacing:.5px;">{{ c.code }}</span>
@@ -173,7 +165,7 @@ window.MyCoupon = {
         </div>
       </div>
 
-      <!-- ── 사용 정보 (사용됨 탭) ────────────────────────────────────────────── -->
+      <!-- -- 사용 정보 (사용됨 탭) ---------------------------------------------- -->
       <div v-if="c.used" style="margin-top:6px;padding:8px 12px;background:var(--bg-base);border-radius:6px;border:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px 20px;">
         <div v-if="c.usedOrderId" style="font-size:0.78rem;color:var(--text-muted);">
           주문id <span style="font-weight:600;color:var(--blue);margin-left:4px;">{{ c.usedOrderId }}</span>
@@ -196,7 +188,7 @@ window.MyCoupon = {
       </div>
     </div>
 
-    <!-- ── 할인금액 + 상태 ──────────────────────────────────────────────────── -->
+    <!-- -- 할인금액 + 상태 ---------------------------------------------------- -->
     <div style="text-align:right;flex-shrink:0;">
       <div style="font-size:1.1rem;font-weight:800;color:var(--blue);">{{ myStore.discountLabel(c) }}</div>
       <div style="font-size:0.75rem;font-weight:600;margin-top:4px;"

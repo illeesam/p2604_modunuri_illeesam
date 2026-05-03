@@ -12,31 +12,19 @@ window.PmPlanMng = {
       date_range_opts: [],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.subscription_periods = codeStore.snGetGrpCodes('SUBSCRIPTION_PERIOD') || [];
-        codes.plan_statuses = codeStore.snGetGrpCodes('PLAN_STATUS_KR') || [];
-        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
+        codes.subscription_periods = codeStore.sgGetGrpCodes('SUBSCRIPTION_PERIOD');
+        codes.plan_statuses = codeStore.sgGetGrpCodes('PLAN_STATUS_KR');
+        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     // onMounted에서 API 로드
     const SORT_MAP = { nm: { asc: 'nm_asc', desc: 'nm_desc' }, reg: { asc: 'reg_asc', desc: 'reg_desc' } };
@@ -79,6 +67,7 @@ window.PmPlanMng = {
       return { kw: '', category: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
     };
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     });
     const handleDateRangeChange = () => {
@@ -152,7 +141,7 @@ const CATEGORIES = [
 
     const viewMode = Vue.toRef(uiState, 'viewMode');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), plans, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, CATEGORIES, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       get viewMode() { return uiState.viewMode; }, set viewMode(v) { uiState.viewMode = v; } };
@@ -186,7 +175,7 @@ const CATEGORIES = [
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <!-- ── 리스트 뷰 ──────────────────────────────────────────────────────── -->
+    <!-- -- 리스트 뷰 -------------------------------------------------------- -->
     <table class="bo-table" v-if="viewMode==='list'">
       <thead><tr><th style="width:36px;text-align:center;">번호</th><th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">기획전명 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th><th>카테고리</th><th>테마</th><th>상품수</th><th>상태</th><th>조회수</th><th>기간</th><th @click="onSort('reg')" style="cursor:pointer;user-select:none;white-space:nowrap;">등록일 <span :style="uiState.sortKey==='reg'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('reg') }}</span></th><th>사이트명</th><th style="text-align:right">관리</th></tr></thead>
       <tbody>
@@ -211,13 +200,13 @@ const CATEGORIES = [
       </tbody>
     </table>
 
-    <!-- ── 카드 뷰 ───────────────────────────────────────────────────────── -->
+    <!-- -- 카드 뷰 --------------------------------------------------------- -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="plans.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
       <div v-for="p in plans" :key="p?.planId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="selectedId===p.planId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleLoadDetail(p.planId)">
-        <!-- ── 배너 이미지 ─────────────────────────────────────────────────── -->
+        <!-- -- 배너 이미지 --------------------------------------------------- -->
         <div v-if="p.bannerImage" style="padding:12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;" v-html="p.bannerImage"></div>
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">기획전 #{{ p.planId }}</div>
@@ -243,7 +232,7 @@ const CATEGORIES = [
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
-  <!-- ── 하단 상세: PlanDtl 임베드 ───────────────────────────────────────────── -->
+  <!-- -- 하단 상세: PlanDtl 임베드 --------------------------------------------- -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

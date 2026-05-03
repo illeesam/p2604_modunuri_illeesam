@@ -5,7 +5,7 @@ window.SyCodeMng = {
   setup(props) {
     const { reactive, watch, onMounted, nextTick } = Vue;
 
-    // ── 선언부 ────────────────────────────────────────────────────────────────
+    // -- 선언부 ----------------------------------------------------------------
 
     const pageCodes   = reactive({ use_yn: [], date_range_opts: [] });
     const uiState     = reactive({
@@ -51,7 +51,7 @@ window.SyCodeMng = {
     // grpDirtyCount: uiState.grpRows 변경 시 갱신
     const syncGrpDirty = () => { uiState.grpDirtyCount = uiState.grpRows.filter(r => r._row_status !== 'N').length; };
 
-    // ── 트리 갱신 ─────────────────────────────────────────────────────────────
+    // -- 트리 갱신 -------------------------------------------------------------
 
     const rebuildTree = () => {
       parentOpts.splice(0);
@@ -88,29 +88,27 @@ window.SyCodeMng = {
       roots.map(build).forEach(node => walk(node, 0));
     };
 
-    // ── watch ─────────────────────────────────────────────────────────────────
+    // -- watch -----------------------------------------------------------------
 
-    // isAppReady: Pinia store 준비 완료 시 pageCodes 로드 (computed 제거 → store 직접 확인)
+    // isAppReady: Pinia store 준비 완료 시 pageCodes 로드 ( 제거 → store 직접 확인)
     const checkAndLoadCodes = () => {
       const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
+      const codeStore = window.sfGetBoCodeStore();
       if (!initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad)
         fnLoadCodes();
     };
-    watch(() => window.sfGetBoCodeStore?.()?.svCodes?.length, checkAndLoadCodes);
+    watch(() => window.sfGetBoCodeStore()?.svCodes?.length, checkAndLoadCodes);
 
-    // ── 초기화 ────────────────────────────────────────────────────────────────
+    // -- 초기화 ----------------------------------------------------------------
 
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (codeStore?.snGetGrpCodes) {
-          pageCodes.use_yn = await codeStore.snGetGrpCodes('USE_YN') || [];
-          pageCodes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
-        }
-        uiState.isPageCodeLoad = true;
-      } catch (err) { console.error('[fnLoadCodes]', err); }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      pageCodes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+        pageCodes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
     };
+
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     onMounted(() => {
       checkAndLoadCodes();
@@ -118,7 +116,7 @@ window.SyCodeMng = {
       Object.assign(searchParamOrg, searchParam);
     });
 
-    // ── 이벤트 함수 ──────────────────────────────────────────────────────────
+    // -- 이벤트 함수 ----------------------------------------------------------
 
     const onSearch = () => handleLoadAllGroups();
     const onReset  = () => {
@@ -182,7 +180,7 @@ window.SyCodeMng = {
 
     const toggleCheckAll = () => { uiState.gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
-    // ── 일반 함수 ─────────────────────────────────────────────────────────────
+    // -- 일반 함수 -------------------------------------------------------------
 
     // grpSortKey → API sort 파라미터 매핑
     const GRP_SORT_MAP = {
@@ -445,7 +443,7 @@ window.SyCodeMng = {
 
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    // ── return ────────────────────────────────────────────────────────────────
+    // -- return ----------------------------------------------------------------
 
     return {
       uiState, pageCodes, siteNm,
@@ -466,7 +464,7 @@ window.SyCodeMng = {
 <div>
   <div class="page-title">공통코드관리</div>
 
-  <!-- ── 검색 영역 ──────────────────────────────────────────────────────── -->
+  <!-- -- 검색 영역 -------------------------------------------------------- -->
   <div class="card">
     <div class="search-bar">
       <input v-model="searchParam.kw" placeholder="코드그룹 / 라벨 / 코드값 검색" @keyup.enter="onSearch" />
@@ -489,7 +487,7 @@ window.SyCodeMng = {
     </div>
   </div>
 
-  <!-- ── 표시경로 트리 + 코드그룹 CRUD ─────────────────────────────────── -->
+  <!-- -- 표시경로 트리 + 코드그룹 CRUD ----------------------------------- -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;margin-bottom:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;">
@@ -602,7 +600,7 @@ window.SyCodeMng = {
     </div>
   </div>
 
-  <!-- ── 코드 목록 영역 ──────────────────────────────────────────────────── -->
+  <!-- -- 코드 목록 영역 ---------------------------------------------------- -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title" style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px;">
@@ -626,7 +624,7 @@ window.SyCodeMng = {
       </div>
     </div>
 
-    <!-- ── 일반/트리 탭 ──────────────────────────────────────────────────── -->
+    <!-- -- 일반/트리 탭 ---------------------------------------------------- -->
     <div style="display:flex;gap:8px;padding:12px;border-bottom:1px solid #e5e7eb;background:#f9fafb;">
       <button @click="uiState.activeCodeTab='일반'"
         style="padding:8px 16px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:#6b7280;font-weight:500;transition:all 0.2s;"
@@ -636,7 +634,7 @@ window.SyCodeMng = {
         :style="uiState.activeCodeTab==='트리' ? {borderBottomColor:'#e8587a',color:'#e8587a'} : {}">트리</button>
     </div>
 
-    <!-- ── 일반 탭 ────────────────────────────────────────────────────────── -->
+    <!-- -- 일반 탭 ---------------------------------------------------------- -->
     <div v-if="uiState.activeCodeTab==='일반'" style="overflow-y:auto;max-height:400px;border:1px solid #e5e7eb;">
       <table class="bo-table crud-grid">
         <thead style="position:sticky;top:0;background:#fff;z-index:10;">
@@ -710,7 +708,7 @@ window.SyCodeMng = {
       </table>
     </div>
 
-    <!-- ── 트리 탭 ────────────────────────────────────────────────────────── -->
+    <!-- -- 트리 탭 ---------------------------------------------------------- -->
     <div v-if="uiState.activeCodeTab==='트리' && uiState.selectedGrp">
       <div class="toolbar" style="background:#f9fafb;padding:12px;border-bottom:1px solid #e5e7eb;">
         <span class="list-title">트리 형식 편집</span>
@@ -792,13 +790,13 @@ window.SyCodeMng = {
     </div>
   </div>
 
-  <!-- ── 표시경로 선택 모달 ────────────────────────────────────────────── -->
+  <!-- -- 표시경로 선택 모달 ---------------------------------------------- -->
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_code_grp"
     :value="pathPickModal.row ? pathPickModal.row.pathId : null"
     title="공통코드그룹 표시경로 선택"
     @select="onPathPicked" @close="closePathPick" />
 
-  <!-- ── 코드 상세 패널 (인라인 임베드) ───────────────────────────────── -->
+  <!-- -- 코드 상세 패널 (인라인 임베드) --------------------------------- -->
   <div v-if="uiState.selectedCodeId" style="margin-top:20px;padding:20px;background:#fff;border-radius:8px;border:1px solid #e5e7eb;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb;">
       <h3 style="margin:0;font-size:16px;font-weight:600;color:#1f2937;">코드 상세</h3>

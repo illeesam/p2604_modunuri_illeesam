@@ -13,32 +13,20 @@ window.PmSaveMng = {
       date_range_opts: [],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.save_statuses = codeStore.snGetGrpCodes('SAVE_STATUS') || [];
-        codes.save_issue_types = codeStore.snGetGrpCodes('SAVE_ISSUE_TYPE') || [];
-        codes.promo_statuses = codeStore.snGetGrpCodes('PROMO_STATUS') || [];
-        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
+        codes.save_statuses = codeStore.sgGetGrpCodes('SAVE_STATUS');
+        codes.save_issue_types = codeStore.sgGetGrpCodes('SAVE_ISSUE_TYPE');
+        codes.promo_statuses = codeStore.sgGetGrpCodes('PROMO_STATUS');
+        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     // onMounted에서 API 로드
     const SORT_MAP = { nm: { asc: 'nm_asc', desc: 'nm_desc' }, reg: { asc: 'reg_asc', desc: 'reg_desc' } };
@@ -81,6 +69,7 @@ window.PmSaveMng = {
       return { kw: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, type: '', status: '' };
     };
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     });
     const handleDateRangeChange = () => {
@@ -148,7 +137,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
 
     const viewMode = Vue.toRef(uiState, 'viewMode');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), saves, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       get viewMode() { return uiState.viewMode; }, set viewMode(v) { uiState.viewMode = v; } };
@@ -205,7 +194,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
       </tbody>
     </table>
 
-    <!-- ── 카드 뷰 ───────────────────────────────────────────────────────── -->
+    <!-- -- 카드 뷰 --------------------------------------------------------- -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="saves.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
       <div v-for="s in saves" :key="s?.saveId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
@@ -235,7 +224,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view' });
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
-  <!-- ── 하단 상세: PmSaveDtl 임베드 ─────────────────────────────────────────── -->
+  <!-- -- 하단 상세: PmSaveDtl 임베드 ------------------------------------------- -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

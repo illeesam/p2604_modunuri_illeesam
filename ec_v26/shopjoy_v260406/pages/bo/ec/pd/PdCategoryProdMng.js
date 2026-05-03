@@ -14,32 +14,22 @@ window.PdCategoryProdMng = {
       disp_yn_opts: [{ codeValue: 'Y', codeLabel: '전시' }, { codeValue: 'N', codeLabel: '비전시' }],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
 
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.product_statuses = codeStore.snGetGrpCodes('PRODUCT_STATUS') || [];
+        codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+
 
     /* 선택된 카테고리 (watch 이전에 선언 필수) */
     const cfSelectedCatId = ref(null);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     watch(() => cfSelectedCatId.value, async (newVal) => {
       if (newVal) {
@@ -56,12 +46,12 @@ window.PdCategoryProdMng = {
       if (isAppReady.value) fnLoadCodes();
     });
 
-    /* ── 뷰모드 영속화 ── */
+    /* -- 뷰모드 영속화 -- */
     if (!window._ecCategoryProdState) window._ecCategoryProdState = { viewMode: 'tab' };
 
         watch(() => uiState.viewMode, v => { window._ecCategoryProdState.viewMode = v; });
 
-    /* ── 진열 유형 탭 ── */
+    /* -- 진열 유형 탭 -- */
     const TYPE_TABS = [
       { cd: 'NORMAL',    nm: '일반상품' },
       { cd: 'HIGHLIGHT', nm: '하이라이트상품' },
@@ -71,7 +61,7 @@ window.PdCategoryProdMng = {
       { cd: 'HOT_DEAL',  nm: '핫딜상품' },
     ];
     
-    /* ── 강조 옵션 ── */
+    /* -- 강조 옵션 -- */
     const EMPHASIS_OPTS = [
       { cd: 'BOLD',       nm: '볼드',      icon: 'B' },
       { cd: 'TEXT_COLOR', nm: '글자색',    icon: 'A' },
@@ -86,11 +76,11 @@ window.PdCategoryProdMng = {
       row.emphasisCd = s.size ? '^' + [...s].join('^') + '^' : '';
     };
 
-    /* ── 날짜 기본값 ── */
+    /* -- 날짜 기본값 -- */
     const defaultDispEndDate   = () => { const y = new Date().getFullYear() + 3; return `${y}-12-31`; };
     const defaultDispStartDate = () => new Date().toISOString().slice(0, 10);
 
-    /* ── 검색 ── */
+    /* -- 검색 -- */
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const _initSearchParam = () => ({ prodNm: '', categoryId: '' });
     const searchParam = reactive(_initSearchParam());
@@ -185,7 +175,7 @@ window.PdCategoryProdMng = {
       });
     });
 
-    /* ── 드래그 상태 ── */
+    /* -- 드래그 상태 -- */
     const dragoverIdx = ref(null);
     let dragStartIdx = null;
     const onDragStart = (idx) => { dragStartIdx = idx; };
@@ -200,7 +190,7 @@ window.PdCategoryProdMng = {
       dragStartIdx = null;
     };
 
-    /* ── 상품 정보 조회 헬퍼 ── */
+    /* -- 상품 정보 조회 헬퍼 -- */
     const getProdNm = (prodId) => {
       const prod = products.find(p => p.prodId === prodId || p.productId === prodId);
       return prod?.prodNm || prod?.productName || `[${prodId}]`;
@@ -219,13 +209,13 @@ window.PdCategoryProdMng = {
       return path.join(' > ');
     };
 
-    /* ── 행 제거 ── */
+    /* -- 행 제거 -- */
     const removeRow = (row) => {
       const idx = categoryProds.findIndex(r => r === row);
       if (idx !== -1) categoryProds.splice(idx, 1);
     };
 
-    /* ── 상품 추가 ── */
+    /* -- 상품 추가 -- */
     const addProd = (prod) => {
       const exists = categoryProds.some(cp => cp.prodId === prod.productId && cp.categoryId === cfSelectedCatId.value && cp.typeCd === uiState.activeTypeCd);
       if (exists) {
@@ -248,7 +238,7 @@ window.PdCategoryProdMng = {
       if (props.showToast) props.showToast('상품이 추가되었습니다.', 'success');
     };
 
-    /* ── 피커 검색 ── */
+    /* -- 피커 검색 -- */
     const cfPickerList = computed(() => {
       return products.filter(p => {
         const q = pickerSearch.value.toLowerCase();
@@ -273,7 +263,7 @@ window.PdCategoryProdMng = {
       }
     };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return {
       codes, uiState, categories, categoryProds,
@@ -295,7 +285,7 @@ window.PdCategoryProdMng = {
 <div>
   <div class="page-title">카테고리상품관리</div>
 
-  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
     <div class="search-bar">
       <label class="search-label">상품명</label>
@@ -308,10 +298,10 @@ window.PdCategoryProdMng = {
     </div>
   </div>
 
-  <!-- ── 좌 트리 + 우 상품목록 ────────────────────────────────────────────────── -->
+  <!-- -- 좌 트리 + 우 상품목록 -------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:flex-start">
 
-    <!-- ── 좌측 카테고리 트리 ─────────────────────────────────────────────────── -->
+    <!-- -- 좌측 카테고리 트리 --------------------------------------------------- -->
     <div class="card" style="padding:12px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <span style="font-size:13px;font-weight:600;color:#555">📁 카테고리</span>
@@ -320,17 +310,17 @@ window.PdCategoryProdMng = {
       <category-tree mode="tree" :selected="cfSelectedCatId" :show-count="totalProdCount" @select="selectNode" />
     </div>
 
-    <!-- ── 우측 상품 목록 ───────────────────────────────────────────────────── -->
+    <!-- -- 우측 상품 목록 ----------------------------------------------------- -->
     <div class="card">
 
-      <!-- ── 선택 전 안내 ──────────────────────────────────────────────────── -->
+      <!-- -- 선택 전 안내 ---------------------------------------------------- -->
       <div v-if="!cfSelectedCatId" style="text-align:center;padding:60px;color:#aaa">
         <div style="font-size:32px;margin-bottom:12px">📂</div>
         <div>좌측에서 카테고리를 선택하세요.</div>
       </div>
 
       <template v-else>
-        <!-- ── 카테고리명 + 저장/추가 버튼 ───────────────────────────────────────── -->
+        <!-- -- 카테고리명 + 저장/추가 버튼 ----------------------------------------- -->
         <div class="toolbar" style="margin-bottom:0">
           <span class="list-title">
             <span :style="{ color: fnDepthColor((cfSelectedCat?.depth||1)-1), fontWeight:700, marginRight:'4px' }">
@@ -345,7 +335,7 @@ window.PdCategoryProdMng = {
           </div>
         </div>
 
-        <!-- ── 탭바 + 뷰모드 버튼 ────────────────────────────────────────────── -->
+        <!-- -- 탭바 + 뷰모드 버튼 ---------------------------------------------- -->
         <div class="tab-bar-row" style="margin:12px 0 0">
           <div class="tab-nav" style="flex:1;flex-wrap:wrap">
             <button v-for="tab in TYPE_TABS" :key="tab?.cd"
@@ -368,7 +358,7 @@ window.PdCategoryProdMng = {
           ≡ 드래그로 순서 변경 · 저장 후 반영됩니다.
         </div>
 
-        <!-- ── TABLE 뷰 (tab / 1col) ───────────────────────────────────── -->
+        <!-- -- TABLE 뷰 (tab / 1col) ------------------------------------- -->
         <table v-if="uiState.viewMode==='tab'||uiState.viewMode==='1col'" class="bo-table">
           <thead><tr>
             <th style="width:28px"></th>
@@ -452,7 +442,7 @@ window.PdCategoryProdMng = {
           </tbody>
         </table>
 
-        <!-- ── CARD GRID 뷰 (2col / 3col / 4col) ───────────────────────── -->
+        <!-- -- CARD GRID 뷰 (2col / 3col / 4col) ------------------------- -->
         <div v-else
              :style="{
                display:'grid',
@@ -468,7 +458,7 @@ window.PdCategoryProdMng = {
                :style="dragoverIdx===idx ? 'border-color:#1677ff;box-shadow:0 0 0 2px #bfdbfe'
                        : row._isNew ? 'border-color:#52c41a'
                        : (uiState.activeTypeCd!=='NORMAL' && row.dispYn==='N') ? 'opacity:0.6' : ''">
-            <!-- ── 카드 헤더 ──────────────────────────────────────────────── -->
+            <!-- -- 카드 헤더 ------------------------------------------------ -->
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
               <div style="display:flex;align-items:center;gap:5px">
                 <span style="cursor:grab;color:#bbb;font-size:15px;user-select:none">≡</span>
@@ -477,15 +467,15 @@ window.PdCategoryProdMng = {
               </div>
               <button class="btn btn-danger btn-xs" @click="removeRow(row)">✕</button>
             </div>
-            <!-- ── 상품명 ────────────────────────────────────────────────── -->
+            <!-- -- 상품명 -------------------------------------------------- -->
             <div style="font-weight:600;font-size:13px;margin-bottom:3px;line-height:1.4;word-break:keep-all">
               {{ getProdNm(row.prodId) }}
             </div>
-            <!-- ── 카테고리경로 ─────────────────────────────────────────────── -->
+            <!-- -- 카테고리경로 ----------------------------------------------- -->
             <div style="font-size:10px;color:#888;margin-bottom:6px;background:#f5f5f5;border-radius:4px;padding:2px 6px;display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
               {{ getCatPath(row.categoryId) }}
             </div>
-            <!-- ── 가격/재고/상태 ───────────────────────────────────────────── -->
+            <!-- -- 가격/재고/상태 --------------------------------------------- -->
             <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;flex-wrap:wrap">
               <span style="font-size:12px;font-weight:700;color:#e8587a">
                 {{ ((getProd(row.prodId)?.salePrice||getProd(row.prodId)?.price||0)).toLocaleString() }}원
@@ -498,7 +488,7 @@ window.PdCategoryProdMng = {
                 {{ getProd(row.prodId)?.status || '-' }}
               </span>
             </div>
-            <!-- ── 강조옵션 chips ─────────────────────────────────────────── -->
+            <!-- -- 강조옵션 chips ------------------------------------------- -->
             <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:7px">
               <button v-for="opt in EMPHASIS_OPTS" :key="opt?.cd"
                       @click="toggleEmphasis(row, opt.cd)"
@@ -509,7 +499,7 @@ window.PdCategoryProdMng = {
                 {{ opt.icon }} {{ opt.nm }}
               </button>
             </div>
-            <!-- ── 전시기간 (NORMAL 제외) ───────────────────────────────────── -->
+            <!-- -- 전시기간 (NORMAL 제외) ------------------------------------- -->
             <template v-if="uiState.activeTypeCd!=='NORMAL'">
               <div style="display:flex;align-items:center;gap:2px;margin-bottom:4px">
                 <input type="date" class="form-control" v-model="row.dispStartDate"
@@ -518,7 +508,7 @@ window.PdCategoryProdMng = {
                 <input type="date" class="form-control" v-model="row.dispEndDate"
                        style="flex:1;padding:2px 4px;font-size:10px;min-width:0" />
               </div>
-              <!-- ── 전시여부 ─────────────────────────────────────────────── -->
+              <!-- -- 전시여부 ----------------------------------------------- -->
               <select class="form-control" v-model="row.dispYn"
                       style="width:100%;padding:2px 6px;font-size:11px"
                       :style="row.dispYn==='Y' ? 'color:#16a34a;font-weight:600' : 'color:#9ca3af'">
@@ -536,7 +526,7 @@ window.PdCategoryProdMng = {
     </div>
   </div>
 
-  <!-- ── 상품 추가 피커 모달 ──────────────────────────────────────────────────── -->
+  <!-- -- 상품 추가 피커 모달 ---------------------------------------------------- -->
   <teleport to="body">
     <div v-if="pickerOpen"
          style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"

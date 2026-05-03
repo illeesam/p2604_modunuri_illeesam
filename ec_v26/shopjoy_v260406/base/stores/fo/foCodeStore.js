@@ -25,7 +25,7 @@ window.useFoCodeStore = Pinia.defineStore('foCode', {
       return code?.codeNm || codeVal;
     },
     // 코드 그룹을 { codeValue, codeLabel } 형식으로 변환
-    snGetGrpCodes: (s) => (grpVal) => {
+    sgGetGrpCodes: (s) => (grpVal) => {
       if (!Array.isArray(s.svCodes)) return [];
       return s.svCodes
         .filter(c => c.codeGrp === grpVal && c.use_yn === 'Y')
@@ -33,7 +33,7 @@ window.useFoCodeStore = Pinia.defineStore('foCode', {
         .map(c => ({ codeValue: c.code_value, codeLabel: `${c.code_label} (${c.codeGrp}:${c.code_value})` })) || [];
     },
     // 코드 그룹을 { codeValue, codeLabel } 형식으로 + 초기 항목 추가
-    snGetGrpCodesFirstOpt: (s) => (grpVal, initVal, initLabel) => {
+    sgGetGrpCodesFirstOpt: (s) => (grpVal, initVal, initLabel) => {
       if (!Array.isArray(s.svCodes)) return initVal && initLabel ? [{ codeValue: initVal, codeLabel: initLabel }] : [];
       const codes = s.svCodes
         .filter(c => c.codeGrp === grpVal && c.use_yn === 'Y')

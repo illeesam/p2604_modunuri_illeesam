@@ -16,31 +16,19 @@ window.PdSetMng = {
       use_yn: [],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.product_statuses = codeStore.snGetGrpCodes('PRODUCT_STATUS') || [];
-        codes.bundle_statuses = codeStore.snGetGrpCodes('BUNDLE_STATUS') || [];
-        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
+        codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
+        codes.bundle_statuses = codeStore.sgGetGrpCodes('BUNDLE_STATUS');
+        codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     // onMounted에서 API 로드
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -63,11 +51,11 @@ window.PdSetMng = {
         uiState.loading = false;
       }
     };
-    /* ── 검색 파라미터 ── */
+    /* -- 검색 파라미터 -- */
     const _initSearchParam = () => ({ nm: '' });
     const searchParam = reactive(_initSearchParam());
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchData('DEFAULT');
@@ -76,7 +64,7 @@ window.PdSetMng = {
 const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
 
-    /* ── 신규등록 폼 ── */
+    /* -- 신규등록 폼 -- */
     const newForm = reactive({
       prodNm: '', brandId: '', vendorId: '',
       listPrice: 0, salePrice: 0, stock: 0,
@@ -84,7 +72,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     });
     const newErrors = reactive({});
 
-    /* ── 카테고리 N개 ── */
+    /* -- 카테고리 N개 -- */
     const dtlCategories   = reactive([]);
     const cfCatExcludeSet = computed(() => new Set(dtlCategories.map(c => String(c.categoryId))));
 
@@ -109,11 +97,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const getCategoryNm  = id => { const c = (categories||[]).find(c=>c.categoryId==id); return c ? c.categoryNm : String(id); };
     const getCategoryDepth = id => { const c = (categories||[]).find(c=>c.categoryId==id); return c ? (c.depth||1) : 1; };
 
-    /* ── 구성품 목록 ── */
+    /* -- 구성품 목록 -- */
     const dtlItems = reactive([]);
     let _seq = 1;
 
-    /* ── 드래그 ── */
+    /* -- 드래그 -- */
     const onDragStart = idx => { uiState.dragIdx = idx; };
     const onDragOver  = idx => { uiState.dragoverIdx = idx; };
     const onDrop = () => {
@@ -128,7 +116,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       uiState.dragIdx = uiState.dragoverIdx = null;
     };
 
-    /* ── 상품 피커 ── */
+    /* -- 상품 피커 -- */
     const cfPickerList   = computed(() => {
       const q    = (uiState.pickerSearch || '').trim().toLowerCase();
       const used = new Set(dtlItems.map(d => d.itemProdId).filter(Boolean));
@@ -140,12 +128,12 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       });
     });
 
-    /* ── helpers ── */
+    /* -- helpers -- */
     const getProd   = id => id ? (products || []).find(p => p.productId === id) : null;
     const getProdNm = id => { const p = getProd(id); return p ? (p.prodNm || p.productName || '상품#' + id) : id ? '상품#' + id : ''; };
     const getBrandNm = id => { const b = (brands||[]).find(b=>b.brandId==id); return b ? (b.brandNm||id) : id; };
 
-    /* ── 세트상품 목록 ── */
+    /* -- 세트상품 목록 -- */
     const setList = reactive([]);
 
     const fnBuildSetList = () => {
@@ -181,7 +169,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
     const onSizeChange = () => { pager.pageNo = 1; };
 
-    /* ── 신규 열기 ── */
+    /* -- 신규 열기 -- */
     const openNew = () => {
       uiState.dtlMode = 'new';
       uiState.editSetId = null;
@@ -191,7 +179,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       dtlItems.length = 0;
     };
 
-    /* ── 편집 열기 ── */
+    /* -- 편집 열기 -- */
     const openDtl = setProdId => {
       uiState.dtlMode = 'edit';
       uiState.editSetId = setProdId;
@@ -222,7 +210,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     const cfDtlProdNm = computed(() => uiState.dtlMode === 'new' ? (newForm.prodNm || '(신규 세트상품)') : getProdNm(uiState.editSetId));
 
-    /* ── 구성품 추가 (연결상품) ── */
+    /* -- 구성품 추가 (연결상품) -- */
     const addItemFromProd = prod => {
       const maxSort = dtlItems.length ? Math.max(...dtlItems.map(d => d.sortOrd)) : 0;
       dtlItems.push({
@@ -239,7 +227,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       uiState.pickerOpen = false; uiState.pickerSearch = '';
     };
 
-    /* ── 구성품 추가 (비상품 — 직접입력) ── */
+    /* -- 구성품 추가 (비상품 — 직접입력) -- */
     const addItemBlank = () => {
       const maxSort = dtlItems.length ? Math.max(...dtlItems.map(d => d.sortOrd)) : 0;
       dtlItems.push({
@@ -257,7 +245,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     const removeItem = idx => dtlItems.splice(idx, 1);
 
-    /* ── 저장 ── */
+    /* -- 저장 -- */
     const handleSave = async () => {
       Object.keys(newErrors).forEach(k => delete newErrors[k]);
       if (uiState.dtlMode === 'new') {
@@ -321,7 +309,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       }
     };
 
-    /* ── 삭제 ── */
+    /* -- 삭제 -- */
     const handleDelete = async setProdId => {
       const ok = await props.showConfirm('삭제', '세트상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
       if (!ok) return;
@@ -341,7 +329,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     };
 
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return {
       codes, uiState,
@@ -371,7 +359,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     </div>
   </div>
 
-  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
     <div class="search-bar">
       <label class="search-label">세트상품명</label>
@@ -384,7 +372,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     </div>
   </div>
 
-  <!-- ── 목록 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 목록 ------------------------------------------------------------- -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title">세트상품 목록</span>
@@ -452,11 +440,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
 
-  <!-- ── 신규등록 / 구성관리 (인라인 Dtl) ────────────────────────────────────────── -->
+  <!-- -- 신규등록 / 구성관리 (인라인 Dtl) ------------------------------------------ -->
   <div v-if="uiState.dtlMode !== null" class="card"
        :style="uiState.dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #f59e0b'">
 
-    <!-- ── Dtl 헤더 ─────────────────────────────────────────────────────── -->
+    <!-- -- Dtl 헤더 ------------------------------------------------------- -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0">
       <div style="display:flex;align-items:center;gap:10px">
         <span :class="['badge', uiState.dtlMode==='new' ? 'badge-green' : 'badge-orange']">
@@ -476,7 +464,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       </div>
     </div>
 
-    <!-- ── ① 기본정보 (신규 시만) ─────────────────────────────────────────────── -->
+    <!-- -- ① 기본정보 (신규 시만) ----------------------------------------------- -->
     <div v-if="uiState.dtlMode==='new'" style="background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:16px 20px;margin-bottom:20px">
       <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:12px">세트상품 기본정보 (pd_prod)</div>
       <div class="form-row">
@@ -531,7 +519,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       </div>
     </div>
 
-    <!-- ── ② 카테고리 ─────────────────────────────────────────────────────── -->
+    <!-- -- ② 카테고리 ------------------------------------------------------- -->
     <div class="form-row" style="margin-bottom:16px">
       <div class="form-group">
         <label class="form-label">카테고리 <span style="font-size:11px;color:#aaa;font-weight:400">N개 등록 · 첫 번째 = 대표</span></label>
@@ -553,7 +541,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       </div>
     </div>
 
-    <!-- ── ③ 구성품 목록 ───────────────────────────────────────────────────── -->
+    <!-- -- ③ 구성품 목록 ----------------------------------------------------- -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
       <span style="font-size:13px;font-weight:600;color:#555">구성품 목록 (pd_prod_set_item)</span>
       <span style="font-size:11px;color:#888;background:#fff7ed;border:1px solid #fed7aa;border-radius:4px;padding:1px 8px">
@@ -620,7 +608,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       </tbody>
     </table>
 
-    <!-- ── 구성품 추가 버튼 ──────────────────────────────────────────────────── -->
+    <!-- -- 구성품 추가 버튼 ---------------------------------------------------- -->
     <div style="margin-top:12px;display:flex;gap:8px">
       <button class="btn btn-secondary btn-sm" @click="uiState.pickerOpen=true;uiState.pickerSearch=''">
         + 상품 구성품 추가
@@ -631,7 +619,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     </div>
   </div>
 
-  <!-- ── 상품 피커 모달 ─────────────────────────────────────────────────────── -->
+  <!-- -- 상품 피커 모달 ------------------------------------------------------- -->
   <teleport to="body" v-if="uiState.pickerOpen">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
          @click.self="uiState.pickerOpen=false">
@@ -671,7 +659,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     </div>
   </teleport>
 
-  <!-- ── 카테고리 피커 모달 ───────────────────────────────────────────────────── -->
+  <!-- -- 카테고리 피커 모달 ----------------------------------------------------- -->
   <category-tree mode="picker" :show="uiState.catPickerOpen" :exclude-ids="cfCatExcludeSet"
                  @select="addCategory" @close="uiState.catPickerOpen=false" />
 </div>`

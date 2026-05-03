@@ -7,27 +7,21 @@ window.SyBbsDtl = {
 
     const uiState = reactive({ loading: false, showBbmDetail: false, error: null, isPageCodeLoad: false, selectedBbm: null, showBbmModal: false });
     const codes = reactive({ bbs_post_statuses: [] });
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
 
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (codeStore?.snGetGrpCodes) {
-          codes.bbs_post_statuses = codeStore.snGetGrpCodes('BBS_POST_STATUS') || [];
-        }
+        const codeStore = window.sfGetBoCodeStore();
+        codes.bbs_post_statuses = codeStore.sgGetGrpCodes('BBS_POST_STATUS');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
       uiState.isPageCodeLoad = true;
     };
 
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+
     // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
 
     const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());

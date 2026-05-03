@@ -8,34 +8,17 @@ window.SyPropMng = {
     const uiState = reactive({ isPageCodeLoad: false, _newId: -1, selectedPath: ''});
     const codes = reactive({ use_yn: [], prop_types: ['STRING','NUMBER','BOOLEAN','JSON'] });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     const cfSiteId = computed(() => boCommonFilter?.siteId || null);
 
-    /* ── 표시경로 선택 모달 (sy_path) ── */
+    /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, row: null });
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
@@ -48,10 +31,10 @@ window.SyPropMng = {
     };
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    /* ── 검색 ── */
+    /* -- 검색 -- */
     const searchParam = reactive({ kw: '', useFlt: '', typeFlt: '' });
 
-    /* ── 데이터 (작업 상태 포함) ── */
+    /* -- 데이터 (작업 상태 포함) -- */
     const rows = reactive([]);
     const _rawProps = reactive([]); // 원본 데이터 (cancelRow 복원용)
     const reload = () => {
@@ -79,20 +62,20 @@ window.SyPropMng = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       fetchData('DEFAULT');
     });
 
-    /* ── 선택 노드 ── */
+    /* -- 선택 노드 -- */
     const selectNode = (path) => { uiState.selectedPath = path; fetchData('DEFAULT'); };
 
-    /* ── 그리드에 표시할 행: 삭제 표시 제외 ── */
+    /* -- 그리드에 표시할 행: 삭제 표시 제외 -- */
     const cfGridRows = computed(() => rows.filter(r => r._status !== 'D'));
 
 
-    /* ── 행 변경 추적 ── */
+    /* -- 행 변경 추적 -- */
     const onChange = (row, field, val) => {
       row[field] = val;
       if (row._status === '') row._status = 'U';
@@ -170,7 +153,7 @@ window.SyPropMng = {
       URL.revokeObjectURL(url);
     };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return {
       uiState, codes,
@@ -186,7 +169,7 @@ window.SyPropMng = {
 <div>
   <div class="page-title">프로퍼티관리</div>
 
-  <!-- ── 검색 바 ─────────────────────────────────────────────────────────── -->
+  <!-- -- 검색 바 ----------------------------------------------------------- -->
   <div class="card" style="padding:12px;margin-bottom:12px;">
     <div class="search-bar">
       <input class="form-control" v-model="searchParam.kw" placeholder="표시경로 / 키 / 값 / 라벨 검색" style="min-width:280px;flex:1;max-width:420px;" @keyup.enter="fetchData">
@@ -206,10 +189,10 @@ window.SyPropMng = {
     </div>
   </div>
 
-  <!-- ── 좌 트리 + 우 그리드 ─────────────────────────────────────────────────── -->
+  <!-- -- 좌 트리 + 우 그리드 --------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:flex-start;">
 
-    <!-- ── 트리 ─────────────────────────────────────────────────────────── -->
+    <!-- -- 트리 ----------------------------------------------------------- -->
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:6px;">
         <span class="list-title" style="font-size:13px;">📂 표시경로 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#sy_prop</span></span>
@@ -220,7 +203,7 @@ window.SyPropMng = {
       </div>
     </div>
 
-    <!-- ── 그리드 ────────────────────────────────────────────────────────── -->
+    <!-- -- 그리드 ---------------------------------------------------------- -->
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:10px;">
         <div class="list-title">
@@ -302,7 +285,7 @@ window.SyPropMng = {
 `,
 };
 
-/* ── 트리 노드 재귀 컴포넌트 ── */
+/* -- 트리 노드 재귀 컴포넌트 -- */
 window.PropTreeNode = {
   name: 'PropTreeNode',
   props: ['node', 'expanded', 'selected', 'onToggle', 'onSelect', 'depth'],

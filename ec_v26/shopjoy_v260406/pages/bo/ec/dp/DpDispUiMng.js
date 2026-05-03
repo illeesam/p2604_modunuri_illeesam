@@ -14,33 +14,16 @@ window.DpDispUiMng = {
       date_range_opts: [],
     });
 
-    // App 초기화 준비 상태
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading
-          && codeStore?.svCodes?.length > 0
-          && !uiState.isPageCodeLoad;
-    });
-
-    // 코드 주입
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
-      codes.disp_ui_types = codeStore.snGetGrpCodes('DISP_UI_TYPE') || [];
-      codes.use_yn = codeStore.snGetGrpCodes('USE_YN') || [];
-      codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
+      codes.disp_ui_types = codeStore.sgGetGrpCodes('DISP_UI_TYPE');
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       uiState.isPageCodeLoad = true;
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // App 초기화 감시
-
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (ready) => {
-      if (ready) {
-        fnLoadCodes();
-      }
-    });
+    // 코드 주입
 
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
@@ -91,7 +74,7 @@ window.DpDispUiMng = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
@@ -99,7 +82,7 @@ window.DpDispUiMng = {
 
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    /* ── 표시경로 트리 ── */
+    /* -- 표시경로 트리 -- */
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     const handleDateRangeChange = () => {
@@ -131,7 +114,7 @@ window.DpDispUiMng = {
     const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { displays, uiState, codes, pager, searchParam,
       onSearch, onReset, setPage, onSizeChange, handleDateRangeChange,

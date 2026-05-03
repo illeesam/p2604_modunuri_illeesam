@@ -91,6 +91,17 @@ window.SyUserMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
+
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.user_status = codeStore.sgGetGrpCodes('USER_STATUS');
+      codes.user_roles = codeStore.sgGetGrpCodes('USER_ROLE');
+      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
+
+
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
@@ -99,32 +110,6 @@ window.SyUserMng = {
       await handleSearchData('DEFAULT');
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore?.();
-        if (!codeStore?.snGetGrpCodes) return;
-        codes.user_status = await codeStore.snGetGrpCodes('USER_STATUS') || [];
-        codes.user_roles = await codeStore.snGetGrpCodes('USER_ROLE') || [];
-        codes.date_range_opts = codeStore.snGetGrpCodes('DATE_RANGE_OPT') || [];
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
     /* 선택 부서 + 자손의 dept 이름 Set */
     const cfAllowedDeptNms = computed(() => {
       if (uiState.selectedDeptId == null) return null;
@@ -186,7 +171,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     const exportExcel = () => boUtil.exportCsv(users, [{label:'ID',key:'userId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'userNm'},{label:'이메일',key:'userEmail'},{label:'연락처',key:'userPhone'},{label:'권한',key:'roleNm'},{label:'부서',key:'deptNm'},{label:'상태',key:'userStatusCd'},{label:'최종로그인',key:'lastLoginDate'}], '사용자목록.csv');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), users, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, handleDateRangeChange, cfSiteNm, pager, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon };
   },

@@ -14,29 +14,17 @@ window.PdReviewMng = {
       review_status_list: [{value:'ACTIVE',label:'공개'},{value:'HIDDEN',label:'숨김'},{value:'DELETED',label:'삭제'}],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.review_statuses = codeStore.snGetGrpCodes('REVIEW_STATUS') || [];
+        codes.review_statuses = codeStore.sgGetGrpCodes('REVIEW_STATUS');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     // onMounted에서 API 로드
     const SORT_MAP = { reg: { asc: 'reg_asc', desc: 'reg_desc' } };
@@ -73,8 +61,9 @@ window.PdReviewMng = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     });
 const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -123,7 +112,7 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const starStr  = r => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r));
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { reviews, uiState, searchParam, pager, setPage, onSearch, onReset,
               selectedId, cfSelectedRow, openDetail, changeStatus, fnStatusBadge, STATUS_LABEL, getProdNm, getMemNm, starStr, onSizeChange, codes, onSort, sortIcon };

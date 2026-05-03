@@ -6,7 +6,7 @@
 window.XsSample01 = {
   name: 'XsSample01',
   setup() {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const { ref, reactive, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, focusedIdx: null, dragMoved: false, checkAll: false, dragSrc: null });
     const codes = reactive({
@@ -14,33 +14,21 @@ window.XsSample01 = {
       status_opts: [{ value: '활성', label: '활성' }, { value: '비활성', label: '비활성' }],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useFoAppInitStore?.();
-      const codeStore = window.useFoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
-        handleSearchList();
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
 
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
     const api = window.axiosApi || window.adminApi;
     const API = 'api/base/sy/zz-sample1';
     const CD_GRP = 'S01_MEMBER';
 
-    /* ── Toast ── */
+    /* -- Toast -- */
     const toast = reactive({ show: false, msg: '', type: 'success' });
     let _tId = null;
     const showToast = (msg, type = 'success') => {
@@ -48,11 +36,11 @@ window.XsSample01 = {
       clearTimeout(_tId); _tId = setTimeout(() => { toast.show = false; }, 2500);
     };
 
-    /* ── 검색 ── */
+    /* -- 검색 -- */
     const searchParam = reactive({ kw: '', grade: '', status: '' });
     const searchParamOrg = reactive({ kw: '', grade: '', status: '' });
 
-    /* ── CRUD Grid ── */
+    /* -- CRUD Grid -- */
     const allData   = reactive([]);
     const gridRows  = reactive([]);
     let   _tempId   = -1;
@@ -85,7 +73,7 @@ window.XsSample01 = {
       _row_org: { memberNm: d.memberNm, email: d.email, phone: d.phone, grade: d.grade, status: d.status },
     });
 
-    /* ── Pager ── */
+    /* -- Pager -- */
     const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const fnBuildPagerNums = () => { pager.pageTotalCount=gridRows.filter(r=>r._row_status!=='D').length; pager.pageTotalPage=Math.max(1,Math.ceil(gridRows.length/pager.pageSize)); const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); pager.pageList=gridRows.slice((pager.pageNo-1)*pager.pageSize,pager.pageNo*pager.pageSize); };
     const setPage    = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; fnBuildPagerNums(); } };
@@ -108,10 +96,10 @@ window.XsSample01 = {
       fnBuildPagerNums();
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
-      Object.assign(searchParamOrg, searchParam);
+      handleSearchList();
     });
 
     const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
@@ -182,7 +170,7 @@ window.XsSample01 = {
       } catch (e) { showToast('저장 실패: ' + (e.response?.data?.message || e.message || e), 'error'); }
     };
 
-    /* ── Drag & UI State ── */
+    /* -- Drag & UI State -- */
     const onDragStart = idx => { uiState.dragSrc = idx; uiState.dragMoved = false; };
     const onDragOver  = (e, idx) => { e.preventDefault(); if (uiState.dragSrc === null || uiState.dragSrc === idx) return; const m = gridRows.splice(uiState.dragSrc, 1)[0]; gridRows.splice(idx, 0, m); uiState.dragSrc = idx; uiState.dragMoved = true; };
     const onDragEnd   = () => { if (uiState.dragMoved) showToast('정렬이 변경되었습니다.'); uiState.dragSrc = null; uiState.dragMoved = false; };
@@ -191,7 +179,7 @@ window.XsSample01 = {
     const fnStatusBadge = s => ({ N: 'background:#f0f0f0;color:#666;', I: 'background:#dbeafe;color:#1e40af;', U: 'background:#fef3c7;color:#92400e;', D: 'background:#fee2e2;color:#991b1b;' }[s] || '');
     const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return {
       toast, searchParam, onSearch, onReset,
@@ -205,19 +193,19 @@ window.XsSample01 = {
   template: /* html */`
 <div style="padding:clamp(12px,3vw,24px);">
 
-  <!-- ── Toast ────────────────────────────────────────────────────────── -->
+  <!-- -- Toast ---------------------------------------------------------- -->
   <div v-if="toast.show" style="position:fixed;top:20px;right:20px;z-index:9999;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.15);pointer-events:none;"
     :style="toast.type==='error'?'background:#fee2e2;color:#991b1b;':toast.type==='info'?'background:#dbeafe;color:#1e40af;':'background:#d1fae5;color:#065f46;'">
     {{ toast.msg }}
   </div>
 
-  <!-- ── 제목 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 제목 ------------------------------------------------------------- -->
   <div style="font-size:16px;font-weight:700;margin-bottom:12px;">
     01. 회원 관리
     <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">CRUD Grid 예제</span>
   </div>
 
-  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 검색 ------------------------------------------------------------- -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <input v-model="searchParam.kw" placeholder="이름 / 이메일 / 전화번호 검색" @keyup.enter="onSearch"
@@ -235,9 +223,9 @@ window.XsSample01 = {
     </div>
   </div>
 
-  <!-- ── CRUD Grid ────────────────────────────────────────────────────── -->
+  <!-- -- CRUD Grid ------------------------------------------------------ -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
-    <!-- ── 툴바 ─────────────────────────────────────────────────────────── -->
+    <!-- -- 툴바 ----------------------------------------------------------- -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #f0f0f0;">
       <span style="font-size:12px;font-weight:700;">회원 목록 <span style="color:#e8587a;margin-left:4px;">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span></span>
       <div style="display:flex;gap:5px;">
@@ -247,7 +235,7 @@ window.XsSample01 = {
         <button @click="handleSave"        style="font-size:11px;padding:4px 10px;border:none;border-radius:5px;background:#e8587a;color:#fff;cursor:pointer;font-weight:600;">저장</button>
       </div>
     </div>
-    <!-- ── 테이블 ────────────────────────────────────────────────────────── -->
+    <!-- -- 테이블 ---------------------------------------------------------- -->
     <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:700px;">
         <thead>
@@ -318,7 +306,7 @@ window.XsSample01 = {
         </tbody>
       </table>
     </div>
-    <!-- ── 페이지네이션 ─────────────────────────────────────────────────────── -->
+    <!-- -- 페이지네이션 ------------------------------------------------------- -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1px solid #f0f0f0;">
       <div style="font-size:11px;color:#aaa;">총 {{ gridRows.filter(r => r._row_status !== 'D').length }}건</div>
       <div style="display:flex;gap:3px;">

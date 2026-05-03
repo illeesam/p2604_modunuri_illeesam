@@ -13,29 +13,17 @@ window.PdRestockNotiMng = {
       send_yn_opts: [{codeValue:'Y',codeLabel:'발송완료'},{codeValue:'N',codeLabel:'미발송'}],
     });
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
-        codes.product_statuses = codeStore.snGetGrpCodes('PRODUCT_STATUS') || [];
+        codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
         uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => {
-      if (newVal) {
-        fnLoadCodes();
-      }
-    });
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -60,8 +48,9 @@ window.PdRestockNotiMng = {
     const _initSearchParam = () => ({ prod: '', noti: '' });
     const searchParam = reactive(_initSearchParam());
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted
     onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT');
     });
     const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -109,7 +98,7 @@ window.PdRestockNotiMng = {
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return { restockNotis, uiState, searchParam, pager, setPage, onSearch, onReset,
              checkedIds, checkedCount, allChecked, toggleAll, toggleOne, handleSend, fnYnBadge, getProdNm, getMemNm, onSizeChange,

@@ -25,26 +25,17 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
       } catch (_) {}
     };
 
-    const isAppReady = computed(() => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore?.();
-      return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-    });
-
     const codes = reactive({ login_results: [], token_actions: [], date_range_opts: [] });
 
-    const fnLoadCodes = async () => {
+    const fnLoadCodes = () => {
       uiState.isPageCodeLoad = true;
-      const codeStore = window.sfGetBoCodeStore?.();
-      codes.login_results = codeStore?.snGetGrpCodes('LOGIN_RESULT') || [];
-      codes.token_actions = codeStore?.snGetGrpCodes('TOKEN_ACTION') || [];
-      codes.date_range_opts = codeStore?.snGetGrpCodes('DATE_RANGE_OPT') || [];
-      handleSearchList();
+      const codeStore = window.sfGetBoCodeStore();
+      codes.login_results = codeStore?.sgGetGrpCodes('LOGIN_RESULT');
+      codes.token_actions = codeStore?.sgGetGrpCodes('TOKEN_ACTION');
+      codes.date_range_opts = codeStore?.sgGetGrpCodes('DATE_RANGE_OPT');
     };
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
+    const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
@@ -166,7 +157,11 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
       const all = filterRows(cfLogList.value, 'logId');
       const tk  = filterRows(cfTokenList.value, 'tokenLogId');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    onMounted(() => {
+      handleSearchList();
+    });
+
+    // -- return ---------------------------------------------------------------
 
       return {
         total:   all.length,
@@ -195,7 +190,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
 
     const searchTokenAction = Vue.toRef(uiState, 'searchTokenAction');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // -- return ---------------------------------------------------------------
 
     return {
       uiState, onTabChange,
@@ -220,7 +215,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
 • 행 클릭 시 상세 정보 확장 표시</div>
   </div>
 
-  <!-- ── 검색 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
     <div class="search-bar" style="flex-wrap:wrap;gap:8px">
       <select v-model="uiState.dateRange" @change="onDateRangeChange" style="min-width:110px">
@@ -245,7 +240,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
     </div>
   </div>
 
-  <!-- ── 집계 ───────────────────────────────────────────────────────────── -->
+  <!-- -- 집계 ------------------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:12px 0">
     <div class="card" style="text-align:center;padding:12px;background:#f0f4ff;margin-bottom:0">
       <div style="font-size:11px;color:#888">총 로그인 시도</div>
@@ -269,7 +264,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
     </div>
   </div>
 
-  <!-- ── 탭 + 목록 ───────────────────────────────────────────────────────── -->
+  <!-- -- 탭 + 목록 --------------------------------------------------------- -->
   <div class="card">
     <div class="tab-nav" style="margin-bottom:16px">
       <button class="tab-btn" :class="{active:uiState.activeTab==='log'}"   @click="onTabChange('log')">로그인 로그 <span class="tab-count" v-if="uiState.activeTab==='log'">{{ cfFiltered.length }}</span></button>
@@ -278,7 +273,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
     </div>
     <div class="toolbar"><span class="list-count">총 {{ cfFiltered.length }}건</span></div>
 
-    <!-- ── 로그인 로그 탭 ── -->
+    <!-- -- 로그인 로그 탭 -- -->
     <div v-if="uiState.activeTab==='log'">
       <table class="bo-table">
         <thead>
@@ -351,7 +346,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
       </table>
     </div>
 
-    <!-- ── 로그인 이력 탭 ── -->
+    <!-- -- 로그인 이력 탭 -- -->
     <div v-if="uiState.activeTab==='hist'">
       <table class="bo-table">
         <thead><tr><th style="width:36px;text-align:center;">번호</th><th>이력ID</th><th>로그인일시</th><th>회원</th><th>IP</th><th>디바이스</th><th>결과</th></tr></thead>
@@ -370,7 +365,7 @@ const uiState = reactive({ descOpen: false, isPageCodeLoad: false, activeTab: 'l
       </table>
     </div>
 
-    <!-- ── 토큰 이력 탭 ── -->
+    <!-- -- 토큰 이력 탭 -- -->
     <div v-if="uiState.activeTab==='token'">
       <table class="bo-table">
         <thead>
