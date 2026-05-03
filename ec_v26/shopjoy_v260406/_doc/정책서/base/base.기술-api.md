@@ -153,6 +153,61 @@ src/main/java/com/shopjoy/ecadminapi/common/config/
 
 ---
 
+## 7. API 응답 구조 ⭐
+
+### 7.1 ApiResponse — 단건/목록 응답
+
+```json
+{
+  "code": 200,
+  "message": "OK",
+  "data": { ... }
+}
+```
+
+`res.data.data` 로 실제 데이터에 접근한다.
+
+### 7.2 PageResult — 페이징 응답 ⭐
+
+`getPageData()` 계열 API는 `data` 필드 안에 `PageResult`를 반환한다.
+
+```json
+{
+  "code": 200,
+  "data": {
+    "pageList":       [...],      ← 현재 페이지 데이터 배열
+    "pageNo":         1,          ← 현재 페이지 번호 (1부터)
+    "pageSize":       20,         ← 페이지당 건수
+    "pageTotalCount": 153,        ← 전체 건수
+    "pageTotalPage":  8,          ← 전체 페이지 수 (최소 1)
+    "pageCond":       { ... }     ← 이번 조회에 사용된 검색 조건
+  }
+}
+```
+
+**프론트에서 올바르게 읽는 방법**:
+
+```js
+const res = await boApiSvc.mbMember.getPage({ kw, pageNo, pageSize });
+const d = res.data?.data || {};
+
+// ✅ 올바른 필드명
+const rows      = d.pageList       || [];   // 데이터 배열
+const total     = d.pageTotalCount || 0;    // 전체 건수
+const totalPage = d.pageTotalPage  || 1;    // 전체 페이지 수
+
+// ❌ 잘못된 필드명 — 항상 빈 값 반환
+// d.list         → undefined
+// d.totalCount   → undefined
+// d.total        → undefined
+// d.items        → undefined
+```
+
+> **주의**: 필드명을 `list`, `totalCount`, `total`로 잘못 읽으면 항상 빈 배열·0이 반환되어
+> "조회 결과 없음"처럼 보이지만 실제 API는 정상 응답한다.
+
+---
+
 ## 관련 정책
 - `base.인증-admin.md` — 관리자 인증/토큰 정책
 - `base.인증-front.md` — 사용자 인증/토큰 정책

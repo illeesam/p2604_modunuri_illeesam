@@ -2111,10 +2111,12 @@
   </div>
   <div v-if="loginError" class="login-error">{{ loginError }}</div>
   <button class="btn btn-primary" style="width:100%;margin-top:4px;" @click="doLogin">로그인</button>
-  <button class="btn btn-secondary" style="width:100%;margin-top:8px;" @click="openUserPick">👥 사용자 선택</button>
   <div style="text-align:center;margin-top:12px;font-size:12px;color:#aaa;">
   <span>계정이 없으신가요?</span>
   <span style="color:#e8587a;cursor:pointer;margin-left:6px;font-weight:600;" @click="loginModal.tab='register';loginError=''">회원가입</span>
+  </div>
+  <div style="text-align:center;margin-top:14px;">
+  <button @click="openUserPick" style="background:none;border:none;cursor:pointer;font-size:0.72rem;color:#aaa;text-decoration:underline;padding:0;">사용자 선택하여 로그인 (개발)</button>
   </div>
   </div>
 

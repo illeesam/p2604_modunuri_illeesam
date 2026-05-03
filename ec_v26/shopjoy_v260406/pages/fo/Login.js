@@ -64,9 +64,9 @@ window.Login = {
           '로그인', '회원선택',
         );
         const d = res.data?.data || {};
-        memberPick.rows = d.list || [];
-        memberPick.total = d.totalCount || 0;
-        memberPick.totalPage = Math.max(1, Math.ceil(memberPick.total / PICK_SIZE));
+        memberPick.rows = d.pageList || [];
+        memberPick.total = d.pageTotalCount || 0;
+        memberPick.totalPage = d.pageTotalPage || 1;
       } catch (e) {
         memberPick.rows = [];
       } finally {

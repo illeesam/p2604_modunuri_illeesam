@@ -22,6 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **⚙️ 백엔드 (Spring Boot)**
 - [EcAdminApi Controller/Service](#ecadminapi-controller--service-파라미터-패턴) — Map<String, Object> p 패턴
+- [PageResult 응답 필드명](#pageresult-응답-필드명-) — pageList / pageTotalCount / pageTotalPage ⭐
 - [MyBatis SQL 테이블 별칭](#mybatis-sql-테이블-별칭-정책-postgresql) — 모든 컬럼 명시 ⭐
 - [MyBatis Mapper XML 수정 이력](#mybatis-mapper-xml-수정-이력-2026-04-16--2026-04-29) — 문제 해결 과정
 - [Spring Boot 빌드 & 배포](#spring-boot-빌드--배포) — ./gradlew clean build ⭐
@@ -783,6 +784,26 @@ public List<XxxDto> getMyXxx(Map<String, Object> p) {
     return mapper.selectList(p);
 }
 ```
+
+### PageResult 응답 필드명 ⭐
+
+`getPageData()` API 응답의 `data` 필드는 `PageResult` 구조다. **필드명을 정확히 사용해야 한다.**
+
+```js
+const res = await boApiSvc.mbMember.getPage({ kw, pageNo, pageSize });
+const d = res.data?.data || {};
+
+// ✅ 올바른 필드명
+const rows      = d.pageList       || [];  // 데이터 배열
+const total     = d.pageTotalCount || 0;   // 전체 건수
+const totalPage = d.pageTotalPage  || 1;   // 전체 페이지 수
+
+// ❌ 잘못된 필드명 — 항상 undefined → 빈 결과처럼 보임
+// d.list / d.totalCount / d.total / d.items  ← 존재하지 않는 필드
+```
+
+> 증상: API는 정상 응답하지만 화면에 "조회 결과 없음"이 표시됨.  
+> 원인: `d.list`처럼 잘못된 필드명을 읽으면 `undefined || []` → 빈 배열.
 
 ### buildParam 금지
 
