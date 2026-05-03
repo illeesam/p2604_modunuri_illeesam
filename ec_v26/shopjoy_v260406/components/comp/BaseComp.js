@@ -50,6 +50,8 @@ window.BaseAttachGrp = {
           attachUrl:  f.attachUrl || f.storagePath,
           cdnImgUrl:  f.cdnImgUrl || '',
           storagePath: f.storagePath || '',
+          thumbUrl:   f.thumbUrl || '',
+          thumbCdnUrl: f.thumbCdnUrl || '',
         })));
       } catch (err) {
         console.error('[BaseAttachGrp] 파일 목록 조회 실패', err);
@@ -127,13 +129,15 @@ window.BaseAttachGrp = {
         /* 파일 목록 추가 */
         (d.files || []).forEach(f => {
           files.push({
-            attachId:   f.attachId,
-            fileNm:     f.originalName,
-            fileSize:   f.fileSize,
-            fileExt:    f.fileExt,
-            attachUrl:  f.filePath,
-            cdnImgUrl:  f.cdnImgUrl || '',
+            attachId:    f.attachId,
+            fileNm:      f.originalName,
+            fileSize:    f.fileSize,
+            fileExt:     f.fileExt,
+            attachUrl:   f.filePath,
+            cdnImgUrl:   f.cdnImgUrl || '',
             storagePath: f.storagePath || '',
+            thumbUrl:    f.thumbUrl || '',
+            thumbCdnUrl: f.thumbCdnUrl || f.thumbUrl || '',
           });
         });
 
@@ -209,20 +213,24 @@ window.BaseAttachGrp = {
       <!-- 액션 아이콘: 다운로드 / 팝업보기 / 썸네일보기 -->
       <span style="display:inline-flex;align-items:center;gap:3px;flex-shrink:0;">
         <a :href="f.cdnImgUrl || f.attachUrl" :download="f.fileNm"
-          :title="'다운로드\n' + (f.cdnImgUrl || f.attachUrl)"
+          :title="'다운로드 | ' + (f.cdnImgUrl || f.attachUrl)"
           style="width:22px;height:22px;border:1px solid #e0e0e0;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#666;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;transition:all .15s;"
           @mouseenter="e=>{e.currentTarget.style.borderColor='#4a90d9';e.currentTarget.style.color='#4a90d9';}"
           @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';e.currentTarget.style.color='#666';}">⬇</a>
         <button @click.stop="window.open(f.cdnImgUrl || f.attachUrl,'_blank')"
-          :title="'새창보기\n' + (f.cdnImgUrl || f.attachUrl)" type="button"
+          :title="'새창보기 | ' + (f.cdnImgUrl || f.attachUrl)" type="button"
           style="width:22px;height:22px;border:1px solid #e0e0e0;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#666;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
           @mouseenter="e=>{e.currentTarget.style.borderColor='#7c5cbf';e.currentTarget.style.color='#7c5cbf';}"
           @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';e.currentTarget.style.color='#666';}">↗</button>
         <button v-if="fnIsImage(f.fileExt)" @click.stop="fnOpenThumb(f)"
-          :title="'썸네일보기\n' + (f.cdnImgUrl || f.attachUrl)" type="button"
-          style="width:22px;height:22px;border:1px solid #e0e0e0;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#666;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
-          @mouseenter="e=>{e.currentTarget.style.borderColor='#e8587a';e.currentTarget.style.color='#e8587a';}"
-          @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';e.currentTarget.style.color='#666';}">🖼</button>
+          :title="'썸네일보기 | ' + (f.cdnImgUrl || f.attachUrl)" type="button"
+          style="width:22px;height:22px;border:1px solid #e0e0e0;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#666;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:all .15s;overflow:hidden;"
+          @mouseenter="e=>{e.currentTarget.style.borderColor='#e8587a';}"
+          @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';}">
+          <img v-if="f.thumbCdnUrl" :src="f.thumbCdnUrl"
+            style="width:100%;height:100%;object-fit:cover;display:block;" @error="e=>{e.target.style.display='none';e.target.nextElementSibling.style.display='inline-flex';}" />
+          <span style="font-size:12px;color:#666;" :style="{display:f.thumbCdnUrl?'none':'inline-flex'}">🖼</span>
+        </button>
       </span>
       <span style="font-size:11px;color:#bbb;flex-shrink:0;white-space:nowrap;">{{ fnFmtSize(f.fileSize) }}</span>
       <button @click.stop="removeFile(f.attachId)" title="삭제"

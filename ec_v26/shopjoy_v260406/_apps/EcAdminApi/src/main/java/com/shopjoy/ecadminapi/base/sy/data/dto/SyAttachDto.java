@@ -24,6 +24,11 @@ public class SyAttachDto {
     private String cdnHost;
     private String cdnImgUrl;
     private String cdnThumbUrl;
+    private String thumbFileNm;
+    private String thumbStoredNm;
+    private String thumbUrl;
+    private String thumbCdnUrl;
+    private String thumbGeneratedYn;
     private Integer sortOrd;
     private String attachMemo;
     private String regBy;

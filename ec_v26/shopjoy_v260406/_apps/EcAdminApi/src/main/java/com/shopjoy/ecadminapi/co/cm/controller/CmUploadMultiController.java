@@ -215,11 +215,15 @@ public class CmUploadMultiController {
                     fileInfo.put("uploadedAt", LocalDateTime.now());
                     fileInfo.put("storageType", "LOCAL");
                     fileInfo.put("storagePath", storageFilePath);
+                    fileInfo.put("cdnImgUrl", savedAttach.getCdnImgUrl());
                     fileInfo.put("thumbGeneratedYn", savedAttach.getThumbGeneratedYn());
                     if ("Y".equals(savedAttach.getThumbGeneratedYn())) {
                         fileInfo.put("thumbFileNm", savedAttach.getThumbFileNm());
                         fileInfo.put("thumbStoredNm", savedAttach.getThumbStoredNm());
                         fileInfo.put("thumbUrl", savedAttach.getThumbUrl());
+                        String thumbCdnUrl = savedAttach.getThumbUrl() != null
+                                ? cdnBase + "/" + savedAttach.getThumbUrl() : null;
+                        fileInfo.put("thumbCdnUrl", thumbCdnUrl);
                     }
 
                     uploadedFiles.add(fileInfo);
@@ -262,7 +266,13 @@ public class CmUploadMultiController {
     @GetMapping("/attach-grp/{attachGrpId}/files")
     public ResponseEntity<ApiResponse<List<SyAttachDto>>> getAttachGrpFiles(
             @PathVariable("attachGrpId") String attachGrpId) {
+        String cdnBase = cdnHost.endsWith("/") ? cdnHost.substring(0, cdnHost.length() - 1) : cdnHost;
         List<SyAttachDto> files = syAttachService.getList(Map.of("attachGrpId", attachGrpId));
+        files.forEach(f -> {
+            if (f.getThumbUrl() != null && !f.getThumbUrl().isBlank()) {
+                f.setThumbCdnUrl(cdnBase + "/" + f.getThumbUrl());
+            }
+        });
         return ResponseEntity.ok(ApiResponse.ok(files));
     }
 
