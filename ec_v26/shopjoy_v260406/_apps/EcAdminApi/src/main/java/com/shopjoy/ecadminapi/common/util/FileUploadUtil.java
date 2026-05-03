@@ -33,7 +33,7 @@ public class FileUploadUtil {
     @Value("${app.file.max-video-size:104857600}")
     private long maxVideoSize;
 
-    @Value("${app.file.local.base-path:static/cdn}")
+    @Value("${app.file.local.base-path:cdn}")
     private String basePath;
 
     private static final Set<String> IMAGE_EXTENSIONS = new HashSet<>(

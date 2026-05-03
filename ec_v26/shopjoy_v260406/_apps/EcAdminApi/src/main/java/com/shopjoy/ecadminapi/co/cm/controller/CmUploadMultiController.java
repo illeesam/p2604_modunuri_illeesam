@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.co.cm.controller;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachGrpDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttachGrp;
 import com.shopjoy.ecadminapi.base.sy.service.SyAttachGrpService;
@@ -57,6 +58,7 @@ public class CmUploadMultiController {
             @RequestParam("files") MultipartFile[] files,
             @RequestParam(value = "businessCode", defaultValue = "common") String businessCode,
             @RequestParam(value = "grpNm", defaultValue = "") String grpNm,
+            @RequestParam(value = "attachGrpId", required = false) String attachGrpId,
             @RequestParam(value = "createThumbnail", defaultValue = "false") boolean createThumbnail) {
 
         if (files == null || files.length == 0) {
@@ -68,12 +70,25 @@ public class CmUploadMultiController {
         }
 
         try {
-            SyAttachGrp attachGrp = SyAttachGrp.builder()
-                    .attachGrpCode(businessCode + "_" + System.currentTimeMillis())
-                    .attachGrpNm(grpNm.isEmpty() ? businessCode + " 파일 그룹" : grpNm)
-                    .useYn("Y")
-                    .build();
-            SyAttachGrp savedGrp = syAttachGrpService.create(attachGrp);
+            // 기존 그룹이 있으면 재사용, 없으면 새로 생성
+            SyAttachGrp savedGrp;
+            if (attachGrpId != null && !attachGrpId.isBlank()) {
+                SyAttachGrpDto existing = syAttachGrpService.getById(attachGrpId);
+                if (existing == null) throw new CmBizException("존재하지 않는 첨부 그룹입니다: " + attachGrpId);
+                savedGrp = SyAttachGrp.builder()
+                        .attachGrpId(existing.getAttachGrpId())
+                        .attachGrpCode(existing.getAttachGrpCode())
+                        .attachGrpNm(existing.getAttachGrpNm())
+                        .useYn(existing.getUseYn())
+                        .build();
+            } else {
+                SyAttachGrp attachGrp = SyAttachGrp.builder()
+                        .attachGrpCode(businessCode + "_" + System.currentTimeMillis())
+                        .attachGrpNm(grpNm.isEmpty() ? businessCode + " 파일 그룹" : grpNm)
+                        .useYn("Y")
+                        .build();
+                savedGrp = syAttachGrpService.create(attachGrp);
+            }
 
             List<Map<String, Object>> uploadedFiles = new ArrayList<>();
             List<String> failedFiles = new ArrayList<>();

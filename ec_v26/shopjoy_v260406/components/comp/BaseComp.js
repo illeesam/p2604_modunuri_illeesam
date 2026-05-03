@@ -107,6 +107,7 @@ window.BaseAttachGrp = {
         validFiles.forEach(f => fd.append('files', f));
         fd.append('businessCode', props.grpCode);
         fd.append('grpNm', props.grpNm);
+        if (props.modelValue) fd.append('attachGrpId', props.modelValue);
 
         const hdr = window.coUtil.apiHdr('첨부파일', '업로드');
         // Content-Type은 axios가 FormData boundary 포함해서 자동 설정
@@ -177,7 +178,14 @@ window.BaseAttachGrp = {
       return map[ext?.toLowerCase()] || '📎';
     };
 
-    return { uiState, files, cfAcceptAttr, fileInputRef, openPicker, onFileChange, removeFile, fnFmtSize, fnExtIcon, loadFiles };
+    const IMAGE_EXTS = new Set(['jpg','jpeg','png','gif','webp','bmp','svg']);
+    const fnIsImage = (ext) => IMAGE_EXTS.has(ext?.toLowerCase());
+
+    const thumbState = reactive({ show: false, url: '', nm: '' });
+    const fnOpenThumb = (f) => { thumbState.url = f.attachUrl; thumbState.nm = f.fileNm; thumbState.show = true; };
+    const fnCloseThumb = () => { thumbState.show = false; };
+
+    return { uiState, files, cfAcceptAttr, fileInputRef, openPicker, onFileChange, removeFile, fnFmtSize, fnExtIcon, loadFiles, fnIsImage, thumbState, fnOpenThumb, fnCloseThumb };
   },
   template: /* html */`
 <div style="border:1px solid #e8e8e8;border-radius:8px;background:#fafafa;padding:12px 14px;">
@@ -190,7 +198,25 @@ window.BaseAttachGrp = {
       @mouseenter="e=>e.currentTarget.style.background='#fff8f9'"
       @mouseleave="e=>e.currentTarget.style.background='#fff'">
       <span style="font-size:15px;flex-shrink:0;line-height:1;">{{ fnExtIcon(f.fileExt) }}</span>
-      <span style="flex:1;font-size:12px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;" :title="f.fileNm">{{ f.fileNm }}</span>
+      <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;">
+        <span style="font-size:12px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;" :title="f.fileNm">{{ f.fileNm }}</span>
+        <span v-if="f.attachUrl" style="font-size:10px;color:#bbb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="f.attachUrl">{{ f.attachUrl }}</span>
+      </span>
+      <!-- 액션 아이콘: 다운로드 / 팝업보기 / 썸네일보기 -->
+      <span style="display:inline-flex;align-items:center;gap:3px;flex-shrink:0;">
+        <a :href="f.attachUrl" :download="f.fileNm" :title="'다운로드: '+f.fileNm"
+          style="width:22px;height:22px;border:1px solid #e0e0e0;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#666;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;transition:all .15s;"
+          @mouseenter="e=>{e.currentTarget.style.borderColor='#4a90d9';e.currentTarget.style.color='#4a90d9';}"
+          @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';e.currentTarget.style.color='#666';}">⬇</a>
+        <button @click.stop="window.open(f.attachUrl,'_blank')" :title="'새창보기: '+f.fileNm" type="button"
+          style="width:22px;height:22px;border:1px solid #e0e0e0;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#666;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
+          @mouseenter="e=>{e.currentTarget.style.borderColor='#7c5cbf';e.currentTarget.style.color='#7c5cbf';}"
+          @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';e.currentTarget.style.color='#666';}">↗</button>
+        <button v-if="fnIsImage(f.fileExt)" @click.stop="fnOpenThumb(f)" :title="'썸네일보기: '+f.fileNm" type="button"
+          style="width:22px;height:22px;border:1px solid #e0e0e0;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#666;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
+          @mouseenter="e=>{e.currentTarget.style.borderColor='#e8587a';e.currentTarget.style.color='#e8587a';}"
+          @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';e.currentTarget.style.color='#666';}">🖼</button>
+      </span>
       <span style="font-size:11px;color:#bbb;flex-shrink:0;white-space:nowrap;">{{ fnFmtSize(f.fileSize) }}</span>
       <button @click.stop="removeFile(f.attachId)" title="삭제"
         style="flex-shrink:0;width:18px;height:18px;border:none;background:#f0f0f0;border-radius:50%;cursor:pointer;font-size:10px;color:#888;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1;transition:background .1s;"
@@ -220,6 +246,22 @@ window.BaseAttachGrp = {
       최대 {{ maxSizeMb }}MB
       <span v-if="allowExt!=='*'"><span style="margin:0 4px;color:#e8e8e8;">|</span>{{ allowExt }}</span>
     </span>
+  </div>
+
+  <!-- 썸네일 팝업 모달 -->
+  <div v-if="thumbState.show" @click.self="fnCloseThumb"
+    style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:16px;max-width:90vw;max-height:90vh;display:flex;flex-direction:column;gap:10px;box-shadow:0 8px 40px rgba(0,0,0,.4);">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
+        <span style="font-size:13px;color:#444;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60vw;" :title="thumbState.nm">{{ thumbState.nm }}</span>
+        <button @click="fnCloseThumb" type="button"
+          style="flex-shrink:0;width:24px;height:24px;border:none;background:#f0f0f0;border-radius:50%;cursor:pointer;font-size:13px;color:#888;display:inline-flex;align-items:center;justify-content:center;padding:0;"
+          @mouseenter="e=>e.currentTarget.style.background='#fde8e8'"
+          @mouseleave="e=>e.currentTarget.style.background='#f0f0f0'">✕</button>
+      </div>
+      <img :src="thumbState.url" :alt="thumbState.nm"
+        style="max-width:80vw;max-height:75vh;object-fit:contain;border-radius:6px;" />
+    </div>
   </div>
 </div>
 `
