@@ -60,10 +60,12 @@ public class ErrorLogConfig {
     }
 
     private String resolveServerName() {
-        try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (Exception e) {
-            return "unknown";
-        }
+        // InetAddress.getLocalHost() blocks on DNS reverse lookup (~10s on Windows dev)
+        // Use OS env vars first; fall back to loopback address (instant, no DNS)
+        String name = System.getenv("COMPUTERNAME"); // Windows
+        if (name != null && !name.isBlank()) return name;
+        name = System.getenv("HOSTNAME"); // Linux / macOS
+        if (name != null && !name.isBlank()) return name;
+        return InetAddress.getLoopbackAddress().getHostName(); // "localhost" — no DNS call
     }
 }
