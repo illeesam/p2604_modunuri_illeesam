@@ -106,10 +106,13 @@
     getThumbUrl(thumbUrl) { return `/co/cm/image/thumb/${thumbUrl}`; },
   };
 
-  /* ── cm: 첨부파일 그룹 조회 (/co/cm/upload) ─────────────── */
+  /* ── cm: 첨부파일 조회/삭제 (/co/cm/upload) ─────────────── */
   coApiSvc.cmAttach = {
     getFiles(attachGrpId, uiNm = '첨부파일', cmdNm = '목록조회') {
       return client().get(`/co/cm/upload/attach-grp/${attachGrpId}/files`, hdr(uiNm, cmdNm));
+    },
+    deleteFile(attachId, uiNm = '첨부파일', cmdNm = '삭제') {
+      return client().delete(`/co/cm/upload/attach/${attachId}`, hdr(uiNm, cmdNm));
     },
   };
 

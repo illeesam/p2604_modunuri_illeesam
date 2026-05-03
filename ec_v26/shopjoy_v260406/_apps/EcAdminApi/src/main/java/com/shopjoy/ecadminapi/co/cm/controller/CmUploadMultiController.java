@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnailator;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -237,5 +238,26 @@ public class CmUploadMultiController {
             @PathVariable String attachGrpId) {
         List<SyAttachDto> files = syAttachService.getList(Map.of("attachGrpId", attachGrpId));
         return ResponseEntity.ok(ApiResponse.ok(files));
+    }
+
+    /// 첨부 파일 단건 삭제 (DB + 실제 파일)
+    @Operation(summary = "첨부 파일 삭제", description = "attachId로 DB 레코드 및 실제 저장 파일을 삭제합니다.")
+    @DeleteMapping("/attach/{attachId}")
+    public ResponseEntity<ApiResponse<Void>> deleteAttach(
+            @PathVariable String attachId) {
+        SyAttachDto dto = syAttachService.getById(attachId);
+        if (dto == null) throw new CmBizException("존재하지 않는 첨부파일입니다: " + attachId);
+
+        syAttachService.delete(attachId);
+
+        if (dto.getStoragePath() != null) {
+            try {
+                Files.deleteIfExists(Paths.get(dto.getStoragePath()));
+            } catch (Exception e) {
+                log.warn("실제 파일 삭제 실패 (계속 진행): {}", dto.getStoragePath(), e);
+            }
+        }
+
+        return ResponseEntity.ok(ApiResponse.ok(null));
     }
 }

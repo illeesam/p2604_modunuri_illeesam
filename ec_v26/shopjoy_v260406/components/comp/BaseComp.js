@@ -153,6 +153,13 @@ window.BaseAttachGrp = {
     };
 
     const removeFile = async (attachId) => {
+      try {
+        await window.coApiSvc.cmAttach.deleteFile(attachId);
+      } catch (err) {
+        console.error('[BaseAttachGrp] 파일 삭제 실패', err);
+        props.showToast(err.response?.data?.message || '파일 삭제 중 오류가 발생했습니다.', 'error', 0);
+        return;
+      }
       const idx = files.findIndex(f => f.attachId === attachId);
       if (idx !== -1) files.splice(idx, 1);
       if (files.length === 0) emit('update:modelValue', null);

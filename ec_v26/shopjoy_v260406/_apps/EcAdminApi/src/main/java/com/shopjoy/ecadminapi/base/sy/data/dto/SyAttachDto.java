@@ -19,6 +19,7 @@ public class SyAttachDto {
     private String mimeTypeCd;
     private String storedNm;
     private String attachUrl;
+    private String storagePath;
     private String cdnHost;
     private String cdnImgUrl;
     private String cdnThumbUrl;
