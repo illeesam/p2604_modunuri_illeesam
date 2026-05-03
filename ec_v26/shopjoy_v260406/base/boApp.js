@@ -789,7 +789,7 @@
   } catch(_) { return { userId: '', name: '', email: '', role: '', phone: '', dept: '' }; }
   };
   /* ── FO의 foAuth.state 패턴과 동일: Vue.reactive state + _sync() ── */
-  const _defaultBoAuthUser = () => ({ authId: '', authNm: '', userId: '', name: '', email: '', role: '', phone: '', dept: '', userTypeCd: '', roleId: '', siteId: '' });
+  const _defaultBoAuthUser = () => ({ authId: '', authNm: '', userId: '', name: '', email: '', role: '', phone: '', dept: '', userTypeCd: '', roleId: '', siteId: '', profileAttachId: null });
   const currentAuthUser = reactive(_defaultBoAuthUser());
   // store 인스턴스를 setup() 안에서 한 번만 가져와서 고정 — Pinia 컨텍스트 보장
   const _boAuthStore = window.useBoAuthStore?.();
@@ -971,27 +971,47 @@
   const uiState = reactive({ userMenuShow: false, profileModalShow: false, pwModalShow: false, relatedSiteOpen: false });
 
   /* 프로필 모달 */
-  const profileForm  = reactive({ name: '', phone: '', dept: '', email: '' });
+  const profileForm  = reactive({ name: '', phone: '', dept: '', email: '', profileAttachId: null });
+  const profileImgUploading = ref(false);
   const openProfile  = () => {
   if (!currentAuthUser || !currentAuthUser.userId) return;
   Object.assign(profileForm, {
   name: currentAuthUser.name || '',
   phone: currentAuthUser.phone || '',
   dept: currentAuthUser.dept || '',
-  email: currentAuthUser.email || ''
+  email: currentAuthUser.email || '',
+  profileAttachId: currentAuthUser.profileAttachId || null,
   });
   uiState.profileModalShow = true; uiState.userMenuShow = false;
   };
   const saveProfile  = () => {
   if (!profileForm.name) { showToast('이름을 입력하세요.', 'error'); return; }
-  if (!currentAuthUser) {
-  Object.assign(currentAuthUser, _defaultBoUser());
-  }
+  if (!currentAuthUser) Object.assign(currentAuthUser, _defaultBoAuthUser());
   currentAuthUser.name  = profileForm.name || '';
   currentAuthUser.phone = profileForm.phone || '';
   currentAuthUser.dept  = profileForm.dept || '';
+  currentAuthUser.profileAttachId = profileForm.profileAttachId || null;
   uiState.profileModalShow = false;
   showToast('프로필이 저장되었습니다.');
+  };
+  const onProfileImgChange = async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('grpCode', 'USER_PROFILE');
+  profileImgUploading.value = true;
+  try {
+  const res = await coApiSvc.cmUpload.uploadOne(formData, '프로필', '사진변경');
+  const attachId = res.data?.data?.attachId || res.data?.attachId;
+  if (attachId) { profileForm.profileAttachId = attachId; showToast('사진이 변경되었습니다.', 'success'); }
+  else showToast('업로드 응답에 attachId가 없습니다.', 'error');
+  } catch (err) {
+  showToast(err.response?.data?.message || '업로드 중 오류가 발생했습니다.', 'error');
+  } finally {
+  profileImgUploading.value = false;
+  e.target.value = '';
+  }
   };
 
   /* 비밀번호 변경 모달 */
@@ -1187,7 +1207,7 @@
   loginModal, loginForm, regForm, loginError, uiState, userRoles,
   openLogin, closeLogin, doLogin, doLogout, doRegister,
   QUICK_USERS, quickLogin,
-  profileForm, openProfile, saveProfile,
+  profileForm, profileImgUploading, openProfile, saveProfile, onProfileImgChange,
   pwForm, pwError, openPwChange, savePwChange,
   favorites, favKeepSet, sidebarTab, isFav, toggleFav, cfFavList, toggleFavKeep,
   apiResPanel, setApiRes, closeApiResPanel,
@@ -1856,11 +1876,26 @@
   <span class="modal-close" @click="uiState.profileModalShow=false">✕</span>
   </div>
   <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:14px;background:#fff5f7;border-radius:10px;">
-  <div style="width:54px;height:54px;border-radius:50%;background:#e8587a;color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ ((currentAuthUser?.authNm || currentAuthUser?.name || '').charAt(0)) || '?' }}</div>
+  <!-- 프로필 사진 -->
+  <label style="position:relative;cursor:pointer;flex-shrink:0;" :title="profileImgUploading ? '업로드 중...' : '클릭하여 사진 변경'">
+  <img v-if="profileForm.profileAttachId"
+    :src="'/co/cm/image/view/' + profileForm.profileAttachId"
+    style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid #e8587a;" />
+  <div v-else style="width:64px;height:64px;border-radius:50%;background:#e8587a;color:#fff;font-size:24px;font-weight:700;display:flex;align-items:center;justify-content:center;">
+    {{ ((currentAuthUser?.authNm || currentAuthUser?.name || '').charAt(0)) || '?' }}
+  </div>
+  <div style="position:absolute;bottom:0;right:0;width:20px;height:20px;border-radius:50%;background:#e8587a;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;">
+    <span v-if="profileImgUploading">⏳</span><span v-else>📷</span>
+  </div>
+  <input type="file" accept="image/*" style="display:none;" :disabled="profileImgUploading" @change="onProfileImgChange" />
+  </label>
   <div>
   <div style="font-size:15px;font-weight:700;color:#1a1a2e;">{{ currentAuthUser?.authNm || currentAuthUser?.name || '' }}</div>
   <div style="font-size:12px;color:#e8587a;font-weight:600;margin-top:3px;">{{ currentAuthUser?.role || '' }}</div>
   <div style="font-size:11px;color:#aaa;margin-top:2px;">가입일: {{ currentAuthUser?.regDate || '' }}</div>
+  <div v-if="profileForm.profileAttachId" style="font-size:11px;color:#bbb;margin-top:2px;">
+    <span style="cursor:pointer;color:#e8587a;" @click.prevent="profileForm.profileAttachId=null">✕ 사진 삭제</span>
+  </div>
   </div>
   </div>
   <div class="form-row">
