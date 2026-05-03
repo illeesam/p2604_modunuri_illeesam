@@ -106,5 +106,6 @@ public class BoDpWidgetService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

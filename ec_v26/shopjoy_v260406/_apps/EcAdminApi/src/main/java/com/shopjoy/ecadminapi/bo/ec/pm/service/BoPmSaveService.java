@@ -106,5 +106,6 @@ public class BoPmSaveService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

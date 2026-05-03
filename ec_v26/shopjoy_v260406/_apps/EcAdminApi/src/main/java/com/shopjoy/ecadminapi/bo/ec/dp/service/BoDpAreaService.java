@@ -108,5 +108,6 @@ public class BoDpAreaService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

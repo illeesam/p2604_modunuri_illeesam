@@ -105,5 +105,6 @@ public class BoPmCacheService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

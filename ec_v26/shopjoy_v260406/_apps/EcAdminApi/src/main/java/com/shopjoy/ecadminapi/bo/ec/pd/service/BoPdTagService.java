@@ -104,5 +104,6 @@ public class BoPdTagService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

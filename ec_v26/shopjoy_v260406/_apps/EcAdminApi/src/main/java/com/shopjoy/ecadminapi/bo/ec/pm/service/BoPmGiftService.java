@@ -118,5 +118,6 @@ public class BoPmGiftService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

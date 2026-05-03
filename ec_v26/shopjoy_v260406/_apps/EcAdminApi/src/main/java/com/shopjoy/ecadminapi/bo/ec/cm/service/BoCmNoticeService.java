@@ -106,5 +106,6 @@ public class BoCmNoticeService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

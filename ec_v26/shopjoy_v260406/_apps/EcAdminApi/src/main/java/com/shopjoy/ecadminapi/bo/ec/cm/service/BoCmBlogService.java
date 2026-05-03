@@ -118,5 +118,6 @@ public class BoCmBlogService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

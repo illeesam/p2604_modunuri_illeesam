@@ -74,6 +74,7 @@ public class BoSyUserRoleService {
         entity.setUpdBy(authId);
         entity.setUpdDate(LocalDateTime.now());
         repository.save(entity);
+        em.flush();
         return getById(id);
     }
 

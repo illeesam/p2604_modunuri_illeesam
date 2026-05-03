@@ -118,5 +118,6 @@ public class BoPdQnaService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

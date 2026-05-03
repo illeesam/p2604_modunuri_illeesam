@@ -108,5 +108,6 @@ public class BoPdDlivTmpltService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

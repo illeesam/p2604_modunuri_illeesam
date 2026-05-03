@@ -114,5 +114,6 @@ public class BoPdRestockNotiService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

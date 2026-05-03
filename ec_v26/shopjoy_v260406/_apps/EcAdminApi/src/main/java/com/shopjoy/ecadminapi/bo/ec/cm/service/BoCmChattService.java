@@ -118,5 +118,6 @@ public class BoCmChattService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

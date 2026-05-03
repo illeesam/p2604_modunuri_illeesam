@@ -188,5 +188,6 @@ public class BoOdClaimService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

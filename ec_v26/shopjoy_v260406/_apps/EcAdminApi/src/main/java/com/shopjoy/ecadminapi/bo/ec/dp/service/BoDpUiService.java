@@ -106,5 +106,6 @@ public class BoDpUiService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

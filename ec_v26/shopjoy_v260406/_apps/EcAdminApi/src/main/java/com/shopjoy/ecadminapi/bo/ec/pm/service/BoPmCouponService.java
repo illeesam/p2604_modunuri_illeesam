@@ -118,5 +118,6 @@ public class BoPmCouponService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

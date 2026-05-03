@@ -190,5 +190,6 @@ public class BoOdDlivService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

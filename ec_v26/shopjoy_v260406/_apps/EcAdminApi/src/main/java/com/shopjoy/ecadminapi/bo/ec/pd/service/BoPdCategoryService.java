@@ -139,5 +139,6 @@ public class BoPdCategoryService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

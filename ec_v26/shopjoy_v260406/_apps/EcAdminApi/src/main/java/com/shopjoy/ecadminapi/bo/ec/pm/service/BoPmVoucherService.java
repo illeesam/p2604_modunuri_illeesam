@@ -125,5 +125,6 @@ public class BoPmVoucherService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

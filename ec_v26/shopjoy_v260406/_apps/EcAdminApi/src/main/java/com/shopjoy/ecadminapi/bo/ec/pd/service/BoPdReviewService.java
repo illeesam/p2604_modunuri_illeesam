@@ -118,5 +118,6 @@ public class BoPdReviewService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

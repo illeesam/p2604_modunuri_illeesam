@@ -120,5 +120,6 @@ public class BoPmEventService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

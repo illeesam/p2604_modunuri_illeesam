@@ -106,5 +106,6 @@ public class BoMbMemGroupService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

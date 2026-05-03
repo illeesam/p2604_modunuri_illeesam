@@ -105,5 +105,6 @@ public class BoPdProdService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

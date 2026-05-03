@@ -65,6 +65,7 @@ public class BoStSettleRawService {
         entity.setUpdDate(LocalDateTime.now());
         StSettleRaw saved = repository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다.");
+        em.flush();
         return getById(id);
     }
 

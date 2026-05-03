@@ -119,5 +119,6 @@ public class BoOdOrderService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

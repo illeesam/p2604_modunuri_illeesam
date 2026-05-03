@@ -118,5 +118,6 @@ public class BoPmDiscntService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

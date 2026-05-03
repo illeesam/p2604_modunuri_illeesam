@@ -115,5 +115,6 @@ public class BoMbMemberService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

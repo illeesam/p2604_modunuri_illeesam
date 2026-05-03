@@ -108,5 +108,6 @@ public class BoDpPanelService {
             }
         }
         em.flush();
+        em.clear();
     }
 }

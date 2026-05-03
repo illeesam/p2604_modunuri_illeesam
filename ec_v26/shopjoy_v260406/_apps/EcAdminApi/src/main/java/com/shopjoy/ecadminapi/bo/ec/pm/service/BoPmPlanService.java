@@ -118,5 +118,6 @@ public class BoPmPlanService {
             }
         }
         em.flush();
+        em.clear();
     }
 }
