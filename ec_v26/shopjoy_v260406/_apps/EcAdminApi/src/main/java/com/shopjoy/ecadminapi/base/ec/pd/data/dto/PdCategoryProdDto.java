@@ -24,5 +24,11 @@ public class PdCategoryProdDto {
     private String regBy;
     private LocalDateTime regDate;
 
-    // ── JOIN: 필요 시 추가 ────────────────────────────────────────
+    private String updBy;
+    private LocalDateTime updDate;
+
+    // ── JOIN ─────────────────────────────────────────────────────
+    private String siteNm;
+    private String categoryNm;
+    private String prodNm;
 }

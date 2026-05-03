@@ -8,6 +8,7 @@
     <sql id="pdCategoryProdCond">
         <where>
             <if test="siteId != null and siteId != ''">AND p.site_id = #{siteId}</if>
+            <if test="categoryId != null and categoryId != ''">AND p.category_id = #{categoryId}</if>
             <if test="typeCd != null and typeCd != ''">AND p.category_prod_type_cd = #{typeCd}</if>
             <if test="dateStart != null and dateStart != ''">AND p.reg_date &gt;= #{dateStart}::DATE</if>
             <if test="dateEnd   != null and dateEnd   != ''">AND p.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
