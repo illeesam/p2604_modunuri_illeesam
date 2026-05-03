@@ -7,7 +7,9 @@
     <!-- 장바구니 조회 조건 -->
     <sql id="odCartCond">
         <where>
-            <if test="siteId != null and siteId != ''">AND c.site_id = #{siteId}</if>
+            <if test="siteId   != null and siteId   != ''">AND c.site_id   = #{siteId}</if>
+            <if test="memberId != null and memberId != ''">AND c.member_id = #{memberId}</if>
+            <if test="kw       != null and kw       != ''">AND (mem.member_nm LIKE '%'||#{kw}||'%' OR c.member_id LIKE '%'||#{kw}||'%' OR c.prod_id LIKE '%'||#{kw}||'%' OR prd.prod_nm LIKE '%'||#{kw}||'%')</if>
             <if test="dateStart != null and dateStart != ''">AND c.reg_date &gt;= #{dateStart}::DATE</if>
             <if test="dateEnd   != null and dateEnd   != ''">AND c.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
         </where>
@@ -17,13 +19,17 @@
     <select id="selectById" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdCartDto">
         SELECT  /* base.ec.od :: OdCart :: selectById */
               c.*
-            , ste.site_nm AS site_nm
+            , ste.site_nm   AS site_nm
             , mem.member_nm AS member_nm
-            , prd.prod_nm AS prod_nm
+            , prd.prod_nm   AS prod_nm
+            , oi1.opt_nm    AS opt_nm1
+            , oi2.opt_nm    AS opt_nm2
         FROM od_cart c
-            LEFT JOIN sy_site ste ON ste.site_id = c.site_id
-            LEFT JOIN mb_member mem ON mem.member_id = c.member_id
-            LEFT JOIN pd_prod prd ON prd.prod_id = c.prod_id
+            LEFT JOIN sy_site ste        ON ste.site_id     = c.site_id
+            LEFT JOIN mb_member mem      ON mem.member_id   = c.member_id
+            LEFT JOIN pd_prod prd        ON prd.prod_id     = c.prod_id
+            LEFT JOIN pd_prod_opt_item oi1 ON oi1.opt_item_id = c.opt_item_id_1
+            LEFT JOIN pd_prod_opt_item oi2 ON oi2.opt_item_id = c.opt_item_id_2
         WHERE c.cart_id = #{id}
     </select>
 
@@ -31,13 +37,17 @@
     <select id="selectList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdCartDto">
         SELECT  /* base.ec.od :: OdCart :: selectList */
               c.*
-            , ste.site_nm AS site_nm
+            , ste.site_nm   AS site_nm
             , mem.member_nm AS member_nm
-            , prd.prod_nm AS prod_nm
+            , prd.prod_nm   AS prod_nm
+            , oi1.opt_nm    AS opt_nm1
+            , oi2.opt_nm    AS opt_nm2
         FROM od_cart c
-            LEFT JOIN sy_site ste ON ste.site_id = c.site_id
-            LEFT JOIN mb_member mem ON mem.member_id = c.member_id
-            LEFT JOIN pd_prod prd ON prd.prod_id = c.prod_id
+            LEFT JOIN sy_site ste        ON ste.site_id     = c.site_id
+            LEFT JOIN mb_member mem      ON mem.member_id   = c.member_id
+            LEFT JOIN pd_prod prd        ON prd.prod_id     = c.prod_id
+            LEFT JOIN pd_prod_opt_item oi1 ON oi1.opt_item_id = c.opt_item_id_1
+            LEFT JOIN pd_prod_opt_item oi2 ON oi2.opt_item_id = c.opt_item_id_2
             <include refid="odCartCond"/>
         <choose>
             <when test="sort == 'id_asc'">ORDER BY c.cart_id ASC</when>
@@ -53,13 +63,17 @@
     <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.ec.od.data.dto.OdCartDto">
         SELECT  /* base.ec.od :: OdCart :: selectPageList */
               c.*
-            , ste.site_nm AS site_nm
+            , ste.site_nm   AS site_nm
             , mem.member_nm AS member_nm
-            , prd.prod_nm AS prod_nm
+            , prd.prod_nm   AS prod_nm
+            , oi1.opt_nm    AS opt_nm1
+            , oi2.opt_nm    AS opt_nm2
         FROM od_cart c
-            LEFT JOIN sy_site ste ON ste.site_id = c.site_id
-            LEFT JOIN mb_member mem ON mem.member_id = c.member_id
-            LEFT JOIN pd_prod prd ON prd.prod_id = c.prod_id
+            LEFT JOIN sy_site ste        ON ste.site_id     = c.site_id
+            LEFT JOIN mb_member mem      ON mem.member_id   = c.member_id
+            LEFT JOIN pd_prod prd        ON prd.prod_id     = c.prod_id
+            LEFT JOIN pd_prod_opt_item oi1 ON oi1.opt_item_id = c.opt_item_id_1
+            LEFT JOIN pd_prod_opt_item oi2 ON oi2.opt_item_id = c.opt_item_id_2
             <include refid="odCartCond"/>
         <choose>
             <when test="sort == 'id_asc'">ORDER BY c.cart_id ASC</when>
@@ -75,6 +89,8 @@
     <select id="selectPageCount" resultType="long">
         SELECT COUNT(c.*)  /* base.ec.od :: OdCart :: selectPageCount */
         FROM od_cart c
+            LEFT JOIN mb_member mem ON mem.member_id = c.member_id
+            LEFT JOIN pd_prod prd ON prd.prod_id = c.prod_id
             <include refid="odCartCond"/>
     </select>
 

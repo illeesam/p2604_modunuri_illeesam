@@ -138,6 +138,13 @@
     getPage(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/mb/member-token-log/page', { params, ...hdr(uiNm, cmdNm) }); },
   };
 
+  /* ── od: 장바구니 ──────────────────────────────────────────── */
+  boApiSvc.odCart = {
+    getPage(params, uiNm, cmdNm)  { return global.boApi.get(   '/bo/ec/od/cart/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)     { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/od/cart/${_id}`, hdr(uiNm, cmdNm)); },
+    remove(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/od/cart/${_id}`, hdr(uiNm, cmdNm)); },
+  };
+
   /* ── od: 클레임 ─────────────────────────────────────────────── */
   boApiSvc.odClaim = {
     getPage(params, uiNm, cmdNm)       { return global.boApi.get(   '/bo/ec/od/claim/page', { params, ...hdr(uiNm, cmdNm) }); },

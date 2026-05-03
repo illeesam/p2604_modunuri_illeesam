@@ -27,5 +27,10 @@ public class OdCartDto {
     private String updBy;
     private LocalDateTime updDate;
 
-    // ── JOIN: 필요 시 추가 ────────────────────────────────────────
+    // ── JOIN ────────────────────────────────────────────────────
+    private String siteNm;
+    private String memberNm;
+    private String prodNm;
+    private String optNm1;
+    private String optNm2;
 }

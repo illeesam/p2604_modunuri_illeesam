@@ -48,7 +48,7 @@
   { id: 'pdRestockNotiMng', label: '재입고알림' },
   { id: 'pdTagMng',  label: '태그관리' },
   ],
-  order:  [{ id: 'odOrderMng',  label: '주문관리' }, { id: 'odClaimMng', label: '클레임관리' }, { id: 'odDlivMng', label: '배송관리' }],
+  order:  [{ id: 'odOrderMng',  label: '주문관리' }, { id: 'odClaimMng', label: '클레임관리' }, { id: 'odDlivMng', label: '배송관리' }, { id: 'odCartMng', label: '장바구니관리' }],
   promotion: [
   { group: '판촉' },
   { id: 'pmCouponMng',  label: '쿠폰관리' },
@@ -289,6 +289,7 @@
   'odOrderMng':'od-order-mng', 'odOrderDtl':'od-order-dtl',
   'odClaimMng':'od-claim-mng', 'odClaimDtl':'od-claim-dtl',
   'odDlivMng':'od-dliv-mng', 'odDlivDtl':'od-dliv-dtl',
+  'odCartMng':'od-cart-mng',
   'pmCouponMng':'pm-coupon-mng', 'pmCouponDtl':'pm-coupon-dtl',
   'pmCacheMng':'pm-cache-mng', 'pmCacheDtl':'pm-cache-dtl',
   'dpDispPanelMng':'dp-disp-panel-mng', 'dpDispAreaPreview':'dp-disp-area-preview', 'dpDispAreaMng':'dp-disp-area-mng',
@@ -1564,6 +1565,7 @@
   <od-claim-dtl  v-else-if="page==='odClaimDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <od-dliv-mng  v-else-if="page==='odDlivMng'"  :navigate="navigate" />
   <od-dliv-dtl  v-else-if="page==='odDlivDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+  <od-cart-mng  v-else-if="page==='odCartMng'"  :navigate="navigate" />
   <pm-coupon-mng  v-else-if="page==='pmCouponMng'"  :navigate="navigate" />
   <pm-coupon-dtl  v-else-if="page==='pmCouponDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <pm-cache-mng  v-else-if="page==='pmCacheMng'"  :navigate="navigate" />
@@ -2269,6 +2271,7 @@
   .component('OdDlivMng',  window.OdDlivMng)
   .component('OdDlivDtl',  window.OdDlivDtl)
   .component('OdDlivHist',  window.OdDlivHist)
+  .component('OdCartMng',  window.OdCartMng)
   /* ── pages/bo/ec/ — 쿠폰/캐쉬 ── */
   .component('PmCouponMng',  window.PmCouponMng)
   .component('PmCouponDtl',  window.PmCouponDtl)
