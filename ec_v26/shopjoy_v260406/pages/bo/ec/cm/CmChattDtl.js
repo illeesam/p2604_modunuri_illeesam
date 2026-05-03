@@ -1,11 +1,12 @@
 /* ShopJoy Admin - 채팅관리 상세/등록 */
-window._cmChattDtlState = window._cmChattDtlState || { tab: 'chat', viewMode: 'tab' };
+window._cmChattDtlState = window._cmChattDtlState || { tab: 'chat', tabMode: 'tab' };
 window.CmChattDtl = {
   name: 'CmChattDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    editId:       { type: String, default: null }, // 수정 대상 ID
-    viewMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlId:        { type: String, default: null }, // 수정 대상 ID
+    tabMode:      { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
@@ -14,9 +15,9 @@ window.CmChattDtl = {
     const showConfirm  = window.boApp.showConfirm;
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._cmChattDtlState.tab || 'chat', viewMode2: window._cmChattDtlState.viewMode || 'tab', replyText: '', searchUserId: '', chat: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._cmChattDtlState.tab || 'chat', tabMode2: window._cmChattDtlState.tabMode || 'tab', replyText: '', searchUserId: '', chat: null });
     const tab = Vue.toRef(uiState, 'tab');
-    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
+    const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ chatt_statuses: [] });
 
     const fnLoadCodes = () => {
@@ -28,10 +29,10 @@ window.CmChattDtl = {
     const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
     const handleSearchDetail = async () => {
-      if (!props.editId) return;
+      if (!props.dtlId) return;
       uiState.loading = true;
       try {
-        const res = await boApiSvc.cmChatt.getById(props.editId, '채팅관리', '상세조회');
+        const res = await boApiSvc.cmChatt.getById(props.dtlId, '채팅관리', '상세조회');
         uiState.chat = res.data?.data || null;
         if (uiState.chat) uiState.chat.unread = 0;
         scrollToBottom();
@@ -43,12 +44,12 @@ window.CmChattDtl = {
       }
     };
 
-    const cfIsNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.dtlId);
 
     watch(() => uiState.tab, v => { window._cmChattDtlState.tab = v; });
 
-    watch(() => uiState.viewMode2, v => { window._cmChattDtlState.viewMode = v; });
-    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
+    watch(() => uiState.tabMode2, v => { window._cmChattDtlState.tabMode = v; });
+    const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     const msgBoxRef = ref(null);
 
@@ -154,9 +155,12 @@ window.CmChattDtl = {
     const searchUserId = Vue.toRef(uiState, 'searchUserId');
     const chat = Vue.toRef(uiState, 'chat');
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // -- return ---------------------------------------------------------------
 
-    return { cfIsNew, tab, viewMode2, showTab, chat, replyText, sendReply, closeChat, msgBoxRef,
+    return { cfIsNew, tab, cfDtlMode, tabMode2, showTab, chat, replyText, sendReply, closeChat, msgBoxRef,
       hasRef, refLabel, openMsgRef, refModal, closeRefModal,
       form, errors, handleSave, onUserChange,
       searchUserId, cfUserChats,
@@ -171,22 +175,22 @@ window.CmChattDtl = {
   <div v-if="!cfIsNew">
     <div class="tab-bar-row">
       <div class="tab-nav">
-        <button class="tab-btn" :class="{active:tab==='chat'}" :disabled="viewMode2!=='tab'" @click="tab='chat'">💬 채팅 내용</button>
-        <button class="tab-btn" :class="{active:tab==='history'}" :disabled="viewMode2!=='tab'" @click="tab='history'">🕒 회원 채팅 이력 <span class="tab-count">{{ cfMemberChats.length }}</span></button>
+        <button class="tab-btn" :class="{active:tab==='chat'}" :disabled="tabMode2!=='tab'" @click="tab='chat'">💬 채팅 내용</button>
+        <button class="tab-btn" :class="{active:tab==='history'}" :disabled="tabMode2!=='tab'" @click="tab='history'">🕒 회원 채팅 이력 <span class="tab-count">{{ cfMemberChats.length }}</span></button>
       </div>
-      <div class="tab-view-modes">
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭으로 보기">📑</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열로 보기">1▭</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열로 보기">2▭</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열로 보기">3▭</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열로 보기">4▭</button>
+      <div class="tab-modes">
+        <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="tabMode2='tab'" title="탭으로 보기">📑</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="tabMode2='1col'" title="1열로 보기">1▭</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="tabMode2='2col'" title="2열로 보기">2▭</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="tabMode2='3col'" title="3열로 보기">3▭</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열로 보기">4▭</button>
       </div>
     </div>
-    <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
+    <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
     <!-- -- 채팅 내용 탭 ------------------------------------------------------ -->
     <div class="card" v-show="showTab('chat')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💬 채팅 내용</div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💬 채팅 내용</div>
       <template v-if="chat">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
           <div>
@@ -220,7 +224,7 @@ window.CmChattDtl = {
         </div>
         <div v-else style="margin-top:12px;text-align:center;color:#aaa;font-size:13px;padding:10px;background:#fafafa;border-radius:6px;">종료된 채팅입니다.</div>
 
-        <div class="form-actions">
+        <div class="form-actions" v-if="!cfDtlMode">
           <button class="btn btn-secondary" @click="navigate('cmChattMng')">목록으로</button>
         </div>
       </template>
@@ -229,7 +233,7 @@ window.CmChattDtl = {
 
     <!-- -- 회원 채팅 이력 탭 --------------------------------------------------- -->
     <div class="card" v-show="showTab('history')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 채팅 이력 <span class="tab-count">{{ cfMemberChats.length }}</span></div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 채팅 이력 <span class="tab-count">{{ cfMemberChats.length }}</span></div>
       <div v-if="chat" style="margin-bottom:14px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;align-items:center;gap:12px;">
         <span style="font-size:13px;color:#555;">
           <span class="ref-link" @click="showRefModal('member', chat.userId)">{{ chat.userNm }}</span> 의 다른 채팅
@@ -287,7 +291,7 @@ window.CmChattDtl = {
             <option v-for="c in codes.chatt_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
-        <div class="form-actions">
+        <div class="form-actions" v-if="!cfDtlMode">
           <button class="btn btn-primary" @click="handleSave">등록</button>
           <button class="btn btn-secondary" @click="navigate('cmChattMng')">취소</button>
         </div>

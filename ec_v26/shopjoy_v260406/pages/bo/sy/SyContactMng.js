@@ -83,22 +83,22 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
     /* 하단 상세 */
     const detailModal = reactive({
       show: false,
-      editId: null,
-      viewMode: 'view' // 'view' | 'edit'
+      dtlId: null,
+      dtlMode: 'view' // 'view' | 'edit'
     });
 
-    const loadView = (id) => { if (detailModal.editId === id && detailModal.viewMode === 'view') { detailModal.show = false; detailModal.editId = null; return; } detailModal.editId = id; detailModal.viewMode = 'view'; detailModal.show = true; };
-    const handleLoadDetail = (id) => { if (detailModal.editId === id && detailModal.viewMode === 'edit') { detailModal.show = false; detailModal.editId = null; return; } detailModal.editId = id; detailModal.viewMode = 'edit'; detailModal.show = true; };
-    const openNew = () => { detailModal.editId = '__new__'; detailModal.viewMode = 'edit'; detailModal.show = true; };
-    const closeDetail = () => { detailModal.show = false; detailModal.editId = null; };
+    const loadView = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'view') { detailModal.show = false; detailModal.dtlId = null; return; } detailModal.dtlId = id; detailModal.dtlMode = 'view'; detailModal.show = true; };
+    const handleLoadDetail = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'edit') { detailModal.show = false; detailModal.dtlId = null; return; } detailModal.dtlId = id; detailModal.dtlMode = 'edit'; detailModal.show = true; };
+    const openNew = () => { detailModal.dtlId = '__new__'; detailModal.dtlMode = 'edit'; detailModal.show = true; };
+    const closeDetail = () => { detailModal.show = false; detailModal.dtlId = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'syContactMng') { detailModal.show = false; detailModal.editId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
-      if (pg === '__switchToEdit__') { detailModal.viewMode = 'edit'; return; }
+      if (pg === 'syContactMng') { detailModal.show = false; detailModal.dtlId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === '__switchToEdit__') { detailModal.dtlMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => detailModal.editId === '__new__' ? null : detailModal.editId);
-    const cfIsViewMode = computed(() => detailModal.viewMode === 'view' && detailModal.editId !== '__new__');
-    const cfDetailKey = computed(() => `${detailModal.editId}_${detailModal.viewMode}`);
+    const cfDetailEditId = computed(() => detailModal.dtlId === '__new__' ? null : detailModal.dtlId);
+    const cfIsViewMode = computed(() => detailModal.dtlMode === 'view' && detailModal.dtlId !== '__new__');
+    const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}`);
 
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const fnStatusBadge = s => ({ '요청': 'badge-orange', '처리중': 'badge-blue', '답변완료': 'badge-green', '취소됨': 'badge-gray' }[s] || 'badge-gray');
@@ -112,7 +112,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
       if (!ok) return;
       const idx = contacts.findIndex(x => x.inquiryId === c.inquiryId);
       if (idx !== -1) contacts.splice(idx, 1);
-      if (detailModal.editId === c.inquiryId) { detailModal.show = false; detailModal.editId = null; }
+      if (detailModal.dtlId === c.inquiryId) { detailModal.show = false; detailModal.dtlId = null; }
       try {
         const res = await boApiSvc.syContact.remove(c.inquiryId, '문의관리', '삭제');
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
@@ -166,11 +166,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
       </tr></thead>
       <tbody>
         <tr v-if="contacts.length===0"><td colspan="8" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(c, idx) in contacts" :key="c.inquiryId" :style="detailModal.editId===c.inquiryId?'background:#fff8f9;':''">
+        <tr v-else v-for="(c, idx) in contacts" :key="c.inquiryId" :style="detailModal.dtlId===c.inquiryId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td><span class="ref-link" @click="showRefModal('member', c.userId)">{{ c.userNm }}</span></td>
           <td><span class="tag">{{ c.categoryCd }}</span></td>
-          <td><span class="title-link" @click="handleLoadDetail(c.inquiryId)" :style="detailModal.editId===c.inquiryId?'color:#e8587a;font-weight:700;':''">{{ c.title }}<span v-if="detailModal.editId===c.inquiryId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+          <td><span class="title-link" @click="handleLoadDetail(c.inquiryId)" :style="detailModal.dtlId===c.inquiryId?'color:#e8587a;font-weight:700;':''">{{ c.title }}<span v-if="detailModal.dtlId===c.inquiryId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
           <td><span class="badge" :class="fnStatusBadge(c.statusCd)">{{ c.statusCd }}</span></td>
           <td>{{ String(c.regDate||c.date||'').slice(0,10) }}</td>
           <td style="font-size:12px;color:#2563eb;">{{ cfSiteNm }}</td>
@@ -190,12 +190,13 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
     <sy-contact-dtl
-      :key="detailModal.editId"
+      :key="detailModal.dtlId"
       :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
-      :edit-id="cfDetailEditId"
+      :dtl-id="cfDetailEditId"
+      :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
     />
   </div>
 </div>

@@ -100,7 +100,7 @@
       const uiState = reactive({
         filterExpand: false,
         activeTab: 'sales',
-        viewMode: '4col' // tab | 1col | 2col | 3col | 4col
+        tabMode: '4col' // tab | 1col | 2col | 3col | 4col
       });
     const tab = Vue.toRef(uiState, 'tab');
     const activeTab = Vue.toRef(uiState, 'activeTab');
@@ -129,10 +129,10 @@
         { key: '4col', icon: '▭▭▭▭', label: '4열' },
       ];
       const cfGridCols = computed(() => {
-        if (uiState.viewMode === 'tab') return '1fr';
-        return 'repeat(' + parseInt(uiState.viewMode) + ',minmax(0,1fr))';
+        if (uiState.tabMode === 'tab') return '1fr';
+        return 'repeat(' + parseInt(uiState.tabMode) + ',minmax(0,1fr))';
       });
-      const showPanel = (key) => uiState.viewMode === 'tab' ? uiState.activeTab === key : true;
+      const showPanel = (key) => uiState.tabMode === 'tab' ? uiState.activeTab === key : true;
 
       /* -- 보조 대시보드 (원본 KPI 섹션) -- */
       const cfTotalSales    = computed(() => cfMonthlySales.value.reduce((a,b)=>a+b,0));
@@ -296,7 +296,7 @@
     },
 
     template: /* html */`
-<div :class="(uiState.viewMode==='3col'||uiState.viewMode==='4col') ? 'dash-wide' : 'bo-wrap'">
+<div :class="(uiState.tabMode==='3col'||uiState.tabMode==='4col') ? 'dash-wide' : 'bo-wrap'">
   <!-- 헤더 -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:12px 16px;background:linear-gradient(135deg,#1a1a2e 0%,#2d2d44 100%);border-radius:10px;color:#fff;">
     <div style="width:6px;height:24px;background:#e8587a;border-radius:3px;"></div>
@@ -349,20 +349,20 @@
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
     <div class="tab-nav" style="margin-bottom:0;flex:1;flex-wrap:wrap;">
       <button v-for="t in TABS" :key="t.key" class="tab-btn"
-        :class="{active: uiState.activeTab===t.key && uiState.viewMode==='tab'}"
-        :disabled="uiState.viewMode!=='tab'"
-        @click="uiState.viewMode==='tab' && (activeTab=t.key)"
-        :style="uiState.viewMode!=='tab' ? 'opacity:0.4;cursor:not-allowed;' : ''">
+        :class="{active: uiState.activeTab===t.key && uiState.tabMode==='tab'}"
+        :disabled="uiState.tabMode!=='tab'"
+        @click="uiState.tabMode==='tab' && (activeTab=t.key)"
+        :style="uiState.tabMode!=='tab' ? 'opacity:0.4;cursor:not-allowed;' : ''">
         <span style="margin-right:4px;">{{ t.icon }}</span>{{ t.label }}
       </button>
     </div>
     <div style="display:flex;gap:4px;background:#fff;padding:4px;border:1px solid #eef0f3;border-radius:8px;flex-shrink:0;">
-      <button v-for="vm in VIEW_MODES" :key="vm.key" @click="uiState.viewMode=vm.key"
+      <button v-for="vm in VIEW_MODES" :key="vm.key" @click="uiState.tabMode=vm.key"
         :title="vm.label+'로 보기'"
         :style="{fontSize:'11px',padding:'4px 8px',borderRadius:'5px',border:'none',cursor:'pointer',minWidth:'34px',
-                 background: uiState.viewMode===vm.key ? '#fff0f4' : 'transparent',
-                 color:       uiState.viewMode===vm.key ? '#e8587a' : '#888',
-                 fontWeight:  uiState.viewMode===vm.key ? 700 : 400}">{{ vm.icon }}</button>
+                 background: uiState.tabMode===vm.key ? '#fff0f4' : 'transparent',
+                 color:       uiState.tabMode===vm.key ? '#e8587a' : '#888',
+                 fontWeight:  uiState.tabMode===vm.key ? 700 : 400}">{{ vm.icon }}</button>
     </div>
   </div>
 

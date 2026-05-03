@@ -175,7 +175,7 @@
     const instantOrder = ref(null);
     /* ── 장바구니 선택 주문 (cartIds) ── */
     const cartIds = reactive([]);
-    /* ── 서브페이지 editId (이벤트상세, 블로그상세/수정 등) ── */
+    /* ── 서브페이지 dtlId (이벤트상세, 블로그상세/수정 등) ── */
     const viewEditId = ref(null);
 
     /* instantOrder → URL 해시 파라미터 변환 */
@@ -211,7 +211,7 @@
       } else if (id !== 'order') {
         cartIds.splice(0, cartIds.length);
       }
-      if (opts && opts.editId !== undefined) viewEditId.value = opts.editId;
+      if (opts && opts.dtlId !== undefined) viewEditId.value = opts.dtlId;
       else if (opts && opts.eventId !== undefined) viewEditId.value = opts.eventId;
       else viewEditId.value = null;
       if (uiState.mobileOpen) uiState.mobileOpen = false;
@@ -486,7 +486,7 @@
       /* 이벤트/블로그 상세 ID 복원 */
       if (hasPageParam) {
         const hEventId = params.get('eventId');
-        const hEditId  = params.get('editId');
+        const hEditId  = params.get('dtlId');
         if (hEventId) viewEditId.value = Number(hEventId) || hEventId;
         else if (hEditId) viewEditId.value = Number(hEditId) || hEditId;
       }
@@ -518,7 +518,7 @@
           if (f) selectedProduct.value = f;
         }
         const hEventId = params.get('eventId');
-        const hEditId  = params.get('editId');
+        const hEditId  = params.get('dtlId');
         if (hEventId) viewEditId.value = Number(hEventId) || hEventId;
         else if (hEditId) viewEditId.value = Number(hEditId) || hEditId;
       } catch(e) {}
@@ -544,7 +544,7 @@
         params.set('eventId', viewEditId.value);
       }
       if ((id === 'blogView' || id === 'blogEdit') && viewEditId.value != null) {
-        params.set('editId', viewEditId.value);
+        params.set('dtlId', viewEditId.value);
       }
       const hash = params.toString();
       const url = window.location.pathname + window.location.search + '#' + hash;
@@ -703,7 +703,7 @@
         />
         <event-view
           v-else-if="page==='eventView'"
-          :navigate="navigate" :edit-id="viewEditId"
+          :navigate="navigate" :dtl-id="viewEditId"
         />
         <blog-page
           v-else-if="page==='blog'"
@@ -711,11 +711,11 @@
         />
         <blog-view
           v-else-if="page==='blogView'"
-          :navigate="navigate" :edit-id="viewEditId"
+          :navigate="navigate" :dtl-id="viewEditId"
         />
         <blog-edit
           v-else-if="page==='blogEdit'"
-          :navigate="navigate" :edit-id="viewEditId"
+          :navigate="navigate" :dtl-id="viewEditId"
         />
         <like-page
           v-else-if="page==='like'"

@@ -3,8 +3,9 @@ window.SyVendorDtl = {
   name: 'SyVendorDtl',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    editId:      { type: String, default: null }, // 수정 대상 ID
-    viewMode:    { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlId:       { type: String, default: null }, // 수정 대상 ID
+    tabMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:     { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const { reactive, computed, watch, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
@@ -32,7 +33,7 @@ window.SyVendorDtl = {
     // ── watch ────────────────────────────────────────────────────────────────
 
 
-    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
+    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     const form = reactive({
@@ -67,7 +68,7 @@ window.SyVendorDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApiSvc.syVendor.getById(props.editId, '판매자관리', '상세조회');
+        const res = await boApiSvc.syVendor.getById(props.dtlId, '판매자관리', '상세조회');
         const data = res.data?.data;
         if (data) Object.assign(form, data);
         uiState.error = null;
@@ -134,13 +135,16 @@ window.SyVendorDtl = {
     const memoEl = Vue.ref(null);
     Vue.watch(memoEl, (el) => { if (uiState) uiState.memoEl = el; });
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, addrDetailRef, openKakaoPostcode, memoEl };
+    return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, cfDtlMode, addrDetailRef, openKakaoPostcode, memoEl };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '업체 등록' : (viewMode ? '업체 상세' : '업체 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.vendorId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '업체 등록' : (cfDtlMode ? '업체 상세' : '업체 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.vendorId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
@@ -150,36 +154,36 @@ window.SyVendorDtl = {
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">업체유형 <span v-if="!viewMode" class="req">*</span></label>
-        <select class="form-control" v-model="form.vendorType" :disabled="viewMode">
+        <label class="form-label">업체유형 <span v-if="!cfDtlMode" class="req">*</span></label>
+        <select class="form-control" v-model="form.vendorType" :disabled="cfDtlMode">
           <option v-for="c in codes.vendor_type_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">업체명 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.vendorNm" placeholder="업체명" :readonly="viewMode" :class="errors.vendorNm ? 'is-invalid' : ''" />
+        <label class="form-label">업체명 <span v-if="!cfDtlMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.vendorNm" placeholder="업체명" :readonly="cfDtlMode" :class="errors.vendorNm ? 'is-invalid' : ''" />
         <span v-if="errors.vendorNm" class="field-error">{{ errors.vendorNm }}</span>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">대표자명</label>
-        <input class="form-control" v-model="form.ceo" :readonly="viewMode" />
+        <input class="form-control" v-model="form.ceo" :readonly="cfDtlMode" />
       </div>
       <div class="form-group">
-        <label class="form-label">사업자등록번호 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.bizNo" placeholder="000-00-00000" :readonly="viewMode" :class="errors.bizNo ? 'is-invalid' : ''" />
+        <label class="form-label">사업자등록번호 <span v-if="!cfDtlMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.bizNo" placeholder="000-00-00000" :readonly="cfDtlMode" :class="errors.bizNo ? 'is-invalid' : ''" />
         <span v-if="errors.bizNo" class="field-error">{{ errors.bizNo }}</span>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">전화번호</label>
-        <input class="form-control" v-model="form.phone" :readonly="viewMode" />
+        <input class="form-control" v-model="form.phone" :readonly="cfDtlMode" />
       </div>
       <div class="form-group">
         <label class="form-label">이메일</label>
-        <input class="form-control" v-model="form.email" :readonly="viewMode" />
+        <input class="form-control" v-model="form.email" :readonly="cfDtlMode" />
       </div>
     </div>
 
@@ -189,23 +193,23 @@ window.SyVendorDtl = {
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
         <input class="form-control" v-model="form.zipcode" placeholder="우편번호"
           style="width:110px;flex-shrink:0;" readonly />
-        <button v-if="!viewMode" type="button" class="btn btn-blue btn-sm" @click="openKakaoPostcode"
+        <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="openKakaoPostcode"
           style="white-space:nowrap;">🔍 주소 검색</button>
       </div>
       <input class="form-control" v-model="form.address" placeholder="기본주소 (주소 검색 후 자동 입력)"
         style="margin-bottom:6px;" readonly />
       <input class="form-control" v-model="form.addressDetail" ref="addrDetailRef"
-        placeholder="상세주소 (동/호수 등)" :readonly="viewMode" />
+        placeholder="상세주소 (동/호수 등)" :readonly="cfDtlMode" />
     </div>
 
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">계약일</label>
-        <input class="form-control" type="date" v-model="form.contractDate" :readonly="viewMode" />
+        <input class="form-control" type="date" v-model="form.contractDate" :readonly="cfDtlMode" />
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
+        <select class="form-control" v-model="form.statusCd" :disabled="cfDtlMode">
           <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
@@ -213,12 +217,12 @@ window.SyVendorDtl = {
     <div class="form-row">
       <div class="form-group" style="flex:1">
         <label class="form-label">메모</label>
-        <div v-if="viewMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
+        <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
         <div v-else ref="memoEl" style="min-height:90px;background:#fff;"></div>
       </div>
     </div>
-    <div class="form-actions">
-      <template v-if="viewMode">
+    <div class="form-actions" v-if="!cfDtlMode">
+      <template v-if="cfDtlMode">
         <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
         <button class="btn btn-secondary" @click="navigate('syVendorMng')">닫기</button>
       </template>

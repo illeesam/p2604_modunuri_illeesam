@@ -1,5 +1,5 @@
 /* ShopJoy Admin - 주문 이력 (구성상품 / 배송이력 / 연관클레임) */
-window._ecOrderHistState = window._ecOrderHistState || { tab: 'products', viewMode: 'tab' };
+window._ecOrderHistState = window._ecOrderHistState || { tab: 'products', tabMode: 'tab' };
 window.OdOrderHist = {
   name: 'OdOrderHist',
   props: {
@@ -13,9 +13,9 @@ window.OdOrderHist = {
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
     const orders = reactive([]);
-    const uiState = reactive({ loading: false, isPageCodeLoad: false, botTab: window._ecOrderHistState.tab || 'products', viewMode2: 'tab'});
+    const uiState = reactive({ loading: false, isPageCodeLoad: false, botTab: window._ecOrderHistState.tab || 'products', tabMode2: 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
-    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
+    const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const claims = reactive([]);
     const deliveries = reactive([]);
 
@@ -50,7 +50,7 @@ window.OdOrderHist = {
 
     const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.botTab === id;
+    const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
 
     const orderItems = reactive([]);
 
@@ -88,16 +88,16 @@ window.OdOrderHist = {
   <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>이력정보</div>
   <div class="tab-bar-row">
     <div class="tab-nav">
-      <button class="tab-btn" :class="{active:botTab==='products'}" :disabled="viewMode2!=='tab'" @click="botTab='products'">📦 구성 상품 <span class="tab-count">{{ orderItems.length }}</span></button>
-      <button class="tab-btn" :class="{active:botTab==='dliv'}"     :disabled="viewMode2!=='tab'" @click="botTab='dliv'">🚚 배송 이력 <span class="tab-count">{{ cfRelatedDliv ? 1 : 0 }}</span></button>
-      <button class="tab-btn" :class="{active:botTab==='claims'}"   :disabled="viewMode2!=='tab'" @click="botTab='claims'">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='products'}" :disabled="tabMode2!=='tab'" @click="botTab='products'">📦 구성 상품 <span class="tab-count">{{ orderItems.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='dliv'}"     :disabled="tabMode2!=='tab'" @click="botTab='dliv'">🚚 배송 이력 <span class="tab-count">{{ cfRelatedDliv ? 1 : 0 }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='claims'}"   :disabled="tabMode2!=='tab'" @click="botTab='claims'">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></button>
     </div>
     </div>
-  <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
+  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
   <!-- -- 구성 상품 ---------------------------------------------------------- -->
   <div class="card" v-show="showTab('products')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📦 구성 상품 <span class="tab-count">{{ orderItems.length }}</span></div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📦 구성 상품 <span class="tab-count">{{ orderItems.length }}</span></div>
     <table class="bo-table" v-if="orderItems.length">
       <thead><tr><th>No</th><th>상품명</th><th>옵션</th><th>수량</th><th>단가</th><th>금액</th><th>상태</th><th>관리</th></tr></thead>
       <tbody>
@@ -118,7 +118,7 @@ window.OdOrderHist = {
 
   <!-- -- 배송 이력 ---------------------------------------------------------- -->
   <div class="card" v-show="showTab('dliv')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🚚 배송 이력 <span class="tab-count">{{ cfRelatedDliv ? 1 : 0 }}</span></div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🚚 배송 이력 <span class="tab-count">{{ cfRelatedDliv ? 1 : 0 }}</span></div>
     <template v-if="cfRelatedDliv">
       <div style="margin-bottom:14px;padding:12px 16px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;display:flex;justify-content:space-between;align-items:center;">
         <div style="font-size:13px;">
@@ -146,7 +146,7 @@ window.OdOrderHist = {
 
   <!-- -- 연관 클레임 --------------------------------------------------------- -->
   <div class="card" v-show="showTab('claims')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></div>
     <table class="bo-table" v-if="cfRelatedClaims.length">
       <thead><tr><th>클레임ID</th><th>회원</th><th>유형</th><th>상태</th><th>사유</th><th>신청일</th><th>관리</th></tr></thead>
       <tbody>

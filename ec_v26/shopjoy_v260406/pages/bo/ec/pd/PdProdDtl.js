@@ -1,11 +1,12 @@
 /* ShopJoy Admin - 상품관리 상세/등록 */
-window._pdProdDtlState = window._pdProdDtlState || { tab: 'info', viewMode: 'tab' };
+window._pdProdDtlState = window._pdProdDtlState || { tab: 'info', tabMode: 'tab' };
 window.PdProdDtl = {
   name: 'PdProdDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    editId:       { type: String, default: null }, // 수정 대상 ID
-    viewMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlId:        { type: String, default: null }, // 수정 대상 ID
+    tabMode:      { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
@@ -20,7 +21,7 @@ window.PdProdDtl = {
     const boUsers = reactive([]);
     const categories = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, isPageCodeLoad: false, topTab: window._pdProdDtlState.tab || 'info', viewMode2: window._pdProdDtlState.viewMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearch: '' });
+    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, isPageCodeLoad: false, topTab: window._pdProdDtlState.tab || 'info', tabMode2: window._pdProdDtlState.tabMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearch: '' });
     const tab = Vue.toRef(uiState, 'tab');
     const codes = reactive([]);
     const grpCodes = reactive({ product_statuses: [], prod_types: [], prod_plan_statuses: [], opt_stock_statuses: [], stock_filter_opts: [{value:'in',label:'재고있음'},{value:'out',label:'품절(0)'}] });
@@ -80,25 +81,25 @@ window.PdProdDtl = {
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     };
 
-    const TAB_BASE = () => `/bo/ec/pd/prod/${props.editId}`;
+    const TAB_BASE = () => `/bo/ec/pd/prod/${props.dtlId}`;
     const HDR = (cmd) => coUtil.apiHdr('상품관리', cmd);
 
     // 보조 데이터(사용자/카테고리) + 기본정보 + 탭 전체 동시 조회
     const handleLoadData = async () => {
       uiState.loading = true;
       try {
-        const isNew = !props.editId;
+        const isNew = !props.dtlId;
         const baseCalls = [
           boApiSvc.syUser.getPage({ pageNo: 1, pageSize: 1000 }, '상품관리', '상세조회'),
           boApiSvc.pdCategory.getPage({ pageNo: 1, pageSize: 1000 }, '상품관리', '상세조회'),
         ];
         if (!isNew) baseCalls.push(
-          boApiSvc.pdProd.getById(props.editId, '상품관리', '기본정보조회'),
-          boApiSvc.pdProd.getImages(props.editId,   '상품관리', '이미지조회'),
-          boApiSvc.pdProd.getOpts(props.editId,     '상품관리', '옵션조회'),
-          boApiSvc.pdProd.getSkus(props.editId,     '상품관리', 'SKU조회'),
-          boApiSvc.pdProd.getContents(props.editId, '상품관리', '상품설명조회'),
-          boApiSvc.pdProd.getRels(props.editId,     '상품관리', '연관상품조회'),
+          boApiSvc.pdProd.getById(props.dtlId, '상품관리', '기본정보조회'),
+          boApiSvc.pdProd.getImages(props.dtlId,   '상품관리', '이미지조회'),
+          boApiSvc.pdProd.getOpts(props.dtlId,     '상품관리', '옵션조회'),
+          boApiSvc.pdProd.getSkus(props.dtlId,     '상품관리', 'SKU조회'),
+          boApiSvc.pdProd.getContents(props.dtlId, '상품관리', '상품설명조회'),
+          boApiSvc.pdProd.getRels(props.dtlId,     '상품관리', '연관상품조회'),
         );
         const r = await Promise.all(baseCalls);
 
@@ -148,13 +149,13 @@ window.PdProdDtl = {
         uiState.loading = false;
       }
     };
-    const cfIsNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.dtlId);
     const topTab = ref(uiState.topTab);
-    const viewMode2 = ref(uiState.viewMode2);
+    const tabMode2 = ref(uiState.tabMode2);
 
     watch(topTab, v => { uiState.topTab = v; window._pdProdDtlState.tab = v; });
 
-    watch(() => props.editId, () => {
+    watch(() => props.dtlId, () => {
       images.splice(0); optGroups.splice(0); skus.splice(0);
       contentBlocks.splice(0); relProds.splice(0);
       tabData.images.splice(0); tabData.skus.splice(0);
@@ -162,8 +163,8 @@ window.PdProdDtl = {
       tabData.opts.groups.splice(0); tabData.opts.items.splice(0);
     });
 
-    watch(viewMode2, v => { uiState.viewMode2 = v; window._pdProdDtlState.viewMode = v; });
-    const showTab = id => viewMode2.value !== 'tab' || topTab.value === id;
+    watch(tabMode2, v => { uiState.tabMode2 = v; window._pdProdDtlState.tabMode = v; });
+    const showTab = id => tabMode2.value !== 'tab' || topTab.value === id;
 
     // -- form: pd_prod 전체 필드
     const form = reactive({
@@ -700,9 +701,12 @@ window.PdProdDtl = {
     const splitPct = Vue.toRef(uiState, 'splitPct');
     const useOpt = Vue.toRef(uiState, 'useOpt');
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // -- return ---------------------------------------------------------------
 
-    return { cfIsNew, showTab, topTab, viewMode2, form, errors, handleSave,
+    return { cfIsNew, showTab, topTab, cfDtlMode, tabMode2, form, errors, handleSave,
       tabPage, tabData, cfTabPageList, onTabPageChange, cfTabTotalPages, fnTabPageNos,
       uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
       clearOpt, optGroups, skus, cfTotalStock, generateSkus,
@@ -726,6 +730,7 @@ window.PdProdDtl = {
       prodOptCategoryTypeCd, openHelp,
       safeFirst, safeGet, safeFind, safeFilter,
       grpCodes,
+      dtlId: Vue.computed(() => props.dtlId),
     };
   },
   template: /* html */`
@@ -735,29 +740,29 @@ window.PdProdDtl = {
   <!-- -- 탭바 ------------------------------------------------------------- -->
   <div class="tab-bar-row">
     <div class="tab-nav">
-      <button class="tab-btn" :class="{active:topTab==='info'}"    :disabled="viewMode2!=='tab'" @click="topTab='info'">📋 기본정보</button>
-      <button class="tab-btn" :class="{active:topTab==='detail'}"  :disabled="viewMode2!=='tab'" @click="topTab='detail'">📝 상세설정</button>
-      <button class="tab-btn" :class="{active:topTab==='image'}"   :disabled="viewMode2!=='tab'" @click="topTab='image'">🖼 이미지 <span class="tab-count">{{ tabData.images.length }}</span></button>
-      <button class="tab-btn" :class="{active:topTab==='content'}" :disabled="viewMode2!=='tab'" @click="topTab='content'">📄 상품설명 <span class="tab-count">{{ tabData.content.length }}</span></button>
-      <button class="tab-btn" :class="{active:topTab==='option'}"  :disabled="viewMode2!=='tab'" @click="topTab='option'">⚙ 옵션설정 <span class="tab-count">{{ tabData.opts.groups.length }}</span></button>
-      <button class="tab-btn" :class="{active:topTab==='price'}"   :disabled="viewMode2!=='tab'" @click="topTab='price'">💰 옵션(가격/재고) <span class="tab-count">{{ tabData.skus.length }}</span></button>
-      <button class="tab-btn" :class="{active:topTab==='related'}" :disabled="viewMode2!=='tab'" @click="topTab='related'">🔗 연관상품 <span class="tab-count">{{ tabData.rels.length }}</span></button>
+      <button class="tab-btn" :class="{active:topTab==='info'}"    :disabled="tabMode2!=='tab'" @click="topTab='info'">📋 기본정보</button>
+      <button class="tab-btn" :class="{active:topTab==='detail'}"  :disabled="tabMode2!=='tab'" @click="topTab='detail'">📝 상세설정</button>
+      <button class="tab-btn" :class="{active:topTab==='image'}"   :disabled="tabMode2!=='tab'" @click="topTab='image'">🖼 이미지 <span class="tab-count">{{ tabData.images.length }}</span></button>
+      <button class="tab-btn" :class="{active:topTab==='content'}" :disabled="tabMode2!=='tab'" @click="topTab='content'">📄 상품설명 <span class="tab-count">{{ tabData.content.length }}</span></button>
+      <button class="tab-btn" :class="{active:topTab==='option'}"  :disabled="tabMode2!=='tab'" @click="topTab='option'">⚙ 옵션설정 <span class="tab-count">{{ tabData.opts.groups.length }}</span></button>
+      <button class="tab-btn" :class="{active:topTab==='price'}"   :disabled="tabMode2!=='tab'" @click="topTab='price'">💰 옵션(가격/재고) <span class="tab-count">{{ tabData.skus.length }}</span></button>
+      <button class="tab-btn" :class="{active:topTab==='related'}" :disabled="tabMode2!=='tab'" @click="topTab='related'">🔗 연관상품 <span class="tab-count">{{ tabData.rels.length }}</span></button>
     </div>
-    <div class="tab-view-modes">
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}"  @click="viewMode2='tab'"  title="탭">📑</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열">1▭</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열">2▭</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열">3▭</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열">4▭</button>
+    <div class="tab-modes">
+      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}"  @click="tabMode2='tab'"  title="탭">📑</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="tabMode2='1col'" title="1열">1▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="tabMode2='2col'" title="2열">2▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="tabMode2='3col'" title="3열">3▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열">4▭</button>
     </div>
   </div>
-  <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
+  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
   <!-- ══════════════════════════════════════
        📋 기본정보  (pd_prod 주요 필드)
   ══════════════════════════════════════ -->
   <div class="card" v-show="showTab('info')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
 
     <!-- -- 상품명 / 상품코드 --------------------------------------------------- -->
     <div class="form-row">
@@ -955,7 +960,7 @@ window.PdProdDtl = {
       </label>
     </div>
 
-    <div class="form-actions">
+    <div class="form-actions" v-if="!cfDtlMode">
       <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
@@ -965,7 +970,7 @@ window.PdProdDtl = {
        ⚙ 옵션설정  (pd_prod_opt / pd_prod_opt_item / pd_prod_sku)
   ══════════════════════════════════════ -->
   <div class="card" v-show="showTab('option')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">⚙ 옵션설정</div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">⚙ 옵션설정</div>
 
     <!-- -- 옵션 사용 토글 + OPT_TYPE 2레벨 트리 선택 -------------------------------- -->
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;padding:12px 14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;">
@@ -1143,7 +1148,7 @@ window.PdProdDtl = {
       💡 SKU별 가격·재고는 <strong>💰 옵션(가격/재고)</strong> 탭에서 관리합니다.
     </div>
 
-    <div class="form-actions" style="margin-top:16px;">
+    <div class="form-actions" v-if="!cfDtlMode" style="margin-top:16px;">
       <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
@@ -1153,7 +1158,7 @@ window.PdProdDtl = {
        📄 상품설명  (contentBlocks — 첨부/URL/HTML 블록)
   ══════════════════════════════════════ -->
   <div class="card" v-show="showTab('content')" style="margin:0;padding:0;overflow:hidden;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title" style="padding:14px 20px;">📄 상품설명</div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title" style="padding:14px 20px;">📄 상품설명</div>
 
     <!-- -- 상단 툴바: 블록 추가 버튼 ---------------------------------------------- -->
     <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafafa;flex-wrap:wrap;">
@@ -1267,7 +1272,7 @@ window.PdProdDtl = {
       </div>
     </div>
 
-    <div class="form-actions" style="padding:12px 16px;border-top:1px solid #f0f0f0;">
+    <div class="form-actions" v-if="!cfDtlMode" style="padding:12px 16px;border-top:1px solid #f0f0f0;">
       <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
@@ -1277,7 +1282,7 @@ window.PdProdDtl = {
        📝 상세설정  (advrt / 구매제한 / 혜택)
   ══════════════════════════════════════ -->
   <div class="card" v-show="showTab('detail')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 상세설정</div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 상세설정</div>
 
     <!-- -- 홍보문구 --------------------------------------------------------- -->
     <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">홍보문구 (advrt_stmt)</div>
@@ -1338,7 +1343,7 @@ window.PdProdDtl = {
       </label>
     </div>
 
-    <div class="form-actions" style="margin-top:20px;">
+    <div class="form-actions" v-if="!cfDtlMode" style="margin-top:20px;">
       <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
@@ -1348,7 +1353,7 @@ window.PdProdDtl = {
        🖼 이미지  (pd_prod_img)
   ══════════════════════════════════════ -->
   <div class="card" v-show="showTab('image')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🖼 이미지</div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🖼 이미지</div>
     <input type="file" ref="fileInputRef" multiple accept="image/*" style="display:none" @change="onFileChange" />
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;">
       <button class="btn btn-secondary" @click="triggerFileInput">+ 파일 선택</button>
@@ -1422,7 +1427,7 @@ window.PdProdDtl = {
       <button class="pager" @click="onTabPageChange('images',cfTabTotalPages('images'))" :disabled="tabPage.images.pageNo===cfTabTotalPages('images')">»</button>
       <span class="pager-right">{{ images.length }}개 / {{ tabPage.images.pageSize }}개씩</span>
     </div>
-    <div class="form-actions">
+    <div class="form-actions" v-if="!cfDtlMode">
       <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
@@ -1432,7 +1437,7 @@ window.PdProdDtl = {
        🔗 연관상품
   ══════════════════════════════════════ -->
   <div class="card" v-show="showTab('related')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🔗 연관상품</div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🔗 연관상품</div>
 
     <!-- --- 섹션1: 연관상품 --- -->
     <div style="margin-bottom:28px;">
@@ -1466,7 +1471,7 @@ window.PdProdDtl = {
             :style="dragoverRelIdx===((tabPage.rels.pageNo-1)*tabPage.rels.pageSize+idx) && dragRelIdx!==((tabPage.rels.pageNo-1)*tabPage.rels.pageSize+idx) ? 'background:#e6f4ff;' : ''">
             <td style="text-align:center;cursor:grab;color:#ccc;font-size:15px;user-select:none;letter-spacing:-2px;" title="드래그로 순서 변경">≡</td>
             <td style="text-align:center;color:#888;">{{ p.relProdId || p.prodId }}</td>
-            <td><span class="ref-link" @click="navigate('pdProdDtl',{editId:p.relProdId||p.prodId})">{{ p.prodNm }}</span></td>
+            <td><span class="ref-link" @click="navigate('pdProdDtl',{id:p.relProdId||p.prodId})">{{ p.prodNm }}</span></td>
             <td>{{ p.prodRelTypeCdNm || p.prodRelTypeCd }}</td>
             <td style="text-align:center;">
               <button class="btn btn-xs btn-danger" @click="removeRelProd((tabPage.rels.pageNo-1)*tabPage.rels.pageSize+idx)">삭제</button>
@@ -1522,7 +1527,7 @@ window.PdProdDtl = {
             :style="dragoverCodeIdx===idx && dragCodeIdx!==idx ? 'background:#e6f4ff;' : ''">
             <td style="text-align:center;cursor:grab;color:#ccc;font-size:15px;user-select:none;letter-spacing:-2px;" title="드래그로 순서 변경">≡</td>
             <td style="text-align:center;color:#888;">{{ p.productId }}</td>
-            <td><span class="ref-link" @click="navigate('pdProdDtl',{editId:p.productId})">{{ p.prodNm }}</span></td>
+            <td><span class="ref-link" @click="navigate('pdProdDtl',{id:p.productId})">{{ p.prodNm }}</span></td>
             <td>{{ p.category }}</td>
             <td style="text-align:right;">{{ (p.price||0).toLocaleString() }}원</td>
             <td style="text-align:right;">{{ p.stock }}개</td>
@@ -1538,7 +1543,7 @@ window.PdProdDtl = {
       </table>
     </div>
 
-    <div class="form-actions">
+    <div class="form-actions" v-if="!cfDtlMode">
       <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
@@ -1596,7 +1601,7 @@ window.PdProdDtl = {
        💰 옵션(가격/재고)  (SKU 가격/재고 + 기본가격 + 판매계획)
   ══════════════════════════════════════ -->
   <div class="card" v-show="showTab('price')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💰 옵션(가격/재고)</div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💰 옵션(가격/재고)</div>
 
     <!-- --- 섹션1: SKU별 가격·재고 (옵션 카테고리 설정 시) --- -->
     <template v-if="prodOptCategoryTypeCd">
@@ -1828,7 +1833,7 @@ window.PdProdDtl = {
       </div>
     </div>
 
-    <div class="form-actions">
+    <div class="form-actions" v-if="!cfDtlMode">
       <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
     </div>
@@ -1897,7 +1902,7 @@ window.PdProdDtl = {
 
   <!-- -- 이력 ------------------------------------------------------------- -->
   <div v-if="!cfIsNew" style="margin-top:20px;">
-    <pd-prod-hist :prod-id="editId" :navigate="navigate" :show-ref-modal="showRefModal" />
+    <pd-prod-hist :prod-id="dtlId" :navigate="navigate" :show-ref-modal="showRefModal" />
   </div>
 </div>
 `

@@ -35,12 +35,12 @@ Object.assign(searchParam, searchParamOrg); // onReset
 const detailModal = reactive({
   show: false,
   isNew: false,
-  editId: null,
+  dtlId: null,
   form: {}
 });
 
 // Before: selectedId (ref), isNew (ref), form (reactive)
-// After: detailModal.show, detailModal.isNew, detailModal.editId, detailModal.form
+// After: detailModal.show, detailModal.isNew, detailModal.dtlId, detailModal.form
 ```
 
 ---
@@ -61,7 +61,7 @@ const detailModal = reactive({
 ### Phase 2-2: Mng.js 모달/상세 (계속)
 남은 27개 파일에 detailModal 패턴 적용:
 1. 상세 모달이 있는 파일 식별
-2. `selectedId` (ref) → `detailModal.editId`
+2. `selectedId` (ref) → `detailModal.dtlId`
 3. `isNew` (ref) → `detailModal.isNew`
 4. `form` → `detailModal.form`
 5. `openDetail()`, `openNew()`, `closeDetail()` 함수 업데이트
@@ -111,7 +111,7 @@ const customerModal = ref(false);
 ### After (consolidated reactive)
 ```javascript
 const searchParam = reactive({ kw: '', type: '' });
-const detailModal = reactive({ editId: null, isNew: false, form: {} });
+const detailModal = reactive({ dtlId: null, isNew: false, form: {} });
 const productModal = reactive({ show: false, product: null });
 const customerModal = reactive({ show: false, customer: null });
 ```
@@ -132,7 +132,7 @@ const isNew = ref(false);
 const detailModal = reactive({
   show: false,
   isNew: false,
-  editId: null,
+  dtlId: null,
   form: {}
 });
 ```
@@ -148,9 +148,9 @@ const openDetail = (row) => {
 
 // After
 const openDetail = (row) => {
-  if (detailModal.editId === row.blogId) { detailModal.show = false; detailModal.editId = null; return; }
+  if (detailModal.dtlId === row.blogId) { detailModal.show = false; detailModal.dtlId = null; return; }
   Object.assign(detailModal.form, { ...row });
-  detailModal.editId = row.blogId; detailModal.isNew = false; detailModal.show = true;
+  detailModal.dtlId = row.blogId; detailModal.isNew = false; detailModal.show = true;
 };
 ```
 
@@ -175,7 +175,7 @@ const openDetail = (row) => {
 
 2. **Reactive 객체 구조화**
    - 기능별 그룹화 (search, form, modal)
-   - 명확한 프로퍼티 이름 (show, editId, isNew 등)
+   - 명확한 프로퍼티 이름 (show, dtlId, isNew 등)
    - 관련 데이터 함께 포함 (form 안에 모든 필드)
 
 3. **Watch 의존성**

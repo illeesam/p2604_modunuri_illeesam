@@ -1,11 +1,12 @@
 /* ShopJoy Admin - 상품권관리 상세/등록 (탭: 기본정보/미리보기/상세정보/발급내역/사용내역) */
-window._pmVoucherDtlState = window._pmVoucherDtlState || { tab: 'info', viewMode: 'tab' };
+window._pmVoucherDtlState = window._pmVoucherDtlState || { tab: 'info', tabMode: 'tab' };
 window.PmVoucherDtl = {
   name: 'PmVoucherDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    editId:       { type: String, default: null }, // 수정 대상 ID
-    viewMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlId:        { type: String, default: null }, // 수정 대상 ID
+    tabMode:      { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
@@ -13,9 +14,9 @@ window.PmVoucherDtl = {
     const showConfirm  = window.boApp.showConfirm;
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
-    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmVoucherDtlState.tab || 'info', viewMode2: window._pmVoucherDtlState.viewMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null, snsMsg: ''});
+    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmVoucherDtlState.tab || 'info', tabMode2: window._pmVoucherDtlState.tabMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null, snsMsg: ''});
     const tab = Vue.toRef(uiState, 'tab');
-    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
+    const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ promo_statuses: [] });
 
     // 단건 조회
@@ -23,7 +24,7 @@ window.PmVoucherDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pmVoucher.getById(props.editId, '바우처관리', '상세조회');
+        const res = await boApiSvc.pmVoucher.getById(props.dtlId, '바우처관리', '상세조회');
         const v = res.data?.data || res.data;
         if (v) Object.assign(form, { ...v });
         if (!form.startDate) form.startDate = DEFAULT_START;
@@ -36,12 +37,12 @@ window.PmVoucherDtl = {
         uiState.loading = false;
       }
     };
-    const cfIsNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.dtlId);
 
 watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
 
-        watch(() => uiState.viewMode2, v => { window._pmVoucherDtlState.viewMode = v; });
-    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
+        watch(() => uiState.tabMode2, v => { window._pmVoucherDtlState.tabMode = v; });
+    const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -191,21 +192,24 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
     const snsMsg = Vue.toRef(uiState, 'snsMsg');
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // -- return ---------------------------------------------------------------
 
-    return { uiState, codes, cfIsNew, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, viewMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, cfSelectedVendorNm, selectVendor };
+    return { uiState, codes, cfIsNew, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, cfDtlMode, tabMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
   <div class="page-title">{{ cfIsNew ? '상품권 등록' : '상품권 수정' }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.voucherId }}</span></div>
 
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;justify-content:flex-end;">
-    <div class="tab-view-modes">
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭">📑</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열">1▭</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열">2▭</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열">3▭</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열">4▭</button>
+    <div class="tab-modes">
+      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="tabMode2='tab'" title="탭">📑</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="tabMode2='1col'" title="1열">1▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="tabMode2='2col'" title="2열">2▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="tabMode2='3col'" title="3열">3▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열">4▭</button>
     </div>
   </div>
 
@@ -219,8 +223,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   </div>
 
   <!-- -- 기본정보 탭 --------------------------------------------------------- -->
-  <div v-if="showTab('info')" :class="['card', 'dtl-tab-grid', {'cols-1':viewMode2==='1col','cols-2':viewMode2==='2col'}]" style="margin-top:8px;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">기본정보</div>
+  <div v-if="showTab('info')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">기본정보</div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">상품권명 *</label>
@@ -314,15 +318,15 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
         </div>
       </div>
     </div>
-    <div class="form-actions">
+    <div class="form-actions" v-if="!cfDtlMode">
       <button @click="handleSave" class="btn btn-primary">{{ cfIsNew ? '등록' : '저장' }}</button>
       <button @click="navigate('pmVoucherMng')" class="btn btn-secondary">취소</button>
     </div>
   </div>
 
   <!-- -- 미리보기 탭 --------------------------------------------------------- -->
-  <div v-if="showTab('preview')" :class="['card', 'dtl-tab-grid', {'cols-1':viewMode2==='1col','cols-2':viewMode2==='2col'}]" style="margin-top:8px;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">미리보기</div>
+  <div v-if="showTab('preview')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">미리보기</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px;">
       <!-- -- 좌측 컬럼 ------------------------------------------------------ -->
       <div style="display:flex;flex-direction:column;gap:16px;">
@@ -425,8 +429,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   </div>
 
   <!-- -- 발급내역 탭 --------------------------------------------------------- -->
-  <div v-if="showTab('issueHist')" :class="['card', 'dtl-tab-grid', {'cols-1':viewMode2==='1col','cols-2':viewMode2==='2col'}]" style="margin-top:8px;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">발급내역</div>
+  <div v-if="showTab('issueHist')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">발급내역</div>
     <table class="bo-table" style="margin:0;">
       <thead><tr><th>발급번호</th><th>회원명</th><th>발급일</th><th>발급가격</th><th>만료일</th><th>상태</th></tr></thead>
       <tbody>
@@ -444,8 +448,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   </div>
 
   <!-- -- 사용내역 탭 --------------------------------------------------------- -->
-  <div v-if="showTab('useHist')" :class="['card', 'dtl-tab-grid', {'cols-1':viewMode2==='1col','cols-2':viewMode2==='2col'}]" style="margin-top:8px;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">사용내역</div>
+  <div v-if="showTab('useHist')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">사용내역</div>
     <table class="bo-table" style="margin:0;">
       <thead><tr><th>사용번호</th><th>발급번호</th><th>회원명</th><th>주문ID</th><th>사용금액</th><th>사용일시</th></tr></thead>
       <tbody>
@@ -463,8 +467,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   </div>
 
   <!-- -- 상세정보 탭 --------------------------------------------------------- -->
-  <div v-if="showTab('detail')" :class="['card', 'dtl-tab-grid', {'cols-1':viewMode2==='1col','cols-2':viewMode2==='2col'}]" style="margin-top:8px;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
+  <div v-if="showTab('detail')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
     <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #e8e8e8;">
       <h3 style="font-size:13px;font-weight:700;color:#222;">💬 SNS전송</h3>
     </div>

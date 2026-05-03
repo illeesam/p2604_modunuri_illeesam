@@ -3,7 +3,8 @@ window.PdCategoryDtl = {
   name: 'PdCategoryDtl',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    editId:      { type: String, default: null }, // 수정 대상 ID
+    dtlId:       { type: String, default: null }, // 수정 대상 ID
+    dtlMode:     { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
@@ -38,7 +39,7 @@ window.PdCategoryDtl = {
         uiState.loading = false;
       }
     };
-    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
+    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const form = reactive({
       categoryId: null, parentId: null, categoryNm: '', depth: 1, sortOrd: 1, status: '활성', description: '', imgUrl: '',
     });
@@ -51,7 +52,7 @@ window.PdCategoryDtl = {
     const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       try {
-        const res = await boApiSvc.pdCategory.getById(props.editId, '카테고리상세', '상세조회');
+        const res = await boApiSvc.pdCategory.getById(props.dtlId, '카테고리상세', '상세조회');
         const c = res.data?.data || res.data;
         if (c) Object.assign(form, { ...c });
       } catch (err) {
@@ -67,7 +68,7 @@ window.PdCategoryDtl = {
     });
 
     const cfParentOptions = computed(() => window.safeArrayUtils.safeFilter(categories, c => {
-      if (!cfIsNew.value && c.categoryId === props.editId) return false;
+      if (!cfIsNew.value && c.categoryId === props.dtlId) return false;
       return true;
     }));
 
@@ -106,9 +107,12 @@ window.PdCategoryDtl = {
       }
     };
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // -- return ---------------------------------------------------------------
 
-    return { cfIsNew, form, errors, handleSave, cfParentOptions, onParentChange, codes };
+    return { cfIsNew, form, errors, handleSave, cfParentOptions, onParentChange, codes, cfDtlMode };
   },
   template: /* html */`
 <div>
@@ -156,7 +160,7 @@ window.PdCategoryDtl = {
         <input class="form-control" v-model="form.description" />
       </div>
     </div>
-    <div class="form-actions">
+    <div class="form-actions" v-if="!cfDtlMode">
       <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('pdCategoryMng')">취소</button>
     </div>

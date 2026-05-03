@@ -45,7 +45,7 @@ window.DpDispUiSimul = {
     /* ── UI 상태 ── */
     const uiState = reactive({
       mainTab: 'preview', // 'preview' | 'struct' | 'source'
-      viewMode: 'card',   // 'list' | 'card' | 'expand'
+      tabMode: 'card',   // 'list' | 'card' | 'expand'
       showDesc: true, isPageCodeLoad: false,
       showAreaDrop: false, sourceCopied: false, structLayoutType: 'grid', structColCount: 1, structViewport: 'desktop', structShowReal: false, structDashDragOver: false, structSpanPopupIdx: -1, structDragOverIdx: -1, dispUiLayerOpen: true, dispUiModalOpen: false, dispUiAreaErr: false, dispUiSiteModalOpen: false, dispUiSiteSearch: '', dispUiMemberModalOpen: false, dispUiMemberSearch: '', dispUiAreaDrop: false, otherMenuOpen: false});
     const tab = Vue.toRef(uiState, 'tab');
@@ -728,7 +728,7 @@ window.DpDispUiSimul = {
       isLoggedIn:   false,
       userGrade:    '',
     }));
-    const cfDispOpt = computed(() => ({ layout: uiState.viewMode, showBadges: true, mode: uiState.viewMode, showDesc: uiState.showDesc }));
+    const cfDispOpt = computed(() => ({ layout: uiState.tabMode, showBadges: true, mode: uiState.tabMode, showDesc: uiState.showDesc }));
     const areaInfo = (code) =>
       (Array.isArray(codes) ? codes : []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
 
@@ -799,7 +799,7 @@ window.DpDispUiSimul = {
     const structShowReal = Vue.toRef(uiState, 'structShowReal');
     const structSpanPopupIdx = Vue.toRef(uiState, 'structSpanPopupIdx');
     const structViewport = Vue.toRef(uiState, 'structViewport');
-    const viewMode = Vue.toRef(uiState, 'viewMode');
+    const tabMode = Vue.toRef(uiState, 'tabMode');
 
     // ── return ───────────────────────────────────────────────────────────────
 
@@ -891,14 +891,14 @@ window.DpDispUiSimul = {
       <div style="display:flex;align-items:center;gap:6px;" :style="uiState.mainTab!=='preview' ? 'opacity:.4;pointer-events:none;' : ''">
         <span style="font-size:12px;font-weight:600;color:#555;">보기</span>
         <div style="display:flex;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
-          <button @click="viewMode='list'" style="font-size:11px;padding:4px 11px;border:none;cursor:pointer;transition:all .15s;"
-            :style="viewMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">☰ 패널리스트목록형식</button>
-          <button @click="viewMode='card'" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
-            :style="viewMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">🖼 패널목록카드형식</button>
-          <button @click="viewMode='expand'" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
-            :style="viewMode==='expand' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">⊞ 패널-위젯 상세보기</button>
-          <button @click="viewMode='area_detail'" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
-            :style="viewMode==='area_detail' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">⊟ 영역-위젯 상세보기</button>
+          <button @click="tabMode='list'" style="font-size:11px;padding:4px 11px;border:none;cursor:pointer;transition:all .15s;"
+            :style="tabMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">☰ 패널리스트목록형식</button>
+          <button @click="tabMode='card'" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
+            :style="tabMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">🖼 패널목록카드형식</button>
+          <button @click="tabMode='expand'" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
+            :style="tabMode==='expand' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">⊞ 패널-위젯 상세보기</button>
+          <button @click="tabMode='area_detail'" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
+            :style="tabMode==='area_detail' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">⊟ 영역-위젯 상세보기</button>
         </div>
       </div>
       <div style="width:1px;height:28px;background:#e0e0e0;" :style="uiState.mainTab!=='preview' ? 'opacity:.4;' : ''"></div>

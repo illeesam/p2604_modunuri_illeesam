@@ -67,22 +67,22 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     const detailModal = reactive({
       show: false,
-      editId: null,
-      viewMode: 'view' // 'view' | 'edit'
+      dtlId: null,
+      dtlMode: 'view' // 'view' | 'edit'
     });
 
-    const loadView = (id) => { if (detailModal.editId === id && detailModal.viewMode === 'view') { detailModal.show = false; detailModal.editId = null; return; } detailModal.editId = id; detailModal.viewMode = 'view'; detailModal.show = true; };
-    const handleLoadDetail = (id) => { if (detailModal.editId === id && detailModal.viewMode === 'edit') { detailModal.show = false; detailModal.editId = null; return; } detailModal.editId = id; detailModal.viewMode = 'edit'; detailModal.show = true; };
-    const openNew = () => { detailModal.editId = '__new__'; detailModal.viewMode = 'edit'; detailModal.show = true; };
-    const closeDetail = () => { detailModal.show = false; detailModal.editId = null; };
+    const loadView = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'view') { detailModal.show = false; detailModal.dtlId = null; return; } detailModal.dtlId = id; detailModal.dtlMode = 'view'; detailModal.show = true; };
+    const handleLoadDetail = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'edit') { detailModal.show = false; detailModal.dtlId = null; return; } detailModal.dtlId = id; detailModal.dtlMode = 'edit'; detailModal.show = true; };
+    const openNew = () => { detailModal.dtlId = '__new__'; detailModal.dtlMode = 'edit'; detailModal.show = true; };
+    const closeDetail = () => { detailModal.show = false; detailModal.dtlId = null; };
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'syBbmMng') { detailModal.show = false; detailModal.editId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
-      if (pg === '__switchToEdit__') { detailModal.viewMode = 'edit'; return; }
+      if (pg === 'syBbmMng') { detailModal.show = false; detailModal.dtlId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === '__switchToEdit__') { detailModal.dtlMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => detailModal.editId === '__new__' ? null : detailModal.editId);
-    const cfIsViewMode = computed(() => detailModal.viewMode === 'view' && detailModal.editId !== '__new__');
-    const cfDetailKey = computed(() => `${detailModal.editId}_${detailModal.viewMode}`);
+    const cfDetailEditId = computed(() => detailModal.dtlId === '__new__' ? null : detailModal.dtlId);
+    const cfIsViewMode = computed(() => detailModal.dtlMode === 'view' && detailModal.dtlId !== '__new__');
+    const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}`);
 
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const fnTypeBadge = t => ({ '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' }[t] || 'badge-gray');
@@ -100,7 +100,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       if (!ok) return;
       const idx = bbms.findIndex(x => x.bbmId === b.bbmId);
       if (idx !== -1) bbms.splice(idx, 1);
-      if (detailModal.editId === b.bbmId) { detailModal.show = false; detailModal.editId = null; }
+      if (detailModal.dtlId === b.bbmId) { detailModal.show = false; detailModal.dtlId = null; }
       try {
         const res = await boApiSvc.syBbm.remove(b.bbmId, '게시판모드관리', '삭제');
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
@@ -166,7 +166,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           </tr></thead>
           <tbody>
             <tr v-if="bbms.length===0"><td colspan="16" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-            <tr v-else v-for="(b, idx) in bbms" :key="b.bbmId" :style="detailModal.editId===b.bbmId?'background:#fff8f9;':''">
+            <tr v-else v-for="(b, idx) in bbms" :key="b.bbmId" :style="detailModal.dtlId===b.bbmId?'background:#fff8f9;':''">
               <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
               <td>
                 <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:b.pathId!=null?'#374151':'#9ca3af',fontWeight:b.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">
@@ -175,7 +175,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
                 </div>
               </td>
               <td><code style="font-size:11px;color:#555;">{{ b.bbmCode }}</code></td>
-              <td><span class="title-link" @click="handleLoadDetail(b.bbmId)" :style="detailModal.editId===b.bbmId?'color:#e8587a;font-weight:700;':''">{{ b.bbmNm }}<span v-if="detailModal.editId===b.bbmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
+              <td><span class="title-link" @click="handleLoadDetail(b.bbmId)" :style="detailModal.dtlId===b.bbmId?'color:#e8587a;font-weight:700;':''">{{ b.bbmNm }}<span v-if="detailModal.dtlId===b.bbmId" style="font-size:10px;margin-left:3px;">▼</span></span></td>
               <td><span class="badge" :class="fnTypeBadge(b.bbmType)">{{ b.bbmType }}</span></td>
               <td><span class="badge" :class="fnCommentBadge(b.allowComment)">{{ b.allowComment || '불가' }}</span></td>
               <td><span class="badge" :class="fnAttachBadge(b.allowAttach)">{{ b.allowAttach || '불가' }}</span></td>
@@ -201,7 +201,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
           <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
         </div>
-        <sy-bbm-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="cfDetailEditId" :view-mode="cfIsViewMode" />
+        <sy-bbm-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId" :tab-mode="cfIsViewMode"
+          :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'" />
       </div>
     </div>
   </div>

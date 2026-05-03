@@ -6,6 +6,7 @@ window.MbMemberDtl = {
     handleSave:   { type: Function, default: () => {} }, // 콜백 함수
     handleDelete: { type: Function, default: () => {} }, // 콜백 함수
     closeDetail:  { type: Function, default: () => {} }, // 콜백 함수
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const { watch, ref, reactive, onMounted } = Vue;
@@ -13,10 +14,10 @@ window.MbMemberDtl = {
     const showConfirm  = window.boApp.showConfirm;
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
-    const currentId = ref(props.detailModal.editId);
+    const currentId = ref(props.detailModal.dtlId);
     const codes = reactive({ member_grades: [], member_statuses: [] });
 
-    watch(() => props.detailModal.editId, (newId) => {
+    watch(() => props.detailModal.dtlId, (newId) => {
       if (newId) currentId.value = newId;
     }, { immediate: true });
 

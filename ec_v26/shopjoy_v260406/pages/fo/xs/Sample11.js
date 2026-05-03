@@ -4,7 +4,7 @@ window.XsSample11 = {
   components: { 'category-select-modal': window.CategorySelectModal },
   setup() {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), viewMode: 'card', showDesc: true, previewTime: new Date().toTimeString().slice(0, 5), showAreaDrop: false, showCatModal: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), tabMode: 'card', showDesc: true, previewTime: new Date().toTimeString().slice(0, 5), showAreaDrop: false, showCatModal: false });
     const codes = reactive({
       active_status_opts: [{value:'활성',label:'활성'},{value:'비활성',label:'비활성'}],
       need_yn_opts:       [{value:'Y',label:'필요'},{value:'N',label:'불필요'}],
@@ -190,9 +190,9 @@ window.XsSample11 = {
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>
       <!-- -- 보기 모드 ------------------------------------------------------ -->
       <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
-        <button @click="uiState.viewMode='list'" style="font-size:11px;padding:3px 10px;border:none;cursor:pointer;" :style="uiState.viewMode==='list'?'background:#333;color:#fff;':'background:#fff;color:#666;'">☰ 리스트</button>
-        <button @click="uiState.viewMode='card'" style="font-size:11px;padding:3px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;" :style="uiState.viewMode==='card'?'background:#333;color:#fff;':'background:#fff;color:#666;'">🖼 카드</button>
-        <button @click="uiState.viewMode='expand'" style="font-size:11px;padding:3px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;" :style="uiState.viewMode==='expand'?'background:#333;color:#fff;':'background:#fff;color:#666;'">⊞ 상세</button>
+        <button @click="uiState.tabMode='list'" style="font-size:11px;padding:3px 10px;border:none;cursor:pointer;" :style="uiState.tabMode==='list'?'background:#333;color:#fff;':'background:#fff;color:#666;'">☰ 리스트</button>
+        <button @click="uiState.tabMode='card'" style="font-size:11px;padding:3px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;" :style="uiState.tabMode==='card'?'background:#333;color:#fff;':'background:#fff;color:#666;'">🖼 카드</button>
+        <button @click="uiState.tabMode='expand'" style="font-size:11px;padding:3px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;" :style="uiState.tabMode==='expand'?'background:#333;color:#fff;':'background:#fff;color:#666;'">⊞ 상세</button>
       </div>
       <!-- -- 설명 토글 ------------------------------------------------------ -->
       <button @click="uiState.showDesc=!uiState.showDesc" style="font-size:11px;padding:3px 10px;border-radius:8px;border:1px solid #ddd;cursor:pointer;"
@@ -270,7 +270,7 @@ window.XsSample11 = {
       해당 날짜 활성 패널 없음
     </div>
     <!-- -- 리스트 모드 ------------------------------------------------------- -->
-    <div v-else-if="uiState.viewMode==='list'" style="border:1px solid #e0e0e0;border-top:none;border-radius:0 0 6px 6px;overflow:hidden;">
+    <div v-else-if="uiState.tabMode==='list'" style="border:1px solid #e0e0e0;border-top:none;border-radius:0 0 6px 6px;overflow:hidden;">
       <div v-for="p in panelsForArea(area.codeValue)" :key="p.dispId"
         style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;">
         <code style="font-size:10px;background:#f5f5f5;padding:1px 5px;border-radius:3px;color:#666;flex-shrink:0;">#{{ String(p.dispId).padStart(4,'0') }}</code>
@@ -281,7 +281,7 @@ window.XsSample11 = {
       </div>
     </div>
     <!-- -- 카드 모드 -------------------------------------------------------- -->
-    <div v-else-if="uiState.viewMode==='card'" style="background:#f9f9f9;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 6px 6px;padding:10px;display:flex;flex-wrap:wrap;gap:8px;">
+    <div v-else-if="uiState.tabMode==='card'" style="background:#f9f9f9;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 6px 6px;padding:10px;display:flex;flex-wrap:wrap;gap:8px;">
       <div v-for="p in panelsForArea(area.codeValue)" :key="p.dispId"
         style="background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:10px 12px;min-width:180px;flex:1;max-width:260px;">
         <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;">
@@ -294,7 +294,7 @@ window.XsSample11 = {
       </div>
     </div>
     <!-- -- 상세(expand) 모드 ------------------------------------------------ -->
-    <div v-else-if="uiState.viewMode==='expand'" style="border:1px solid #e0e0e0;border-top:none;border-radius:0 0 6px 6px;overflow:hidden;">
+    <div v-else-if="uiState.tabMode==='expand'" style="border:1px solid #e0e0e0;border-top:none;border-radius:0 0 6px 6px;overflow:hidden;">
       <div v-for="p in panelsForArea(area.codeValue)" :key="p.dispId" style="border-bottom:1px solid #f0f0f0;">
         <!-- -- 패널 행 ----------------------------------------------------- -->
         <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:#fafafa;">

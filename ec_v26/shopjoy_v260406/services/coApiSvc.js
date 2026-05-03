@@ -44,15 +44,15 @@
    * ─────────────────────────────────────────────────────────── */
   coApiSvc.cmBoAppStore = {
     getInitData(names, uiNm, cmdNm) {
-      return global.boApi.get('/co/cm/bo-app-store/getInitData', { params: { names }, ...hdr(uiNm, cmdNm) });
+      return global.boApi.get(   '/co/cm/bo-app-store/getInitData', { params: { names }, ...hdr(uiNm, cmdNm) });
     },
-    getAuth(uiNm, cmdNm)  { return global.boApi.get('/co/cm/bo-app-store/getAuth',  hdr(uiNm, cmdNm)); },
-    getUser(uiNm, cmdNm)  { return global.boApi.get('/co/cm/bo-app-store/getUser',  hdr(uiNm, cmdNm)); },
-    getRoles(uiNm, cmdNm) { return global.boApi.get('/co/cm/bo-app-store/getRoles', hdr(uiNm, cmdNm)); },
-    getMenus(uiNm, cmdNm) { return global.boApi.get('/co/cm/bo-app-store/getMenus', hdr(uiNm, cmdNm)); },
-    getCodes(uiNm, cmdNm) { return global.boApi.get('/co/cm/bo-app-store/getCodes', hdr(uiNm, cmdNm)); },
-    getProps(uiNm, cmdNm) { return global.boApi.get('/co/cm/bo-app-store/getProps', hdr(uiNm, cmdNm)); },
-    getApp(uiNm, cmdNm)   { return global.boApi.get('/co/cm/bo-app-store/getApp',   hdr(uiNm, cmdNm)); },
+    getAuth(uiNm, cmdNm)  { return global.boApi.get(   '/co/cm/bo-app-store/getAuth',  hdr(uiNm, cmdNm)); },
+    getUser(uiNm, cmdNm)  { return global.boApi.get(   '/co/cm/bo-app-store/getUser',  hdr(uiNm, cmdNm)); },
+    getRoles(uiNm, cmdNm) { return global.boApi.get(   '/co/cm/bo-app-store/getRoles', hdr(uiNm, cmdNm)); },
+    getMenus(uiNm, cmdNm) { return global.boApi.get(   '/co/cm/bo-app-store/getMenus', hdr(uiNm, cmdNm)); },
+    getCodes(uiNm, cmdNm) { return global.boApi.get(   '/co/cm/bo-app-store/getCodes', hdr(uiNm, cmdNm)); },
+    getProps(uiNm, cmdNm) { return global.boApi.get(   '/co/cm/bo-app-store/getProps', hdr(uiNm, cmdNm)); },
+    getApp(uiNm, cmdNm)   { return global.boApi.get(   '/co/cm/bo-app-store/getApp',   hdr(uiNm, cmdNm)); },
   };
 
   /* ── cm: FO 앱 초기화 데이터 (/co/cm/fo-app-store) ──────────
@@ -63,14 +63,14 @@
     getInitData(names, uiNm, cmdNm) {
       return global.foApi.get('/co/cm/fo-app-store/getInitData', { params: { names }, ...hdr(uiNm, cmdNm) });
     },
-    getAuth(uiNm, cmdNm)  { return global.foApi.get('/co/cm/fo-app-store/getAuth',  hdr(uiNm, cmdNm)); },
-    getUser(uiNm, cmdNm)  { return global.foApi.get('/co/cm/fo-app-store/getUser',  hdr(uiNm, cmdNm)); },
+    getAuth(uiNm, cmdNm)     { return global.foApi.get('/co/cm/fo-app-store/getAuth',  hdr(uiNm, cmdNm)); },
+    getUser(uiNm, cmdNm)     { return global.foApi.get('/co/cm/fo-app-store/getUser',  hdr(uiNm, cmdNm)); },
     getUserPost(uiNm, cmdNm) { return global.foApi.post('/co/cm/fo-app-store/getUser', '', hdr(uiNm, cmdNm)); },
-    getRoles(uiNm, cmdNm) { return global.foApi.get('/co/cm/fo-app-store/getRoles', hdr(uiNm, cmdNm)); },
-    getMenus(uiNm, cmdNm) { return global.foApi.get('/co/cm/fo-app-store/getMenus', hdr(uiNm, cmdNm)); },
-    getCodes(uiNm, cmdNm) { return global.foApi.get('/co/cm/fo-app-store/getCodes', hdr(uiNm, cmdNm)); },
-    getProps(uiNm, cmdNm) { return global.foApi.get('/co/cm/fo-app-store/getProps', hdr(uiNm, cmdNm)); },
-    getApp(uiNm, cmdNm)   { return global.foApi.get('/co/cm/fo-app-store/getApp',   hdr(uiNm, cmdNm)); },
+    getRoles(uiNm, cmdNm)    { return global.foApi.get('/co/cm/fo-app-store/getRoles', hdr(uiNm, cmdNm)); },
+    getMenus(uiNm, cmdNm)    { return global.foApi.get('/co/cm/fo-app-store/getMenus', hdr(uiNm, cmdNm)); },
+    getCodes(uiNm, cmdNm)    { return global.foApi.get('/co/cm/fo-app-store/getCodes', hdr(uiNm, cmdNm)); },
+    getProps(uiNm, cmdNm)    { return global.foApi.get('/co/cm/fo-app-store/getProps', hdr(uiNm, cmdNm)); },
+    getApp(uiNm, cmdNm)      { return global.foApi.get('/co/cm/fo-app-store/getApp',   hdr(uiNm, cmdNm)); },
   };
 
   /* ── fo-auth: FO 인증 (/co/fo-auth) ─────────────────────────
@@ -88,11 +88,11 @@
    * boAuthStore.js 에서 사용. 로그인/토큰갱신/로그아웃.
    * ─────────────────────────────────────────────────────────── */
   coApiSvc.boAuth = {
-    login(body, uiNm, cmdNm)          { return global.boApi.post('/co/bo-auth/login',           body, hdr(uiNm, cmdNm)); },
-    tokenRefresh(body, uiNm, cmdNm)   { return global.boApi.post('/co/bo-auth/token-refresh',   body, hdr(uiNm, cmdNm)); },
-    logout(body, uiNm, cmdNm)         { return global.boApi.post('/co/bo-auth/logout',          body, hdr(uiNm, cmdNm)); },
-    join(body, uiNm, cmdNm)           { return global.boApi.post('/co/bo-auth/join',            body, hdr(uiNm, cmdNm)); },
-    changePassword(body, uiNm, cmdNm) { return global.boApi.post('/co/bo-auth/change-password', body, hdr(uiNm, cmdNm)); },
+    login(body, uiNm, cmdNm)          { return global.boApi.post(  '/co/bo-auth/login',           body, hdr(uiNm, cmdNm)); },
+    tokenRefresh(body, uiNm, cmdNm)   { return global.boApi.post(  '/co/bo-auth/token-refresh',   body, hdr(uiNm, cmdNm)); },
+    logout(body, uiNm, cmdNm)         { return global.boApi.post(  '/co/bo-auth/logout',          body, hdr(uiNm, cmdNm)); },
+    join(body, uiNm, cmdNm)           { return global.boApi.post(  '/co/bo-auth/join',            body, hdr(uiNm, cmdNm)); },
+    changePassword(body, uiNm, cmdNm) { return global.boApi.post(  '/co/bo-auth/change-password', body, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 공통코드 (FO·BO 모두 코드 조회 시 사용) ────────── */
@@ -120,8 +120,8 @@
     getSiteList(params, uiNm, cmdNm) {
       return client().get('/co/sy/site/list', { params, ...hdr(uiNm, cmdNm) });
     },
-    getSiteById(siteId, uiNm, cmdNm) {
-      return client().get(`/co/sy/site/${siteId}`, hdr(uiNm, cmdNm));
+    getSiteById(_id, uiNm, cmdNm) {
+      return client().get(`/co/sy/site/${_id}`, hdr(uiNm, cmdNm));
     },
   };
 

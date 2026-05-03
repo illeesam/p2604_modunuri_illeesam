@@ -265,7 +265,7 @@
   if (st === 401) { errorMessage.value = msg; page.value = 'error401'; }
   else if (st >= 500 || st === 0) { errorMessage.value = msg; page.value = 'error500'; }
   });
-  const editId = ref(null);
+  const dtlId = ref(null);
 
   /* ── 탭 관리 ── */
   const openTabs = reactive([{ id: 'dashboard', label: '대시보드' }]);
@@ -348,7 +348,7 @@
   if (cfActiveTabId.value === tabId) {
   const next = openTabs[Math.min(idx, openTabs.length - 1)];
   if (next) navigate(next.id);
-  else { page.value = 'dashboard'; editId.value = null; }
+  else { page.value = 'dashboard'; dtlId.value = null; }
   }
   };
 
@@ -449,7 +449,7 @@
   addTab(toTabId(pg));
   }
   const id = p.get('id');
-  editId.value = id !== null ? (isNaN(id) ? id : Number(id)) : null;
+  dtlId.value = id !== null ? (isNaN(id) ? id : Number(id)) : null;
   };
   readHash(false);
 
@@ -460,7 +460,7 @@
   return;
   }
   page.value  = pg;
-  editId.value  = opts.id ?? null;
+  dtlId.value  = opts.id ?? null;
   if (PAGE_TO_TOP[pg]) activeTop.value = PAGE_TO_TOP[pg];
   addTab(toTabId(pg));
   // 즐겨찾기 keep 설정이 있으면 자동으로 탭 고정
@@ -1167,7 +1167,7 @@
 
   return {
   isApiLoading,
-  page, editId, navigate, errorMessage, cfDashboardComp,
+  page, dtlId, navigate, errorMessage, cfDashboardComp,
   TOP_MENUS, LEFT_MENUS, AUTH_METHODS,
   openTabs, closeTab, cfActiveTabId, refreshKeys, keptTabIds, toggleKeep, PAGE_COMP_MAP,
   ctxMenu, showCtxMenu, closeCtxMenu,
@@ -1448,29 +1448,29 @@
   :is="PAGE_COMP_MAP[keptId]"
   v-show="page === keptId"
   :navigate="navigate"
-  :edit-id="editId"
+  :dtl-id="dtlId"
   />
   <!-- 비고정 현재 탭: 전환 시 재마운트 -->
   <div v-if="!keptTabIds.has(page)" :key="page + '_' + (refreshKeys[page] || 0)" style="display:contents;">
   <component v-if="page==='dashboard'" :is="cfDashboardComp" :navigate="navigate" />
   <mb-member-mng  v-else-if="page==='mbMemberMng'"  :navigate="navigate" />
-  <mb-member-dtl  v-else-if="page==='mbMemberDtl'"  :navigate="navigate" :edit-id="editId" />
+  <mb-member-dtl  v-else-if="page==='mbMemberDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <pd-prod-mng  v-else-if="page==='pdProdMng'"  :navigate="navigate" />
-  <pd-prod-dtl  v-else-if="page==='pdProdDtl'"  :navigate="navigate" :edit-id="editId" />
+  <pd-prod-dtl  v-else-if="page==='pdProdDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <od-order-mng  v-else-if="page==='odOrderMng'"  :navigate="navigate" />
-  <od-order-dtl  v-else-if="page==='odOrderDtl'"  :navigate="navigate" :edit-id="editId" />
+  <od-order-dtl  v-else-if="page==='odOrderDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <od-claim-mng  v-else-if="page==='odClaimMng'"  :navigate="navigate" />
-  <od-claim-dtl  v-else-if="page==='odClaimDtl'"  :navigate="navigate" :edit-id="editId" />
+  <od-claim-dtl  v-else-if="page==='odClaimDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <od-dliv-mng  v-else-if="page==='odDlivMng'"  :navigate="navigate" />
-  <od-dliv-dtl  v-else-if="page==='odDlivDtl'"  :navigate="navigate" :edit-id="editId" />
+  <od-dliv-dtl  v-else-if="page==='odDlivDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <pm-coupon-mng  v-else-if="page==='pmCouponMng'"  :navigate="navigate" />
-  <pm-coupon-dtl  v-else-if="page==='pmCouponDtl'"  :navigate="navigate" :edit-id="editId" />
+  <pm-coupon-dtl  v-else-if="page==='pmCouponDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <pm-cache-mng  v-else-if="page==='pmCacheMng'"  :navigate="navigate" />
   <pm-discnt-mng v-else-if="page==='pmDiscntMng'" :navigate="navigate" />
   <pm-save-mng  v-else-if="page==='pmSaveMng'"  :navigate="navigate" />
   <pm-gift-mng  v-else-if="page==='pmGiftMng'"  :navigate="navigate" />
   <pm-voucher-mng v-else-if="page==='pmVoucherMng'" :navigate="navigate" />
-  <pm-cache-dtl  v-else-if="page==='pmCacheDtl'"  :navigate="navigate" :edit-id="editId" />
+  <pm-cache-dtl  v-else-if="page==='pmCacheDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <dp-disp-panel-mng  v-else-if="page==='dpDispPanelMng'"  :navigate="navigate" />
   <dp-disp-area-preview  v-else-if="page==='dpDispAreaPreview'"  :navigate="navigate" />
   <dp-disp-ui-preview  v-else-if="page==='dpDispUiPreview'"  :navigate="navigate" />
@@ -1480,39 +1480,39 @@
   <dp-disp-area-mng  v-else-if="page==='dpDispAreaMng'"  :navigate="navigate" />
   <dp-disp-ui-mng  v-else-if="page==='dpDispUiMng'"  :navigate="navigate" />
   <dp-disp-widget-mng  v-else-if="page==='dpDispWidgetMng'"  :navigate="navigate" />
-  <dp-disp-panel-dtl  v-else-if="page==='dpDispPanelDtl'"  :navigate="navigate" :edit-id="editId" />
+  <dp-disp-panel-dtl  v-else-if="page==='dpDispPanelDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <dp-disp-widget-lib-mng  v-else-if="page==='dpDispWidgetLibMng'"  :navigate="navigate" />
-  <dp-disp-widget-lib-dtl  v-else-if="page==='dpDispWidgetLibDtl'"  :navigate="navigate" :edit-id="editId" />
+  <dp-disp-widget-lib-dtl  v-else-if="page==='dpDispWidgetLibDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <dp-disp-widget-lib-preview v-else-if="page==='dpDispWidgetLibPreview'" :navigate="navigate" />
   <dp-disp-relation-mng v-else-if="page==='dpDispRelationMng'" :navigate="navigate" />
   <pm-event-mng  v-else-if="page==='pmEventMng'"  :navigate="navigate" />
-  <pm-event-dtl  v-else-if="page==='pmEventDtl'"  :navigate="navigate" :edit-id="editId" />
+  <pm-event-dtl  v-else-if="page==='pmEventDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <pm-plan-mng  v-else-if="page==='pmPlanMng'"  :navigate="navigate" />
-  <pm-plan-dtl  v-else-if="page==='pmPlanDtl'"  :navigate="navigate" :edit-id="editId" />
+  <pm-plan-dtl  v-else-if="page==='pmPlanDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <mb-cust-info-mng v-else-if="page==='mbCustInfoMng'" :navigate="navigate" />
   <sy-contact-mng v-else-if="page==='syContactMng'" :navigate="navigate" />
-  <sy-contact-dtl v-else-if="page==='syContactDtl'" :navigate="navigate" :edit-id="editId" />
+  <sy-contact-dtl v-else-if="page==='syContactDtl'" :navigate="navigate" :dtl-id="dtlId" />
   <cm-chatt-mng  v-else-if="page==='cmChattMng'"  :navigate="navigate" />
-  <cm-chatt-dtl  v-else-if="page==='cmChattDtl'"  :navigate="navigate" :edit-id="editId" />
+  <cm-chatt-dtl  v-else-if="page==='cmChattDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <sy-site-mng  v-else-if="page==='sySiteMng'"  :navigate="navigate" />
-  <sy-site-dtl  v-else-if="page==='sySiteDtl'"  :navigate="navigate" :edit-id="editId" />
+  <sy-site-dtl  v-else-if="page==='sySiteDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <sy-code-mng  v-else-if="page==='syCodeMng'"  :navigate="navigate" />
-  <sy-code-dtl  v-else-if="page==='syCodeDtl'"  :navigate="navigate" :edit-id="editId" />
+  <sy-code-dtl  v-else-if="page==='syCodeDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <sy-brand-mng  v-else-if="page==='syBrandMng'"  :navigate="navigate" />
   <sy-attach-mng  v-else-if="page==='syAttachMng'"  :navigate="navigate" />
   <sy-template-mng v-else-if="page==='syTemplateMng'" :navigate="navigate" />
-  <sy-template-dtl v-else-if="page==='syTemplateDtl'" :navigate="navigate" :edit-id="editId" />
+  <sy-template-dtl v-else-if="page==='syTemplateDtl'" :navigate="navigate" :dtl-id="dtlId" />
   <sy-vendor-mng  v-else-if="page==='syVendorMng'"  :navigate="navigate" />
   <sy-biz-mng  v-else-if="page==='syBizMng'"  :navigate="navigate" />
   <sy-vendor-user-mng v-else-if="page==='syVendorUserMng'" :navigate="navigate" />
-  <sy-vendor-dtl  v-else-if="page==='syVendorDtl'"  :navigate="navigate" :edit-id="editId" />
+  <sy-vendor-dtl  v-else-if="page==='syVendorDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <pd-category-mng v-else-if="page==='pdCategoryMng'" :navigate="navigate" />
-  <pd-category-dtl v-else-if="page==='pdCategoryDtl'" :navigate="navigate" :edit-id="editId" />
+  <pd-category-dtl v-else-if="page==='pdCategoryDtl'" :navigate="navigate" :dtl-id="dtlId" />
   <pd-category-prod-mng v-else-if="page==='pdCategoryProdMng'" :navigate="navigate" />
   <sy-user-mng  v-else-if="page==='syUserMng'"  :navigate="navigate" />
-  <sy-user-dtl  v-else-if="page==='syUserDtl'"  :navigate="navigate" :edit-id="editId" />
+  <sy-user-dtl  v-else-if="page==='syUserDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <sy-batch-mng  v-else-if="page==='syBatchMng'"  :navigate="navigate" />
-  <sy-batch-dtl  v-else-if="page==='syBatchDtl'"  :navigate="navigate" :edit-id="editId" />
+  <sy-batch-dtl  v-else-if="page==='syBatchDtl'"  :navigate="navigate" :dtl-id="dtlId" />
   <sy-dept-mng  v-else-if="page==='syDeptMng'"  :navigate="navigate" />
   <sy-menu-mng  v-else-if="page==='syMenuMng'"  :navigate="navigate" />
   <sy-role-mng  v-else-if="page==='syRoleMng'"  :navigate="navigate" />

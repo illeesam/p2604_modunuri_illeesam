@@ -9,7 +9,7 @@ Preview 컴포넌트들의 산재된 조회 조건 refs (previewDate, previewTim
 ```javascript
 // UI 상태
 const mainTab      = ref('preview');
-const viewMode     = ref('card');
+const tabMode     = ref('card');
 const showDesc     = ref(true);
 const showAreaDrop = ref(false);
 
@@ -30,7 +30,7 @@ const searchVisibility = ref('');
 // UI 상태
 const uiState = reactive({
   mainTab: 'preview',        // 'preview' | 'struct' | 'source'
-  viewMode: 'card',          // 'list' | 'card' | 'expand'
+  tabMode: 'card',          // 'list' | 'card' | 'expand'
   showDesc: true,
   showAreaDrop: false,
 });
@@ -82,7 +82,7 @@ UI 시뮬레이션 컴포넌트:
 
 ### 각 파일별 수행 항목
 - [ ] 개별 UI state ref → `uiState` reactive 통합
-  - `mainTab`, `viewMode`, `showDesc`, `showAreaDrop` 등
+  - `mainTab`, `tabMode`, `showDesc`, `showAreaDrop` 등
 - [ ] 개별 조회/필터 ref → `searchParam`, `searchParamOrg` 통합
   - `previewDate`, `previewTime`, `filterType`, `filterStatus`, `filterVisibility`, `filterDispEnv`
   - `searchKw`, `searchStatus`, `searchVisibility`
@@ -117,7 +117,7 @@ UI 시뮬레이션 컴포넌트:
 
 **변경 사항**:
 - `mainTab = ref()` → `uiState.mainTab`
-- `viewMode = ref()` → `uiState.viewMode`
+- `tabMode = ref()` → `uiState.tabMode`
 - `showDesc = ref()` → `uiState.showDesc`
 - `showAreaDrop = ref()` → `uiState.showAreaDrop`
 - `previewDate = ref()` → `searchParam.previewDate`

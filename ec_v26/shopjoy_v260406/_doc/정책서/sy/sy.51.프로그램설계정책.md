@@ -513,7 +513,7 @@ const loadColumnSettings = () => {
 
 ```javascript
 // 신규/수정 상태 판정
-const isNew = computed(() => !props.editId);
+const isNew = computed(() => !props.dtlId);
 
 // 폼 데이터
 const form = reactive({
@@ -525,7 +525,7 @@ const form = reactive({
 // onMounted에서 ID 할당
 onMounted(() => {
   if (!isNew.value) {
-    const data = props.adminData.getCoupon(props.editId);
+    const data = props.adminData.getCoupon(props.dtlId);
     if (data) Object.assign(form, { ...data });
     // form.couponId는 자동으로 설정됨
   }
@@ -565,7 +565,7 @@ return { isNew, form, ... };
 
 - **신규 등록**: ID 미할당 상태이므로 표시 안 함
 - **수정/상세**: ID 할당된 상태이므로 표시
-- **보기 모드 지원**: viewMode prop 있는 경우에도 ID 표시 유지
+- **보기 모드 지원**: tabMode prop 있는 경우에도 ID 표시 유지
 
 ### 5.7 스타일 가이드
 

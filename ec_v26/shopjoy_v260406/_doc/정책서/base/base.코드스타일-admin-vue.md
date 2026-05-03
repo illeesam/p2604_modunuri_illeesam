@@ -14,7 +14,7 @@
 | 케이스 | 이유 | 예시 |
 |---|---|---|
 | `isAppReady` 감시 | 앱 스토어가 비동기로 준비되는 시점을 알 수 없어 watch가 불가피 | `watch(isAppReady, v => { if (v) fnLoadCodes(); })` |
-| 외부 `props.*` 변경 감시 | 부모가 언제 prop을 바꿀지 제어 불가 | `watch(() => props.editId, handleLoadDetail)` |
+| 외부 `props.*` 변경 감시 | 부모가 언제 prop을 바꿀지 제어 불가 | `watch(() => props.dtlId, handleLoadDetail)` |
 | UI 탭/뷰모드 영속화 | 상태 변경 시점에 즉시 window에 동기화 필요 | `watch(() => uiState.tab, v => { window._xxState.tab = v; })` |
 | 에디터 초기화 등 복잡 사이드 이펙트 | DOM 상태나 라이브러리 인스턴스 제어가 필요한 경우 | Quill 에디터 on/off 전환 |
 
@@ -52,12 +52,12 @@ const fnSiteNm = () => boUtil.getSiteNm();
 // 또는 template: {{ $root.boUtil?.getSiteNm() }}  ← boUtil이 전역이면 직접 호출 가능
 
 // ❌ 금지 — reactive 값을 단순히 다시 접근하는 computed
-const cfIsNew = computed(() => !props.editId);
+const cfIsNew = computed(() => !props.dtlId);
 
 // ✅ 대체 — template에서 직접 표현식 사용
-// template: <span v-if="!editId">신규</span>
+// template: <span v-if="!dtlId">신규</span>
 // 또는 단순 함수
-const cfIsNew = () => !props.editId;
+const cfIsNew = () => !props.dtlId;
 // template: <span v-if="cfIsNew()">신규</span>
 
 // ❌ 금지 — 호출 빈도 낮은 변환을 computed로 선언

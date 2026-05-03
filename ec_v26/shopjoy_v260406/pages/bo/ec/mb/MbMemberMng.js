@@ -21,12 +21,12 @@ window.MbMemberMng = {
     const detailModal = reactive({
       show: false,
       isNew: false,
-      editId: null,
+      dtlId: null,
       form: { memberId: null, email: '', memberNm: '', phone: '', gradeCd: '일반', statusCd: '활성', joinDate: '', memo: '' }
     });
 
     // 2️⃣ computed 선언
-    const cfSelectedRow = computed(() => members.find(m => m.memberId === detailModal.editId) || null);
+    const cfSelectedRow = computed(() => members.find(m => m.memberId === detailModal.dtlId) || null);
 
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
@@ -88,7 +88,7 @@ window.MbMemberMng = {
     };
 
     const openDetail = async (row) => {
-      detailModal.editId = row.memberId;
+      detailModal.dtlId = row.memberId;
       detailModal.isNew = false;
       detailModal.show = true;
       fnApplyForm(row); // 목록 row 데이터로 먼저 표시
@@ -103,14 +103,14 @@ window.MbMemberMng = {
 
     const openNew = () => {
       Object.assign(detailModal.form, { memberId: null, email: '', memberNm: '', phone: '', gradeCd: '일반', statusCd: '활성', joinDate: new Date().toISOString().split('T')[0], memo: '' });
-      detailModal.editId = '__new__';
+      detailModal.dtlId = '__new__';
       detailModal.isNew = true;
       detailModal.show = true;
     };
 
     const closeDetail = () => {
       detailModal.show = false;
-      detailModal.editId = null;
+      detailModal.dtlId = null;
     };
 
     const handleSave = async () => {
@@ -124,7 +124,7 @@ window.MbMemberMng = {
         detailModal.form.orderCount = 0;
         detailModal.form.totalPurchase = 0;
         members.unshift({ ...detailModal.form });
-        detailModal.editId = detailModal.form.memberId;
+        detailModal.dtlId = detailModal.form.memberId;
         detailModal.isNew = false;
       } else {
         const si = members.findIndex(m => m.memberId === detailModal.form.memberId);
@@ -179,7 +179,7 @@ window.MbMemberMng = {
 
     // -- return ---------------------------------------------------------------
     return {
-      selectedId: computed(() => detailModal.editId), members, uiState, codes,
+      selectedId: computed(() => detailModal.dtlId), members, uiState, codes,
       searchParam, pager, setPage,
       onSearch, onReset, cfSelectedRow, detailModal, openDetail, openNew, closeDetail,
       handleSave, handleDelete, fnGradeBadge, fnStatusBadge, fnFmtDate, onSizeChange,

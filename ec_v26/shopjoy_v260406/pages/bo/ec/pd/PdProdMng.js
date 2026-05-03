@@ -244,7 +244,8 @@ window.PdProdMng = {
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
-      :edit-id="cfDetailEditId"
+      :dtl-id="cfDetailEditId"
+      :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
     />
   </div>
 </div>

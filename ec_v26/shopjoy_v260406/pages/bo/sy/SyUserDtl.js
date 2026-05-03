@@ -3,8 +3,9 @@ window.SyUserDtl = {
   name: 'SyUserDtl',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    editId:      { type: String, default: null }, // 수정 대상 ID
-    viewMode:    { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlId:       { type: String, default: null }, // 수정 대상 ID
+    tabMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:     { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const { reactive, computed, watch, onMounted, ref } = Vue;
@@ -32,7 +33,7 @@ window.SyUserDtl = {
     // ── watch ────────────────────────────────────────────────────────────────
 
 
-    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
+    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     const form = reactive({
@@ -54,7 +55,7 @@ window.SyUserDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApiSvc.syUser.getById(props.editId, '사용자관리', '상세조회');
+        const res = await boApiSvc.syUser.getById(props.dtlId, '사용자관리', '상세조회');
         const data = res.data?.data;
         if (data) Object.assign(form, { ...data, password: '' });
         uiState.error = null;
@@ -133,16 +134,19 @@ window.SyUserDtl = {
       }
     };
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // ── return ───────────────────────────────────────────────────────────────
 
     return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm,
-             addrDetailRef, openKakaoPostcode,
+             cfDtlMode, addrDetailRef, openKakaoPostcode,
              deptModal, openDeptModal, onDeptSelect, clearDept,
              cfUserRoles, fnRoleTypeBadge };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '사용자 등록' : (viewMode ? '사용자 상세' : '사용자 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.boUserId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '사용자 등록' : (cfDtlMode ? '사용자 상세' : '사용자 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.boUserId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
@@ -152,37 +156,37 @@ window.SyUserDtl = {
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">로그인ID <span v-if="!viewMode" class="req">*</span></label>
+        <label class="form-label">로그인ID <span v-if="!cfDtlMode" class="req">*</span></label>
         <input class="form-control" v-model="form.loginId" placeholder="로그인 아이디"
-          :readonly="!cfIsNew || viewMode" :style="(!cfIsNew || viewMode)?'background:#f5f5f5;':''"
+          :readonly="!cfIsNew || cfDtlMode" :style="(!cfIsNew || cfDtlMode)?'background:#f5f5f5;':''"
           :class="errors.loginId ? 'is-invalid' : ''" />
         <span v-if="errors.loginId" class="field-error">{{ errors.loginId }}</span>
       </div>
-      <div v-if="!viewMode" class="form-group">
+      <div v-if="!cfDtlMode" class="form-group">
         <label class="form-label">비밀번호{{ cfIsNew ? '' : ' (변경 시 입력)' }} <span v-if="cfIsNew" class="req">*</span></label>
         <input class="form-control" type="password" v-model="form.password" placeholder="비밀번호" />
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">이름 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.name" placeholder="이름" :readonly="viewMode" :class="errors.name ? 'is-invalid' : ''" />
+        <label class="form-label">이름 <span v-if="!cfDtlMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.name" placeholder="이름" :readonly="cfDtlMode" :class="errors.name ? 'is-invalid' : ''" />
         <span v-if="errors.name" class="field-error">{{ errors.name }}</span>
       </div>
       <div class="form-group">
-        <label class="form-label">이메일 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.email" placeholder="이메일" :readonly="viewMode" :class="errors.email ? 'is-invalid' : ''" />
+        <label class="form-label">이메일 <span v-if="!cfDtlMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.email" placeholder="이메일" :readonly="cfDtlMode" :class="errors.email ? 'is-invalid' : ''" />
         <span v-if="errors.email" class="field-error">{{ errors.email }}</span>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">연락처</label>
-        <input class="form-control" v-model="form.phone" placeholder="010-0000-0000" :readonly="viewMode" />
+        <input class="form-control" v-model="form.phone" placeholder="010-0000-0000" :readonly="cfDtlMode" />
       </div>
       <div class="form-group">
         <label class="form-label">부서</label>
-        <div v-if="viewMode" class="readonly-field">{{ form.dept || '-' }}</div>
+        <div v-if="cfDtlMode" class="readonly-field">{{ form.dept || '-' }}</div>
         <div v-else style="display:flex;gap:8px;align-items:center;">
           <div class="form-control" style="flex:1;cursor:pointer;background:#fafafa;display:flex;align-items:center;min-height:36px;"
             @click="openDeptModal">
@@ -197,13 +201,13 @@ window.SyUserDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">역할</label>
-        <select class="form-control" v-model="form.role" :disabled="viewMode">
+        <select class="form-control" v-model="form.role" :disabled="cfDtlMode">
           <option v-for="c in codes.user_roles" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
+        <select class="form-control" v-model="form.statusCd" :disabled="cfDtlMode">
           <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
@@ -215,17 +219,17 @@ window.SyUserDtl = {
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
         <input class="form-control" v-model="form.zipcode" placeholder="우편번호"
           style="width:110px;flex-shrink:0;" readonly />
-        <button v-if="!viewMode" type="button" class="btn btn-blue btn-sm" @click="openKakaoPostcode"
+        <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="openKakaoPostcode"
           style="white-space:nowrap;">🔍 주소 검색</button>
       </div>
       <input class="form-control" v-model="form.address"
         placeholder="기본주소 (주소 검색 후 자동 입력)" style="margin-bottom:6px;" readonly />
       <input class="form-control" v-model="form.addressDetail" ref="addrDetailRef"
-        placeholder="상세주소 (동/호수 등)" :readonly="viewMode" />
+        placeholder="상세주소 (동/호수 등)" :readonly="cfDtlMode" />
     </div>
 
-    <div class="form-actions">
-      <template v-if="viewMode">
+    <div class="form-actions" v-if="!cfDtlMode">
+      <template v-if="cfDtlMode">
         <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
         <button class="btn btn-secondary" @click="navigate('syUserMng')">닫기</button>
       </template>

@@ -1,5 +1,5 @@
 /* ShopJoy Admin - 배송 이력 (연관주문 / 연관클레임) */
-window._ecDlivHistState = window._ecDlivHistState || { tab: 'order', viewMode: 'tab' };
+window._ecDlivHistState = window._ecDlivHistState || { tab: 'order', tabMode: 'tab' };
 window.OdDlivHist = {
   name: 'OdDlivHist',
   props: {
@@ -13,9 +13,9 @@ window.OdDlivHist = {
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
     const deliveries = reactive([]);
-    const uiState = reactive({ loading: false, isPageCodeLoad: false, botTab: window._ecDlivHistState.tab || 'order', viewMode2: 'tab'});
+    const uiState = reactive({ loading: false, isPageCodeLoad: false, botTab: window._ecDlivHistState.tab || 'order', tabMode2: 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
-    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
+    const tabMode2 = Vue.toRef(uiState, 'tabMode2');
 
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -45,7 +45,7 @@ window.OdDlivHist = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.botTab === id;
+    const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
     const cfRelatedOrder  = computed(() => getOrder.value(props.orderId));
     const cfRelatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.orderId === props.orderId));
     const botTab = Vue.toRef(uiState, 'botTab');
@@ -63,15 +63,15 @@ window.OdDlivHist = {
   <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>이력정보</div>
   <div class="tab-bar-row">
     <div class="tab-nav">
-      <button class="tab-btn" :class="{active:botTab==='order'}"  :disabled="viewMode2!=='tab'" @click="botTab='order'">🛒 연관 주문 <span class="tab-count">{{ cfRelatedOrder ? 1 : 0 }}</span></button>
-      <button class="tab-btn" :class="{active:botTab==='claims'}" :disabled="viewMode2!=='tab'" @click="botTab='claims'">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='order'}"  :disabled="tabMode2!=='tab'" @click="botTab='order'">🛒 연관 주문 <span class="tab-count">{{ cfRelatedOrder ? 1 : 0 }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='claims'}" :disabled="tabMode2!=='tab'" @click="botTab='claims'">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></button>
     </div>
     </div>
-  <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
+  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
   <!-- -- 연관 주문 ---------------------------------------------------------- -->
   <div class="card" v-show="showTab('order')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ cfRelatedOrder ? 1 : 0 }}</span></div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ cfRelatedOrder ? 1 : 0 }}</span></div>
     <template v-if="cfRelatedOrder">
       <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ cfRelatedOrder.orderId }}</span></div>
       <div class="detail-row"><span class="detail-label">회원</span>
@@ -87,7 +87,7 @@ window.OdDlivHist = {
 
   <!-- -- 연관 클레임 --------------------------------------------------------- -->
   <div class="card" v-show="showTab('claims')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></div>
     <table class="bo-table" v-if="cfRelatedClaims.length">
       <thead><tr><th>클레임ID</th><th>유형</th><th>상태</th><th>사유</th><th>신청일</th><th>관리</th></tr></thead>
       <tbody>

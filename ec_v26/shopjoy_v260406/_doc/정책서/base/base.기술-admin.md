@@ -124,7 +124,7 @@ props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'se
 ### Dtl 컴포넌트 (별도 페이지)
 
 ```js
-props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'editId', 'viewMode']
+props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'dtlId', 'tabMode']
 ```
 
 ### Hist 컴포넌트
@@ -303,16 +303,16 @@ API가 연결되면 이 데이터를 실제 API 응답으로 교체.
 
 ```js
 // 파일 상단 전역 상태 선언
-window._ecOrderDtlState = window._ecOrderDtlState || { tab: 'info', viewMode: 'tab' };
+window._ecOrderDtlState = window._ecOrderDtlState || { tab: 'info', tabMode: 'tab' };
 
 // setup() 내 참조
 const dtlState = window._ecOrderDtlState;
 const tab      = Vue.ref(dtlState.tab);
-const viewMode = Vue.ref(dtlState.viewMode);
+const tabMode = Vue.ref(dtlState.tabMode);
 
 // 변경 시 영속화
 const setTab      = (t) => { tab.value = t;      dtlState.tab = t; };
-const setViewMode = (m) => { viewMode.value = m;  dtlState.viewMode = m; };
+const setViewMode = (m) => { tabMode.value = m;  dtlState.tabMode = m; };
 ```
 
 뷰모드별 grid 클래스: `dtl-tab-grid cols-1 / cols-2 / cols-3 / cols-4`

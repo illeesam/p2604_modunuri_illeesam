@@ -166,8 +166,8 @@ const customerModal = reactive({
 
 const detailModal = reactive({
   show: false,
-  editId: null,
-  viewMode: 'tab' // 'tab' | '1col' | '2col' | '3col' | '4col'
+  dtlId: null,
+  tabMode: 'tab' // 'tab' | '1col' | '2col' | '3col' | '4col'
 });
 
 // 사용
@@ -186,7 +186,7 @@ const closeProductModal = () => {
 - `show`: 모달 표시 여부
 - `{dataName}`: 모달에 표시할 데이터 (product, customer, order 등)
 - `mode`: 'view' | 'edit' | 기타 뷰 모드
-- `viewMode`: 탭/열 레이아웃 모드 (Dtl 컴포넌트용)
+- `tabMode`: 탭/열 레이아웃 모드 (Dtl 컴포넌트용)
 
 ---
 
@@ -278,8 +278,8 @@ const closeProductModal = () => {
 
 3. **모달 영속화**: Dtl 뷰모드는 window._ec{X}DtlState에 저장
    ```javascript
-   if (!window._ecOrderDtlState) window._ecOrderDtlState = { tab: 'info', viewMode: 'tab' };
-   watch(viewMode, v => { window._ecOrderDtlState.viewMode = v; });
+   if (!window._ecOrderDtlState) window._ecOrderDtlState = { tab: 'info', tabMode: 'tab' };
+   watch(tabMode, v => { window._ecOrderDtlState.tabMode = v; });
    ```
 
 4. **템플릿 무한루프 방지**: form.field 수정 시 formOrg와 비교

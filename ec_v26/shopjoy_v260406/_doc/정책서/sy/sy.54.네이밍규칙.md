@@ -111,7 +111,7 @@ const fnPayBadge = (s) => ({ '결제완료': 'badge-green', '미결제': 'badge-
 ```js
 // ✅ 올바른 패턴
 const cfSiteNm    = computed(() => window.boCmUtil.getSiteNm());
-const cfIsNew     = computed(() => !props.editId);
+const cfIsNew     = computed(() => !props.dtlId);
 const cfFiltered  = computed(() => orders.filter(o => /* 필터 조건 */));
 const cfTotal     = computed(() => cfFiltered.value.length);
 const cfTotalPages = computed(() => Math.max(1, Math.ceil(cfTotal.value / pager.size)));
@@ -219,7 +219,7 @@ getters: {
 - **데이터 로드 함수**는 목적에 따라 구분한다.
   - 목록 단일 API 조회: `handleSearchList`
   - 복수 API 동시 조회 (`Promise.all` 등): `handleSearchData`
-  - 단건 상세 조회 (Dtl/editId): `handleSearchDetail`
+  - 단건 상세 조회 (Dtl/dtlId): `handleSearchDetail`
 - **상수** (`PAGE_SIZES`, `DATE_RANGE_OPTIONS` 등) 는 ALL_CAPS 유지.
 - **로컬 루프 변수** (`o`, `m`, `i` 등) 는 짧은 이름 유지.
 - **이미 `on*` 로 명명된 함수** (`onSearch`, `onReset` 등) 는 변경 불필요.

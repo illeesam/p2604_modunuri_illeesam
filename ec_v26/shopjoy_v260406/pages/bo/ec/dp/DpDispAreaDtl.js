@@ -3,7 +3,8 @@ window.DpDispAreaDtl = {
   name: 'DpDispAreaDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    editId:       { type: String, default: null }, // 수정 대상 ID
+    dtlId:        { type: String, default: null }, // 수정 대상 ID
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
@@ -55,7 +56,7 @@ window.DpDispAreaDtl = {
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
     const fnPathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const cfIsNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.dtlId);
 
     /* -- Area Type Options (from codes) -- */
     const fnAreaTypeLabel = (v) => codes.disp_areas.find(c => c.codeValue === v)?.codeLabel || '-';
@@ -89,7 +90,7 @@ window.DpDispAreaDtl = {
     /* -- 로드 -- */
     const handleInitForm = async () => {
       if (!cfIsNew.value) {
-        const a = areas.find(c => c.codeId === props.editId && c.codeGrp === 'DISP_AREA');
+        const a = areas.find(c => c.codeId === props.dtlId && c.codeGrp === 'DISP_AREA');
         if (a) {
           Object.assign(form, {
             codeId: a.codeId, codeGrp: a.codeGrp,
@@ -305,7 +306,7 @@ window.DpDispAreaDtl = {
 
     const addPanelShortcut = () => {
       if (!form.codeId) return showToast && showToast('먼저 영역을 저장해주세요.', 'error');
-      props.navigate('dpDispPanelDtl', { editId: null, preset: { area: form.codeValue } });
+      props.navigate('dpDispPanelDtl', { id: null, preset: { area: form.codeValue } });
     };
 
     /* -- 공개 대상 (Area-Panel 매핑) -- */
@@ -655,7 +656,7 @@ window.DpDispAreaDtl = {
             <span class="badge" :class="cfActivePanel.status==='활성'?'badge-green':'badge-gray'" style="font-size:11px;margin-left:8px;">{{ cfActivePanel.status }}</span>
           </div>
           <div style="display:flex;gap:6px;">
-            <button class="btn btn-blue btn-sm" @click="props.navigate('dpDispPanelDtl', { editId: cfActivePanel.dispId })">패널 편집</button>
+            <button class="btn btn-blue btn-sm" @click="props.navigate('dpDispPanelDtl', { id: cfActivePanel.dispId })">패널 편집</button>
             <button class="btn btn-danger btn-sm" @click="removePanel(cfActivePanel)">영역에서 제거</button>
           </div>
         </div>

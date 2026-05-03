@@ -8,9 +8,9 @@ window.Home01 = {
   setup(props) {
     const { computed, ref, onMounted, onBeforeUnmount, reactive, watch } = Vue;
     const products             = window.foApp.products;
-    const selectProduct        = window.foApp.selectProduct;
-    const toggleLike           = window.foApp.toggleLike;
-    const isLiked              = window.foApp.isLiked;
+    const selectProduct        = (p) => window.foApp.selectProduct(p);
+    const toggleLike           = (id) => window.foApp.toggleLike(id);
+    const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cartModalMode: false, quickViewProduct: null, bannerIdx: 0});
     const codes = reactive({});
 
@@ -92,7 +92,7 @@ window.Home01 = {
     // -- return ---------------------------------------------------------------
 
     const siteConfig = window.SITE_CONFIG || {};
-    return { siteConfig, fnCategoryLabel, fnCatEmoji, cfNewProducts, cfBestProducts, cfAllHomeProducts, cfSaleProducts, uiState, banners, setBanner, codes };
+    return { siteConfig, fnCategoryLabel, fnCatEmoji, cfNewProducts, cfBestProducts, cfAllHomeProducts, cfSaleProducts, uiState, banners, setBanner, codes, isLiked, toggleLike, selectProduct };
   },
   template: /* html */ `
 <div>

@@ -1,11 +1,12 @@
 /* ShopJoy Admin - 캐쉬관리 상세/등록 */
-window._pmCacheDtlState = window._pmCacheDtlState || { tab: 'info', viewMode: 'tab' };
+window._pmCacheDtlState = window._pmCacheDtlState || { tab: 'info', tabMode: 'tab' };
 window.PmCacheDtl = {
   name: 'PmCacheDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    editId:       { type: String, default: null }, // 수정 대상 ID
-    viewMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlId:        { type: String, default: null }, // 수정 대상 ID
+    tabMode:      { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
@@ -14,9 +15,9 @@ window.PmCacheDtl = {
     const showConfirm  = window.boApp.showConfirm;
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
-    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCacheDtlState.tab || 'info', viewMode2: window._pmCacheDtlState.viewMode || 'tab'});
+    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCacheDtlState.tab || 'info', tabMode2: window._pmCacheDtlState.tabMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
-    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
+    const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ cache_trans_types: [] });
 
     // 단건 조회
@@ -24,7 +25,7 @@ window.PmCacheDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pmCache.getById(props.editId, '캐시관리', '상세조회');
+        const res = await boApiSvc.pmCache.getById(props.dtlId, '캐시관리', '상세조회');
         const c = res.data?.data || res.data;
         if (c) Object.assign(form, { ...c });
         uiState.error = null;
@@ -35,12 +36,12 @@ window.PmCacheDtl = {
         uiState.loading = false;
       }
     };
-    const cfIsNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.dtlId);
 
 watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
 
-        watch(() => uiState.viewMode2, v => { window._pmCacheDtlState.viewMode = v; });
-    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
+        watch(() => uiState.tabMode2, v => { window._pmCacheDtlState.tabMode = v; });
+    const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -115,38 +116,41 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
 
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // -- return ---------------------------------------------------------------
 
-    return { uiState, codes, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, viewMode2, showTab, cfSelectedVendorNm, selectVendor, showVendorModal };
+    return { uiState, codes, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, showVendorModal };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ cfIsNew ? '캐쉬 등록' : (viewMode ? '캐쉬 상세' : '캐쉬 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.cacheId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '캐쉬 등록' : (cfDtlMode ? '캐쉬 상세' : '캐쉬 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.cacheId }}</span></div>
     <div class="tab-bar-row">
       <div class="tab-nav">
-        <button class="tab-btn" :class="{active:tab==='info'}" :disabled="viewMode2!=='tab'" @click="tab='info'">📋 기본정보</button>
-        <button v-if="form.userId" class="tab-btn" :class="{active:tab==='history'}" :disabled="viewMode2!=='tab'" @click="tab='history'">
+        <button class="tab-btn" :class="{active:tab==='info'}" :disabled="tabMode2!=='tab'" @click="tab='info'">📋 기본정보</button>
+        <button v-if="form.userId" class="tab-btn" :class="{active:tab==='history'}" :disabled="tabMode2!=='tab'" @click="tab='history'">
           🕒 회원 캐쉬 내역 <span class="tab-count">{{ cfMemberCacheHistory.length }}</span>
         </button>
       </div>
-      <div class="tab-view-modes">
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭으로 보기">📑</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열로 보기">1▭</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열로 보기">2▭</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열로 보기">3▭</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열로 보기">4▭</button>
+      <div class="tab-modes">
+        <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="tabMode2='tab'" title="탭으로 보기">📑</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="tabMode2='1col'" title="1열로 보기">1▭</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="tabMode2='2col'" title="2열로 보기">2▭</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="tabMode2='3col'" title="3열로 보기">3▭</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열로 보기">4▭</button>
       </div>
     </div>
-    <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
+    <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
     <!-- -- 기본정보 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">회원ID <span v-if="!viewMode" class="req">*</span></label>
+          <label class="form-label">회원ID <span v-if="!cfDtlMode" class="req">*</span></label>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserIdChange" :readonly="viewMode" :class="errors.userId ? 'is-invalid' : ''" />
+            <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserIdChange" :readonly="cfDtlMode" :class="errors.userId ? 'is-invalid' : ''" />
             <span v-if="form.userId" class="ref-link" @click="showRefModal('member', Number(form.userId))">보기</span>
           </div>
           <span v-if="errors.userId" class="field-error">{{ errors.userId }}</span>
@@ -159,28 +163,28 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">유형</label>
-          <select class="form-control" v-model="form.type" :disabled="viewMode">
+          <select class="form-control" v-model="form.type" :disabled="cfDtlMode">
             <option v-for="c in codes.cache_trans_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">일시</label>
-          <input class="form-control" v-model="form.date" placeholder="2026-04-08 10:00" :readonly="viewMode" />
+          <input class="form-control" v-model="form.date" placeholder="2026-04-08 10:00" :readonly="cfDtlMode" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">금액 <span v-if="!viewMode" class="req">*</span> <span style="font-size:11px;color:#888;">(사용/소멸은 음수)</span></label>
-          <input class="form-control" type="number" v-model.number="form.amount" :readonly="viewMode" />
+          <label class="form-label">금액 <span v-if="!cfDtlMode" class="req">*</span> <span style="font-size:11px;color:#888;">(사용/소멸은 음수)</span></label>
+          <input class="form-control" type="number" v-model.number="form.amount" :readonly="cfDtlMode" />
         </div>
         <div class="form-group">
           <label class="form-label">처리 후 잔액</label>
-          <input class="form-control" type="number" v-model.number="form.balance" :readonly="viewMode" />
+          <input class="form-control" type="number" v-model.number="form.balance" :readonly="cfDtlMode" />
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">내용 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.desc" placeholder="내용 입력" :readonly="viewMode" :class="errors.desc ? 'is-invalid' : ''" />
+        <label class="form-label">내용 <span v-if="!cfDtlMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.desc" placeholder="내용 입력" :readonly="cfDtlMode" :class="errors.desc ? 'is-invalid' : ''" />
         <span v-if="errors.desc" class="field-error">{{ errors.desc }}</span>
       </div>
       <div class="form-row" style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
@@ -196,7 +200,7 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
         </div>
         <div class="form-group">
           <label class="form-label">판매담당자</label>
-          <input class="form-control" v-model="form.chargeStaff" placeholder="담당자명 입력" :readonly="viewMode" />
+          <input class="form-control" v-model="form.chargeStaff" placeholder="담당자명 입력" :readonly="cfDtlMode" />
         </div>
       </div>
 
@@ -225,8 +229,8 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
         </div>
       </div>
 
-      <div class="form-actions">
-        <template v-if="viewMode">
+      <div class="form-actions" v-if="!cfDtlMode">
+        <template v-if="cfDtlMode">
           <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
           <button class="btn btn-secondary" @click="navigate('pmCacheMng')">닫기</button>
         </template>
@@ -239,7 +243,7 @@ watch(() => uiState.tab, v => { window._pmCacheDtlState.tab = v; });
 
     <!-- -- 회원 캐쉬 내역 ----------------------------------------------------- -->
     <div class="card" v-show="showTab('history')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 캐쉬 내역 <span class="tab-count">{{ cfMemberCacheHistory.length }}</span></div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 캐쉬 내역 <span class="tab-count">{{ cfMemberCacheHistory.length }}</span></div>
       <div style="margin-bottom:12px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:13px;color:#555;">
           <span class="ref-link" @click="showRefModal('member', Number(form.userId))">{{ form.userNm }}</span> 현재 잔액

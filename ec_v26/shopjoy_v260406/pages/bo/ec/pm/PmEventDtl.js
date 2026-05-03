@@ -1,11 +1,12 @@
 /* ShopJoy Admin - 이벤트관리 상세/등록 (Quill HTML Editor) */
-window._ecEventDtlState = window._ecEventDtlState || { tab: 'info', viewMode: 'tab' };
+window._ecEventDtlState = window._ecEventDtlState || { tab: 'info', tabMode: 'tab' };
 window.PmEventDtl = {
   name: 'PmEventDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    editId:       { type: String, default: null }, // 수정 대상 ID
-    viewMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlId:        { type: String, default: null }, // 수정 대상 ID
+    tabMode:      { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
@@ -15,9 +16,9 @@ window.PmEventDtl = {
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
     const products = reactive([]);
-    const uiState = reactive({ loading: false, showProdPopup: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._ecEventDtlState.tab || 'info', viewMode2: window._ecEventDtlState.viewMode || 'tab', activeContentTab: 1, prodSearch: ''});
+    const uiState = reactive({ loading: false, showProdPopup: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._ecEventDtlState.tab || 'info', tabMode2: window._ecEventDtlState.tabMode || 'tab', activeContentTab: 1, prodSearch: ''});
     const tab = Vue.toRef(uiState, 'tab');
-    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
+    const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ event_statuses: [] });
 
     // 단건 조회 + 상품목록 로드
@@ -25,7 +26,7 @@ window.PmEventDtl = {
       uiState.loading = true;
       try {
         const calls = [boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 10000 }, '이벤트관리', '조회')];
-        if (!cfIsNew.value) calls.unshift(boApiSvc.pmEvent.getById(props.editId, '이벤트관리', '상세조회'));
+        if (!cfIsNew.value) calls.unshift(boApiSvc.pmEvent.getById(props.dtlId, '이벤트관리', '상세조회'));
         const results = await Promise.all(calls);
         if (!cfIsNew.value) {
           const e = results[0].data?.data || results[0].data;
@@ -48,12 +49,12 @@ window.PmEventDtl = {
         uiState.loading = false;
       }
     };
-    const cfIsNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.dtlId);
 
 watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
 
-        watch(() => uiState.viewMode2, v => { window._ecEventDtlState.viewMode = v; });
-    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
+        watch(() => uiState.tabMode2, v => { window._ecEventDtlState.tabMode = v; });
+    const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -205,42 +206,45 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
     const showProdPopup = Vue.toRef(uiState, 'showProdPopup');
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // -- return ---------------------------------------------------------------
 
-    return { events, uiState, codes, cfIsNew, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, viewMode2, showTab, cfSelectedVendorNm, selectVendor };
+    return { events, uiState, codes, cfIsNew, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ cfIsNew ? '이벤트 등록' : (viewMode ? '이벤트 상세' : '이벤트 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.eventId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '이벤트 등록' : (cfDtlMode ? '이벤트 상세' : '이벤트 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.eventId }}</span></div>
     <div class="tab-bar-row">
       <div class="tab-nav">
-        <button class="tab-btn" :class="{active:tab==='banner'}" :disabled="viewMode2!=='tab'" @click="onTabChange('banner')">🎨 배너이미지</button>
-        <button class="tab-btn" :class="{active:tab==='info'}" :disabled="viewMode2!=='tab'" @click="onTabChange('info')">📋 기본정보</button>
-        <button class="tab-btn" :class="{active:tab==='content'}" :disabled="viewMode2!=='tab'" @click="onTabChange('content')">📝 이벤트 내용</button>
-        <button class="tab-btn" :class="{active:tab==='products'}" :disabled="viewMode2!=='tab'" @click="onTabChange('products')">
+        <button class="tab-btn" :class="{active:tab==='banner'}" :disabled="tabMode2!=='tab'" @click="onTabChange('banner')">🎨 배너이미지</button>
+        <button class="tab-btn" :class="{active:tab==='info'}" :disabled="tabMode2!=='tab'" @click="onTabChange('info')">📋 기본정보</button>
+        <button class="tab-btn" :class="{active:tab==='content'}" :disabled="tabMode2!=='tab'" @click="onTabChange('content')">📝 이벤트 내용</button>
+        <button class="tab-btn" :class="{active:tab==='products'}" :disabled="tabMode2!=='tab'" @click="onTabChange('products')">
           🛍 대상 상품 <span class="tab-count">{{ form.targetProducts.length }}</span>
         </button>
-        <button class="tab-btn" :class="{active:tab==='preview'}" :disabled="viewMode2!=='tab'" @click="onTabChange('preview')">👁 미리보기</button>
+        <button class="tab-btn" :class="{active:tab==='preview'}" :disabled="tabMode2!=='tab'" @click="onTabChange('preview')">👁 미리보기</button>
       </div>
-      <div class="tab-view-modes">
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭으로 보기">📑</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열로 보기">1▭</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열로 보기">2▭</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열로 보기">3▭</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열로 보기">4▭</button>
+      <div class="tab-modes">
+        <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="tabMode2='tab'" title="탭으로 보기">📑</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="tabMode2='1col'" title="1열로 보기">1▭</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="tabMode2='2col'" title="2열로 보기">2▭</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="tabMode2='3col'" title="3열로 보기">3▭</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열로 보기">4▭</button>
       </div>
     </div>
-    <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
+    <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
     <!-- -- 배너이미지 -------------------------------------------------------- -->
     <div class="card" v-show="showTab('banner')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🎨 배너이미지</div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🎨 배너이미지</div>
       <div style="margin-bottom:12px;">
         <div style="font-size:12px;color:#888;margin-bottom:6px;">💡 팁: 이미지 삽입 후 크기 조절 및 배치를 자유롭게 설정할 수 있습니다.</div>
         <div id="quill-banner" style="min-height:300px;background:#fff;border:1px solid #e0e0e0;border-radius:6px;"></div>
       </div>
-      <div class="form-actions">
-        <template v-if="viewMode">
+      <div class="form-actions" v-if="!cfDtlMode">
+        <template v-if="cfDtlMode">
           <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">닫기</button>
         </template>
@@ -253,26 +257,26 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
 
     <!-- -- 기본정보 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <div class="form-group">
-        <label class="form-label">이벤트 제목 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.title" placeholder="이벤트 제목을 입력하세요" :readonly="viewMode" :class="errors.title ? 'is-invalid' : ''" />
+        <label class="form-label">이벤트 제목 <span v-if="!cfDtlMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.title" placeholder="이벤트 제목을 입력하세요" :readonly="cfDtlMode" :class="errors.title ? 'is-invalid' : ''" />
         <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">시작일</label>
-          <input class="form-control" type="date" v-model="form.startDate" :readonly="viewMode" />
+          <input class="form-control" type="date" v-model="form.startDate" :readonly="cfDtlMode" />
         </div>
         <div class="form-group">
           <label class="form-label">종료일</label>
-          <input class="form-control" type="date" v-model="form.endDate" :readonly="viewMode" />
+          <input class="form-control" type="date" v-model="form.endDate" :readonly="cfDtlMode" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.status" :disabled="viewMode">
+          <select class="form-control" v-model="form.status" :disabled="cfDtlMode">
             <option v-for="c in codes.event_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
@@ -296,9 +300,9 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
               background:hasVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',
               color:hasVisibility(opt.codeValue)?'#1565c0':'#666',
               fontSize:'12px',fontWeight:hasVisibility(opt.codeValue)?700:500,
-              cursor: viewMode?'default':'pointer',
+              cursor: cfDtlMode?'default':'pointer',
             }">
-            <input type="checkbox" :checked="hasVisibility(opt.codeValue)" :disabled="viewMode"
+            <input type="checkbox" :checked="hasVisibility(opt.codeValue)" :disabled="cfDtlMode"
               @change="toggleVisibility(opt.codeValue)" style="accent-color:#1565c0;" />
             {{ opt.codeLabel }}
           </label>
@@ -317,7 +321,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
         </div>
         <div class="form-group">
           <label class="form-label">판매담당자</label>
-          <input class="form-control" v-model="form.chargeStaff" placeholder="담당자명 입력" :readonly="viewMode" />
+          <input class="form-control" v-model="form.chargeStaff" placeholder="담당자명 입력" :readonly="cfDtlMode" />
         </div>
       </div>
 
@@ -346,8 +350,8 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
         </div>
       </div>
 
-      <div class="form-actions">
-        <template v-if="viewMode">
+      <div class="form-actions" v-if="!cfDtlMode">
+        <template v-if="cfDtlMode">
           <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">닫기</button>
         </template>
@@ -360,7 +364,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
 
     <!-- -- 이벤트 내용 (HTML 에디터) -------------------------------------------- -->
     <div class="card" v-show="showTab('content')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 이벤트 내용</div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 이벤트 내용</div>
       <div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;">
         <button v-for="n in 5" :key="Math.random()" class="btn btn-sm"
           :class="activeContentTab===n ? 'btn-primary' : 'btn-secondary'"
@@ -374,13 +378,13 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
           <span class="badge badge-orange">인증 후 표시</span>
           <span style="font-size:12px;color:#888;">로그인 회원에게만 표시됩니다</span>
         </div>
-        <div v-if="viewMode" class="form-control" style="min-height:160px;line-height:1.6;" v-html="form['content'+n] || '<span style=color:#bbb>-</span>'"></div>
+        <div v-if="cfDtlMode" class="form-control" style="min-height:160px;line-height:1.6;" v-html="form['content'+n] || '<span style=color:#bbb>-</span>'"></div>
         <div v-else class="quill-wrap">
           <div :id="'quill-content'+n" style="min-height:160px;"></div>
         </div>
       </div>
-      <div class="form-actions" style="margin-top:16px;">
-        <template v-if="viewMode">
+      <div class="form-actions" v-if="!cfDtlMode" style="margin-top:16px;">
+        <template v-if="cfDtlMode">
           <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">닫기</button>
         </template>
@@ -393,9 +397,9 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
 
     <!-- -- 대상 상품 -------------------------------------------------------- -->
     <div class="card" v-show="showTab('products')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🛍 대상 상품 <span class="tab-count">{{ form.targetProducts.length }}</span></div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛍 대상 상품 <span class="tab-count">{{ form.targetProducts.length }}</span></div>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
-        <button v-if="!viewMode" class="btn btn-secondary" @click="showProdPopup=true">+ 상품 추가</button>
+        <button v-if="!cfDtlMode" class="btn btn-secondary" @click="showProdPopup=true">+ 상품 추가</button>
         <span style="font-size:13px;color:#888;">{{ form.targetProducts.length }}개 선택됨</span>
       </div>
       <table class="bo-table" v-if="cfSelectedProducts.length">
@@ -413,8 +417,8 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
         </tbody>
       </table>
       <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">선택된 상품이 없습니다.</div>
-      <div class="form-actions">
-        <template v-if="viewMode">
+      <div class="form-actions" v-if="!cfDtlMode">
+        <template v-if="cfDtlMode">
           <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
           <button class="btn btn-secondary" @click="navigate('pmEventMng')">닫기</button>
         </template>
@@ -427,7 +431,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
 
     <!-- -- 미리보기 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('preview')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
       <div style="background:#f9f9f9;border-radius:10px;padding:20px;border:1px solid #e8e8e8;max-width:600px;">
         <!-- -- 배너 미리보기 -------------------------------------------------- -->
         <div v-if="form.bannerImage" style="margin-bottom:20px;padding:12px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;overflow:hidden;" v-html="form.bannerImage"></div>

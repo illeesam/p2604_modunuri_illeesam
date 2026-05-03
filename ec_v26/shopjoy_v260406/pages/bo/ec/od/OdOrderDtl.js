@@ -1,11 +1,12 @@
 /* ShopJoy Admin - 주문관리 상세/등록 */
-window._odOrderDtlState = window._odOrderDtlState || { activeTab: 'info', viewMode: 'tab' };
+window._odOrderDtlState = window._odOrderDtlState || { activeTab: 'info', tabMode: 'tab' };
 window.OdOrderDtl = {
   name: 'OdOrderDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    editId:       { type: String, default: null }, // 수정 대상 ID
-    viewMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlId:        { type: String, default: null }, // 수정 대상 ID
+    tabMode:      { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
@@ -16,13 +17,13 @@ window.OdOrderDtl = {
     const vendors = reactive([]);
     const deliveries = reactive([]);
     const claims = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: window._odOrderDtlState?.activeTab || 'info', viewMode2: window._odOrderDtlState.viewMode || 'tab', memoEl: null});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: window._odOrderDtlState?.activeTab || 'info', tabMode2: window._odOrderDtlState.tabMode || 'tab', memoEl: null});
     const tab = Vue.toRef(uiState, 'tab');
     const activeTab = Vue.toRef(uiState, 'activeTab');
-    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
+    const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ claim_statuses: [], order_statuses: [], payment_methods: [], pay_statuses: [] });
 
-    const cfIsNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.dtlId);
 
     // 단건 GET
     const handleSearchDetail = async () => {
@@ -30,14 +31,14 @@ window.OdOrderDtl = {
       uiState.loading = true;
       try {
         const [orderRes, vendorsRes, deliveriesRes, claimsRes] = await Promise.all([
-          boApiSvc.odOrder.getById(props.editId, '주문관리', '상세조회'),
+          boApiSvc.odOrder.getById(props.dtlId, '주문관리', '상세조회'),
           boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '주문관리', '조회'),
           boApiSvc.odDliv.getPage({ pageNo: 1, pageSize: 10000 }, '주문관리', '조회'),
           boApiSvc.odClaim.getPage({ pageNo: 1, pageSize: 10000 }, '주문관리', '조회'),
         ]);
         const o = orderRes.data?.data || orderRes.data || {};
         Object.assign(form, { ...o });
-        if (!form.orderId) form.orderId = props.editId;
+        if (!form.orderId) form.orderId = props.dtlId;
         if (o.status) form.statusCd = o.status;
         if (o.payMethod) form.payMethodCd = o.payMethod;
         if (o.payStatus) form.payStatusCd = o.payStatus;
@@ -187,11 +188,11 @@ window.OdOrderDtl = {
 
     /* 배송 정보 (이 주문의 택배사 등) */
     const cfRelatedDelivery = computed(() =>
-      (deliveries).find(d => d.orderId === props.editId)
+      (deliveries).find(d => d.orderId === props.dtlId)
     );
     /* 클레임 정보 (이 주문에 연결된 클레임) */
     const cfRelatedClaim = computed(() =>
-      (claims).find(c => c.orderId === props.editId)
+      (claims).find(c => c.orderId === props.dtlId)
     );
     const _TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
     const cfClaimStatusCodes = computed(() =>
@@ -241,8 +242,8 @@ window.OdOrderDtl = {
     });
      // 'tab' | '2col' | '1col'
 
-    watch(() => uiState.viewMode2, v => { window._odOrderDtlState.viewMode = v; });
-    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.activeTab === id;
+    watch(() => uiState.tabMode2, v => { window._odOrderDtlState.tabMode = v; });
+    const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.activeTab === id;
     const expandedItems = reactive(new Set());
     const toggleExpand = (i) => { const s = new Set(expandedItems); if (s.has(i)) s.delete(i); else s.add(i); expandedItems = s; };
     const isExpanded = (i) => expandedItems.has(i);
@@ -284,58 +285,61 @@ window.OdOrderDtl = {
 
     watch(memoEl, (el) => { uiState.memoEl = el; });
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // -- return ---------------------------------------------------------------
 
-    return { cfIsNew, form, errors, handleSave, ORDER_STEPS, cfCurrentStepIdx, cfIsCanceled, memoEl, activeTab, orderItems, fmt, cfRelatedClaim, cfRelatedDelivery, cfRelatedVendor, CLAIM_FLOWS, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, PAY_STATUS_FALLBACK, fnPayStatusBadge, viewMode2, showTab, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, codes };
+    return { cfIsNew, form, errors, handleSave, ORDER_STEPS, cfCurrentStepIdx, cfIsCanceled, memoEl, activeTab, orderItems, fmt, cfRelatedClaim, cfRelatedDelivery, cfRelatedVendor, CLAIM_FLOWS, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, PAY_STATUS_FALLBACK, fnPayStatusBadge, cfDtlMode, tabMode2, showTab, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, codes };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ cfIsNew ? '주문 등록' : (viewMode ? '주문 상세' : '주문 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.orderId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '주문 등록' : (cfDtlMode ? '주문 상세' : '주문 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.orderId }}</span></div>
 
   <!-- -- 탭 -------------------------------------------------------------- -->
   <div v-if="!cfIsNew" style="display:flex;gap:8px;margin-bottom:14px;align-items:stretch;">
     <div style="flex:1;display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
       <button v-for="t in cfTabs" :key="t?.id"
         @click="activeTab=t.id"
-        :disabled="viewMode2!=='tab'"
+        :disabled="tabMode2!=='tab'"
         :style="{
-          flex:1, padding:'11px 12px', border:'none', cursor: viewMode2==='tab'?'pointer':'default', fontSize:'12.5px',
+          flex:1, padding:'11px 12px', border:'none', cursor: tabMode2==='tab'?'pointer':'default', fontSize:'12.5px',
           borderRadius:'9px', transition:'all .18s',
           display:'inline-flex', alignItems:'center', justifyContent:'center', gap:'6px',
-          opacity: viewMode2==='tab' ? 1 : 0.55,
+          opacity: tabMode2==='tab' ? 1 : 0.55,
           fontWeight: activeTab===t.id ? 800 : 600,
-          background: (viewMode2==='tab' && activeTab===t.id) ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent',
-          color: (viewMode2==='tab' && activeTab===t.id) ? '#e8587a' : '#666',
-          boxShadow: (viewMode2==='tab' && activeTab===t.id) ? '0 2px 8px rgba(232,88,122,0.18)' : 'none',
-          borderBottom: (viewMode2==='tab' && activeTab===t.id) ? '2px solid #e8587a' : '2px solid transparent',
+          background: (tabMode2==='tab' && activeTab===t.id) ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent',
+          color: (tabMode2==='tab' && activeTab===t.id) ? '#e8587a' : '#666',
+          boxShadow: (tabMode2==='tab' && activeTab===t.id) ? '0 2px 8px rgba(232,88,122,0.18)' : 'none',
+          borderBottom: (tabMode2==='tab' && activeTab===t.id) ? '2px solid #e8587a' : '2px solid transparent',
         }">
         <span style="font-size:14px;">{{ t.icon }}</span>
         <span>{{ t.label }}</span>
         <span v-if="t.count !== undefined" :style="{
           fontSize:'10.5px', fontWeight:800, padding:'1px 7px', borderRadius:'10px',
-          background: (viewMode2==='tab' && activeTab===t.id) ? '#e8587a' : '#e5e7eb',
-          color: (viewMode2==='tab' && activeTab===t.id) ? '#fff' : '#666', minWidth:'18px', textAlign:'center',
+          background: (tabMode2==='tab' && activeTab===t.id) ? '#e8587a' : '#e5e7eb',
+          color: (tabMode2==='tab' && activeTab===t.id) ? '#fff' : '#666', minWidth:'18px', textAlign:'center',
         }">{{ t.count }}</span>
       </button>
     </div>
     <div style="display:flex;gap:3px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
       <button v-for="v in [{id:'tab',label:'탭',icon:'📑'},{id:'1col',label:'1열',icon:'1▭'},{id:'2col',label:'2열',icon:'2▭'},{id:'3col',label:'3열',icon:'3▭'},{id:'4col',label:'4열',icon:'4▭'}]" :key="v?.id"
-        @click="viewMode2=v.id" :title="v.label+'로 보기'"
+        @click="tabMode2=v.id" :title="v.label+'로 보기'"
         :style="{
           padding:'8px 12px', border:'none', cursor:'pointer', fontSize:'13px', borderRadius:'8px',
-          fontWeight: viewMode2===v.id ? 800 : 600,
-          background: viewMode2===v.id ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent',
-          color: viewMode2===v.id ? '#e8587a' : '#888',
-          boxShadow: viewMode2===v.id ? '0 2px 6px rgba(232,88,122,0.18)' : 'none',
+          fontWeight: tabMode2===v.id ? 800 : 600,
+          background: tabMode2===v.id ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent',
+          color: tabMode2===v.id ? '#e8587a' : '#888',
+          boxShadow: tabMode2===v.id ? '0 2px 6px rgba(232,88,122,0.18)' : 'none',
         }">
         <span style="font-size:15px;">{{ v.icon }}</span>
       </button>
     </div>
   </div>
-  <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
+  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
   <div v-if="cfIsNew || showTab('info')" class="card">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
 
     <!-- -- 주문 진행 상태 흐름 -------------------------------------------------- -->
     <div v-if="!cfIsNew" style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
@@ -430,14 +434,14 @@ window.OdOrderDtl = {
     <!-- -- 기본정보 폼 ------------------------------------------------------- -->
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">주문ID <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="!isNew || viewMode" :class="errors.orderId ? 'is-invalid' : ''" />
+        <label class="form-label">주문ID <span v-if="!cfDtlMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="!isNew || cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" />
         <span v-if="errors.orderId" class="field-error">{{ errors.orderId }}</span>
       </div>
       <div class="form-group">
-        <label class="form-label">회원ID <span v-if="!viewMode" class="req">*</span></label>
+        <label class="form-label">회원ID <span v-if="!cfDtlMode" class="req">*</span></label>
         <div style="display:flex;gap:8px;align-items:center;">
-          <input class="form-control" v-model="form.userId" placeholder="회원 ID" :readonly="viewMode" :class="errors.userId ? 'is-invalid' : ''" />
+          <input class="form-control" v-model="form.userId" placeholder="회원 ID" :readonly="cfDtlMode" :class="errors.userId ? 'is-invalid' : ''" />
           <span v-if="form.userId" class="ref-link" @click="showRefModal('member', Number(form.userId))">보기</span>
         </div>
         <span v-if="errors.userId" class="field-error">{{ errors.userId }}</span>
@@ -446,16 +450,16 @@ window.OdOrderDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">회원명</label>
-        <input class="form-control" v-model="form.userNm" :readonly="viewMode" />
+        <input class="form-control" v-model="form.userNm" :readonly="cfDtlMode" />
       </div>
       <div class="form-group">
         <label class="form-label">주문일시</label>
-        <input class="form-control" v-model="form.orderDate" placeholder="2026-04-08 10:00" :readonly="viewMode" />
+        <input class="form-control" v-model="form.orderDate" placeholder="2026-04-08 10:00" :readonly="cfDtlMode" />
       </div>
     </div>
     <div class="form-group">
       <label class="form-label">상품</label>
-      <input class="form-control" v-model="form.prodNm" placeholder="상품명" :readonly="viewMode" />
+      <input class="form-control" v-model="form.prodNm" placeholder="상품명" :readonly="cfDtlMode" />
     </div>
     <div class="form-group">
       <label class="form-label">판매업체</label>
@@ -469,11 +473,11 @@ window.OdOrderDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">결제금액</label>
-        <input class="form-control" type="number" v-model.number="form.totalPrice" :readonly="viewMode" />
+        <input class="form-control" type="number" v-model.number="form.totalPrice" :readonly="cfDtlMode" />
       </div>
       <div class="form-group">
         <label class="form-label">결제수단</label>
-        <select class="form-control" v-model="form.payMethodCd" :disabled="viewMode">
+        <select class="form-control" v-model="form.payMethodCd" :disabled="cfDtlMode">
           <option v-for="c in codes.payment_methods" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
@@ -481,30 +485,30 @@ window.OdOrderDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">결제상태</label>
-        <select class="form-control" v-model="form.payStatusCd" :disabled="viewMode">
+        <select class="form-control" v-model="form.payStatusCd" :disabled="cfDtlMode">
           <option v-for="c in (codes.pay_statuses.length ? codes.pay_statuses : PAY_STATUS_FALLBACK.map(v=>({codeValue:v,codeLabel:v})))" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">결제일시</label>
-        <input class="form-control" v-model="form.payDate" :readonly="viewMode" placeholder="2026-04-05 14:32" />
+        <input class="form-control" v-model="form.payDate" :readonly="cfDtlMode" placeholder="2026-04-05 14:32" />
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
+        <select class="form-control" v-model="form.statusCd" :disabled="cfDtlMode">
           <option v-for="c in codes.order_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
     </div>
     <div class="form-group">
       <label class="form-label">메모</label>
-      <div v-if="viewMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
+      <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
       <div v-else ref="memoEl" style="min-height:90px;background:#fff;"></div>
     </div>
-    <div class="form-actions">
-      <template v-if="viewMode">
+    <div class="form-actions" v-if="!cfDtlMode">
+      <template v-if="cfDtlMode">
         <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
         <button class="btn btn-secondary" @click="navigate('odOrderMng')">닫기</button>
       </template>
@@ -518,7 +522,7 @@ window.OdOrderDtl = {
 
   <!-- -- 주문항목목록 탭 ------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('items')" class="card" style="padding:20px;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📦 주문항목 <span class="tab-count">{{ orderItems.length }}</span></div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📦 주문항목 <span class="tab-count">{{ orderItems.length }}</span></div>
     <div v-if="cfRelatedClaim && cfRelatedClaim.type==='교환'" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
       <button class="btn btn-secondary btn-sm" @click="toggleExpandAll">
         {{ cfAllExpanded ? '▲ 교환품 모두접기' : '▼ 교환품 모두펼치기' }}
@@ -608,7 +612,7 @@ window.OdOrderDtl = {
 
   <!-- -- 결제정보 탭 --------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('payment')" class="card" style="padding:20px;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ cfPaymentList.length }}</span></div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ cfPaymentList.length }}</span></div>
     <table class="bo-table" v-if="cfPaymentList.length">
       <thead><tr>
         <th style="width:40px;text-align:center;">No.</th>
@@ -632,13 +636,13 @@ window.OdOrderDtl = {
 
   <!-- -- 상태변경이력 탭 ------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('hist')" class="card">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">🕒 상태변경이력 <span class="tab-count">{{ cfStatusHistList.length }}</span></div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">🕒 상태변경이력 <span class="tab-count">{{ cfStatusHistList.length }}</span></div>
     <od-order-hist :order-id="form.orderId" :navigate="navigate" :show-ref-modal="showRefModal" :show-toast="showToast" />
   </div>
 
   <!-- -- 정보수정이력 탭 ------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('editHist')" class="card" style="padding:20px;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ cfEditHistList.length }}</span></div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ cfEditHistList.length }}</span></div>
     <table class="bo-table" v-if="cfEditHistList.length">
       <thead><tr>
         <th style="width:140px;">수정일시</th><th style="width:100px;">수정자</th><th style="width:120px;">항목</th><th>변경 전</th><th>변경 후</th>

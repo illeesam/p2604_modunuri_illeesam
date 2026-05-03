@@ -116,12 +116,12 @@ const form = reactive({ id: null, title: '', ... });
 
 onMounted(async () => {
   if (!cfIsNew.value) {
-    await handleSearchDetail();   // editId로 단건 API 조회
+    await handleSearchDetail();   // dtlId로 단건 API 조회
   }
 });
 
 const handleSearchDetail = async () => {
-  const res = await window.boApi.get(`/bo/.../${props.editId}`);
+  const res = await window.boApi.get(`/bo/.../${props.dtlId}`);
   Object.assign(form, res.data?.data || {});
 };
 ```
@@ -166,7 +166,7 @@ const cfPageNums = computed(() => {
 | `items.value.push()` | `items.push()` |
 | `cfFiltered = computed(() => items.filter(...))` | searchParam을 API params로 전달하여 서버 필터링 |
 | 부모 배열을 props로 받아 자식에서 filter | 자식이 직접 API 조회 |
-| `items.find(x => x.id === editId)` 로 Dtl 폼 초기화 | Dtl에서 단건 API GET |
+| `items.find(x => x.id === dtlId)` 로 Dtl 폼 초기화 | Dtl에서 단건 API GET |
 | 트리 클릭 후 클라이언트 filter로 우측 목록 구성 | 트리 클릭 시 API 재조회 |
 | `pageSize: 10000` 전체 로드 후 클라이언트 slice | 서버 페이지네이션 |
 

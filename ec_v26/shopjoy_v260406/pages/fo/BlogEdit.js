@@ -3,7 +3,7 @@ window.BlogEdit = {
   name: 'BlogEdit',
   props: {
     navigate:  { type: Function, required: true },        // 페이지 이동
-    editId:    { type: String,   default: null },          // 대상 ID
+    dtlId:    { type: String,   default: null },          // 대상 ID
   },
   setup(props) {
     const { ref, computed, reactive, onMounted, watch } = Vue;
@@ -12,7 +12,7 @@ window.BlogEdit = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
-    const cfIsEdit = computed(() => !!props.editId);
+    const cfIsEdit = computed(() => !!props.dtlId);
     const form = reactive({
       title: '',
       category: 'fashion',
@@ -32,7 +32,7 @@ window.BlogEdit = {
     const handleSearchDetail = async (searchType = 'DEFAULT') => {
       if (!cfIsEdit.value) return;
       try {
-        const res = await foApiSvc.cmBltn.getById(props.editId, '블로그편집', '상세조회');
+        const res = await foApiSvc.cmBltn.getById(props.dtlId, '블로그편집', '상세조회');
         Object.assign(form, res.data?.data || {});
       } catch (e) {
         Object.assign(form, {

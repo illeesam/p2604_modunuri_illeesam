@@ -1,11 +1,12 @@
 /* ShopJoy Admin - 배송관리 상세/등록 */
-window._odDlivDtlState = window._odDlivDtlState || { tab: 'info', viewMode: 'tab' };
+window._odDlivDtlState = window._odDlivDtlState || { tab: 'info', tabMode: 'tab' };
 window.OdDlivDtl = {
   name: 'OdDlivDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    editId:       { type: String, default: null }, // 수정 대상 ID
-    viewMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlId:        { type: String, default: null }, // 수정 대상 ID
+    tabMode:      { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
@@ -13,9 +14,9 @@ window.OdDlivDtl = {
     const showConfirm  = window.boApp.showConfirm;
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._odDlivDtlState.tab || 'info', viewMode2: window._odDlivDtlState.viewMode || 'tab', memoEl: null});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._odDlivDtlState.tab || 'info', tabMode2: window._odDlivDtlState.tabMode || 'tab', memoEl: null});
     const tab = Vue.toRef(uiState, 'tab');
-    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
+    const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ dliv_statuses: [] });
     const relatedClaims = reactive([]);
 
@@ -27,12 +28,12 @@ window.OdDlivDtl = {
     const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
-    const cfIsNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.dtlId);
 
         watch(() => uiState.tab, v => { window._odDlivDtlState.tab = v; });
 
-        watch(() => uiState.viewMode2, v => { window._odDlivDtlState.viewMode = v; });
-    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
+        watch(() => uiState.tabMode2, v => { window._odDlivDtlState.tabMode = v; });
+    const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     const form = reactive({
       dlivId: '', orderId: '', userId: '', userNm: '', receiver: '',
@@ -52,10 +53,10 @@ window.OdDlivDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApiSvc.odDliv.getById(props.editId, '배송관리', '상세조회');
+        const res = await boApiSvc.odDliv.getById(props.dtlId, '배송관리', '상세조회');
         const d = res.data?.data || res.data || {};
         Object.assign(form, { ...d });
-        if (!form.dlivId) form.dlivId = props.editId;
+        if (!form.dlivId) form.dlivId = props.dtlId;
         if (d.status) form.statusCd = d.status;
         if (d.courier) form.courierCd = d.courier;
         // 연관 클레임 로드 (주문ID 기준)
@@ -203,58 +204,61 @@ window.OdDlivDtl = {
     const memoEl = Vue.ref(null);
     Vue.watch(memoEl, (el) => { if (uiState) uiState.memoEl = el; });
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // -- return ---------------------------------------------------------------
 
-    return { cfIsNew, tab, form, errors, handleSave, memoEl, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfFirstClaim, CLAIM_TYPE_COLOR, viewMode2, showTab, relatedClaims, codes };
+    return { cfIsNew, tab, form, errors, handleSave, memoEl, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfFirstClaim, CLAIM_TYPE_COLOR, cfDtlMode, tabMode2, showTab, relatedClaims, codes };
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ cfIsNew ? '배송 등록' : (viewMode ? '배송 상세' : '배송 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.dlivId }}</span></div>
+  <div class="page-title">{{ cfIsNew ? '배송 등록' : (cfDtlMode ? '배송 상세' : '배송 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.dlivId }}</span></div>
 
   <!-- -- 탭 -------------------------------------------------------------- -->
   <div v-if="!cfIsNew" style="display:flex;gap:8px;margin-bottom:14px;align-items:stretch;">
     <div style="flex:1;display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
       <button v-for="t in cfTabs" :key="t?.id"
         @click="tab=t.id"
-        :disabled="viewMode2!=='tab'"
+        :disabled="tabMode2!=='tab'"
         :style="{
-          flex:1, padding:'11px 12px', border:'none', cursor: viewMode2==='tab'?'pointer':'default', fontSize:'12.5px',
+          flex:1, padding:'11px 12px', border:'none', cursor: tabMode2==='tab'?'pointer':'default', fontSize:'12.5px',
           borderRadius:'9px', transition:'all .18s',
           display:'inline-flex', alignItems:'center', justifyContent:'center', gap:'6px',
-          opacity: viewMode2==='tab' ? 1 : 0.55,
+          opacity: tabMode2==='tab' ? 1 : 0.55,
           fontWeight: tab===t.id ? 800 : 600,
-          background: (viewMode2==='tab' && tab===t.id) ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent',
-          color: (viewMode2==='tab' && tab===t.id) ? '#e8587a' : '#666',
-          boxShadow: (viewMode2==='tab' && tab===t.id) ? '0 2px 8px rgba(232,88,122,0.18)' : 'none',
-          borderBottom: (viewMode2==='tab' && tab===t.id) ? '2px solid #e8587a' : '2px solid transparent',
+          background: (tabMode2==='tab' && tab===t.id) ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent',
+          color: (tabMode2==='tab' && tab===t.id) ? '#e8587a' : '#666',
+          boxShadow: (tabMode2==='tab' && tab===t.id) ? '0 2px 8px rgba(232,88,122,0.18)' : 'none',
+          borderBottom: (tabMode2==='tab' && tab===t.id) ? '2px solid #e8587a' : '2px solid transparent',
         }">
         <span style="font-size:14px;">{{ t.icon }}</span>
         <span>{{ t.label }}</span>
         <span v-if="t.count !== undefined" :style="{
           fontSize:'10.5px', fontWeight:800, padding:'1px 7px', borderRadius:'10px',
-          background: (viewMode2==='tab' && tab===t.id) ? '#e8587a' : '#e5e7eb',
-          color: (viewMode2==='tab' && tab===t.id) ? '#fff' : '#666', minWidth:'18px', textAlign:'center',
+          background: (tabMode2==='tab' && tab===t.id) ? '#e8587a' : '#e5e7eb',
+          color: (tabMode2==='tab' && tab===t.id) ? '#fff' : '#666', minWidth:'18px', textAlign:'center',
         }">{{ t.count }}</span>
       </button>
     </div>
     <div style="display:flex;gap:3px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
       <button v-for="v in [{id:'tab',label:'탭',icon:'📑'},{id:'1col',label:'1열',icon:'1▭'},{id:'2col',label:'2열',icon:'2▭'},{id:'3col',label:'3열',icon:'3▭'},{id:'4col',label:'4열',icon:'4▭'}]" :key="v?.id"
-        @click="viewMode2=v.id" :title="v.label+'로 보기'"
+        @click="tabMode2=v.id" :title="v.label+'로 보기'"
         :style="{
           padding:'8px 12px', border:'none', cursor:'pointer', fontSize:'13px', borderRadius:'8px',
-          fontWeight: viewMode2===v.id ? 800 : 600,
-          background: viewMode2===v.id ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent',
-          color: viewMode2===v.id ? '#e8587a' : '#888',
-          boxShadow: viewMode2===v.id ? '0 2px 6px rgba(232,88,122,0.18)' : 'none',
+          fontWeight: tabMode2===v.id ? 800 : 600,
+          background: tabMode2===v.id ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent',
+          color: tabMode2===v.id ? '#e8587a' : '#888',
+          boxShadow: tabMode2===v.id ? '0 2px 6px rgba(232,88,122,0.18)' : 'none',
         }">
         <span style="font-size:15px;">{{ v.icon }}</span>
       </button>
     </div>
   </div>
-  <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
+  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
   <div v-if="cfIsNew || showTab('info')" class="card">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
     <!-- -- 배송 진행 상태 흐름 -------------------------------------------------- -->
     <div v-if="!cfIsNew" style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
@@ -302,14 +306,14 @@ window.OdDlivDtl = {
     <div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">배송ID <span v-if="!viewMode" class="req">*</span></label>
-          <input class="form-control" v-model="form.dlivId" placeholder="DLIV-XXX" :readonly="!cfIsNew || viewMode" :class="errors.dlivId ? 'is-invalid' : ''" />
+          <label class="form-label">배송ID <span v-if="!cfDtlMode" class="req">*</span></label>
+          <input class="form-control" v-model="form.dlivId" placeholder="DLIV-XXX" :readonly="!cfIsNew || cfDtlMode" :class="errors.dlivId ? 'is-invalid' : ''" />
           <span v-if="errors.dlivId" class="field-error">{{ errors.dlivId }}</span>
         </div>
         <div class="form-group">
-          <label class="form-label">주문ID <span v-if="!viewMode" class="req">*</span></label>
+          <label class="form-label">주문ID <span v-if="!cfDtlMode" class="req">*</span></label>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="viewMode" :class="errors.orderId ? 'is-invalid' : ''" />
+            <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" />
             <span v-if="form.orderId" class="ref-link" @click="showRefModal('order', form.orderId)">보기</span>
           </div>
           <span v-if="errors.orderId" class="field-error">{{ errors.orderId }}</span>
@@ -319,38 +323,38 @@ window.OdDlivDtl = {
         <div class="form-group">
           <label class="form-label">회원명</label>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.userNm" :readonly="viewMode" />
+            <input class="form-control" v-model="form.userNm" :readonly="cfDtlMode" />
             <span v-if="form.userId" class="ref-link" @click="showRefModal('member', form.userId)">보기</span>
           </div>
         </div>
         <div class="form-group">
           <label class="form-label">수령인</label>
-          <input class="form-control" v-model="form.receiver" :readonly="viewMode" />
+          <input class="form-control" v-model="form.receiver" :readonly="cfDtlMode" />
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">배송지 주소</label>
-        <input class="form-control" v-model="form.address" placeholder="주소 입력" :readonly="viewMode" />
+        <input class="form-control" v-model="form.address" placeholder="주소 입력" :readonly="cfDtlMode" />
       </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">연락처</label>
-          <input class="form-control" v-model="form.phone" placeholder="010-0000-0000" :readonly="viewMode" />
+          <input class="form-control" v-model="form.phone" placeholder="010-0000-0000" :readonly="cfDtlMode" />
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
+          <select class="form-control" v-model="form.statusCd" :disabled="cfDtlMode">
             <option v-for="c in codes.dliv_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">메모</label>
-        <div v-if="viewMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
+        <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
         <div v-else ref="memoEl" style="min-height:90px;background:#fff;"></div>
       </div>
-      <div class="form-actions">
-        <template v-if="viewMode">
+      <div class="form-actions" v-if="!cfDtlMode">
+        <template v-if="cfDtlMode">
           <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
           <button class="btn btn-secondary" @click="navigate('odDlivMng')">닫기</button>
         </template>
@@ -365,7 +369,7 @@ window.OdDlivDtl = {
 
   <!-- -- 배송항목목록 탭 ------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('items')" class="card" style="padding:20px;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📦 배송항목 <span class="tab-count">{{ dlivItems.length }}</span></div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📦 배송항목 <span class="tab-count">{{ dlivItems.length }}</span></div>
     <div style="background:#f9fafb;padding:10px 14px;border-radius:8px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:14px;font-size:12px;">
       <span><b style="color:#888;">택배사:</b> {{ form.courier || '미지정' }}</span>
       <span><b style="color:#888;">운송장번호:</b> {{ form.trackingNo || '-' }}</span>
@@ -439,7 +443,7 @@ window.OdDlivDtl = {
 
   <!-- -- 결제정보 탭 --------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('payment')" class="card" style="padding:20px;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ cfPaymentList.length }}</span></div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ cfPaymentList.length }}</span></div>
     <table class="bo-table" v-if="cfPaymentList.length">
       <thead><tr>
         <th style="width:40px;text-align:center;">No.</th>
@@ -461,13 +465,13 @@ window.OdDlivDtl = {
 
   <!-- -- 배송상태변경이력 탭 ----------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('hist')" class="card">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">🕒 상태변경이력 <span class="tab-count">{{ cfStatusHistList.length }}</span></div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">🕒 상태변경이력 <span class="tab-count">{{ cfStatusHistList.length }}</span></div>
     <od-dliv-hist :order-id="form.orderId" :navigate="navigate" :show-ref-modal="showRefModal" />
   </div>
 
   <!-- -- 정보수정이력 탭 ------------------------------------------------------- -->
   <div v-if="!cfIsNew && showTab('editHist')" class="card" style="padding:20px;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ cfEditHistList.length }}</span></div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ cfEditHistList.length }}</span></div>
     <table class="bo-table" v-if="cfEditHistList.length">
       <thead><tr>
         <th style="width:140px;">수정일시</th><th style="width:100px;">수정자</th><th style="width:120px;">항목</th><th>변경 전</th><th>변경 후</th>

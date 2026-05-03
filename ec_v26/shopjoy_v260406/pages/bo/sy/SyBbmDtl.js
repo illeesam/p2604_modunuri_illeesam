@@ -3,8 +3,9 @@ window.SyBbmDtl = {
   name: 'SyBbmDtl',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    editId:      { type: String, default: null }, // 수정 대상 ID
-    viewMode:    { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlId:       { type: String, default: null }, // 수정 대상 ID
+    tabMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:     { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const { reactive, computed, watch, onMounted, ref } = Vue;
@@ -38,7 +39,7 @@ window.SyBbmDtl = {
     // ── watch ────────────────────────────────────────────────────────────────
 
 
-    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
+    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const form = reactive({
       bbmId: null, bbmCode: '', bbmNm: '', bbmType: '일반',
@@ -64,7 +65,7 @@ window.SyBbmDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApiSvc.syBbm.getById(props.editId, '게시판모드관리', '상세조회');
+        const res = await boApiSvc.syBbm.getById(props.dtlId, '게시판모드관리', '상세조회');
         const data = res.data?.data;
         if (data) Object.assign(form, data);
         uiState.error = null;
@@ -107,13 +108,16 @@ window.SyBbmDtl = {
       }
     };
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
+    return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, cfDtlMode, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '게시판 등록' : (viewMode ? '게시판 상세' : '게시판 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.bbmId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '게시판 등록' : (cfDtlMode ? '게시판 상세' : '게시판 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.bbmId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
@@ -123,18 +127,18 @@ window.SyBbmDtl = {
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">게시판코드 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.bbmCode" placeholder="BOARD_CODE" style="font-family:monospace;" :readonly="viewMode" :class="errors.bbmCode ? 'is-invalid' : ''" />
+        <label class="form-label">게시판코드 <span v-if="!cfDtlMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.bbmCode" placeholder="BOARD_CODE" style="font-family:monospace;" :readonly="cfDtlMode" :class="errors.bbmCode ? 'is-invalid' : ''" />
         <span v-if="errors.bbmCode" class="field-error">{{ errors.bbmCode }}</span>
       </div>
       <div class="form-group">
-        <label class="form-label">게시판명 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.bbmNm" placeholder="게시판명" :readonly="viewMode" :class="errors.bbmNm ? 'is-invalid' : ''" />
+        <label class="form-label">게시판명 <span v-if="!cfDtlMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.bbmNm" placeholder="게시판명" :readonly="cfDtlMode" :class="errors.bbmNm ? 'is-invalid' : ''" />
         <span v-if="errors.bbmNm" class="field-error">{{ errors.bbmNm }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">유형</label>
-        <select class="form-control" v-model="form.bbmType" :disabled="viewMode">
+        <select class="form-control" v-model="form.bbmType" :disabled="cfDtlMode">
           <option v-for="c in codes.bbm_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
@@ -142,19 +146,19 @@ window.SyBbmDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">댓글허용</label>
-        <select class="form-control" v-model="form.allowComment" :disabled="viewMode">
+        <select class="form-control" v-model="form.allowComment" :disabled="cfDtlMode">
           <option v-for="c in codes.bbm_comment_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">첨부허용</label>
-        <select class="form-control" v-model="form.allowAttach" :disabled="viewMode">
+        <select class="form-control" v-model="form.allowAttach" :disabled="cfDtlMode">
           <option v-for="c in codes.bbm_attach_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">좋아요허용</label>
-        <select class="form-control" v-model="form.allowLike" :disabled="viewMode">
+        <select class="form-control" v-model="form.allowLike" :disabled="cfDtlMode">
           <option v-for="o in codes.allow_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
         </select>
       </div>
@@ -162,13 +166,13 @@ window.SyBbmDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">내용입력</label>
-        <select class="form-control" v-model="form.contentType" :disabled="viewMode">
+        <select class="form-control" v-model="form.contentType" :disabled="cfDtlMode">
           <option v-for="c in codes.bbm_content_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">공개범위</label>
-        <select class="form-control" v-model="form.scopeType" :disabled="viewMode">
+        <select class="form-control" v-model="form.scopeType" :disabled="cfDtlMode">
           <option v-for="c in codes.bbm_scope_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
@@ -178,32 +182,32 @@ window.SyBbmDtl = {
       <div class="form-group" style="flex:2">
         <label class="form-label">표시경로</label>
         <div style="display:flex;align-items:center;gap:8px;">
-          <div :style="{flex:1,padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'13px',background:viewMode?'#f9fafb':'#fff',color:form.pathId!=null?'#374151':'#9ca3af',minHeight:'34px',display:'flex',alignItems:'center'}">
+          <div :style="{flex:1,padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'13px',background:cfDtlMode?'#f9fafb':'#fff',color:form.pathId!=null?'#374151':'#9ca3af',minHeight:'34px',display:'flex',alignItems:'center'}">
             {{ pathLabel(form.pathId) || '경로 선택...' }}
           </div>
-          <button v-if="!viewMode" type="button" class="btn btn-secondary btn-sm" @click="openPathPick">🔍 선택</button>
-          <button v-if="!viewMode && form.pathId != null" type="button" class="btn btn-sm" @click="form.pathId=null" style="color:#999;">✕</button>
+          <button v-if="!cfDtlMode" type="button" class="btn btn-secondary btn-sm" @click="openPathPick">🔍 선택</button>
+          <button v-if="!cfDtlMode && form.pathId != null" type="button" class="btn btn-sm" @click="form.pathId=null" style="color:#999;">✕</button>
         </div>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">정렬순서</label>
-        <input class="form-control" type="number" v-model.number="form.sortOrd" min="1" :readonly="viewMode" />
+        <input class="form-control" type="number" v-model.number="form.sortOrd" min="1" :readonly="cfDtlMode" />
       </div>
       <div class="form-group">
         <label class="form-label">사용여부</label>
-        <select class="form-control" v-model="form.useYn" :disabled="viewMode">
+        <select class="form-control" v-model="form.useYn" :disabled="cfDtlMode">
           <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">비고</label>
-        <input class="form-control" v-model="form.remark" placeholder="비고" :readonly="viewMode" />
+        <input class="form-control" v-model="form.remark" placeholder="비고" :readonly="cfDtlMode" />
       </div>
     </div>
-    <div class="form-actions">
-      <template v-if="viewMode">
+    <div class="form-actions" v-if="!cfDtlMode">
+      <template v-if="cfDtlMode">
         <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
         <button class="btn btn-secondary" @click="navigate('syBbmMng')">닫기</button>
       </template>

@@ -3,7 +3,8 @@ window.DpDispUiDtl = {
   name: 'DpDispUiDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    editId:       { type: String, default: null }, // 수정 대상 ID
+    dtlId:        { type: String, default: null }, // 수정 대상 ID
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
@@ -53,7 +54,7 @@ window.DpDispUiDtl = {
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const cfIsNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.dtlId);
 
     /* -- 기본 기간: 오늘 ~ +10년 -- */
     const _today = new Date();
@@ -77,7 +78,7 @@ window.DpDispUiDtl = {
 
     const handleInitForm = async () => {
       if (!cfIsNew.value) {
-        const u = (codes || []).find(c => c.codeId === props.editId && c.codeGrp === 'DISP_UI');
+        const u = (codes || []).find(c => c.codeId === props.dtlId && c.codeGrp === 'DISP_UI');
         if (u) {
           Object.assign(form, {
             codeId: u.codeId, codeGrp: u.codeGrp,

@@ -7,8 +7,8 @@ window.Like = {
   setup(props) {
     const { reactive, computed, watch, onMounted } = Vue;
     const products             = window.foApp.products;
-    const toggleLike           = window.foApp.toggleLike;
-    const selectProduct        = window.foApp.selectProduct;
+    const toggleLike           = (id) => window.foApp.toggleLike(id);
+    const selectProduct        = (p) => window.foApp.selectProduct(p);
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});

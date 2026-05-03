@@ -13,7 +13,7 @@ window.PdCategoryProdMng = {
     const categories = reactive([]);
     const products = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, viewMode: window._ecCategoryProdState?.viewMode || 'tab', activeTypeCd: 'NORMAL'});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tabMode: window._ecCategoryProdState?.tabMode || 'tab', activeTypeCd: 'NORMAL'});
     const tab = Vue.toRef(uiState, 'tab');
     const codes = reactive({
       product_statuses: [],
@@ -53,9 +53,9 @@ window.PdCategoryProdMng = {
     });
 
     /* -- 뷰모드 영속화 -- */
-    if (!window._ecCategoryProdState) window._ecCategoryProdState = { viewMode: 'tab' };
+    if (!window._ecCategoryProdState) window._ecCategoryProdState = { tabMode: 'tab' };
 
-        watch(() => uiState.viewMode, v => { window._ecCategoryProdState.viewMode = v; });
+        watch(() => uiState.tabMode, v => { window._ecCategoryProdState.tabMode = v; });
 
     /* -- 진열 유형 탭 -- */
     const TYPE_TABS = [
@@ -351,12 +351,12 @@ window.PdCategoryProdMng = {
               <span v-if="cfTypeCountMap[tab.cd]" class="tab-count">{{ cfTypeCountMap[tab.cd] }}</span>
             </button>
           </div>
-          <div class="tab-view-modes">
-            <button class="tab-view-mode-btn" :class="{ active: uiState.viewMode==='tab' }"  @click="uiState.viewMode='tab'"  title="탭으로 보기">📑</button>
-            <button class="tab-view-mode-btn" :class="{ active: uiState.viewMode==='1col' }" @click="uiState.viewMode='1col'" title="1열로 보기">1▭</button>
-            <button class="tab-view-mode-btn" :class="{ active: uiState.viewMode==='2col' }" @click="uiState.viewMode='2col'" title="2열로 보기">2▭</button>
-            <button class="tab-view-mode-btn" :class="{ active: uiState.viewMode==='3col' }" @click="uiState.viewMode='3col'" title="3열로 보기">3▭</button>
-            <button class="tab-view-mode-btn" :class="{ active: uiState.viewMode==='4col' }" @click="uiState.viewMode='4col'" title="4열로 보기">4▭</button>
+          <div class="tab-modes">
+            <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='tab' }"  @click="uiState.tabMode='tab'"  title="탭으로 보기">📑</button>
+            <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='1col' }" @click="uiState.tabMode='1col'" title="1열로 보기">1▭</button>
+            <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='2col' }" @click="uiState.tabMode='2col'" title="2열로 보기">2▭</button>
+            <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='3col' }" @click="uiState.tabMode='3col'" title="3열로 보기">3▭</button>
+            <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='4col' }" @click="uiState.tabMode='4col'" title="4열로 보기">4▭</button>
           </div>
         </div>
 
@@ -365,7 +365,7 @@ window.PdCategoryProdMng = {
         </div>
 
         <!-- -- TABLE 뷰 (tab / 1col) ------------------------------------- -->
-        <table v-if="uiState.viewMode==='tab'||uiState.viewMode==='1col'" class="bo-table">
+        <table v-if="uiState.tabMode==='tab'||uiState.tabMode==='1col'" class="bo-table">
           <thead><tr>
             <th style="width:28px"></th>
             <th style="width:36px;text-align:center">순서</th>
@@ -452,7 +452,7 @@ window.PdCategoryProdMng = {
         <div v-else
              :style="{
                display:'grid',
-               gridTemplateColumns: uiState.viewMode==='2col' ? 'repeat(2,1fr)' : uiState.viewMode==='3col' ? 'repeat(3,1fr)' : 'repeat(4,1fr)',
+               gridTemplateColumns: uiState.tabMode==='2col' ? 'repeat(2,1fr)' : uiState.tabMode==='3col' ? 'repeat(3,1fr)' : 'repeat(4,1fr)',
                gap:'10px',
              }">
           <div v-for="(row, idx) in cfFilteredRows" :key="row?._id"

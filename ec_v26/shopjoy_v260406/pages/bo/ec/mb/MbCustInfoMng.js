@@ -60,7 +60,7 @@
     return true;
   };
 
-  window._mbCustInfoState = window._mbCustInfoState || { tab: 'orders', viewMode: '3col' };
+  window._mbCustInfoState = window._mbCustInfoState || { tab: 'orders', tabMode: '3col' };
   window.MbCustInfoMng = {
     name: 'MbCustInfoMng',
     props: {
@@ -160,12 +160,12 @@
 
       /* -- 탭 / 뷰모드 (영속화) -- */
       const histTab  = Vue.ref(window._mbCustInfoState.tab      || 'orders');
-      const viewMode2 = Vue.ref(window._mbCustInfoState.viewMode || '3col');
+      const tabMode2 = Vue.ref(window._mbCustInfoState.tabMode || '3col');
 
       watch(histTab,   v => { window._mbCustInfoState.tab      = v; });
 
-      watch(() => uiState.viewMode2, v => { window._mbCustInfoState.viewMode = v; });
-      const showTab = (id) => viewMode2.value !== 'tab' || histTab.value === id;
+      watch(() => uiState.tabMode2, v => { window._mbCustInfoState.tabMode = v; });
+      const showTab = (id) => tabMode2.value !== 'tab' || histTab.value === id;
 
       /* -- 고객 초기화 -- */
       const clearCustomer = () => { uiState.customer = null; uiState.searchInput = ''; };
@@ -266,7 +266,7 @@
         openMemberModal, searchMemberModal, selectMember,
         onSearch, clearCustomer,
         fnBadgeCls, fnChannelCls, fnFmtPrice,
-        histTab, viewMode2, showTab,
+        histTab, tabMode2, showTab,
       };
     },
 
@@ -400,27 +400,27 @@
     <!-- -- 이력 탭바 + 뷰모드 -- -->
     <div class="tab-bar-row">
       <div class="tab-nav">
-        <button class="tab-btn" :class="{active:histTab==='orders'}"   :disabled="viewMode2!=='tab'" @click="histTab='orders'">🛒 주문이력 <span class="tab-count">{{ cfCustOrders.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='claims'}"   :disabled="viewMode2!=='tab'" @click="histTab='claims'">↩ 클레임이력 <span class="tab-count">{{ cfCustClaims.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='dliv'}"     :disabled="viewMode2!=='tab'" @click="histTab='dliv'">🚚 배송이력 <span class="tab-count">{{ cfCustDeliveries.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='cache'}"    :disabled="viewMode2!=='tab'" @click="histTab='cache'">💰 캐쉬내역 <span class="tab-count">{{ cfCustCache.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='contacts'}" :disabled="viewMode2!=='tab'" @click="histTab='contacts'">📋 문의이력 <span class="tab-count">{{ cfCustContacts.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='chats'}"    :disabled="viewMode2!=='tab'" @click="histTab='chats'">💬 채팅이력 <span class="tab-count">{{ cfCustChats.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='login'}"    :disabled="viewMode2!=='tab'" @click="histTab='login'">🔐 로그인 <span class="tab-count">{{ cfCustLoginHist.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='coupon'}"   :disabled="viewMode2!=='tab'" @click="histTab='coupon'">🎟 쿠폰 <span class="tab-count">{{ cfCustCouponUsage.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='send'}"     :disabled="viewMode2!=='tab'" @click="histTab='send'">📨 발송 <span class="tab-count">{{ cfCustSendHist.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='orders'}"   :disabled="tabMode2!=='tab'" @click="histTab='orders'">🛒 주문이력 <span class="tab-count">{{ cfCustOrders.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='claims'}"   :disabled="tabMode2!=='tab'" @click="histTab='claims'">↩ 클레임이력 <span class="tab-count">{{ cfCustClaims.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='dliv'}"     :disabled="tabMode2!=='tab'" @click="histTab='dliv'">🚚 배송이력 <span class="tab-count">{{ cfCustDeliveries.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='cache'}"    :disabled="tabMode2!=='tab'" @click="histTab='cache'">💰 캐쉬내역 <span class="tab-count">{{ cfCustCache.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='contacts'}" :disabled="tabMode2!=='tab'" @click="histTab='contacts'">📋 문의이력 <span class="tab-count">{{ cfCustContacts.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='chats'}"    :disabled="tabMode2!=='tab'" @click="histTab='chats'">💬 채팅이력 <span class="tab-count">{{ cfCustChats.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='login'}"    :disabled="tabMode2!=='tab'" @click="histTab='login'">🔐 로그인 <span class="tab-count">{{ cfCustLoginHist.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='coupon'}"   :disabled="tabMode2!=='tab'" @click="histTab='coupon'">🎟 쿠폰 <span class="tab-count">{{ cfCustCouponUsage.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='send'}"     :disabled="tabMode2!=='tab'" @click="histTab='send'">📨 발송 <span class="tab-count">{{ cfCustSendHist.length }}</span></button>
       </div>
-      <div class="tab-view-modes">
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭으로 보기">📑</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열로 보기">1▭</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열로 보기">2▭</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열로 보기">3▭</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열로 보기">4▭</button>
+      <div class="tab-modes">
+        <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="tabMode2='tab'" title="탭으로 보기">📑</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="tabMode2='1col'" title="1열로 보기">1▭</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="tabMode2='2col'" title="2열로 보기">2▭</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="tabMode2='3col'" title="3열로 보기">3▭</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열로 보기">4▭</button>
       </div>
     </div>
 
     <!-- -- 이력 패널 -- -->
-    <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
+    <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
       <!-- -- 주문이력 -- -->
       <div v-show="showTab('orders')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">

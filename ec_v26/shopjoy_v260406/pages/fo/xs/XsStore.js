@@ -9,7 +9,7 @@ window.XsStore = {
   },
   setup(props) {
     const { ref, computed, reactive, onMounted, watch } = Vue;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, storeInfo: '', selectedStore: null, viewMode: 'col5'});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, storeInfo: '', selectedStore: null, tabMode: 'col5'});
     const codes = reactive({});
 
     const fnLoadCodes = () => {
@@ -199,86 +199,86 @@ window.XsStore = {
       <!-- -- 뷰모드 버튼 (탭바 우측) --------------------------------------------- -->
       <div style="display: flex; gap: 4px; padding-left: 16px; flex-shrink: 0;">
         <button
-          @click="uiState.viewMode = 'tab'"
+          @click="uiState.tabMode = 'tab'"
           :style="{
             padding: '6px 10px',
             fontSize: '13px',
-            border: uiState.viewMode === 'tab' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
-            background: uiState.viewMode === 'tab' ? '#fff0f4' : 'white',
-            color: uiState.viewMode === 'tab' ? '#ff6b9d' : '#666',
+            border: uiState.tabMode === 'tab' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
+            background: uiState.tabMode === 'tab' ? '#fff0f4' : 'white',
+            color: uiState.tabMode === 'tab' ? '#ff6b9d' : '#666',
             cursor: 'pointer',
             borderRadius: '4px',
-            fontWeight: uiState.viewMode === 'tab' ? '600' : '500',
+            fontWeight: uiState.tabMode === 'tab' ? '600' : '500',
             transition: 'all 0.2s'
           }"
           title="탭 뷰">📑</button>
         <button
-          @click="uiState.viewMode = 'col1'"
+          @click="uiState.tabMode = 'col1'"
           :style="{
             padding: '6px 10px',
             fontSize: '13px',
-            border: uiState.viewMode === 'col1' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
-            background: uiState.viewMode === 'col1' ? '#fff0f4' : 'white',
-            color: uiState.viewMode === 'col1' ? '#ff6b9d' : '#666',
+            border: uiState.tabMode === 'col1' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
+            background: uiState.tabMode === 'col1' ? '#fff0f4' : 'white',
+            color: uiState.tabMode === 'col1' ? '#ff6b9d' : '#666',
             cursor: 'pointer',
             borderRadius: '4px',
-            fontWeight: uiState.viewMode === 'col1' ? '600' : '500',
+            fontWeight: uiState.tabMode === 'col1' ? '600' : '500',
             transition: 'all 0.2s'
           }"
           title="1열 보기">1</button>
         <button
-          @click="uiState.viewMode = 'col2'"
+          @click="uiState.tabMode = 'col2'"
           :style="{
             padding: '6px 10px',
             fontSize: '13px',
-            border: uiState.viewMode === 'col2' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
-            background: uiState.viewMode === 'col2' ? '#fff0f4' : 'white',
-            color: uiState.viewMode === 'col2' ? '#ff6b9d' : '#666',
+            border: uiState.tabMode === 'col2' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
+            background: uiState.tabMode === 'col2' ? '#fff0f4' : 'white',
+            color: uiState.tabMode === 'col2' ? '#ff6b9d' : '#666',
             cursor: 'pointer',
             borderRadius: '4px',
-            fontWeight: uiState.viewMode === 'col2' ? '600' : '500',
+            fontWeight: uiState.tabMode === 'col2' ? '600' : '500',
             transition: 'all 0.2s'
           }"
           title="2열 보기">2</button>
         <button
-          @click="uiState.viewMode = 'col3'"
+          @click="uiState.tabMode = 'col3'"
           :style="{
             padding: '6px 10px',
             fontSize: '13px',
-            border: uiState.viewMode === 'col3' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
-            background: uiState.viewMode === 'col3' ? '#fff0f4' : 'white',
-            color: uiState.viewMode === 'col3' ? '#ff6b9d' : '#666',
+            border: uiState.tabMode === 'col3' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
+            background: uiState.tabMode === 'col3' ? '#fff0f4' : 'white',
+            color: uiState.tabMode === 'col3' ? '#ff6b9d' : '#666',
             cursor: 'pointer',
             borderRadius: '4px',
-            fontWeight: uiState.viewMode === 'col3' ? '600' : '500',
+            fontWeight: uiState.tabMode === 'col3' ? '600' : '500',
             transition: 'all 0.2s'
           }"
           title="3열 보기">3</button>
         <button
-          @click="uiState.viewMode = 'col4'"
+          @click="uiState.tabMode = 'col4'"
           :style="{
             padding: '6px 10px',
             fontSize: '13px',
-            border: uiState.viewMode === 'col4' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
-            background: uiState.viewMode === 'col4' ? '#fff0f4' : 'white',
-            color: uiState.viewMode === 'col4' ? '#ff6b9d' : '#666',
+            border: uiState.tabMode === 'col4' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
+            background: uiState.tabMode === 'col4' ? '#fff0f4' : 'white',
+            color: uiState.tabMode === 'col4' ? '#ff6b9d' : '#666',
             cursor: 'pointer',
             borderRadius: '4px',
-            fontWeight: uiState.viewMode === 'col4' ? '600' : '500',
+            fontWeight: uiState.tabMode === 'col4' ? '600' : '500',
             transition: 'all 0.2s'
           }"
           title="4열 보기">4</button>
         <button
-          @click="uiState.viewMode = 'col5'"
+          @click="uiState.tabMode = 'col5'"
           :style="{
             padding: '6px 10px',
             fontSize: '13px',
-            border: uiState.viewMode === 'col5' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
-            background: uiState.viewMode === 'col5' ? '#fff0f4' : 'white',
-            color: uiState.viewMode === 'col5' ? '#ff6b9d' : '#666',
+            border: uiState.tabMode === 'col5' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
+            background: uiState.tabMode === 'col5' ? '#fff0f4' : 'white',
+            color: uiState.tabMode === 'col5' ? '#ff6b9d' : '#666',
             cursor: 'pointer',
             borderRadius: '4px',
-            fontWeight: uiState.viewMode === 'col5' ? '600' : '500',
+            fontWeight: uiState.tabMode === 'col5' ? '600' : '500',
             transition: 'all 0.2s'
           }"
           title="5열 보기">5</button>
@@ -289,17 +289,17 @@ window.XsStore = {
   <!-- -- 탭 콘텐츠 영역 (뷰모드별 그리드 레이아웃) --------------------------------------- -->
   <div :style="{
     display: 'grid',
-    gridTemplateColumns: uiState.viewMode === 'col1' ? '1fr' : uiState.viewMode === 'col2' ? 'repeat(2, 1fr)' : uiState.viewMode === 'col3' ? 'repeat(3, 1fr)' : uiState.viewMode === 'col4' ? 'repeat(4, 1fr)' : uiState.viewMode === 'col5' ? 'repeat(5, 1fr)' : '1fr',
+    gridTemplateColumns: uiState.tabMode === 'col1' ? '1fr' : uiState.tabMode === 'col2' ? 'repeat(2, 1fr)' : uiState.tabMode === 'col3' ? 'repeat(3, 1fr)' : uiState.tabMode === 'col4' ? 'repeat(4, 1fr)' : uiState.tabMode === 'col5' ? 'repeat(5, 1fr)' : '1fr',
     gap: '4px',
     padding: '0',
     marginTop: '0'
   }">
 
     <div v-for="store in cfStoreList" :key="store.name"
-      v-show="uiState.viewMode === 'tab' ? uiState.selectedStore === store.name : true"
+      v-show="uiState.tabMode === 'tab' ? uiState.selectedStore === store.name : true"
       style="display: flex; flex-direction: column; height: 100%; background: white; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
 
-      <div v-if="uiState.viewMode !== 'tab'" style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; background: #fafafa; font-weight: 600; font-size: 12px; color: #333;">{{ store.label }}</div>
+      <div v-if="uiState.tabMode !== 'tab'" style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; background: #fafafa; font-weight: 600; font-size: 12px; color: #333;">{{ store.label }}</div>
 
       <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 320px;">
         <label style="display: block; padding: 8px 12px 4px; font-weight: 600; font-size: 11px; color: #666;">Store State (JSON)</label>

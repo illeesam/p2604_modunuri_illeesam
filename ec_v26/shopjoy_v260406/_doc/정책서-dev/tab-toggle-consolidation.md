@@ -27,7 +27,7 @@ const uiState = reactive({
 watch(uiState, (newVal) => {
   if (window._ecOrderDtlState) {
     window._ecOrderDtlState.activeTab = newVal.activeTab;
-    window._ecOrderDtlState.viewMode = newVal.viewMode;
+    window._ecOrderDtlState.tabMode = newVal.tabMode;
   }
 }, { deep: true });
 ```
@@ -192,13 +192,13 @@ Dtl 컴포넌트의 탭 상태를 행 전환 시에도 유지:
 ```javascript
 const uiState = reactive({
   activeTab: window._ecOrderDtlState?.activeTab || 'info',
-  viewMode: window._ecOrderDtlState?.viewMode || 'tab',
+  tabMode: window._ecOrderDtlState?.tabMode || 'tab',
 });
 
 watch(uiState, (newVal) => {
   if (!window._ecOrderDtlState) window._ecOrderDtlState = {};
   window._ecOrderDtlState.activeTab = newVal.activeTab;
-  window._ecOrderDtlState.viewMode = newVal.viewMode;
+  window._ecOrderDtlState.tabMode = newVal.tabMode;
 }, { deep: true });
 ```
 

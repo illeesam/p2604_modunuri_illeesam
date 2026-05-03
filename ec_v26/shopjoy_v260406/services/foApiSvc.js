@@ -24,8 +24,8 @@
     getPage(params, uiNm, cmdNm) {
       return global.foApi.get('/fo/ec/cm/bltn/page', { params, ...hdr(uiNm, cmdNm) });
     },
-    getById(bltnId, uiNm, cmdNm) {
-      return global.foApi.get(`/fo/ec/cm/bltn/${bltnId}`, hdr(uiNm, cmdNm));
+    getById(_id, uiNm, cmdNm) {
+      return global.foApi.get(`/fo/ec/cm/bltn/${_id}`, hdr(uiNm, cmdNm));
     },
   };
 
@@ -60,13 +60,13 @@
   /* ── my: 문의 ───────────────────────────────────────────────── */
   foApiSvc.myInquiry = {
     getList(params, uiNm, cmdNm) { return global.foApi.get('/fo/my/inquiry/list', { params, ...hdr(uiNm, cmdNm) }); },
-    create(body, uiNm, cmdNm) { return global.foApi.post('/fo/inquiry/create', body, hdr(uiNm, cmdNm)); },
+    create(body, uiNm, cmdNm)    { return global.foApi.post('/fo/inquiry/create', body, hdr(uiNm, cmdNm)); },
   };
 
   /* ── my: 주문 ───────────────────────────────────────────────── */
   foApiSvc.myOrder = {
     getList(params, uiNm, cmdNm) { return global.foApi.get('/fo/my/order/list', { params, ...hdr(uiNm, cmdNm) }); },
-    create(body, uiNm, cmdNm) { return global.foApi.post('/fo/order/create', body, hdr(uiNm, cmdNm)); },
+    create(body, uiNm, cmdNm)    { return global.foApi.post('/fo/order/create', body, hdr(uiNm, cmdNm)); },
   };
 
   /* ── pd: 상품 ───────────────────────────────────────────────── */
@@ -74,8 +74,8 @@
     getPage(params, uiNm, cmdNm) {
       return global.foApi.get('/fo/ec/pd/prod/page', { params, ...hdr(uiNm, cmdNm) });
     },
-    getById(prodId, uiNm, cmdNm) {
-      return global.foApi.get(`/fo/ec/pd/prod/${prodId}`, hdr(uiNm, cmdNm));
+    getById(_id, uiNm, cmdNm) {
+      return global.foApi.get(`/fo/ec/pd/prod/${_id}`, hdr(uiNm, cmdNm));
     },
   };
 
@@ -84,8 +84,8 @@
     getPage(params, uiNm, cmdNm) {
       return global.foApi.get('/fo/ec/pm/event/page', { params, ...hdr(uiNm, cmdNm) });
     },
-    getById(eventId, uiNm, cmdNm) {
-      return global.foApi.get(`/fo/ec/pm/event/${eventId}`, hdr(uiNm, cmdNm));
+    getById(_id, uiNm, cmdNm) {
+      return global.foApi.get(`/fo/ec/pm/event/${_id}`, hdr(uiNm, cmdNm));
     },
   };
 

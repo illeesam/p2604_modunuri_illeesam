@@ -11,8 +11,8 @@ window.Prod02View = {
     const addToCart            = window.foApp.addToCart;
     const showToast            = window.foApp.showToast;
     const showAlert            = window.foApp.showAlert;
-    const toggleLike           = window.foApp.toggleLike;
-    const isLiked              = window.foApp.isLiked;
+    const toggleLike           = (id) => window.foApp.toggleLike(id);
+    const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy' });
     const codes = reactive({});

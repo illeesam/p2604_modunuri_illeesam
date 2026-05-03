@@ -89,27 +89,27 @@ window.SySiteMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const detailModal = reactive({
       show: false,
-      editId: null,
-      viewMode: 'view' // 'view' | 'edit'
+      dtlId: null,
+      dtlMode: 'view' // 'view' | 'edit'
     });
 
-    const loadView = (id) => { if (detailModal.editId === id && detailModal.viewMode === 'view') { detailModal.show = false; detailModal.editId = null; return; } detailModal.editId = id; detailModal.viewMode = 'view'; detailModal.show = true; };
-    const handleLoadDetail = (id) => { if (detailModal.editId === id && detailModal.viewMode === 'edit') { detailModal.show = false; detailModal.editId = null; return; } detailModal.editId = id; detailModal.viewMode = 'edit'; detailModal.show = true; };
-    const openNew    = () => { detailModal.editId = '__new__'; detailModal.viewMode = 'edit'; detailModal.show = true; };
-    const closeDetail = () => { detailModal.show = false; detailModal.editId = null; };
+    const loadView = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'view') { detailModal.show = false; detailModal.dtlId = null; return; } detailModal.dtlId = id; detailModal.dtlMode = 'view'; detailModal.show = true; };
+    const handleLoadDetail = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'edit') { detailModal.show = false; detailModal.dtlId = null; return; } detailModal.dtlId = id; detailModal.dtlMode = 'edit'; detailModal.show = true; };
+    const openNew    = () => { detailModal.dtlId = '__new__'; detailModal.dtlMode = 'edit'; detailModal.show = true; };
+    const closeDetail = () => { detailModal.show = false; detailModal.dtlId = null; };
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'sySiteMng') {
         detailModal.show = false;
-        detailModal.editId = null;
+        detailModal.dtlId = null;
         if (opts.reload) handleSearchList('RELOAD');
         return;
       }
-      if (pg === '__switchToEdit__') { detailModal.viewMode = 'edit'; return; }
+      if (pg === '__switchToEdit__') { detailModal.dtlMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => detailModal.editId === '__new__' ? null : detailModal.editId);
-    const cfIsViewMode = computed(() => detailModal.viewMode === 'view' && detailModal.editId !== '__new__');
-    const cfDetailKey = computed(() => `${detailModal.editId}_${detailModal.viewMode}`);
+    const cfDetailEditId = computed(() => detailModal.dtlId === '__new__' ? null : detailModal.dtlId);
+    const cfIsViewMode = computed(() => detailModal.dtlMode === 'view' && detailModal.dtlId !== '__new__');
+    const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}`);
 
     const cfTypeOptions = computed(() => [...new Set(sites.map(s => s.siteTypeCd))].sort());
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -132,7 +132,7 @@ const detailModal = reactive({
       if (!ok) return;
       const idx = sites.findIndex(x => x.siteId === s.siteId);
       if (idx !== -1) sites.splice(idx, 1);
-      if (detailModal.editId === s.siteId) { detailModal.show = false; detailModal.editId = null; }
+      if (detailModal.dtlId === s.siteId) { detailModal.show = false; detailModal.dtlId = null; }
       try {
         const res = await boApiSvc.sySite.remove(s.siteId, '사이트관리', '삭제');
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
@@ -220,14 +220,14 @@ const detailModal = reactive({
       </tr></thead>
       <tbody>
         <tr v-if="sites.length===0"><td colspan="12" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <tr v-else v-for="(s, idx) in sites" :key="s.siteId" :style="detailModal.editId===s.siteId?'background:#fff8f9;':''">
+        <tr v-else v-for="(s, idx) in sites" :key="s.siteId" :style="detailModal.dtlId===s.siteId?'background:#fff8f9;':''">
           <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}</td>
           <td style="font-size:12px;"><div style="display:flex;align-items:center;gap:6px;"><span style="flex:1;padding:4px 6px;background:#f3f4f6;border-radius:4px;color:#666;font-weight:500;">{{ pathLabel(s.pathId) || '미설정' }}</span><button type="button" @click="openPathPick(s)" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;hover:background:#eef2ff;">🔍</button></div></td>
           <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;">{{ s.siteCode }}</code></td>
           <td><span class="badge" :class="fnTypeBadge(s.siteTypeCd)" style="font-size:10px;">{{ s.siteTypeCd }}</span></td>
           <td>
-            <span class="title-link" @click="handleLoadDetail(s.siteId)" :style="detailModal.editId===s.siteId?'color:#e8587a;font-weight:700;':''">
-              {{ s.siteNm }}<span v-if="detailModal.editId===s.siteId" style="font-size:10px;margin-left:3px;">▼</span>
+            <span class="title-link" @click="handleLoadDetail(s.siteId)" :style="detailModal.dtlId===s.siteId?'color:#e8587a;font-weight:700;':''">
+              {{ s.siteNm }}<span v-if="detailModal.dtlId===s.siteId" style="font-size:10px;margin-left:3px;">▼</span>
             </span>
             <div style="font-size:11px;color:#888;margin-top:2px;">{{ s.description }}</div>
           </td>
@@ -251,7 +251,8 @@ const detailModal = reactive({
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
-    <sy-site-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :edit-id="cfDetailEditId" />
+    <sy-site-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
+      :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'" />
   </div>
 </div></div>
 

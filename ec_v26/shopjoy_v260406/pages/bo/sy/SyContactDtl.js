@@ -1,11 +1,12 @@
 /* ShopJoy Admin - 문의관리 상세/등록 */
-window._syContactDtlState = window._syContactDtlState || { tab: 'content', viewMode: 'tab' };
+window._syContactDtlState = window._syContactDtlState || { tab: 'content', tabMode: 'tab' };
 window.SyContactDtl = {
   name: 'SyContactDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    editId:       { type: String, default: null }, // 수정 대상 ID
-    viewMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlId:        { type: String, default: null }, // 수정 대상 ID
+    tabMode:      { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick, watch } = Vue;
@@ -14,17 +15,17 @@ window.SyContactDtl = {
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._syContactDtlState.tab || 'content', viewMode2: window._syContactDtlState.viewMode || 'tab', contentEl: null, answerEl: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._syContactDtlState.tab || 'content', tabMode2: window._syContactDtlState.tabMode || 'tab', contentEl: null, answerEl: null });
     const tab = Vue.toRef(uiState, 'tab');
-    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
+    const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ contact_categories: [], contact_statuses: [] });
-    const cfIsNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.dtlId);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
 watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
 
-        watch(() => uiState.viewMode2, v => { window._syContactDtlState.viewMode = v; });
-    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
+        watch(() => uiState.tabMode2, v => { window._syContactDtlState.tabMode = v; });
+    const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -76,7 +77,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApiSvc.syContact.getById(props.editId, '문의관리', '상세조회');
+        const res = await boApiSvc.syContact.getById(props.dtlId, '문의관리', '상세조회');
         const data = res.data?.data;
         if (data) {
           Object.assign(form, data);
@@ -155,13 +156,16 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     const answerEl = Vue.toRef(uiState, 'answerEl');
     const contentEl = Vue.toRef(uiState, 'contentEl');
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // -- return ---------------------------------------------------------------
 
-    return { uiState, codes, cfIsNew, tab, viewMode2, showTab, form, errors, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm, contentEl, answerEl };
+    return { uiState, codes, cfIsNew, tab, tabMode2, cfDtlMode, showTab, form, errors, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm, contentEl, answerEl };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '문의 등록' : (viewMode ? '문의 상세' : '문의 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.inquiryId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '문의 등록' : (cfDtlMode ? '문의 상세' : '문의 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.inquiryId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
@@ -171,28 +175,28 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     </div>
     <div class="tab-bar-row">
       <div class="tab-nav">
-        <button class="tab-btn" :class="{active:tab==='content'}" :disabled="viewMode2!=='tab'" @click="tab='content'">📋 문의 내용</button>
-        <button class="tab-btn" :class="{active:tab==='answer'}"  :disabled="viewMode2!=='tab'" @click="tab='answer'">💬 답변</button>
-        <button v-if="!cfIsNew && form.userId" class="tab-btn" :class="{active:tab==='history'}" :disabled="viewMode2!=='tab'" @click="tab='history'">🕒 회원 문의 이력</button>
+        <button class="tab-btn" :class="{active:tab==='content'}" :disabled="tabMode2!=='tab'" @click="tab='content'">📋 문의 내용</button>
+        <button class="tab-btn" :class="{active:tab==='answer'}"  :disabled="tabMode2!=='tab'" @click="tab='answer'">💬 답변</button>
+        <button v-if="!cfIsNew && form.userId" class="tab-btn" :class="{active:tab==='history'}" :disabled="tabMode2!=='tab'" @click="tab='history'">🕒 회원 문의 이력</button>
       </div>
-      <div class="tab-view-modes">
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭으로 보기">📑</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열로 보기">1▭</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열로 보기">2▭</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열로 보기">3▭</button>
-        <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열로 보기">4▭</button>
+      <div class="tab-modes">
+        <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="tabMode2='tab'" title="탭으로 보기">📑</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="tabMode2='1col'" title="1열로 보기">1▭</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="tabMode2='2col'" title="2열로 보기">2▭</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="tabMode2='3col'" title="3열로 보기">3▭</button>
+        <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열로 보기">4▭</button>
       </div>
     </div>
-    <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
+    <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
     <!-- -- 문의 내용 -------------------------------------------------------- -->
     <div class="card" v-show="showTab('content')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 문의 내용</div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 문의 내용</div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">회원ID</label>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserIdChange" :readonly="viewMode" />
+            <input class="form-control" v-model="form.userId" placeholder="회원 ID" @change="onUserIdChange" :readonly="cfDtlMode" />
             <span v-if="form.userId" class="ref-link" @click="showRefModal('member', Number(form.userId))">보기</span>
           </div>
         </div>
@@ -204,30 +208,30 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">카테고리</label>
-          <select class="form-control" v-model="form.categoryCd" :disabled="viewMode">
+          <select class="form-control" v-model="form.categoryCd" :disabled="cfDtlMode">
             <option v-for="c in codes.contact_categories" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
+          <select class="form-control" v-model="form.statusCd" :disabled="cfDtlMode">
             <option v-for="c in codes.contact_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">제목 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.title" :readonly="viewMode" :class="errors.title ? 'is-invalid' : ''" />
+        <label class="form-label">제목 <span v-if="!cfDtlMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.title" :readonly="cfDtlMode" :class="errors.title ? 'is-invalid' : ''" />
         <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
       </div>
       <div class="form-group">
-        <label class="form-label">문의 내용 <span v-if="!viewMode" class="req">*</span></label>
-        <div v-if="viewMode" class="form-control" style="min-height:150px;line-height:1.6;" v-html="form.content || '<span style=color:#bbb>-</span>'"></div>
+        <label class="form-label">문의 내용 <span v-if="!cfDtlMode" class="req">*</span></label>
+        <div v-if="cfDtlMode" class="form-control" style="min-height:150px;line-height:1.6;" v-html="form.content || '<span style=color:#bbb>-</span>'"></div>
         <div v-else ref="contentEl" style="min-height:150px;background:#fff;" :class="errors.content ? 'is-invalid' : ''"></div>
         <span v-if="errors.content" class="field-error">{{ errors.content }}</span>
       </div>
       <div class="form-actions">
-        <template v-if="viewMode">
+        <template v-if="cfDtlMode">
           <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
           <button class="btn btn-secondary" @click="navigate('syContactMng')">닫기</button>
         </template>
@@ -240,7 +244,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
 
     <!-- -- 답변 ----------------------------------------------------------- -->
     <div class="card" v-show="showTab('answer')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💬 답변</div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💬 답변</div>
       <div v-if="!cfIsNew" style="margin-bottom:16px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
         <div style="font-size:12px;color:#888;margin-bottom:6px;">{{ form.categoryCd }} · {{ form.date }}</div>
         <div style="font-size:14px;font-weight:600;margin-bottom:8px;">{{ form.title }}</div>
@@ -248,11 +252,11 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       </div>
       <div class="form-group">
         <label class="form-label">답변 내용 <span v-if="!form.answer" class="badge badge-orange" style="margin-left:4px;">미답변</span></label>
-        <div v-if="viewMode" class="form-control" style="min-height:180px;line-height:1.6;" v-html="form.answer || '<span style=color:#bbb>-</span>'"></div>
+        <div v-if="cfDtlMode" class="form-control" style="min-height:180px;line-height:1.6;" v-html="form.answer || '<span style=color:#bbb>-</span>'"></div>
         <div v-else ref="answerEl" style="min-height:180px;background:#fff;"></div>
       </div>
       <div class="form-actions">
-        <template v-if="viewMode">
+        <template v-if="cfDtlMode">
           <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
           <button class="btn btn-secondary" @click="navigate('syContactMng')">닫기</button>
         </template>
@@ -266,7 +270,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
 
     <!-- -- 회원 문의 이력 ----------------------------------------------------- -->
     <div class="card" v-show="showTab('history')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 문의 이력</div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 문의 이력</div>
       <div style="text-align:center;color:#aaa;padding:30px;font-size:13px;">회원 문의 이력은 목록에서 확인하세요.</div>
     </div>
     </div>

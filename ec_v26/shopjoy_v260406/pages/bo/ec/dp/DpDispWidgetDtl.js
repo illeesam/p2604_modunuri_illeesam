@@ -3,7 +3,8 @@ window.DpDispWidgetDtl = {
   name: 'DpDispWidgetDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    editId:       { type: String, default: null }, // 수정 대상 ID
+    dtlId:        { type: String, default: null }, // 수정 대상 ID
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   emits: ['close'],
   setup(props, { emit }) {
@@ -33,7 +34,7 @@ window.DpDispWidgetDtl = {
     const onPathPicked = (pathId) => { form.pathId = pathId; };
     const pathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
     const widgetLibs = reactive([]);
-    const cfIsNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.dtlId);
 
     /* -- 폼 초기값 -- */
     const makeForm = () => ({
@@ -101,7 +102,7 @@ window.DpDispWidgetDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApiSvc.dpWidgetLib.getById(props.editId, '전시위젯관리', '상세조회');
+        const res = await boApiSvc.dpWidgetLib.getById(props.dtlId, '전시위젯관리', '상세조회');
         const data = res.data?.data;
         if (data) Object.assign(form, data);
         uiState.error = null;
@@ -480,12 +481,15 @@ window.DpDispWidgetDtl = {
     const libPickMode = Vue.toRef(uiState, 'libPickMode');
     const previewPaneWidth = Vue.toRef(uiState, 'previewPaneWidth');
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // -- return ---------------------------------------------------------------
 
     return {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       uiState, libPickMode, openLibPick, onLibPicked,
-      cfIsNew, form, errors, codes,
+      cfDtlMode, cfIsNew, form, errors, codes,
       cfIsImage, cfIsProduct, cfIsCondProduct, cfIsChart, cfIsText, cfIsInfo,
       cfIsPopup, cfIsFile, cfIsFileList, cfIsCoupon, cfIsHtmlEditor, cfIsEvent, cfIsCache, cfIsEmbed,
       cfDisplayRows, cfFileListItems, addFileItem, removeFileItem, updateFileItem,
@@ -505,7 +509,7 @@ window.DpDispWidgetDtl = {
       </span>
       <span v-if="!cfIsNew" style="font-size:11px;background:#eee;color:#666;border-radius:4px;padding:1px 7px;">#{{ String(form.libId).padStart(4,'0') }}</span>
     </div>
-    <div class="form-actions" style="margin:0;gap:8px;">
+    <div class="form-actions" v-if="!cfDtlMode" style="margin:0;gap:8px;">
       <button @click="openLibPick('copy')" class="btn btn-outline" style="font-size:12px;background:#e3f2fd;color:#1565c0;border-color:#90caf9;">📋 전시위젯Lib 내용복사</button>
       <button @click="openLibPick('ref')"  class="btn btn-outline" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-color:#ce93d8;">🔗 전시위젯Lib 참조</button>
       <button @click="handleSave"   class="btn btn-primary" style="font-size:13px;">저장</button>

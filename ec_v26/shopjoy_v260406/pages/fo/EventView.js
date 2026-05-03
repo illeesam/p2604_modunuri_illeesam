@@ -3,7 +3,7 @@ window.EventView = {
   name: 'EventView',
   props: {
     navigate: { type: Function, required: true },        // 페이지 이동
-    editId:   { type: String,   default: null },          // 대상 ID
+    dtlId:    { type: String,   default: null },          // 대상 ID
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
@@ -16,7 +16,7 @@ window.EventView = {
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
-        const res = await foApiSvc.pmEvent.getById(props.editId, '이벤트상세', '상세조회');
+        const res = await foApiSvc.pmEvent.getById(props.dtlId, '이벤트상세', '상세조회');
         events.splice(0, events.length, ...(res.data?.data ? [res.data.data] : []));
       } catch (e) {
         console.error('[handleSearchData]', e);
@@ -37,7 +37,7 @@ window.EventView = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    const cfEventId  = computed(() => Number(props.editId) || 1);
+    const cfEventId  = computed(() => Number(props.dtlId) || 1);
     const cfEvent    = computed(() => events.find(e => e.id === cfEventId.value) || events[0] || null);
     
     /* 탭 변경 시 0으로 리셋 */

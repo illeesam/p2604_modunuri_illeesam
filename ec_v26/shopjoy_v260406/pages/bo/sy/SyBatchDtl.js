@@ -3,8 +3,9 @@ window.SyBatchDtl = {
   name: 'SyBatchDtl',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    editId:      { type: String, default: null }, // 수정 대상 ID
-    viewMode:    { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlId:       { type: String, default: null }, // 수정 대상 ID
+    tabMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:     { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const { reactive, computed, watch, onMounted, ref } = Vue;
@@ -31,7 +32,7 @@ window.SyBatchDtl = {
     // ── watch ────────────────────────────────────────────────────────────────
 
 
-    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
+    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const form = reactive({
       batchId: null, batchNm: '', batchCode: '', description: '', cron: '0 0 * * *', statusCd: '활성',
@@ -48,7 +49,7 @@ window.SyBatchDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApiSvc.syBatch.getById(props.editId, '배치관리', '상세조회');
+        const res = await boApiSvc.syBatch.getById(props.dtlId, '배치관리', '상세조회');
         const data = res.data?.data;
         if (data) Object.assign(form, data);
         uiState.error = null;
@@ -101,13 +102,16 @@ window.SyBatchDtl = {
       }
     };
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, codes, cfIsNew, form, errors, handleSave, CRON_PRESETS, cfSiteNm };
+    return { uiState, codes, cfIsNew, form, errors, handleSave, CRON_PRESETS, cfSiteNm, cfDtlMode };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '배치 등록' : (viewMode ? '배치 상세' : '배치 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.batchId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '배치 등록' : (cfDtlMode ? '배치 상세' : '배치 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.batchId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
@@ -117,32 +121,32 @@ window.SyBatchDtl = {
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">배치명 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.batchNm" placeholder="배치 이름" :readonly="viewMode" :class="errors.batchNm ? 'is-invalid' : ''" />
+        <label class="form-label">배치명 <span v-if="!cfDtlMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.batchNm" placeholder="배치 이름" :readonly="cfDtlMode" :class="errors.batchNm ? 'is-invalid' : ''" />
         <span v-if="errors.batchNm" class="field-error">{{ errors.batchNm }}</span>
       </div>
       <div class="form-group">
-        <label class="form-label">배치코드 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.batchCode" placeholder="ORDER_AUTO_COMPLETE" style="text-transform:uppercase;" :readonly="viewMode" :class="errors.batchCode ? 'is-invalid' : ''" />
+        <label class="form-label">배치코드 <span v-if="!cfDtlMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.batchCode" placeholder="ORDER_AUTO_COMPLETE" style="text-transform:uppercase;" :readonly="cfDtlMode" :class="errors.batchCode ? 'is-invalid' : ''" />
         <span v-if="errors.batchCode" class="field-error">{{ errors.batchCode }}</span>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group" style="flex:1">
         <label class="form-label">설명</label>
-        <input class="form-control" v-model="form.description" placeholder="배치 처리 내용 설명" :readonly="viewMode" />
+        <input class="form-control" v-model="form.description" placeholder="배치 처리 내용 설명" :readonly="cfDtlMode" />
       </div>
     </div>
     <div class="form-row">
       <div class="form-group" style="flex:1">
-        <label class="form-label">Cron 표현식 <span v-if="!viewMode" class="req">*</span>
+        <label class="form-label">Cron 표현식 <span v-if="!cfDtlMode" class="req">*</span>
           <span style="font-size:11px;color:#888;margin-left:8px;">분 시 일 월 요일</span>
         </label>
-        <input class="form-control" v-model="form.cron" placeholder="0 0 * * *" :readonly="viewMode" :class="errors.cron ? 'is-invalid' : ''" />
+        <input class="form-control" v-model="form.cron" placeholder="0 0 * * *" :readonly="cfDtlMode" :class="errors.cron ? 'is-invalid' : ''" />
         <span v-if="errors.cron" class="field-error">{{ errors.cron }}</span>
       </div>
     </div>
-    <div v-if="!viewMode" style="margin-bottom:16px;padding:10px 12px;background:#f8f9fa;border-radius:6px;">
+    <div v-if="!cfDtlMode" style="margin-bottom:16px;padding:10px 12px;background:#f8f9fa;border-radius:6px;">
       <div style="font-size:12px;color:#666;margin-bottom:8px;font-weight:600;">Cron 프리셋</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;">
         <button v-for="p in CRON_PRESETS" :key="p.value"
@@ -154,13 +158,13 @@ window.SyBatchDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">활성여부</label>
-        <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
+        <select class="form-control" v-model="form.statusCd" :disabled="cfDtlMode">
           <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
     </div>
-    <div class="form-actions">
-      <template v-if="viewMode">
+    <div class="form-actions" v-if="!cfDtlMode">
+      <template v-if="cfDtlMode">
         <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
         <button class="btn btn-secondary" @click="navigate('syBatchMng')">닫기</button>
       </template>

@@ -1,11 +1,12 @@
 /* ShopJoy Admin - 판촉마일리지 상세/등록 */
-window._pmSaveDtlState = window._pmSaveDtlState || { tab: 'info', viewMode: 'tab' };
+window._pmSaveDtlState = window._pmSaveDtlState || { tab: 'info', tabMode: 'tab' };
 window.PmSaveDtl = {
   name: 'PmSaveDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    editId:       { type: String, default: null }, // 수정 대상 ID
-    viewMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlId:        { type: String, default: null }, // 수정 대상 ID
+    tabMode:      { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
@@ -13,9 +14,9 @@ window.PmSaveDtl = {
     const showConfirm  = window.boApp.showConfirm;
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
-    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmSaveDtlState.tab || 'info', viewMode2: window._pmSaveDtlState.viewMode || 'tab'});
+    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmSaveDtlState.tab || 'info', tabMode2: window._pmSaveDtlState.tabMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
-    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
+    const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ save_issue_types: [], save_units: [], promo_statuses: [] });
 
     // 단건 조회
@@ -23,7 +24,7 @@ window.PmSaveDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pmSave.getById(props.editId, '적립금관리', '상세조회');
+        const res = await boApiSvc.pmSave.getById(props.dtlId, '적립금관리', '상세조회');
         const s = res.data?.data || res.data;
         if (s) Object.assign(form, s);
         uiState.error = null;
@@ -34,12 +35,12 @@ window.PmSaveDtl = {
         uiState.loading = false;
       }
     };
-    const cfIsNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.dtlId);
 
 watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
 
-        watch(() => uiState.viewMode2, v => { window._pmSaveDtlState.viewMode = v; });
-    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
+        watch(() => uiState.tabMode2, v => { window._pmSaveDtlState.tabMode = v; });
+    const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -121,32 +122,35 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
 
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // -- return ---------------------------------------------------------------
 
-    return { uiState, codes, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfSelectedVendorNm, selectVendor };
+    return { uiState, codes, cfIsNew, tab, form, errors, showTab, cfDtlMode, tabMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfSelectedVendorNm, selectVendor };
   },
   template: /* html */`
 <div>
   <div class="page-title">{{ cfIsNew ? '마일리지 등록' : '마일리지 수정' }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.saveId }}</span></div>
   <div class="tab-bar-row">
     <div class="tab-nav">
-      <button class="tab-btn" :class="{active:tab==='info'}" :disabled="viewMode2!=='tab'" @click="tab='info'">📋 기본정보</button>
-      <button class="tab-btn" :class="{active:tab==='visibility'}" :disabled="viewMode2!=='tab'" @click="tab='visibility'">🔒 공개대상</button>
-      <button class="tab-btn" :class="{active:tab==='preview'}" :disabled="viewMode2!=='tab'" @click="tab='preview'">👁 미리보기</button>
+      <button class="tab-btn" :class="{active:tab==='info'}" :disabled="tabMode2!=='tab'" @click="tab='info'">📋 기본정보</button>
+      <button class="tab-btn" :class="{active:tab==='visibility'}" :disabled="tabMode2!=='tab'" @click="tab='visibility'">🔒 공개대상</button>
+      <button class="tab-btn" :class="{active:tab==='preview'}" :disabled="tabMode2!=='tab'" @click="tab='preview'">👁 미리보기</button>
     </div>
-    <div class="tab-view-modes">
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭">📑</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열">1▭</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열">2▭</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열">3▭</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열">4▭</button>
+    <div class="tab-modes">
+      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="tabMode2='tab'" title="탭">📑</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="tabMode2='1col'" title="1열">1▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="tabMode2='2col'" title="2열">2▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="tabMode2='3col'" title="3열">3▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열">4▭</button>
     </div>
   </div>
-  <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
+  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
     <!-- -- 기본정보 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <div class="form-group">
         <label class="form-label">마일리지명 <span class="req">*</span></label>
         <input class="form-control" v-model="form.saveNm" placeholder="마일리지명 입력" :class="errors.saveNm ? 'is-invalid' : ''" />
@@ -216,7 +220,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
         </div>
         <div class="form-group">
           <label class="form-label">판매담당자</label>
-          <input class="form-control" v-model="form.chargeStaff" placeholder="담당자명 입력" :readonly="viewMode" />
+          <input class="form-control" v-model="form.chargeStaff" placeholder="담당자명 입력" :readonly="cfDtlMode" />
         </div>
       </div>
 
@@ -244,7 +248,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
           </div>
         </div>
       </div>
-      <div class="form-actions">
+      <div class="form-actions" v-if="!cfDtlMode">
         <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('pmSaveMng')">취소</button>
       </div>
@@ -252,7 +256,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
 
     <!-- -- 공개대상 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('visibility')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🔒 공개대상</div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🔒 공개대상</div>
       <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">하나라도 해당하면 노출</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;">
         <label v-for="opt in cfVisibilityOptions" :key="opt?.codeValue"
@@ -261,7 +265,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
           {{ opt.codeLabel }}
         </label>
       </div>
-      <div class="form-actions">
+      <div class="form-actions" v-if="!cfDtlMode">
         <button class="btn btn-primary" @click="handleSave">저장</button>
         <button class="btn btn-secondary" @click="navigate('pmSaveMng')">취소</button>
       </div>
@@ -269,7 +273,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
 
     <!-- -- 미리보기 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('preview')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
       <div style="background:#f9f9f9;border-radius:10px;padding:20px;border:1px solid #e8e8e8;max-width:600px;">
         <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">{{ form.saveNm || '마일리지명' }}</div>
         <div style="font-size:12px;color:#aaa;margin-bottom:16px;">{{ form.startDate }} ~ {{ form.endDate }}</div>

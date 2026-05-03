@@ -3,8 +3,9 @@ window.DpDispPanelDtl = {
   name: 'DpDispPanelDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    editId:       { type: String, default: null }, // 수정 대상 ID
-    viewMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlId:        { type: String, default: null }, // 수정 대상 ID
+    tabMode:      { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
@@ -36,7 +37,7 @@ window.DpDispPanelDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApiSvc.dpPanel.getById(props.editId, '전시패널관리', '상세조회');
+        const res = await boApiSvc.dpPanel.getById(props.dtlId, '전시패널관리', '상세조회');
         const data = res.data?.data;
         if (data) Object.assign(form, data);
         uiState.error = null;
@@ -70,7 +71,7 @@ window.DpDispPanelDtl = {
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
     const fnPathLabel = (id) => boUtil.getPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    const cfIsNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.dtlId);
             const PREVIEW_MODES = [
       { value: 'default', label: '기본',   width: 480  },
       { value: 'pc',      label: 'PC',     width: 1200 },
@@ -413,7 +414,7 @@ window.DpDispPanelDtl = {
     };
 
     const initQuillDesc = () => {
-      if (props.viewMode || !uiState.htmlDescEl || quillDesc) return;
+      if (props.tabMode || !uiState.htmlDescEl || quillDesc) return;
       quillDesc = new Quill(uiState.htmlDescEl, QUILL_OPTS);
       quillDesc.root.innerHTML = form.htmlDesc || '';
       quillDesc.on('text-change', () => { form.htmlDesc = quillDesc.root.innerHTML; });
@@ -430,7 +431,7 @@ window.DpDispPanelDtl = {
     };
 
     const initQuillContent = () => {
-      if (props.viewMode || !uiState.htmlContentEl) return;
+      if (props.tabMode || !uiState.htmlContentEl) return;
       if (!quillContent) {
         quillContent = new Quill(uiState.htmlContentEl, QUILL_OPTS);
       }
@@ -684,6 +685,9 @@ window.DpDispPanelDtl = {
     const showComponentTooltip = Vue.toRef(uiState, 'showComponentTooltip');
     const viewAll = Vue.toRef(uiState, 'viewAll');
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // -- return ---------------------------------------------------------------
 
     return { uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
@@ -707,14 +711,14 @@ window.DpDispPanelDtl = {
       fnRowIsHtmlEditor, fnRowIsFileList, fnRowIsImage, fnRowIsText, fnRowIsProduct,
       fnGetDisplayRows, fnGetRelatedEvent,
       fnGetFileListItems, fnAddFileItemAt, fnRemoveFileItemAt, fnSetFileItem,
-      moveRowAt, codes,
+      moveRowAt, codes, cfDtlMode,
     };
   },
   template: /* html */`
 <div>
   <div class="page-title" style="display:flex;align-items:center;justify-content:space-between;">
     <span>
-      {{ cfIsNew ? '전시패널 등록' : (viewMode ? '전시패널 상세' : '전시패널 수정') }}
+      {{ cfIsNew ? '전시패널 등록' : (cfDtlMode ? '전시패널 상세' : '전시패널 수정') }}
       <span v-if="!cfIsNew" style="font-size:13px;color:#888;font-weight:400;margin-left:6px;">#{{ form.dispId }}</span>
     </span>
     <div style="display:flex;align-items:center;gap:6px;">
@@ -725,13 +729,13 @@ window.DpDispPanelDtl = {
         <span>{{ viewAll ? '☰' : '⊞' }}</span>
         {{ viewAll ? '탭 보기' : '펼치기' }}
       </button>
-      <button v-if="!viewMode" class="btn btn-sm" :disabled="cfIsNew"
+      <button v-if="!cfDtlMode" class="btn btn-sm" :disabled="cfIsNew"
         :style="cfIsNew ? 'background:#f5f5f5;border:1px solid #ddd;color:#bbb;cursor:not-allowed;' : 'background:#e3f2fd;border:1px solid #90caf9;color:#1565c0;font-weight:600;'"
         :title="cfIsNew ? '저장 후 전시항목을 복사할 수 있습니다.' : ''"
         @click="!cfIsNew && (rowCopyOpen = true)">
         📄 전시항목 복사
       </button>
-      <button v-if="!viewMode" class="btn btn-primary btn-sm" @click="handleSave" style="font-weight:700;">💾 저장</button>
+      <button v-if="!cfDtlMode" class="btn btn-primary btn-sm" @click="handleSave" style="font-weight:700;">💾 저장</button>
     </div>
   </div>
   <div class="card">
@@ -807,16 +811,16 @@ window.DpDispPanelDtl = {
             </div>
             <div class="form-row" style="margin-bottom:8px;">
               <div class="form-group">
-                <label class="form-label">패널코드 <span v-if="!viewMode" class="req">*</span></label>
-                <input class="form-control" v-model="form.dispCode" placeholder="DP_YYMMDD_HHMMSS" :readonly="viewMode" style="font-family:monospace;" />
+                <label class="form-label">패널코드 <span v-if="!cfDtlMode" class="req">*</span></label>
+                <input class="form-control" v-model="form.dispCode" placeholder="DP_YYMMDD_HHMMSS" :readonly="cfDtlMode" style="font-family:monospace;" />
               </div>
               <div class="form-group">
-                <label class="form-label">패널명 <span v-if="!viewMode" class="req">*</span></label>
-                <input class="form-control" v-model="form.name" placeholder="패널 이름" :readonly="viewMode" />
+                <label class="form-label">패널명 <span v-if="!cfDtlMode" class="req">*</span></label>
+                <input class="form-control" v-model="form.name" placeholder="패널 이름" :readonly="cfDtlMode" />
               </div>
               <div class="form-group">
                 <label class="form-label">상태</label>
-                <select class="form-control" v-model="form.status" :disabled="viewMode">
+                <select class="form-control" v-model="form.status" :disabled="cfDtlMode">
                   <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
                 </select>
               </div>
@@ -851,10 +855,10 @@ window.DpDispPanelDtl = {
                 <label class="form-label">표시방식</label>
                 <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;max-width:200px;">
                   <button v-for="o in codes.layout_types" :key="o?.codeValue"
-                    @click="!viewMode && (form.layoutType = o.codeValue)"
+                    @click="!cfDtlMode && (form.layoutType = o.codeValue)"
                     type="button"
                     style="flex:1;padding:6px 0;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
-                    :style="[o.codeValue==='grid'?'border-left:none;':'', form.layoutType===o.codeValue ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', viewMode?'cursor:default;opacity:.6;':'']">
+                    :style="[o.codeValue==='grid'?'border-left:none;':'', form.layoutType===o.codeValue ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', cfDtlMode?'cursor:default;opacity:.6;':'']">
                     {{ o.codeValue==='grid' ? '🔲 ' : '🧩 ' }}{{ o.codeLabel }}
                   </button>
                 </div>
@@ -864,14 +868,14 @@ window.DpDispPanelDtl = {
                 <div style="display:flex;align-items:center;gap:6px;">
                   <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
                     <button v-for="n in [1,2,3,4]" :key="Math.random()" type="button"
-                      @click="!viewMode && (form.gridCols = n)"
+                      @click="!cfDtlMode && (form.gridCols = n)"
                       style="padding:6px 12px;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
-                      :style="[n===1?'border-left:none;':'', form.gridCols===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', viewMode?'cursor:default;opacity:.6;':'']">
+                      :style="[n===1?'border-left:none;':'', form.gridCols===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', cfDtlMode?'cursor:default;opacity:.6;':'']">
                       {{ n }}
                     </button>
                   </div>
                   <input type="number" v-model.number="form.gridCols" min="1" max="32"
-                    :readonly="viewMode"
+                    :readonly="cfDtlMode"
                     style="width:64px;font-size:13px;padding:5px 8px;border:1px solid #d1d5db;border-radius:6px;text-align:center;" />
                   <span style="font-size:12px;color:#aaa;">열</span>
                 </div>
@@ -883,9 +887,9 @@ window.DpDispPanelDtl = {
             </div>
             <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">📅 사용기간</div>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              <input type="date" class="form-control" v-model="form.useStartDate" style="width:150px;margin:0;" :readonly="viewMode" />
+              <input type="date" class="form-control" v-model="form.useStartDate" style="width:150px;margin:0;" :readonly="cfDtlMode" />
               <span style="color:#aaa;font-size:13px;padding:0 4px;">~</span>
-              <input type="date" class="form-control" v-model="form.useEndDate" style="width:150px;margin:0;" :readonly="viewMode" />
+              <input type="date" class="form-control" v-model="form.useEndDate" style="width:150px;margin:0;" :readonly="cfDtlMode" />
             </div>
           </div><!-- -- /설정 -------------------------------------------------------------- -->
 
@@ -897,16 +901,16 @@ window.DpDispPanelDtl = {
               <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
                 <span style="font-size:11px;font-weight:600;color:#888;">타이틀 표시</span>
                 <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
-                  <input type="radio" v-model="form.titleYn" value="Y" :disabled="viewMode" /> 표시
+                  <input type="radio" v-model="form.titleYn" value="Y" :disabled="cfDtlMode" /> 표시
                 </label>
                 <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
-                  <input type="radio" v-model="form.titleYn" value="N" :disabled="viewMode" /> 미표시
+                  <input type="radio" v-model="form.titleYn" value="N" :disabled="cfDtlMode" /> 미표시
                 </label>
               </span>
             </div>
             <div v-if="form.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
               <label style="font-size:12px;font-weight:600;color:#555;width:50px;flex-shrink:0;">타이틀</label>
-              <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="viewMode"
+              <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="cfDtlMode"
                 style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
             </div>
           </div><!-- -- /제목 -------------------------------------------------------------- -->
@@ -918,7 +922,7 @@ window.DpDispPanelDtl = {
               내용
             </div>
             <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">📝 패널코멘트</div>
-            <div v-if="viewMode"
+            <div v-if="cfDtlMode"
               style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;">
               <span v-if="form.htmlDesc" v-html="form.htmlDesc"></span>
               <span v-else style="color:#bbb;">내용 없음</span>
@@ -926,8 +930,8 @@ window.DpDispPanelDtl = {
             <div v-else ref="htmlDescEl"></div>
           </div><!-- -- /내용 -------------------------------------------------------------- -->
 
-          <div class="form-actions">
-            <template v-if="viewMode">
+          <div class="form-actions" v-if="!cfDtlMode">
+            <template v-if="cfDtlMode">
               <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
               <button class="btn btn-secondary" @click="navigate('dpDispPanelMng')">닫기</button>
             </template>
@@ -945,7 +949,7 @@ window.DpDispPanelDtl = {
             <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
               <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
               설정
-              <span v-if="!viewMode" style="margin-left:auto;display:flex;gap:6px;">
+              <span v-if="!cfDtlMode" style="margin-left:auto;display:flex;gap:6px;">
                 <button @click="!cfIsNew && openLibPick('copy')" :disabled="cfIsNew"
                   :title="cfIsNew ? '저장 후 사용할 수 있습니다.' : ''"
                   :style="cfIsNew ? 'font-size:11px;padding:4px 10px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:6px;cursor:not-allowed;font-weight:600;' : 'font-size:11px;padding:4px 10px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:6px;cursor:pointer;font-weight:600;'">📋 위젯Lib내용복사</button>
@@ -960,7 +964,7 @@ window.DpDispPanelDtl = {
               style="background:linear-gradient(135deg,#f3e5f5 0%,#fff 100%);border:1px dashed #ce93d8;border-radius:10px;padding:12px 14px;margin-bottom:14px;">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                 <span style="font-size:12px;font-weight:700;color:#6a1b9a;">🔗 전시위젯Lib 참조 중</span>
-                <button v-if="!viewMode" @click="cfActiveRow.refLibId=null; cfActiveRow.refLibCode=''; cfActiveRow.refLibName=''"
+                <button v-if="!cfDtlMode" @click="cfActiveRow.refLibId=null; cfActiveRow.refLibCode=''; cfActiveRow.refLibName=''"
                   style="font-size:10px;padding:2px 8px;border:1px solid #ce93d8;background:#fff;color:#6a1b9a;border-radius:4px;cursor:pointer;">참조 해제</button>
               </div>
               <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;margin-bottom:10px;">
@@ -988,12 +992,12 @@ window.DpDispPanelDtl = {
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
               <div style="display:flex;align-items:center;gap:8px;">
                 <label style="font-size:12px;font-weight:600;color:#555;white-space:nowrap;">노출 순서</label>
-                <input class="form-control" type="number" v-model.number="cfActiveRow.sortOrder" min="1" :readonly="viewMode"
+                <input class="form-control" type="number" v-model.number="cfActiveRow.sortOrder" min="1" :readonly="cfDtlMode"
                   style="width:80px;margin:0;" />
               </div>
               <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#555;padding:5px 10px;background:#f0f0f0;border-radius:6px;cursor:pointer;">
                 <span>전시여부</span>
-                <input type="checkbox" v-model="cfActiveRow.dispYn" :true-value="'Y'" :false-value="'N'" :disabled="viewMode" style="accent-color:#e8587a;" />
+                <input type="checkbox" v-model="cfActiveRow.dispYn" :true-value="'Y'" :false-value="'N'" :disabled="cfDtlMode" style="accent-color:#e8587a;" />
                 <span>{{ cfActiveRow.dispYn === 'Y' ? '전시' : '숨김' }}</span>
               </label>
               <span style="font-size:10px;color:#aaa;">(배치로 자동 관리됨)</span>
@@ -1006,13 +1010,13 @@ window.DpDispPanelDtl = {
             <div style="display:grid;grid-template-columns:auto 1fr auto 1fr;align-items:center;gap:6px;margin-bottom:12px;background:#f9fafb;padding:10px 12px;border-radius:6px;border:1px solid #e5e7eb;">
               <span style="font-size:11px;color:#888;white-space:nowrap;">시작</span>
               <div style="display:flex;gap:6px;">
-                <input type="date" class="form-control" v-model="cfActiveRow.dispStartDate" style="flex:1;min-width:0;margin:0;" :readonly="viewMode" />
-                <input type="time" class="form-control" v-model="cfActiveRow.dispStartTime" style="width:100px;flex-shrink:0;margin:0;" :readonly="viewMode" />
+                <input type="date" class="form-control" v-model="cfActiveRow.dispStartDate" style="flex:1;min-width:0;margin:0;" :readonly="cfDtlMode" />
+                <input type="time" class="form-control" v-model="cfActiveRow.dispStartTime" style="width:100px;flex-shrink:0;margin:0;" :readonly="cfDtlMode" />
               </div>
               <span style="font-size:11px;color:#888;white-space:nowrap;padding:0 2px;">종료</span>
               <div style="display:flex;gap:6px;">
-                <input type="date" class="form-control" v-model="cfActiveRow.dispEndDate" style="flex:1;min-width:0;margin:0;" :readonly="viewMode" />
-                <input type="time" class="form-control" v-model="cfActiveRow.dispEndTime" style="width:100px;flex-shrink:0;margin:0;" :readonly="viewMode" />
+                <input type="date" class="form-control" v-model="cfActiveRow.dispEndDate" style="flex:1;min-width:0;margin:0;" :readonly="cfDtlMode" />
+                <input type="time" class="form-control" v-model="cfActiveRow.dispEndTime" style="width:100px;flex-shrink:0;margin:0;" :readonly="cfDtlMode" />
               </div>
             </div>
 
@@ -1026,10 +1030,10 @@ window.DpDispPanelDtl = {
                   background:hasDispEnv(opt.code)?'#f3e8ff':'#fafafa',
                   color:hasDispEnv(opt.code)?'#7c3aed':'#666',
                   fontSize:'12px',fontWeight:hasDispEnv(opt.code)?700:500,
-                  cursor: viewMode?'default':'pointer',opacity: viewMode?0.8:1,
+                  cursor: cfDtlMode?'default':'pointer',opacity: cfDtlMode?0.8:1,
                 }">
                 <input type="checkbox" :checked="hasDispEnv(opt.code)"
-                  :disabled="viewMode"
+                  :disabled="cfDtlMode"
                   @change="toggleDispEnv(opt.code)"
                   style="accent-color:#7c3aed;" />
                 {{ opt.label }}
@@ -1046,10 +1050,10 @@ window.DpDispPanelDtl = {
                   background:hasVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',
                   color:hasVisibility(opt.codeValue)?'#1565c0':'#666',
                   fontSize:'12px',fontWeight:hasVisibility(opt.codeValue)?700:500,
-                  cursor: viewMode?'default':'pointer',opacity: viewMode?0.8:1,
+                  cursor: cfDtlMode?'default':'pointer',opacity: cfDtlMode?0.8:1,
                 }">
                 <input type="checkbox" :checked="hasVisibility(opt.codeValue)"
-                  :disabled="viewMode"
+                  :disabled="cfDtlMode"
                   @change="toggleVisibility(opt.codeValue)"
                   style="accent-color:#1565c0;" />
                 {{ opt.codeLabel }}
@@ -1066,16 +1070,16 @@ window.DpDispPanelDtl = {
               <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
                 <span style="font-size:11px;font-weight:600;color:#888;">타이틀 표시</span>
                 <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
-                  <input type="radio" v-model="cfActiveRow.titleYn" value="Y" :disabled="viewMode" /> 표시
+                  <input type="radio" v-model="cfActiveRow.titleYn" value="Y" :disabled="cfDtlMode" /> 표시
                 </label>
                 <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
-                  <input type="radio" v-model="cfActiveRow.titleYn" value="N" :disabled="viewMode" /> 미표시
+                  <input type="radio" v-model="cfActiveRow.titleYn" value="N" :disabled="cfDtlMode" /> 미표시
                 </label>
               </span>
             </div>
             <div v-if="cfActiveRow.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
               <label style="font-size:12px;font-weight:600;color:#555;width:50px;flex-shrink:0;">타이틀</label>
-              <input v-model="cfActiveRow.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="viewMode"
+              <input v-model="cfActiveRow.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="cfDtlMode"
                 style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
             </div>
           </div><!-- -- /제목 영역 ----------------------------------------------------------- -->
@@ -1087,7 +1091,7 @@ window.DpDispPanelDtl = {
               내용
               <span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;flex-shrink:0;">
                 <span style="font-size:11px;font-weight:600;color:#888;white-space:nowrap;">위젯유형</span>
-                <select class="form-control" v-model="cfActiveRow.widgetType" :disabled="viewMode"
+                <select class="form-control" v-model="cfActiveRow.widgetType" :disabled="cfDtlMode"
                   style="margin:0;font-size:12px;padding:3px 8px;height:28px;border-radius:5px;min-width:160px;">
                   <option v-for="w in codes.disp_widget_types" :key="w?.codeValue" :value="w.codeValue">{{ w.codeLabel }}</option>
                 </select>
@@ -1096,7 +1100,7 @@ window.DpDispPanelDtl = {
 
             <!-- -- HTML 에디터 (Quill) ------------------------------------- -->
             <div v-if="cfIsHtmlEditor" style="margin-bottom:20px;">
-              <div v-if="viewMode"
+              <div v-if="cfDtlMode"
                 style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;">
                 <span v-if="cfActiveRow.htmlContent" v-html="cfActiveRow.htmlContent"></span>
                 <span v-else style="color:#bbb;">내용 없음</span>
@@ -1117,7 +1121,7 @@ window.DpDispPanelDtl = {
 
             <!-- -- 파일목록 ------------------------------------------------- -->
             <div v-else-if="cfIsFileList" style="margin-bottom:20px;">
-              <div v-if="viewMode">
+              <div v-if="cfDtlMode">
                 <div v-if="cfFileListItems.length===0" style="color:#bbb;padding:12px 0;font-size:13px;">첨부파일 없음</div>
                 <div v-for="(f, i) in cfFileListItems" :key="Math.random()"
                   style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #e8e8e8;border-radius:6px;margin-bottom:6px;background:#fafafa;">
@@ -1181,22 +1185,22 @@ window.DpDispPanelDtl = {
                 <tr v-for="row in cfDisplayRows" :key="row?.key">
                   <td style="font-weight:500;color:#555;vertical-align:middle;">{{ row.label }}</td>
                   <td style="padding:6px 8px;">
-                    <input v-if="row.type==='input'" class="form-control" v-model="cfActiveRow[row.key]" :placeholder="row.ph" style="margin:0;" :readonly="viewMode" />
-                    <input v-else-if="row.type==='number'" class="form-control" type="number" v-model.number="cfActiveRow[row.key]" style="margin:0;max-width:200px;" :readonly="viewMode" />
-                    <select v-else-if="row.type==='select'" class="form-control" v-model="cfActiveRow[row.key]" style="margin:0;max-width:200px;" :disabled="viewMode">
+                    <input v-if="row.type==='input'" class="form-control" v-model="cfActiveRow[row.key]" :placeholder="row.ph" style="margin:0;" :readonly="cfDtlMode" />
+                    <input v-else-if="row.type==='number'" class="form-control" type="number" v-model.number="cfActiveRow[row.key]" style="margin:0;max-width:200px;" :readonly="cfDtlMode" />
+                    <select v-else-if="row.type==='select'" class="form-control" v-model="cfActiveRow[row.key]" style="margin:0;max-width:200px;" :disabled="cfDtlMode">
                       <option v-for="o in row.options" :key="o?.v" :value="o.v">{{ o.l }}</option>
                     </select>
-                    <textarea v-else-if="row.type==='textarea'" class="form-control" v-model="cfActiveRow[row.key]" rows="3" style="margin:0;" :readonly="viewMode"></textarea>
-                    <textarea v-else-if="row.type==='code'" class="form-control" v-model="cfActiveRow[row.key]" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;" :readonly="viewMode"></textarea>
+                    <textarea v-else-if="row.type==='textarea'" class="form-control" v-model="cfActiveRow[row.key]" rows="3" style="margin:0;" :readonly="cfDtlMode"></textarea>
+                    <textarea v-else-if="row.type==='code'" class="form-control" v-model="cfActiveRow[row.key]" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;" :readonly="cfDtlMode"></textarea>
                     <div v-else-if="row.type==='color'" style="display:flex;gap:8px;align-items:center;">
-                      <input type="color" v-model="cfActiveRow[row.key]" style="width:40px;height:34px;border:1px solid #ddd;border-radius:4px;cursor:pointer;padding:2px;" :disabled="viewMode" />
-                      <input class="form-control" v-model="cfActiveRow[row.key]" style="margin:0;max-width:140px;" :readonly="viewMode" />
+                      <input type="color" v-model="cfActiveRow[row.key]" style="width:40px;height:34px;border:1px solid #ddd;border-radius:4px;cursor:pointer;padding:2px;" :disabled="cfDtlMode" />
+                      <input class="form-control" v-model="cfActiveRow[row.key]" style="margin:0;max-width:140px;" :readonly="cfDtlMode" />
                       <span style="display:inline-block;width:60px;height:28px;border-radius:4px;border:1px solid #e8e8e8;" :style="{background:cfActiveRow[row.key]}"></span>
                     </div>
-                    <textarea v-else-if="row.type==='code'" class="form-control" v-model="cfActiveRow[row.key]" rows="5" style="margin:0;font-family:monospace;font-size:12px;" :placeholder="row.ph" :readonly="viewMode"></textarea>
+                    <textarea v-else-if="row.type==='code'" class="form-control" v-model="cfActiveRow[row.key]" rows="5" style="margin:0;font-family:monospace;font-size:12px;" :placeholder="row.ph" :readonly="cfDtlMode"></textarea>
                     <div v-else-if="row.type==='event'">
                       <div style="display:flex;gap:8px;align-items:center;">
-                        <input class="form-control" v-model="cfActiveRow.eventId" placeholder="이벤트 ID" style="margin:0;max-width:160px;" :readonly="viewMode" />
+                        <input class="form-control" v-model="cfActiveRow.eventId" placeholder="이벤트 ID" style="margin:0;max-width:160px;" :readonly="cfDtlMode" />
                         <span v-if="cfActiveRow.eventId" class="ref-link" @click="showRefModal('event', Number(cfActiveRow.eventId))">보기</span>
                       </div>
                       <div v-if="cfRelatedEvent" style="margin-top:6px;padding:8px 12px;background:#e6f4ff;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px;">
@@ -1237,7 +1241,7 @@ window.DpDispPanelDtl = {
                 <tr>
                   <td style="font-weight:500;color:#555;vertical-align:middle;">클릭 시 동작</td>
                   <td style="padding:6px 8px;">
-                    <select class="form-control" v-model="cfActiveRow.clickAction" style="margin:0;max-width:220px;" :disabled="viewMode">
+                    <select class="form-control" v-model="cfActiveRow.clickAction" style="margin:0;max-width:220px;" :disabled="cfDtlMode">
                       <option v-for="o in codes.click_action_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
                     </select>
                   </td>
@@ -1245,7 +1249,7 @@ window.DpDispPanelDtl = {
                 <tr v-if="cfActiveRow.clickAction !== 'none'">
                   <td style="font-weight:500;color:#555;vertical-align:middle;">대상</td>
                   <td style="padding:6px 8px;">
-                    <input class="form-control" v-model="cfActiveRow.clickTarget" placeholder="/products, showCoupon, https://..." style="margin:0;" :readonly="viewMode" />
+                    <input class="form-control" v-model="cfActiveRow.clickTarget" placeholder="/products, showCoupon, https://..." style="margin:0;" :readonly="cfDtlMode" />
                     <div style="margin-top:6px;font-size:12px;color:#888;">
                       <span v-if="cfActiveRow.clickAction==='navigate'">💡 <code>/home</code>, <code>/products</code>, <code>/detail?pid=1</code> 형식</span>
                       <span v-if="cfActiveRow.clickAction==='event'">💡 <code>showCoupon</code>, <code>openEvent</code> 등 이벤트명</span>
@@ -1257,8 +1261,8 @@ window.DpDispPanelDtl = {
             </table>
           </div><!-- -- /내용 영역 ----------------------------------------------------------- -->
 
-          <div class="form-actions">
-            <template v-if="viewMode">
+          <div class="form-actions" v-if="!cfDtlMode">
+            <template v-if="cfDtlMode">
               <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
               <button class="btn btn-secondary" @click="navigate('dpDispPanelMng')">닫기</button>
             </template>
@@ -1384,18 +1388,18 @@ window.DpDispPanelDtl = {
           <div v-if="t.key === 'info'">
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label">패널코드 <span v-if="!viewMode" class="req">*</span></label>
-                <input class="form-control" v-model="form.dispCode" placeholder="DP_YYMMDD_HHMMSS" :readonly="viewMode" style="font-family:monospace;" />
+                <label class="form-label">패널코드 <span v-if="!cfDtlMode" class="req">*</span></label>
+                <input class="form-control" v-model="form.dispCode" placeholder="DP_YYMMDD_HHMMSS" :readonly="cfDtlMode" style="font-family:monospace;" />
               </div>
               <div class="form-group">
-                <label class="form-label">패널명 <span v-if="!viewMode" class="req">*</span></label>
-                <input class="form-control" v-model="form.name" placeholder="패널 이름" :readonly="viewMode" />
+                <label class="form-label">패널명 <span v-if="!cfDtlMode" class="req">*</span></label>
+                <input class="form-control" v-model="form.name" placeholder="패널 이름" :readonly="cfDtlMode" />
               </div>
               <div class="form-group">
                 <label class="form-label">표시경로 <span style="font-size:10px;color:#888;font-weight:400;margin-left:4px;">(예: FO.모바일메인)</span></label>
                 <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
                   <span style="flex:1;">{{ fnPathLabel(form.pathId) || '경로 선택...' }}</span>
-                  <button type="button" v-if="!viewMode" @click="openPathPick('form')" title="표시경로 선택"
+                  <button type="button" v-if="!cfDtlMode" @click="openPathPick('form')" title="표시경로 선택"
                     :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
                     @mouseover="$event.currentTarget.style.background='#eef2ff'"
                     @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
@@ -1416,7 +1420,7 @@ window.DpDispPanelDtl = {
             </div>
             <div class="form-group">
               <label class="form-label">상태</label>
-              <select class="form-control" style="max-width:200px;" v-model="form.status" :disabled="viewMode">
+              <select class="form-control" style="max-width:200px;" v-model="form.status" :disabled="cfDtlMode">
                 <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
               </select>
             </div>
@@ -1425,25 +1429,25 @@ window.DpDispPanelDtl = {
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
               <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀 표시</label>
               <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
-                <input type="radio" v-model="form.titleYn" value="Y" :disabled="viewMode" /> 표시
+                <input type="radio" v-model="form.titleYn" value="Y" :disabled="cfDtlMode" /> 표시
               </label>
               <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
-                <input type="radio" v-model="form.titleYn" value="N" :disabled="viewMode" /> 미표시
+                <input type="radio" v-model="form.titleYn" value="N" :disabled="cfDtlMode" /> 미표시
               </label>
             </div>
             <div v-if="form.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
               <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀</label>
-              <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="viewMode"
+              <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="cfDtlMode"
                 style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
             </div>
             <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">📝 HTML 설명</div>
-            <div v-if="viewMode" style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;margin-bottom:16px;">
+            <div v-if="cfDtlMode" style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;margin-bottom:16px;">
               <span v-if="form.htmlDesc" v-html="form.htmlDesc"></span>
               <span v-else style="color:#bbb;">내용 없음</span>
             </div>
             <div v-else ref="htmlDescEl" style="margin-bottom:16px;"></div>
-            <div class="form-actions">
-              <template v-if="viewMode">
+            <div class="form-actions" v-if="!cfDtlMode">
+              <template v-if="cfDtlMode">
                 <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
                 <button class="btn btn-secondary" @click="navigate('dpDispPanelMng')">닫기</button>
               </template>
@@ -1460,34 +1464,34 @@ window.DpDispPanelDtl = {
             <div class="form-row" style="margin-bottom:16px;">
               <div class="form-group">
                 <label class="form-label">위젯 유형</label>
-                <select class="form-control" v-model="r.widgetType" :disabled="viewMode">
+                <select class="form-control" v-model="r.widgetType" :disabled="cfDtlMode">
                   <option v-for="w in codes.disp_widget_types" :key="w?.codeValue" :value="w.codeValue">{{ w.codeLabel }}</option>
                 </select>
               </div>
               <div class="form-group">
                 <label class="form-label">노출 순서</label>
-                <input class="form-control" type="number" v-model.number="r.sortOrder" min="1" :readonly="viewMode" />
+                <input class="form-control" type="number" v-model.number="r.sortOrder" min="1" :readonly="cfDtlMode" />
               </div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
               <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀 표시</label>
               <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
-                <input type="radio" v-model="r.titleYn" value="Y" :disabled="viewMode" /> 표시
+                <input type="radio" v-model="r.titleYn" value="Y" :disabled="cfDtlMode" /> 표시
               </label>
               <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
-                <input type="radio" v-model="r.titleYn" value="N" :disabled="viewMode" /> 미표시
+                <input type="radio" v-model="r.titleYn" value="N" :disabled="cfDtlMode" /> 미표시
               </label>
             </div>
             <div v-if="r.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
               <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">타이틀</label>
-              <input v-model="r.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="viewMode"
+              <input v-model="r.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="cfDtlMode"
                 style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
             </div>
 
             <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">🎨 표현 설정</div>
             <!-- -- HTML 에디터: 펼치기 모드에서는 textarea로 표시 --------------------- -->
             <div v-if="fnRowIsHtmlEditor(r)" style="margin-bottom:20px;">
-              <div v-if="viewMode" style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;">
+              <div v-if="cfDtlMode" style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;">
                 <span v-if="r.htmlContent" v-html="r.htmlContent"></span>
                 <span v-else style="color:#bbb;">내용 없음</span>
               </div>
@@ -1495,7 +1499,7 @@ window.DpDispPanelDtl = {
             </div>
             <!-- -- 파일목록 ------------------------------------------------- -->
             <div v-else-if="fnRowIsFileList(r)" style="margin-bottom:20px;">
-              <div v-if="viewMode">
+              <div v-if="cfDtlMode">
                 <div v-if="fnGetFileListItems(r).length===0" style="color:#bbb;padding:12px 0;font-size:13px;">첨부파일 없음</div>
                 <div v-for="(f, fi) in fnGetFileListItems(r)" :key="fi" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #e8e8e8;border-radius:6px;margin-bottom:6px;background:#fafafa;">
                   <span>📎</span>
@@ -1527,22 +1531,22 @@ window.DpDispPanelDtl = {
                 <tr v-for="drow in fnGetDisplayRows(r)" :key="drow?.key">
                   <td style="font-weight:500;color:#555;vertical-align:middle;">{{ drow.label }}</td>
                   <td style="padding:6px 8px;">
-                    <input v-if="drow.type==='input'" class="form-control" v-model="r[drow.key]" :placeholder="drow.ph" style="margin:0;" :readonly="viewMode" />
-                    <input v-else-if="drow.type==='number'" class="form-control" type="number" v-model.number="r[drow.key]" style="margin:0;max-width:200px;" :readonly="viewMode" />
-                    <select v-else-if="drow.type==='select'" class="form-control" v-model="r[drow.key]" style="margin:0;max-width:200px;" :disabled="viewMode">
+                    <input v-if="drow.type==='input'" class="form-control" v-model="r[drow.key]" :placeholder="drow.ph" style="margin:0;" :readonly="cfDtlMode" />
+                    <input v-else-if="drow.type==='number'" class="form-control" type="number" v-model.number="r[drow.key]" style="margin:0;max-width:200px;" :readonly="cfDtlMode" />
+                    <select v-else-if="drow.type==='select'" class="form-control" v-model="r[drow.key]" style="margin:0;max-width:200px;" :disabled="cfDtlMode">
                       <option v-for="o in drow.options" :key="o?.v" :value="o.v">{{ o.l }}</option>
                     </select>
-                    <textarea v-else-if="drow.type==='textarea'" class="form-control" v-model="r[drow.key]" rows="3" style="margin:0;" :readonly="viewMode"></textarea>
-                    <textarea v-else-if="drow.type==='code'" class="form-control" v-model="r[drow.key]" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;" :readonly="viewMode"></textarea>
+                    <textarea v-else-if="drow.type==='textarea'" class="form-control" v-model="r[drow.key]" rows="3" style="margin:0;" :readonly="cfDtlMode"></textarea>
+                    <textarea v-else-if="drow.type==='code'" class="form-control" v-model="r[drow.key]" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;" :readonly="cfDtlMode"></textarea>
                     <div v-else-if="drow.type==='color'" style="display:flex;gap:8px;align-items:center;">
-                      <input type="color" v-model="r[drow.key]" style="width:40px;height:34px;border:1px solid #ddd;border-radius:4px;cursor:pointer;padding:2px;" :disabled="viewMode" />
-                      <input class="form-control" v-model="r[drow.key]" style="margin:0;max-width:140px;" :readonly="viewMode" />
+                      <input type="color" v-model="r[drow.key]" style="width:40px;height:34px;border:1px solid #ddd;border-radius:4px;cursor:pointer;padding:2px;" :disabled="cfDtlMode" />
+                      <input class="form-control" v-model="r[drow.key]" style="margin:0;max-width:140px;" :readonly="cfDtlMode" />
                       <span style="display:inline-block;width:60px;height:28px;border-radius:4px;border:1px solid #e8e8e8;" :style="{background:r[drow.key]}"></span>
                     </div>
-                    <textarea v-else-if="drow.type==='code'" class="form-control" v-model="r[drow.key]" rows="5" style="margin:0;font-family:monospace;font-size:12px;" :placeholder="drow.ph" :readonly="viewMode"></textarea>
+                    <textarea v-else-if="drow.type==='code'" class="form-control" v-model="r[drow.key]" rows="5" style="margin:0;font-family:monospace;font-size:12px;" :placeholder="drow.ph" :readonly="cfDtlMode"></textarea>
                     <div v-else-if="drow.type==='event'">
                       <div style="display:flex;gap:8px;align-items:center;">
-                        <input class="form-control" v-model="r.eventId" placeholder="이벤트 ID" style="margin:0;max-width:160px;" :readonly="viewMode" />
+                        <input class="form-control" v-model="r.eventId" placeholder="이벤트 ID" style="margin:0;max-width:160px;" :readonly="cfDtlMode" />
                         <span v-if="r.eventId" class="ref-link" @click="showRefModal('event', Number(r.eventId))">보기</span>
                       </div>
                       <div v-if="fnGetRelatedEvent(r)" style="margin-top:6px;padding:8px 12px;background:#e6f4ff;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px;">
@@ -1582,7 +1586,7 @@ window.DpDispPanelDtl = {
                 <tr>
                   <td style="font-weight:500;color:#555;vertical-align:middle;">클릭 시 동작</td>
                   <td style="padding:6px 8px;">
-                    <select class="form-control" v-model="r.clickAction" style="margin:0;max-width:220px;" :disabled="viewMode">
+                    <select class="form-control" v-model="r.clickAction" style="margin:0;max-width:220px;" :disabled="cfDtlMode">
                       <option v-for="o in codes.click_action_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
                     </select>
                   </td>
@@ -1590,7 +1594,7 @@ window.DpDispPanelDtl = {
                 <tr v-if="r.clickAction !== 'none'">
                   <td style="font-weight:500;color:#555;vertical-align:middle;">대상</td>
                   <td style="padding:6px 8px;">
-                    <input class="form-control" v-model="r.clickTarget" placeholder="/products, showCoupon, https://..." style="margin:0;" :readonly="viewMode" />
+                    <input class="form-control" v-model="r.clickTarget" placeholder="/products, showCoupon, https://..." style="margin:0;" :readonly="cfDtlMode" />
                     <div style="margin-top:6px;font-size:12px;color:#888;">
                       <span v-if="r.clickAction==='navigate'">💡 <code>/home</code>, <code>/products</code> 형식</span>
                       <span v-if="r.clickAction==='event'">💡 <code>showCoupon</code>, <code>openEvent</code> 등</span>
@@ -1600,8 +1604,8 @@ window.DpDispPanelDtl = {
                 </tr>
               </tbody>
             </table>
-            <div class="form-actions">
-              <template v-if="viewMode">
+            <div class="form-actions" v-if="!cfDtlMode">
+              <template v-if="cfDtlMode">
                 <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
                 <button class="btn btn-secondary" @click="navigate('dpDispPanelMng')">닫기</button>
               </template>

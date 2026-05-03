@@ -8,9 +8,9 @@ window.Prod03List = {
 
     const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
     const products             = window.foApp.products;
-    const selectProduct        = window.foApp.selectProduct;
-    const toggleLike           = window.foApp.toggleLike;
-    const isLiked              = window.foApp.isLiked;
+    const selectProduct        = (p) => window.foApp.selectProduct(p);
+    const toggleLike           = (id) => window.foApp.toggleLike(id);
+    const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
 
     const pager = reactive({ pageNo: 1, pageSize: 12, pageTotalCount: 0, pageTotalPage: 1, pageType: 'INFINITE_SCROLL', pageSizes: [12, 24, 48], pageCond: {} });
 

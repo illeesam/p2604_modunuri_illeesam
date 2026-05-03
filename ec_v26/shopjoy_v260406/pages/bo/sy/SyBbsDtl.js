@@ -3,8 +3,9 @@ window.SyBbsDtl = {
   name: 'SyBbsDtl',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    editId:      { type: String, default: null }, // 수정 대상 ID
-    viewMode:    { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlId:       { type: String, default: null }, // 수정 대상 ID
+    tabMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:     { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick, watch } = Vue;
@@ -31,7 +32,7 @@ window.SyBbsDtl = {
     // ── watch ────────────────────────────────────────────────────────────────
 
 
-    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
+    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
 
     /* ── 선택된 게시판 정보 ── */
@@ -86,7 +87,7 @@ window.SyBbsDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApiSvc.syBbs.getById(props.editId, '게시판관리', '상세조회');
+        const res = await boApiSvc.syBbs.getById(props.dtlId, '게시판관리', '상세조회');
         const data = res.data?.data;
         if (data) {
           Object.assign(form, data);
@@ -105,8 +106,8 @@ window.SyBbsDtl = {
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
       if (!cfIsNew.value) { await handleLoadDetail(); }
-      /* htmleditor 초기화는 selectedBbm 결정 후 — viewMode 일 때는 초기화 불필요 */
-      if (!props.viewMode && cfContentType.value === 'htmleditor') {
+      /* htmleditor 초기화는 selectedBbm 결정 후 — cfDtlMode 일 때는 초기화 불필요 */
+      if (!props.tabMode && cfContentType.value === 'htmleditor') {
         Vue.nextTick(() => { initQuill(); });
       }
     });
@@ -114,7 +115,7 @@ window.SyBbsDtl = {
     /* cfContentType 변화 감지 → Quill 초기화 */
 
     watch(cfContentType, (val) => {
-      if (!props.viewMode && val === 'htmleditor') {
+      if (!props.tabMode && val === 'htmleditor') {
         nextTick(() => { initQuill(); });
       } else {
         quill = null;
@@ -158,15 +159,19 @@ window.SyBbsDtl = {
     const selectedBbm = computed(() => uiState.selectedBbm);
     const showBbmDetail = Vue.toRef(uiState, 'showBbmDetail');
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, codes, cfIsNew, form, errors, selectedBbm, cfContentType, cfAllowAttach, cfAttachMaxCount,
-      showBbmModal, onBbmSelect, handleSave, cfSiteNm,
+    const dtlId = Vue.computed(() => props.dtlId);
+    return { uiState, codes, cfIsNew, dtlId, form, errors, selectedBbm, cfContentType, cfAllowAttach, cfAttachMaxCount,
+      showBbmModal, onBbmSelect, handleSave, cfSiteNm, cfDtlMode,
     };
   },
   template: /* html */`
 <div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '게시글 등록' : (viewMode ? '게시글 상세' : '게시글 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.bbsId }}</span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div class="page-title">{{ cfIsNew ? '게시글 등록' : (cfDtlMode ? '게시글 상세' : '게시글 수정') }}</div><span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.bbsId }}</span></div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
@@ -177,14 +182,14 @@ window.SyBbsDtl = {
 
     <!-- ── 게시판 선택 ─────────────────────────────────────────────────────── -->
     <div class="form-group">
-      <label class="form-label">게시판 <span v-if="!viewMode" class="req">*</span></label>
+      <label class="form-label">게시판 <span v-if="!cfDtlMode" class="req">*</span></label>
       <div style="display:flex;align-items:center;gap:8px;">
         <!-- ── 신규: 선택 버튼 ──────────────────────────────────────────────── -->
-        <template v-if="cfIsNew && !viewMode">
+        <template v-if="cfIsNew && !cfDtlMode">
           <button class="btn btn-secondary btn-sm" type="button" @click="showBbmModal=true">📋 게시판 선택</button>
           <button v-if="selectedBbm" class="btn btn-blue btn-sm" type="button" @click="showBbmDetail=true" title="게시판 상세보기">🔍</button>
         </template>
-        <!-- ── 수정 또는 viewMode: 변경 불가 ──────────────────────────────────── -->
+        <!-- ── 수정 또는 cfDtlMode: 변경 불가 ──────────────────────────────────── -->
         <template v-else>
           <button class="btn btn-secondary btn-sm" type="button" disabled style="opacity:.5;cursor:not-allowed;">📋 게시판 선택</button>
           <button v-if="selectedBbm" class="btn btn-blue btn-sm" type="button" @click="showBbmDetail=true" title="게시판 상세보기">🔍</button>
@@ -204,17 +209,17 @@ window.SyBbsDtl = {
     <!-- ── 기본 정보 ──────────────────────────────────────────────────────── -->
     <div class="form-row">
       <div class="form-group" style="flex:2">
-        <label class="form-label">제목 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.title" placeholder="게시글 제목" :readonly="viewMode" :class="errors.title ? 'is-invalid' : ''" />
+        <label class="form-label">제목 <span v-if="!cfDtlMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.title" placeholder="게시글 제목" :readonly="cfDtlMode" :class="errors.title ? 'is-invalid' : ''" />
         <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">작성자</label>
-        <input class="form-control" v-model="form.authorNm" placeholder="작성자명" :readonly="viewMode" />
+        <input class="form-control" v-model="form.authorNm" placeholder="작성자명" :readonly="cfDtlMode" />
       </div>
       <div class="form-group">
         <label class="form-label">상태</label>
-        <select class="form-control" v-model="form.statusCd" :disabled="viewMode">
+        <select class="form-control" v-model="form.statusCd" :disabled="cfDtlMode">
           <option v-for="c in codes.bbs_post_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
@@ -231,11 +236,11 @@ window.SyBbsDtl = {
     </div>
     <div v-else-if="cfContentType==='textarea'" class="form-group">
       <label class="form-label">내용</label>
-      <textarea class="form-control" v-model="form.contentHtml" rows="8" placeholder="게시글 내용을 입력하세요." :readonly="viewMode"></textarea>
+      <textarea class="form-control" v-model="form.contentHtml" rows="8" placeholder="게시글 내용을 입력하세요." :readonly="cfDtlMode"></textarea>
     </div>
     <div v-else-if="cfContentType==='htmleditor'" class="form-group">
       <label class="form-label">내용</label>
-      <div v-if="viewMode" class="form-control" style="min-height:300px;line-height:1.6;" v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
+      <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;" v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
       <div v-else id="bbs-editor" style="min-height:300px;background:#fff;"></div>
     </div>
 
@@ -248,7 +253,7 @@ window.SyBbsDtl = {
       </label>
       <base-attach-grp
         :model-value="form.attachGrpId"
-        @update:model-value="form.attachGrpId = $event" :ref-id="editId ? 'BBS-'+editId : ''"
+        @update:model-value="form.attachGrpId = $event" :ref-id="dtlId ? 'BBS-'+dtlId : ''"
         :show-toast="showToast"
         grp-code="BBS_ATTACH"
         grp-name="게시글 첨부파일"
@@ -262,8 +267,8 @@ window.SyBbsDtl = {
       <div style="color:#bbb;font-size:13px;padding:4px 0;">이 게시판은 첨부파일을 지원하지 않습니다.</div>
     </div>
 
-    <div class="form-actions">
-      <template v-if="viewMode">
+    <div class="form-actions" v-if="!cfDtlMode">
+      <template v-if="cfDtlMode">
         <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
         <button class="btn btn-secondary" @click="navigate('syBbsMng')">닫기</button>
       </template>

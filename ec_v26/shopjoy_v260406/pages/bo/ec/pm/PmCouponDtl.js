@@ -1,11 +1,12 @@
 /* ShopJoy Admin - 쿠폰관리 상세/등록 (다중탭: 기본정보/미리보기/상세정보/발급목록/사용목록) */
-window._pmCouponDtlState = window._pmCouponDtlState || { tab: 'info', viewMode: 'tab' };
+window._pmCouponDtlState = window._pmCouponDtlState || { tab: 'info', tabMode: 'tab' };
 window.PmCouponDtl = {
   name: 'PmCouponDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    editId:       { type: String, default: null }, // 수정 대상 ID
-    viewMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlId:        { type: String, default: null }, // 수정 대상 ID
+    tabMode:      { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
@@ -13,9 +14,9 @@ window.PmCouponDtl = {
     const showConfirm  = window.boApp.showConfirm;
     const showRefModal = window.boApp.showRefModal;
     const setApiRes    = window.boApp.setApiRes;
-    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCouponDtlState.tab || 'info', viewMode2: window._pmCouponDtlState.viewMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null, memoEl: null});
+    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCouponDtlState.tab || 'info', tabMode2: window._pmCouponDtlState.tabMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null, memoEl: null});
     const tab = Vue.toRef(uiState, 'tab');
-    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
+    const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({
       coupon_statuses_dtl: [],
       coupon_use_limit_opts: [{value:'unlimited',label:'무제한'},{value:'once',label:'1회만'},{value:'month',label:'월 1회'}],
@@ -32,7 +33,7 @@ window.PmCouponDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pmCoupon.getById(props.editId, '쿠폰관리', '상세조회');
+        const res = await boApiSvc.pmCoupon.getById(props.dtlId, '쿠폰관리', '상세조회');
         const c = res.data?.data || res.data;
         if (c) Object.assign(form, { ...c });
         if (!form.startDate) form.startDate = DEFAULT_START;
@@ -45,12 +46,12 @@ window.PmCouponDtl = {
         uiState.loading = false;
       }
     };
-    const cfIsNew = computed(() => !props.editId);
+    const cfIsNew = computed(() => !props.dtlId);
 
 watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
 
-        watch(() => uiState.viewMode2, v => { window._pmCouponDtlState.viewMode = v; });
-    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.tab === id;
+        watch(() => uiState.tabMode2, v => { window._pmCouponDtlState.tabMode = v; });
+    const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -229,7 +230,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
 
     // -- return ---------------------------------------------------------------
 
-    return { uiState, codes, cfIsNew, tab, form, errors, showTab, viewMode2, handleSave, memoEl, onTabChange,
+    return { uiState, codes, cfIsNew, tab, form, errors, showTab, tabMode2, handleSave, memoEl, onTabChange,
       cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer,
       cfSelectedVendorNm, selectVendor,
     };
@@ -239,25 +240,25 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
   <div class="page-title">{{ cfIsNew ? '쿠폰 등록' : '쿠폰 수정' }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.couponId }}</span></div>
   <div class="tab-bar-row">
     <div class="tab-nav">
-      <button class="tab-btn" :class="{active:tab==='info'}" :disabled="viewMode2!=='tab'" @click="onTabChange('info')">📋 기본정보</button>
-      <button class="tab-btn" :class="{active:tab==='detail'}" :disabled="viewMode2!=='tab'" @click="onTabChange('detail')">📋 상세정보</button>
-      <button class="tab-btn" :class="{active:tab==='issued'}" :disabled="viewMode2!=='tab'" @click="onTabChange('issued')">📊 발급목록</button>
-      <button class="tab-btn" :class="{active:tab==='used'}" :disabled="viewMode2!=='tab'" @click="onTabChange('used')">✅ 사용목록</button>
-      <button class="tab-btn" :class="{active:tab==='preview'}" :disabled="viewMode2!=='tab'" @click="onTabChange('preview')">👁 미리보기</button>
+      <button class="tab-btn" :class="{active:tab==='info'}" :disabled="tabMode2!=='tab'" @click="onTabChange('info')">📋 기본정보</button>
+      <button class="tab-btn" :class="{active:tab==='detail'}" :disabled="tabMode2!=='tab'" @click="onTabChange('detail')">📋 상세정보</button>
+      <button class="tab-btn" :class="{active:tab==='issued'}" :disabled="tabMode2!=='tab'" @click="onTabChange('issued')">📊 발급목록</button>
+      <button class="tab-btn" :class="{active:tab==='used'}" :disabled="tabMode2!=='tab'" @click="onTabChange('used')">✅ 사용목록</button>
+      <button class="tab-btn" :class="{active:tab==='preview'}" :disabled="tabMode2!=='tab'" @click="onTabChange('preview')">👁 미리보기</button>
     </div>
-    <div class="tab-view-modes">
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}" @click="viewMode2='tab'" title="탭">📑</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열">1▭</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열">2▭</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열">3▭</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열">4▭</button>
+    <div class="tab-modes">
+      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="tabMode2='tab'" title="탭">📑</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="tabMode2='1col'" title="1열">1▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="tabMode2='2col'" title="2열">2▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="tabMode2='3col'" title="3열">3▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열">4▭</button>
     </div>
   </div>
-  <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
+  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
     <!-- -- 기본정보 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">쿠폰 타입</label>
@@ -379,7 +380,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
 
     <!-- -- 미리보기 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('preview')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px;">
         <!-- -- 좌측 컬럼 ---------------------------------------------------- -->
         <div style="display:flex;flex-direction:column;gap:16px;">
@@ -485,7 +486,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
 
     <!-- -- 상세정보 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('detail')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
 
       <!-- -- 발급대상 ------------------------------------------------------- -->
       <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
@@ -567,7 +568,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
 
     <!-- -- 발급목록 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('issued')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📊 발급목록 <span class="tab-count">{{ cfIssuedList.length }}</span></div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📊 발급목록 <span class="tab-count">{{ cfIssuedList.length }}</span></div>
       <div v-if="cfIssuedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">발급된 쿠폰이 없습니다.</div>
       <table v-else class="bo-table" style="font-size:12px;">
         <thead><tr><th>쿠폰코드</th><th>발급대상</th><th>발급일시</th><th>유효기간</th><th>상태</th></tr></thead>
@@ -585,7 +586,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
 
     <!-- -- 사용목록 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('used')" style="margin:0;">
-      <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">✅ 사용목록 <span class="tab-count">{{ cfUsedList.length }}</span></div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">✅ 사용목록 <span class="tab-count">{{ cfUsedList.length }}</span></div>
       <div v-if="cfUsedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">사용된 쿠폰이 없습니다.</div>
       <table v-else class="bo-table" style="font-size:12px;">
         <thead><tr><th>쿠폰코드</th><th>사용자</th><th>주문ID</th><th>주문금액</th><th>할인액</th><th>사용일시</th></tr></thead>

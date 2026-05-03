@@ -3,7 +3,8 @@ window.SyCodeDtl = {
   name: 'SyCodeDtl',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    editId:      { type: String, default: null }, // 수정 대상 ID
+    dtlId:       { type: String, default: null }, // 수정 대상 ID
+    dtlMode:     { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
@@ -17,7 +18,7 @@ window.SyCodeDtl = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
 
 
-    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
+    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.getSiteNm());
     const form = reactive({
       codeId: null, codeGrp: '', codeLabel: '', codeValue: '', sortOrd: 1, useYn: 'Y', remark: '',
@@ -34,7 +35,7 @@ window.SyCodeDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApiSvc.syCode.getById(props.editId, '코드관리', '상세조회');
+        const res = await boApiSvc.syCode.getById(props.dtlId, '코드관리', '상세조회');
         const data = res.data?.data;
         if (data) Object.assign(form, data);
         uiState.error = null;
@@ -92,9 +93,12 @@ window.SyCodeDtl = {
       }
     };
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, pageCodes, cfIsNew, form, errors, handleSave, cfSiteNm };
+    return { uiState, pageCodes, cfIsNew, form, errors, handleSave, cfSiteNm, cfDtlMode };
   },
   template: /* html */`
 <div>
@@ -141,7 +145,7 @@ window.SyCodeDtl = {
         <input class="form-control" v-model="form.remark" />
       </div>
     </div>
-    <div class="form-actions">
+    <div class="form-actions" v-if="!cfDtlMode">
       <button class="btn btn-primary" @click="handleSave">저장</button>
       <button class="btn btn-secondary" @click="navigate('syCodeMng')">취소</button>
     </div>

@@ -215,17 +215,17 @@ Dtl 탭 뷰모드 중 **3열(`cols-3`) 또는 4열(`cols-4`)** 선택 시 max-wi
     <button class="tab-btn" :class="{active: tab==='info'}" @click="setTab('info')">기본정보</button>
     ...
   </div>
-  <div class="tab-view-modes">
-    <button class="tab-view-mode-btn" :class="{active: viewMode==='tab'}"  @click="setViewMode('tab')">📑</button>
-    <button class="tab-view-mode-btn" :class="{active: viewMode==='1col'}" @click="setViewMode('1col')">1▭</button>
-    <button class="tab-view-mode-btn" :class="{active: viewMode==='2col'}" @click="setViewMode('2col')">2▭</button>
-    <button class="tab-view-mode-btn" :class="{active: viewMode==='3col'}" @click="setViewMode('3col')">3▭</button>
-    <button class="tab-view-mode-btn" :class="{active: viewMode==='4col'}" @click="setViewMode('4col')">4▭</button>
+  <div class="tab-modes">
+    <button class="tab-mode-btn" :class="{active: tabMode==='tab'}"  @click="setViewMode('tab')">📑</button>
+    <button class="tab-mode-btn" :class="{active: tabMode==='1col'}" @click="setViewMode('1col')">1▭</button>
+    <button class="tab-mode-btn" :class="{active: tabMode==='2col'}" @click="setViewMode('2col')">2▭</button>
+    <button class="tab-mode-btn" :class="{active: tabMode==='3col'}" @click="setViewMode('3col')">3▭</button>
+    <button class="tab-mode-btn" :class="{active: tabMode==='4col'}" @click="setViewMode('4col')">4▭</button>
   </div>
 </div>
 
 <!-- 콘텐츠 영역 -->
-<div class="dtl-tab-grid" :class="viewModeClass">
+<div class="dtl-tab-grid" :class="tabModeClass">
   <div class="dtl-tab-card-title">기본정보</div>  <!-- 2/3/4열에서만 보임 -->
   ...
 </div>
@@ -233,7 +233,7 @@ Dtl 탭 뷰모드 중 **3열(`cols-3`) 또는 4열(`cols-4`)** 선택 시 max-wi
 
 뷰모드별 grid class:
 
-| 버튼 | viewMode | grid class |
+| 버튼 | tabMode | grid class |
 |---|---|---|
 | 📑 탭 | `tab` | 탭 패널 표시 (단일 컬럼) |
 | 1▭ | `1col` | `dtl-tab-grid cols-1` |
@@ -241,7 +241,7 @@ Dtl 탭 뷰모드 중 **3열(`cols-3`) 또는 4열(`cols-4`)** 선택 시 max-wi
 | 3▭ | `3col` | `dtl-tab-grid cols-3` + max-width 해제 |
 | 4▭ | `4col` | `dtl-tab-grid cols-4` + max-width 해제 |
 
-뷰모드 상태 영속화: `window._ec{X}DtlState.viewMode` (행 전환에도 유지)
+뷰모드 상태 영속화: `window._ec{X}DtlState.tabMode` (행 전환에도 유지)
 
 ---
 

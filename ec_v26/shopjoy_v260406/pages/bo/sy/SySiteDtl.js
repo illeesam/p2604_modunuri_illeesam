@@ -3,8 +3,9 @@ window.SySiteDtl = {
   name: 'SySiteDtl',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    editId:      { type: String, default: null }, // 수정 대상 ID
-    viewMode:    { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlId:       { type: String, default: null }, // 수정 대상 ID
+    tabMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:     { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
   },
   setup(props) {
     const { reactive, computed, watch, onMounted, ref } = Vue;
@@ -17,7 +18,7 @@ window.SySiteDtl = {
     const codes = reactive({ site_oper_statuses: [], site_types: ['이커머스','숙박공유','전문가연결','IT매칭','부동산','교육','중고거래','영화예매','음식배달','가격비교','시각화','홈페이지','기타'] });
 
 
-    const cfIsNew = computed(() => props.editId === null || props.editId === undefined);
+    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
 
     const form = reactive({
       siteId: null, siteCode: '', siteTypeCd: '홈페이지', siteNm: '', siteDomain: '',
@@ -39,7 +40,7 @@ window.SySiteDtl = {
       if (cfIsNew.value) return;
       uiState.loading = true;
       try {
-        const res = await boApiSvc.sySite.getById(props.editId, '사이트관리', '상세조회');
+        const res = await boApiSvc.sySite.getById(props.dtlId, '사이트관리', '상세조회');
         const data = res.data?.data;
         if (data) Object.assign(form, data);
         uiState.error = null;
@@ -117,66 +118,69 @@ window.SySiteDtl = {
       }
     };
 
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
     // ── return ───────────────────────────────────────────────────────────────
 
-    return { uiState, codes, cfIsNew, form, errors, handleSave, addrDetailRef, openKakaoPostcode };
+    return { uiState, codes, cfIsNew, form, errors, handleSave, addrDetailRef, openKakaoPostcode, cfDtlMode };
   },
   template: /* html */`
 <div>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-    <div class="page-title">{{ cfIsNew ? '사이트 등록' : (viewMode ? '사이트 상세' : '사이트 수정') }}</div>
+    <div class="page-title">{{ cfIsNew ? '사이트 등록' : (cfDtlMode ? '사이트 상세' : '사이트 수정') }}</div>
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;">#{{ form.siteId }}</span>
   </div>
   <div class="card">
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">사이트코드 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.siteCode" placeholder="ST0001" style="font-family:monospace;font-weight:600;" :readonly="viewMode" :class="errors.siteCode ? 'is-invalid' : ''" />
+        <label class="form-label">사이트코드 <span v-if="!cfDtlMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.siteCode" placeholder="ST0001" style="font-family:monospace;font-weight:600;" :readonly="cfDtlMode" :class="errors.siteCode ? 'is-invalid' : ''" />
         <span v-if="errors.siteCode" class="field-error">{{ errors.siteCode }}</span>
       </div>
       <div class="form-group">
         <label class="form-label">사이트유형</label>
-        <select class="form-control" v-model="form.siteTypeCd" :disabled="viewMode">
+        <select class="form-control" v-model="form.siteTypeCd" :disabled="cfDtlMode">
           <option v-for="t in codes.site_types" :key="t">{{ t }}</option>
         </select>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">사이트명 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.siteNm" placeholder="ShopJoy" :readonly="viewMode" :class="errors.siteNm ? 'is-invalid' : ''" />
+        <label class="form-label">사이트명 <span v-if="!cfDtlMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.siteNm" placeholder="ShopJoy" :readonly="cfDtlMode" :class="errors.siteNm ? 'is-invalid' : ''" />
         <span v-if="errors.siteNm" class="field-error">{{ errors.siteNm }}</span>
       </div>
       <div class="form-group">
-        <label class="form-label">도메인 <span v-if="!viewMode" class="req">*</span></label>
-        <input class="form-control" v-model="form.siteDomain" placeholder="shopjoy.com" :readonly="viewMode" :class="errors.siteDomain ? 'is-invalid' : ''" />
+        <label class="form-label">도메인 <span v-if="!cfDtlMode" class="req">*</span></label>
+        <input class="form-control" v-model="form.siteDomain" placeholder="shopjoy.com" :readonly="cfDtlMode" :class="errors.siteDomain ? 'is-invalid' : ''" />
         <span v-if="errors.siteDomain" class="field-error">{{ errors.siteDomain }}</span>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group" style="flex:1">
         <label class="form-label">사이트 설명</label>
-        <input class="form-control" v-model="form.siteDesc" placeholder="사이트 한줄 설명" :readonly="viewMode" />
+        <input class="form-control" v-model="form.siteDesc" placeholder="사이트 한줄 설명" :readonly="cfDtlMode" />
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">대표이메일</label>
-        <input class="form-control" v-model="form.siteEmail" placeholder="help@shopjoy.com" :readonly="viewMode" />
+        <input class="form-control" v-model="form.siteEmail" placeholder="help@shopjoy.com" :readonly="cfDtlMode" />
       </div>
       <div class="form-group">
         <label class="form-label">대표전화</label>
-        <input class="form-control" v-model="form.sitePhone" placeholder="02-1234-5678" :readonly="viewMode" />
+        <input class="form-control" v-model="form.sitePhone" placeholder="02-1234-5678" :readonly="cfDtlMode" />
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">대표자명</label>
-        <input class="form-control" v-model="form.siteCeo" :readonly="viewMode" />
+        <input class="form-control" v-model="form.siteCeo" :readonly="cfDtlMode" />
       </div>
       <div class="form-group">
         <label class="form-label">사업자등록번호</label>
-        <input class="form-control" v-model="form.siteBusinessNo" placeholder="000-00-00000" :readonly="viewMode" />
+        <input class="form-control" v-model="form.siteBusinessNo" placeholder="000-00-00000" :readonly="cfDtlMode" />
       </div>
     </div>
 
@@ -186,7 +190,7 @@ window.SySiteDtl = {
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
         <input class="form-control" v-model="form.siteZipCode" placeholder="우편번호"
           style="width:110px;flex-shrink:0;" readonly />
-        <button v-if="!viewMode" type="button" class="btn btn-blue btn-sm" @click="openKakaoPostcode"
+        <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="openKakaoPostcode"
           style="white-space:nowrap;">🔍 주소 검색</button>
       </div>
       <input class="form-control" v-model="form.siteAddress"
@@ -196,23 +200,23 @@ window.SySiteDtl = {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">로고 URL</label>
-        <input class="form-control" v-model="form.logoUrl" placeholder="/assets/img/logo.png" :readonly="viewMode" />
+        <input class="form-control" v-model="form.logoUrl" placeholder="/assets/img/logo.png" :readonly="cfDtlMode" />
       </div>
       <div class="form-group">
         <label class="form-label">파비콘 URL</label>
-        <input class="form-control" v-model="form.faviconUrl" placeholder="/favicon.ico" :readonly="viewMode" />
+        <input class="form-control" v-model="form.faviconUrl" placeholder="/favicon.ico" :readonly="cfDtlMode" />
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">운영상태</label>
-        <select class="form-control" v-model="form.siteStatusCd" :disabled="viewMode">
+        <select class="form-control" v-model="form.siteStatusCd" :disabled="cfDtlMode">
           <option v-for="c in codes.site_oper_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
       </div>
     </div>
-    <div class="form-actions">
-      <template v-if="viewMode">
+    <div class="form-actions" v-if="!cfDtlMode">
+      <template v-if="cfDtlMode">
         <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
         <button class="btn btn-secondary" @click="navigate('sySiteMng')">닫기</button>
       </template>

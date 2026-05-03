@@ -3,7 +3,7 @@ window.BlogView = {
   name: 'BlogView',
   props: {
     navigate: { type: Function, required: true },        // 페이지 이동
-    editId:   { type: String,   default: null },          // 대상 ID
+    dtlId:    { type: String,   default: null },          // 대상 ID
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
@@ -15,7 +15,7 @@ window.BlogView = {
 
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
-        const res = await foApiSvc.cmBltn.getById(props.editId, '블로그상세', '상세조회');
+        const res = await foApiSvc.cmBltn.getById(props.dtlId, '블로그상세', '상세조회');
         posts.splice(0, posts.length, ...(res.data?.data ? [res.data.data] : []));
       } catch (e) {
         console.error('[handleSearchData]', e);
@@ -33,7 +33,7 @@ window.BlogView = {
     const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
 
 
-    const cfPostId = computed(() => Number(props.editId) || 1);
+    const cfPostId = computed(() => Number(props.dtlId) || 1);
     const cfPost   = computed(() => {
       const found = posts.find(p => p.id === cfPostId.value);
       return found || (posts.length > 0 ? posts[0] : { id: 0, title: '', category: '', author: '', date: '', readTime: '', tags: [], viewCount: 0, img: '', imgMid: '', body: '', comments: [] });
@@ -226,7 +226,7 @@ window.BlogView = {
         <div style="display:flex;flex-direction:column;gap:14px;">
           <div v-for="lp in cfLatestPosts" :key="lp.id"
             style="display:flex;gap:12px;cursor:pointer;"
-            @click="navigate('blogView', { editId: lp.id })">
+            @click="navigate('blogView', { dtlId: lp.id })">
             <div style="width:64px;height:64px;border-radius:4px;overflow:hidden;flex-shrink:0;background:var(--bg-base);">
               <img v-if="lp.imgSm" :src="lp.imgSm" :alt="lp.title" style="width:100%;height:100%;object-fit:cover;" />
             </div>
@@ -274,7 +274,7 @@ window.BlogView = {
         style="cursor:pointer;transition:transform .25s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-4px)'"
         @mouseleave="$event.currentTarget.style.transform=''"
-        @click="navigate('blogView', { editId: rp.id })">
+        @click="navigate('blogView', { dtlId: rp.id })">
         <div style="aspect-ratio:4/3;overflow:hidden;border-radius:4px;margin-bottom:14px;background:var(--bg-base);">
           <img v-if="rp.img" :src="rp.img" :alt="rp.title"
             style="width:100%;height:100%;object-fit:cover;transition:transform .35s;"

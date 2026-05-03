@@ -21,8 +21,8 @@ const openMode = ref('view');
 // After
 const detailModal = reactive({
   show: false,
-  editId: null,
-  viewMode: 'view'
+  dtlId: null,
+  tabMode: 'view'
 });
 ```
 

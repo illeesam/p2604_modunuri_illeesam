@@ -80,20 +80,20 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
 
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    const detailModal = reactive({ show: false, isNew: false, editId: null, form: {} });
+    const detailModal = reactive({ show: false, isNew: false, dtlId: null, form: {} });
 
-    const cfSelectedRow = computed(() => blogs.find(p => p.blogId === detailModal.editId) || null);
+    const cfSelectedRow = computed(() => blogs.find(p => p.blogId === detailModal.dtlId) || null);
 
     const openDetail = (row) => {
-      if (detailModal.editId === row.blogId) { detailModal.show = false; detailModal.editId = null; return; }
+      if (detailModal.dtlId === row.blogId) { detailModal.show = false; detailModal.dtlId = null; return; }
       Object.assign(detailModal.form, { ...row });
-      detailModal.editId = row.blogId; detailModal.isNew = false; detailModal.show = true;
+      detailModal.dtlId = row.blogId; detailModal.isNew = false; detailModal.show = true;
     };
     const openNew = () => {
       Object.assign(detailModal.form, { blogId: null, siteId: 1, blogCateId: null, blogTitle: '', blogSummary: '', blogContent: '', blogAuthor: '', viewCount: 0, useYn: 'Y', isNotice: 'N' });
-      detailModal.editId = '__new__'; detailModal.isNew = true; detailModal.show = true;
+      detailModal.dtlId = '__new__'; detailModal.isNew = true; detailModal.show = true;
     };
-    const closeDetail = () => { detailModal.show = false; detailModal.editId = null; };
+    const closeDetail = () => { detailModal.show = false; detailModal.dtlId = null; };
 
     const handleSave = async () => {
       if (!detailModal.form.blogTitle) { showToast('제목은 필수입니다.', 'error'); return; }
@@ -104,7 +104,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
         detailModal.form.blogId = 'BL' + String(Date.now()).slice(-6);
         detailModal.form.regDate = new Date().toLocaleString('sv').replace('T', ' ');
         blogs.unshift({ ...detailModal.form });
-        detailModal.editId = detailModal.form.blogId; detailModal.isNew = false;
+        detailModal.dtlId = detailModal.form.blogId; detailModal.isNew = false;
       } else {
         const si = blogs.findIndex(p => p.blogId === detailModal.form.blogId);
         if (si !== -1) Object.assign(blogs[si], detailModal.form);
@@ -169,7 +169,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
     // -- return ---------------------------------------------------------------
 
     return {
-      selectedId: computed(() => detailModal.editId), blogs, uiState, codes,
+      selectedId: computed(() => detailModal.dtlId), blogs, uiState, codes,
       searchParam, pager, setPage,
       onSearch, onReset, cfSelectedRow, detailModal, openDetail, openNew, closeDetail,
       handleSave, handleDelete, toggleUse, fnYnBadge, onSizeChange, onSort, sortIcon,

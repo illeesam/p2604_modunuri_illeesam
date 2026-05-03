@@ -1,5 +1,5 @@
 /* ShopJoy Admin - 상품 이력 (연관주문 / 재고이력 / 가격변경이력 / 상품상태이력 / 상품정보변경이력) */
-window._ecProdHistState = window._ecProdHistState || { tab: 'orders', viewMode: 'tab' };
+window._ecProdHistState = window._ecProdHistState || { tab: 'orders', tabMode: 'tab' };
 window.PdProdHist = {
   name: 'PdProdHist',
   props: {
@@ -16,24 +16,24 @@ window.PdProdHist = {
       loading: false,
       isPageCodeLoad: false,
       botTab: window._ecProdHistState.tab || 'orders',
-      viewMode2: window._ecProdHistState.viewMode || 'tab',
+      tabMode2: window._ecProdHistState.tabMode || 'tab',
       loadedTabs: new Set()
     });
     const botTab   = Vue.toRef(uiState, 'botTab');
-    const viewMode2 = Vue.toRef(uiState, 'viewMode2');
+    const tabMode2 = Vue.toRef(uiState, 'tabMode2');
 
     watch(botTab, v => {
       window._ecProdHistState.tab = v;
       handleLoadTab(v);
     });
 
-    watch(() => uiState.viewMode2, v => { window._ecProdHistState.viewMode = v; });
+    watch(() => uiState.tabMode2, v => { window._ecProdHistState.tabMode = v; });
 
 
     const fnLoadCodes = () => { uiState.isPageCodeLoad = true; };
     const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
 
-    const showTab = (id) => uiState.viewMode2 !== 'tab' || uiState.botTab === id;
+    const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
 
     const relatedOrders = reactive([]);
     const stockHistory  = reactive([]);
@@ -84,7 +84,7 @@ window.PdProdHist = {
     onMounted(() => {
             if (isAppReady.value) fnLoadCodes();
 handleLoadTab(uiState.botTab);
-      if (uiState.viewMode2 !== 'tab') {
+      if (uiState.tabMode2 !== 'tab') {
         ['orders', 'stock', 'price', 'status', 'changes']
           .forEach(t => t !== uiState.botTab && handleLoadTab(t));
       }
@@ -98,20 +98,20 @@ handleLoadTab(uiState.botTab);
       statusHistory.splice(0);
       changeHistory.splice(0);
       handleLoadTab(uiState.botTab);
-      if (uiState.viewMode2 !== 'tab') {
+      if (uiState.tabMode2 !== 'tab') {
         ['orders', 'stock', 'price', 'status', 'changes']
           .forEach(t => t !== uiState.botTab && handleLoadTab(t));
       }
     });
 
-    watch(() => uiState.viewMode2, (v) => {
+    watch(() => uiState.tabMode2, (v) => {
       if (v !== 'tab') {
         ['orders', 'stock', 'price', 'status', 'changes'].forEach(t => handleLoadTab(t));
       }
     });
 
     return {
-      uiState, botTab, viewMode2,
+      uiState, botTab, tabMode2,
       relatedOrders, stockHistory, priceHistory, statusHistory, changeHistory,
       showTab, fnFmtDate, fnStockBadge
     };
@@ -124,25 +124,25 @@ handleLoadTab(uiState.botTab);
   </div>
   <div class="tab-bar-row">
     <div class="tab-nav">
-      <button class="tab-btn" :class="{active:botTab==='orders'}"  :disabled="viewMode2!=='tab'" @click="botTab='orders'">🛒 연관 주문 <span class="tab-count">{{ relatedOrders.length }}</span></button>
-      <button class="tab-btn" :class="{active:botTab==='stock'}"   :disabled="viewMode2!=='tab'" @click="botTab='stock'">📦 재고 이력 <span class="tab-count">{{ stockHistory.length }}</span></button>
-      <button class="tab-btn" :class="{active:botTab==='price'}"   :disabled="viewMode2!=='tab'" @click="botTab='price'">💰 가격변경이력 <span class="tab-count">{{ priceHistory.length }}</span></button>
-      <button class="tab-btn" :class="{active:botTab==='status'}"  :disabled="viewMode2!=='tab'" @click="botTab='status'">🏷 상품상태 이력 <span class="tab-count">{{ statusHistory.length }}</span></button>
-      <button class="tab-btn" :class="{active:botTab==='changes'}" :disabled="viewMode2!=='tab'" @click="botTab='changes'">📝 상품정보 변경이력 <span class="tab-count">{{ changeHistory.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='orders'}"  :disabled="tabMode2!=='tab'" @click="botTab='orders'">🛒 연관 주문 <span class="tab-count">{{ relatedOrders.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='stock'}"   :disabled="tabMode2!=='tab'" @click="botTab='stock'">📦 재고 이력 <span class="tab-count">{{ stockHistory.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='price'}"   :disabled="tabMode2!=='tab'" @click="botTab='price'">💰 가격변경이력 <span class="tab-count">{{ priceHistory.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='status'}"  :disabled="tabMode2!=='tab'" @click="botTab='status'">🏷 상품상태 이력 <span class="tab-count">{{ statusHistory.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='changes'}" :disabled="tabMode2!=='tab'" @click="botTab='changes'">📝 상품정보 변경이력 <span class="tab-count">{{ changeHistory.length }}</span></button>
     </div>
-    <div class="tab-view-modes">
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='tab'}"  @click="viewMode2='tab'"  title="탭으로 보기">📑</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='1col'}" @click="viewMode2='1col'" title="1열로 보기">1▭</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='2col'}" @click="viewMode2='2col'" title="2열로 보기">2▭</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='3col'}" @click="viewMode2='3col'" title="3열로 보기">3▭</button>
-      <button class="tab-view-mode-btn" :class="{active:viewMode2==='4col'}" @click="viewMode2='4col'" title="4열로 보기">4▭</button>
+    <div class="tab-modes">
+      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}"  @click="tabMode2='tab'"  title="탭으로 보기">📑</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="tabMode2='1col'" title="1열로 보기">1▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="tabMode2='2col'" title="2열로 보기">2▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="tabMode2='3col'" title="3열로 보기">3▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열로 보기">4▭</button>
     </div>
   </div>
-  <div :class="viewMode2!=='tab' ? 'dtl-tab-grid cols-'+viewMode2.charAt(0) : ''">
+  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
 
   <!-- -- 연관 주문 ---------------------------------------------------------- -->
   <div class="card" v-show="showTab('orders')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ relatedOrders.length }}</span></div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ relatedOrders.length }}</span></div>
     <table class="bo-table" v-if="relatedOrders.length">
       <thead><tr><th>주문ID</th><th>회원</th><th>주문일</th><th>금액</th><th>수량</th><th>상태</th><th>관리</th></tr></thead>
       <tbody>
@@ -162,7 +162,7 @@ handleLoadTab(uiState.botTab);
 
   <!-- -- 재고 이력 ---------------------------------------------------------- -->
   <div class="card" v-show="showTab('stock')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📦 재고 이력 <span class="tab-count">{{ stockHistory.length }}</span></div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📦 재고 이력 <span class="tab-count">{{ stockHistory.length }}</span></div>
     <table class="bo-table" v-if="stockHistory.length">
       <thead><tr><th>일시</th><th>유형</th><th>수량</th><th>처리 후 재고</th><th>처리자</th><th>메모</th></tr></thead>
       <tbody>
@@ -183,7 +183,7 @@ handleLoadTab(uiState.botTab);
 
   <!-- -- 가격변경이력 --------------------------------------------------------- -->
   <div class="card" v-show="showTab('price')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">💰 가격변경이력 <span class="tab-count">{{ priceHistory.length }}</span></div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💰 가격변경이력 <span class="tab-count">{{ priceHistory.length }}</span></div>
     <table class="bo-table" v-if="priceHistory.length">
       <thead><tr><th>일시</th><th>항목(변경사유)</th><th>변경 전</th><th>변경 후</th><th>처리자</th></tr></thead>
       <tbody>
@@ -201,7 +201,7 @@ handleLoadTab(uiState.botTab);
 
   <!-- -- 상품상태 이력 -------------------------------------------------------- -->
   <div class="card" v-show="showTab('status')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">🏷 상품상태 이력 <span class="tab-count">{{ statusHistory.length }}</span></div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🏷 상품상태 이력 <span class="tab-count">{{ statusHistory.length }}</span></div>
     <table class="bo-table" v-if="statusHistory.length">
       <thead><tr><th>일시</th><th>변경 전</th><th>변경 후</th><th>처리자</th></tr></thead>
       <tbody>
@@ -218,7 +218,7 @@ handleLoadTab(uiState.botTab);
 
   <!-- -- 상품정보 변경이력 ------------------------------------------------------ -->
   <div class="card" v-show="showTab('changes')" style="margin:0;">
-    <div v-if="viewMode2!=='tab'" class="dtl-tab-card-title">📝 상품정보 변경이력 <span class="tab-count">{{ changeHistory.length }}</span></div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 상품정보 변경이력 <span class="tab-count">{{ changeHistory.length }}</span></div>
     <table class="bo-table" v-if="changeHistory.length">
       <thead><tr><th>일시</th><th>항목</th><th>변경 전</th><th>변경 후</th><th>처리자</th></tr></thead>
       <tbody>
