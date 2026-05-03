@@ -179,6 +179,13 @@
     },
   };
 
+  /* ── mb: 회원 목록 (로그인 전 회원 선택 모달 등) ─────────── */
+  coApiSvc.mbMember = {
+    getPage(params, uiNm, cmdNm) {
+      return client().get('/co/ec/mb/member/page', { params, ...hdr(uiNm, cmdNm) });
+    },
+  };
+
   /* ── sy: 사용자 목록 (로그인 전 사용자 선택 모달 등) ─────── */
   coApiSvc.syUser = {
     getPage(params, uiNm, cmdNm) {

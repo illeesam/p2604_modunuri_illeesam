@@ -29,7 +29,7 @@ window.Login = {
 
     /* -- 로그인 -- */
     const form     = reactive({ email: 'user1@demo.com', password: 'demo1234' });
-    
+
     const doLogin = async () => {
       uiState.loginErr = '';
       if (!form.email || !form.password) { uiState.loginErr = '이메일과 비밀번호를 입력하세요.'; return; }
@@ -50,6 +50,38 @@ window.Login = {
 
         emit('close');
       } else { uiState.loginErr = r.msg; }
+    };
+
+    /* -- 회원선택 모달 (개발용) -- */
+    const memberPick = reactive({ show: false, kw: '', loading: false, rows: [], total: 0, pageNo: 1, totalPage: 1 });
+    const PICK_SIZE = 5;
+
+    const _loadMemberPick = async () => {
+      memberPick.loading = true;
+      try {
+        const res = await coApiSvc.mbMember.getPage(
+          { kw: memberPick.kw, pageNo: memberPick.pageNo, pageSize: PICK_SIZE },
+          '로그인', '회원선택',
+        );
+        const d = res.data?.data || {};
+        memberPick.rows = d.list || [];
+        memberPick.total = d.totalCount || 0;
+        memberPick.totalPage = Math.max(1, Math.ceil(memberPick.total / PICK_SIZE));
+      } catch (e) {
+        memberPick.rows = [];
+      } finally {
+        memberPick.loading = false;
+      }
+    };
+
+    const onOpenMemberPick = () => { memberPick.show = true; memberPick.kw = ''; memberPick.pageNo = 1; _loadMemberPick(); };
+    const onMemberPickSearch = () => { memberPick.pageNo = 1; _loadMemberPick(); };
+    const onMemberPickPage = (p) => { memberPick.pageNo = p; _loadMemberPick(); };
+    const onPickMember = async (m) => {
+      memberPick.show = false;
+      form.email = m.loginId || m.memberEmail || '';
+      form.password = '1111';
+      await doLogin();
     };
 
     /* 소셜 로그인 (기존 회원) vs 소셜 회원가입 분기 */
@@ -200,6 +232,7 @@ window.Login = {
       sendSnsPhoneCode, verifySnsPhone, doSnsSignup, snsSf, openKakaoAddrSns,
       providerLabel, providerColor, providerTextColor, IS, codes,
       foAuth: window.foAuth,
+      memberPick, onOpenMemberPick, onMemberPickSearch, onMemberPickPage, onPickMember,
     };
   },
   template: /* html */ `
@@ -263,7 +296,60 @@ window.Login = {
           </button>
         </div>
       </div>
+
+      <!-- 회원선택 바로 로그인 (개발용) -->
+      <div style="text-align:center;margin-top:18px;">
+        <button @click="onOpenMemberPick"
+          style="background:none;border:none;cursor:pointer;font-size:0.72rem;color:var(--text-muted);text-decoration:underline;padding:0;">
+          회원 선택하여 로그인 (개발)
+        </button>
+      </div>
     </template>
+
+    <!-- ════ 회원선택 모달 ════ -->
+    <div v-if="memberPick.show" class="modal-overlay" @click.self="memberPick.show=false" style="z-index:300;">
+      <div class="modal-box" style="max-width:420px;width:92%;padding:20px 18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">회원 선택</div>
+          <button @click="memberPick.show=false" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--text-muted);">✕</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <input v-model="memberPick.kw" type="text" placeholder="이름 또는 이메일 검색"
+            @keyup.enter="onMemberPickSearch"
+            style="flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.85rem;outline:none;">
+          <button @click="onMemberPickSearch"
+            style="padding:8px 14px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:700;">
+            조회
+          </button>
+        </div>
+        <div v-if="memberPick.loading" style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.85rem;">조회 중...</div>
+        <div v-else-if="!memberPick.rows.length" style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.85rem;">조회 결과 없음</div>
+        <div v-else style="display:flex;flex-direction:column;gap:6px;">
+          <div v-for="m in memberPick.rows" :key="m.memberId"
+            @click="onPickMember(m)"
+            style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:background 0.15s;"
+            onmouseover="this.style.background='var(--blue-dim)'" onmouseout="this.style.background=''">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.82rem;font-weight:700;flex-shrink:0;">
+              {{ (m.memberNm||'?').charAt(0) }}
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">{{ m.memberNm }}</div>
+              <div style="font-size:0.76rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ m.loginId || m.memberEmail }}</div>
+            </div>
+            <div style="font-size:0.72rem;color:var(--text-muted);">선택</div>
+          </div>
+        </div>
+        <!-- 페이지네이션 -->
+        <div v-if="memberPick.totalPage > 1" style="display:flex;justify-content:center;gap:4px;margin-top:12px;">
+          <button v-for="p in memberPick.totalPage" :key="p" @click="onMemberPickPage(p)"
+            style="width:28px;height:28px;border-radius:6px;border:1.5px solid var(--border);cursor:pointer;font-size:0.78rem;font-weight:700;"
+            :style="p===memberPick.pageNo ? 'background:var(--accent);color:#fff;border-color:var(--accent);' : 'background:var(--bg-card);color:var(--text-secondary);'">
+            {{ p }}
+          </button>
+        </div>
+        <div style="text-align:center;margin-top:10px;font-size:0.72rem;color:var(--text-muted);">선택 시 마스터 패스워드(1111)로 자동 로그인</div>
+      </div>
+    </div>
 
     <!-- -- ════ 약관 ════ ------------------------------------------------- -->
     <template v-else-if="uiState.step==='terms'">

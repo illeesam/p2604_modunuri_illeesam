@@ -1,8 +1,6 @@
 package com.shopjoy.ecadminapi.co.cm.controller;
 
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -27,13 +25,6 @@ import java.nio.file.Paths;
 public class CmDownloadController {
 
     /// 파일 다운로드 (경로 기반)
-    @Operation(summary = "파일 다운로드 (경로 기반)",
-               description = "저장된 파일 경로를 통해 파일을 다운로드합니다. 이미지, 문서, 동영상 등 모든 파일 지원. 한글 파일명 자동 인코딩.")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "파일 다운로드 성공"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 파일 경로 또는 파일 없음"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
-    })
     @GetMapping("/{filePath}")
     public ResponseEntity<?> download(@PathVariable("filePath") String filePath) {
 
@@ -76,15 +67,6 @@ public class CmDownloadController {
     }
 
     /// 파일 다운로드 (UUID 기반, 보안 강화)
-    @Operation(summary = "파일 다운로드 (UUID 기반, 보안)",
-               description = "파일 ID를 통해 안전하게 파일을 다운로드합니다. DB 연동으로 사용자 접근 권한 검증. (구현 필요)")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "파일 다운로드 성공"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 필요"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "접근 권한 없음"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "파일 정보 없음"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
-    })
     @GetMapping("/secure/{fileId}")
     public ResponseEntity<?> downloadSecure(@PathVariable("fileId") String fileId) {
 

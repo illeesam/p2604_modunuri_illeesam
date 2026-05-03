@@ -1,8 +1,6 @@
 package com.shopjoy.ecadminapi.co.cm.controller;
 
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -25,15 +23,6 @@ import java.nio.file.Paths;
 public class CmImageViewController {
 
     /// 이미지 원본 조회 (인라인 표시)
-    @Operation(summary = "이미지 원본 조회",
-               description = "저장된 이미지 파일을 브라우저에서 직접 표시합니다. 썸네일 없이 원본 이미지를 반환.")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "이미지 조회 성공"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "304", description = "이미지 변경 없음 (캐시)"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 경로 또는 이미지 아님"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "이미지 파일 없음"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
-    })
     @GetMapping("/view/{imageUrl:.+}")
     public ResponseEntity<?> viewImage(@PathVariable("imageUrl") String imageUrl) {
 
@@ -82,15 +71,6 @@ public class CmImageViewController {
     }
 
     /// 이미지 썸네일 조회 (인라인 표시)
-    @Operation(summary = "이미지 썸네일 조회",
-               description = "저장된 썸네일 파일을 브라우저에서 직접 표시합니다. 목록 조회 시 빠른 로딩을 위해 사용.")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "썸네일 조회 성공"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "304", description = "썸네일 변경 없음 (캐시)"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 경로 또는 이미지 아님"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "썸네일 파일 없음"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
-    })
     @GetMapping("/thumb/{thumbUrl:.+}")
     public ResponseEntity<?> viewThumbnail(@PathVariable("thumbUrl") String thumbUrl) {
 

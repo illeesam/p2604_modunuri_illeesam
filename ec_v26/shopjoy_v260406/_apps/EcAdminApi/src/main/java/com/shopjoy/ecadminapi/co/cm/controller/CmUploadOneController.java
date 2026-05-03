@@ -5,8 +5,6 @@ import com.shopjoy.ecadminapi.base.sy.service.SyAttachService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.util.FileUploadUtil;
 import com.shopjoy.ecadminapi.common.util.VideoConvertUtil;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnailator;
@@ -36,12 +34,6 @@ public class CmUploadOneController {
     private final VideoConvertUtil videoConvertUtil;
 
     /// 단일 파일 업로드 (확장자/용량 검증, 썸네일 옵션, DB 저장)
-    @Operation(summary = "단일 파일 업로드", description = "이미지, 문서, 동영상 등 단일 파일을 업로드합니다. 동영상은 자동으로 H.264 MP4로 변환되고 썸네일이 생성됩니다.")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "파일 업로드 성공"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "파일 검증 실패 (확장자/용량/실행파일)"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
-    })
     @PostMapping("/one")
     public ResponseEntity<ApiResponse<Map<String, Object>>> uploadOne(
             @RequestParam("file") MultipartFile file,

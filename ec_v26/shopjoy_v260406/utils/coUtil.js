@@ -262,6 +262,17 @@
     return Promise.reject(new Error(msg));
   }
 
+  /**
+   * 비밀번호 SHA256 해시 (SubtleCrypto 사용 — 외부 라이브러리 불필요)
+   * @param {string} plain 평문 비밀번호
+   * @returns {Promise<string>} 소문자 hex 문자열 (64자)
+   */
+  async function sha256(plain) {
+    if (window.CryptoJS) return CryptoJS.SHA256(plain).toString();
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(plain));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
   // 공개 API: window.coUtil 에 등록
   global.coUtil = global.coUtil || {};
   global.coUtil.apiHdr = global.coUtil.apiHdr || apiHdr;
@@ -270,4 +281,5 @@
   global.coUtil.apiInfo = global.coUtil.apiInfo || apiInfo;
   global.coUtil.chkId = global.coUtil.chkId || chkId;
   global.coUtil.chkRowIds = global.coUtil.chkRowIds || chkRowIds;
+  global.coUtil.sha256 = global.coUtil.sha256 || sha256;
 })(typeof window !== 'undefined' ? window : this);

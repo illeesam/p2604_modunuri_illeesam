@@ -1,8 +1,6 @@
 package com.shopjoy.ecadminapi.co.cm.controller;
 
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -22,13 +20,6 @@ import java.io.InputStream;
 public class CmVideoPlayController {
 
     /// 동영상 스트리밍 재생 (Range 요청 지원)
-    @Operation(summary = "동영상 스트리밍 재생", description = "HTTP Range 요청을 지원하는 동영상 스트리밍 엔드포인트. 일시정지, 재개, 스크롤이 가능합니다.")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "전체 동영상 재생"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "206", description = "부분 범위 동영상 재생"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "동영상 파일을 찾을 수 없음"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
-    })
     @GetMapping("/play/{videoPath:.+}")
     public ResponseEntity<?> playVideo(
             @PathVariable("videoPath") String videoPath,
@@ -119,12 +110,6 @@ public class CmVideoPlayController {
     }
 
     /// 동영상 정보 조회 (메타데이터)
-    @Operation(summary = "동영상 정보 조회", description = "동영상 파일의 메타데이터(파일명, 크기, MIME 타입)를 조회합니다.")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "동영상 정보 조회 성공"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "동영상 파일을 찾을 수 없음"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
-    })
     @GetMapping("/info/{videoPath:.+}")
     public ResponseEntity<?> getVideoInfo(@PathVariable("videoPath") String videoPath) {
         try {

@@ -1105,8 +1105,8 @@
   if (pwForm.next.length < 6) { pwError.value = '새 비밀번호는 6자 이상이어야 합니다.'; return; }
   if (pwForm.next !== pwForm.confirm) { pwError.value = '새 비밀번호가 일치하지 않습니다.'; return; }
   try {
-  const currentPwdHash = window.CryptoJS ? CryptoJS.SHA256(pwForm.current).toString() : pwForm.current;
-  const newPwdHash  = window.CryptoJS ? CryptoJS.SHA256(pwForm.next).toString()  : pwForm.next;
+  const currentPwdHash = await coUtil.sha256(pwForm.current);
+  const newPwdHash  = await coUtil.sha256(pwForm.next);
   await coApiSvc.boAuth.changePassword(
   { currentPassword: currentPwdHash, newPassword: newPwdHash },
   '비밀번호변경', '변경',

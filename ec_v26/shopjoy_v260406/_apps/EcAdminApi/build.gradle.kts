@@ -59,7 +59,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
     // Swagger/OpenAPI
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0")
+    // implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0")
 
     // DevTools (핫 리로드)
     developmentOnly("org.springframework.boot:spring-boot-devtools")

@@ -93,7 +93,7 @@
   const login = async (loginId, loginPwd) => {
     state.loading = true;
     try {
-      const loginPwdHash = window.CryptoJS ? CryptoJS.SHA256(loginPwd).toString() : loginPwd;
+      const loginPwdHash = await coUtil.sha256(loginPwd);
       const res = await coApiSvc.foAuth.login({ loginId, loginPwd: loginPwdHash }, '로그인', '이메일로그인');
       console.log('[foAuth.login] full response:', res);
       console.log('[foAuth.login] response.data:', res.data);
@@ -158,7 +158,7 @@
   const signup = async (memberNm, loginId, phone, extra = {}) => {
     state.loading = true;
     try {
-      const passwordHash = window.CryptoJS ? CryptoJS.SHA256(extra.password || '').toString() : extra.password;
+      const passwordHash = await coUtil.sha256(extra.password || '');
       const body = { memberNm, loginId, loginPwdHash: passwordHash, ...extra };
       const res = await coApiSvc.foAuth.join(body, '회원가입', '가입');
       console.log('[foAuth.signup] response:', res.data);

@@ -10,8 +10,6 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.util.FileUploadUtil;
 import com.shopjoy.ecadminapi.common.util.VideoConvertUtil;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,12 +49,6 @@ public class CmUploadMultiController {
     private String cdnHost;
 
     /// 다중 파일 업로드 (확장자/용량 검증, 썸네일 옵션, DB 저장)
-    @Operation(summary = "다중 파일 업로드", description = "최대 10개의 파일을 한 번에 업로드합니다. 동영상은 자동으로 변환되고 썸네일이 생성됩니다.")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "파일 업로드 성공"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "파일 검증 실패 또는 최대 개수 초과"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
-    })
     @PostMapping("/multi")
     public ResponseEntity<ApiResponse<Map<String, Object>>> uploadMulti(
             @RequestParam("files") MultipartFile[] files,
@@ -262,7 +254,6 @@ public class CmUploadMultiController {
     }
 
     /// 첨부 그룹 ID로 파일 목록 조회
-    @Operation(summary = "첨부 그룹 파일 목록 조회", description = "attachGrpId에 속한 파일 목록을 sort_ord ASC 순으로 반환합니다.")
     @GetMapping("/attach-grp/{attachGrpId}/files")
     public ResponseEntity<ApiResponse<List<SyAttachDto>>> getAttachGrpFiles(
             @PathVariable("attachGrpId") String attachGrpId) {
@@ -277,7 +268,6 @@ public class CmUploadMultiController {
     }
 
     /// 첨부 파일 단건 삭제 (DB + 실제 파일)
-    @Operation(summary = "첨부 파일 삭제", description = "attachId로 DB 레코드 및 실제 저장 파일을 삭제합니다.")
     @DeleteMapping("/attach/{attachId}")
     public ResponseEntity<ApiResponse<Void>> deleteAttach(
             @PathVariable("attachId") String attachId) {
@@ -298,7 +288,6 @@ public class CmUploadMultiController {
     }
 
     /// 첨부 파일 정렬 순서 변경
-    @Operation(summary = "첨부 파일 순서 변경", description = "attachId의 sort_ord를 변경합니다.")
     @org.springframework.web.bind.annotation.PatchMapping("/attach/{attachId}/sort")
     public ResponseEntity<ApiResponse<Void>> updateAttachSort(
             @PathVariable("attachId") String attachId,
