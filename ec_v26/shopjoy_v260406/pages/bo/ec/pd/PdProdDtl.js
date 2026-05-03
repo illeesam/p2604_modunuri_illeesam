@@ -4,16 +4,16 @@ window.PdProdDtl = {
   name: 'PdProdDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
     editId:       { type: String, default: null }, // 수정 대상 ID
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
     viewMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     // window 접근 불가한 템플릿용 + setup 내부 공용 헬퍼
     const { safeFirst, safeGet, safeFind, safeFilter } = window.safeArrayUtils;
     const products = reactive([]);
@@ -256,8 +256,8 @@ window.PdProdDtl = {
     };
 
     const addOptGroup = () => {
-      if (!uiState.prodOptCategoryTypeCd) { props.showToast('옵션 카테고리를 먼저 선택해주세요.', 'error'); return; }
-      if (optGroups.length >= 2) { props.showToast('옵션은 최대 2단까지 가능합니다.', 'error'); return; }
+      if (!uiState.prodOptCategoryTypeCd) { showToast('옵션 카테고리를 먼저 선택해주세요.', 'error'); return; }
+      if (optGroups.length >= 2) { showToast('옵션은 최대 2단까지 가능합니다.', 'error'); return; }
       const defaults = OPT_CATEGORY_MAP[uiState.prodOptCategoryTypeCd] || [];
       const d = defaults[optGroups.length] || { typeCd: 'CUSTOM', grpNm: '옵션' };
       optGroups.push({ _id: _optSeq++, grpNm: d.grpNm, typeCd: d.typeCd, inputTypeCd: 'SELECT', level: optGroups.length + 1, items: [] });
@@ -654,24 +654,24 @@ window.PdProdDtl = {
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try { await schema.validate(form, { abortEarly: false }); }
-      catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
+      catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const imgData = images.map(({ id, ...rest }) => rest);
       const mainImg = safeFind(images, img => img.isMain);
-      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
         const payload = { ...form, contentBlocks: contentBlocks, optGroups: optGroups, skus: skus, relProds: relProds, codeProds: codeProds, salePlans: salePlans };
         const res = await (cfIsNew.value
           ? boApiSvc.pdProd.create(payload, '상품관리', '등록')
           : boApiSvc.pdProd.update(form.prodId, payload, '상품관리', '저장'));
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('pdProdMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
 

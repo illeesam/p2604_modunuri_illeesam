@@ -5,13 +5,13 @@ window.DpDispUiMng = {
   name: 'DpDispUiMng',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const displays = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({
@@ -187,9 +187,9 @@ window.DpDispUiMng = {
   <div v-if="uiStateDetail.selectedId" class="card" style="margin-top:10px;">
     <dp-disp-ui-dtl
       :navigate="inlineNavigate"
-      :show-toast="$props.showToast"
-      :show-confirm="$props.showConfirm"
-      :set-api-res="$props.setApiRes"
+      :show-toast="$showToast"
+      :show-confirm="$showConfirm"
+      :set-api-res="$setApiRes"
       :edit-id="cfDetailEditId"
       :view-mode="uiStateDetail.openMode" />
   </div>

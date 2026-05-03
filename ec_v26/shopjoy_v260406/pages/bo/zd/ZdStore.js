@@ -6,10 +6,13 @@ window.ZdStore = {
   props: {
     navigate:  { type: Function, required: true }, // 페이지 이동
     adminData: { type: Object, default: () => ({}) }, // 목업 데이터
-    showToast: { type: Function, default: () => {} }, // 토스트 알림
   },
   setup(props) {
     const { ref, computed, reactive, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const uiState = reactive({ storeInfo: '', isPageCodeLoad: false, selectedStore: null, viewMode: 'col5' });
     const tab = Vue.toRef(uiState, 'tab');
 
@@ -78,9 +81,9 @@ window.ZdStore = {
     const copyToClipboard = () => {
       try {
         navigator.clipboard.writeText(uiState.storeInfo);
-        props.showToast('클립보드에 복사되었습니다.', 'success');
+        showToast('클립보드에 복사되었습니다.', 'success');
       } catch (e) {
-        props.showToast('복사 실패: ' + e.message, 'error');
+        showToast('복사 실패: ' + e.message, 'error');
       }
     };
 
@@ -90,11 +93,11 @@ window.ZdStore = {
         const storeFunc = window[uiState.selectedStore];
         if (storeFunc && storeFunc().clear) {
           storeFunc().clear();
-          props.showToast('스토어가 초기화되었습니다.', 'success');
+          showToast('스토어가 초기화되었습니다.', 'success');
           selectStore(uiState.selectedStore);
         }
       } catch (e) {
-        props.showToast('초기화 실패: ' + e.message, 'error');
+        showToast('초기화 실패: ' + e.message, 'error');
       }
     };
 
@@ -107,11 +110,11 @@ window.ZdStore = {
         if (storeFunc) {
           const store = storeFunc();
           Object.assign(store.$state, newState);
-          props.showToast('스토어가 저장되었습니다.', 'success');
+          showToast('스토어가 저장되었습니다.', 'success');
           loadStoreData(uiState.selectedStore);
         }
       } catch (e) {
-        props.showToast('저장 실패: ' + e.message, 'error');
+        showToast('저장 실패: ' + e.message, 'error');
       }
     };
 
@@ -119,13 +122,13 @@ window.ZdStore = {
       if (!storeName) return;
       const store = storeList.value.find(s => s.name === storeName);
       if (!store || !store.api) {
-        props.showToast('조회 불가능한 스토어입니다.', 'info');
+        showToast('조회 불가능한 스토어입니다.', 'info');
         return;
       }
       try {
         const api = storeName.startsWith('useFo') ? foApi : boApi;
         if (!api || (storeName.startsWith('useFo') && typeof foApi === 'undefined') || (!storeName.startsWith('useFo') && typeof boApi === 'undefined')) {
-          props.showToast('API 클라이언트를 찾을 수 없습니다.', 'error');
+          showToast('API 클라이언트를 찾을 수 없습니다.', 'error');
           return;
         }
         const endpoint = `/co/cm/${storeName.startsWith('useFo') ? 'fo' : 'bo'}-app-store/${store.api}`;
@@ -151,11 +154,11 @@ window.ZdStore = {
               }
             }
 
-            props.showToast('조회되었습니다.', 'success');
+            showToast('조회되었습니다.', 'success');
           }
         }
       } catch (e) {
-        props.showToast('조회 실패: ' + e.message, 'error');
+        showToast('조회 실패: ' + e.message, 'error');
       }
     };
 

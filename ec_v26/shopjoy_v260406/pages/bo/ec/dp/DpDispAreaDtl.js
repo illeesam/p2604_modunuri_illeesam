@@ -3,15 +3,15 @@ window.DpDispAreaDtl = {
   name: 'DpDispAreaDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
     editId:       { type: String, default: null }, // 수정 대상 ID
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const codes = reactive({ disp_areas: [], layout_types: [], use_yn: [] });
     const areas = reactive([]);
     const panels = reactive([]);
@@ -152,14 +152,14 @@ window.DpDispAreaDtl = {
       if (target < 0 || target >= arr.length) return;
       const a = arr[idx], b = arr[target];
       const tmp = a.sortOrder; a.sortOrder = b.sortOrder; b.sortOrder = tmp;
-      props.showToast && props.showToast(`[${a.name}] 순서가 ${dir < 0 ? '위로' : '아래로'} 이동되었습니다.`, 'info');
+      showToast && showToast(`[${a.name}] 순서가 ${dir < 0 ? '위로' : '아래로'} 이동되었습니다.`, 'info');
     };
     const onPanelPicked = (p) => {
-      if (!form.codeValue) { props.showToast && props.showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
+      if (!form.codeValue) { showToast && showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
       p.area = form.codeValue;
       const list = (panels || []).filter(x => x.area === form.codeValue);
       window.safeArrayUtils.safeForEach(list, (x, i) => { x.sortOrder = i + 1; });
-      props.showToast && props.showToast(`[${p.name}] 패널을 추가했습니다.`, 'info');
+      showToast && showToast(`[${p.name}] 패널을 추가했습니다.`, 'info');
       uiState.pickOpen = false;
     };
     const closePick = () => { uiState.pickOpen = false; };
@@ -171,7 +171,7 @@ window.DpDispAreaDtl = {
     const confirmPick = () => {
       const ids = Array.from(pickSel);
       if (!ids.length) { closePick(); return; }
-      if (!form.codeValue) { props.showToast && props.showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
+      if (!form.codeValue) { showToast && showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
       const list = panels || [];
       window.safeArrayUtils.safeForEach(ids, id => {
         const p = window.safeArrayUtils.safeFind(list, x => x.dispId === id);
@@ -179,16 +179,16 @@ window.DpDispAreaDtl = {
       });
       /* 순서 재부여 */
       window.safeArrayUtils.safeFilter(list, p => p.area === form.codeValue).forEach((p, i) => { p.sortOrder = i + 1; });
-      props.showToast && props.showToast(`${ids.length}개 패널을 추가했습니다.`, 'info');
+      showToast && showToast(`${ids.length}개 패널을 추가했습니다.`, 'info');
       closePick();
     };
     const removePanel = (p) => {
-      props.showConfirm && props.showConfirm({
+      showConfirm && showConfirm({
         title: '영역에서 제거',
         message: `[${p.name}]을 이 영역에서 제거하시겠습니까?`,
         onOk: () => {
           p.area = ''; /* 영역 연결 해제 */
-          props.showToast && props.showToast('제거되었습니다.', 'info');
+          showToast && showToast('제거되었습니다.', 'info');
         },
       });
     };
@@ -242,16 +242,16 @@ window.DpDispAreaDtl = {
       } catch (err) {
         console.error('[catch-info]', err);
         (err.inner || []).forEach(e => { errors[e.path] = e.message; });
-        props.showToast && props.showToast('입력 내용을 확인해주세요.', 'error');
+        showToast && showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
       if (!/^[A-Z0-9_]+$/.test(form.codeValue || '')) {
         errors.codeValue = '영문 대문자·숫자·_ 만 가능합니다.';
-        props.showToast && props.showToast('입력 내용을 확인해주세요.', 'error');
+        showToast && showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
       const isNewArea = cfIsNew.value;
-      const ok = await props.showConfirm('저장', isNewArea ? '신규 영역을 등록하시겠습니까?' : '영역 정보를 수정하시겠습니까?');
+      const ok = await showConfirm('저장', isNewArea ? '신규 영역을 등록하시겠습니까?' : '영역 정보를 수정하시겠습니까?');
       if (!ok) return;
       const codesData = codes;
       if (isNewArea) {
@@ -263,14 +263,14 @@ window.DpDispAreaDtl = {
       }
       try {
         const res = await (isNewArea ? boApiSvc.dpArea.create({ ...form }, '전시영역관리', '등록') : boApiSvc.dpArea.update(form.codeId, { ...form }, '전시영역관리', '저장'));
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast('저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispAreaMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
 
@@ -278,7 +278,7 @@ window.DpDispAreaDtl = {
 
     /* -- 미리보기 액션 -- */
     const openPanelPreview = () => {
-      if (!form.codeValue) return props.showToast && props.showToast('영역코드를 먼저 입력하세요.', 'error');
+      if (!form.codeValue) return showToast && showToast('영역코드를 먼저 입력하세요.', 'error');
       const areaPageMap = {
         'HOME_BANNER':'', 'HOME_PRODUCT':'', 'HOME_CHART':'', 'HOME_EVENT':'',
         'PRODUCT_TOP':'#page=prod01list', 'PRODUCT_BTM':'#page=prod01list',
@@ -288,7 +288,7 @@ window.DpDispAreaDtl = {
       window.open(`${window.pageUrl('index.html')}${hash}`, '_blank', 'width=1280,height=900');
     };
     const openWidgetPreview = (scope) => {
-      if (!cfActivePanel.value) return props.showToast && props.showToast('미리볼 패널을 선택하세요.', 'error');
+      if (!cfActivePanel.value) return showToast && showToast('미리볼 패널을 선택하세요.', 'error');
       const file = scope === 'bo' ? 'disp-bo-ui.html' : 'disp-fo-ui.html';
       window.open(`${window.pageUrl(file)}?areas=${form.codeValue}&date=${form.regDate}&time=00:00`, '_blank', 'width=1280,height=900');
     };
@@ -304,7 +304,7 @@ window.DpDispAreaDtl = {
     const fnWLabel = (t) => WIDGET_LABEL[t] || t || '-';
 
     const addPanelShortcut = () => {
-      if (!form.codeId) return props.showToast && props.showToast('먼저 영역을 저장해주세요.', 'error');
+      if (!form.codeId) return showToast && showToast('먼저 영역을 저장해주세요.', 'error');
       props.navigate('dpDispPanelDtl', { editId: null, preset: { area: form.codeValue } });
     };
 

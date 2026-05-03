@@ -19,6 +19,10 @@ window.BoRefModal = {
   emits: ['close'],
   setup(props, { emit }) {
     const { reactive, watch } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
 
     const close = () => emit('close');
     const s = props.state;

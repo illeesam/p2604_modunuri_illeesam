@@ -3,12 +3,11 @@ window.BlogEdit = {
   name: 'BlogEdit',
   props: {
     navigate:  { type: Function, required: true },        // 페이지 이동
-    config:    { type: Object,   default: () => ({}) },   // 사이트 설정
     editId:    { type: String,   default: null },          // 대상 ID
-    showToast: { type: Function, default: () => {} },      // 토스트 알림
   },
   setup(props) {
     const { ref, computed, reactive, onMounted, watch } = Vue;
+    const showToast            = window.foApp.showToast;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
@@ -60,9 +59,9 @@ window.BlogEdit = {
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     const handleSave = () => {
-      if (!form.title.trim()) { props.showToast?.('제목을 입력해주세요.', 'error'); return; }
-      if (!form.body.trim()) { props.showToast?.('본문을 입력해주세요.', 'error'); return; }
-      props.showToast?.(cfIsEdit.value ? '수정되었습니다.' : '등록되었습니다.', 'success');
+      if (!form.title.trim()) { showToast?.('제목을 입력해주세요.', 'error'); return; }
+      if (!form.body.trim()) { showToast?.('본문을 입력해주세요.', 'error'); return; }
+      showToast?.(cfIsEdit.value ? '수정되었습니다.' : '등록되었습니다.', 'success');
       props.navigate('blog');
     };
 

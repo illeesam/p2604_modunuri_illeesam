@@ -3,11 +3,13 @@ window.SyCodeMng = {
   name: 'SyCodeMng',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    showToast:   { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
   },
   setup(props) {
     const { reactive, watch, onMounted, nextTick } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
 
     // -- 선언부 ----------------------------------------------------------------
 
@@ -315,7 +317,7 @@ window.SyCodeMng = {
 
     const cancelChecked = () => {
       const ids = new Set(uiState.gridRows.filter(r => r._row_check).map(r => r.codeId));
-      if (!ids.size) { props.showToast('취소할 행을 선택해주세요.', 'info'); return; }
+      if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
       for (let i = uiState.gridRows.length - 1; i >= 0; i--) {
         const row = uiState.gridRows[i];
         if (!ids.has(row.codeId) || row._row_status === 'N') continue;
@@ -336,15 +338,15 @@ window.SyCodeMng = {
       const iRows = uiState.gridRows.filter(r => r._row_status === 'I');
       const uRows = uiState.gridRows.filter(r => r._row_status === 'U');
       const dRows = uiState.gridRows.filter(r => r._row_status === 'D');
-      if (!iRows.length && !uRows.length && !dRows.length) { props.showToast('변경된 데이터가 없습니다.', 'error'); return; }
+      if (!iRows.length && !uRows.length && !dRows.length) { showToast('변경된 데이터가 없습니다.', 'error'); return; }
       for (const r of [...iRows, ...uRows]) {
-        if (!r.codeGrp || !r.codeLabel || !r.codeValue) { props.showToast('코드그룹, 코드라벨, 코드값은 필수 항목입니다.', 'error'); return; }
+        if (!r.codeGrp || !r.codeLabel || !r.codeValue) { showToast('코드그룹, 코드라벨, 코드값은 필수 항목입니다.', 'error'); return; }
       }
       const details = [];
       if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
       if (uRows.length) details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' });
       if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
-      const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
+      const ok = await showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
       try {
         uiState.loading = true;
@@ -356,10 +358,10 @@ window.SyCodeMng = {
         if (iRows.length) toastParts.push(`등록 ${iRows.length}건`);
         if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
         if (dRows.length) toastParts.push(`삭제 ${dRows.length}건`);
-        props.showToast(`${toastParts.join(', ')} 저장되었습니다.`);
+        showToast(`${toastParts.join(', ')} 저장되었습니다.`);
         await handleSearchList();
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '저장 중 오류가 발생했습니다.', 'error', 0);
+        showToast(err.response?.data?.message || err.message || '저장 중 오류가 발생했습니다.', 'error', 0);
       } finally { uiState.loading = false; }
     };
 
@@ -388,8 +390,8 @@ window.SyCodeMng = {
     };
 
     const handleSaveGrp = async () => {
-      if (!uiState.grpDirtyCount) { props.showToast('변경된 행이 없습니다.', 'warning'); return; }
-      const ok = await props.showConfirm('저장', `${uiState.grpDirtyCount}건 저장하시겠습니까?`);
+      if (!uiState.grpDirtyCount) { showToast('변경된 행이 없습니다.', 'warning'); return; }
+      const ok = await showConfirm('저장', `${uiState.grpDirtyCount}건 저장하시겠습니까?`);
       if (!ok) return;
       const saveRows = uiState.grpRows
         .filter(r => r._row_status !== 'N')
@@ -405,10 +407,10 @@ window.SyCodeMng = {
         }));
       try {
         await boApiSvc.syCodeGrp.saveList(saveRows, '공통코드그룹관리', '저장');
-        props.showToast('저장되었습니다.', 'success');
+        showToast('저장되었습니다.', 'success');
         await handleLoadAllGroups();
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '저장 중 오류가 발생했습니다.', 'error', 0);
+        showToast(err.response?.data?.message || err.message || '저장 중 오류가 발생했습니다.', 'error', 0);
       }
     };
 

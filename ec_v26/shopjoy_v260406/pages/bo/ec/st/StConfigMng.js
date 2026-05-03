@@ -3,13 +3,13 @@ window.StConfigMng = {
   name: 'StConfigMng',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const { ref, reactive, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const uiState = reactive({ descOpen: false, isNew: false, error: null, loading: false, selectedId: null });
     const configs = reactive([]);
 
@@ -22,7 +22,7 @@ window.StConfigMng = {
         configs.splice(0, configs.length, ...pageList);
       } catch (err) {
         console.error('[handleLoadList]', err);
-        props.showToast?.(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast?.(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       } finally {
         uiState.loading = false;
       }
@@ -90,39 +90,39 @@ window.StConfigMng = {
     };
 
     const handleSave = async () => {
-      if (!validate()) { props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
-      const ok = await props.showConfirm('저장', '정산기준을 저장하시겠습니까?');
+      if (!validate()) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
+      const ok = await showConfirm('저장', '정산기준을 저장하시겠습니까?');
       if (!ok) return;
       closeForm();
       const apiData = fnMapUiToApi(form);
       try {
         const res = await (uiState.isNew ? boApiSvc.stSettleConfig.create(apiData, '정산설정관리', '등록') : boApiSvc.stSettleConfig.update(form.settleConfigId, apiData, '정산설정관리', '저장'));
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast('저장되었습니다.', 'success');
         await handleLoadList();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
 
     const handleDelete = async (c) => {
       const cycleName = c.settleCycleNm || c.settleCycleCd;
-      const ok = await props.showConfirm('삭제', `[${cycleName}] 정산기준을 삭제하시겠습니까?`);
+      const ok = await showConfirm('삭제', `[${cycleName}] 정산기준을 삭제하시겠습니까?`);
       if (!ok) return;
       if (uiState.selectedId === c.settleConfigId) closeForm();
       try {
         const res = await boApiSvc.stSettleConfig.remove(c.settleConfigId, '정산설정관리', '삭제');
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast('삭제되었습니다.', 'success');
         await handleLoadList();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
 

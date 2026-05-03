@@ -3,16 +3,16 @@ window.DpDispPanelDtl = {
   name: 'DpDispPanelDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
     editId:       { type: String, default: null }, // 수정 대상 ID
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
     viewMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const panels = reactive([]);
     const uiState = reactive({ htmlSourceMode: false, libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false, isPageCodeLoad: false, error: null, tab: 'info', previewMode: 'default', previewPaneWidth: 520, libPickMode: 'copy', htmlDescEl: null, htmlContentEl: null });
     const tab = Vue.toRef(uiState, 'tab');
@@ -486,20 +486,20 @@ window.DpDispPanelDtl = {
     });
 
     const handleSave = async () => {
-      if (!form.name || !form.area || !form.dispCode) { props.showToast('필수 항목을 입력해주세요. (패널코드·패널명·화면영역)', 'error'); return; }
+      if (!form.name || !form.area || !form.dispCode) { showToast('필수 항목을 입력해주세요. (패널코드·패널명·화면영역)', 'error'); return; }
       const isNewPanel = cfIsNew.value;
-      const ok = await props.showConfirm(isNewPanel ? '등록' : '저장', isNewPanel ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await showConfirm(isNewPanel ? '등록' : '저장', isNewPanel ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
         const res = await (isNewPanel ? boApiSvc.dpPanel.create({ ...form, rows: rows.map(r => ({ ...r })) }, '전시패널관리', '등록') : boApiSvc.dpPanel.update(form.dispId, { ...form, rows: rows.map(r => ({ ...r })) }, '전시패널관리', '저장'));
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNewPanel ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast(isNewPanel ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispPanelMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
 
@@ -570,7 +570,7 @@ window.DpDispPanelDtl = {
 
     /* -- 위젯 추가 / 삭제 -- */
     const addWidget = () => {
-      if (rows.length >= MAX_WIDGETS) { props.showToast(`위젯은 최대 ${MAX_WIDGETS}개까지 추가할 수 있습니다.`, 'error'); return; }
+      if (rows.length >= MAX_WIDGETS) { showToast(`위젯은 최대 ${MAX_WIDGETS}개까지 추가할 수 있습니다.`, 'error'); return; }
       rows.push(makeRowData({ sortOrder: rows.length + 1 }));
       const newKey = 'tab' + rows.length;
       uiState.tab = newKey;
@@ -650,7 +650,7 @@ window.DpDispPanelDtl = {
         if (rows.length >= MAX_WIDGETS) return;
         rows.push({ ...makeRowData(), ...r, sortOrder: rows.length + 1 });
       });
-      props.showToast && props.showToast(`${pickedRows.length}개 전시항목을 복사했습니다.`, 'info');
+      showToast && showToast(`${pickedRows.length}개 전시항목을 복사했습니다.`, 'info');
       uiState.rowCopyOpen = false;
     };
 
@@ -666,12 +666,12 @@ window.DpDispPanelDtl = {
         const r = cfActiveRow.value;
         const preserve = { widgetNm: r.widgetNm, sortOrder: r.sortOrder };
         Object.assign(r, { ...lib, ...preserve });
-        props.showToast && props.showToast(`[${lib.name}] 내용을 복사했습니다.`, 'info');
+        showToast && showToast(`[${lib.name}] 내용을 복사했습니다.`, 'info');
       } else {
         cfActiveRow.value.refLibId   = lib.libId;
         cfActiveRow.value.refLibCode = lib.libCode || '';
         cfActiveRow.value.refLibName = lib.name || '';
-        props.showToast && props.showToast(`[${lib.name}] 참조로 설정되었습니다.`, 'info');
+        showToast && showToast(`[${lib.name}] 참조로 설정되었습니다.`, 'info');
       }
     };
 

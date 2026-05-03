@@ -4,15 +4,15 @@ window.OdDlivDtl = {
   name: 'OdDlivDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
     editId:       { type: String, default: null }, // 수정 대상 ID
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
     viewMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._odDlivDtlState.tab || 'info', viewMode2: window._odDlivDtlState.viewMode || 'tab', memoEl: null});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
@@ -98,24 +98,24 @@ window.OdDlivDtl = {
       } catch (err) {
         console.error('[catch-info]', err);
         err.inner.forEach(e => { errors[e.path] = e.message; });
-        props.showToast('입력 내용을 확인해주세요.', 'error');
+        showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
       const isNewDliv = cfIsNew.value;
-      const ok = await props.showConfirm(isNewDliv ? '등록' : '저장', isNewDliv ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await showConfirm(isNewDliv ? '등록' : '저장', isNewDliv ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
         const res = await (isNewDliv
           ? boApiSvc.odDliv.create({ ...form }, '배송관리', '등록')
           : boApiSvc.odDliv.update(form.dlivId, { ...form }, '배송관리', '저장'));
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNewDliv ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast(isNewDliv ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('odDlivMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
 
@@ -165,7 +165,7 @@ window.OdDlivDtl = {
     };
     const openTracking = (courier, no) => {
       const url = trackingUrl(courier, no);
-      if (!url) { props.showToast && props.showToast('운송장 정보가 없습니다.', 'error'); return; }
+      if (!url) { showToast && showToast('운송장 정보가 없습니다.', 'error'); return; }
       window.open(url, 'dlivTrack', 'width=900,height=760,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes');
     };
     const DLIV_STEPS = ['준비중', '출고완료', '배송중', '배송완료'];

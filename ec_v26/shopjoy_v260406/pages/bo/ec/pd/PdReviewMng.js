@@ -3,12 +3,13 @@ window.PdReviewMng = {
   name: 'PdReviewMng',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    showToast:   { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:   { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const products = reactive([]);
     const members = reactive([]);
     const reviews = reactive([]);
@@ -88,17 +89,17 @@ const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageT
 
     const openDetail = (row) => { selectedId.value = selectedId.value === row.reviewId ? null : row.reviewId; };
     const changeStatus = async (row, newStatus) => {
-      const ok = await props.showConfirm('상태변경', `[${row.reviewTitle}] 상태를 [${STATUS_LABEL[newStatus]}]로 변경하시겠습니까?`);
+      const ok = await showConfirm('상태변경', `[${row.reviewTitle}] 상태를 [${STATUS_LABEL[newStatus]}]로 변경하시겠습니까?`);
       if (!ok) return;
       row.reviewStatusCd = newStatus; if (cfSelectedRow.value) cfSelectedRow.value.reviewStatusCd = newStatus;
       try {
         const res = await boApiSvc.pdReview.updateStatus(row.reviewId, { reviewStatusCd: newStatus }, '리뷰관리', '상태변경');
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
     const onSearch = async () => {

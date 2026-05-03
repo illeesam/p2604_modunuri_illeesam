@@ -3,14 +3,12 @@ window.Like = {
   name: 'Like',
   props: {
     navigate:      { type: Function, required: true },        // 페이지 이동
-    config:        { type: Object,   default: () => ({}) },   // 사이트 설정
-    products:      { type: Array,    default: () => ([]) },   // 상품 목록
-    likes:         { type: Array,    default: () => ([]) },   // 찜 목록
-    toggleLike:    { type: Function, default: () => {} },      // 찜 토글
-    selectProduct: { type: Function, default: () => {} },      // 상품 선택
   },
   setup(props) {
     const { reactive, computed, watch, onMounted } = Vue;
+    const products             = window.foApp.products;
+    const toggleLike           = window.foApp.toggleLike;
+    const selectProduct        = window.foApp.selectProduct;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
@@ -28,8 +26,7 @@ window.Like = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     const cfLikedProducts = computed(() => {
-      const likeSet = props.likes || new Set();
-      return (props.products || []).filter(p => likeSet.has(p.productId));
+      return (products || []).filter(p => window.foApp.isLiked(p.productId));
     });
 
     // -- return ---------------------------------------------------------------

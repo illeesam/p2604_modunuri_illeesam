@@ -3,15 +3,14 @@ window.Prod01List = {
   name: 'Prod01List',
   props: {
     navigate:      { type: Function, required: true },        // 페이지 이동
-    config:        { type: Object,   default: () => ({}) },   // 사이트 설정
-    products:      { type: Array,    default: () => ([]) },   // 상품 목록
-    selectProduct: { type: Function, default: () => {} },      // 상품 선택
-    toggleLike:    { type: Function, default: () => {} },      // 찜 토글
-    isLiked:       { type: Function, default: () => false },   // 찜 여부 확인
   },
   setup(props) {
 
     const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
+    const products             = window.foApp.products;
+    const selectProduct        = (p) => window.foApp.selectProduct(p);
+    const toggleLike           = (id) => window.foApp.toggleLike(id);
+    const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
 
     const pager = reactive({ pageNo: 1, pageSize: 12, pageTotalCount: 0, pageTotalPage: 1, pageType: 'INFINITE_SCROLL', pageSizes: [12, 24, 48], pageCond: {} });
 
@@ -84,12 +83,13 @@ window.Prod01List = {
           ...(selSizes.size  > 0   ? { sizes: [...selSizes].join(',') }        : {}),
         };
         const res = await foApiSvc.pdProd.getPage(params, '상품목록', '목록조회');
-        pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
-        pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;
-        allProducts.splice(0, allProducts.length, ...(res.data?.data?.pageList || []).map(p => assignImage({
+        const d = res.data?.data || {};
+        pager.pageTotalCount = d.pageTotalCount || 0;
+        pager.pageTotalPage = d.pageTotalPage || 1;
+        allProducts.splice(0, allProducts.length, ...(d.pageList || []).map(p => assignImage({
           ...p,
-          priceNum: p.price,
-          price: p.price.toLocaleString() + '원',
+          priceNum: typeof p.salePrice === 'number' ? p.salePrice : (typeof p.listPrice === 'number' ? p.listPrice : 0),
+          price: (typeof p.salePrice === 'number' ? p.salePrice : (typeof p.listPrice === 'number' ? p.listPrice : 0)).toLocaleString() + '원',
         })));
         /* app.js products 도 갱신해 Detail/Cart 에서 동일 객체 참조 가능하게 */
         try {
@@ -128,7 +128,7 @@ window.Prod01List = {
         return ai - bi;
       });
     });
-    const cfAllCats = computed(() => (props.config && props.config.categorys) || []);
+    const cfAllCats = computed(() => (window.SITE_CONFIG && window.SITE_CONFIG.categorys) || []);
 
     /* -- 할인율 / 포맷 -- */
     const fnDiscountRate = p => p.originalPrice
@@ -221,7 +221,8 @@ window.Prod01List = {
       codes, onSearch,
       onResize,
       setupObserver,
-      observer
+      observer,
+      isLiked, toggleLike, selectProduct,
     };
   },
   template: /* html */ `

@@ -4,16 +4,16 @@ window.CmChattDtl = {
   name: 'CmChattDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
     editId:       { type: String, default: null }, // 수정 대상 ID
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
     viewMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._cmChattDtlState.tab || 'chat', viewMode2: window._cmChattDtlState.viewMode || 'tab', replyText: '', searchUserId: '', chat: null });
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
@@ -112,13 +112,13 @@ window.CmChattDtl = {
       uiState.chat.lastMsg = uiState.replyText.trim();
       uiState.replyText = '';
       scrollToBottom();
-      props.showToast('답변을 전송했습니다.');
+      showToast('답변을 전송했습니다.');
     };
 
     const closeChat = () => {
       if (!uiState.chat) return;
       uiState.chat.status = '종료';
-      props.showToast('채팅이 종료되었습니다.');
+      showToast('채팅이 종료되었습니다.');
     };
 
     const handleSave = async () => {
@@ -128,21 +128,21 @@ window.CmChattDtl = {
       } catch (err) {
         console.error('[catch-info]', err);
         err.inner.forEach(e => { errors[e.path] = e.message; });
-        props.showToast('입력 내용을 확인해주세요.', 'error');
+        showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      const ok = await props.showConfirm('등록', '등록하시겠습니까?');
+      const ok = await showConfirm('등록', '등록하시겠습니까?');
       if (!ok) return;
       try {
         const res = await boApiSvc.cmChatt.create({ ...form }, '채팅관리', '등록');
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('등록되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast('등록되었습니다.', 'success');
         if (props.navigate) props.navigate('cmChattMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
 

@@ -3,10 +3,13 @@ window.SyDashboardMng = {
   name: 'SyDashboardMng',
   props: {
     navigate:  { type: Function, required: true }, // 페이지 이동
-    showToast: { type: Function, default: () => {} }, // 토스트 알림
   },
   setup(props) {
     const { computed, reactive, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const uiState = reactive({ isPageCodeLoad: false });
     const codes = reactive({});
 

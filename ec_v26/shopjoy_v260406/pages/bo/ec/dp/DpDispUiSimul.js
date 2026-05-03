@@ -3,13 +3,13 @@ window.DpDispUiSimul = {
   name: 'DpDispUiSimul',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const codes = reactive({ active_statuses: [], visibility_opts: [
       { value: '', label: '전체' },
       { value: 'PUBLIC',    label: '전체공개' },
@@ -497,7 +497,7 @@ window.DpDispUiSimul = {
       if (!widgets) return;
       window._dragAreaWidgets = null;
       if (widgets.length > 40) {
-        props.showToast(`위젯이 ${widgets.length}개로 40개를 초과합니다. 배치할 수 없습니다.`, 'error');
+        showToast(`위젯이 ${widgets.length}개로 40개를 초과합니다. 배치할 수 없습니다.`, 'error');
         return;
       }
       const rect = e.currentTarget.getBoundingClientRect();
@@ -545,7 +545,7 @@ window.DpDispUiSimul = {
       if (!widgets) return;
       window._dragAreaWidgets = null;
       if (widgets.length > 40) {
-        props.showToast(`위젯이 ${widgets.length}개로 40개를 초과합니다. 배치할 수 없습니다.`, 'error');
+        showToast(`위젯이 ${widgets.length}개로 40개를 초과합니다. 배치할 수 없습니다.`, 'error');
         return;
       }
       const cols = uiState.structColCount;

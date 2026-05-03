@@ -3,10 +3,10 @@ window.MyChatt = {
   name: 'MyChatt',
   props: {
     navigate:  { type: Function, required: true }, // 페이지 이동
-    cartCount: { type: Number,   default: 0 },      // 장바구니 수량
   },
   setup(props) {
     const { reactive, computed, onMounted, watch } = Vue;
+    const showToast            = window.foApp.showToast;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});

@@ -3,13 +3,13 @@ window.StSettleEtcAdjMng = {
   name: 'StSettleEtcAdjMng',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
 const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '', selectedId: null, isNew: false});
     const codes = reactive({
       settle_etc_adj_types: [],
@@ -91,39 +91,39 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       if (!form.vendorId) { errors.vendorId = '업체를 선택하세요.'; }
       if (!form.adjType)  { errors.adjType  = '유형을 선택하세요.'; }
       if (!form.reason)   { errors.reason   = '사유를 입력하세요.'; }
-      if (Object.keys(errors).length) { props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
+      if (Object.keys(errors).length) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const v = cfVendors.value.find(x => x.vendorId === Number(form.vendorId));
       if (v) form.vendorNm = v.vendorNm;
-      const ok = await props.showConfirm('저장', '기타조정을 저장하시겠습니까?');
+      const ok = await showConfirm('저장', '기타조정을 저장하시겠습니까?');
       if (!ok) return;
       if (uiState.isNew) { form.adjId = 'ETCADJ-' + String(etcAdjList.length + 1).padStart(3, '0'); etcAdjList.unshift({ ...form }); }
       else { const idx = etcAdjList.findIndex(x => x.adjId === form.adjId); if (idx !== -1) Object.assign(etcAdjList[idx], { ...form }); }
       closeForm();
       try {
         const res = await (uiState.isNew ? boApiSvc.stSettleEtcAdj.create({ ...form }, '정산기타조정', '저장') : boApiSvc.stSettleEtcAdj.update(form.adjId, { ...form }, '정산기타조정', '저장'));
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast('저장되었습니다.', 'success');
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
 
     const handleDelete = async (r) => {
-      const ok = await props.showConfirm('삭제', `[${r.adjId}]를 삭제하시겠습니까?`);
+      const ok = await showConfirm('삭제', `[${r.adjId}]를 삭제하시겠습니까?`);
       if (!ok) return;
       const idx = etcAdjList.findIndex(x => x.adjId === r.adjId); if (idx !== -1) etcAdjList.splice(idx, 1); if (uiState.selectedId === r.adjId) closeForm();
       try {
         const res = await boApiSvc.stSettleEtcAdj.remove(r.adjId, '정산기타조정', '삭제');
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast('삭제되었습니다.', 'success');
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
 

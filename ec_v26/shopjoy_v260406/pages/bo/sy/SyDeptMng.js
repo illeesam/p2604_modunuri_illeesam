@@ -3,12 +3,14 @@ window.SyDeptMng = {
   name: 'SyDeptMng',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    showToast:   { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const depts = reactive([]);
     const uiState = reactive({ checkAll: false, loading: false, error: null, isPageCodeLoad: false, selectedTreeId: null, focusedIdx: null});
     const codes = reactive({ dept_status: [], use_yn: [], dept_types: ['경영','운영','기술','마케팅','CS','물류','재무','인사','법무','기타'] });
@@ -184,7 +186,7 @@ window.SyDeptMng = {
 
     const cancelChecked = () => {
       const checkedIds = new Set(gridRows.filter(r => r._row_check).map(r => r.deptId));
-      if (!checkedIds.size) { props.showToast('취소할 행을 선택해주세요.', 'info'); return; }
+      if (!checkedIds.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
       for (let i = gridRows.length - 1; i >= 0; i--) {
         const row = gridRows[i];
         if (!checkedIds.has(row.deptId)) continue;
@@ -208,23 +210,23 @@ window.SyDeptMng = {
       const iRows = gridRows.filter(r => r._row_status === 'I');
       const uRows = gridRows.filter(r => r._row_status === 'U');
       const dRows = gridRows.filter(r => r._row_status === 'D');
-      if (!iRows.length && !uRows.length && !dRows.length) { props.showToast('변경된 데이터가 없습니다.', 'error'); return; }
+      if (!iRows.length && !uRows.length && !dRows.length) { showToast('변경된 데이터가 없습니다.', 'error'); return; }
       for (const r of [...iRows, ...uRows]) {
-        if (!r.deptCode || !r.deptNm) { props.showToast('부서코드와 부서명은 필수 항목입니다.', 'error'); return; }
+        if (!r.deptCode || !r.deptNm) { showToast('부서코드와 부서명은 필수 항목입니다.', 'error'); return; }
       }
       const details = [];
       if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
       if (uRows.length) details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' });
       if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
-      const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
+      const ok = await showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
       const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
       try {
         await boApiSvc.syDept.saveList(saveRows, '부서관리', '저장');
-        props.showToast('저장되었습니다.');
+        showToast('저장되었습니다.');
         await handleSearchList();
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };
 

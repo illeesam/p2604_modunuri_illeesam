@@ -3,13 +3,13 @@ window.SyPropMng = {
   name: 'SyPropMng',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const uiState = reactive({ isPageCodeLoad: false, _newId: -1, selectedPath: ''});
     const codes = reactive({ use_yn: [], prop_types: ['STRING','NUMBER','BOOLEAN','JSON'] });
 
@@ -123,18 +123,18 @@ window.SyPropMng = {
 
     const handleSave = async () => {
       if (cfDirtyRows.value.length === 0) {
-        props.showToast('변경된 행이 없습니다.', 'warning');
+        showToast('변경된 행이 없습니다.', 'warning');
         return;
       }
-      const ok = await props.showConfirm('저장', `${cfDirtyRows.value.length}건의 변경사항을 저장하시겠습니까?`);
+      const ok = await showConfirm('저장', `${cfDirtyRows.value.length}건의 변경사항을 저장하시겠습니까?`);
       if (!ok) return;
       const saveRows = cfDirtyRows.value.map(r => ({ ...r, rowStatus: r._status }));
       try {
         await boApiSvc.syProp.saveList(saveRows, '속성관리', '저장');
-        props.showToast('저장되었습니다.', 'success');
+        showToast('저장되었습니다.', 'success');
         await fetchData();
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };
 

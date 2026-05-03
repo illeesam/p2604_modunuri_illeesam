@@ -6,10 +6,13 @@ window.ZdLocalStorage = {
   props: {
     navigate:  { type: Function, required: true }, // 페이지 이동
     adminData: { type: Object, default: () => ({}) }, // 목업 데이터
-    showToast: { type: Function, default: () => {} }, // 토스트 알림
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, onUnmounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
 
     const storageData = reactive([]);
                     const uiState = reactive({ isResizing: false, filterKey: '', editingKey: null, editingValue: '', valueColWidth: 65, startX: 0, startWidth: 0});
@@ -32,9 +35,9 @@ window.ZdLocalStorage = {
     const copyValue = (value) => {
       try {
         navigator.clipboard.writeText(value);
-        props.showToast('클립보드에 복사되었습니다.', 'success');
+        showToast('클립보드에 복사되었습니다.', 'success');
       } catch (e) {
-        props.showToast('복사 실패: ' + e.message, 'error');
+        showToast('복사 실패: ' + e.message, 'error');
       }
     };
 
@@ -47,12 +50,12 @@ window.ZdLocalStorage = {
       if (!key) return;
       try {
         localStorage.setItem(key, uiState.editingValue);
-        props.showToast('저장되었습니다.', 'success');
+        showToast('저장되었습니다.', 'success');
         uiState.editingKey = null;
         uiState.editingValue = '';
         loadStorageData();
       } catch (e) {
-        props.showToast('저장 실패: ' + e.message, 'error');
+        showToast('저장 실패: ' + e.message, 'error');
       }
     };
 
@@ -65,10 +68,10 @@ window.ZdLocalStorage = {
       if (!confirm(`'${key}'를 삭제하시겠습니까?`)) return;
       try {
         localStorage.removeItem(key);
-        props.showToast('삭제되었습니다.', 'success');
+        showToast('삭제되었습니다.', 'success');
         loadStorageData();
       } catch (e) {
-        props.showToast('삭제 실패: ' + e.message, 'error');
+        showToast('삭제 실패: ' + e.message, 'error');
       }
     };
 
@@ -76,10 +79,10 @@ window.ZdLocalStorage = {
       if (!confirm('localStorage의 모든 데이터를 삭제하시겠습니까?')) return;
       try {
         localStorage.clear();
-        props.showToast('모든 데이터가 삭제되었습니다.', 'success');
+        showToast('모든 데이터가 삭제되었습니다.', 'success');
         loadStorageData();
       } catch (e) {
-        props.showToast('삭제 실패: ' + e.message, 'error');
+        showToast('삭제 실패: ' + e.message, 'error');
       }
     };
 

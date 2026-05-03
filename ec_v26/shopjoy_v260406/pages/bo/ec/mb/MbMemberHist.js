@@ -4,11 +4,14 @@ window.MbMemberHist = {
   name: 'MbMemberHist',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
     memberId:     { type: String, default: null }, // 대상 ID
   },
   setup(props) {
     const { computed, reactive, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const uiState = reactive({ loading: false, isPageCodeLoad: false, tab: window._ecMemberHistState.tab || 'orders', viewMode2: window._ecMemberHistState.viewMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
@@ -59,7 +62,7 @@ window.MbMemberHist = {
       tab,
       viewMode2,
       navigate: props.navigate,
-      showRefModal: props.showRefModal
+      showRefModal: showRefModal
     };
   },
   template: /* html */`

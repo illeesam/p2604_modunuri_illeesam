@@ -3,16 +3,13 @@ window.Order = {
   name: 'Order',
   props: {
     navigate:     { type: Function, required: true },        // 페이지 이동
-    config:       { type: Object,   default: () => ({}) },   // 사이트 설정
-    cart:         { type: Array,    default: () => ([]) },   // 장바구니 목록
-    instantOrder: { type: Object,   default: () => ({}) },   // 즉시주문 정보
-    cartIds:      { type: Array,    default: () => ([]) },   // 장바구니 ID 목록
-    showToast:    { type: Function, default: () => {} },      // 토스트 알림
-    showAlert:    { type: Function, default: () => {} },      // 알림 모달
-    clearCart:    { type: Function, default: () => {} },      // 장바구니 비우기
   },
   setup(props) {
     const { reactive, computed, ref, onMounted, watch } = Vue;
+    const showToast            = window.foApp.showToast;
+    const showAlert            = window.foApp.showAlert;
+    const clearCart            = window.foApp.clearCart;
+    const cart                 = window.foApp.cart;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, view: 'order', resultData: null, selectedShipCoupon: null, cashBalance: 0, cashInput: 0 });
     const codes = reactive({
       dliv_req_opts: [
@@ -101,9 +98,8 @@ window.Order = {
 
     /* -- 주문 대상: 바로구매 > 선택장바구니(cartIds) > 전체장바구니 -- */
     const cfOrderItems = computed(() => {
-      if (props.instantOrder) return [props.instantOrder];
-      const cart = props.cart || [];
-      if (props.cartIds?.length) return cart.filter(i => props.cartIds.includes(i.cartId));
+      if (window.foApp.instantOrder) return [window.foApp.instantOrder];
+      if (window.foApp.cartIds?.length) return cart.filter(i => window.foApp.cartIds.includes(i.cartId));
       return cart;
     });
 
@@ -130,7 +126,7 @@ window.Order = {
     });
     const openKakaoAddr = () => {
       if (typeof daum === 'undefined' || !daum.Postcode) {
-        props.showToast('주소 검색 서비스를 불러오는 중입니다.', 'info'); return;
+        showToast('주소 검색 서비스를 불러오는 중입니다.', 'info'); return;
       }
       new daum.Postcode({
         oncomplete(data) {
@@ -190,7 +186,7 @@ window.Order = {
         if (typeof foApiSvc !== 'undefined') await foApiSvc.myOrder.create(payload, '주문', '저장').catch(() => {});
         uiState.resultData = payload;
         uiState.view = 'result';
-        if (!props.instantOrder) props.clearCart(); // 바로구매는 장바구니 건드리지 않음
+        if (!window.foApp.instantOrder) clearCart(); // 바로구매는 장바구니 건드리지 않음
         uiState.cashBalance = Math.max(0, uiState.cashBalance - cfAppliedCash.value);
       } finally { uiState.submitting = false; }
     };

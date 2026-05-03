@@ -4,11 +4,14 @@ window.PdProdHist = {
   name: 'PdProdHist',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
     prodId:       { type: String, default: null }, // 대상 ID
   },
   setup(props) {
     const { computed, onMounted, reactive, watch } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const uiState = reactive({
       loading: false,
       isPageCodeLoad: false,

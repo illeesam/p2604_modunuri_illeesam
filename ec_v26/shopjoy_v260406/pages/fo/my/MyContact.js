@@ -3,12 +3,11 @@ window.MyContact = {
   name: 'MyContact',
   props: {
     navigate:    { type: Function, required: true },                    // 페이지 이동
-    cartCount:   { type: Number,   default: 0 },                        // 장바구니 수량
-    showToast:   { type: Function, default: () => {} },                  // 토스트 알림
-    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
   },
   setup(props) {
     const { reactive, computed, onMounted, watch } = Vue;
+    const showToast            = window.foApp.showToast;
+    const showConfirm          = window.foApp.showConfirm;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
@@ -35,11 +34,11 @@ window.MyContact = {
     const cfDateFilteredInquiries = computed(() => inquiries.value.filter(q => inRange(q.date)));
 
     const cancelInquiry = async id => {
-      const ok = await props.showConfirm('문의 취소', '이 문의를 취소하시겠습니까?', 'warning');
+      const ok = await showConfirm('문의 취소', '이 문의를 취소하시겠습니까?', 'warning');
       if (!ok) return;
       const item = inquiries.value.find(x => x.inquiryId === id);
       if (item) item.status = '취소됨';
-      props.showToast('문의가 취소되었습니다.', 'success');
+      showToast('문의가 취소되었습니다.', 'success');
     };
 
     const onSearch = async (dateParams) => {

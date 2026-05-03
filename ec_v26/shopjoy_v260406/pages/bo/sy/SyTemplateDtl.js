@@ -3,14 +3,15 @@ window.SyTemplateDtl = {
   name: 'SyTemplateDtl',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    showToast:   { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:   { type: Function, default: () => {} }, // API 결과 전달
     editId:      { type: String, default: null }, // 수정 대상 ID
     viewMode:    { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
   },
   setup(props) {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, watch, nextTick } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
 
     /* 미리보기 / 발송 모달 */
     const uiState = reactive({ previewOpen: false, sendOpen: false, error: null, isPageCodeLoad: false, loading: false, quillEditorEl: null});
@@ -98,25 +99,25 @@ window.SyTemplateDtl = {
       } catch (err) {
         console.error('[catch-info]', err);
         err.inner.forEach(e => { errors[e.path] = e.message; });
-        props.showToast('입력 내용을 확인해주세요.', 'error');
+        showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
       if (form.sampleParams) {
         try { JSON.parse(form.sampleParams); }
-        catch { props.showToast('파라미터 샘플 JSON 형식이 올바르지 않습니다.', 'error'); return; }
+        catch { showToast('파라미터 샘플 JSON 형식이 올바르지 않습니다.', 'error'); return; }
       }
-      const ok = await props.showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) return;
       try {
         const res = await (cfIsNew.value ? boApiSvc.syTemplate.create({ ...form }, '템플릿관리', '등록') : boApiSvc.syTemplate.update(form.templateId, { ...form }, '템플릿관리', '저장'));
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
         if (props.navigate) props.navigate('syTemplateMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
 

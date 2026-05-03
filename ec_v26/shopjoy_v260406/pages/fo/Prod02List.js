@@ -3,15 +3,14 @@ window.Prod02List = {
   name: "Prod02List",
   props: {
     navigate:      { type: Function, required: true },        // 페이지 이동
-    config:        { type: Object,   default: () => ({}) },   // 사이트 설정
-    products:      { type: Array,    default: () => ([]) },   // 상품 목록
-    selectProduct: { type: Function, default: () => {} },      // 상품 선택
-    toggleLike:    { type: Function, default: () => {} },      // 찜 토글
-    isLiked:       { type: Function, default: () => false },   // 찜 여부 확인
   },
   setup(props) {
 
     const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
+    const products             = window.foApp.products;
+    const selectProduct        = (p) => window.foApp.selectProduct(p);
+    const toggleLike           = (id) => window.foApp.toggleLike(id);
+    const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
 
     const pager = reactive({ pageNo: 1, pageSize: 12, pageTotalCount: 0, pageTotalPage: 1, pageType: 'INFINITE_SCROLL', pageSizes: [12, 24, 48], pageCond: {} });
 
@@ -128,7 +127,7 @@ window.Prod02List = {
         return ai - bi;
       });
     });
-    const cfAllCats = computed(() => (props.config && props.config.categorys) || []);
+    const cfAllCats = computed(() => (window.SITE_CONFIG && window.SITE_CONFIG.categorys) || []);
 
     /* -- 할인율 / 포맷 -- */
     const fnDiscountRate = p => p.originalPrice
@@ -220,7 +219,8 @@ window.Prod02List = {
       codes, onSearch,
       onResize,
       setupObserver,
-      observer
+      observer,
+      isLiked, toggleLike, selectProduct,
     };
   },
   template: /* html */ `

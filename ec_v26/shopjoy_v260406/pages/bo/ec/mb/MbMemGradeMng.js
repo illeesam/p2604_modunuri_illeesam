@@ -3,12 +3,13 @@ window.MbMemGradeMng = {
   name: 'MbMemGradeMng',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    showToast:   { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:   { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, checkAll: false, focusedIdx: null });
     const codes = reactive({ member_grades: [], use_yn: [] });
     const searchParam = reactive({ kw: '', use: '' });
@@ -107,7 +108,7 @@ window.MbMemGradeMng = {
 
     const cancelChecked = () => {
       const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.gradeId));
-      if (!ids.size) { props.showToast('취소할 행을 선택해주세요.', 'info'); return; }
+      if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
       for (let i = gridRows.length - 1; i >= 0; i--) {
         const row = gridRows[i];
         if (!ids.has(row.gradeId)) continue;
@@ -124,26 +125,26 @@ window.MbMemGradeMng = {
       const uRows = gridRows.filter(r => r._row_status === 'U');
       const dRows = gridRows.filter(r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) {
-        props.showToast('변경된 데이터가 없습니다.', 'error'); return;
+        showToast('변경된 데이터가 없습니다.', 'error'); return;
       }
       for (const r of [...iRows, ...uRows]) {
         if (!r.gradeCd || !r.gradeNm) {
-          props.showToast('등급코드와 등급명은 필수입니다.', 'error'); return;
+          showToast('등급코드와 등급명은 필수입니다.', 'error'); return;
         }
       }
       const details = [];
       if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
       if (uRows.length) details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' });
       if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
-      const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
+      const ok = await showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
       const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
       try {
         await boApiSvc.mbMemGrade.saveList(saveRows, '회원등급관리', '저장');
-        props.showToast('저장되었습니다.');
+        showToast('저장되었습니다.');
         await handleSearchList();
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };
 

@@ -3,13 +3,13 @@ window.SyVendorUserMng = {
   name: 'SyVendorUserMng',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
 
     const vendorUsers = reactive([]);
     const uiState = reactive({ loading: false, roleLoading: false, roleModalOpen: false, vendorPickOpen: false, error: null, isPageCodeLoad: false, selectedPath: null, searchVendorId: null, bizKw: '', bizVendorFlt: '', bizStatusFlt: '', treeRoleCat: '', formMode: '', roleModalTemp: null});
@@ -195,7 +195,7 @@ window.SyVendorUserMng = {
 
     const openNew = () => {
       const vid = uiState.searchVendorId;
-      if (!vid) { props.showToast('업체를 먼저 선택해주세요.', 'warning'); return; }
+      if (!vid) { showToast('업체를 먼저 선택해주세요.', 'warning'); return; }
       Object.assign(formData, blank());
       formData.vendorId = vid;
       formData.joinDate = new Date().toISOString().slice(0,10);
@@ -206,16 +206,16 @@ window.SyVendorUserMng = {
 
     const handleSaveForm = async () => {
       if (!formData.memberNm || !formData.vendorUserMobile || !formData.vendorUserEmail) {
-        props.showToast('이름/휴대전화/이메일은 필수입니다.', 'error'); return;
+        showToast('이름/휴대전화/이메일은 필수입니다.', 'error'); return;
       }
-      const ok = await props.showConfirm(uiState.formMode==='new'?'등록':'저장', uiState.formMode==='new'?'등록하시겠습니까?':'저장하시겠습니까?');
+      const ok = await showConfirm(uiState.formMode==='new'?'등록':'저장', uiState.formMode==='new'?'등록하시겠습니까?':'저장하시겠습니까?');
       if (!ok) return;
       try {
         const res = uiState.formMode === 'new'
           ? await boApiSvc.syVendorUser.create({ ...formData }, '사업자사용자관리', '등록')
           : await boApiSvc.syVendorUser.update(formData.vendorUserId, { ...formData }, '사업자사용자관리', '저장');
-        if (props.setApiRes) props.setApiRes({ ok:true, status:res.status, data:res.data });
-        props.showToast(uiState.formMode==='new'?'등록되었습니다.':'저장되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok:true, status:res.status, data:res.data });
+        showToast(uiState.formMode==='new'?'등록되었습니다.':'저장되었습니다.', 'success');
         await loadVendorUsers(formData.vendorId);
         if (uiState.formMode === 'edit') {
           const saved = res.data?.data;
@@ -226,24 +226,24 @@ window.SyVendorUserMng = {
         uiState.formMode = uiState.formMode === 'new' ? '' : 'edit';
       } catch(err) {
         const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok:false, status:err.response?.status, data:err.response?.data, message:err.message });
-        props.showToast(msg, 'error', 0);
+        if (setApiRes) setApiRes({ ok:false, status:err.response?.status, data:err.response?.data, message:err.message });
+        showToast(msg, 'error', 0);
       }
     };
 
     const handleDeleteRow = async (u) => {
-      const ok = await props.showConfirm('삭제', `[${u.memberNm}] 사용자를 삭제하시겠습니까?`);
+      const ok = await showConfirm('삭제', `[${u.memberNm}] 사용자를 삭제하시겠습니까?`);
       if (!ok) return;
       try {
         const res = await boApiSvc.syVendorUser.remove(u.vendorUserId, '사업자사용자관리', '삭제');
-        if (props.setApiRes) props.setApiRes({ ok:true, status:res.status, data:res.data });
-        props.showToast('삭제되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok:true, status:res.status, data:res.data });
+        showToast('삭제되었습니다.', 'success');
         await loadVendorUsers(u.vendorId);
         if (uiState.formMode === 'edit' && formData.vendorUserId === u.vendorUserId) closeForm();
       } catch(err) {
         const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok:false, status:err.response?.status, data:err.response?.data, message:err.message });
-        props.showToast(msg, 'error', 0);
+        if (setApiRes) setApiRes({ ok:false, status:err.response?.status, data:err.response?.data, message:err.message });
+        showToast(msg, 'error', 0);
       }
     };
 
@@ -312,9 +312,9 @@ window.SyVendorUserMng = {
     const confirmRoleModal = async () => {
       if (!uiState.roleModalTemp) return;
       const rid = roleIdByCode(uiState.roleModalTemp);
-      if (!rid) { props.showToast('역할을 찾을 수 없습니다.', 'error'); return; }
+      if (!rid) { showToast('역할을 찾을 수 없습니다.', 'error'); return; }
       if (userRoles.some(r=>r.roleId===rid)) {
-        props.showToast('이미 부여된 역할입니다.', 'warning');
+        showToast('이미 부여된 역할입니다.', 'warning');
         closeRoleModal(); return;
       }
       try {
@@ -323,26 +323,26 @@ window.SyVendorUserMng = {
           userId: formData.vendorUserId,
           roleId: rid,
         }, '사업자사용자관리', '등록');
-        if (props.setApiRes) props.setApiRes({ ok:true, status:res.status, data:res.data });
-        props.showToast('역할이 부여되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok:true, status:res.status, data:res.data });
+        showToast('역할이 부여되었습니다.', 'success');
         await loadUserRoles(formData.vendorUserId);
       } catch(err) {
         const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-        props.showToast(msg, 'error', 0);
+        showToast(msg, 'error', 0);
       }
       closeRoleModal();
     };
 
     const handleDeleteRole = async (r) => {
-      const ok = await props.showConfirm('역할 삭제', `[${r.roleNm}] 역할을 삭제하시겠습니까?`);
+      const ok = await showConfirm('역할 삭제', `[${r.roleNm}] 역할을 삭제하시겠습니까?`);
       if (!ok) return;
       try {
         const res = await boApiSvc.syVendorUser.removeRole(r.vendorUserRoleId, '사업자사용자관리', '삭제');
-        if (props.setApiRes) props.setApiRes({ ok:true, status:res.status, data:res.data });
-        props.showToast('역할이 삭제되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok:true, status:res.status, data:res.data });
+        showToast('역할이 삭제되었습니다.', 'success');
         await loadUserRoles(formData.vendorUserId);
       } catch(err) {
-        props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };
 
@@ -386,12 +386,12 @@ window.SyVendorUserMng = {
       toggleRoleNode, pickRoleInModal, cfFormRoleTree, cfFormAllowedRootCode,
       roleNmByCode, cfSelectedModalRole, cfModalMenuList, fnPermBadgeColor,
       sendJoinMail: () => {
-        if (!formData.vendorUserEmail) { props.showToast('이메일을 입력해주세요.', 'warning'); return; }
-        props.showToast(formData.vendorUserEmail + ' 로 회원가입 메일을 보냈습니다.', 'success');
+        if (!formData.vendorUserEmail) { showToast('이메일을 입력해주세요.', 'warning'); return; }
+        showToast(formData.vendorUserEmail + ' 로 회원가입 메일을 보냈습니다.', 'success');
       },
       sendPwResetMail: () => {
-        if (!formData.vendorUserEmail) { props.showToast('이메일을 입력해주세요.', 'warning'); return; }
-        props.showToast(formData.vendorUserEmail + ' 로 비밀번호 초기화 메일을 보냈습니다.', 'success');
+        if (!formData.vendorUserEmail) { showToast('이메일을 입력해주세요.', 'warning'); return; }
+        showToast(formData.vendorUserEmail + ' 로 비밀번호 초기화 메일을 보냈습니다.', 'success');
       },
     };
   },

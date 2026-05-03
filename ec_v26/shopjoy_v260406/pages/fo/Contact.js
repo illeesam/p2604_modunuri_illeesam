@@ -3,13 +3,12 @@ window.Contact = {
   name: 'Contact',
   props: {
     navigate:  { type: Function, required: true },        // 페이지 이동
-    config:    { type: Object,   default: () => ({}) },   // 사이트 설정
-    showToast: { type: Function, default: () => {} },      // 토스트 알림
-    showAlert: { type: Function, default: () => {} },      // 알림 모달
   },
   emits: [],
   setup(props) {
     const { reactive, ref, computed, watch, onMounted } = Vue;
+    const showToast            = window.foApp.showToast;
+    const showAlert            = window.foApp.showAlert;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, openFaq: null});
     const codes = reactive({});
 
@@ -26,7 +25,7 @@ window.Contact = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     const cfInquiryCodes = computed(() =>
-      foUtil.codesByGroup(props.config || {}, 'shopjoy_contact_inquiry')
+      foUtil.codesByGroup(window.SITE_CONFIG || {}, 'shopjoy_contact_inquiry')
     );
 
     const form = reactive({ name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
@@ -56,7 +55,7 @@ window.Contact = {
           desc: form.desc,
         }, '문의', '저장').catch(() => {});
       }
-      props.showToast('문의가 접수되었습니다. 빠르게 답변드리겠습니다!', 'success');
+      showToast('문의가 접수되었습니다. 빠르게 답변드리겠습니다!', 'success');
       Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
     };
 

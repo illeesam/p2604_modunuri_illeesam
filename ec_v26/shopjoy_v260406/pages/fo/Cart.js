@@ -3,17 +3,15 @@ window.Cart = {
   name: 'Cart',
   props: {
     navigate:       { type: Function, required: true },                    // 페이지 이동
-    config:         { type: Object,   default: () => ({}) },               // 사이트 설정
-    cart:           { type: Array,    default: () => ([]) },               // 장바구니 목록
-    cartCount:      { type: Number,   default: 0 },                        // 장바구니 수량
-    removeFromCart: { type: Function, default: () => {} },                 // 장바구니 삭제
-    updateCartQty:  { type: Function, default: () => {} },                 // 장바구니 수량 변경
-    showConfirm:    { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    clearCart:      { type: Function, default: () => {} },                 // 장바구니 비우기
   },
   emits: [],
   setup(props) {
     const { computed, ref, reactive, watch, onMounted } = Vue;
+    const showConfirm          = window.foApp.showConfirm;
+    const clearCart            = window.foApp.clearCart;
+    const removeFromCart       = window.foApp.removeFromCart;
+    const updateCartQty        = window.foApp.updateCartQty;
+    const cart                 = window.foApp.cart;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, checkedIdxs: new Set(), sortKey: '', sortDir: 'asc' });
     const codes = reactive({});
@@ -40,7 +38,7 @@ window.Cart = {
     const cartSortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     const cfSortedCart = computed(() => {
-      const list = [...(props.cart || [])].map((item, i) => ({ ...item, _origIdx: i }));
+      const list = [...(cart || [])].map((item, i) => ({ ...item, _origIdx: i }));
       if (!uiState.sortKey) return list;
       return list.sort((a, b) => {
         let va, vb;
@@ -59,10 +57,10 @@ window.Cart = {
     };
 
     const cfAllChecked = computed(() =>
-      props.cart.length > 0 && uiState.checkedIdxs.size === props.cart.length
+      cart.length > 0 && uiState.checkedIdxs.size === cart.length
     );
     const cfSomeChecked = computed(() =>
-      uiState.checkedIdxs.size > 0 && uiState.checkedIdxs.size < props.cart.length
+      uiState.checkedIdxs.size > 0 && uiState.checkedIdxs.size < cart.length
     );
 
     const toggleAll = () => {
@@ -70,13 +68,13 @@ window.Cart = {
         uiState.checkedIdxs.clear();
       } else {
         uiState.checkedIdxs.clear();
-        props.cart.forEach((_, i) => uiState.checkedIdxs.add(i));
+        cart.forEach((_, i) => uiState.checkedIdxs.add(i));
       }
     };
 
     /* 체크 해제된 항목 삭제 시 인덱스 재정렬 */
     const removeItem = (idx) => {
-      props.removeFromCart(idx);
+      removeFromCart(idx);
       const newSet = new Set();
       uiState.checkedIdxs.forEach(i => { if (i < idx) newSet.add(i); else if (i > idx) newSet.add(i - 1); });
       uiState.checkedIdxs.clear();
@@ -88,7 +86,7 @@ window.Cart = {
       if (uiState.checkedIdxs.size === 0) {
         props.navigate('order');
       } else {
-        const ids = [...uiState.checkedIdxs].sort().map(i => props.cart[i].cartId);
+        const ids = [...uiState.checkedIdxs].sort().map(i => cart[i].cartId);
         props.navigate('order', { cartIds: ids });
       }
     };
@@ -109,8 +107,8 @@ window.Cart = {
     /* 요약 패널: 체크된 항목(없으면 전체) 기준 */
     const cfSummaryItems = computed(() =>
       uiState.checkedIdxs.size > 0
-        ? [...uiState.checkedIdxs].sort().map(i => props.cart[i])
-        : (props.cart || [])
+        ? [...uiState.checkedIdxs].sort().map(i => cart[i])
+        : (cart || [])
     );
 
     const cfTotalPrice = computed(() =>
@@ -122,12 +120,12 @@ window.Cart = {
     );
 
     const cfOrderCount = computed(() =>
-      uiState.checkedIdxs.size > 0 ? uiState.checkedIdxs.size : props.cart.length
+      uiState.checkedIdxs.size > 0 ? uiState.checkedIdxs.size : cart.length
     );
 
     const handleClearAll = async () => {
-      const ok = await props.showConfirm('장바구니 비우기', '장바구니의 모든 상품을 삭제하시겠습니까?', 'warning');
-      if (ok) { props.clearCart(); uiState.checkedIdxs.clear(); }
+      const ok = await showConfirm('장바구니 비우기', '장바구니의 모든 상품을 삭제하시겠습니까?', 'warning');
+      if (ok) { clearCart(); uiState.checkedIdxs.clear(); }
     };
 
     // -- return ---------------------------------------------------------------

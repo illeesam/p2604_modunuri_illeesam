@@ -3,12 +3,13 @@ window.PdBundleMng = {
   name: 'PdBundleMng',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    showToast:   { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:   { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const categories = reactive([]);
     const products = reactive([]);
     const brands = reactive([]);
@@ -283,10 +284,10 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       if (uiState.dtlMode === 'new') {
         if (!newForm.prodNm.trim())   { newErrors.prodNm = '묶음상품명을 입력해주세요.'; }
         if (!newForm.salePrice || newForm.salePrice <= 0) { newErrors.salePrice = '판매가를 입력해주세요.'; }
-        if (Object.keys(newErrors).length) { props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
+        if (Object.keys(newErrors).length) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
       }
       if (!cfDtlRateOk.value) {
-        props.showToast(`안분율 합계가 100%여야 합니다. (현재 ${cfDtlRateSum.value.toFixed(1)}%)`, 'error');
+        showToast(`안분율 합계가 100%여야 합니다. (현재 ${cfDtlRateSum.value.toFixed(1)}%)`, 'error');
         return;
       }
 
@@ -296,7 +297,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         : null;
       const bundleProdId = isNewBundle ? newProdId : uiState.editBundleId;
 
-      const ok = await props.showConfirm(isNewBundle ? '등록' : '저장', isNewBundle ? '묶음상품을 등록하시겠습니까?' : '구성품 설정을 저장하시겠습니까?');
+      const ok = await showConfirm(isNewBundle ? '등록' : '저장', isNewBundle ? '묶음상품을 등록하시겠습니까?' : '구성품 설정을 저장하시겠습니까?');
       if (!ok) return;
       /* 신규: products 목록에 BUNDLE 상품 추가 */
       if (isNewBundle) {
@@ -340,31 +341,31 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       if (isNewBundle) { uiState.dtlMode = 'edit'; uiState.editBundleId = newProdId; }
       try {
         const res = await (isNewBundle ? boApiSvc.pdBundle.create({ prod: { ...newForm, prodTypeCd: 'BUNDLE' }, items: dtlItems }, '묶음상품관리', '등록') : boApiSvc.pdBundle.updateItems(bundleProdId, { items: dtlItems }, '묶음상품관리', '저장'));
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(isNewBundle ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast(isNewBundle ? '등록되었습니다.' : '저장되었습니다.', 'success');
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
 
     /* -- 삭제 -- */
     const handleDelete = async bundleProdId => {
-      const ok = await props.showConfirm('삭제', '묶음상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
+      const ok = await showConfirm('삭제', '묶음상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
       if (!ok) return;
       bundles = (bundles).filter(b => b.bundleProdId !== bundleProdId);
       if (uiState.editBundleId === bundleProdId) closeDtl();
       try {
         const res = await boApiSvc.pdBundle.remove(bundleProdId, '묶음상품관리', '삭제');
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast('삭제되었습니다.', 'success');
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
 

@@ -3,12 +3,13 @@ window.PdCategoryProdMng = {
   name: 'PdCategoryProdMng',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    showToast:   { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:   { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const categories = reactive([]);
     const products = reactive([]);
     const categoryProds = reactive([]);
@@ -224,7 +225,7 @@ window.PdCategoryProdMng = {
     const addProd = (prod) => {
       const exists = categoryProds.some(cp => cp.prodId === prod.productId && cp.categoryId === cfSelectedCatId.value && cp.typeCd === uiState.activeTypeCd);
       if (exists) {
-        if (props.showToast) props.showToast('이미 추가된 상품입니다.', 'warning');
+        if (showToast) showToast('이미 추가된 상품입니다.', 'warning');
         return;
       }
       const newRow = {
@@ -240,7 +241,7 @@ window.PdCategoryProdMng = {
       };
       categoryProds.push(newRow);
       pickerOpen.value = false;
-      if (props.showToast) props.showToast('상품이 추가되었습니다.', 'success');
+      if (showToast) showToast('상품이 추가되었습니다.', 'success');
     };
 
     /* -- 피커 검색 -- */
@@ -254,17 +255,17 @@ window.PdCategoryProdMng = {
     const pickerOpen = ref(false);
     const pickerSearch = ref('');
     const onSave = async () => {
-      const ok = await props.showConfirm('저장', '저장하시겠습니까?');
+      const ok = await showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
       try {
         const res = await boApiSvc.pdCategory.updateProds({ categoryProds }, '카테고리상품관리', '저장');
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast('저장되었습니다.', 'success');
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
 
@@ -282,7 +283,7 @@ window.PdCategoryProdMng = {
       dragoverIdx, onDragStart, onDragOver, onDrop,
       getProdNm, getProd, getCatPath, removeRow, addProd,
       pickerOpen, pickerSearch, onSave,
-      showRefModal: props.showRefModal, showToast: props.showToast, showConfirm: props.showConfirm, setApiRes: props.setApiRes, navigate: props.navigate,
+      showRefModal: showRefModal, showToast: showToast, showConfirm: showConfirm, setApiRes: setApiRes, navigate: props.navigate,
     };
   },
 

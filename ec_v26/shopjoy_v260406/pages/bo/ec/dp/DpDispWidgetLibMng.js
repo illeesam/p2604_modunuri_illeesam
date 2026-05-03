@@ -3,13 +3,13 @@ window.DpDispWidgetLibMng = {
   name: 'DpDispWidgetLibMng',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const widgetLibs = reactive([]);
     const uiState = reactive({ loading: false, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ disp_widget_types: [], active_statuses: [] });
@@ -124,18 +124,18 @@ window.DpDispWidgetLibMng = {
     const setPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
     const handleDelete = async (lib) => {
-      const ok = await props.showConfirm('삭제', `[${lib.name}]을 삭제하시겠습니까?`);
+      const ok = await showConfirm('삭제', `[${lib.name}]을 삭제하시겠습니까?`);
       if (!ok) return;
       const idx = widgetLibs.findIndex(x => x.libId === lib.libId);
       if (idx !== -1) widgetLibs.splice(idx, 1);
       if (uiStateDetail.selectedId === lib.libId) { uiStateDetail.selectedId = null; }
       try {
         const res = await boApiSvc.dpWidgetLib.remove(lib.libId, '전시위젯라이브러리', '삭제');
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast('삭제되었습니다.', 'success');
       } catch (err) {
         console.error('[catch-info]', err);
-        if (props.showToast) props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        if (showToast) showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };
 

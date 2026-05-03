@@ -3,13 +3,13 @@ window.StRawMng = {
   name: 'StRawMng',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '', searchMoreOpen: false, loading: false });
     const codes = reactive({ raw_types: [], raw_collect_statuses: [], raw_vendor_divs: [], pay_methods: [], order_statuses_kr: [],
       confirm_yn_opts: [{ codeValue: 'Y', codeLabel: '확정' }, { codeValue: 'N', codeLabel: '미확정' }],
@@ -110,15 +110,15 @@ const rawList = reactive([]);
     const fmtW = n => (Number(n || 0) >= 0 ? '' : '-') + Math.abs(Number(n || 0)).toLocaleString() + '원';
     const fmtPct = n => Number(n || 0).toLocaleString() + '%';
     const doCollect = async () => {
-      const ok = await props.showConfirm('재수집', '해당 기간 정산 데이터를 재수집하시겠습니까?');
+      const ok = await showConfirm('재수집', '해당 기간 정산 데이터를 재수집하시겠습니까?');
       if (!ok) return;
       try {
         const res = await boApiSvc.stSettleRaw.collect({ dateStart: uiState.dateStart, dateEnd: uiState.dateEnd }, '원장관리', '저장');
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('재수집이 완료되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast('재수집이 완료되었습니다.', 'success');
       } catch (err) {
         console.error('[catch-info]', err);
-        if (props.showToast) props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        if (showToast) showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };
 

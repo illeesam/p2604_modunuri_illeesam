@@ -3,11 +3,10 @@ window.MyCoupon = {
   name: 'MyCoupon',
   props: {
     navigate:  { type: Function, required: true },        // 페이지 이동
-    cartCount: { type: Number,   default: 0 },             // 장바구니 수량
-    showToast: { type: Function, default: () => {} },      // 토스트 알림
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
+    const showToast            = window.foApp.showToast;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'unused'});
     const codes = reactive({});
@@ -46,8 +45,8 @@ window.MyCoupon = {
 
     const addCoupon = () => {
       const code = couponCode.value.trim().toUpperCase();
-      if (!code) { props.showToast('쿠폰 코드를 입력하세요.', 'error'); return; }
-      if (coupons.value.find(c => c.code === code)) { props.showToast('이미 등록된 쿠폰입니다.', 'error'); return; }
+      if (!code) { showToast('쿠폰 코드를 입력하세요.', 'error'); return; }
+      if (coupons.value.find(c => c.code === code)) { showToast('이미 등록된 쿠폰입니다.', 'error'); return; }
       coupons.value.unshift({
         couponId: Date.now(), code, name: '추가 쿠폰 (' + code + ')',
         discountType: 'amount', discountValue: 3000, minOrder: 30000,
@@ -55,7 +54,7 @@ window.MyCoupon = {
         regDate: new Date().toISOString().slice(0,10), regSource: '쿠폰 코드 입력', regMethod: '수동',
       });
       couponCode.value = ''; pager.page = 1;
-      props.showToast('쿠폰이 등록되었습니다!', 'success');
+      showToast('쿠폰이 등록되었습니다!', 'success');
     };
 
     const onTabChange = tab => { uiState.activeTab = tab; pager.page = 1; };

@@ -3,12 +3,13 @@ window.PdCategoryMng = {
   name: 'PdCategoryMng',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    showToast:   { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:   { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const categories = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedCatId: null, focusedIdx: null, descOpen: false});
     const codes = reactive({
@@ -234,26 +235,26 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       const row = gridRows[idx];
       if (!row) return;
       if (row._row_status === 'N') { gridRows.splice(idx, 1); return; }
-      const ok = await props.showConfirm?.('삭제', `[${row.categoryNm}] 카테고리를 삭제하시겠습니까?`);
+      const ok = await showConfirm?.('삭제', `[${row.categoryNm}] 카테고리를 삭제하시겠습니까?`);
       if (!ok) return;
       row._row_status = 'D';
       try {
         const res = await boApiSvc.pdCategory.remove(row.categoryId, '카테고리관리', '삭제');
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast('삭제되었습니다.', 'success');
         gridRows.splice(idx, 1);
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
     const deleteRows = async () => {
       const idxs = [];
       gridRows.forEach((r, i) => { if (r._row_check) idxs.push(i); });
-      if (!idxs.length) { props.showToast?.('삭제할 행을 선택하세요.', 'info'); return; }
-      const ok = await props.showConfirm?.('삭제', `선택한 ${idxs.length}건을 삭제하시겠습니까?`);
+      if (!idxs.length) { showToast?.('삭제할 행을 선택하세요.', 'info'); return; }
+      const ok = await showConfirm?.('삭제', `선택한 ${idxs.length}건을 삭제하시겠습니까?`);
       if (!ok) return;
       for (let i = idxs.length - 1; i >= 0; i--) {
         const idx = idxs[i];
@@ -264,15 +265,15 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
           gridRows.splice(idx, 1);
         } catch (err) { console.error('[deleteRows]', err); }
       }
-      props.showToast?.('삭제되었습니다.', 'success');
+      showToast?.('삭제되었습니다.', 'success');
     };
     const handleSave = async () => {
       const changed = gridRows.filter(r => r._row_status === 'N' || r._row_status === 'U');
-      if (!changed.length) { props.showToast?.('변경된 내용이 없습니다.', 'info'); return; }
+      if (!changed.length) { showToast?.('변경된 내용이 없습니다.', 'info'); return; }
       for (const row of changed) {
-        if (!row.categoryNm) { props.showToast?.('카테고리명은 필수입니다.', 'error'); return; }
+        if (!row.categoryNm) { showToast?.('카테고리명은 필수입니다.', 'error'); return; }
       }
-      const ok = await props.showConfirm?.('저장', `${changed.length}건을 저장하시겠습니까?`);
+      const ok = await showConfirm?.('저장', `${changed.length}건을 저장하시겠습니까?`);
       if (!ok) return;
       for (const row of changed) {
         const isNew = row._row_status === 'N';
@@ -283,17 +284,17 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
           const res = isNew
             ? await boApiSvc.pdCategory.create(payload, '카테고리관리', '저장')
             : await boApiSvc.pdCategory.update(row.categoryId, payload, '카테고리관리', '저장');
-          if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+          if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
           row._row_status = null;
         } catch (err) {
           console.error('[handleSave]', err);
           const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-          if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-          if (props.showToast) props.showToast(errMsg, 'error', 0);
+          if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+          if (showToast) showToast(errMsg, 'error', 0);
           return;
         }
       }
-      props.showToast?.('저장되었습니다.', 'success');
+      showToast?.('저장되었습니다.', 'success');
       await handleSearchList();   // 트리 갱신
       await handleGridSearch();   // 그리드 갱신
     };

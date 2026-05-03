@@ -4,12 +4,14 @@ window.OdClaimHist = {
   name: 'OdClaimHist',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
     claimId:      { type: String, default: null }, // 대상 ID
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const uiState = reactive({isPageCodeLoad: false, botTab: window._odClaimHistState.tab || 'items', viewMode2: 'tab', claimType: '취소', claimStatus: '', relatedOrder: null, relatedDliv: null});
     const tab = Vue.toRef(uiState, 'tab');
     const viewMode2 = Vue.toRef(uiState, 'viewMode2');
@@ -100,7 +102,7 @@ window.OdClaimHist = {
         refundMethodCd: processForm.refundMethodCd,
         memo: processForm.memo,
       });
-      props.showToast('저장되었습니다.');
+      showToast('저장되었습니다.');
     };
 
     const botTab = Vue.toRef(uiState, 'botTab');

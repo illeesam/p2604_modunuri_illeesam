@@ -3,13 +3,13 @@ window.StStatusMng = {
   name: 'StStatusMng',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
 const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, activeTab: 'vendor', dateRange: '이번달', dateStart: '', dateEnd: '', vendorSearchKw: '', orderSearchKw: '', orderSearchStatus: '', claimSearchType: '', claimSearchStatus: '', promoSearchKw: '', promoSearchType: '', settleSearchMonth: ''});;
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const codes = reactive({ st_order_statuses: [], claim_types_kr: [], claim_statuses_kr: [], promo_types_kr: [], date_range_opts: [] });
@@ -297,7 +297,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const exportTab = () => {
       const tab = window.safeArrayUtils.safeFind(TABS, t => t.id === uiState.activeTab);
-      props.showToast && props.showToast(`${tab.label} 데이터를 Excel로 내보냅니다.`, 'info');
+      showToast && showToast(`${tab.label} 데이터를 Excel로 내보냅니다.`, 'info');
     };
 
     // -- return ---------------------------------------------------------------

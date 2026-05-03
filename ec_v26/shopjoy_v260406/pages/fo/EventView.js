@@ -3,7 +3,6 @@ window.EventView = {
   name: 'EventView',
   props: {
     navigate: { type: Function, required: true },        // 페이지 이동
-    config:   { type: Object,   default: () => ({}) },   // 사이트 설정
     editId:   { type: String,   default: null },          // 대상 ID
   },
   setup(props) {

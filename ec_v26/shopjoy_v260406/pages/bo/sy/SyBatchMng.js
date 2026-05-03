@@ -3,13 +3,14 @@ window.SyBatchMng = {
   name: 'SyBatchMng',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    showToast:   { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:   { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const batches = reactive([]);
     const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false, selectedPath: null, focusedIdx: null});
     const codes = reactive({ batch_status: [], active_statuses: [], batch_run_statuses: [], date_range_opts: [] });
@@ -143,7 +144,7 @@ window.SyBatchMng = {
 
     const cancelChecked = () => {
       const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.batchId));
-      if (!ids.size) { props.showToast('취소할 행을 선택해주세요.', 'info'); return; }
+      if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
       for (let i = gridRows.length - 1; i >= 0; i--) {
         const row = gridRows[i];
         if (!ids.has(row.batchId) || row._row_status === 'N') continue;
@@ -164,34 +165,34 @@ window.SyBatchMng = {
       const iRows = gridRows.filter(r => r._row_status === 'I');
       const uRows = gridRows.filter(r => r._row_status === 'U');
       const dRows = gridRows.filter(r => r._row_status === 'D');
-      if (!iRows.length && !uRows.length && !dRows.length) { props.showToast('변경된 데이터가 없습니다.', 'error'); return; }
+      if (!iRows.length && !uRows.length && !dRows.length) { showToast('변경된 데이터가 없습니다.', 'error'); return; }
       for (const r of [...iRows, ...uRows]) {
-        if (!r.batchNm || !r.batchCode || !r.cron) { props.showToast('배치명, 배치코드, Cron 표현식은 필수 항목입니다.', 'error'); return; }
+        if (!r.batchNm || !r.batchCode || !r.cron) { showToast('배치명, 배치코드, Cron 표현식은 필수 항목입니다.', 'error'); return; }
       }
       const details = [];
       if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
       if (uRows.length) details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' });
       if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
-      const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
+      const ok = await showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
       const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
       try {
         await boApiSvc.syBatch.saveList(saveRows, '배치관리', '저장');
-        props.showToast('저장되었습니다.');
+        showToast('저장되었습니다.');
         await handleSearchList();
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };
 
     /* -- 즉시 실행 -- */
     const runNow = async (row) => {
-      const ok = await props.showConfirm('즉시 실행', `[${row.batchNm}] 배치를 즉시 실행하시겠습니까?`);
+      const ok = await showConfirm('즉시 실행', `[${row.batchNm}] 배치를 즉시 실행하시겠습니까?`);
       if (!ok) return;
       const src = batches.find(x => x.batchId === row.batchId);
       row.runStatus = '실행중';
       if (src) src.runStatus = '실행중';
-      props.showToast('배치 실행을 시작했습니다.');
+      showToast('배치 실행을 시작했습니다.');
       setTimeout(() => {
         const now = new Date().toLocaleString('ko-KR').slice(0, 16);
         row.runStatus = '성공'; row.lastRun = now; row.runCount = (row.runCount || 0) + 1;
@@ -324,7 +325,7 @@ window.SyBatchMng = {
       gridRows.splice(idx, 0, moved);
       dragSrc.value = idx; uiState.dragMoved = true;
     };
-    const onDragEnd = () => { if (uiState.dragMoved) props.showToast('정렬정보가 저장되었습니다.'); dragSrc.value = null; uiState.dragMoved = false; };
+    const onDragEnd = () => { if (uiState.dragMoved) showToast('정렬정보가 저장되었습니다.'); dragSrc.value = null; uiState.dragMoved = false; };
 
     /* -- 체크 -- */
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };

@@ -3,22 +3,21 @@ window.Prod02View = {
   name: "Prod02View",
   props: {
     navigate:   { type: Function, required: true },        // 페이지 이동
-    config:     { type: Object,   default: () => ({}) },   // 사이트 설정
-    product:    { type: Object,   default: () => ({}) },   // 상품 정보
-    addToCart:  { type: Function, default: () => {} },      // 장바구니 추가
-    showToast:  { type: Function, default: () => {} },      // 토스트 알림
-    showAlert:  { type: Function, default: () => {} },      // 알림 모달
-    toggleLike: { type: Function, default: () => {} },      // 찜 토글
-    isLiked:    { type: Function, default: () => false },   // 찜 여부 확인
   },
   setup(props) {
 
     const { ref, reactive, computed, onMounted, onBeforeUnmount, watch } = Vue;
+    const product              = window.foApp.selectedProduct;
+    const addToCart            = window.foApp.addToCart;
+    const showToast            = window.foApp.showToast;
+    const showAlert            = window.foApp.showAlert;
+    const toggleLike           = window.foApp.toggleLike;
+    const isLiked              = window.foApp.isLiked;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy' });
     const codes = reactive({});
 
-    const svProduct = ref(props.product || null);
+    const svProduct = ref(product || null);
 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       const productId = svProduct.value?.productId;
@@ -322,7 +321,7 @@ window.Prod02View = {
       window.removeEventListener('popstate', onPopState);
     });
 
-    watch(() => props.product, (p) => {
+    watch(() => product, (p) => {
       svProduct.value = p;
       uiState.selectedColor = (p?.opt1s || []).find(c => colorStatus(c) === 'ok') || null;
       uiState.selectedSize  = null;
@@ -337,7 +336,7 @@ window.Prod02View = {
     /* -- 카테고리 라벨 -- */
     const fnCategoryLabel = p => {
       if (!p) return '';
-      return (props.config?.categorys || []).find(c => c.categoryId === p.categoryId)?.categoryNm || p.categoryId || '';
+      return (window.SITE_CONFIG?.categorys || []).find(c => c.categoryId === p.categoryId)?.categoryNm || p.categoryId || '';
     };
 
     /* -- 옵션 재고 상태 (목업: 색상 + 사이즈) -- */
@@ -471,7 +470,7 @@ window.Prod02View = {
 
     const handleAddToCart = () => {
       if (!validate()) return;
-      props.addToCart(svProduct.value, uiState.selectedColor, uiState.selectedSize, uiState.qty);
+      addToCart(svProduct.value, uiState.selectedColor, uiState.selectedSize, uiState.qty);
       uiState.selectedColor = svProduct.value?.opt1s?.[0] || null;
       uiState.selectedSize  = null;
       uiState.qty = 1;
@@ -494,7 +493,7 @@ window.Prod02View = {
     /* 드로어 장바구니 담기 */
     const execCartFromDrawer = () => {
       if (!validate()) return;
-      props.addToCart(svProduct.value, uiState.selectedColor, uiState.selectedSize, uiState.qty);
+      addToCart(svProduct.value, uiState.selectedColor, uiState.selectedSize, uiState.qty);
       uiState.quickBuyOpen = false;
       uiState.selectedColor = svProduct.value?.opt1s?.[0] || null;
       uiState.selectedSize  = null;

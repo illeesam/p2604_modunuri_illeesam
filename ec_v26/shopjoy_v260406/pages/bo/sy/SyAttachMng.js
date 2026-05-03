@@ -3,12 +3,13 @@ window.SyAttachMng = {
   name: 'SyAttachMng',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const attaches = reactive([]);
     const attachGrps = reactive([]);
     const uiState = reactive({ fileEditMode: false, grpEditMode: false, loading: false, error: null, isPageCodeLoad: false, selectedGrpId: null, grpEditId: null, fileEditId: null});
@@ -82,26 +83,26 @@ window.SyAttachMng = {
       Object.assign(grpForm, { ...g });
     };
     const handleSaveGrp = () => {
-      if (!grpForm.grpNm || !grpForm.grpCode) { props.showToast('그룹명과 코드는 필수입니다.', 'error'); return; }
+      if (!grpForm.grpNm || !grpForm.grpCode) { showToast('그룹명과 코드는 필수입니다.', 'error'); return; }
       if (uiState.grpEditId === null) {
         if (!Array.isArray(attachGrps)) return;
         attachGrps.push({ ...grpForm, attachGrpId: nextId.value(attachGrps, 'attachGrpId'), regDate: new Date().toISOString().slice(0, 10) });
-        props.showToast('그룹이 등록되었습니다.');
+        showToast('그룹이 등록되었습니다.');
       } else {
         if (!Array.isArray(attachGrps)) return;
         const idx = attachGrps.findIndex(x => x.attachGrpId === uiState.grpEditId);
         if (idx !== -1) Object.assign(attachGrps[idx], grpForm);
-        props.showToast('저장되었습니다.');
+        showToast('저장되었습니다.');
       }
       uiState.grpEditMode = false;
     };
     const handleDeleteGrp = async (g) => {
-      const ok = await props.showConfirm('그룹 삭제', `[${g.grpNm}] 그룹을 삭제하시겠습니까?`);
+      const ok = await showConfirm('그룹 삭제', `[${g.grpNm}] 그룹을 삭제하시겠습니까?`);
       if (!ok) return;
       const idx = attachGrps.findIndex(x => x.attachGrpId === g.attachGrpId);
       if (idx !== -1) attachGrps.splice(idx, 1);
       if (uiState.selectedGrpId === g.attachGrpId) uiState.selectedGrpId = null;
-      props.showToast('삭제되었습니다.');
+      showToast('삭제되었습니다.');
     };
 
     /* -- 첨부파일 -- */
@@ -124,24 +125,24 @@ window.SyAttachMng = {
       Object.assign(fileForm, { ...a });
     };
     const handleSaveFile = () => {
-      if (!fileForm.fileNm || !fileForm.attachGrpId) { props.showToast('그룹과 파일명은 필수입니다.', 'error'); return; }
+      if (!fileForm.fileNm || !fileForm.attachGrpId) { showToast('그룹과 파일명은 필수입니다.', 'error'); return; }
       const grp = (Array.isArray(attachGrps) ? attachGrps : []).find(g => g.attachGrpId === fileForm.attachGrpId);
       if (uiState.fileEditId === null) {
         attaches.push({ ...fileForm, attachId: nextId.value(attaches, 'attachId'), attachGrpNm: grp?.grpNm || '', regDate: new Date().toISOString().slice(0, 10) });
-        props.showToast('파일이 등록되었습니다.');
+        showToast('파일이 등록되었습니다.');
       } else {
         const idx = (Array.isArray(attaches) ? attaches : []).findIndex(x => x.attachId === uiState.fileEditId);
         if (idx !== -1) Object.assign(attaches[idx], { ...fileForm, attachGrpNm: grp?.grpNm || '' });
-        props.showToast('저장되었습니다.');
+        showToast('저장되었습니다.');
       }
       uiState.fileEditMode = false;
     };
     const handleDeleteFile = async (a) => {
-      const ok = await props.showConfirm('파일 삭제', `[${a.fileNm}] 파일을 삭제하시겠습니까?`);
+      const ok = await showConfirm('파일 삭제', `[${a.fileNm}] 파일을 삭제하시겠습니까?`);
       if (!ok) return;
       const idx = (Array.isArray(attaches) ? attaches : []).findIndex(x => x.attachId === a.attachId);
       if (idx !== -1) attaches.splice(idx, 1);
-      props.showToast('삭제되었습니다.');
+      showToast('삭제되었습니다.');
     };
 
     const fnFmtSize = bytes => {

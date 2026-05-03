@@ -3,7 +3,6 @@ window.EventPage = {
   name: 'EventPage',
   props: {
     navigate: { type: Function, required: true },        // 페이지 이동
-    config:   { type: Object,   default: () => ({}) },   // 사이트 설정
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;

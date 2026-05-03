@@ -3,12 +3,13 @@ window.PdTagMng = {
   name: 'PdTagMng',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    showToast:   { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:   { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const { ref, reactive, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const tags = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ use_yn: [] });
@@ -68,35 +69,35 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
     const deleteRow    = async (idx) => {
       const row = gridRows[idx];
       if (row._row_status === 'N') { gridRows.splice(idx, 1); return; }
-      const ok = await props.showConfirm('삭제', `[${row.tagNm}] 태그를 삭제하시겠습니까?`);
+      const ok = await showConfirm('삭제', `[${row.tagNm}] 태그를 삭제하시겠습니까?`);
       if (!ok) return;
       const si = tags.findIndex(t => t.tagId === row.tagId); if (si !== -1) tags.splice(si, 1); gridRows.splice(idx, 1);
       try {
         const res = await boApiSvc.pdTag.remove(row.tagId, '태그관리', '삭제');
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
     const saveAll = async () => {
       const changed = window.safeArrayUtils.safeFilter(gridRows, r => ['N','I','U','D'].includes(r._row_status));
-      if (!changed.length) { props.showToast('변경된 내용이 없습니다.', 'info'); return; }
+      if (!changed.length) { showToast('변경된 내용이 없습니다.', 'info'); return; }
       for (const row of changed.filter(r => r._row_status !== 'D')) {
-        if (!row.tagNm) { props.showToast('태그명은 필수입니다.', 'error'); return; }
+        if (!row.tagNm) { showToast('태그명은 필수입니다.', 'error'); return; }
       }
-      const ok = await props.showConfirm('저장', '저장하시겠습니까?');
+      const ok = await showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
       const saveRows = changed.map(r => ({ ...r, rowStatus: r._row_status === 'N' ? 'I' : r._row_status }));
       try {
         await boApiSvc.pdTag.saveList(saveRows, '태그관리', '저장');
-        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+        if (showToast) showToast('저장되었습니다.', 'success');
         await handleSearchList();
       } catch (err) {
         const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
     const onSearch = async () => {

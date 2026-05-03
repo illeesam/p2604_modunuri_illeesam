@@ -3,16 +3,14 @@ window.MyOrder = {
   name: 'MyOrder',
   props: {
     navigate:       { type: Function, required: true },                    // 페이지 이동
-    config:         { type: Object,   default: () => ({}) },               // 사이트 설정
-    cart:           { type: Array,    default: () => ([]) },               // 장바구니 목록
-    cartCount:      { type: Number,   default: 0 },                        // 장바구니 수량
-    showToast:      { type: Function, default: () => {} },                  // 토스트 알림
-    showConfirm:    { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    removeFromCart: { type: Function, default: () => {} },                  // 장바구니 삭제
-    updateCartQty:  { type: Function, default: () => {} },                  // 장바구니 수량 변경
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
+    const showToast            = window.foApp.showToast;
+    const showConfirm          = window.foApp.showConfirm;
+    const cart                 = window.foApp.cart;
+    const removeFromCart       = window.foApp.removeFromCart;
+    const updateCartQty        = window.foApp.updateCartQty;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, helpTab: 'order', flowHelpOpen: false });
     const codes = reactive({});
 
@@ -42,7 +40,7 @@ window.MyOrder = {
     };
     const openTracking = (courier, trackingNo) => {
       const fn = COURIER_URLS[courier];
-      if (!fn) { props.showToast('택배사 정보를 찾을 수 없습니다.', 'error'); return; }
+      if (!fn) { showToast('택배사 정보를 찾을 수 없습니다.', 'error'); return; }
       window.open(fn(trackingNo), '_blank', 'width=960,height=700,scrollbars=yes,resizable=yes');
     };
     const openTracking2 = (courier, trackingNo) => {
@@ -58,16 +56,16 @@ window.MyOrder = {
 
     /* -- 주문 액션 -- */
     const cancelOrder = async orderId => {
-      const ok = await props.showConfirm('주문 취소', '이 주문을 취소하시겠습니까?', 'warning');
+      const ok = await showConfirm('주문 취소', '이 주문을 취소하시겠습니까?', 'warning');
       if (!ok) return;
       myStore.setOrderStatus(orderId, '취소됨');
-      props.showToast('주문이 취소되었습니다.', 'success');
+      showToast('주문이 취소되었습니다.', 'success');
     };
     const confirmPurchase = async orderId => {
-      const ok = await props.showConfirm('구매확정', '구매를 확정하시겠습니까?\n확정 후에는 교환/반품 신청이 어렵습니다.', 'warning');
+      const ok = await showConfirm('구매확정', '구매를 확정하시겠습니까?\n확정 후에는 교환/반품 신청이 어렵습니다.', 'warning');
       if (!ok) return;
       myStore.setOrderStatus(orderId, '완료');
-      props.showToast('구매가 확정되었습니다. 감사합니다! 🎉', 'success');
+      showToast('구매가 확정되었습니다. 감사합니다! 🎉', 'success');
     };
 
     /* -- 클레임 신청 모달 -- */
@@ -103,7 +101,7 @@ window.MyOrder = {
     const cfClaimModalProduct = computed(() => {
       if (!claimModal.order) return null;
       const name = claimModal.order.items[claimModal.exchangeItemIdx]?.prodNm;
-      return props.config.products.find(p => p.prodNm === name) || null;
+      return window.SITE_CONFIG.products.find(p => p.prodNm === name) || null;
     });
     const openClaimModal = (orderId, type) => {
       claimModal.show = true; claimModal.type = type; claimModal.orderId = orderId;
@@ -114,22 +112,22 @@ window.MyOrder = {
       if (!coupons.value.length) myStore.handleLoadCoupons();
     };
     const submitClaimModal = () => {
-      if (!claimModal.reason) { props.showToast('신청 사유를 선택해주세요.', 'error'); return; }
+      if (!claimModal.reason) { showToast('신청 사유를 선택해주세요.', 'error'); return; }
       if (claimModal.type === 'exchange') {
         if (!claimModal.exchangeSize && !claimModal.exchangeColor) {
-          props.showToast('교환할 사이즈 또는 색상을 선택해주세요.', 'error'); return;
+          showToast('교환할 사이즈 또는 색상을 선택해주세요.', 'error'); return;
         }
       }
       if (cfClaimSelectedCoupon.value) cfClaimSelectedCoupon.value.used = true;
       myStore.setOrderStatus(claimModal.orderId, claimModal.type === 'exchange' ? '교환요청' : '반품요청');
       const label = claimModal.type === 'exchange' ? '교환' : '반품';
       claimModal.show = false;
-      props.showToast(label + ' 신청이 완료되었습니다. 곧 연락드리겠습니다.', 'success');
+      showToast(label + ' 신청이 완료되었습니다. 곧 연락드리겠습니다.', 'success');
     };
 
     /* -- 공유 모달 -- */
     const cfAuthUser = computed(() => window.foAuth.state.user);
-    const findProduct = name => props.config.products.find(p => p.prodNm === name) || null;
+    const findProduct = name => window.SITE_CONFIG.products.find(p => p.prodNm === name) || null;
     const openProductModal = name => {
       const p = findProduct(name);
       if (p) { myStore.productModal.product = p; myStore.productModal.show = true; }
@@ -158,7 +156,7 @@ window.MyOrder = {
       reviewModal.files = existing ? (existing.files || []) : [];
     };
     const submitReview = () => {
-      if (!reviewModal.text.trim()) { props.showToast('리뷰 내용을 입력해주세요.', 'error'); return; }
+      if (!reviewModal.text.trim()) { showToast('리뷰 내용을 입력해주세요.', 'error'); return; }
       const key = `${reviewModal.orderId}_${reviewModal.itemIdx}`;
       reviews[key] = { rating: reviewModal.rating, text: reviewModal.text, date: new Date().toISOString().slice(0, 10), files: reviewModal.files.map(f => f.name) };
       const order = orders.value.find(o => o.orderId === reviewModal.orderId);
@@ -167,7 +165,7 @@ window.MyOrder = {
         if (allReviewed) myStore.setOrderStatus(reviewModal.orderId, '구매확정');
       }
       reviewModal.show = false;
-      props.showToast(reviewModal.isEdit ? '리뷰가 수정되었습니다.' : '리뷰가 등록되었습니다! 감사합니다 😊', 'success');
+      showToast(reviewModal.isEdit ? '리뷰가 수정되었습니다.' : '리뷰가 등록되었습니다! 감사합니다 😊', 'success');
     };
     const getReview = (orderId, itemIdx) => reviews[`${orderId}_${itemIdx}`] || null;
 

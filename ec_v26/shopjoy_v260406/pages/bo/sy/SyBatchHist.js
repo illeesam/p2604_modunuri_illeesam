@@ -4,12 +4,14 @@ window.SyBatchHist = {
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
     boData:       { type: Object, default: () => ({}) }, // BO 공통 데이터
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
     batchCode:    { type: String, default: null }, // 대상 코드
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const batches = reactive([]);
     const batchLogs = reactive([]);
     const uiState = reactive({ loading: false, isPageCodeLoad: false, error: null, searchBatchId: '', searchStatus: '', expandedId: null });

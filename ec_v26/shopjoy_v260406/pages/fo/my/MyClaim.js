@@ -3,13 +3,11 @@ window.MyClaim = {
   name: 'MyClaim',
   props: {
     navigate:    { type: Function, required: true },                    // 페이지 이동
-    config:      { type: Object,   default: () => ({}) },               // 사이트 설정
-    cartCount:   { type: Number,   default: 0 },                        // 장바구니 수량
-    showToast:   { type: Function, default: () => {} },                  // 토스트 알림
-    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
   },
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
+    const showToast            = window.foApp.showToast;
+    const showConfirm          = window.foApp.showConfirm;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
@@ -44,7 +42,7 @@ window.MyClaim = {
     );
 
     const cfAuthUser = computed(() => window.foAuth.state.user);
-    const findProduct = name => props.config.products.find(p => p.prodNm === name) || null;
+    const findProduct = name => window.SITE_CONFIG.products.find(p => p.prodNm === name) || null;
     const openProductModal = name => {
       const p = findProduct(name);
       if (p) { myStore.productModal.product = p; myStore.productModal.show = true; }
@@ -57,7 +55,7 @@ window.MyClaim = {
     const openOrderModal = async orderId => {
       await myStore.handleLoadOrders();
       const ok = myStore.openOrderModal(orderId);
-      if (!ok) props.showToast('주문 정보를 찾을 수 없습니다.', 'error');
+      if (!ok) showToast('주문 정보를 찾을 수 없습니다.', 'error');
     };
 
     const openTracking2 = (courier, trackingNo) => {
@@ -71,7 +69,7 @@ window.MyClaim = {
     };
 
     const cancelClaim = async claimId => {
-      const ok = await props.showConfirm('신청 취소', '이 신청을 취소하시겠습니까?', 'warning');
+      const ok = await showConfirm('신청 취소', '이 신청을 취소하시겠습니까?', 'warning');
       if (!ok) return;
       const item = claims.value.find(c => c.claimId === claimId);
       if (item) {
@@ -80,7 +78,7 @@ window.MyClaim = {
           : '교환취소됨';
         myStore.removeClaim(claimId);
       }
-      props.showToast('신청이 취소되었습니다.', 'info');
+      showToast('신청이 취소되었습니다.', 'info');
     };
 
     const handleSearchData = async (searchType = 'DEFAULT') => {

@@ -3,15 +3,15 @@ window.DpDispWidgetLibDtl = {
   name: 'DpDispWidgetLibDtl',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
     editId:       { type: String, default: null }, // 수정 대상 ID
   },
   emits: ['close'],
   setup(props, { emit }) {
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const codes = reactive({ disp_widget_types: [], active_statuses: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 실행'},{value:'modal',label:'모달 열기'}] });
     const uiState = reactive({ isPageCodeLoad: false, loading: false, error: null, previewMode: 'default', previewPaneWidth: 460, htmlContentEl: null});
     const previewMode = Vue.toRef(uiState, 'previewMode');
@@ -406,38 +406,38 @@ window.DpDispWidgetLibDtl = {
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try { await schema.validate(form, { abortEarly: false }); }
-      catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); props.showToast('입력 내용을 확인해주세요.', 'error'); return; }
+      catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
 
       const isNewLib = cfIsNew.value;
-      const ok = await props.showConfirm('저장', '저장하시겠습니까?');
+      const ok = await showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
       try {
         const res = await (isNewLib ? boApiSvc.dpWidgetLib.create({ ...form }, '전시위젯라이브러리', '등록') : boApiSvc.dpWidgetLib.update(form.libId, { ...form }, '전시위젯라이브러리', '저장'));
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('저장되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast('저장되었습니다.', 'success');
         if (props.navigate) props.navigate('dpDispWidgetLibMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
 
     /* -- 삭제 -- */
     const handleDelete = async () => {
       if (cfIsNew.value) return;
-      const ok = await props.showConfirm('삭제', '이 위젯 Lib를 삭제하시겠습니까?');
+      const ok = await showConfirm('삭제', '이 위젯 Lib를 삭제하시겠습니까?');
       if (!ok) return;
       try {
         const res = await boApiSvc.dpWidgetLib.remove(form.libId, '전시위젯라이브러리', '삭제');
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast('삭제되었습니다.', 'success');
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
       props.navigate('dpDispWidgetLibMng', { reload: true });
     };
@@ -448,7 +448,7 @@ window.DpDispWidgetLibDtl = {
       uiState.libPickOpen = false;
       const preserve = { libId: form.libId, libCode: form.libCode, regDate: form.regDate };
       Object.assign(form, { ...lib, ...preserve });
-      props.showToast && props.showToast(`[${lib.name}] 내용을 복사했습니다.`, 'info');
+      showToast && showToast(`[${lib.name}] 내용을 복사했습니다.`, 'info');
     };
 
     const previewPaneWidth = Vue.toRef(uiState, 'previewPaneWidth');

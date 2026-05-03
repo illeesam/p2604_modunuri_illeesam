@@ -3,13 +3,13 @@ window.StErpGenMng = {
   name: 'StErpGenMng',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
     const codes = reactive({
       erp_statuses: [],
@@ -71,8 +71,8 @@ window.StErpGenMng = {
     const genHistory = reactive([]);
 
     const doGenerate = async () => {
-      if (!cfPreviewRows.value.length) { props.showToast('생성할 전표 데이터가 없습니다.', 'error'); return; }
-      const ok = await props.showConfirm('ERP 전표생성', `${targetMon.value} ${slipType.value} 전표를 생성하시겠습니까?`);
+      if (!cfPreviewRows.value.length) { showToast('생성할 전표 데이터가 없습니다.', 'error'); return; }
+      const ok = await showConfirm('ERP 전표생성', `${targetMon.value} ${slipType.value} 전표를 생성하시겠습니까?`);
       if (!ok) return;
       genHistory.unshift({
         genId: 'GEN-' + targetMon.value, genMon: targetMon.value, slipType: slipType.value,
@@ -82,13 +82,13 @@ window.StErpGenMng = {
       });
       try {
         const res = await boApiSvc.stErp.gen({ targetMon: targetMon.value, slipType: slipType.value, rows: cfPreviewRows.value }, '정산ERP생성', '저장');
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('ERP 전표가 생성되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast('ERP 전표가 생성되었습니다.', 'success');
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
 

@@ -3,11 +3,10 @@ window.MyCache = {
   name: 'MyCache',
   props: {
     navigate:  { type: Function, required: true },        // 페이지 이동
-    cartCount: { type: Number,   default: 0 },             // 장바구니 수량
-    showToast: { type: Function, default: () => {} },      // 토스트 알림
   },
   setup(props) {
     const { reactive, computed, onMounted, watch } = Vue;
+    const showToast            = window.foApp.showToast;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
@@ -33,20 +32,20 @@ window.MyCache = {
 
     const addCash = () => {
       const amount = parseInt(String(chargeAmount.value).replace(/,/g, ''), 10);
-      if (!amount || amount < 1000) { props.showToast('최소 1,000원 이상 충전 가능합니다.', 'error'); return; }
+      if (!amount || amount < 1000) { showToast('최소 1,000원 이상 충전 가능합니다.', 'error'); return; }
       cashBalance.value += amount;
       cashHistory.value.unshift({
         cashId: Date.now(), date: new Date().toISOString().slice(0, 10),
         type: '충전', amount, desc: '직접 충전', balance: cashBalance.value
       });
       chargeAmount.value = ''; pager.page = 1;
-      props.showToast(amount.toLocaleString() + '원이 충전되었습니다!', 'success');
+      showToast(amount.toLocaleString() + '원이 충전되었습니다!', 'success');
     };
 
     const openOrderModal = async orderId => {
       await myStore.handleLoadOrders();
       const ok = myStore.openOrderModal(orderId);
-      if (!ok) props.showToast('주문 정보를 찾을 수 없습니다.', 'error');
+      if (!ok) showToast('주문 정보를 찾을 수 없습니다.', 'error');
     };
 
     const handleSearchData = async (searchType = 'DEFAULT') => {

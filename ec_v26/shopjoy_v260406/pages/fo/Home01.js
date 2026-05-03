@@ -3,15 +3,14 @@ window.Home01 = {
   name: 'Home',
   props: {
     navigate:      { type: Function, required: true },        // 페이지 이동
-    config:        { type: Object,   default: () => ({}) },   // 사이트 설정
-    products:      { type: Array,    default: () => ([]) },   // 상품 목록
-    selectProduct: { type: Function, default: () => {} },      // 상품 선택
-    toggleLike:    { type: Function, default: () => {} },      // 찜 토글
-    isLiked:       { type: Function, default: () => false },   // 찜 여부 확인
   },
   emits: [],
   setup(props) {
     const { computed, ref, onMounted, onBeforeUnmount, reactive, watch } = Vue;
+    const products             = window.foApp.products;
+    const selectProduct        = window.foApp.selectProduct;
+    const toggleLike           = window.foApp.toggleLike;
+    const isLiked              = window.foApp.isLiked;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cartModalMode: false, quickViewProduct: null, bannerIdx: 0});
     const codes = reactive({});
 
@@ -27,7 +26,7 @@ window.Home01 = {
 
     function fnCategoryLabel(p) {
       if (!p) return '';
-      const cats = (props.config && props.config.categorys) || [];
+      const cats = (window.SITE_CONFIG && window.SITE_CONFIG.categorys) || [];
       const row = cats.find(c => c.categoryId === p.categoryId);
       return row ? row.categoryNm : p.categoryId;
     }
@@ -38,16 +37,16 @@ window.Home01 = {
     }
 
     const cfNewProducts = computed(() =>
-      (props.products || []).filter(p => p.badge === 'NEW').slice(0, 3)
+      (products || []).filter(p => p.badge === 'NEW').slice(0, 3)
     );
 
     const cfBestProducts = computed(() =>
-      (props.products || []).filter(p => p.badge === '인기').slice(0, 3)
+      (products || []).filter(p => p.badge === '인기').slice(0, 3)
     );
 
     /* -- 할인 상품 -- */
     const cfSaleProducts = computed(() =>
-      (props.products || []).filter(p => p.originalPrice && p.priceNum && p.originalPrice > p.priceNum).slice(0, 4)
+      (products || []).filter(p => p.originalPrice && p.priceNum && p.originalPrice > p.priceNum).slice(0, 4)
     );
 
     /* -- 빠른보기 모달 -- */
@@ -60,7 +59,7 @@ window.Home01 = {
 
     /* -- 홈 상품 8개 -- */
     const cfAllHomeProducts = computed(() => {
-      const all = props.products || [];
+      const all = products || [];
       return all.slice(0, 8);
     });
 
@@ -92,7 +91,8 @@ window.Home01 = {
 
     // -- return ---------------------------------------------------------------
 
-    return { fnCategoryLabel, fnCatEmoji, cfNewProducts, cfBestProducts, cfAllHomeProducts, cfSaleProducts, uiState, banners, setBanner, codes };
+    const siteConfig = window.SITE_CONFIG || {};
+    return { siteConfig, fnCategoryLabel, fnCatEmoji, cfNewProducts, cfBestProducts, cfAllHomeProducts, cfSaleProducts, uiState, banners, setBanner, codes };
   },
   template: /* html */ `
 <div>
@@ -137,7 +137,7 @@ window.Home01 = {
   <!-- -- ══ Category Cards (Outstock 스타일) ══ ---------------------------- -->
   <div style="padding:0 clamp(12px,3vw,32px);margin:-40px auto 0;max-width:820px;position:relative;z-index:3;">
     <div class="home-cat-grid">
-      <div v-for="(cat, ci) in (config.categorys || []).slice(0,3)" :key="cat.categoryId"
+      <div v-for="(cat, ci) in (siteConfig.categorys || []).slice(0,3)" :key="cat.categoryId"
         @click="navigate('prodList')"
         style="background:#fff;border-radius:14px;padding:clamp(14px,3vw,24px);cursor:pointer;box-shadow:0 4px 24px rgba(0,0,0,0.09);display:flex;align-items:center;gap:clamp(10px,2vw,20px);transition:transform .2s,box-shadow .2s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,0.14)'"

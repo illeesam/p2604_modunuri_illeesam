@@ -3,13 +3,13 @@ window.OdOrderMng = {
   name: 'OdOrderMng',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const orders = reactive([]);
     const members = reactive([]);
     const claims = reactive([]);
@@ -137,7 +137,7 @@ window.OdOrderMng = {
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
 
     const handleDelete = async (o) => {
-      const ok = await props.showConfirm('삭제', `[${o.orderId}]를 삭제하시겠습니까?`);
+      const ok = await showConfirm('삭제', `[${o.orderId}]를 삭제하시겠습니까?`);
       if (!ok) return;
       if (!Array.isArray(orders)) return;
       const idx = orders.findIndex(x => x.orderId === o.orderId);
@@ -145,13 +145,13 @@ window.OdOrderMng = {
       if (uiStateDetail.selectedId === o.orderId) uiStateDetail.selectedId = null;
       try {
         const res = await boApiSvc.odOrder.remove(o.orderId, '주문관리', '삭제');
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast('삭제되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast('삭제되었습니다.', 'success');
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
 
@@ -210,7 +210,7 @@ window.OdOrderMng = {
       .replace('{amount}', Number(bulkForm.reqAmount||0).toLocaleString())
       .replace('{reason}', bulkForm.reqReason || '-'));
     const openBulk = () => {
-      if (!checked.size) { props.showToast('항목을 선택하세요.', 'error'); return; }
+      if (!checked.size) { showToast('항목을 선택하세요.', 'error'); return; }
       uiState.bulkTab = 'status';
       Object.assign(bulkForm, {
         status:'', payMethod:'', apprAction:'', apprComment:'',
@@ -243,7 +243,7 @@ window.OdOrderMng = {
     });
     const saveBulk = async () => {
       const ids = Array.from(checked);
-      if (!ids.length) { props.showToast('항목을 선택하세요.', 'error'); uiState.bulkOpen = false; return; }
+      if (!ids.length) { showToast('항목을 선택하세요.', 'error'); uiState.bulkOpen = false; return; }
       const cfg = {
         status:     { field:'status',       label:'주문상태',     path:'orders/bulk-status' },
         payMethod:  { field:'payMethod',    label:'결제수단',     path:'orders/bulk-payMethod' },
@@ -251,8 +251,8 @@ window.OdOrderMng = {
         approvalReq:{ field:'apprToUserId', label:'추가결재요청', path:'orders/bulk-approvalReq' },
       }[uiState.bulkTab];
       const val = bulkForm[cfg.field];
-      if (!val) { props.showToast(`${cfg.label} 입력값을 확인하세요.`, 'error'); return; }
-      const ok = await props.showConfirm(`일괄 ${cfg.label}`, `선택한 ${ids.length}건에 대해 ${cfg.label} 작업을 진행하시겠습니까?`);
+      if (!val) { showToast(`${cfg.label} 입력값을 확인하세요.`, 'error'); return; }
+      const ok = await showConfirm(`일괄 ${cfg.label}`, `선택한 ${ids.length}건에 대해 ${cfg.label} 작업을 진행하시겠습니까?`);
       if (!ok) return;
       if (uiState.bulkTab === 'status')    window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) o.status = bulkForm.status; });
       if (uiState.bulkTab === 'payMethod') window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) o.payMethod = bulkForm.payMethod; });
@@ -266,13 +266,13 @@ window.OdOrderMng = {
       uiState.bulkOpen = false;
       try {
         const res = await boApiSvc.odOrder.bulkAction(cfg.path, { ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value }, '주문관리', '목록조회');
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        if (props.showToast) props.showToast(`${ids.length}건 처리되었습니다.`, 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (showToast) showToast(`${ids.length}건 처리되었습니다.`, 'success');
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (props.showToast) props.showToast(errMsg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (showToast) showToast(errMsg, 'error', 0);
       }
     };
 

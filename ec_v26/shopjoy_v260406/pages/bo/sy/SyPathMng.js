@@ -3,13 +3,13 @@ window.SyPathMng = {
   name: 'SyPathMng',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
-    showRefModal: { type: Function, default: () => {} }, // 참조 모달 열기
-    showToast:    { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} }, // API 결과 전달
   },
   setup(props) {
     const { reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
 
     /* -- 코드 -- */
     const codes = reactive({ use_yn: [] });
@@ -147,18 +147,18 @@ window.SyPathMng = {
 
     const deleteRow = async (row) => {
       if (row._status === 'N') { cancelRow(row); return; }
-      const ok = await props.showConfirm?.('삭제', `[${row.pathLabel}] 경로를 삭제하시겠습니까?`);
+      const ok = await showConfirm?.('삭제', `[${row.pathLabel}] 경로를 삭제하시겠습니까?`);
       if (!ok) return;
       try {
         const res = await boApiSvc.syPath.remove(row.pathId, '경로관리', '삭제');
-        if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
-        props.showToast?.('삭제되었습니다.', 'success');
+        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        showToast?.('삭제되었습니다.', 'success');
         await handleSearchTree();
         await handleGridSearch();
       } catch (err) {
         const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-        if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        props.showToast?.(msg, 'error', 0);
+        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        showToast?.(msg, 'error', 0);
       }
     };
 
@@ -166,20 +166,20 @@ window.SyPathMng = {
 
     const handleSave = async () => {
       const changed = cfDirtyRows.value;
-      if (!changed.length) { props.showToast?.('변경된 내용이 없습니다.', 'info'); return; }
+      if (!changed.length) { showToast?.('변경된 내용이 없습니다.', 'info'); return; }
       for (const row of changed) {
-        if (!row.pathLabel) { props.showToast?.('경로 라벨은 필수입니다.', 'error'); return; }
+        if (!row.pathLabel) { showToast?.('경로 라벨은 필수입니다.', 'error'); return; }
       }
-      const ok = await props.showConfirm?.('저장', `${changed.length}건을 저장하시겠습니까?`);
+      const ok = await showConfirm?.('저장', `${changed.length}건을 저장하시겠습니까?`);
       if (!ok) return;
       const saveRows = changed.map(r => ({ ...r, rowStatus: r._row_status || r._status }));
       try {
         await boApiSvc.syPath.saveList(saveRows, '경로관리', '저장');
-        props.showToast?.('저장되었습니다.', 'success');
+        showToast?.('저장되었습니다.', 'success');
         await handleSearchTree();
         await handleGridSearch();
       } catch (err) {
-        props.showToast?.(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast?.(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };
 

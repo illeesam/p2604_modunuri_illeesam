@@ -3,12 +3,14 @@ window.SyRoleMng = {
   name: 'SyRoleMng',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동
-    showToast:   { type: Function, default: () => {} }, // 토스트 알림
-    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
   },
   setup(props) {
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const roles = reactive([]);
     const menus = reactive([]);
     const roleMenus = reactive([]);
@@ -246,7 +248,7 @@ window.SyRoleMng = {
     /* -- 메뉴권한·대상사용자 설정 저장 -- */
     const handleSaveRoleConfig = async () => {
       if (!uiState.selectedRoleId) return;
-      const ok = await props.showConfirm('설정 저장', '메뉴 접근권한과 대상사용자를 저장하시겠습니까?');
+      const ok = await showConfirm('설정 저장', '메뉴 접근권한과 대상사용자를 저장하시겠습니까?');
       if (!ok) return;
       try {
         const menuPayload = roleMenus
@@ -259,9 +261,9 @@ window.SyRoleMng = {
           boApiSvc.syRole.saveMenus(uiState.selectedRoleId, { menus: menuPayload }, '역할관리', '메뉴권한저장'),
           boApiSvc.syRole.saveUsers(uiState.selectedRoleId, { users: userPayload }, '역할관리', '대상사용자저장'),
         ]);
-        props.showToast('설정이 저장되었습니다.', 'success');
+        showToast('설정이 저장되었습니다.', 'success');
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '저장 중 오류가 발생했습니다.', 'error', 0);
+        showToast(err.response?.data?.message || err.message || '저장 중 오류가 발생했습니다.', 'error', 0);
       }
     };
 
@@ -328,7 +330,7 @@ window.SyRoleMng = {
 
     const cancelChecked = () => {
       const checkedIds = new Set(gridRows.filter(r => r._row_check).map(r => r.roleId));
-      if (!checkedIds.size) { props.showToast('취소할 행을 선택해주세요.', 'info'); return; }
+      if (!checkedIds.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
       for (let i = gridRows.length - 1; i >= 0; i--) {
         const row = gridRows[i];
         if (!checkedIds.has(row.roleId)) continue;
@@ -352,23 +354,23 @@ window.SyRoleMng = {
       const iRows = gridRows.filter(r => r._row_status === 'I');
       const uRows = gridRows.filter(r => r._row_status === 'U');
       const dRows = gridRows.filter(r => r._row_status === 'D');
-      if (!iRows.length && !uRows.length && !dRows.length) { props.showToast('변경된 데이터가 없습니다.', 'error'); return; }
+      if (!iRows.length && !uRows.length && !dRows.length) { showToast('변경된 데이터가 없습니다.', 'error'); return; }
       for (const r of [...iRows, ...uRows]) {
-        if (!r.roleCode || !r.roleNm) { props.showToast('역할코드와 역할명은 필수 항목입니다.', 'error'); return; }
+        if (!r.roleCode || !r.roleNm) { showToast('역할코드와 역할명은 필수 항목입니다.', 'error'); return; }
       }
       const details = [];
       if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
       if (uRows.length) details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' });
       if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
-      const ok = await props.showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
+      const ok = await showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
       if (!ok) return;
       const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
       try {
         await boApiSvc.syRole.saveList(saveRows, '역할관리', '저장');
-        props.showToast('저장되었습니다.');
+        showToast('저장되었습니다.');
         await handleSearchList();
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };
 

@@ -9,6 +9,10 @@ window.MbMemberDtl = {
   },
   setup(props) {
     const { watch, ref, reactive, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;
+    const showConfirm  = window.boApp.showConfirm;
+    const showRefModal = window.boApp.showRefModal;
+    const setApiRes    = window.boApp.setApiRes;
     const currentId = ref(props.detailModal.editId);
     const codes = reactive({ member_grades: [], member_statuses: [] });
 
