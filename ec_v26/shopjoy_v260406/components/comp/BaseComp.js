@@ -335,7 +335,129 @@ window.BaseAttachGrp = {
 `
 };
 
+/* ── BaseAttachOne: 단일 파일 첨부 (이미지 미리보기 전용) ── */
+window.BaseAttachOne = {
+  name: 'BaseAttachOne',
+  props: {
+    modelValue:  { default: null },          // attachGrpId
+    showToast:   { type: Function, default: () => {} },
+    grpCode:     { default: 'common' },
+    grpNm:       { default: '첨부파일' },
+    maxSizeMb:   { default: 5 },
+    allowExt:    { default: 'jpg,jpeg,png,gif,webp' },
+    width:       { default: '120px' },
+    height:      { default: '120px' },
+  },
+  emits: ['update:modelValue'],
+  setup(props, { emit }) {
+    const { reactive, ref, watch, onMounted } = Vue;
+    const uiState  = reactive({ uploading: false, loading: false });
+    const file     = reactive({ attachId: null, cdnImgUrl: '', thumbCdnUrl: '', fileNm: '' });
+    const inputRef = ref(null);
+
+    const loadFile = async (grpId) => {
+      if (!grpId) return;
+      uiState.loading = true;
+      try {
+        const res = await window.coApiSvc.cmAttach.getFiles(grpId);
+        const list = res.data?.data || [];
+        const f = list[0];
+        if (f) { file.attachId = f.attachId; file.cdnImgUrl = f.cdnImgUrl || ''; file.thumbCdnUrl = f.thumbCdnUrl || ''; file.fileNm = f.fileNm || ''; }
+        else   { file.attachId = null; file.cdnImgUrl = ''; file.thumbCdnUrl = ''; file.fileNm = ''; }
+      } catch(e) { console.error('[BaseAttachOne] load fail', e); }
+      finally   { uiState.loading = false; }
+    };
+
+    onMounted(() => { if (props.modelValue) loadFile(props.modelValue); });
+    watch(() => props.modelValue, v => { if (v) loadFile(v); });
+
+    const openPicker = () => { if (!uiState.uploading) inputRef.value?.click(); };
+
+    const onFileChange = async (e) => {
+      const f = e.target.files?.[0]; e.target.value = '';
+      if (!f) return;
+      const ext = f.name.split('.').pop().toLowerCase();
+      const allowed = props.allowExt.split(',').map(x => x.trim().toLowerCase());
+      if (!allowed.includes(ext)) { props.showToast(`허용되지 않는 확장자입니다: .${ext}`, 'error'); return; }
+      if (f.size > props.maxSizeMb * 1024 * 1024) { props.showToast(`${props.maxSizeMb}MB 이하 파일만 첨부 가능합니다.`, 'error'); return; }
+
+      uiState.uploading = true;
+      try {
+        /* 기존 파일 삭제 후 새 파일 업로드 */
+        if (file.attachId) {
+          await window.coApiSvc.cmAttach.deleteFile(file.attachId);
+          file.attachId = null; file.cdnImgUrl = ''; file.thumbCdnUrl = '';
+        }
+        const fd = new FormData();
+        fd.append('files', f);
+        fd.append('businessCode', props.grpCode);
+        fd.append('grpNm', props.grpNm);
+        if (props.modelValue) fd.append('attachGrpId', props.modelValue);
+        const hdr = window.coUtil.apiHdr('첨부파일', '업로드');
+        const res = await window.boApi.post('co/cm/upload/multi', fd, hdr);
+        const d = res.data?.data;
+        if (!d) throw new Error('업로드 응답 없음');
+        const uploaded = (d.files || [])[0];
+        if (uploaded) {
+          file.attachId   = uploaded.attachId;
+          file.cdnImgUrl  = uploaded.cdnImgUrl || '';
+          file.thumbCdnUrl = uploaded.thumbCdnUrl || uploaded.cdnImgUrl || '';
+          file.fileNm     = uploaded.originalName || '';
+        }
+        if (!props.modelValue) emit('update:modelValue', d.attachGrpId);
+        props.showToast('업로드되었습니다.', 'success');
+      } catch(err) {
+        props.showToast(err.response?.data?.message || err.message || '업로드 오류', 'error', 0);
+      } finally { uiState.uploading = false; }
+    };
+
+    const removeFile = async () => {
+      if (!file.attachId) return;
+      try {
+        await window.coApiSvc.cmAttach.deleteFile(file.attachId);
+        file.attachId = null; file.cdnImgUrl = ''; file.thumbCdnUrl = ''; file.fileNm = '';
+        emit('update:modelValue', null);
+        props.showToast('삭제되었습니다.', 'success');
+      } catch(err) { props.showToast(err.response?.data?.message || '삭제 오류', 'error', 0); }
+    };
+
+    return { uiState, file, inputRef, openPicker, onFileChange, removeFile };
+  },
+  template: /* html */`
+<div style="display:inline-flex;flex-direction:column;align-items:center;gap:8px;">
+  <input ref="inputRef" type="file" style="display:none;" :accept="allowExt.split(',').map(e=>'.'+e.trim()).join(',')" @change="onFileChange" />
+  <!-- 이미지 미리보기 박스 -->
+  <div @click="openPicker"
+    :style="{width:width,height:height,border:'2px dashed #e0e0e0',borderRadius:'10px',overflow:'hidden',cursor:'pointer',background:'#fafafa',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',transition:'border-color .15s'}"
+    @mouseenter="e=>e.currentTarget.style.borderColor='#e8587a'"
+    @mouseleave="e=>e.currentTarget.style.borderColor='#e0e0e0'"
+    :title="file.fileNm || '클릭하여 이미지 선택'">
+    <span v-if="uiState.loading || uiState.uploading" style="font-size:22px;">⏳</span>
+    <img v-else-if="file.thumbCdnUrl || file.cdnImgUrl"
+      :src="file.thumbCdnUrl || file.cdnImgUrl"
+      style="width:100%;height:100%;object-fit:cover;display:block;" />
+    <span v-else style="font-size:32px;color:#ccc;">👤</span>
+  </div>
+  <!-- 버튼 -->
+  <div style="display:flex;gap:6px;">
+    <button type="button" @click="openPicker" :disabled="uiState.uploading"
+      style="font-size:11px;padding:3px 10px;border:1px solid #d9d9d9;border-radius:5px;background:#fff;cursor:pointer;color:#555;transition:all .15s;"
+      @mouseenter="e=>{e.currentTarget.style.borderColor='#e8587a';e.currentTarget.style.color='#e8587a';}"
+      @mouseleave="e=>{e.currentTarget.style.borderColor='#d9d9d9';e.currentTarget.style.color='#555';}">
+      {{ uiState.uploading ? '업로드중…' : '📷 변경' }}
+    </button>
+    <button v-if="file.attachId" type="button" @click.stop="removeFile"
+      style="font-size:11px;padding:3px 10px;border:1px solid #fca5a5;border-radius:5px;background:#fff;cursor:pointer;color:#e8587a;transition:all .15s;"
+      @mouseenter="e=>{e.currentTarget.style.background='#fde8e8';}"
+      @mouseleave="e=>{e.currentTarget.style.background='#fff';}">✕ 삭제</button>
+  </div>
+  <span style="font-size:10px;color:#bbb;">{{ allowExt }} / 최대 {{ maxSizeMb }}MB</span>
+</div>
+`
+};
+
 /* ── BaseComp 레지스트리 ── */
 window.BaseComp = {
   'attach_grp': window.BaseAttachGrp,
+  'attach_one':  window.BaseAttachOne,
 };

@@ -2032,6 +2032,7 @@
   .component('CountdownWidget', window.CountdownWidget || { template: '<div/>' })
   /* ── components/comp/ (공통 컴포넌트) ── */
   .component('BaseAttachGrp',  window.BaseAttachGrp)
+  .component('BaseAttachOne',  window.BaseAttachOne)
   /* ── pages/bo/ (공통) ── */
   .component('BoRefModal',  window.BoRefModal)
   /* ── pages/bo/ec/ — 회원 ── */

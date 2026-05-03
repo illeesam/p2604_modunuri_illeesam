@@ -29,6 +29,7 @@ public class SyUserDto {
     private LocalDateTime updDate;
     private String authMethodCd;
     private LocalDateTime lastLoginDate;
+    private String profileAttachId;
 
     // ── JOIN ─────────────────────────────────────────────────────
     private String siteNm;

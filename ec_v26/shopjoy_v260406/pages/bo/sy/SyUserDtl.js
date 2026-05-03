@@ -232,13 +232,14 @@ window.SyUserDtl = {
     <!-- ── 프로필 이미지 ─────────────────────────────────────────────────── -->
     <div class="form-group">
       <label class="form-label">프로필 이미지</label>
-      <base-attach-grp
+      <base-attach-one
         v-model="form.profileAttachId"
         grp-code="USER_PROFILE"
         grp-nm="사용자 프로필"
-        :max-count="1"
         :max-size-mb="5"
         allow-ext="jpg,jpeg,png,gif,webp"
+        width="120px"
+        height="120px"
         :show-toast="showToast" />
     </div>
 

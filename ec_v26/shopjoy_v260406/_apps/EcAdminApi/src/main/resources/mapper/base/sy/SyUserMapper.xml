@@ -113,6 +113,7 @@
             <if test="updDate != null">upd_date = #{updDate},</if>
             <if test="authMethodCd != null">auth_method_cd = #{authMethodCd},</if>
             <if test="lastLoginDate != null">last_login_date = #{lastLoginDate},</if>
+            <if test="profileAttachId != null">profile_attach_id = #{profileAttachId},</if>
         </set>
         WHERE user_id = #{userId}
     </update>

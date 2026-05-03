@@ -63,4 +63,7 @@ public class SyUser extends BaseEntity {
     @Column(name = "last_login_date")
     private LocalDateTime lastLoginDate;
 
+    @Column(name = "profile_attach_id", length = 21)
+    private String profileAttachId;
+
 }
