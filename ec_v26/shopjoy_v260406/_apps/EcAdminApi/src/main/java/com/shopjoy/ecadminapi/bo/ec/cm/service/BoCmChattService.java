@@ -99,23 +99,37 @@ public class BoCmChattService {
     public void saveList(List<CmChattRoom> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
+
+        // 1단계: DELETE 일괄 처리
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getChattRoomId() != null)
+            .map(CmChattRoom::getChattRoomId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            repository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        // 2단계: UPDATE 처리
         for (CmChattRoom row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setChattRoomId("CR" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
-            } else if ("U".equals(rs)) {
-                String id = Objects.requireNonNull(row.getChattRoomId(), "chattRoomId must not be null");
-                CmChattRoom entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-                VoUtil.voCopyExclude(row, entity, "chattRoomId^regBy^regDate^rowStatus");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
-            } else if ("D".equals(rs)) {
-                String id = Objects.requireNonNull(row.getChattRoomId(), "chattRoomId must not be null");
-                if (repository.existsById(id)) repository.deleteById(id);
-            }
+            if (!"U".equals(row.getRowStatus())) continue;
+            String id = Objects.requireNonNull(row.getChattRoomId(), "chattRoomId must not be null");
+            CmChattRoom entity = repository.findById(id)
+                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            VoUtil.voCopyExclude(row, entity, "chattRoomId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            repository.save(entity);
+        }
+        em.flush();
+
+        // 3단계: INSERT 처리
+        for (CmChattRoom row : rows) {
+            if (!"I".equals(row.getRowStatus())) continue;
+            row.setChattRoomId("CR" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            repository.save(row);
         }
         em.flush();
         em.clear();

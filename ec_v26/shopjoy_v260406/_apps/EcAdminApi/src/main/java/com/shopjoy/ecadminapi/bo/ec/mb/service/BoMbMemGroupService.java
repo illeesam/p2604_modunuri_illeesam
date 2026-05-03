@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Map;
 
 @Service
@@ -87,23 +88,37 @@ public class BoMbMemGroupService {
     public void saveList(List<MbMemberGroup> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
+
+        // 1단계: DELETE 일괄 처리
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getMemberGroupId() != null)
+            .map(MbMemberGroup::getMemberGroupId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            repository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+        }
+
+        // 2단계: UPDATE 처리
         for (MbMemberGroup row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                if (row.getUseYn() == null) row.setUseYn("Y");
-                row.setMemberGroupId("MG" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
-            } else if ("U".equals(rs)) {
-                MbMemberGroup entity = repository.findById(row.getMemberGroupId())
-                    .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getMemberGroupId()));
-                VoUtil.voCopyExclude(row, entity, "memberGroupId^regBy^regDate");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
-            } else if ("D".equals(rs)) {
-                if (repository.existsById(row.getMemberGroupId())) repository.deleteById(row.getMemberGroupId());
-            }
+            if (!"U".equals(row.getRowStatus())) continue;
+            String id = Objects.requireNonNull(row.getMemberGroupId(), "memberGroupId must not be null");
+            MbMemberGroup entity = repository.findById(id)
+                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+            VoUtil.voCopyExclude(row, entity, "memberGroupId^regBy^regDate");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            repository.save(entity);
+        }
+        em.flush();
+
+        // 3단계: INSERT 처리
+        for (MbMemberGroup row : rows) {
+            if (!"I".equals(row.getRowStatus())) continue;
+            row.setMemberGroupId("MG" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            repository.save(row);
         }
         em.flush();
         em.clear();
