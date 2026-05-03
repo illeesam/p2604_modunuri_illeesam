@@ -117,6 +117,15 @@ public class BoAuthService {
         // 로그인 성공 이력 기록
         saveLoginLog(authId, user.getSiteId(), user.getLoginId(), "SUCCESS", accessToken, tokenLogId, 0, null, null);
 
+        String deptNm = "";
+        if (user.getDeptId() != null) {
+            try {
+                com.shopjoy.ecadminapi.base.sy.data.entity.SyDept dept =
+                    em.find(com.shopjoy.ecadminapi.base.sy.data.entity.SyDept.class, user.getDeptId());
+                if (dept != null) deptNm = dept.getDeptNm();
+            } catch (Exception ignored) {}
+        }
+
         return LoginRes.builder()
             .accessToken(accessToken)
             .refreshToken(null)
@@ -124,10 +133,14 @@ public class BoAuthService {
             .userId(authId)
             .memberId(null)
             .userNm(user.getUserNm())
+            .userEmail(user.getUserEmail())
+            .userPhone(user.getUserPhone())
+            .deptNm(deptNm)
             .siteId(user.getSiteId())
             .roleId(user.getRoleId())
             .userTypeCd(userTypeCd)
-            .deptId("")
+            .deptId(user.getDeptId() != null ? user.getDeptId() : "")
+            .profileAttachId(user.getProfileAttachId())
             .build();
     }
 

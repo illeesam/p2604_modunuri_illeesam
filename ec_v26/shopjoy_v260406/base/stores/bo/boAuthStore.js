@@ -31,6 +31,7 @@
     dept: '',
     siteId: '',
     roleId: '',
+    profileAttachId: null,
   });
 
   window.useBoAuthStore = defineStore('boAuth', {
@@ -72,13 +73,15 @@
             userId: authId,       // BO 전용
             memberId: null,       // FO 전용: BO는 null
             userTypeCd: loginData.userTypeCd || 'BO',
+            authNm: loginData.userNm || '',
             name: loginData.userNm || '',
             email: loginData.userEmail || '',
             role: loginData.roleId || '',
             phone: loginData.userPhone || '',
-            dept: loginData.userDept || '',
+            dept: loginData.deptNm || loginData.userDept || '',
             siteId: loginData.siteId || '',
             roleId: loginData.roleId || '',
+            profileAttachId: loginData.profileAttachId || null,
           };
 
           this.svAccessExpiresIn = loginData.accessExpiresIn || 3600;

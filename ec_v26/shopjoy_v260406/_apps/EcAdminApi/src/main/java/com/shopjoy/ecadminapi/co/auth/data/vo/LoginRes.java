@@ -12,9 +12,13 @@ public class LoginRes {
     private String userId;          // BO 전용: sy_user.user_id
     private String memberId;        // FO 전용: ec_member.member_id
     private String userNm;          // 사용자명 (sy_user.user_nm 또는 ec_member.member_nm)
+    private String userEmail;
+    private String userPhone;
+    private String deptNm;
     private String siteId;
     private String roleId;
     private String deptId;
     private String userTypeCd;
     private String vendorId;
+    private String profileAttachId;
 }

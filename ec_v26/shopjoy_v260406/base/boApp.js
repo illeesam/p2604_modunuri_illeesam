@@ -972,7 +972,17 @@
 
   /* 프로필 모달 */
   const profileForm  = reactive({ name: '', phone: '', dept: '', email: '', profileAttachId: null });
+  const profileImg   = reactive({ attachId: null, cdnImgUrl: '' }); // 표시용 이미지 상태
   const profileImgUploading = ref(false);
+  const _loadProfileImg = async (grpId) => {
+  if (!grpId) { profileImg.attachId = null; profileImg.cdnImgUrl = ''; return; }
+  try {
+  const res = await window.coApiSvc.cmAttach.getFiles(grpId);
+  const f = (res.data?.data || [])[0];
+  profileImg.attachId  = f?.attachId  || null;
+  profileImg.cdnImgUrl = f?.cdnImgUrl || '';
+  } catch(e) { profileImg.attachId = null; profileImg.cdnImgUrl = ''; }
+  };
   const openProfile  = () => {
   if (!currentAuthUser || !currentAuthUser.userId) return;
   Object.assign(profileForm, {
@@ -982,6 +992,7 @@
   email: currentAuthUser.email || '',
   profileAttachId: currentAuthUser.profileAttachId || null,
   });
+  _loadProfileImg(profileForm.profileAttachId);
   uiState.profileModalShow = true; uiState.userMenuShow = false;
   };
   const saveProfile  = () => {
@@ -995,23 +1006,37 @@
   showToast('프로필이 저장되었습니다.');
   };
   const onProfileImgChange = async (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('grpCode', 'USER_PROFILE');
+  const f = e.target.files?.[0]; e.target.value = '';
+  if (!f) return;
   profileImgUploading.value = true;
   try {
-  const res = await coApiSvc.cmUpload.uploadOne(formData, '프로필', '사진변경');
-  const attachId = res.data?.data?.attachId || res.data?.attachId;
-  if (attachId) { profileForm.profileAttachId = attachId; showToast('사진이 변경되었습니다.', 'success'); }
-  else showToast('업로드 응답에 attachId가 없습니다.', 'error');
+  if (profileImg.attachId) {
+  await window.coApiSvc.cmAttach.deleteFile(profileImg.attachId);
+  profileImg.attachId = null; profileImg.cdnImgUrl = '';
+  }
+  const fd = new FormData();
+  fd.append('files', f);
+  fd.append('businessCode', 'USER_PROFILE');
+  fd.append('grpNm', '사용자 프로필');
+  if (profileForm.profileAttachId) fd.append('attachGrpId', profileForm.profileAttachId);
+  const res = await window.boApi.post('co/cm/upload/multi', fd, window.coUtil.apiHdr('프로필', '사진변경'));
+  const d = res.data?.data;
+  const uploaded = (d?.files || [])[0];
+  if (uploaded) { profileImg.attachId = uploaded.attachId; profileImg.cdnImgUrl = uploaded.cdnImgUrl || ''; }
+  if (!profileForm.profileAttachId && d?.attachGrpId) profileForm.profileAttachId = d.attachGrpId;
+  showToast('사진이 변경되었습니다.', 'success');
   } catch (err) {
   showToast(err.response?.data?.message || '업로드 중 오류가 발생했습니다.', 'error');
-  } finally {
-  profileImgUploading.value = false;
-  e.target.value = '';
-  }
+  } finally { profileImgUploading.value = false; }
+  };
+  const onProfileImgRemove = async () => {
+  if (!profileImg.attachId) { profileForm.profileAttachId = null; profileImg.cdnImgUrl = ''; return; }
+  try {
+  await window.coApiSvc.cmAttach.deleteFile(profileImg.attachId);
+  profileImg.attachId = null; profileImg.cdnImgUrl = '';
+  profileForm.profileAttachId = null;
+  showToast('사진이 삭제되었습니다.', 'success');
+  } catch(err) { showToast(err.response?.data?.message || '삭제 오류', 'error', 0); }
   };
 
   /* 비밀번호 변경 모달 */
@@ -1207,7 +1232,7 @@
   loginModal, loginForm, regForm, loginError, uiState, userRoles,
   openLogin, closeLogin, doLogin, doLogout, doRegister,
   QUICK_USERS, quickLogin,
-  profileForm, profileImgUploading, openProfile, saveProfile, onProfileImgChange,
+  profileForm, profileImg, profileImgUploading, openProfile, saveProfile, onProfileImgChange, onProfileImgRemove,
   pwForm, pwError, openPwChange, savePwChange,
   favorites, favKeepSet, sidebarTab, isFav, toggleFav, cfFavList, toggleFavKeep,
   apiResPanel, setApiRes, closeApiResPanel,
@@ -1878,8 +1903,8 @@
   <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:14px;background:#fff5f7;border-radius:10px;">
   <!-- 프로필 사진 -->
   <label style="position:relative;cursor:pointer;flex-shrink:0;" :title="profileImgUploading ? '업로드 중...' : '클릭하여 사진 변경'">
-  <img v-if="profileForm.profileAttachId"
-    :src="'/co/cm/image/view/' + profileForm.profileAttachId"
+  <img v-if="profileImg.cdnImgUrl"
+    :src="profileImg.cdnImgUrl"
     style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid #e8587a;" />
   <div v-else style="width:64px;height:64px;border-radius:50%;background:#e8587a;color:#fff;font-size:24px;font-weight:700;display:flex;align-items:center;justify-content:center;">
     {{ ((currentAuthUser?.authNm || currentAuthUser?.name || '').charAt(0)) || '?' }}
@@ -1893,8 +1918,8 @@
   <div style="font-size:15px;font-weight:700;color:#1a1a2e;">{{ currentAuthUser?.authNm || currentAuthUser?.name || '' }}</div>
   <div style="font-size:12px;color:#e8587a;font-weight:600;margin-top:3px;">{{ currentAuthUser?.role || '' }}</div>
   <div style="font-size:11px;color:#aaa;margin-top:2px;">가입일: {{ currentAuthUser?.regDate || '' }}</div>
-  <div v-if="profileForm.profileAttachId" style="font-size:11px;color:#bbb;margin-top:2px;">
-    <span style="cursor:pointer;color:#e8587a;" @click.prevent="profileForm.profileAttachId=null">✕ 사진 삭제</span>
+  <div v-if="profileImg.cdnImgUrl" style="font-size:11px;color:#bbb;margin-top:2px;">
+    <span style="cursor:pointer;color:#e8587a;" @click.prevent="onProfileImgRemove">✕ 사진 삭제</span>
   </div>
   </div>
   </div>
