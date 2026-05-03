@@ -966,7 +966,7 @@
   doLogin();
   };
   /* 사용자 선택 모달 */
-  const PAGE_SIZE = 5;
+  const PAGE_SIZE = 20;
   const userPickModal = reactive({ show: false, kw: '', pageNo: 1, loading: false, rows: [], total: 0, totalPage: 1, isApiMode: false });
   const _loadUserPickPage = async () => {
   userPickModal.loading = true;
@@ -2004,50 +2004,110 @@
 
   <!-- 사용자 선택 모달 -->
   <div v-if="userPickModal.show" class="modal-overlay" style="z-index:1100;" @click.self="userPickModal.show=false">
-  <div class="modal-box" style="max-width:420px;">
-  <div class="modal-header">
-  <span class="modal-title">👥 사용자 선택</span>
-  <span class="modal-close" @click="userPickModal.show=false">✕</span>
+  <div class="modal-box" style="max-width:820px;width:96%;padding:0;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;max-height:90vh;">
+  <!-- 모달 헤더 -->
+  <div style="background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffc8d6;flex-shrink:0;">
+  <div style="display:flex;align-items:center;gap:10px;">
+  <span style="font-size:18px;">👥</span>
+  <div>
+  <div style="font-size:14px;font-weight:800;color:#1a1a2e;">사용자 선택</div>
+  <div style="font-size:10px;color:#e8587a;margin-top:1px;">선택 시 마스터 패스워드(1111)로 자동 로그인</div>
   </div>
-  <!-- 검색 -->
+  </div>
+  <button @click="userPickModal.show=false" style="background:none;border:none;cursor:pointer;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;color:#e8587a;" onmouseover="this.style.background='#ffd5e1'" onmouseout="this.style.background='none'">✕</button>
+  </div>
+  <!-- 본문 (스크롤 영역) -->
+  <div style="padding:14px 18px;overflow-y:auto;flex:1;">
+  <!-- 검색바 -->
   <div style="display:flex;gap:6px;margin-bottom:10px;">
-  <input class="form-control" v-model="userPickModal.kw" placeholder="이름 또는 ID 검색..."
-  @keyup.enter="onUserPickSearch" style="flex:1;" />
-  <button class="btn btn-primary btn-sm" @click="onUserPickSearch">조회</button>
+  <div style="position:relative;flex:1;">
+  <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#ccc;font-size:13px;">🔍</span>
+  <input class="form-control" v-model="userPickModal.kw" placeholder="이름 / 로그인ID / 이메일 검색..."
+  @keyup.enter="onUserPickSearch" style="padding-left:32px;height:34px;" />
   </div>
-  <!-- 총 건수 -->
-  <div style="font-size:12px;color:#999;margin-bottom:8px;">
-  총 <b>{{ cfPickTotal }}</b>명
+  <button class="btn btn-primary btn-sm" @click="onUserPickSearch" style="padding:0 16px;font-weight:700;">조회</button>
   </div>
-  <!-- 목록 -->
-  <div style="display:flex;flex-direction:column;gap:6px;min-height:120px;">
-  <div v-if="userPickModal.loading" style="text-align:center;color:#bbb;padding:24px;font-size:13px;">조회 중...</div>
+  <!-- 건수 -->
+  <div style="font-size:11px;color:#aaa;margin-bottom:8px;">
+  총 <b style="color:#e8587a;">{{ cfPickTotal }}</b>명
+  </div>
+  <!-- 테이블 -->
+  <div style="overflow-x:auto;border-radius:8px;border:1px solid #f0e0e8;">
+  <table style="width:100%;border-collapse:collapse;font-size:12px;">
+  <thead>
+  <tr style="background:linear-gradient(90deg,#fdf0f4,#fce8ef);">
+  <th style="padding:6px 8px;text-align:center;width:32px;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;white-space:nowrap;">번호</th>
+  <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">이름</th>
+  <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">로그인ID</th>
+  <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">사이트</th>
+  <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">부서</th>
+  <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">권한</th>
+  <th style="padding:6px 8px;text-align:center;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">상태</th>
+  <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">이메일</th>
+  <th style="padding:6px 8px;text-align:center;width:44px;border-bottom:2px solid #f5c0d0;"></th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr v-if="userPickModal.loading">
+  <td colspan="9" style="text-align:center;color:#ccc;padding:24px;font-size:12px;">⏳ 조회 중...</td>
+  </tr>
+  <tr v-else-if="!cfPickRows.length">
+  <td colspan="9" style="text-align:center;color:#ccc;padding:24px;font-size:12px;">🔍 검색 결과가 없습니다.</td>
+  </tr>
   <template v-else>
-  <button v-for="u in cfPickRows" :key="u.loginId || u.userId"
-  class="quick-login-btn"
-  :class="{active: loginForm.loginId===(u.loginId||u.userId)}"
+  <tr v-for="(u, idx) in cfPickRows" :key="u.loginId || u.userId"
   @click="onUserPick(u)"
-  style="text-align:left;">
-  <span class="quick-login-icon">{{ u.icon || '👤' }}</span>
-  <span class="quick-login-info">
-  <span class="quick-login-label">{{ u.label || u.userNm || u.loginId }}</span>
-  <span class="quick-login-id">{{ u.loginId }}</span>
-  </span>
-  <span class="quick-login-arrow">›</span>
-  </button>
-  <div v-if="!cfPickRows.length" style="text-align:center;color:#bbb;padding:24px;font-size:13px;">
-  검색 결과가 없습니다.
+  :style="loginForm.loginId===(u.loginId||u.userId)
+    ? 'background:#fff0f4;cursor:pointer;'
+    : 'background:'+(idx%2===0?'#fff':'#fdfafe')+';cursor:pointer;'"
+  onmouseover="this.style.background='#fff5f8'" onmouseout="this.style.background=''">
+  <td style="padding:5px 8px;text-align:center;color:#ccc;font-size:11px;border-bottom:1px solid #f5eef2;">{{ (userPickModal.pageNo-1)*20+idx+1 }}</td>
+  <td style="padding:5px 8px;border-bottom:1px solid #f5eef2;">
+  <div style="display:flex;align-items:center;gap:6px;">
+  <div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ (u.userNm||u.label||'?').charAt(0) }}</div>
+  <span style="font-weight:700;color:#1a1a2e;white-space:nowrap;">{{ u.userNm || u.label || '-' }}</span>
   </div>
+  </td>
+  <td style="padding:5px 8px;color:#888;border-bottom:1px solid #f5eef2;font-family:monospace;font-size:11px;">{{ u.loginId }}</td>
+  <td style="padding:5px 8px;color:#777;border-bottom:1px solid #f5eef2;white-space:nowrap;">{{ u.siteNm || '-' }}</td>
+  <td style="padding:5px 8px;color:#777;border-bottom:1px solid #f5eef2;white-space:nowrap;">{{ u.deptNm || '-' }}</td>
+  <td style="padding:5px 8px;border-bottom:1px solid #f5eef2;">
+  <span v-if="u.roleNm" style="display:inline-block;padding:1px 7px;border-radius:9px;background:#ede9fe;color:#7c3aed;font-size:10px;font-weight:700;white-space:nowrap;">{{ u.roleNm }}</span>
+  <span v-else style="color:#ddd;">—</span>
+  </td>
+  <td style="padding:5px 8px;text-align:center;border-bottom:1px solid #f5eef2;">
+  <span v-if="u.userStatusCd==='ACTIVE'" style="display:inline-block;padding:1px 8px;border-radius:9px;background:#dcfce7;color:#16a34a;font-size:10px;font-weight:700;">활성</span>
+  <span v-else style="display:inline-block;padding:1px 8px;border-radius:9px;background:#fee2e2;color:#dc2626;font-size:10px;font-weight:700;">{{ u.userStatusCdNm || '비활성' }}</span>
+  </td>
+  <td style="padding:5px 8px;color:#999;font-size:11px;border-bottom:1px solid #f5eef2;">{{ u.userEmail || '-' }}</td>
+  <td style="padding:5px 8px;text-align:center;border-bottom:1px solid #f5eef2;">
+  <button @click.stop="onUserPick(u)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">선택</button>
+  </td>
+  </tr>
   </template>
+  </tbody>
+  </table>
   </div>
-  <!-- 페이지네이션 -->
-  <div v-if="cfPickTotalPage > 1" style="display:flex;justify-content:center;gap:4px;margin-top:10px;">
-  <button v-for="p in cfPickTotalPage" :key="p"
-  class="btn btn-sm" :class="userPickModal.pageNo===p ? 'btn-primary' : 'btn-secondary'"
-  style="min-width:28px;padding:2px 6px;" @click="onUserPickPage(p)">{{ p }}</button>
   </div>
-  <!-- 안내 -->
-  <div style="margin-top:10px;font-size:11px;color:#bbb;text-align:center;">선택 후 비밀번호를 입력하여 로그인하세요</div>
+  <!-- 페이지네이션 (스크롤 밖 고정) -->
+  <div v-if="cfPickTotalPage > 1" style="display:flex;justify-content:center;align-items:center;gap:4px;padding:10px 18px;border-top:1px solid #f5eef2;flex-shrink:0;flex-wrap:wrap;">
+  <button @click="onUserPickPage(1)" :disabled="userPickModal.pageNo===1"
+  style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="userPickModal.pageNo===1?'opacity:.35;cursor:default;':''">«</button>
+  <button @click="onUserPickPage(userPickModal.pageNo-1)" :disabled="userPickModal.pageNo===1"
+  style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="userPickModal.pageNo===1?'opacity:.35;cursor:default;':''">‹</button>
+  <template v-for="p in cfPickTotalPage" :key="p">
+  <button v-if="Math.abs(p-userPickModal.pageNo)<=2||p===1||p===cfPickTotalPage"
+  @click="onUserPickPage(p)"
+  :style="userPickModal.pageNo===p
+    ? 'background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;font-weight:700;'
+    : 'background:#fff;color:#888;border:1px solid #eee;'"
+  style="min-width:28px;height:28px;border-radius:6px;font-size:11px;cursor:pointer;">{{ p }}</button>
+  </template>
+  <button @click="onUserPickPage(userPickModal.pageNo+1)" :disabled="userPickModal.pageNo===cfPickTotalPage"
+  style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="userPickModal.pageNo===cfPickTotalPage?'opacity:.35;cursor:default;':''">›</button>
+  <button @click="onUserPickPage(cfPickTotalPage)" :disabled="userPickModal.pageNo===cfPickTotalPage"
+  style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="userPickModal.pageNo===cfPickTotalPage?'opacity:.35;cursor:default;':''">»</button>
+  </div>
   </div>
   </div>
 

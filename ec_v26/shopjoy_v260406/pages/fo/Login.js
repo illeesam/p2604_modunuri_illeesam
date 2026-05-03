@@ -54,7 +54,7 @@ window.Login = {
 
     /* -- 회원선택 모달 (개발용) -- */
     const memberPick = reactive({ show: false, kw: '', loading: false, rows: [], total: 0, pageNo: 1, totalPage: 1 });
-    const PICK_SIZE = 5;
+    const PICK_SIZE = 20;
 
     const _loadMemberPick = async () => {
       memberPick.loading = true;
@@ -308,46 +308,108 @@ window.Login = {
 
     <!-- ════ 회원선택 모달 ════ -->
     <div v-if="memberPick.show" class="modal-overlay" @click.self="memberPick.show=false" style="z-index:300;">
-      <div class="modal-box" style="max-width:420px;width:92%;padding:20px 18px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-          <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">회원 선택</div>
-          <button @click="memberPick.show=false" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--text-muted);">✕</button>
-        </div>
-        <div style="display:flex;gap:8px;margin-bottom:12px;">
-          <input v-model="memberPick.kw" type="text" placeholder="이름 또는 이메일 검색"
-            @keyup.enter="onMemberPickSearch"
-            style="flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.85rem;outline:none;">
-          <button @click="onMemberPickSearch"
-            style="padding:8px 14px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:700;">
-            조회
-          </button>
-        </div>
-        <div v-if="memberPick.loading" style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.85rem;">조회 중...</div>
-        <div v-else-if="!memberPick.rows.length" style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.85rem;">조회 결과 없음</div>
-        <div v-else style="display:flex;flex-direction:column;gap:6px;">
-          <div v-for="m in memberPick.rows" :key="m.memberId"
-            @click="onPickMember(m)"
-            style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:background 0.15s;"
-            onmouseover="this.style.background='var(--blue-dim)'" onmouseout="this.style.background=''">
-            <div style="width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.82rem;font-weight:700;flex-shrink:0;">
-              {{ (m.memberNm||'?').charAt(0) }}
+      <div style="background:#fff;border-radius:16px;overflow:hidden;max-width:820px;width:96%;display:flex;flex-direction:column;max-height:90vh;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <!-- 헤더 -->
+        <div style="background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffc8d6;flex-shrink:0;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:18px;">👥</span>
+            <div>
+              <div style="font-size:14px;font-weight:800;color:#1a1a2e;">회원 선택</div>
+              <div style="font-size:10px;color:#e8587a;margin-top:1px;">선택 시 마스터 패스워드(1111)로 자동 로그인</div>
             </div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">{{ m.memberNm }}</div>
-              <div style="font-size:0.76rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ m.loginId || m.memberEmail }}</div>
+          </div>
+          <button @click="memberPick.show=false" style="background:none;border:none;cursor:pointer;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;color:#e8587a;" onmouseover="this.style.background='#ffd5e1'" onmouseout="this.style.background='none'">✕</button>
+        </div>
+        <!-- 본문 (스크롤) -->
+        <div style="padding:14px 18px;overflow-y:auto;flex:1;">
+          <!-- 검색바 -->
+          <div style="display:flex;gap:6px;margin-bottom:10px;">
+            <div style="position:relative;flex:1;">
+              <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#ccc;font-size:13px;">🔍</span>
+              <input v-model="memberPick.kw" type="text" placeholder="이름 / 로그인ID / 연락처 검색..."
+                @keyup.enter="onMemberPickSearch"
+                style="width:100%;padding:7px 10px 7px 32px;border:1.5px solid #f0c8d8;border-radius:8px;font-size:12px;outline:none;box-sizing:border-box;">
             </div>
-            <div style="font-size:0.72rem;color:var(--text-muted);">선택</div>
+            <button @click="onMemberPickSearch"
+              style="padding:0 16px;border:none;border-radius:8px;background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;cursor:pointer;font-size:12px;font-weight:700;">조회</button>
+          </div>
+          <!-- 건수 -->
+          <div style="font-size:11px;color:#aaa;margin-bottom:8px;text-align:left;">총 <b style="color:#e8587a;">{{ memberPick.total }}</b>명</div>
+          <!-- 테이블 -->
+          <div style="overflow-x:auto;border-radius:8px;border:1px solid #f0e0e8;">
+            <table style="width:100%;border-collapse:collapse;font-size:12px;">
+              <thead>
+                <tr style="background:linear-gradient(90deg,#fdf0f4,#fce8ef);">
+                  <th style="padding:6px 8px;text-align:center;width:32px;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;white-space:nowrap;">번호</th>
+                  <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">이름</th>
+                  <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">로그인ID</th>
+                  <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">사이트</th>
+                  <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">등급</th>
+                  <th style="padding:6px 8px;text-align:center;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">상태</th>
+                  <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">연락처</th>
+                  <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">가입일</th>
+                  <th style="padding:6px 8px;text-align:center;width:44px;border-bottom:2px solid #f5c0d0;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="memberPick.loading">
+                  <td colspan="9" style="text-align:center;color:#ccc;padding:24px;font-size:12px;">⏳ 조회 중...</td>
+                </tr>
+                <tr v-else-if="!memberPick.rows.length">
+                  <td colspan="9" style="text-align:center;color:#ccc;padding:24px;font-size:12px;">🔍 조회 결과 없음</td>
+                </tr>
+                <template v-else>
+                  <tr v-for="(m, idx) in memberPick.rows" :key="m.memberId"
+                    @click="onPickMember(m)"
+                    :style="'background:'+(idx%2===0?'#fff':'#fdfafe')+';cursor:pointer;'"
+                    onmouseover="this.style.background='#fff5f8'" onmouseout="this.style.background=''">
+                    <td style="padding:5px 8px;text-align:center;color:#ccc;font-size:11px;border-bottom:1px solid #f5eef2;">{{ (memberPick.pageNo-1)*20+idx+1 }}</td>
+                    <td style="padding:5px 8px;border-bottom:1px solid #f5eef2;">
+                      <div style="display:flex;align-items:center;gap:6px;">
+                        <div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ (m.memberNm||'?').charAt(0) }}</div>
+                        <span style="font-weight:700;color:#1a1a2e;white-space:nowrap;">{{ m.memberNm || '-' }}</span>
+                      </div>
+                    </td>
+                    <td style="padding:5px 8px;color:#888;border-bottom:1px solid #f5eef2;font-family:monospace;font-size:11px;">{{ m.loginId || '-' }}</td>
+                    <td style="padding:5px 8px;color:#777;border-bottom:1px solid #f5eef2;white-space:nowrap;">{{ m.siteNm || '-' }}</td>
+                    <td style="padding:5px 8px;border-bottom:1px solid #f5eef2;">
+                      <span v-if="m.gradeCdNm" style="display:inline-block;padding:1px 7px;border-radius:9px;background:#ede9fe;color:#7c3aed;font-size:10px;font-weight:700;white-space:nowrap;">{{ m.gradeCdNm }}</span>
+                      <span v-else style="color:#ddd;">—</span>
+                    </td>
+                    <td style="padding:5px 8px;text-align:center;border-bottom:1px solid #f5eef2;">
+                      <span v-if="m.memberStatusCd==='ACTIVE'" style="display:inline-block;padding:1px 8px;border-radius:9px;background:#dcfce7;color:#16a34a;font-size:10px;font-weight:700;">활성</span>
+                      <span v-else style="display:inline-block;padding:1px 8px;border-radius:9px;background:#fee2e2;color:#dc2626;font-size:10px;font-weight:700;">{{ m.memberStatusCdNm || '비활성' }}</span>
+                    </td>
+                    <td style="padding:5px 8px;color:#999;font-size:11px;border-bottom:1px solid #f5eef2;">{{ m.memberPhone || '-' }}</td>
+                    <td style="padding:5px 8px;color:#999;font-size:11px;border-bottom:1px solid #f5eef2;white-space:nowrap;">{{ m.joinDate ? m.joinDate.substring(0,10) : '-' }}</td>
+                    <td style="padding:5px 8px;text-align:center;border-bottom:1px solid #f5eef2;">
+                      <button @click.stop="onPickMember(m)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">선택</button>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
           </div>
         </div>
-        <!-- 페이지네이션 -->
-        <div v-if="memberPick.totalPage > 1" style="display:flex;justify-content:center;gap:4px;margin-top:12px;">
-          <button v-for="p in memberPick.totalPage" :key="p" @click="onMemberPickPage(p)"
-            style="width:28px;height:28px;border-radius:6px;border:1.5px solid var(--border);cursor:pointer;font-size:0.78rem;font-weight:700;"
-            :style="p===memberPick.pageNo ? 'background:var(--accent);color:#fff;border-color:var(--accent);' : 'background:var(--bg-card);color:var(--text-secondary);'">
-            {{ p }}
-          </button>
+        <!-- 페이지네이션 (고정) -->
+        <div v-if="memberPick.totalPage > 1" style="display:flex;justify-content:center;align-items:center;gap:4px;padding:10px 18px;border-top:1px solid #f5eef2;flex-shrink:0;flex-wrap:wrap;">
+          <button @click="onMemberPickPage(1)" :disabled="memberPick.pageNo===1"
+            style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="memberPick.pageNo===1?'opacity:.35;cursor:default;':''">«</button>
+          <button @click="onMemberPickPage(memberPick.pageNo-1)" :disabled="memberPick.pageNo===1"
+            style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="memberPick.pageNo===1?'opacity:.35;cursor:default;':''">‹</button>
+          <template v-for="p in memberPick.totalPage" :key="p">
+            <button v-if="Math.abs(p-memberPick.pageNo)<=2||p===1||p===memberPick.totalPage"
+              @click="onMemberPickPage(p)"
+              :style="memberPick.pageNo===p
+                ? 'background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;font-weight:700;'
+                : 'background:#fff;color:#888;border:1px solid #eee;'"
+              style="min-width:28px;height:28px;border-radius:6px;font-size:11px;cursor:pointer;">{{ p }}</button>
+          </template>
+          <button @click="onMemberPickPage(memberPick.pageNo+1)" :disabled="memberPick.pageNo===memberPick.totalPage"
+            style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="memberPick.pageNo===memberPick.totalPage?'opacity:.35;cursor:default;':''">›</button>
+          <button @click="onMemberPickPage(memberPick.totalPage)" :disabled="memberPick.pageNo===memberPick.totalPage"
+            style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="memberPick.pageNo===memberPick.totalPage?'opacity:.35;cursor:default;':''">»</button>
         </div>
-        <div style="text-align:center;margin-top:10px;font-size:0.72rem;color:var(--text-muted);">선택 시 마스터 패스워드(1111)로 자동 로그인</div>
       </div>
     </div>
 
