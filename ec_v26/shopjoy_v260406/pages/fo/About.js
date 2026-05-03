@@ -2,6 +2,52 @@
 window.About = {
   name: 'About',
   props: ['navigate', 'config'],
+  setup(props) {
+    const { ref, reactive, watch, onMounted } = Vue;
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({});
+
+    const fnLoadCodes = () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
+
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+
+    const values = [
+      { icon:'😊', bg:'#dbeafe', title:'고객 중심', desc:'모든 의사결정의 기준은 고객 만족입니다.' },
+      { icon:'💡', bg:'#fef3c7', title:'트렌드 선도', desc:'최신 패션 트렌드를 빠르게 반영합니다.' },
+      { icon:'🌱', bg:'#dcfce7', title:'지속 가능성', desc:'환경을 생각하는 지속 가능한 패션을 지향합니다.' },
+      { icon:'🤝', bg:'#f3e8ff', title:'신뢰와 투명성', desc:'정직한 정보와 합리적인 가격으로 신뢰를 쌓습니다.' },
+    ];
+    const history = [
+      { date:'2024년 11월', title:'ShopJoy 서비스 론칭', desc:'베타 버전 출시 및 초기 상품 라인업 구축' },
+      { date:'2024년 12월', title:'회원 1,000명 달성', desc:'오픈 한 달 만에 1,000명의 회원 유치' },
+      { date:'2025년 02월', title:'카테고리 확장', desc:'악세서리 카테고리 신규 추가, 총 5개 카테고리 운영' },
+      { date:'2025년 06월', title:'모바일 앱 출시', desc:'iOS/Android 앱 동시 출시 및 앱 전용 할인 이벤트 진행' },
+      { date:'2026년 01월', title:'50개 상품 라인업 완성', desc:'다양한 카테고리에 걸쳐 50가지 상품 구비' },
+      { date:'2026년 04월', title:'리뉴얼 오픈', desc:'새로운 UI/UX로 전면 리뉴얼. 더 편리한 쇼핑 경험 제공' },
+    ];
+    const bizInfo = [
+      { label:'상호명',    value:'ShopJoy (쇼핑조이)' },
+      { label:'대표자',    value:'송성일' },
+      { label:'사업자번호', value:'123-45-67890' },
+      { label:'통신판매업', value:'제2024-성남중원-0001호' },
+      { label:'주소',      value:'경기도 성남시 중원구 성남대로 997번길 49-14 201호' },
+      { label:'고객센터',  value:'010-3805-0206' },
+      { label:'이메일',    value:'illeesam@gmail.com' },
+    ];
+
+    // -- return ---------------------------------------------------------------
+
+    return { values, history, bizInfo, uiState, codes };
+  },
   template: /* html */ `
 <div class="page-wrap">
 
@@ -116,51 +162,5 @@ window.About = {
   </div>
 
 </div>
-  `,
-  setup(props) {
-    const { ref, reactive, watch, onMounted } = Vue;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({});
-
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
-
-
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
-
-    const values = [
-      { icon:'😊', bg:'#dbeafe', title:'고객 중심', desc:'모든 의사결정의 기준은 고객 만족입니다.' },
-      { icon:'💡', bg:'#fef3c7', title:'트렌드 선도', desc:'최신 패션 트렌드를 빠르게 반영합니다.' },
-      { icon:'🌱', bg:'#dcfce7', title:'지속 가능성', desc:'환경을 생각하는 지속 가능한 패션을 지향합니다.' },
-      { icon:'🤝', bg:'#f3e8ff', title:'신뢰와 투명성', desc:'정직한 정보와 합리적인 가격으로 신뢰를 쌓습니다.' },
-    ];
-    const history = [
-      { date:'2024년 11월', title:'ShopJoy 서비스 론칭', desc:'베타 버전 출시 및 초기 상품 라인업 구축' },
-      { date:'2024년 12월', title:'회원 1,000명 달성', desc:'오픈 한 달 만에 1,000명의 회원 유치' },
-      { date:'2025년 02월', title:'카테고리 확장', desc:'악세서리 카테고리 신규 추가, 총 5개 카테고리 운영' },
-      { date:'2025년 06월', title:'모바일 앱 출시', desc:'iOS/Android 앱 동시 출시 및 앱 전용 할인 이벤트 진행' },
-      { date:'2026년 01월', title:'50개 상품 라인업 완성', desc:'다양한 카테고리에 걸쳐 50가지 상품 구비' },
-      { date:'2026년 04월', title:'리뉴얼 오픈', desc:'새로운 UI/UX로 전면 리뉴얼. 더 편리한 쇼핑 경험 제공' },
-    ];
-    const bizInfo = [
-      { label:'상호명',    value:'ShopJoy (쇼핑조이)' },
-      { label:'대표자',    value:'송성일' },
-      { label:'사업자번호', value:'123-45-67890' },
-      { label:'통신판매업', value:'제2024-성남중원-0001호' },
-      { label:'주소',      value:'경기도 성남시 중원구 성남대로 997번길 49-14 201호' },
-      { label:'고객센터',  value:'010-3805-0206' },
-      { label:'이메일',    value:'illeesam@gmail.com' },
-    ];
-
-    // -- return ---------------------------------------------------------------
-
-    return { values, history, bizInfo, uiState, codes };
-  }
+  `
 };

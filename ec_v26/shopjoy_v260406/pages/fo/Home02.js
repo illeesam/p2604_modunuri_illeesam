@@ -3,6 +3,93 @@ window.Home02 = {
   name: 'Home',
   props: ['navigate', 'config', 'products', 'selectProduct', 'toggleLike', 'isLiked'],
   emits: [],
+  setup(props) {
+    const { ref, reactive, computed, onMounted, onBeforeUnmount } = Vue;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, quickViewProduct: null, bannerIdx: 0, cartModalMode: false});
+    const codes = reactive({});
+
+    const fnLoadCodes = () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
+
+    function fnCategoryLabel(p) {
+      if (!p) return '';
+      const cats = (props.config && props.config.categorys) || [];
+      const row = cats.find(c => c.categoryId === p.categoryId);
+      return row ? row.categoryNm : p.categoryId;
+    }
+
+    function fnCatEmoji(id) {
+      const map = { tops: '👕', bottoms: '👖', outer: '🧥', dress: '👗', acc: '💍' };
+      return map[id] || '🏷️';
+    }
+
+    const cfNewProducts = computed(() =>
+      (props.products || []).filter(p => p.badge === 'NEW').slice(0, 3)
+    );
+
+    const cfBestProducts = computed(() =>
+      (props.products || []).filter(p => p.badge === '인기').slice(0, 3)
+    );
+
+    /* -- 할인 상품 -- */
+    const cfSaleProducts = computed(() =>
+      (props.products || []).filter(p => p.originalPrice && p.priceNum && p.originalPrice > p.priceNum).slice(0, 4)
+    );
+
+    /* -- 빠른보기 모달 -- */
+
+    /* -- 홈 그리드 반응형 CSS 주입 -- */
+    /* max-width 컨테이너가 최대 열 수를 자연 제한:
+       카테고리 max-width:820px  / minmax(240px) → 최대 3열, 좁아지면 2→1열
+       상품     max-width:1080px / minmax(220px) → 최대 4열, 좁아지면 3→2→1열
+       블로그   max-width:1080px / minmax(300px) → 최대 3열, 좁아지면 2→1열  */
+
+    /* -- 홈 상품 8개 -- */
+    const cfAllHomeProducts = computed(() => {
+      const all = props.products || [];
+      return all.slice(0, 8);
+    });
+
+    /* -- 배너 슬라이더 -- */
+        const banners = [
+      { img: 'assets/cdn/prod/img/slider/slider-1.jpg', title: '나만의 스타일을', sub: '완성하세요', desc: '트렌디한 의류를 합리적인 가격으로. 색상과 사이즈를 직접 선택해 나만의 스타일을 만들어보세요.' },
+      { img: 'assets/cdn/prod/img/slider/slider-2.jpg', title: '2026 S/S', sub: '신상품 컬렉션', desc: '올 봄·여름 시즌을 빛낼 새로운 컬렉션이 도착했습니다. 지금 만나보세요.' },
+      { img: 'assets/cdn/prod/img/slider/slider-3.jpg', title: '특별한 혜택', sub: '시즌 세일 진행중', desc: '인기 상품 최대 50% 할인! 한정 수량으로 준비된 특별 혜택을 놓치지 마세요.' },
+    ];
+    let bannerTimer = null;
+    const startBannerTimer = () => { bannerTimer = setInterval(() => { uiState.bannerIdx = (uiState.bannerIdx + 1) % banners.length; }, 20000); };
+    const setBanner = (i) => { uiState.bannerIdx = i; clearInterval(bannerTimer); startBannerTimer(); };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      if (!document.getElementById('home-grid-styles')) {
+        const s = document.createElement('style');
+        s.id = 'home-grid-styles';
+        s.textContent = `
+          .home-cat-grid  { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
+          .home-prod-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
+          .home-sale-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
+          .home-blog-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
+        `;
+        document.head.appendChild(s);
+      }
+      startBannerTimer();
+    });
+    onBeforeUnmount(() => clearInterval(bannerTimer));
+
+    // -- return ---------------------------------------------------------------
+
+    return { fnCategoryLabel, fnCatEmoji, cfNewProducts, cfBestProducts, cfAllHomeProducts, cfSaleProducts, uiState, banners, setBanner, codes };
+  },
   template: /* html */ `
 <div>
 
@@ -232,92 +319,5 @@ window.Home02 = {
 
 
 </div>
-  `,
-  setup(props) {
-    const { ref, reactive, computed, onMounted, onBeforeUnmount } = Vue;
-
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, quickViewProduct: null, bannerIdx: 0, cartModalMode: false});
-    const codes = reactive({});
-
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-
-    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
-
-    function fnCategoryLabel(p) {
-      if (!p) return '';
-      const cats = (props.config && props.config.categorys) || [];
-      const row = cats.find(c => c.categoryId === p.categoryId);
-      return row ? row.categoryNm : p.categoryId;
-    }
-
-    function fnCatEmoji(id) {
-      const map = { tops: '👕', bottoms: '👖', outer: '🧥', dress: '👗', acc: '💍' };
-      return map[id] || '🏷️';
-    }
-
-    const cfNewProducts = computed(() =>
-      (props.products || []).filter(p => p.badge === 'NEW').slice(0, 3)
-    );
-
-    const cfBestProducts = computed(() =>
-      (props.products || []).filter(p => p.badge === '인기').slice(0, 3)
-    );
-
-    /* -- 할인 상품 -- */
-    const cfSaleProducts = computed(() =>
-      (props.products || []).filter(p => p.originalPrice && p.priceNum && p.originalPrice > p.priceNum).slice(0, 4)
-    );
-
-    /* -- 빠른보기 모달 -- */
-
-    /* -- 홈 그리드 반응형 CSS 주입 -- */
-    /* max-width 컨테이너가 최대 열 수를 자연 제한:
-       카테고리 max-width:820px  / minmax(240px) → 최대 3열, 좁아지면 2→1열
-       상품     max-width:1080px / minmax(220px) → 최대 4열, 좁아지면 3→2→1열
-       블로그   max-width:1080px / minmax(300px) → 최대 3열, 좁아지면 2→1열  */
-
-    /* -- 홈 상품 8개 -- */
-    const cfAllHomeProducts = computed(() => {
-      const all = props.products || [];
-      return all.slice(0, 8);
-    });
-
-    /* -- 배너 슬라이더 -- */
-        const banners = [
-      { img: 'assets/cdn/prod/img/slider/slider-1.jpg', title: '나만의 스타일을', sub: '완성하세요', desc: '트렌디한 의류를 합리적인 가격으로. 색상과 사이즈를 직접 선택해 나만의 스타일을 만들어보세요.' },
-      { img: 'assets/cdn/prod/img/slider/slider-2.jpg', title: '2026 S/S', sub: '신상품 컬렉션', desc: '올 봄·여름 시즌을 빛낼 새로운 컬렉션이 도착했습니다. 지금 만나보세요.' },
-      { img: 'assets/cdn/prod/img/slider/slider-3.jpg', title: '특별한 혜택', sub: '시즌 세일 진행중', desc: '인기 상품 최대 50% 할인! 한정 수량으로 준비된 특별 혜택을 놓치지 마세요.' },
-    ];
-    let bannerTimer = null;
-    const startBannerTimer = () => { bannerTimer = setInterval(() => { uiState.bannerIdx = (uiState.bannerIdx + 1) % banners.length; }, 20000); };
-    const setBanner = (i) => { uiState.bannerIdx = i; clearInterval(bannerTimer); startBannerTimer(); };
-
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      if (!document.getElementById('home-grid-styles')) {
-        const s = document.createElement('style');
-        s.id = 'home-grid-styles';
-        s.textContent = `
-          .home-cat-grid  { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
-          .home-prod-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
-          .home-sale-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
-          .home-blog-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
-        `;
-        document.head.appendChild(s);
-      }
-      startBannerTimer();
-    });
-    onBeforeUnmount(() => clearInterval(bannerTimer));
-
-    // -- return ---------------------------------------------------------------
-
-    return { fnCategoryLabel, fnCatEmoji, cfNewProducts, cfBestProducts, cfAllHomeProducts, cfSaleProducts, uiState, banners, setBanner, codes };
-  }
+  `
 };

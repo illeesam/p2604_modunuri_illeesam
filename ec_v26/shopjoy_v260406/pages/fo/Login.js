@@ -197,8 +197,9 @@ window.Login = {
       snsPhone,
       sendSnsPhoneCode, verifySnsPhone, doSnsSignup, snsSf, openKakaoAddrSns,
       providerLabel, providerColor, providerTextColor, IS, codes,
+      foAuth: window.foAuth,
     };
-  }: { foAuth() { return window.foAuth; } },
+  },
   template: /* html */ `
 <div class="modal-overlay" @click.self="$emit('close')" style="z-index:200;">
   <div class="modal-box" style="max-width:460px;width:92%;padding:clamp(16px,4vw,32px) clamp(14px,3vw,28px);position:relative;max-height:92vh;overflow-y:auto;">

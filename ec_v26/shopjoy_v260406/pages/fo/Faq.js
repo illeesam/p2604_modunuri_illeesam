@@ -3,6 +3,28 @@ window.Faq = {
   name: 'Faq',
   props: ['navigate', 'config'],
   emits: [],
+  setup() {
+    const { ref, reactive, watch, onMounted } = Vue;
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, openFaq: null});
+    const codes = reactive({});
+
+    const fnLoadCodes = () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
+
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+
+    // -- return ---------------------------------------------------------------
+
+    return { uiState, codes };
+  },
   template: /* html */ `
 <div class="page-wrap">
   <!-- -- 페이지 타이틀 배너 ----------------------------------------------------- -->
@@ -33,27 +55,5 @@ window.Faq = {
     <button class="btn-blue" @click="navigate('contact')">1:1 문의하기</button>
   </div>
 </div>
-  `,
-  setup() {
-    const { ref, reactive, watch, onMounted } = Vue;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, openFaq: null});
-    const codes = reactive({});
-
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
-
-
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
-
-    // -- return ---------------------------------------------------------------
-
-    return { uiState, codes };
-  }
+  `
 };

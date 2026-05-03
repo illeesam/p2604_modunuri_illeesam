@@ -3,6 +3,62 @@ window.Contact = {
   name: 'Contact',
   props: ['navigate', 'config', 'showToast', 'showAlert'],
   emits: [],
+  setup(props) {
+    const { reactive, ref, computed, watch, onMounted } = Vue;
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, openFaq: null});
+    const codes = reactive({});
+
+    const fnLoadCodes = () => {
+      try {
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
+
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+    const cfInquiryCodes = computed(() =>
+      foUtil.codesByGroup(props.config || {}, 'shopjoy_contact_inquiry')
+    );
+
+    const form = reactive({ name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
+    const errors = reactive({});
+    
+    const clearErr = k => { if (errors[k] !== undefined) delete errors[k]; };
+
+    const validate = () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      let ok = true;
+      if (!form.name.trim() || form.name.trim().length < 2) { errors.name = '이름을 2자 이상 입력해주세요.'; ok = false; }
+      if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { errors.email = '유효한 이메일을 입력해주세요.'; ok = false; }
+      if (!form.desc.trim() || form.desc.trim().length < 10) { errors.desc = '문의 내용을 최소 10자 이상 입력해주세요.'; ok = false; }
+      return ok;
+    };
+
+    const handleSubmit = async () => {
+      if (!validate()) return;
+      if (typeof foApi !== 'undefined') {
+        await foApiSvc.myInquiry.create({
+          source: 'shopjoy',
+          name: form.name,
+          email: form.email,
+          tel: form.tel,
+          orderNo: form.orderNo,
+          inquiryType: form.inquiryType,
+          desc: form.desc,
+        }, '문의', '저장').catch(() => {});
+      }
+      props.showToast('문의가 접수되었습니다. 빠르게 답변드리겠습니다!', 'success');
+      Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
+    };
+
+    // -- return ---------------------------------------------------------------
+
+    return { form, errors, clearErr, handleSubmit, cfInquiryCodes, uiState, codes };
+  },
   template: /* html */ `
 <div class="page-wrap">
   <!-- -- 페이지 타이틀 배너 ----------------------------------------------------- -->
@@ -88,61 +144,5 @@ window.Contact = {
     </div>
   </div>
 </div>
-  `,
-  setup(props) {
-    const { reactive, ref, computed, watch, onMounted } = Vue;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, openFaq: null});
-    const codes = reactive({});
-
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = foUtil.useAppCodeReady(uiState, fnLoadCodes);
-
-
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
-    const cfInquiryCodes = computed(() =>
-      foUtil.codesByGroup(props.config || {}, 'shopjoy_contact_inquiry')
-    );
-
-    const form = reactive({ name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
-    const errors = reactive({});
-    
-    const clearErr = k => { if (errors[k] !== undefined) delete errors[k]; };
-
-    const validate = () => {
-      Object.keys(errors).forEach(k => delete errors[k]);
-      let ok = true;
-      if (!form.name.trim() || form.name.trim().length < 2) { errors.name = '이름을 2자 이상 입력해주세요.'; ok = false; }
-      if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { errors.email = '유효한 이메일을 입력해주세요.'; ok = false; }
-      if (!form.desc.trim() || form.desc.trim().length < 10) { errors.desc = '문의 내용을 최소 10자 이상 입력해주세요.'; ok = false; }
-      return ok;
-    };
-
-    const handleSubmit = async () => {
-      if (!validate()) return;
-      if (typeof foApi !== 'undefined') {
-        await foApiSvc.myInquiry.create({
-          source: 'shopjoy',
-          name: form.name,
-          email: form.email,
-          tel: form.tel,
-          orderNo: form.orderNo,
-          inquiryType: form.inquiryType,
-          desc: form.desc,
-        }, '문의', '저장').catch(() => {});
-      }
-      props.showToast('문의가 접수되었습니다. 빠르게 답변드리겠습니다!', 'success');
-      Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
-    };
-
-    // -- return ---------------------------------------------------------------
-
-    return { form, errors, clearErr, handleSubmit, cfInquiryCodes, uiState, codes };
-  }
+  `
 };
