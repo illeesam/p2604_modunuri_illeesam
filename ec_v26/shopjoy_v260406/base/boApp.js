@@ -953,17 +953,72 @@
   const loginModal  = reactive({ show: false, tab: 'login' });
   const loginForm  = reactive({ loginId: '', loginPwd: '', authMethod: '메인' });
   const QUICK_USERS = [
-  { loginId: 'super_admin',  loginPwd: 'demo1234', label: '슈퍼관리자',  role: 'SUPER',  icon: '👑' },
-  { loginId: 'admin1',  loginPwd: 'demo1234', label: '운영관리자',  role: 'ADMIN',  icon: '🛡' },
-  { loginId: 'admin2',  loginPwd: 'demo1234', label: '일반관리자',  role: 'ADMIN',  icon: '👤' },
-  { loginId: 'operator1',  loginPwd: 'demo1234', label: '운영자',  role: 'OPR',  icon: '⚙️' },
-  { loginId: 'cs_agent1',  loginPwd: 'demo1234', label: 'CS상담원',  role: 'CS',  icon: '🎧' },
-  { loginId: 'vendor1',  loginPwd: 'demo1234', label: '판매업체',  role: 'VENDOR', icon: '🏪' },
+  { loginId: 'super_admin',  loginPwd: 'demo1234', label: '슈퍼관리자',  userNm: '슈퍼관리자', role: 'SUPER',  icon: '👑' },
+  { loginId: 'admin1',       loginPwd: 'demo1234', label: '운영관리자',  userNm: '관리자1',   role: 'ADMIN',  icon: '🛡' },
+  { loginId: 'admin2',       loginPwd: 'demo1234', label: '일반관리자',  userNm: '관리자2',   role: 'ADMIN',  icon: '👤' },
+  { loginId: 'operator1',    loginPwd: 'demo1234', label: '운영자',      userNm: '운영자1',   role: 'OPR',    icon: '⚙️' },
+  { loginId: 'cs_agent1',    loginPwd: 'demo1234', label: 'CS상담원',   userNm: 'CS상담원1', role: 'CS',     icon: '🎧' },
+  { loginId: 'vendor1',      loginPwd: 'demo1234', label: '판매업체',    userNm: '판매업체1', role: 'VENDOR', icon: '🏪' },
   ];
   const quickLogin = (u) => {
   loginForm.loginId = u.loginId;
   loginForm.loginPwd = u.loginPwd;
   doLogin();
+  };
+  /* 사용자 선택 모달 */
+  const PAGE_SIZE = 5;
+  const userPickModal = reactive({ show: false, kw: '', pageNo: 1, loading: false, rows: [], total: 0, totalPage: 1, isApiMode: false });
+  const _loadUserPickPage = async () => {
+  userPickModal.loading = true;
+  try {
+  const res = await window.boApiSvc.syUser.getPage({ kw: userPickModal.kw, pageNo: userPickModal.pageNo, pageSize: PAGE_SIZE }, '사용자선택', '목록조회');
+  const d = res.data?.data;
+  userPickModal.rows      = d?.list || d?.content || [];
+  userPickModal.total     = d?.totalCount ?? d?.totalElements ?? 0;
+  userPickModal.totalPage = d?.totalPage  ?? Math.max(1, Math.ceil(userPickModal.total / PAGE_SIZE));
+  } catch(e) {
+  userPickModal.rows = []; userPickModal.total = 0; userPickModal.totalPage = 1;
+  } finally { userPickModal.loading = false; }
+  };
+  /* 로컬(QUICK_USERS) 페이징 — 로그인 전 fallback */
+  const cfLocalFiltered = Vue.computed(() => {
+  const kw = (userPickModal.kw || '').toLowerCase();
+  return kw ? QUICK_USERS.filter(u =>
+    u.label.toLowerCase().includes(kw) || u.loginId.toLowerCase().includes(kw) || (u.userNm||'').toLowerCase().includes(kw)
+  ) : QUICK_USERS;
+  });
+  const cfLocalPage = Vue.computed(() => {
+  const start = (userPickModal.pageNo - 1) * PAGE_SIZE;
+  return cfLocalFiltered.value.slice(start, start + PAGE_SIZE);
+  });
+  const cfLocalTotalPage = Vue.computed(() => Math.max(1, Math.ceil(cfLocalFiltered.value.length / PAGE_SIZE)));
+  const cfPickRows     = Vue.computed(() => userPickModal.isApiMode ? userPickModal.rows     : cfLocalPage.value);
+  const cfPickTotal    = Vue.computed(() => userPickModal.isApiMode ? userPickModal.total    : cfLocalFiltered.value.length);
+  const cfPickTotalPage= Vue.computed(() => userPickModal.isApiMode ? userPickModal.totalPage: cfLocalTotalPage.value);
+  const openUserPick = () => {
+  userPickModal.kw = ''; userPickModal.pageNo = 1;
+  userPickModal.isApiMode = cfIsLoggedIn.value;
+  userPickModal.show = true;
+  if (cfIsLoggedIn.value) _loadUserPickPage();
+  };
+  const onUserPickSearch = () => {
+  userPickModal.pageNo = 1;
+  if (userPickModal.isApiMode) _loadUserPickPage();
+  };
+  const onUserPickPage = (p) => {
+  userPickModal.pageNo = p;
+  if (userPickModal.isApiMode) _loadUserPickPage();
+  };
+  const onUserPick = (u) => {
+  userPickModal.show = false;
+  /* API 모드: loginId/loginPwd 직접 설정 불가 → loginId만 채우고 비번 입력 요구 */
+  if (userPickModal.isApiMode) {
+    loginForm.loginId  = u.loginId || u.userId || '';
+    loginForm.loginPwd = '';
+    loginModal.show = true;
+    return;
+  }
+  quickLogin(u);
   };
   const regForm  = reactive({ name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
   const userRoles  = ref([]);
@@ -1231,7 +1286,8 @@
   boInitReady, cfIsLoggedIn, currentAuthUser, currentAuthUserRoles, activeRoleId, rolePath, onRoleChange, rolesOfUser, bizInfoOfUser,
   loginModal, loginForm, regForm, loginError, uiState, userRoles,
   openLogin, closeLogin, doLogin, doLogout, doRegister,
-  QUICK_USERS, quickLogin,
+  QUICK_USERS, quickLogin, userPickModal, openUserPick, onUserPick,
+  cfPickRows, cfPickTotal, cfPickTotalPage, onUserPickSearch, onUserPickPage,
   profileForm, profileImg, profileImgUploading, openProfile, saveProfile, onProfileImgChange, onProfileImgRemove,
   pwForm, pwError, openPwChange, savePwChange,
   favorites, favKeepSet, sidebarTab, isFav, toggleFav, cfFavList, toggleFavKeep,
@@ -1948,6 +2004,60 @@
   </div>
   </div>
 
+  <!-- 사용자 선택 모달 -->
+  <div v-if="userPickModal.show" class="modal-overlay" style="z-index:1100;" @click.self="userPickModal.show=false">
+  <div class="modal-box" style="max-width:420px;">
+  <div class="modal-header">
+  <span class="modal-title">👥 사용자 선택</span>
+  <span class="modal-close" @click="userPickModal.show=false">✕</span>
+  </div>
+  <!-- 검색 -->
+  <div style="display:flex;gap:6px;margin-bottom:10px;">
+  <input class="form-control" v-model="userPickModal.kw" placeholder="이름 또는 ID 검색..."
+  @keyup.enter="onUserPickSearch" style="flex:1;" />
+  <button class="btn btn-primary btn-sm" @click="onUserPickSearch">조회</button>
+  </div>
+  <!-- 총 건수 -->
+  <div style="font-size:12px;color:#999;margin-bottom:8px;">
+  총 <b>{{ cfPickTotal }}</b>명
+  <span v-if="userPickModal.isApiMode" style="color:#bbb;"> (전체 사용자)</span>
+  <span v-else style="color:#bbb;"> (데모 계정)</span>
+  </div>
+  <!-- 목록 -->
+  <div style="display:flex;flex-direction:column;gap:6px;min-height:120px;">
+  <div v-if="userPickModal.loading" style="text-align:center;color:#bbb;padding:24px;font-size:13px;">조회 중...</div>
+  <template v-else>
+  <button v-for="u in cfPickRows" :key="u.loginId || u.userId"
+  class="quick-login-btn"
+  :class="{active: loginForm.loginId===(u.loginId||u.userId)}"
+  @click="onUserPick(u)"
+  style="text-align:left;">
+  <span class="quick-login-icon">{{ u.icon || '👤' }}</span>
+  <span class="quick-login-info">
+  <span class="quick-login-label">{{ u.label || u.userNm || u.loginId }}</span>
+  <span class="quick-login-id">{{ u.loginId }}</span>
+  </span>
+  <span class="quick-login-arrow">›</span>
+  </button>
+  <div v-if="!cfPickRows.length" style="text-align:center;color:#bbb;padding:24px;font-size:13px;">
+  검색 결과가 없습니다.
+  </div>
+  </template>
+  </div>
+  <!-- 페이지네이션 -->
+  <div v-if="cfPickTotalPage > 1" style="display:flex;justify-content:center;gap:4px;margin-top:10px;">
+  <button v-for="p in cfPickTotalPage" :key="p"
+  class="btn btn-sm" :class="userPickModal.pageNo===p ? 'btn-primary' : 'btn-secondary'"
+  style="min-width:28px;padding:2px 6px;" @click="onUserPickPage(p)">{{ p }}</button>
+  </div>
+  <!-- 안내 -->
+  <div style="margin-top:10px;font-size:11px;color:#bbb;text-align:center;">
+  <span v-if="!userPickModal.isApiMode">비밀번호: demo1234 · 선택 즉시 로그인됩니다</span>
+  <span v-else>선택 후 비밀번호를 입력하여 로그인하세요</span>
+  </div>
+  </div>
+  </div>
+
   <!-- 비밀번호 변경 모달 -->
   <div v-if="uiState.pwModalShow" class="modal-overlay" @click.self="uiState.pwModalShow=false">
   <div class="modal-box" style="max-width:380px;">
@@ -2016,8 +2126,8 @@
   </div>
   </div>
   <!-- 우: 사용자 선택 -->
-  <div>
-  <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px;letter-spacing:.3px;">🔑 빠른 로그인</div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+  <div style="font-size:12px;font-weight:600;color:#888;letter-spacing:.3px;">🔑 빠른 로그인</div>
   <div style="display:flex;flex-direction:column;gap:6px;">
   <button v-for="u in QUICK_USERS" :key="u.loginId"
   class="quick-login-btn"
@@ -2031,7 +2141,10 @@
   <span class="quick-login-arrow">›</span>
   </button>
   </div>
-  <div style="margin-top:10px;font-size:11px;color:#bbb;text-align:center;">비밀번호: demo1234</div>
+  <button class="btn btn-secondary btn-sm" style="width:100%;font-size:12px;" @click="openUserPick">
+  👥 사용자 선택
+  </button>
+  <div style="font-size:11px;color:#bbb;text-align:center;">비밀번호: demo1234</div>
   </div>
   </div>
 
