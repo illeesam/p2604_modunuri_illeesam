@@ -374,7 +374,7 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .user-dropdown-item.danger:hover { background: #fff1f0; color: #cf1322; }
 
 /* ── 로그인 모달 ── */
-.login-modal-box { background: #fff; border-radius: 14px; padding: 26px 24px 22px; width: 100%; max-width: 760px; }
+.login-modal-box { background: #fff; border-radius: 14px; padding: 26px 24px 22px; width: 100%; max-width: 420px; }
 .login-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
 .login-tabs { display: flex; gap: 3px; background: #f4f4f6; border-radius: 8px; padding: 3px; }
 .login-tabs span { padding: 5px 18px; border-radius: 6px; font-size: 13px; font-weight: 500; color: #999; cursor: pointer; transition: all .15s; user-select: none; }

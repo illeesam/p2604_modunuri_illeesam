@@ -47,15 +47,12 @@ import java.util.Map;
  * 인증 방식: JWT Stateless (세션 미사용)
  * CORS: localhost 전 포트 허용
  *
- * URL 인가 규칙:
- *   /api/base/**   GET              → 누구나 (permitAll)
- *   /api/base/**   POST/PUT/DELETE  → BO만
- *   /api/fo/ec/my/**               → FO만
- *   /api/bo/**                     → BO만
- *   /api/**        GET              → BO 또는 FO
- *   /api/**        POST/PUT/PATCH/DELETE → BO만
- *   /autoRest/**   GET              → BO 또는 FO
- *   /autoRest/**   POST/PUT/PATCH/DELETE → BO만
+ * URL 인가 규칙 (경로 프리픽스 기준):
+ *   /api/co/**   → 누구나 (permitAll) — 로그인·공통코드·사용자선택·파일 등
+ *   /api/fo/**   → FO만 (MEMBER)
+ *   /api/bo/**   → BO만 (USER)
+ *   /api/base/** → 완전 차단 (denyAll) — 내부 공통 레이어, 외부 직접 호출 금지
+ *   /api/ext/**  → EXT(외부 시스템)만
  *
  * 어노테이션 방식 (개별 메서드 예외 처리):
  *   @BoOnly  → BO만
@@ -83,15 +80,6 @@ public class SecurityConfig {
     private static final AuthorizationManager<RequestAuthorizationContext> BO_ONLY =
         (supplier, ctx) -> new AuthorizationDecision(isUserType(supplier.get(), AuthPrincipal.BO));
 
-    /** BO 또는 FO 허용 */
-    private static final AuthorizationManager<RequestAuthorizationContext> BO_OR_FO =
-        (supplier, ctx) -> {
-            Authentication auth = supplier.get();
-            return new AuthorizationDecision(
-                isUserType(auth, AuthPrincipal.BO) || isUserType(auth, AuthPrincipal.FO)
-            );
-        };
-
     /** FO만 허용 */
     private static final AuthorizationManager<RequestAuthorizationContext> FO_ONLY =
         (supplier, ctx) -> new AuthorizationDecision(isUserType(supplier.get(), AuthPrincipal.FO));
@@ -107,45 +95,15 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // /api/co/bo-auth/**, /api/co/fo-auth/** — 누구나 (login/join/refresh/logout)
-                .requestMatchers("/api/co/bo-auth/**", "/api/co/fo-auth/**").permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()           // CORS preflight
+                .requestMatchers(HttpMethod.GET, "/cdn/**", "/zz/**").permitAll() // static 리소스
                 .requestMatchers("/actuator/**").permitAll()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // static 리소스 — 인증 없이 허용
-                .requestMatchers(HttpMethod.GET, "/cdn/**", "/zz/**").permitAll()
-
-                // /api/co/cm/fo-app-store/**, /api/co/cm/bo-app-store/** — 누구나 허용 (초기화 데이터 조회)
-                // ⭐ 더 구체적이므로 일반 /api/** 규칙보다 먼저 배치
-                .requestMatchers("/api/co/cm/fo-app-store/**").permitAll()
-                .requestMatchers("/api/co/cm/bo-app-store/**").permitAll()
-
-                // /api/base/** — GET 누구나, 변경(POST/PUT/PATCH/DELETE) USER만
-                .requestMatchers(HttpMethod.GET,    "/api/base/**").permitAll()
-                .requestMatchers(HttpMethod.POST,   "/api/base/**").access(BO_ONLY)
-                .requestMatchers(HttpMethod.PUT,    "/api/base/**").access(BO_ONLY)
-                .requestMatchers(HttpMethod.PATCH,  "/api/base/**").access(BO_ONLY)
-                .requestMatchers(HttpMethod.DELETE, "/api/base/**").access(BO_ONLY)
-
-                // /api/fo/ec/my/** — MEMBER만 (더 구체적인 경로 먼저)
-                .requestMatchers("/api/fo/ec/my/**").access(FO_ONLY)
-
-                // /api/fo/ec/**, /api/bo/cm/**, /api/base/cm/** — 누구나 허용
-                .requestMatchers("/api/fo/ec/**").permitAll()
-                .requestMatchers("/api/base/cm/**").permitAll()
-
-                // /api/bo/** — BO만 허용
-                .requestMatchers("/api/bo/**").access(BO_ONLY)
-
-                // /api/ext/** — EXT(외부 시스템)만 허용
-                .requestMatchers("/api/ext/**").access(EXT_ONLY)
-
-                // /api/**, /api/autoRest/** — GET: USER or MEMBER / 변경: USER만
-                .requestMatchers(HttpMethod.GET,    "/api/**").access(BO_OR_FO)
-                .requestMatchers(HttpMethod.POST,   "/api/**").access(BO_ONLY)
-                .requestMatchers(HttpMethod.PUT,    "/api/**").access(BO_ONLY)
-                .requestMatchers(HttpMethod.PATCH,  "/api/**").access(BO_ONLY)
-                .requestMatchers(HttpMethod.DELETE, "/api/**").access(BO_ONLY)
+                .requestMatchers("/api/co/**").permitAll()      // 공통 API: 누구나
+                .requestMatchers("/api/fo/**").access(FO_ONLY)  // FO 전용: 회원만
+                .requestMatchers("/api/bo/**").access(BO_ONLY)  // BO 전용: 관리자만
+                .requestMatchers("/api/base/**").denyAll()       // 내부 레이어: 완전 차단
+                .requestMatchers("/api/ext/**").access(EXT_ONLY) // 외부 시스템만
 
                 .anyRequest().authenticated()
             )
@@ -197,7 +155,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
+        config.setAllowedOriginPatterns(List.of("http://localhost:*", "https://localhost:*", "http://127.0.0.1:*", "https://127.0.0.1:*", "http://illeesam.synology.me:*", "https://illeesam.synology.me:*", "http://illeesam.netlify.app", "https://illeesam.netlify.app"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization"));

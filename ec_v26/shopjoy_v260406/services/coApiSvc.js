@@ -179,5 +179,12 @@
     },
   };
 
+  /* ── sy: 사용자 목록 (로그인 전 사용자 선택 모달 등) ─────── */
+  coApiSvc.syUser = {
+    getPage(params, uiNm, cmdNm) {
+      return client().get('/co/sy/user/page', { params, ...hdr(uiNm, cmdNm) });
+    },
+  };
+
   global.coApiSvc = coApiSvc;
 })(window);

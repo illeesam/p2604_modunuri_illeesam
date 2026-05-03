@@ -971,7 +971,7 @@
   const _loadUserPickPage = async () => {
   userPickModal.loading = true;
   try {
-  const res = await window.boApiSvc.syUser.getPage({ kw: userPickModal.kw, pageNo: userPickModal.pageNo, pageSize: PAGE_SIZE }, '사용자선택', '목록조회');
+  const res = await window.coApiSvc.syUser.getPage({ kw: userPickModal.kw, pageNo: userPickModal.pageNo, pageSize: PAGE_SIZE }, '사용자선택', '목록조회');
   const d = res.data?.data;
   userPickModal.rows      = d?.list || d?.content || [];
   userPickModal.total     = d?.totalCount ?? d?.totalElements ?? 0;
@@ -997,28 +997,24 @@
   const cfPickTotalPage= Vue.computed(() => userPickModal.isApiMode ? userPickModal.totalPage: cfLocalTotalPage.value);
   const openUserPick = () => {
   userPickModal.kw = ''; userPickModal.pageNo = 1;
-  userPickModal.isApiMode = cfIsLoggedIn.value;
+  userPickModal.isApiMode = true; // 항상 API 모드 (로그인 전/후 무관)
   userPickModal.show = true;
-  if (cfIsLoggedIn.value) _loadUserPickPage();
+  _loadUserPickPage();
   };
   const onUserPickSearch = () => {
   userPickModal.pageNo = 1;
-  if (userPickModal.isApiMode) _loadUserPickPage();
+  _loadUserPickPage();
   };
   const onUserPickPage = (p) => {
   userPickModal.pageNo = p;
-  if (userPickModal.isApiMode) _loadUserPickPage();
+  _loadUserPickPage();
   };
   const onUserPick = (u) => {
   userPickModal.show = false;
-  /* API 모드: loginId/loginPwd 직접 설정 불가 → loginId만 채우고 비번 입력 요구 */
-  if (userPickModal.isApiMode) {
-    loginForm.loginId  = u.loginId || u.userId || '';
-    loginForm.loginPwd = '';
-    loginModal.show = true;
-    return;
-  }
-  quickLogin(u);
+  /* 선택 후 loginId만 채우고 비밀번호 입력 요구 */
+  loginForm.loginId  = u.loginId || u.userId || '';
+  loginForm.loginPwd = '';
+  loginModal.show = true;
   };
   const regForm  = reactive({ name: '', email: '', password: '', confirmPw: '', phone: '', role: '운영자' });
   const userRoles  = ref([]);
@@ -2020,8 +2016,6 @@
   <!-- 총 건수 -->
   <div style="font-size:12px;color:#999;margin-bottom:8px;">
   총 <b>{{ cfPickTotal }}</b>명
-  <span v-if="userPickModal.isApiMode" style="color:#bbb;"> (전체 사용자)</span>
-  <span v-else style="color:#bbb;"> (데모 계정)</span>
   </div>
   <!-- 목록 -->
   <div style="display:flex;flex-direction:column;gap:6px;min-height:120px;">
@@ -2051,10 +2045,7 @@
   style="min-width:28px;padding:2px 6px;" @click="onUserPickPage(p)">{{ p }}</button>
   </div>
   <!-- 안내 -->
-  <div style="margin-top:10px;font-size:11px;color:#bbb;text-align:center;">
-  <span v-if="!userPickModal.isApiMode">비밀번호: demo1234 · 선택 즉시 로그인됩니다</span>
-  <span v-else>선택 후 비밀번호를 입력하여 로그인하세요</span>
-  </div>
+  <div style="margin-top:10px;font-size:11px;color:#bbb;text-align:center;">선택 후 비밀번호를 입력하여 로그인하세요</div>
   </div>
   </div>
 
@@ -2097,9 +2088,7 @@
   </div>
 
   <!-- 로그인 폼 -->
-  <div v-if="loginModal.tab==='login'" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
-  <!-- 좌: 입력 폼 -->
-  <div>
+  <div v-if="loginModal.tab==='login'">
   <div class="form-group">
   <label class="form-label">로그인 ID</label>
   <input class="form-control" v-model="loginForm.loginId" placeholder="로그인 ID 입력" @keyup.enter="doLogin" autocomplete="username" />
@@ -2120,31 +2109,10 @@
   </div>
   <div v-if="loginError" class="login-error">{{ loginError }}</div>
   <button class="btn btn-primary" style="width:100%;margin-top:4px;" @click="doLogin">로그인</button>
+  <button class="btn btn-secondary" style="width:100%;margin-top:8px;" @click="openUserPick">👥 사용자 선택</button>
   <div style="text-align:center;margin-top:12px;font-size:12px;color:#aaa;">
   <span>계정이 없으신가요?</span>
   <span style="color:#e8587a;cursor:pointer;margin-left:6px;font-weight:600;" @click="loginModal.tab='register';loginError=''">회원가입</span>
-  </div>
-  </div>
-  <!-- 우: 사용자 선택 -->
-  <div style="display:flex;flex-direction:column;gap:10px;">
-  <div style="font-size:12px;font-weight:600;color:#888;letter-spacing:.3px;">🔑 빠른 로그인</div>
-  <div style="display:flex;flex-direction:column;gap:6px;">
-  <button v-for="u in QUICK_USERS" :key="u.loginId"
-  class="quick-login-btn"
-  :class="{active: loginForm.loginId===u.loginId}"
-  @click="quickLogin(u)">
-  <span class="quick-login-icon">{{ u.icon }}</span>
-  <span class="quick-login-info">
-  <span class="quick-login-label">{{ u.label }}</span>
-  <span class="quick-login-id">{{ u.loginId }}</span>
-  </span>
-  <span class="quick-login-arrow">›</span>
-  </button>
-  </div>
-  <button class="btn btn-secondary btn-sm" style="width:100%;font-size:12px;" @click="openUserPick">
-  👥 사용자 선택
-  </button>
-  <div style="font-size:11px;color:#bbb;text-align:center;">비밀번호: demo1234</div>
   </div>
   </div>
 
