@@ -99,11 +99,12 @@ public class BoSyContactService {
         }
 
         // 2단계: UPDATE 처리
-        for (SyContact row : rows) {
-            if (!"U".equals(row.getRowStatus())) continue;
-            String id = row.getContactId();
-            SyContact entity = repository.findById(id)
-                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        List<SyContact> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getContactId() != null)
+            .toList();
+        for (SyContact row : updateRows) {
+            SyContact entity = repository.findById(row.getContactId())
+                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getContactId()));
             VoUtil.voCopyExclude(row, entity, "contactId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             repository.save(entity);
@@ -111,8 +112,10 @@ public class BoSyContactService {
         em.flush();
 
         // 3단계: INSERT 처리
-        for (SyContact row : rows) {
-            if (!"I".equals(row.getRowStatus())) continue;
+        List<SyContact> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyContact row : insertRows) {
             row.setContactId("CO" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);

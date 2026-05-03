@@ -99,11 +99,12 @@ public class BoSyBatchService {
         }
 
         // 2단계: UPDATE 처리
-        for (SyBatch row : rows) {
-            if (!"U".equals(row.getRowStatus())) continue;
-            String id = row.getBatchId();
-            SyBatch entity = repository.findById(id)
-                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        List<SyBatch> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getBatchId() != null)
+            .toList();
+        for (SyBatch row : updateRows) {
+            SyBatch entity = repository.findById(row.getBatchId())
+                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getBatchId()));
             VoUtil.voCopyExclude(row, entity, "batchId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             repository.save(entity);
@@ -111,8 +112,10 @@ public class BoSyBatchService {
         em.flush();
 
         // 3단계: INSERT 처리
-        for (SyBatch row : rows) {
-            if (!"I".equals(row.getRowStatus())) continue;
+        List<SyBatch> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyBatch row : insertRows) {
             row.setBatchId("BA" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);

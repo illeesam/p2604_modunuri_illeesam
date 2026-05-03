@@ -99,11 +99,12 @@ public class BoSyAlarmService {
         }
 
         // 2단계: UPDATE 처리
-        for (SyAlarm row : rows) {
-            if (!"U".equals(row.getRowStatus())) continue;
-            String id = row.getAlarmId();
-            SyAlarm entity = repository.findById(id)
-                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        List<SyAlarm> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getAlarmId() != null)
+            .toList();
+        for (SyAlarm row : updateRows) {
+            SyAlarm entity = repository.findById(row.getAlarmId())
+                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getAlarmId()));
             VoUtil.voCopyExclude(row, entity, "alarmId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             repository.save(entity);
@@ -111,8 +112,10 @@ public class BoSyAlarmService {
         em.flush();
 
         // 3단계: INSERT 처리
-        for (SyAlarm row : rows) {
-            if (!"I".equals(row.getRowStatus())) continue;
+        List<SyAlarm> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyAlarm row : insertRows) {
             row.setAlarmId("AL" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);

@@ -94,27 +94,44 @@ public class BoSyRoleService {
     public void saveList(List<SyRole> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
-        for (SyRole row : rows) {
-            String rs = row.getRowStatus();
-            if ("I".equals(rs)) {
-                row.setRoleId("RL" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                repository.save(row);
-            } else if ("U".equals(rs)) {
-                SyRole entity = repository.findById(row.getRoleId())
-                    .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getRoleId()));
-                VoUtil.voCopyExclude(row, entity, "roleId^regBy^regDate");
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                repository.save(entity);
-            } else if ("D".equals(rs)) {
-                if (repository.existsById(row.getRoleId())) {
-                    repository.deleteById(row.getRoleId());
-                    roleMenuCache.evict(row.getRoleId());
-                }
-            }
+
+        // 1단계: DELETE 일괄 처리 (roleMenuCache도 함께 evict)
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()) && r.getRoleId() != null)
+            .map(SyRole::getRoleId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            repository.deleteAllById(deleteIds);
+            em.flush();
+            em.clear();
+            deleteIds.forEach(roleMenuCache::evict);
+        }
+
+        // 2단계: UPDATE 처리
+        List<SyRole> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getRoleId() != null)
+            .toList();
+        for (SyRole row : updateRows) {
+            SyRole entity = repository.findById(row.getRoleId())
+                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getRoleId()));
+            VoUtil.voCopyExclude(row, entity, "roleId^regBy^regDate^rowStatus");
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            repository.save(entity);
         }
         em.flush();
+
+        // 3단계: INSERT 처리
+        List<SyRole> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyRole row : insertRows) {
+            row.setRoleId("RL" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            repository.save(row);
+        }
+        em.flush();
+        em.clear();
         roleCache.evictAll();
     }
 }

@@ -93,12 +93,12 @@ public class BoSyCodeService {
         }
 
         // 2단계: UPDATE 처리
-        for (SyCode row : rows) {
-            if (!"U".equals(row.getRowStatus())) continue;
-            String codeId = row.getCodeId();
-            if (codeId == null) throw new CmBizException("수정 행에 codeId가 없습니다.");
-            SyCode entity = repository.findById(codeId)
-                .orElseThrow(() -> new CmBizException("존재하지 않는 코드: " + codeId));
+        List<SyCode> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getCodeId() != null)
+            .toList();
+        for (SyCode row : updateRows) {
+            SyCode entity = repository.findById(row.getCodeId())
+                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getCodeId()));
             VoUtil.voCopy(row, entity, "codeId", "regBy", "regDate");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             repository.save(entity);
@@ -106,8 +106,10 @@ public class BoSyCodeService {
         em.flush();
 
         // 3단계: INSERT 처리
-        for (SyCode row : rows) {
-            if (!"I".equals(row.getRowStatus())) continue;
+        List<SyCode> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyCode row : insertRows) {
             row.setCodeId("CD" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
@@ -115,17 +117,6 @@ public class BoSyCodeService {
         }
         em.flush();
         em.clear();
-        codeCache.evictAll();
-    }
-
-    @Transactional
-    public void delete(String id) {
-        SyCode entity = repository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        repository.delete(entity);
-        em.flush();
-        if (repository.existsById(id))
-            throw new CmBizException("데이터 삭제에 실패했습니다.");
         codeCache.evictAll();
     }
 }

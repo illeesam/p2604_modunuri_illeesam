@@ -99,11 +99,12 @@ public class BoSyAttachService {
         }
 
         // 2단계: UPDATE 처리
-        for (SyAttach row : rows) {
-            if (!"U".equals(row.getRowStatus())) continue;
-            String id = row.getAttachId();
-            SyAttach entity = repository.findById(id)
-                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        List<SyAttach> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getAttachId() != null)
+            .toList();
+        for (SyAttach row : updateRows) {
+            SyAttach entity = repository.findById(row.getAttachId())
+                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getAttachId()));
             VoUtil.voCopyExclude(row, entity, "attachId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             repository.save(entity);
@@ -111,8 +112,10 @@ public class BoSyAttachService {
         em.flush();
 
         // 3단계: INSERT 처리
-        for (SyAttach row : rows) {
-            if (!"I".equals(row.getRowStatus())) continue;
+        List<SyAttach> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyAttach row : insertRows) {
             row.setAttachId("AT" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);

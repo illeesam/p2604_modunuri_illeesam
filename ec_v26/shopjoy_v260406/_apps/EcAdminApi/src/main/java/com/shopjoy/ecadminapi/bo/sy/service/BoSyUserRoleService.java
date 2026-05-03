@@ -103,11 +103,12 @@ public class BoSyUserRoleService {
         }
 
         // 2단계: UPDATE 처리
-        for (SyUserRole row : rows) {
-            if (!"U".equals(row.getRowStatus())) continue;
-            String id = Objects.requireNonNull(row.getUserRoleId(), "userRoleId must not be null");
-            SyUserRole entity = repository.findById(id)
-                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        List<SyUserRole> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getUserRoleId() != null)
+            .toList();
+        for (SyUserRole row : updateRows) {
+            SyUserRole entity = repository.findById(row.getUserRoleId())
+                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getUserRoleId()));
             VoUtil.voCopyExclude(row, entity, "userRoleId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             repository.save(entity);
@@ -115,8 +116,10 @@ public class BoSyUserRoleService {
         em.flush();
 
         // 3단계: INSERT 처리
-        for (SyUserRole row : rows) {
-            if (!"I".equals(row.getRowStatus())) continue;
+        List<SyUserRole> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyUserRole row : insertRows) {
             row.setUserRoleId("UR" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);

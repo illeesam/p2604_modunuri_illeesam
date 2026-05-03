@@ -104,8 +104,10 @@ public class BoSyMenuService {
         }
 
         // 2단계: UPDATE 처리
-        for (SyMenu row : rows) {
-            if (!"U".equals(row.getRowStatus())) continue;
+        List<SyMenu> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getMenuId() != null)
+            .toList();
+        for (SyMenu row : updateRows) {
             SyMenu entity = repository.findById(row.getMenuId())
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getMenuId()));
             VoUtil.voCopyExclude(row, entity, "menuId^regBy^regDate^rowStatus");
@@ -115,8 +117,10 @@ public class BoSyMenuService {
         em.flush();
 
         // 3단계: INSERT 처리
-        for (SyMenu row : rows) {
-            if (!"I".equals(row.getRowStatus())) continue;
+        List<SyMenu> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyMenu row : insertRows) {
             row.setMenuId("MN" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);

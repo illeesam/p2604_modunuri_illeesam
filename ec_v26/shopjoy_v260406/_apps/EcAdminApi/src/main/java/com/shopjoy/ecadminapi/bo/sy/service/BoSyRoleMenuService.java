@@ -112,11 +112,12 @@ public class BoSyRoleMenuService {
         }
 
         // 2단계: UPDATE 처리
-        for (SyRoleMenu row : rows) {
-            if (!"U".equals(row.getRowStatus())) continue;
-            String id = Objects.requireNonNull(row.getRoleMenuId(), "RoleMenuId must not be null");
-            SyRoleMenu entity = repository.findById(id)
-                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        List<SyRoleMenu> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getRoleMenuId() != null)
+            .toList();
+        for (SyRoleMenu row : updateRows) {
+            SyRoleMenu entity = repository.findById(row.getRoleMenuId())
+                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getRoleMenuId()));
             VoUtil.voCopyExclude(row, entity, "roleMenuId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             repository.save(entity);
@@ -124,8 +125,10 @@ public class BoSyRoleMenuService {
         em.flush();
 
         // 3단계: INSERT 처리
-        for (SyRoleMenu row : rows) {
-            if (!"I".equals(row.getRowStatus())) continue;
+        List<SyRoleMenu> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyRoleMenu row : insertRows) {
             row.setRoleMenuId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_role_menu"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
@@ -133,6 +136,6 @@ public class BoSyRoleMenuService {
         }
         em.flush();
         em.clear();
-        rows.stream().map(SyRoleMenu::getRoleMenuId).filter(java.util.Objects::nonNull).forEach(id -> evictIfPresent(id));
+        rows.stream().map(SyRoleMenu::getRoleId).filter(java.util.Objects::nonNull).distinct().forEach(this::evictIfPresent);
     }
 }

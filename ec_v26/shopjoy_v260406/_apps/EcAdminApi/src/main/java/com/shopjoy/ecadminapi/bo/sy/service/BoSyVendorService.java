@@ -97,11 +97,12 @@ public class BoSyVendorService {
         }
 
         // 2단계: UPDATE 처리
-        for (SyVendor row : rows) {
-            if (!"U".equals(row.getRowStatus())) continue;
-            String id = row.getVendorId();
-            SyVendor entity = repository.findById(id)
-                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        List<SyVendor> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getVendorId() != null)
+            .toList();
+        for (SyVendor row : updateRows) {
+            SyVendor entity = repository.findById(row.getVendorId())
+                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getVendorId()));
             VoUtil.voCopyExclude(row, entity, "vendorId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             repository.save(entity);
@@ -109,8 +110,10 @@ public class BoSyVendorService {
         em.flush();
 
         // 3단계: INSERT 처리
-        for (SyVendor row : rows) {
-            if (!"I".equals(row.getRowStatus())) continue;
+        List<SyVendor> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyVendor row : insertRows) {
             row.setVendorId("VD" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);

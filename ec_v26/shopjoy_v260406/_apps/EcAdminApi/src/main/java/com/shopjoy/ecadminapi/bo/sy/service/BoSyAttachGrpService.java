@@ -98,11 +98,12 @@ public class BoSyAttachGrpService {
         }
 
         // 2단계: UPDATE 처리
-        for (SyAttachGrp row : rows) {
-            if (!"U".equals(row.getRowStatus())) continue;
-            String id = row.getAttachGrpId();
-            SyAttachGrp entity = repository.findById(id)
-                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        List<SyAttachGrp> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()) && r.getAttachGrpId() != null)
+            .toList();
+        for (SyAttachGrp row : updateRows) {
+            SyAttachGrp entity = repository.findById(row.getAttachGrpId())
+                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + row.getAttachGrpId()));
             VoUtil.voCopyExclude(row, entity, "attachGrpId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
             repository.save(entity);
@@ -110,8 +111,10 @@ public class BoSyAttachGrpService {
         em.flush();
 
         // 3단계: INSERT 처리
-        for (SyAttachGrp row : rows) {
-            if (!"I".equals(row.getRowStatus())) continue;
+        List<SyAttachGrp> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyAttachGrp row : insertRows) {
             row.setAttachGrpId(com.shopjoy.ecadminapi.common.util.CmUtil.generateId("sy_attach_grp"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
