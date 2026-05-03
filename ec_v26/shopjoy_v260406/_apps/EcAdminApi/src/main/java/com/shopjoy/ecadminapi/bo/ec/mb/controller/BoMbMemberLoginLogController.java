@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.bo.sy.controller;
+package com.shopjoy.ecadminapi.bo.ec.mb.controller;
 
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserLoginLogDto;
-import com.shopjoy.ecadminapi.bo.sy.service.BoSyUserLoginLogService;
+import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbhMemberLoginLogDto;
+import com.shopjoy.ecadminapi.bo.ec.mb.service.BoMbMemberLoginLogService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
@@ -12,27 +12,27 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * BO 사용자 로그인 이력 API — /api/bo/sy/user-login-log
+ * BO 회원 로그인 이력 API — /api/bo/ec/mb/member-login-log
  */
 @RestController
-@RequestMapping("/api/bo/sy/user-login-log")
+@RequestMapping("/api/bo/ec/mb/member-login-log")
 @RequiredArgsConstructor
-public class BoSyUserLoginLogController {
+public class BoMbMemberLoginLogController {
 
-    private final BoSyUserLoginLogService service;
+    private final BoMbMemberLoginLogService service;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<SyhUserLoginLogDto>>> list(@RequestParam Map<String, Object> p) {
+    public ResponseEntity<ApiResponse<List<MbhMemberLoginLogDto>>> list(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
     }
 
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PageResult<SyhUserLoginLogDto>>> page(@RequestParam Map<String, Object> p) {
+    public ResponseEntity<ApiResponse<PageResult<MbhMemberLoginLogDto>>> page(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyhUserLoginLogDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<MbhMemberLoginLogDto>> getById(@PathVariable String id) {
         return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 

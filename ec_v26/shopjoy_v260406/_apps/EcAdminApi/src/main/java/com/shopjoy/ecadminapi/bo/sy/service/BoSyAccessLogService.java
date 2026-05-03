@@ -27,6 +27,6 @@ public class BoSyAccessLogService {
 
     @Transactional
     public void deleteAll() {
-        repository.deleteAll();
+        repository.deleteAllBulk();
     }
 }

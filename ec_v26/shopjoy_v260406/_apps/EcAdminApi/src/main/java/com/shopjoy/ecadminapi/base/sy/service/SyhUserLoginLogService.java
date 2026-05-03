@@ -53,7 +53,7 @@ public class SyhUserLoginLogService {
 
     @Transactional
     public void deleteAll() {
-        repository.deleteAll();
+        repository.deleteAllBulk();
     }
 
 }

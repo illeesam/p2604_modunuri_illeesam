@@ -79,3 +79,7 @@ tasks.withType<Test> {
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
 }
+
+tasks.named<Jar>("jar") {
+    enabled = false
+}

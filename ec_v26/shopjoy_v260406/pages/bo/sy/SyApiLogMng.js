@@ -179,12 +179,14 @@ window.SyApiLogMng = {
 
     const cfCurrentList = computed(() => uiState.activeTab === 'access' ? accessLogs : errorLogs);
 
+    const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
+
     // -- return ---------------------------------------------------------------
 
     return {
       uiState, codes, pager, tabCounts, cfCurrentList,
       onTabChange, onDateRangeChange, onSearch, onReset, setPage, onSizeChange,
-      fnMethodBadge, fnStatusBadge,
+      fnMethodBadge, fnStatusBadge, fnDecode,
       expandedRows, toggleRow, isExpanded, toggleExpandAll, allExpanded, handleClearLog,
       showRefModal,
     };
@@ -203,7 +205,7 @@ window.SyApiLogMng = {
 
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
-    <div class="search-bar" style="flex-wrap:wrap;gap:8px">
+    <div class="search-bar">
       <span class="search-label">등록기간</span>
       <input type="date" v-model="uiState.dateStart" style="width:140px" />
       <span style="line-height:32px">~</span>
@@ -223,14 +225,13 @@ window.SyApiLogMng = {
       </select>
       <input v-model="uiState.searchPath" placeholder="API 경로 (예: /bo/sy/)" style="width:190px" @keyup.enter="onSearch" />
       <input v-model="uiState.searchKw" placeholder="IP / 사용자ID" style="width:150px" @keyup.enter="onSearch" />
-      <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="white-space:nowrap">{{ uiState.srchOpen?'▲ 조건닫기':'▼ 조건더보기' }}</button>
-      <div class="search-actions">
+      <div class="search-actions" style="margin-left:auto;display:flex;align-items:center;gap:4px;flex-shrink:0;">
+        <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">{{ uiState.srchOpen?'▲':'▼' }}</button>
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>
-    <!-- 추가 검색조건 -->
-    <div v-if="uiState.srchOpen" class="search-bar" style="flex-wrap:wrap;gap:8px;margin-top:8px;padding-top:8px;border-top:1px dashed #eee;">
+    <div v-if="uiState.srchOpen" class="search-bar" style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;">
       <input v-model="uiState.searchStatus" placeholder="상태코드 (예: 500)" style="width:150px" @keyup.enter="onSearch" />
       <select v-model="uiState.searchUserTypeCd" style="width:120px">
         <option value="">사용자유형 전체</option>
@@ -241,8 +242,8 @@ window.SyApiLogMng = {
         <option v-for="c in codes.user_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <span class="search-label">x-헤더</span>
-      <input v-model="uiState.searchUiNm"    placeholder="화면명 (x-ui-nm)"   style="width:170px" @keyup.enter="onSearch" />
-      <input v-model="uiState.searchTraceId" placeholder="Trace ID"           style="width:200px" @keyup.enter="onSearch" />
+      <input v-model="uiState.searchUiNm"    placeholder="화면명 (x-ui-nm)"  style="width:170px" @keyup.enter="onSearch" />
+      <input v-model="uiState.searchTraceId" placeholder="Trace ID"          style="width:200px" @keyup.enter="onSearch" />
     </div>
   </div>
 
@@ -295,9 +296,9 @@ window.SyApiLogMng = {
               <td style="font-family:monospace;font-size:12px;">{{ r.reqIp || '-' }}</td>
               <td style="font-size:12px;color:#555;">{{ r.userId || '-' }}</td>
               <td style="font-size:12px;color:#555;">
-                <span v-if="r.uiNm" style="color:#e8587a;font-weight:600;">{{ r.uiNm }}</span>
+                <span v-if="r.uiNm" style="color:#e8587a;font-weight:600;">{{ fnDecode(r.uiNm) }}</span>
                 <span v-if="r.uiNm && r.cmdNm" style="color:#aaa;"> > </span>
-                <span v-if="r.cmdNm">{{ r.cmdNm }}</span>
+                <span v-if="r.cmdNm">{{ fnDecode(r.cmdNm) }}</span>
                 <span v-if="!r.uiNm && !r.cmdNm" style="color:#ccc;">-</span>
               </td>
               <td style="font-family:monospace;font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.traceId">{{ r.traceId || '-' }}</td>
@@ -325,8 +326,8 @@ window.SyApiLogMng = {
                   <div>
                     <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px;">🏷 X-헤더 (호출 추적)</div>
                     <table style="width:100%;border-collapse:collapse;">
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-ui-nm</td><td style="color:#e8587a;font-weight:600;">{{ r.uiNm || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-cmd-nm</td><td>{{ r.cmdNm || '-' }}</td></tr>
+                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-ui-nm</td><td style="color:#e8587a;font-weight:600;">{{ fnDecode(r.uiNm) || '-' }}</td></tr>
+                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-cmd-nm</td><td>{{ fnDecode(r.cmdNm) || '-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-file-nm</td><td style="font-family:monospace;font-size:11px;">{{ r.fileNm || '-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-func-nm</td><td style="font-family:monospace;font-size:11px;">{{ r.funcNm || '-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-line-no</td><td style="font-family:monospace;">{{ r.lineNo || '-' }}</td></tr>
@@ -386,9 +387,9 @@ window.SyApiLogMng = {
               <td style="font-family:monospace;font-size:12px;">{{ r.reqIp || '-' }}</td>
               <td style="font-size:12px;color:#555;">{{ r.userId || '-' }}</td>
               <td style="font-size:12px;color:#555;">
-                <span v-if="r.uiNm" style="color:#e8587a;font-weight:600;">{{ r.uiNm }}</span>
+                <span v-if="r.uiNm" style="color:#e8587a;font-weight:600;">{{ fnDecode(r.uiNm) }}</span>
                 <span v-if="r.uiNm && r.cmdNm" style="color:#aaa;"> > </span>
-                <span v-if="r.cmdNm">{{ r.cmdNm }}</span>
+                <span v-if="r.cmdNm">{{ fnDecode(r.cmdNm) }}</span>
                 <span v-if="!r.uiNm && !r.cmdNm" style="color:#ccc;">-</span>
               </td>
               <td style="font-family:monospace;font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.traceId">{{ r.traceId || '-' }}</td>
@@ -419,8 +420,8 @@ window.SyApiLogMng = {
                   <div>
                     <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px;">🏷 X-헤더 (호출 추적)</div>
                     <table style="width:100%;border-collapse:collapse;">
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-ui-nm</td><td style="color:#e8587a;font-weight:600;">{{ r.uiNm || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-cmd-nm</td><td>{{ r.cmdNm || '-' }}</td></tr>
+                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-ui-nm</td><td style="color:#e8587a;font-weight:600;">{{ fnDecode(r.uiNm) || '-' }}</td></tr>
+                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-cmd-nm</td><td>{{ fnDecode(r.cmdNm) || '-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-file-nm</td><td style="font-family:monospace;font-size:11px;">{{ r.fileNm || '-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-func-nm</td><td style="font-family:monospace;font-size:11px;">{{ r.funcNm || '-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-line-no</td><td style="font-family:monospace;">{{ r.lineNo || '-' }}</td></tr>

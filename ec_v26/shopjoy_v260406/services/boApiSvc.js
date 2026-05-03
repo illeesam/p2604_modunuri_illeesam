@@ -125,13 +125,13 @@
   };
 
   /* ── mb: 회원 로그인이력 ────────────────────────────────────── */
-  boApiSvc.syMemberLoginLog = {
-    getPage(params, uiNm, cmdNm) { return global.boApi.get('/base/ec/mb/member-login-log/page', { params, ...hdr(uiNm, cmdNm) }); },
+  boApiSvc.mbMemberLoginLog = {
+    getPage(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/mb/member-login-log/page', { params, ...hdr(uiNm, cmdNm) }); },
   };
 
   /* ── mb: 회원 토큰이력 ──────────────────────────────────────── */
-  boApiSvc.syMemberTokenLog = {
-    getPage(params, uiNm, cmdNm) { return global.boApi.get('/base/ec/mb/member-token-log/page', { params, ...hdr(uiNm, cmdNm) }); },
+  boApiSvc.mbMemberTokenLog = {
+    getPage(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/mb/member-token-log/page', { params, ...hdr(uiNm, cmdNm) }); },
   };
 
   /* ── od: 클레임 ─────────────────────────────────────────────── */
@@ -548,12 +548,12 @@
 
   /* ── sy: 사용자 로그인이력 ─────────────────────────────────── */
   boApiSvc.syUserLoginLog = {
-    getPage(params, uiNm, cmdNm) { return global.boApi.get('/base/sy/user-login-log/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getPage(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/user-login-log/page', { params, ...hdr(uiNm, cmdNm) }); },
   };
 
   /* ── sy: 사용자 토큰이력 ────────────────────────────────────── */
   boApiSvc.syUserTokenLog = {
-    getPage(params, uiNm, cmdNm) { return global.boApi.get('/base/sy/user-token-log/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getPage(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/user-token-log/page', { params, ...hdr(uiNm, cmdNm) }); },
   };
 
   /* ── sy: API요청로그 ────────────────────────────────────────── */

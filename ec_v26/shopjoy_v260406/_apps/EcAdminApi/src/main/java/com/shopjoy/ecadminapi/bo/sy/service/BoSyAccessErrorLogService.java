@@ -27,6 +27,6 @@ public class BoSyAccessErrorLogService {
 
     @Transactional
     public void deleteAll() {
-        repository.deleteAll();
+        repository.deleteAllBulk();
     }
 }

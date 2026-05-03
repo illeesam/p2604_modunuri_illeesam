@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.bo.sy.service;
+package com.shopjoy.ecadminapi.bo.ec.mb.service;
 
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserLoginLogDto;
-import com.shopjoy.ecadminapi.base.sy.mapper.SyhUserLoginLogMapper;
-import com.shopjoy.ecadminapi.base.sy.repository.SyhUserLoginLogRepository;
+import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbhMemberTokenLogDto;
+import com.shopjoy.ecadminapi.base.ec.mb.mapper.MbhMemberTokenLogMapper;
+import com.shopjoy.ecadminapi.base.ec.mb.repository.MbhMemberTokenLogRepository;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import lombok.RequiredArgsConstructor;
@@ -14,26 +14,26 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class BoSyUserLoginLogService {
+public class BoMbMemberTokenLogService {
 
-    private final SyhUserLoginLogMapper mapper;
-    private final SyhUserLoginLogRepository repository;
+    private final MbhMemberTokenLogMapper mapper;
+    private final MbhMemberTokenLogRepository repository;
 
     @Transactional(readOnly = true)
-    public List<SyhUserLoginLogDto> getList(Map<String, Object> p) {
+    public List<MbhMemberTokenLogDto> getList(Map<String, Object> p) {
         if (p.containsKey("pageSize")) PageHelper.addPaging(p);
         return mapper.selectList(p);
     }
 
     @Transactional(readOnly = true)
-    public PageResult<SyhUserLoginLogDto> getPageData(Map<String, Object> p) {
+    public PageResult<MbhMemberTokenLogDto> getPageData(Map<String, Object> p) {
         PageHelper.addPaging(p);
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p),
             PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
     @Transactional(readOnly = true)
-    public SyhUserLoginLogDto getById(String id) {
+    public MbhMemberTokenLogDto getById(String id) {
         return mapper.selectById(id);
     }
 

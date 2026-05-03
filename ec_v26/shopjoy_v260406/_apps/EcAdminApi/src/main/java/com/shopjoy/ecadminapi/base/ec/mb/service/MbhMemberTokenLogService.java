@@ -49,7 +49,7 @@ public class MbhMemberTokenLogService {
 
     @Transactional
     public void deleteAll() {
-        repository.deleteAll();
+        repository.deleteAllBulk();
     }
 
 }

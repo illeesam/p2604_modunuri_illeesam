@@ -72,7 +72,7 @@ window.SyMemberLoginHist = {
 
     const handleSearchLog = async () => {
       try {
-        const res = await boApiSvc.syMemberLoginLog.getPage(buildParams(), '회원로그인이력', '로그인로그조회');
+        const res = await boApiSvc.mbMemberLoginLog.getPage(buildParams(), '회원로그인이력', '로그인로그조회');
         const d = res.data?.data;
         logList.splice(0, logList.length, ...(d?.pageList || []));
         pager.pageTotalCount = d?.pageTotalCount || 0;
@@ -85,7 +85,7 @@ window.SyMemberLoginHist = {
 
     const handleSearchToken = async () => {
       try {
-        const res = await boApiSvc.syMemberTokenLog.getPage(buildParams(), '회원로그인이력', '토큰이력조회');
+        const res = await boApiSvc.mbMemberTokenLog.getPage(buildParams(), '회원로그인이력', '토큰이력조회');
         const d = res.data?.data;
         tokenList.splice(0, tokenList.length, ...(d?.pageList || []));
         pager.pageTotalCount = d?.pageTotalCount || 0;
@@ -118,8 +118,8 @@ window.SyMemberLoginHist = {
       const ok = await props.showConfirm('로그 비우기', `[${tabNm}] 테이블의 모든 데이터를 삭제합니다.\n이 작업은 되돌릴 수 없습니다.`);
       if (!ok) return;
       try {
-        if (uiState.activeTab==='log') await window.boApi.delete('/base/ec/mb/member-login-log/all', coUtil.apiHdr('회원로그인이력', '로그비우기'));
-        else                           await window.boApi.delete('/base/ec/mb/member-token-log/all', coUtil.apiHdr('회원로그인이력', '로그비우기'));
+        if (uiState.activeTab==='log') await window.boApi.delete('/bo/ec/mb/member-login-log/all', coUtil.apiHdr('회원로그인이력', '로그비우기'));
+        else                           await window.boApi.delete('/bo/ec/mb/member-token-log/all', coUtil.apiHdr('회원로그인이력', '로그비우기'));
         props.showToast(`${tabNm} 전체 삭제 완료`, 'success');
         if (uiState.activeTab==='log') { logList.splice(0); tabCounts.log=0; }
         else                           { tokenList.splice(0); tabCounts.token=0; }
@@ -137,11 +137,12 @@ window.SyMemberLoginHist = {
     const fnActionBadge = cd => ({'ISSUE':'badge-blue','REFRESH':'badge-green','REVOKE':'badge-red','EXPIRE':'badge-orange'}[cd]||'badge-gray');
     const fnActionLabel = cd => ({'ISSUE':'발급','REFRESH':'갱신','REVOKE':'폐기','EXPIRE':'만료'}[cd]||cd||'-');
     const fnTypeBadge   = cd => ({'ACCESS':'badge-purple','REFRESH':'badge-blue'}[cd]||'badge-gray');
+    const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
 
     return {
       uiState, codes, pager, tabCounts, cfCurrentList,
       expandedRows, toggleRow, isExpanded, toggleExpandAll, allExpanded,
-      fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge,
+      fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge, fnDecode,
       onTabChange, onDateRangeChange, onSearch, onReset, setPage, onSizeChange, handleClearLog,
     };
   },
@@ -158,8 +159,7 @@ window.SyMemberLoginHist = {
 
   <!-- ── 검색 ──────────────────────────────────────────────────────── -->
   <div class="card">
-    <div class="search-bar" style="flex-wrap:wrap;gap:8px;">
-      <!-- 1줄: 기간 -->
+    <div class="search-bar">
       <span class="search-label">등록기간</span>
       <input type="date" v-model="uiState.dateStart" style="width:140px" />
       <span style="line-height:32px">~</span>
@@ -168,24 +168,22 @@ window.SyMemberLoginHist = {
         <option value="">기간선택</option>
         <option v-for="opt in codes.date_range_opts" :key="opt.codeValue" :value="opt.codeValue">{{ opt.codeLabel }}</option>
       </select>
-      <!-- 2줄: 주요조건 -->
       <select v-model="uiState.searchResultCd" style="width:130px">
         <option value="">로그인결과 전체</option>
         <option v-for="c in codes.login_results" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <input v-model="uiState.searchIp" placeholder="IP 주소" style="width:140px" @keyup.enter="onSearch" />
       <input v-model="uiState.searchKw" placeholder="회원ID / 로그인ID" style="width:170px" @keyup.enter="onSearch" />
-      <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="white-space:nowrap">{{ uiState.srchOpen?'▲ 조건닫기':'▼ 조건더보기' }}</button>
-      <div class="search-actions">
+      <div class="search-actions" style="margin-left:auto;display:flex;align-items:center;gap:4px;flex-shrink:0;">
+        <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">{{ uiState.srchOpen?'▲':'▼' }}</button>
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </div>
-    <!-- 추가 검색조건 (펼쳐지면 표시) -->
-    <div v-if="uiState.srchOpen" class="search-bar" style="flex-wrap:wrap;gap:8px;margin-top:8px;padding-top:8px;border-top:1px dashed #eee;">
+    <div v-if="uiState.srchOpen" class="search-bar" style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;">
       <span class="search-label">x-헤더</span>
-      <input v-model="uiState.searchUiNm"   placeholder="화면명 (x-ui-nm)"    style="width:170px" @keyup.enter="onSearch" />
-      <input v-model="uiState.searchTraceId" placeholder="Trace ID"           style="width:200px" @keyup.enter="onSearch" />
+      <input v-model="uiState.searchUiNm"    placeholder="화면명 (x-ui-nm)"  style="width:170px" @keyup.enter="onSearch" />
+      <input v-model="uiState.searchTraceId" placeholder="Trace ID"          style="width:200px" @keyup.enter="onSearch" />
     </div>
   </div>
 
@@ -234,9 +232,9 @@ window.SyMemberLoginHist = {
               <td style="font-family:monospace;font-size:12px">{{ r.ip||'-' }}</td>
               <td style="font-size:11px;color:#666;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="r.browser+' / '+r.os">{{ r.browser||r.device||'-' }}</td>
               <td style="font-size:12px">
-                <span v-if="r.uiNm" style="color:#e8587a;font-weight:600">{{ r.uiNm }}</span>
+                <span v-if="r.uiNm" style="color:#e8587a;font-weight:600">{{ fnDecode(r.uiNm) }}</span>
                 <span v-if="r.uiNm&&r.cmdNm" style="color:#aaa"> > </span>
-                <span v-if="r.cmdNm">{{ r.cmdNm }}</span>
+                <span v-if="r.cmdNm">{{ fnDecode(r.cmdNm) }}</span>
                 <span v-if="!r.uiNm&&!r.cmdNm" style="color:#ccc">-</span>
               </td>
               <td style="font-family:monospace;font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="r.traceId">{{ r.traceId||'-' }}</td>
@@ -260,8 +258,8 @@ window.SyMemberLoginHist = {
                   <div>
                     <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px">🏷 X-헤더 (호출 추적)</div>
                     <table style="width:100%;border-collapse:collapse">
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-ui-nm</td><td style="color:#e8587a;font-weight:600">{{ r.uiNm||'-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-cmd-nm</td><td>{{ r.cmdNm||'-' }}</td></tr>
+                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-ui-nm</td><td style="color:#e8587a;font-weight:600">{{ fnDecode(r.uiNm)||'-' }}</td></tr>
+                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-cmd-nm</td><td>{{ fnDecode(r.cmdNm)||'-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-file-nm</td><td style="font-family:monospace;font-size:11px">{{ r.fileNm||'-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-func-nm</td><td style="font-family:monospace;font-size:11px">{{ r.funcNm||'-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-line-no</td><td style="font-family:monospace">{{ r.lineNo||'-' }}</td></tr>
@@ -312,9 +310,9 @@ window.SyMemberLoginHist = {
               <td style="font-size:12px" :style="r.actionCd==='EXPIRE'||r.actionCd==='REVOKE'?'color:#e74c3c':''">{{ r.tokenExp||'-' }}</td>
               <td style="font-family:monospace;font-size:12px">{{ r.ip||'-' }}</td>
               <td style="font-size:12px">
-                <span v-if="r.uiNm" style="color:#e8587a;font-weight:600">{{ r.uiNm }}</span>
+                <span v-if="r.uiNm" style="color:#e8587a;font-weight:600">{{ fnDecode(r.uiNm) }}</span>
                 <span v-if="r.uiNm&&r.cmdNm" style="color:#aaa"> > </span>
-                <span v-if="r.cmdNm">{{ r.cmdNm }}</span>
+                <span v-if="r.cmdNm">{{ fnDecode(r.cmdNm) }}</span>
                 <span v-if="!r.uiNm&&!r.cmdNm" style="color:#ccc">-</span>
               </td>
               <td style="font-family:monospace;font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="r.traceId">{{ r.traceId||'-' }}</td>
@@ -337,8 +335,8 @@ window.SyMemberLoginHist = {
                   <div>
                     <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px">🏷 X-헤더 (호출 추적)</div>
                     <table style="width:100%;border-collapse:collapse">
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-ui-nm</td><td style="color:#e8587a;font-weight:600">{{ r.uiNm||'-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-cmd-nm</td><td>{{ r.cmdNm||'-' }}</td></tr>
+                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-ui-nm</td><td style="color:#e8587a;font-weight:600">{{ fnDecode(r.uiNm)||'-' }}</td></tr>
+                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-cmd-nm</td><td>{{ fnDecode(r.cmdNm)||'-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-file-nm</td><td style="font-family:monospace;font-size:11px">{{ r.fileNm||'-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-func-nm</td><td style="font-family:monospace;font-size:11px">{{ r.funcNm||'-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-line-no</td><td style="font-family:monospace">{{ r.lineNo||'-' }}</td></tr>
