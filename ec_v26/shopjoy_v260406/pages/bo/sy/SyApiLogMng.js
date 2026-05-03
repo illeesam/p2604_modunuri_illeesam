@@ -58,8 +58,10 @@ window.SyApiLogMng = {
 
     // 펼쳐진 행 ID 집합
     const expandedRows = reactive(new Set());
-    const toggleRow  = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
-    const isExpanded = id => expandedRows.has(id);
+    const toggleRow    = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
+    const isExpanded   = id => expandedRows.has(id);
+    const expandAll    = () => { const list = uiState.activeTab === 'access' ? accessLogs : errorLogs; list.forEach((r, i) => expandedRows.add(r.logId || i)); };
+    const collapseAll  = () => expandedRows.clear();
 
     const fnBuildPagerNums = () => {
       const c = pager.pageNo, l = pager.pageTotalPage;
@@ -150,7 +152,7 @@ window.SyApiLogMng = {
       uiState, codes, pager, cfCurrentList,
       onTabChange, onDateRangeChange, onSearch, onReset, setPage, onSizeChange,
       fnMethodBadge, fnStatusBadge,
-      expandedRows, toggleRow, isExpanded,
+      expandedRows, toggleRow, isExpanded, expandAll, collapseAll,
       showRefModal,
     };
   },
@@ -207,7 +209,11 @@ window.SyApiLogMng = {
         {{ uiState.activeTab === 'access' ? 'API요청로그' : 'API오류로그' }}
         <span class="list-count">{{ pager.pageTotalCount }}건</span>
       </span>
-      <span style="font-size:11px;color:#aaa;">행 클릭 시 상세정보 펼침</span>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:11px;color:#aaa;">행 클릭 시 상세정보 펼침</span>
+        <button class="btn btn-secondary btn-xs" @click="expandAll">전체펼치기</button>
+        <button class="btn btn-secondary btn-xs" @click="collapseAll">전체닫기</button>
+      </div>
     </div>
 
     <!-- -- API요청로그 탭 -------------------------------------------------- -->
