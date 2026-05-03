@@ -11,7 +11,7 @@ window.SyApiLogMng = {
 
     const uiState = reactive({
       activeTab: 'access',
-      descOpen: false,
+      descOpen: false, srchOpen: false,
       isPageCodeLoad: false,
       dateRange: '1week',
       dateStart: '',
@@ -20,14 +20,18 @@ window.SyApiLogMng = {
       searchMethod: '',
       searchStatus: '',
       searchPath: '',
+      searchUserTypeCd: '',
+      searchUiNm: '',
+      searchTraceId: '',
     });
 
-    const codes = reactive({ date_range_opts: [], http_methods: [] });
+    const codes = reactive({ date_range_opts: [], http_methods: [], user_types: [] });
 
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.date_range_opts = codeStore?.sgGetGrpCodes('DATE_RANGE_OPT') || [];
       codes.http_methods    = codeStore?.sgGetGrpCodes('HTTP_METHOD')    || [];
+      codes.user_types      = codeStore?.sgGetGrpCodes('USER_TYPE')      || [];
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
@@ -55,6 +59,7 @@ window.SyApiLogMng = {
 
     const accessLogs = reactive([]);
     const errorLogs  = reactive([]);
+    const tabCounts  = reactive({ access: 0, error: 0 });
 
     // 펼쳐진 행 ID 집합
     const expandedRows = reactive(new Set());
@@ -70,14 +75,17 @@ window.SyApiLogMng = {
     };
 
     const buildSearchParams = () => ({
-      pageNo:    pager.pageNo,
-      pageSize:  pager.pageSize,
-      dateStart: uiState.dateStart || undefined,
-      dateEnd:   uiState.dateEnd   || undefined,
-      kw:        uiState.searchKw  || undefined,
-      method:    uiState.searchMethod  || undefined,
-      status:    uiState.searchStatus  || undefined,
-      path:      uiState.searchPath    || undefined,
+      pageNo:      pager.pageNo,
+      pageSize:    pager.pageSize,
+      dateStart:   uiState.dateStart       || undefined,
+      dateEnd:     uiState.dateEnd         || undefined,
+      kw:          uiState.searchKw        || undefined,
+      method:      uiState.searchMethod    || undefined,
+      status:      uiState.searchStatus    || undefined,
+      path:        uiState.searchPath      || undefined,
+      userTypeCd:  uiState.searchUserTypeCd || undefined,
+      uiNm:        uiState.searchUiNm      || undefined,
+      traceId:     uiState.searchTraceId   || undefined,
     });
 
     const handleSearchAccessLog = async () => {
@@ -87,6 +95,7 @@ window.SyApiLogMng = {
         accessLogs.splice(0, accessLogs.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        tabCounts.access = pager.pageTotalCount;
         fnBuildPagerNums();
         expandedRows.clear();
       } catch (err) {
@@ -102,6 +111,7 @@ window.SyApiLogMng = {
         errorLogs.splice(0, errorLogs.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        tabCounts.error = pager.pageTotalCount;
         fnBuildPagerNums();
         expandedRows.clear();
       } catch (err) {
@@ -120,11 +130,23 @@ window.SyApiLogMng = {
       handleSearchList();
     });
 
-    const onTabChange  = (tab) => { uiState.activeTab = tab; pager.pageNo = 1; handleSearchList(); };
+    const onTabChange   = (tab) => { uiState.activeTab = tab; pager.pageNo = 1; handleSearchList(); };
+    const handleClearLog = async () => {
+      const tabNm = uiState.activeTab === 'access' ? 'API요청로그' : 'API오류로그';
+      const ok = await window.boApp.showConfirm('로그 비우기', `현재 페이지의 ${tabNm} 목록을 화면에서 지웁니다.\n(DB 데이터는 삭제되지 않습니다)`);
+      if (!ok) return;
+      if (uiState.activeTab === 'access') { accessLogs.splice(0); tabCounts.access = 0; }
+      else                                { errorLogs.splice(0);  tabCounts.error  = 0; }
+      pager.pageTotalCount = 0; pager.pageTotalPage = 1;
+      expandedRows.clear();
+    };
     const onSearch     = () => { pager.pageNo = 1; handleSearchList(); };
     const onReset      = () => {
-      uiState.searchKw = ''; uiState.searchMethod = ''; uiState.searchStatus = ''; uiState.searchPath = '';
-      uiState.dateRange = '1week';
+      Object.assign(uiState, {
+        searchKw:'', searchMethod:'', searchStatus:'', searchPath:'',
+        searchUserTypeCd:'', searchUiNm:'', searchTraceId:'',
+        dateRange:'1week', srchOpen:false,
+      });
       const r = boUtil.getDateRange('1week');
       uiState.dateStart = r.from; uiState.dateEnd = r.to;
       pager.pageNo = 1;
@@ -149,10 +171,10 @@ window.SyApiLogMng = {
     // -- return ---------------------------------------------------------------
 
     return {
-      uiState, codes, pager, cfCurrentList,
+      uiState, codes, pager, tabCounts, cfCurrentList,
       onTabChange, onDateRangeChange, onSearch, onReset, setPage, onSizeChange,
       fnMethodBadge, fnStatusBadge,
-      expandedRows, toggleRow, isExpanded, expandAll, collapseAll,
+      expandedRows, toggleRow, isExpanded, expandAll, collapseAll, handleClearLog,
       showRefModal,
     };
   },
@@ -188,21 +210,36 @@ window.SyApiLogMng = {
         <option v-if="!codes.http_methods.length" value="DELETE">DELETE</option>
         <option v-for="c in codes.http_methods" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <input v-model="uiState.searchStatus" placeholder="상태코드 (예: 500)" style="width:150px" @keyup.enter="onSearch" />
       <input v-model="uiState.searchPath" placeholder="API 경로 (예: /bo/sy/)" style="width:190px" @keyup.enter="onSearch" />
       <input v-model="uiState.searchKw" placeholder="IP / 사용자ID" style="width:150px" @keyup.enter="onSearch" />
+      <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="white-space:nowrap">{{ uiState.srchOpen?'▲ 조건닫기':'▼ 조건더보기' }}</button>
       <div class="search-actions">
         <button class="btn btn-primary" @click="onSearch">조회</button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
+    </div>
+    <!-- 추가 검색조건 -->
+    <div v-if="uiState.srchOpen" class="search-bar" style="flex-wrap:wrap;gap:8px;margin-top:8px;padding-top:8px;border-top:1px dashed #eee;">
+      <input v-model="uiState.searchStatus" placeholder="상태코드 (예: 500)" style="width:150px" @keyup.enter="onSearch" />
+      <select v-model="uiState.searchUserTypeCd" style="width:120px">
+        <option value="">사용자유형 전체</option>
+        <option v-if="!codes.user_types.length" value="ADMIN">관리자</option>
+        <option v-if="!codes.user_types.length" value="MEMBER">회원</option>
+        <option v-if="!codes.user_types.length" value="VENDOR">업체</option>
+        <option v-if="!codes.user_types.length" value="ANON">비로그인</option>
+        <option v-for="c in codes.user_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+      </select>
+      <span class="search-label">x-헤더</span>
+      <input v-model="uiState.searchUiNm"    placeholder="화면명 (x-ui-nm)"   style="width:170px" @keyup.enter="onSearch" />
+      <input v-model="uiState.searchTraceId" placeholder="Trace ID"           style="width:200px" @keyup.enter="onSearch" />
     </div>
   </div>
 
   <!-- -- 탭 + 목록 --------------------------------------------------------- -->
   <div class="card">
     <div class="tab-nav" style="margin-bottom:16px">
-      <button class="tab-btn" :class="{active:uiState.activeTab==='access'}" @click="onTabChange('access')">📋 API요청로그</button>
-      <button class="tab-btn" :class="{active:uiState.activeTab==='error'}"  @click="onTabChange('error')">🚨 API오류로그</button>
+      <button class="tab-btn" :class="{active:uiState.activeTab==='access'}" @click="onTabChange('access')">📋 API요청로그 <span class="tab-count">{{ tabCounts.access }}</span></button>
+      <button class="tab-btn" :class="{active:uiState.activeTab==='error'}"  @click="onTabChange('error')">🚨 API오류로그 <span class="tab-count">{{ tabCounts.error }}</span></button>
     </div>
     <div class="toolbar">
       <span class="list-title">
@@ -213,6 +250,7 @@ window.SyApiLogMng = {
         <span style="font-size:11px;color:#aaa;">행 클릭 시 상세정보 펼침</span>
         <button class="btn btn-secondary btn-xs" @click="expandAll">전체펼치기</button>
         <button class="btn btn-secondary btn-xs" @click="collapseAll">전체닫기</button>
+        <button class="btn btn-danger btn-xs" @click="handleClearLog">로그비우기</button>
       </div>
     </div>
 
