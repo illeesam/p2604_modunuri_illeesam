@@ -133,10 +133,10 @@ window.SyUserLoginHist = {
     // ── 표시용 ───────────────────────────────────────────────────────────
     const cfCurrentList = computed(() => uiState.activeTab==='log' ? logList : tokenList);
 
-    const fnResultBadge = cd => ({'SUCCESS':'badge-green','FAIL_PW':'badge-red','FAIL_LOCKED':'badge-orange','FAIL_NOT_FOUND':'badge-gray','FAIL_IP':'badge-purple'}[cd]||'badge-gray');
-    const fnResultLabel = cd => ({'SUCCESS':'성공','FAIL_PW':'비밀번호오류','FAIL_LOCKED':'계정잠금','FAIL_NOT_FOUND':'없는계정','FAIL_IP':'IP차단'}[cd]||cd||'-');
-    const fnActionBadge = cd => ({'ISSUE':'badge-blue','REFRESH':'badge-green','REVOKE':'badge-red','EXPIRE':'badge-orange'}[cd]||'badge-gray');
-    const fnActionLabel = cd => ({'ISSUE':'발급','REFRESH':'갱신','REVOKE':'폐기','EXPIRE':'만료'}[cd]||cd||'-');
+    const fnResultBadge = cd => ({'SUCCESS':'badge-green','LOGOUT':'badge-blue','FAIL_PW':'badge-red','FAIL_LOCKED':'badge-orange','FAIL_NOT_FOUND':'badge-gray','FAIL_IP':'badge-purple'}[cd]||'badge-gray');
+    const fnResultLabel = cd => ({'SUCCESS':'성공','LOGOUT':'로그아웃','FAIL_PW':'비밀번호오류','FAIL_LOCKED':'계정잠금','FAIL_NOT_FOUND':'없는계정','FAIL_IP':'IP차단'}[cd]||cd||'-');
+    const fnActionBadge = cd => ({'ISSUE':'badge-blue','REFRESH':'badge-green','REVOKE':'badge-red','EXPIRE':'badge-orange','LOGOUT':'badge-gray'}[cd]||'badge-gray');
+    const fnActionLabel = cd => ({'ISSUE':'발급','REFRESH':'갱신','REVOKE':'폐기','EXPIRE':'만료','LOGOUT':'로그아웃'}[cd]||cd||'-');
     const fnTypeBadge   = cd => ({'ACCESS':'badge-purple','REFRESH':'badge-blue'}[cd]||'badge-gray');
     const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
 
@@ -292,12 +292,12 @@ window.SyUserLoginHist = {
           <th style="width:36px;text-align:center;">번호</th>
           <th style="width:20px"></th>
           <th>토큰로그ID</th><th>일시</th><th>사용자</th>
-          <th>액션</th><th>토큰유형</th><th>만료일시</th><th>IP</th>
+          <th>액션</th><th>토큰유형</th><th>AT만료</th><th>RT만료</th><th>IP</th>
           <th>화면>기능</th><th>Trace ID</th><th>폐기사유</th>
         </tr></thead>
         <tbody>
           <tr v-if="cfCurrentList.length===0">
-            <td colspan="12" style="text-align:center;color:#999;padding:30px">데이터가 없습니다.</td>
+            <td colspan="13" style="text-align:center;color:#999;padding:30px">데이터가 없습니다.</td>
           </tr>
           <template v-else v-for="(r,idx) in cfCurrentList" :key="r.tokenLogId||r.logId||idx">
             <tr style="cursor:pointer" :style="isExpanded(r.tokenLogId||idx)?'background:#fafbff':''" @click="toggleRow(r.tokenLogId||idx)">
@@ -308,7 +308,8 @@ window.SyUserLoginHist = {
               <td><div style="font-weight:600">{{ r.userNm||r.userId||'-' }}</div><div style="font-size:11px;color:#aaa">{{ r.userId }}</div></td>
               <td><span class="badge" :class="fnActionBadge(r.actionCd)">{{ fnActionLabel(r.actionCd) }}</span></td>
               <td><span class="badge" :class="fnTypeBadge(r.tokenTypeCd)" style="font-size:11px">{{ r.tokenTypeCd||'-' }}</span></td>
-              <td style="font-size:12px" :style="r.actionCd==='EXPIRE'||r.actionCd==='REVOKE'?'color:#e74c3c':''">{{ r.tokenExp||'-' }}</td>
+              <td style="font-size:12px;color:#8e44ad">{{ String(r.accessTokenExp||'').slice(0,19)||'-' }}</td>
+              <td style="font-size:12px" :style="r.actionCd==='EXPIRE'||r.actionCd==='REVOKE'?'color:#e74c3c':''">{{ String(r.tokenExp||'').slice(0,19)||'-' }}</td>
               <td style="font-family:monospace;font-size:12px">{{ r.ip||'-' }}</td>
               <td style="font-size:12px">
                 <span v-if="r.uiNm" style="color:#e8587a;font-weight:600">{{ fnDecode(r.uiNm) }}</span>
@@ -320,14 +321,15 @@ window.SyUserLoginHist = {
               <td style="font-size:12px;color:#e74c3c">{{ r.revokeReason||'-' }}</td>
             </tr>
             <tr v-if="isExpanded(r.tokenLogId||idx)">
-              <td colspan="12" style="background:#f4f6fb;padding:16px 20px;border-top:none">
+              <td colspan="13" style="background:#f4f6fb;padding:16px 20px;border-top:none">
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px">
                   <div>
                     <div style="font-weight:700;color:#e91e8c;margin-bottom:8px;border-bottom:1px solid #f0c0d0;padding-bottom:4px">🔑 토큰 정보</div>
                     <table style="width:100%;border-collapse:collapse">
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">액션</td><td><span class="badge" :class="fnActionBadge(r.actionCd)">{{ fnActionLabel(r.actionCd) }}</span></td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">토큰유형</td><td><span class="badge" :class="fnTypeBadge(r.tokenTypeCd)">{{ r.tokenTypeCd }}</span></td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">만료일시</td><td :style="r.actionCd==='EXPIRE'||r.actionCd==='REVOKE'?'color:#e74c3c;font-weight:700':''">{{ r.tokenExp||'-' }}</td></tr>
+                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">AT만료</td><td style="color:#8e44ad">{{ String(r.accessTokenExp||'').slice(0,19)||'-' }}</td></tr>
+                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">RT만료</td><td :style="r.actionCd==='EXPIRE'||r.actionCd==='REVOKE'?'color:#e74c3c;font-weight:700':''">{{ String(r.tokenExp||'').slice(0,19)||'-' }}</td></tr>
                       <tr v-if="r.revokeReason"><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">폐기사유</td><td style="color:#e74c3c;font-weight:600">{{ r.revokeReason }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">IP</td><td style="font-family:monospace">{{ r.ip||'-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">사용자ID</td><td>{{ r.userId||'-' }}</td></tr>

@@ -16,6 +16,7 @@ import io.jsonwebtoken.Claims;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -79,20 +80,20 @@ public class BoAuthService {
                 .setParameter("loginId", request.getLoginId())
                 .getSingleResult();
         } catch (NoResultException e) {
-            saveLoginLog(null, null, request.getLoginId(), "FAIL", null, null, 0);
+            saveLoginLog(null, null, request.getLoginId(), "FAIL", null, null, 0, null, null);
             throw new CmBizException("사용자 로그인ID가 올바르지 않습니다.");
         }
 
         if (!"ACTIVE".equals(user.getUserStatusCd())) {
             saveLoginLog(user.getUserId(), user.getSiteId(), user.getLoginId(), "FAIL", null, null,
-                user.getLoginFailCnt() == null ? 0 : user.getLoginFailCnt());
+                user.getLoginFailCnt() == null ? 0 : user.getLoginFailCnt(), null, null);
             throw new CmBizException("비활성화된 계정입니다.");
         }
 
         if (!passwordEncoder.matches(request.getLoginPwd(), user.getLoginPwdHash())) {
             int failCnt = user.getLoginFailCnt() == null ? 1 : user.getLoginFailCnt() + 1;
             user.setLoginFailCnt(failCnt);
-            saveLoginLog(user.getUserId(), user.getSiteId(), user.getLoginId(), "FAIL", null, null, failCnt);
+            saveLoginLog(user.getUserId(), user.getSiteId(), user.getLoginId(), "FAIL", null, null, failCnt, null, null);
             throw new CmBizException("아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 
@@ -111,10 +112,10 @@ public class BoAuthService {
         String refreshToken = jwtProvider.createRefreshToken(authId, userTypeCd);
 
         // refreshToken DB 저장
-        String tokenLogId = saveTokenLog(authId, user.getSiteId(), accessToken, refreshToken, "LOGIN", userTypeCd);
+        String tokenLogId = saveTokenLog(authId, user.getSiteId(), accessToken, refreshToken, "LOGIN", userTypeCd, null, null, null);
 
         // 로그인 성공 이력 기록
-        saveLoginLog(authId, user.getSiteId(), user.getLoginId(), "SUCCESS", accessToken, tokenLogId, 0);
+        saveLoginLog(authId, user.getSiteId(), user.getLoginId(), "SUCCESS", accessToken, tokenLogId, 0, null, null);
 
         return LoginRes.builder()
             .accessToken(accessToken)
@@ -208,16 +209,25 @@ public class BoAuthService {
     // ── logout ────────────────────────────────────────────────────────────
 
     @Transactional
-    public void logout(String accessToken, String userTypeCd) {
+    public void logout(String accessToken, String userTypeCd, HttpServletRequest request) {
         if (accessToken == null || accessToken.isBlank()) return;
+        String uiNm  = request != null ? request.getHeader("X-UI-Nm")  : null;
+        String cmdNm = request != null ? request.getHeader("X-Cmd-Nm") : null;
         try {
             Claims claims = jwtProvider.getClaimsAllowExpired(accessToken);
             String authId = claims.getSubject();
             if (authId != null) {
+                SyUser user = em.find(SyUser.class, authId);
+                String siteId = user != null ? user.getSiteId() : null;
+                // 토큰 삭제 먼저 (1세션) — DELETE 후 REVOKE 로그 persist해야 삭제되지 않음
                 em.createQuery(
                         "DELETE FROM SyhUserTokenLog t WHERE t.authId = :authId")
                     .setParameter("authId", authId)
                     .executeUpdate();
+                // REVOKE 토큰 이력 기록
+                saveTokenLog(authId, siteId, accessToken, null, "REVOKE", userTypeCd, "LOGOUT", uiNm, cmdNm);
+                // LOGOUT 로그인 이력 기록
+                saveLoginLog(authId, siteId, authId, "LOGOUT", null, null, 0, uiNm, cmdNm);
             }
         } catch (Exception e) {
             log.warn("logout token parse error: {}", e.getMessage());
@@ -248,9 +258,11 @@ public class BoAuthService {
     /** syh_user_token_log INSERT, logId 반환 */
     private String saveTokenLog(String authId, String siteId,
                                 String accessToken, String refreshToken,
-                                String actionCd, String userTypeCd) {
+                                String actionCd, String userTypeCd,
+                                String revokeReason, String uiNm, String cmdNm) {
         String logId = "TL" + LocalDateTime.now().format(ID_FMT)
             + String.format("%04d", (int)(Math.random() * 10000));
+        LocalDateTime now = LocalDateTime.now();
         SyhUserTokenLog tokenLog = SyhUserTokenLog.builder()
             .logId(logId)
             .siteId(siteId)
@@ -258,19 +270,24 @@ public class BoAuthService {
             .userId(authId)
             .actionCd(actionCd)
             .tokenTypeCd(userTypeCd)
-            .accessToken(accessToken)
+            .accessToken(accessToken != null ? accessToken : "LOGOUT")
             .refreshToken(refreshToken)
-            .tokenExp(LocalDateTime.now().plusMinutes(jwtProvider.getBoRefreshExpiryMinutes()))
+            .accessTokenExp(accessToken != null ? now.plusMinutes(jwtProvider.getBoAccessExpiryMinutes()) : null)
+            .tokenExp(now.plusMinutes(jwtProvider.getBoRefreshExpiryMinutes()))
+            .revokeReason(revokeReason)
+            .uiNm(uiNm)
+            .cmdNm(cmdNm)
             .regBy(authId)
-            .regDate(LocalDateTime.now())
+            .regDate(now)
             .build();
         em.persist(tokenLog);
         return logId;
     }
 
-    /** syh_user_login_log INSERT (성공/실패 모두) */
+    /** syh_user_login_log INSERT (성공/실패/로그아웃 모두) */
     private void saveLoginLog(String userId, String siteId, String loginId,
-                              String resultCd, String accessToken, String loginLogId, int failCnt) {
+                              String resultCd, String accessToken, String loginLogId,
+                              int failCnt, String uiNm, String cmdNm) {
         try {
             String logId = "LL" + LocalDateTime.now().format(ID_FMT)
                 + String.format("%04d", (int)(Math.random() * 10000));
@@ -286,6 +303,8 @@ public class BoAuthService {
                 .accessToken(accessToken)
                 .accessTokenExp(accessToken != null
                     ? LocalDateTime.now().plusMinutes(jwtProvider.getBoAccessExpiryMinutes()) : null)
+                .uiNm(uiNm)
+                .cmdNm(cmdNm)
                 .regBy(userId)
                 .regDate(LocalDateTime.now())
                 .build();

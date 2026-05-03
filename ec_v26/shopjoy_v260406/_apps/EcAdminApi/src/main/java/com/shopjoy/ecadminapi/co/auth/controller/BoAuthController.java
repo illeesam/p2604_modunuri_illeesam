@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.co.auth.data.vo.LoginRes;
 import com.shopjoy.ecadminapi.co.auth.service.BoAuthService;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -55,10 +56,11 @@ public class BoAuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
-            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
         String accessToken = (authHeader != null && authHeader.startsWith("Bearer "))
                 ? authHeader.substring(7) : null;
-        authService.logout(accessToken, "BO");
+        authService.logout(accessToken, "BO", request);
         return ResponseEntity.ok(ApiResponse.ok(null, "로그아웃 되었습니다."));
     }
 

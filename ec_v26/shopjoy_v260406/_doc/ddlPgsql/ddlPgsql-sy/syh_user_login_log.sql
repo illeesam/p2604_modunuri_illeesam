@@ -20,6 +20,8 @@ CREATE TABLE syh_user_login_log (
     access_token_exp    TIMESTAMP,                             -- 액세스 토큰 만료일시
     refresh_token       VARCHAR(512),                          -- 리프레시 토큰 (SHA-256 해시 권장)
     refresh_token_exp   TIMESTAMP,                             -- 리프레시 토큰 만료일시
+    ui_nm               VARCHAR(100),                          -- 화면명 (X-UI-Nm 헤더)
+    cmd_nm              VARCHAR(100),                          -- 기능명 (X-Cmd-Nm 헤더)
     reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by              VARCHAR(30),
@@ -43,6 +45,8 @@ COMMENT ON COLUMN syh_user_login_log.access_token      IS '액세스 토큰 (SHA
 COMMENT ON COLUMN syh_user_login_log.access_token_exp  IS '액세스 토큰 만료일시';
 COMMENT ON COLUMN syh_user_login_log.refresh_token     IS '리프레시 토큰 (SHA-256 해시값 저장 권장)';
 COMMENT ON COLUMN syh_user_login_log.refresh_token_exp IS '리프레시 토큰 만료일시';
+COMMENT ON COLUMN syh_user_login_log.ui_nm             IS '화면명 (X-UI-Nm 헤더)';
+COMMENT ON COLUMN syh_user_login_log.cmd_nm            IS '기능명 (X-Cmd-Nm 헤더)';
 COMMENT ON COLUMN syh_user_login_log.reg_by            IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN syh_user_login_log.reg_date          IS '등록일';
 COMMENT ON COLUMN syh_user_login_log.upd_by            IS '수정자 (sy_user.user_id, ec_member.member_id)';

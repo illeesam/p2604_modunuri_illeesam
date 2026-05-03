@@ -19,6 +19,9 @@ CREATE TABLE syh_user_token_log (
     ip                  VARCHAR(50),
     device_info         VARCHAR(200),                          -- User-Agent
     revoke_reason       VARCHAR(200),                          -- 폐기 사유 (REVOKE 시: LOGOUT/FORCE/EXPIRED 등)
+    access_token_exp    TIMESTAMP,                             -- 액세스 토큰 만료일시
+    ui_nm               VARCHAR(100),                          -- 화면명 (X-UI-Nm 헤더)
+    cmd_nm              VARCHAR(100),                          -- 기능명 (X-Cmd-Nm 헤더)
     reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by              VARCHAR(30),
@@ -40,6 +43,9 @@ COMMENT ON COLUMN syh_user_token_log.refresh_token          IS '리프레시 토
 COMMENT ON COLUMN syh_user_token_log.ip                     IS 'IP주소';
 COMMENT ON COLUMN syh_user_token_log.device_info            IS 'User-Agent';
 COMMENT ON COLUMN syh_user_token_log.revoke_reason          IS '폐기 사유 (LOGOUT/FORCE/EXPIRED 등)';
+COMMENT ON COLUMN syh_user_token_log.access_token_exp       IS '액세스 토큰 만료일시';
+COMMENT ON COLUMN syh_user_token_log.ui_nm                  IS '화면명 (X-UI-Nm 헤더)';
+COMMENT ON COLUMN syh_user_token_log.cmd_nm                 IS '기능명 (X-Cmd-Nm 헤더)';
 COMMENT ON COLUMN syh_user_token_log.reg_by                 IS '등록자 (sy_user.user_id)';
 COMMENT ON COLUMN syh_user_token_log.reg_date               IS '등록일';
 COMMENT ON COLUMN syh_user_token_log.upd_by                 IS '수정자 (sy_user.user_id)';
@@ -53,5 +59,5 @@ CREATE INDEX idx_syh_user_token_log_date      ON syh_user_token_log (reg_date);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] syh_user_token_log.action_cd   (토큰 액션) : TOKEN_ACTION { ISSUE:발급, REFRESH:갱신, EXPIRE:만료, REVOKE:폐기 }
+-- [CODES] syh_user_token_log.action_cd   (토큰 액션) : TOKEN_ACTION { ISSUE:발급, REFRESH:갱신, EXPIRE:만료, REVOKE:폐기, LOGOUT:로그아웃 }
 -- [CODES] syh_user_token_log.token_type_cd (토큰 유형) : TOKEN_TYPE { ACCESS:액세스, REFRESH:리프레시 }

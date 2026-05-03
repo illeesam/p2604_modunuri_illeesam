@@ -69,4 +69,10 @@ public class MbhMemberLoginLog extends BaseEntity {
     @Column(name = "refresh_token_exp")
     private LocalDateTime refreshTokenExp;
 
+    @Column(name = "ui_nm", length = 100)
+    private String uiNm;
+
+    @Column(name = "cmd_nm", length = 100)
+    private String cmdNm;
+
 }

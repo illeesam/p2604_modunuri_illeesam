@@ -6,7 +6,7 @@
 CREATE TABLE mbh_member_login_log (
     log_id              VARCHAR(21)     NOT NULL,
     site_id             VARCHAR(21),                            -- sy_site.site_id
-    member_id           VARCHAR(21),                           -- mb_member.member_id (실패 시 NULL 가능)
+    member_id           VARCHAR(21),                           -- mb_member.member_id (실패 시 NULL 가능)
     login_id            VARCHAR(100),                          -- 입력한 로그인ID (이메일)
     login_date          TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     result_cd           VARCHAR(20)     DEFAULT 'SUCCESS',     -- 코드: LOGIN_RESULT (SUCCESS/FAIL_PWD/FAIL_LOCKED/FAIL_NOT_FOUND)
@@ -21,6 +21,8 @@ CREATE TABLE mbh_member_login_log (
     access_token_exp    TIMESTAMP,                             -- 액세스 토큰 만료일시
     refresh_token       VARCHAR(512),                          -- 리프레시 토큰 (SHA-256 해시 권장)
     refresh_token_exp   TIMESTAMP,                             -- 리프레시 토큰 만료일시
+    ui_nm               VARCHAR(100),                          -- 화면명 (X-UI-Nm 헤더)
+    cmd_nm              VARCHAR(100),                          -- 기능명 (X-Cmd-Nm 헤더)
     reg_by              VARCHAR(30),
     reg_date            TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     upd_by              VARCHAR(30),
@@ -45,9 +47,11 @@ COMMENT ON COLUMN mbh_member_login_log.access_token      IS '액세스 토큰 (S
 COMMENT ON COLUMN mbh_member_login_log.access_token_exp  IS '액세스 토큰 만료일시';
 COMMENT ON COLUMN mbh_member_login_log.refresh_token     IS '리프레시 토큰 (SHA-256 해시값 저장 권장)';
 COMMENT ON COLUMN mbh_member_login_log.refresh_token_exp IS '리프레시 토큰 만료일시';
-COMMENT ON COLUMN mbh_member_login_log.reg_by            IS '등록자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN mbh_member_login_log.ui_nm             IS '화면명 (X-UI-Nm 헤더)';
+COMMENT ON COLUMN mbh_member_login_log.cmd_nm            IS '기능명 (X-Cmd-Nm 헤더)';
+COMMENT ON COLUMN mbh_member_login_log.reg_by            IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN mbh_member_login_log.reg_date          IS '등록일';
-COMMENT ON COLUMN mbh_member_login_log.upd_by            IS '수정자 (sy_user.user_id, mb_member.member_id)';
+COMMENT ON COLUMN mbh_member_login_log.upd_by            IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN mbh_member_login_log.upd_date          IS '수정일';
 
 CREATE INDEX idx_mbh_member_login_log_member ON mbh_member_login_log (member_id);

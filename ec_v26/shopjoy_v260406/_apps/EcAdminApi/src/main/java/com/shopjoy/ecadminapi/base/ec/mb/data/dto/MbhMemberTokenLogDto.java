@@ -23,6 +23,9 @@ public class MbhMemberTokenLogDto {
     private String ip;
     private String deviceInfo;
     private String revokeReason;
+    private LocalDateTime accessTokenExp;
+    private String uiNm;
+    private String cmdNm;
     private String regBy;
     private LocalDateTime regDate;
     private String updBy;

@@ -59,4 +59,13 @@ public class MbhMemberTokenLog extends BaseEntity {
     @Column(name = "revoke_reason", length = 200)
     private String revokeReason;
 
+    @Column(name = "access_token_exp")
+    private LocalDateTime accessTokenExp;
+
+    @Column(name = "ui_nm", length = 100)
+    private String uiNm;
+
+    @Column(name = "cmd_nm", length = 100)
+    private String cmdNm;
+
 }

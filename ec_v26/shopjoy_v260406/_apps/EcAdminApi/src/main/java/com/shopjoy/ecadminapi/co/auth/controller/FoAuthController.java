@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.co.auth.data.vo.LoginRes;
 import com.shopjoy.ecadminapi.co.auth.service.FoAuthService;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -55,10 +56,11 @@ public class FoAuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
-            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
         String accessToken = (authHeader != null && authHeader.startsWith("Bearer "))
                 ? authHeader.substring(7) : null;
-        authService.logout(accessToken, "FO");
+        authService.logout(accessToken, "FO", request);
         return ResponseEntity.ok(ApiResponse.ok(null, "로그아웃 되었습니다."));
     }
 

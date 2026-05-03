@@ -18,6 +18,7 @@ import io.jsonwebtoken.Claims;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -58,19 +59,19 @@ public class FoAuthService {
             member = memberRepository.findByLoginId(request.getLoginId())
                 .orElseThrow(() -> new CmBizException("회원 로그인ID가 올바르지 않습니다."));
         } catch (CmBizException e) {
-            saveLoginLog(null, null, request.getLoginId(), "FAIL", null, 0);
+            saveLoginLog(null, null, request.getLoginId(), "FAIL", null, 0, null, null);
             throw e;
         }
 
         if (!"ACTIVE".equals(member.getMemberStatusCd())) {
             saveLoginLog(member.getMemberId(), CmUtil.nvl(member.getSiteId()),
-                member.getLoginId(), "FAIL", null, 0);
+                member.getLoginId(), "FAIL", null, 0, null, null);
             throw new CmBizException("비활성화된 계정입니다.");
         }
 
         if (!passwordEncoder.matches(request.getLoginPwd(), member.getLoginPwdHash())) {
             saveLoginLog(member.getMemberId(), CmUtil.nvl(member.getSiteId()),
-                member.getLoginId(), "FAIL", null, 0);
+                member.getLoginId(), "FAIL", null, 0, null, null);
             throw new CmBizException("로그인 ID 또는 비밀번호가 올바르지 않습니다.");
         }
 
@@ -82,10 +83,10 @@ public class FoAuthService {
         String refreshToken = jwtProvider.createRefreshToken(authId, userTypeCd);
 
         // 멀티디바이스: 행 추가 (기존 삭제 없음)
-        saveTokenLog(authId, CmUtil.nvl(member.getSiteId()), accessToken, refreshToken, "LOGIN", userTypeCd);
+        saveTokenLog(authId, CmUtil.nvl(member.getSiteId()), accessToken, refreshToken, "LOGIN", userTypeCd, null, null, null);
 
         // 로그인 성공 이력 기록
-        saveLoginLog(authId, CmUtil.nvl(member.getSiteId()), member.getLoginId(), "SUCCESS", accessToken, 0);
+        saveLoginLog(authId, CmUtil.nvl(member.getSiteId()), member.getLoginId(), "SUCCESS", accessToken, 0, null, null);
 
         return LoginRes.builder()
             .accessToken(accessToken)
@@ -203,17 +204,26 @@ public class FoAuthService {
     // ── logout ────────────────────────────────────────────────────────────
 
     @Transactional
-    public void logout(String accessToken, String userTypeCd) {
+    public void logout(String accessToken, String userTypeCd, HttpServletRequest request) {
         if (accessToken == null || accessToken.isBlank()) return;
+        String uiNm  = request != null ? request.getHeader("X-UI-Nm")  : null;
+        String cmdNm = request != null ? request.getHeader("X-Cmd-Nm") : null;
         try {
             Claims claims = jwtProvider.getClaimsAllowExpired(accessToken);
             String authId = claims.getSubject();
             if (authId != null) {
+                MbMember member = memberRepository.findById(authId).orElse(null);
+                String siteId = member != null ? CmUtil.nvl(member.getSiteId()) : null;
+                // 토큰 삭제 먼저 (멀티디바이스: 해당 토큰만) — DELETE 후 REVOKE 로그 persist
                 em.createQuery(
                         "DELETE FROM MbhMemberTokenLog t WHERE t.authId = :authId AND t.accessToken = :accessToken")
                     .setParameter("authId", authId)
                     .setParameter("accessToken", accessToken)
                     .executeUpdate();
+                // REVOKE 토큰 이력 기록
+                saveTokenLog(authId, siteId, accessToken, null, "REVOKE", userTypeCd, "LOGOUT", uiNm, cmdNm);
+                // LOGOUT 로그인 이력 기록
+                saveLoginLog(authId, siteId, authId, "LOGOUT", null, 0, uiNm, cmdNm);
             }
         } catch (Exception e) {
             log.warn("logout token parse error: {}", e.getMessage());
@@ -244,9 +254,11 @@ public class FoAuthService {
     /** mbh_member_token_log INSERT */
     private void saveTokenLog(String authId, String siteId,
                               String accessToken, String refreshToken,
-                              String actionCd, String userTypeCd) {
+                              String actionCd, String userTypeCd,
+                              String revokeReason, String uiNm, String cmdNm) {
         String logId = "TL" + LocalDateTime.now().format(ID_FMT)
             + String.format("%04d", (int)(Math.random() * 10000));
+        LocalDateTime now = LocalDateTime.now();
         MbhMemberTokenLog tokenLog = MbhMemberTokenLog.builder()
             .logId(logId)
             .siteId(siteId)
@@ -254,18 +266,23 @@ public class FoAuthService {
             .memberId(authId)
             .actionCd(actionCd)
             .tokenTypeCd(userTypeCd)
-            .accessToken(accessToken)
+            .accessToken(accessToken != null ? accessToken : "LOGOUT")
             .refreshToken(refreshToken)
-            .tokenExp(LocalDateTime.now().plusMinutes(jwtProvider.getFoRefreshExpiryMinutes()))
+            .accessTokenExp(accessToken != null ? now.plusMinutes(jwtProvider.getFoAccessExpiryMinutes()) : null)
+            .tokenExp(now.plusMinutes(jwtProvider.getFoRefreshExpiryMinutes()))
+            .revokeReason(revokeReason)
+            .uiNm(uiNm)
+            .cmdNm(cmdNm)
             .regBy(authId)
-            .regDate(LocalDateTime.now())
+            .regDate(now)
             .build();
         em.persist(tokenLog);
     }
 
-    /** mbh_member_login_log INSERT (성공/실패 모두) */
+    /** mbh_member_login_log INSERT (성공/실패/로그아웃 모두) */
     private void saveLoginLog(String memberId, String siteId, String loginId,
-                              String resultCd, String accessToken, int failCnt) {
+                              String resultCd, String accessToken, int failCnt,
+                              String uiNm, String cmdNm) {
         try {
             String logId = "LL" + LocalDateTime.now().format(ID_FMT)
                 + String.format("%04d", (int)(Math.random() * 10000));
@@ -281,6 +298,8 @@ public class FoAuthService {
                 .accessToken(accessToken)
                 .accessTokenExp(accessToken != null
                     ? LocalDateTime.now().plusMinutes(jwtProvider.getFoAccessExpiryMinutes()) : null)
+                .uiNm(uiNm)
+                .cmdNm(cmdNm)
                 .regBy(memberId)
                 .regDate(LocalDateTime.now())
                 .build();

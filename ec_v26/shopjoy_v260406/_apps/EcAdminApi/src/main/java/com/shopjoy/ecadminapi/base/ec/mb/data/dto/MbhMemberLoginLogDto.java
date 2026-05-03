@@ -26,10 +26,14 @@ public class MbhMemberLoginLogDto {
     private LocalDateTime accessTokenExp;
     private String refreshToken;
     private LocalDateTime refreshTokenExp;
+    private String uiNm;
+    private String cmdNm;
     private String regBy;
     private LocalDateTime regDate;
     private String updBy;
     private LocalDateTime updDate;
 
     // ── JOIN: 필요 시 추가 ────────────────────────────────────────
+    private String siteNm;
+    private String memberNm;
 }
