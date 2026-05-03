@@ -77,6 +77,17 @@ public class BoSyCodeService {
     }
 
     @Transactional
+    public void delete(String id) {
+        SyCode entity = repository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
+        repository.delete(entity);
+        em.flush();
+        if (repository.existsById(id))
+            throw new CmBizException("데이터 삭제에 실패했습니다.");
+        codeCache.evictAll();
+    }
+
+    @Transactional
     public void saveList(List<SyCode> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
