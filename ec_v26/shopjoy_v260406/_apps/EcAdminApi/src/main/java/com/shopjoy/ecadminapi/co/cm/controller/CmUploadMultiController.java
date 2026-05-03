@@ -296,4 +296,19 @@ public class CmUploadMultiController {
 
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
+
+    /// 첨부 파일 정렬 순서 변경
+    @Operation(summary = "첨부 파일 순서 변경", description = "attachId의 sort_ord를 변경합니다.")
+    @org.springframework.web.bind.annotation.PatchMapping("/attach/{attachId}/sort")
+    public ResponseEntity<ApiResponse<Void>> updateAttachSort(
+            @PathVariable("attachId") String attachId,
+            @org.springframework.web.bind.annotation.RequestBody Map<String, Object> body) {
+        SyAttachDto dto = syAttachService.getById(attachId);
+        if (dto == null) throw new CmBizException("존재하지 않는 첨부파일입니다: " + attachId);
+        Integer sortOrd = body.get("sortOrd") instanceof Number n ? n.intValue() : null;
+        if (sortOrd == null) throw new CmBizException("sortOrd 값이 필요합니다.");
+        SyAttach entity = SyAttach.builder().attachId(attachId).sortOrd(sortOrd).build();
+        syAttachService.update(entity);
+        return ResponseEntity.ok(ApiResponse.ok(null));
+    }
 }

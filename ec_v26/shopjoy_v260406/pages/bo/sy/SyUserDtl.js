@@ -41,6 +41,7 @@ window.SyUserDtl = {
       role: '운영자', dept: '', deptId: null,
       zipcode: '', address: '', addressDetail: '',
       statusCd: '활성', password: '',
+      profileAttachId: null,
     });
     const errors = reactive({});
     const addrDetailRef = ref(null);
@@ -142,7 +143,7 @@ window.SyUserDtl = {
     return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm,
              cfDtlMode, addrDetailRef, openKakaoPostcode,
              deptModal, openDeptModal, onDeptSelect, clearDept,
-             cfUserRoles, fnRoleTypeBadge };
+             cfUserRoles, fnRoleTypeBadge, showToast };
   },
   template: /* html */`
 <div>
@@ -226,6 +227,19 @@ window.SyUserDtl = {
         placeholder="기본주소 (주소 검색 후 자동 입력)" style="margin-bottom:6px;" readonly />
       <input class="form-control" v-model="form.addressDetail" ref="addrDetailRef"
         placeholder="상세주소 (동/호수 등)" :readonly="cfDtlMode" />
+    </div>
+
+    <!-- ── 프로필 이미지 ─────────────────────────────────────────────────── -->
+    <div class="form-group">
+      <label class="form-label">프로필 이미지</label>
+      <base-attach-grp
+        v-model="form.profileAttachId"
+        grp-code="USER_PROFILE"
+        grp-nm="사용자 프로필"
+        :max-count="1"
+        :max-size-mb="5"
+        allow-ext="jpg,jpeg,png,gif,webp"
+        :show-toast="showToast" />
     </div>
 
     <div class="form-actions" v-if="!cfDtlMode">

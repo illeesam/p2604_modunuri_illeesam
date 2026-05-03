@@ -189,11 +189,47 @@ window.BaseAttachGrp = {
     const IMAGE_EXTS = new Set(['jpg','jpeg','png','gif','webp','bmp','svg']);
     const fnIsImage = (ext) => IMAGE_EXTS.has(ext?.toLowerCase());
 
+    /* ── 팝업 모달 ── */
     const thumbState = reactive({ show: false, url: '', nm: '' });
     const fnOpenThumb = (f) => { thumbState.url = f.cdnImgUrl || f.attachUrl; thumbState.nm = f.fileNm; thumbState.show = true; };
     const fnCloseThumb = () => { thumbState.show = false; };
 
-    return { uiState, files, cfAcceptAttr, fileInputRef, openPicker, onFileChange, removeFile, fnFmtSize, fnExtIcon, loadFiles, fnIsImage, thumbState, fnOpenThumb, fnCloseThumb };
+    /* ── hover 미리보기 레이어 ── */
+    const hoverState = reactive({ show: false, url: '', x: 0, y: 0 });
+    const fnShowHover = (e, url) => {
+      if (!url) return;
+      const r = e.currentTarget.getBoundingClientRect();
+      hoverState.x = r.right + 8;
+      hoverState.y = r.top;
+      hoverState.url = url;
+      hoverState.show = true;
+    };
+    const fnHideHover = () => { hoverState.show = false; };
+
+    /* ── drag & drop 정렬 ── */
+    const dragState = reactive({ fromIdx: null });
+    const onDragStart = (idx) => { dragState.fromIdx = idx; };
+    const onDragOver  = (e) => { e.preventDefault(); };
+    const onDrop = async (toIdx) => {
+      const from = dragState.fromIdx;
+      dragState.fromIdx = null;
+      if (from === null || from === toIdx) return;
+      const moved = files.splice(from, 1)[0];
+      files.splice(toIdx, 0, moved);
+      /* sort_ord 업데이트 (fire & forget) */
+      files.forEach((f, i) => { f.sortOrd = i + 1; });
+      try {
+        await Promise.all(files.map((f, i) =>
+          window.boApi.patch(`co/cm/upload/attach/${f.attachId}/sort`, { sortOrd: i + 1 }, window.coUtil.apiHdr('첨부파일', '순서변경'))
+        ));
+      } catch(e) { console.warn('[BaseAttachGrp] sort update failed', e); }
+    };
+
+    return { uiState, files, cfAcceptAttr, fileInputRef, openPicker, onFileChange, removeFile,
+      fnFmtSize, fnExtIcon, loadFiles, fnIsImage,
+      thumbState, fnOpenThumb, fnCloseThumb,
+      hoverState, fnShowHover, fnHideHover,
+      dragState, onDragStart, onDragOver, onDrop };
   },
   template: /* html */`
 <div style="border:1px solid #e8e8e8;border-radius:8px;background:#fafafa;padding:12px 14px;">
@@ -201,32 +237,42 @@ window.BaseAttachGrp = {
 
   <!-- 파일 목록 -->
   <div v-if="files.length" style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;">
-    <div v-for="f in files" :key="f.attachId"
-      style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#fff;border:1px solid #f0f0f0;border-radius:6px;transition:background .1s;"
+    <div v-for="(f, idx) in files" :key="f.attachId"
+      draggable="true"
+      @dragstart="onDragStart(idx)"
+      @dragover.prevent="onDragOver"
+      @drop.prevent="onDrop(idx)"
+      style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#fff;border:1px solid #f0f0f0;border-radius:6px;transition:background .1s;cursor:grab;"
       @mouseenter="e=>e.currentTarget.style.background='#fff8f9'"
       @mouseleave="e=>e.currentTarget.style.background='#fff'">
+      <!-- 순서 번호 -->
+      <span style="flex-shrink:0;width:16px;font-size:10px;color:#ccc;text-align:center;line-height:1;">{{ idx+1 }}</span>
+      <!-- 드래그 핸들 -->
+      <span style="flex-shrink:0;font-size:12px;color:#ccc;cursor:grab;line-height:1;" title="드래그하여 순서 변경">⠿</span>
       <span style="font-size:15px;flex-shrink:0;line-height:1;">{{ fnExtIcon(f.fileExt) }}</span>
       <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;">
         <span style="font-size:12px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;" :title="f.fileNm">{{ f.fileNm }}</span>
         <span v-if="f.attachUrl" style="font-size:10px;color:#bbb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="f.attachUrl">{{ f.attachUrl }}</span>
       </span>
-      <!-- 액션 아이콘: 다운로드 / 팝업보기 / 썸네일보기 -->
+      <!-- 액션 아이콘: 다운로드 / 팝업보기 / 썸네일hover+클릭 -->
       <span style="display:inline-flex;align-items:center;gap:3px;flex-shrink:0;">
         <a :href="f.cdnImgUrl || f.attachUrl" :download="f.fileNm"
           :title="'다운로드 | ' + (f.cdnImgUrl || f.attachUrl)"
           style="width:22px;height:22px;border:1px solid #e0e0e0;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#666;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;transition:all .15s;"
           @mouseenter="e=>{e.currentTarget.style.borderColor='#4a90d9';e.currentTarget.style.color='#4a90d9';}"
           @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';e.currentTarget.style.color='#666';}">⬇</a>
-        <button @click.stop="window.open(f.cdnImgUrl || f.attachUrl,'_blank')"
-          :title="'새창보기 | ' + (f.cdnImgUrl || f.attachUrl)" type="button"
+        <!-- 팝업보기: 이미지면 hover 미리보기 + 클릭 모달, 아니면 클릭 모달 -->
+        <button @click.stop="fnOpenThumb(f)" type="button"
+          :title="'팝업보기 | ' + (f.cdnImgUrl || f.attachUrl)"
           style="width:22px;height:22px;border:1px solid #e0e0e0;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#666;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
-          @mouseenter="e=>{e.currentTarget.style.borderColor='#7c5cbf';e.currentTarget.style.color='#7c5cbf';}"
-          @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';e.currentTarget.style.color='#666';}">↗</button>
-        <button v-if="fnIsImage(f.fileExt)" @click.stop="fnOpenThumb(f)"
-          :title="'썸네일보기 | ' + (f.cdnImgUrl || f.attachUrl)" type="button"
+          @mouseenter="e=>{e.currentTarget.style.borderColor='#7c5cbf';e.currentTarget.style.color='#7c5cbf';fnShowHover(e, f.cdnImgUrl||f.attachUrl);}"
+          @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';e.currentTarget.style.color='#666';fnHideHover();}">↗</button>
+        <!-- 썸네일 아이콘: hover 미리보기 + 클릭 모달 -->
+        <button v-if="fnIsImage(f.fileExt)" @click.stop="fnOpenThumb(f)" type="button"
+          :title="'썸네일보기 | ' + (f.thumbCdnUrl || f.cdnImgUrl || f.attachUrl)"
           style="width:22px;height:22px;border:1px solid #e0e0e0;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#666;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:all .15s;overflow:hidden;"
-          @mouseenter="e=>{e.currentTarget.style.borderColor='#e8587a';}"
-          @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';}">
+          @mouseenter="e=>{e.currentTarget.style.borderColor='#e8587a';fnShowHover(e, f.thumbCdnUrl||f.cdnImgUrl||f.attachUrl);}"
+          @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';fnHideHover();}">
           <img v-if="f.thumbCdnUrl" :src="f.thumbCdnUrl"
             style="width:100%;height:100%;object-fit:cover;display:block;" @error="e=>{e.target.style.display='none';e.target.nextElementSibling.style.display='inline-flex';}" />
           <span style="font-size:12px;color:#666;" :style="{display:f.thumbCdnUrl?'none':'inline-flex'}">🖼</span>
@@ -263,7 +309,14 @@ window.BaseAttachGrp = {
     </span>
   </div>
 
-  <!-- 썸네일 팝업 모달 -->
+  <!-- hover 미리보기 레이어 (fixed, 마우스 우측 하단) -->
+  <div v-if="hoverState.show && hoverState.url"
+    style="position:fixed;z-index:10000;pointer-events:none;border-radius:8px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.35);background:#fff;border:1px solid #e0e0e0;"
+    :style="{left: hoverState.x + 'px', top: hoverState.y + 'px'}">
+    <img :src="hoverState.url" style="display:block;max-width:200px;max-height:200px;object-fit:contain;" />
+  </div>
+
+  <!-- 팝업 모달 -->
   <div v-if="thumbState.show" @click.self="fnCloseThumb"
     style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:12px;padding:16px;max-width:90vw;max-height:90vh;display:flex;flex-direction:column;gap:10px;box-shadow:0 8px 40px rgba(0,0,0,.4);">
