@@ -52,7 +52,7 @@ public class CacheRedisReloadController {
      * 예) POST /api/cache/redis/reload/sy-code^sy-menu
      */
     @PostMapping("/reload/{domains}")
-    public ResponseEntity<ApiResponse<Map<String, Integer>>> reload(@PathVariable String domains) {
+    public ResponseEntity<ApiResponse<Map<String, Integer>>> reload(@PathVariable("domains") String domains) {
         if (!service.isEnabled())
             return ResponseEntity.ok(ApiResponse.ok(null, MSG_DISABLED));
         Map<String, Integer> result = service.reloadMulti(domains);
@@ -65,7 +65,7 @@ public class CacheRedisReloadController {
      * 예) DELETE /api/cache/redis/ec-pd-prod^ec-pm-prom
      */
     @DeleteMapping("/{domains}")
-    public ResponseEntity<ApiResponse<Void>> evict(@PathVariable String domains) {
+    public ResponseEntity<ApiResponse<Void>> evict(@PathVariable("domains") String domains) {
         if (!service.isEnabled())
             return ResponseEntity.ok(ApiResponse.ok(null, MSG_DISABLED));
         service.evictMulti(domains);

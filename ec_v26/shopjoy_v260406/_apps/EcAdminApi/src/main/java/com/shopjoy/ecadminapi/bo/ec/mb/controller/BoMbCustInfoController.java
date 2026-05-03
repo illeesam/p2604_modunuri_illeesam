@@ -37,17 +37,17 @@ public class BoMbCustInfoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberDto>> update(@PathVariable String id, @RequestBody MbMember body) {
+    public ResponseEntity<ApiResponse<MbMemberDto>> update(@PathVariable("id") String id, @RequestBody MbMember body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberDto>> upsert(@PathVariable String id, @RequestBody MbMember body) {
+    public ResponseEntity<ApiResponse<MbMemberDto>> upsert(@PathVariable("id") String id, @RequestBody MbMember body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

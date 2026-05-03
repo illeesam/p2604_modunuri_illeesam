@@ -32,7 +32,7 @@ public class BoSyBatchLogController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyhBatchLogDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyhBatchLogDto>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 }

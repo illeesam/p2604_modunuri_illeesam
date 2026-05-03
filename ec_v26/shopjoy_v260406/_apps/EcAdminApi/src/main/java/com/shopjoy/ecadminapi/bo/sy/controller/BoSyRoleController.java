@@ -39,7 +39,7 @@ public class BoSyRoleController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyRoleDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyRoleDto>> getById(@PathVariable("id") String id) {
         SyRoleDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -51,18 +51,18 @@ public class BoSyRoleController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyRoleDto>> update(@PathVariable String id, @RequestBody SyRole body) {
+    public ResponseEntity<ApiResponse<SyRoleDto>> update(@PathVariable("id") String id, @RequestBody SyRole body) {
         SyRoleDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyRoleDto>> upsert(@PathVariable String id, @RequestBody SyRole body) {
+    public ResponseEntity<ApiResponse<SyRoleDto>> upsert(@PathVariable("id") String id, @RequestBody SyRole body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

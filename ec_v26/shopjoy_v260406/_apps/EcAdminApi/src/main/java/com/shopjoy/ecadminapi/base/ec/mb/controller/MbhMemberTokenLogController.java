@@ -33,7 +33,7 @@ public class MbhMemberTokenLogController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbhMemberTokenLogDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<MbhMemberTokenLogDto>> getById(@PathVariable("id") String id) {
         MbhMemberTokenLogDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));

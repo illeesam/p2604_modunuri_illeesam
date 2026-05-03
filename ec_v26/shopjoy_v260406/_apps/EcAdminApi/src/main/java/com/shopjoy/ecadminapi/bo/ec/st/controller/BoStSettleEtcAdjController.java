@@ -32,7 +32,7 @@ public class BoStSettleEtcAdjController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleEtcAdjDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<StSettleEtcAdjDto>> getById(@PathVariable("id") String id) {
         StSettleEtcAdjDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -43,17 +43,17 @@ public class BoStSettleEtcAdjController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleEtcAdjDto>> update(@PathVariable String id, @RequestBody StSettleEtcAdj body) {
+    public ResponseEntity<ApiResponse<StSettleEtcAdjDto>> update(@PathVariable("id") String id, @RequestBody StSettleEtcAdj body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleEtcAdjDto>> upsert(@PathVariable String id, @RequestBody StSettleEtcAdj body) {
+    public ResponseEntity<ApiResponse<StSettleEtcAdjDto>> upsert(@PathVariable("id") String id, @RequestBody StSettleEtcAdj body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

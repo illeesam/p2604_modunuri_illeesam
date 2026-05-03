@@ -39,7 +39,7 @@ public class BoPmVoucherController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmVoucherDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<PmVoucherDto>> getById(@PathVariable("id") String id) {
         PmVoucherDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -51,32 +51,32 @@ public class BoPmVoucherController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmVoucherDto>> update(@PathVariable String id, @RequestBody PmVoucher body) {
+    public ResponseEntity<ApiResponse<PmVoucherDto>> update(@PathVariable("id") String id, @RequestBody PmVoucher body) {
         PmVoucherDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmVoucherDto>> upsert(@PathVariable String id, @RequestBody PmVoucher body) {
+    public ResponseEntity<ApiResponse<PmVoucherDto>> upsert(@PathVariable("id") String id, @RequestBody PmVoucher body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<PmVoucherDto>> changeStatus(
-            @PathVariable String id, @RequestBody Map<String, String> body) {
+            @PathVariable("id") String id, @RequestBody Map<String, String> body) {
         PmVoucherDto result = service.changeStatus(id, body.get("statusCd"));
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}/send-sns")
     public ResponseEntity<ApiResponse<Void>> sendSns(
-            @PathVariable String id, @RequestBody Map<String, Object> body) {
+            @PathVariable("id") String id, @RequestBody Map<String, Object> body) {
         service.sendSns(id, body);
         return ResponseEntity.ok(ApiResponse.ok(null, "발송되었습니다."));
     }

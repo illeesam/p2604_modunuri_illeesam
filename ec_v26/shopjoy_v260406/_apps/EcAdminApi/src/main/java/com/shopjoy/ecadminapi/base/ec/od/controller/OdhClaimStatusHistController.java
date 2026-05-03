@@ -33,7 +33,7 @@ public class OdhClaimStatusHistController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdhClaimStatusHistDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<OdhClaimStatusHistDto>> getById(@PathVariable("id") String id) {
         OdhClaimStatusHistDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));

@@ -39,7 +39,7 @@ public class BoPmEventController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmEventDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<PmEventDto>> getById(@PathVariable("id") String id) {
         PmEventDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -51,25 +51,25 @@ public class BoPmEventController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmEventDto>> update(@PathVariable String id, @RequestBody PmEvent body) {
+    public ResponseEntity<ApiResponse<PmEventDto>> update(@PathVariable("id") String id, @RequestBody PmEvent body) {
         PmEventDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmEventDto>> upsert(@PathVariable String id, @RequestBody PmEvent body) {
+    public ResponseEntity<ApiResponse<PmEventDto>> upsert(@PathVariable("id") String id, @RequestBody PmEvent body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<PmEventDto>> changeStatus(
-            @PathVariable String id, @RequestBody Map<String, String> body) {
+            @PathVariable("id") String id, @RequestBody Map<String, String> body) {
         PmEventDto result = service.changeStatus(id, body.get("statusCd"));
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

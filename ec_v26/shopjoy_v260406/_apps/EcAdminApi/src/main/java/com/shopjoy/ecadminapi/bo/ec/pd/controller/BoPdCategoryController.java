@@ -46,7 +46,7 @@ public class BoPdCategoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdCategoryDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<PdCategoryDto>> getById(@PathVariable("id") String id) {
         PdCategoryDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -58,26 +58,26 @@ public class BoPdCategoryController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdCategoryDto>> update(@PathVariable String id, @RequestBody PdCategory body) {
+    public ResponseEntity<ApiResponse<PdCategoryDto>> update(@PathVariable("id") String id, @RequestBody PdCategory body) {
         PdCategoryDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdCategoryDto>> upsert(@PathVariable String id, @RequestBody PdCategory body) {
+    public ResponseEntity<ApiResponse<PdCategoryDto>> upsert(@PathVariable("id") String id, @RequestBody PdCategory body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PutMapping("/{id}/prods/{activeTypeCd}")
     public ResponseEntity<ApiResponse<Void>> updateProds(
-            @PathVariable String id,
-            @PathVariable String activeTypeCd,
+            @PathVariable("id") String id,
+            @PathVariable("activeTypeCd") String activeTypeCd,
             @RequestBody Map<String, Object> body) {
         service.updateProds(id, activeTypeCd, body);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));

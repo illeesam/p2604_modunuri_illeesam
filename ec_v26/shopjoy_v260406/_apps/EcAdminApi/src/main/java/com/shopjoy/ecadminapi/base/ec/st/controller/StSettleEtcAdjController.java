@@ -34,7 +34,7 @@ public class StSettleEtcAdjController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleEtcAdjDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<StSettleEtcAdjDto>> getById(@PathVariable("id") String id) {
         StSettleEtcAdjDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -50,7 +50,7 @@ public class StSettleEtcAdjController {
     /* ── 전체 수정 (JPA) ── */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleEtcAdj>> save(
-            @PathVariable String id, @RequestBody StSettleEtcAdj entity) {
+            @PathVariable("id") String id, @RequestBody StSettleEtcAdj entity) {
         entity.setSettleEtcAdjId(id);
         StSettleEtcAdj result = service.save(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -59,7 +59,7 @@ public class StSettleEtcAdjController {
     /* ── 선택 필드 수정 (MyBatis) ── */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable String id, @RequestBody StSettleEtcAdj entity) {
+            @PathVariable("id") String id, @RequestBody StSettleEtcAdj entity) {
         entity.setSettleEtcAdjId(id);
         int result = service.update(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -67,7 +67,7 @@ public class StSettleEtcAdjController {
 
     /* ── 삭제 (JPA) ── */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

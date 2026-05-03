@@ -33,7 +33,7 @@ public class SyhUserTokenLogController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyhUserTokenLogDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyhUserTokenLogDto>> getById(@PathVariable("id") String id) {
         SyhUserTokenLogDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));

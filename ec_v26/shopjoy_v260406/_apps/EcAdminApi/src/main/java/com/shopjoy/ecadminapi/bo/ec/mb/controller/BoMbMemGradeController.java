@@ -46,7 +46,7 @@ public class BoMbMemGradeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberGradeDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<MbMemberGradeDto>> getById(@PathVariable("id") String id) {
         MbMemberGradeDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -58,18 +58,18 @@ public class BoMbMemGradeController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberGradeDto>> update(@PathVariable String id, @RequestBody MbMemberGrade body) {
+    public ResponseEntity<ApiResponse<MbMemberGradeDto>> update(@PathVariable("id") String id, @RequestBody MbMemberGrade body) {
         MbMemberGradeDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberGradeDto>> upsert(@PathVariable String id, @RequestBody MbMemberGrade body) {
+    public ResponseEntity<ApiResponse<MbMemberGradeDto>> upsert(@PathVariable("id") String id, @RequestBody MbMemberGrade body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

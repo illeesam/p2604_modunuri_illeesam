@@ -35,7 +35,7 @@ public class CmImageViewController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @GetMapping("/view/{imageUrl:.+}")
-    public ResponseEntity<?> viewImage(@PathVariable String imageUrl) {
+    public ResponseEntity<?> viewImage(@PathVariable("imageUrl") String imageUrl) {
 
         try {
             if (imageUrl.contains("..")) {
@@ -92,7 +92,7 @@ public class CmImageViewController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @GetMapping("/thumb/{thumbUrl:.+}")
-    public ResponseEntity<?> viewThumbnail(@PathVariable String thumbUrl) {
+    public ResponseEntity<?> viewThumbnail(@PathVariable("thumbUrl") String thumbUrl) {
 
         try {
             if (thumbUrl.contains("..")) {

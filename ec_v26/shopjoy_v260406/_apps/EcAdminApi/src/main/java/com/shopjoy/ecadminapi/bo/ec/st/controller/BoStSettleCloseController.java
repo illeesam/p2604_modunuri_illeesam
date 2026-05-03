@@ -32,7 +32,7 @@ public class BoStSettleCloseController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleCloseDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<StSettleCloseDto>> getById(@PathVariable("id") String id) {
         StSettleCloseDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -43,23 +43,23 @@ public class BoStSettleCloseController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleCloseDto>> update(@PathVariable String id, @RequestBody StSettleClose body) {
+    public ResponseEntity<ApiResponse<StSettleCloseDto>> update(@PathVariable("id") String id, @RequestBody StSettleClose body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleCloseDto>> upsert(@PathVariable String id, @RequestBody StSettleClose body) {
+    public ResponseEntity<ApiResponse<StSettleCloseDto>> upsert(@PathVariable("id") String id, @RequestBody StSettleClose body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PutMapping("/{id}/reopen")
-    public ResponseEntity<ApiResponse<StSettleCloseDto>> reopen(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<StSettleCloseDto>> reopen(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(service.reopen(id)));
     }
 }

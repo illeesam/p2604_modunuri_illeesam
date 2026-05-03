@@ -46,7 +46,7 @@ public class BoPdQnaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdProdQnaDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<PdProdQnaDto>> getById(@PathVariable("id") String id) {
         PdProdQnaDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -58,25 +58,25 @@ public class BoPdQnaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdProdQnaDto>> update(@PathVariable String id, @RequestBody PdProdQna body) {
+    public ResponseEntity<ApiResponse<PdProdQnaDto>> update(@PathVariable("id") String id, @RequestBody PdProdQna body) {
         PdProdQnaDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdProdQnaDto>> upsert(@PathVariable String id, @RequestBody PdProdQna body) {
+    public ResponseEntity<ApiResponse<PdProdQnaDto>> upsert(@PathVariable("id") String id, @RequestBody PdProdQna body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PutMapping("/{id}/answer")
     public ResponseEntity<ApiResponse<PdProdQnaDto>> answer(
-            @PathVariable String id, @RequestBody Map<String, Object> body) {
+            @PathVariable("id") String id, @RequestBody Map<String, Object> body) {
         return ResponseEntity.ok(ApiResponse.ok(service.saveAnswer(id, body)));
     }
     @PostMapping("/save-list")

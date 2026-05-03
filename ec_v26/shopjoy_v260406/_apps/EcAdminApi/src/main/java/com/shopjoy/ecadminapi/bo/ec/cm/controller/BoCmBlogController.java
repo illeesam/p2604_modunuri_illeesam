@@ -46,7 +46,7 @@ public class BoCmBlogController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmBlogDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<CmBlogDto>> getById(@PathVariable("id") String id) {
         CmBlogDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -58,24 +58,24 @@ public class BoCmBlogController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmBlogDto>> update(@PathVariable String id, @RequestBody CmBlog body) {
+    public ResponseEntity<ApiResponse<CmBlogDto>> update(@PathVariable("id") String id, @RequestBody CmBlog body) {
         CmBlogDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmBlogDto>> upsert(@PathVariable String id, @RequestBody CmBlog body) {
+    public ResponseEntity<ApiResponse<CmBlogDto>> upsert(@PathVariable("id") String id, @RequestBody CmBlog body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PutMapping("/{id}/use")
-    public ResponseEntity<ApiResponse<CmBlogDto>> toggleUse(@PathVariable String id, @RequestBody Map<String, Object> body) {
+    public ResponseEntity<ApiResponse<CmBlogDto>> toggleUse(@PathVariable("id") String id, @RequestBody Map<String, Object> body) {
         return ResponseEntity.ok(ApiResponse.ok(service.toggleUse(id, body)));
     }
     @PostMapping("/save-list")

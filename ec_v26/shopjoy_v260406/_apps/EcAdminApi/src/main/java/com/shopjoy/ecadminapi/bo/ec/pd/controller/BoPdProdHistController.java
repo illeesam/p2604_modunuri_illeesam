@@ -27,35 +27,35 @@ public class BoPdProdHistController {
 
     @GetMapping("/orders")
     public ResponseEntity<ApiResponse<List<PdProdHistDto>>> orders(
-            @PathVariable String prodId,
+            @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(service.getOrders(prodId, p)));
     }
 
     @GetMapping("/stock")
     public ResponseEntity<ApiResponse<List<PdProdHistDto>>> stock(
-            @PathVariable String prodId,
+            @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(service.getStockHist(prodId, p)));
     }
 
     @GetMapping("/price")
     public ResponseEntity<ApiResponse<List<PdProdHistDto>>> price(
-            @PathVariable String prodId,
+            @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPriceHist(prodId, p)));
     }
 
     @GetMapping("/status")
     public ResponseEntity<ApiResponse<List<PdProdHistDto>>> status(
-            @PathVariable String prodId,
+            @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(service.getStatusHist(prodId, p)));
     }
 
     @GetMapping("/changes")
     public ResponseEntity<ApiResponse<List<PdProdHistDto>>> changes(
-            @PathVariable String prodId,
+            @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(service.getChangeHist(prodId, p)));
     }

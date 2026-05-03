@@ -46,7 +46,7 @@ public class BoDpPanelController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpPanelDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<DpPanelDto>> getById(@PathVariable("id") String id) {
         DpPanelDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -58,18 +58,18 @@ public class BoDpPanelController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpPanelDto>> update(@PathVariable String id, @RequestBody DpPanel body) {
+    public ResponseEntity<ApiResponse<DpPanelDto>> update(@PathVariable("id") String id, @RequestBody DpPanel body) {
         DpPanelDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpPanelDto>> upsert(@PathVariable String id, @RequestBody DpPanel body) {
+    public ResponseEntity<ApiResponse<DpPanelDto>> upsert(@PathVariable("id") String id, @RequestBody DpPanel body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

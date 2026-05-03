@@ -146,7 +146,7 @@ public class CacheRedisInfoController {
      * 예) /data/sy-code^sy-prop
      */
     @GetMapping("/data/{domains}")
-    public ResponseEntity<ApiResponse<Object>> getCacheAll(@PathVariable String domains) {
+    public ResponseEntity<ApiResponse<Object>> getCacheAll(@PathVariable("domains") String domains) {
         if (!service.isEnabled())
             return ResponseEntity.ok(ApiResponse.ok(null, MSG_DISABLED));
 
@@ -184,8 +184,8 @@ public class CacheRedisInfoController {
      */
     @GetMapping("/data/{domain}/{key}")
     public ResponseEntity<ApiResponse<Object>> getCacheByKey(
-            @PathVariable String domain,
-            @PathVariable String key) {
+            @PathVariable("domain") String domain,
+            @PathVariable("key") String key) {
         if (!service.isEnabled())
             return ResponseEntity.ok(ApiResponse.ok(null, MSG_DISABLED));
         Object result = service.getCacheByKey(domain, key);

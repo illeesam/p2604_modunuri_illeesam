@@ -33,7 +33,7 @@ public class BoSyRoleMenuController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyRoleMenuDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyRoleMenuDto>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 
@@ -43,12 +43,12 @@ public class BoSyRoleMenuController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyRoleMenuDto>> update(@PathVariable String id, @RequestBody SyRoleMenu body) {
+    public ResponseEntity<ApiResponse<SyRoleMenuDto>> update(@PathVariable("id") String id, @RequestBody SyRoleMenu body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

@@ -41,7 +41,7 @@ public class FoPmEventController {
     }
 
     @GetMapping("/{eventId}")
-    public ResponseEntity<ApiResponse<PmEventDto>> getById(@PathVariable String eventId) {
+    public ResponseEntity<ApiResponse<PmEventDto>> getById(@PathVariable("eventId") String eventId) {
         PmEventDto result = service.getById(eventId);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

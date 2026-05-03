@@ -34,7 +34,7 @@ public class PmCacheController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCacheDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<PmCacheDto>> getById(@PathVariable("id") String id) {
         PmCacheDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -50,7 +50,7 @@ public class PmCacheController {
     /* ── 전체 수정 (JPA) ── */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PmCache>> save(
-            @PathVariable String id, @RequestBody PmCache entity) {
+            @PathVariable("id") String id, @RequestBody PmCache entity) {
         entity.setCacheId(id);
         PmCache result = service.save(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -59,7 +59,7 @@ public class PmCacheController {
     /* ── 선택 필드 수정 (MyBatis) ── */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable String id, @RequestBody PmCache entity) {
+            @PathVariable("id") String id, @RequestBody PmCache entity) {
         entity.setCacheId(id);
         int result = service.update(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -67,7 +67,7 @@ public class PmCacheController {
 
     /* ── 삭제 (JPA) ── */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

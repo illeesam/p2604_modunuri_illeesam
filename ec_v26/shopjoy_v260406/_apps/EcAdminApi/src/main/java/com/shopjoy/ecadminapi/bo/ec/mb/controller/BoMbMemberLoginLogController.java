@@ -32,7 +32,7 @@ public class BoMbMemberLoginLogController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbhMemberLoginLogDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<MbhMemberLoginLogDto>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 

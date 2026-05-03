@@ -46,7 +46,7 @@ public class BoDpWidgetLibController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpWidgetLibDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<DpWidgetLibDto>> getById(@PathVariable("id") String id) {
         DpWidgetLibDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -58,18 +58,18 @@ public class BoDpWidgetLibController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpWidgetLibDto>> update(@PathVariable String id, @RequestBody DpWidgetLib body) {
+    public ResponseEntity<ApiResponse<DpWidgetLibDto>> update(@PathVariable("id") String id, @RequestBody DpWidgetLib body) {
         DpWidgetLibDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpWidgetLibDto>> upsert(@PathVariable String id, @RequestBody DpWidgetLib body) {
+    public ResponseEntity<ApiResponse<DpWidgetLibDto>> upsert(@PathVariable("id") String id, @RequestBody DpWidgetLib body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

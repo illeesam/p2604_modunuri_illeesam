@@ -41,7 +41,7 @@ public class FoPdProdController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdProdDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<PdProdDto>> getById(@PathVariable("id") String id) {
         PdProdDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

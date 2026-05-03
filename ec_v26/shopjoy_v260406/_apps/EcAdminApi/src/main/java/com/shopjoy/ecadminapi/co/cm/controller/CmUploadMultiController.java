@@ -252,7 +252,7 @@ public class CmUploadMultiController {
     @Operation(summary = "첨부 그룹 파일 목록 조회", description = "attachGrpId에 속한 파일 목록을 sort_ord ASC 순으로 반환합니다.")
     @GetMapping("/attach-grp/{attachGrpId}/files")
     public ResponseEntity<ApiResponse<List<SyAttachDto>>> getAttachGrpFiles(
-            @PathVariable String attachGrpId) {
+            @PathVariable("attachGrpId") String attachGrpId) {
         List<SyAttachDto> files = syAttachService.getList(Map.of("attachGrpId", attachGrpId));
         return ResponseEntity.ok(ApiResponse.ok(files));
     }
@@ -261,7 +261,7 @@ public class CmUploadMultiController {
     @Operation(summary = "첨부 파일 삭제", description = "attachId로 DB 레코드 및 실제 저장 파일을 삭제합니다.")
     @DeleteMapping("/attach/{attachId}")
     public ResponseEntity<ApiResponse<Void>> deleteAttach(
-            @PathVariable String attachId) {
+            @PathVariable("attachId") String attachId) {
         SyAttachDto dto = syAttachService.getById(attachId);
         if (dto == null) throw new CmBizException("존재하지 않는 첨부파일입니다: " + attachId);
 

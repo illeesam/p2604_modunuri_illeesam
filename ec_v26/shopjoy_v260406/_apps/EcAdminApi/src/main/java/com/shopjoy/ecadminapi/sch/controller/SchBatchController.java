@@ -79,7 +79,7 @@ public class SchBatchController {
 
     /** 핸들러 직접 즉시 실행 — cron 스케줄 등록 여부·실행 모드 무관하게 강제 실행 */
     @PostMapping("/batch/{batchCode}/run")
-    public ResponseEntity<ApiResponse<Void>> run(@PathVariable String batchCode) {
+    public ResponseEntity<ApiResponse<Void>> run(@PathVariable("batchCode") String batchCode) {
         SyBatch batch = findBatch(batchCode);
         log.info("[SCH-API] 수동 즉시 실행: batchCode={}", batchCode);
         executor.execute(batch);
@@ -88,7 +88,7 @@ public class SchBatchController {
 
     /** cron 스케줄 등록 (Jenkins 모드에서는 등록이 생략됨) */
     @PostMapping("/batch/{batchCode}/on")
-    public ResponseEntity<ApiResponse<Void>> on(@PathVariable String batchCode) {
+    public ResponseEntity<ApiResponse<Void>> on(@PathVariable("batchCode") String batchCode) {
         SyBatch batch = findBatch(batchCode);
         registry.register(batch);
         boolean jenkinsMode = properties.getJenkins().isEnabled();
@@ -100,7 +100,7 @@ public class SchBatchController {
 
     /** cron 스케줄 해제 */
     @PostMapping("/batch/{batchCode}/off")
-    public ResponseEntity<ApiResponse<Void>> off(@PathVariable String batchCode) {
+    public ResponseEntity<ApiResponse<Void>> off(@PathVariable("batchCode") String batchCode) {
         registry.unregister(batchCode);
         return ResponseEntity.ok(ApiResponse.ok(null, batchCode + " cron 스케줄 해제됨"));
     }
@@ -142,7 +142,7 @@ public class SchBatchController {
      */
     @PostMapping("/jenkins/{batchCode}")
     public ResponseEntity<ApiResponse<Void>> jenkinsRun(
-            @PathVariable String batchCode,
+            @PathVariable("batchCode") String batchCode,
             @RequestHeader(value = JENKINS_TOKEN_HEADER, required = false) String token) {
 
         // Jenkins 모드 비활성 시 403

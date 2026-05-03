@@ -34,7 +34,7 @@ public class ZzSample1Controller {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ZzSample1Dto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<ZzSample1Dto>> getById(@PathVariable("id") String id) {
         ZzSample1Dto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -48,7 +48,7 @@ public class ZzSample1Controller {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ZzSample1>> save(
-            @PathVariable String id, @RequestBody ZzSample1 entity) {
+            @PathVariable("id") String id, @RequestBody ZzSample1 entity) {
         entity.setSample1Id(id);
         ZzSample1 result = service.save(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -56,14 +56,14 @@ public class ZzSample1Controller {
 
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable String id, @RequestBody ZzSample1 entity) {
+            @PathVariable("id") String id, @RequestBody ZzSample1 entity) {
         entity.setSample1Id(id);
         int result = service.update(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

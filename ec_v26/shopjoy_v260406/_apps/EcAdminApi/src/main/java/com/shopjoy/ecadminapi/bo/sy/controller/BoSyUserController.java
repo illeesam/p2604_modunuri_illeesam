@@ -42,7 +42,7 @@ public class BoSyUserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyUserDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyUserDto>> getById(@PathVariable("id") String id) {
         SyUserDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -54,24 +54,24 @@ public class BoSyUserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyUserDto>> update(@PathVariable String id, @RequestBody SyUser body) {
+    public ResponseEntity<ApiResponse<SyUserDto>> update(@PathVariable("id") String id, @RequestBody SyUser body) {
         SyUserDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyUserDto>> upsert(@PathVariable String id, @RequestBody SyUser body) {
+    public ResponseEntity<ApiResponse<SyUserDto>> upsert(@PathVariable("id") String id, @RequestBody SyUser body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @GetMapping("/{userId}/roles")
-    public ResponseEntity<ApiResponse<List<SyUserRoleDto>>> getRoles(@PathVariable String userId) {
+    public ResponseEntity<ApiResponse<List<SyUserRoleDto>>> getRoles(@PathVariable("userId") String userId) {
         return ResponseEntity.ok(ApiResponse.ok(userRoleService.getRolesByUserId(userId)));
     }
     @PostMapping("/save-list")

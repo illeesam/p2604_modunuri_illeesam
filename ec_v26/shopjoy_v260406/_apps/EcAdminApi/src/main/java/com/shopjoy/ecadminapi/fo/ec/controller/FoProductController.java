@@ -35,7 +35,7 @@ public class FoProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getById(@PathVariable("id") String id) {
         PdProdDto product = service.getById(id);
         Map<String, Object> result = new HashMap<>();
         result.put("data", product);

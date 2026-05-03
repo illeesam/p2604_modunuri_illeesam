@@ -39,7 +39,7 @@ public class BoSyVendorController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyVendorDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyVendorDto>> getById(@PathVariable("id") String id) {
         SyVendorDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -51,18 +51,18 @@ public class BoSyVendorController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyVendorDto>> update(@PathVariable String id, @RequestBody SyVendor body) {
+    public ResponseEntity<ApiResponse<SyVendorDto>> update(@PathVariable("id") String id, @RequestBody SyVendor body) {
         SyVendorDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyVendorDto>> upsert(@PathVariable String id, @RequestBody SyVendor body) {
+    public ResponseEntity<ApiResponse<SyVendorDto>> upsert(@PathVariable("id") String id, @RequestBody SyVendor body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

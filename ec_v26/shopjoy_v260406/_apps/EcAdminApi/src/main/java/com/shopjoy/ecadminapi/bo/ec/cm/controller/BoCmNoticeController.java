@@ -46,7 +46,7 @@ public class BoCmNoticeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyNoticeDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyNoticeDto>> getById(@PathVariable("id") String id) {
         SyNoticeDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -58,18 +58,18 @@ public class BoCmNoticeController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyNoticeDto>> update(@PathVariable String id, @RequestBody SyNotice body) {
+    public ResponseEntity<ApiResponse<SyNoticeDto>> update(@PathVariable("id") String id, @RequestBody SyNotice body) {
         SyNoticeDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyNoticeDto>> upsert(@PathVariable String id, @RequestBody SyNotice body) {
+    public ResponseEntity<ApiResponse<SyNoticeDto>> upsert(@PathVariable("id") String id, @RequestBody SyNotice body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

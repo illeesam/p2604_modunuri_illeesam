@@ -34,7 +34,7 @@ public class MbMemberGroupController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberGroupDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<MbMemberGroupDto>> getById(@PathVariable("id") String id) {
         MbMemberGroupDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -50,7 +50,7 @@ public class MbMemberGroupController {
     /* ── 전체 수정 (JPA) ── */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<MbMemberGroup>> save(
-            @PathVariable String id, @RequestBody MbMemberGroup entity) {
+            @PathVariable("id") String id, @RequestBody MbMemberGroup entity) {
         entity.setMemberGroupId(id);
         MbMemberGroup result = service.save(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -59,7 +59,7 @@ public class MbMemberGroupController {
     /* ── 선택 필드 수정 (MyBatis) ── */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable String id, @RequestBody MbMemberGroup entity) {
+            @PathVariable("id") String id, @RequestBody MbMemberGroup entity) {
         entity.setMemberGroupId(id);
         int result = service.update(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -67,7 +67,7 @@ public class MbMemberGroupController {
 
     /* ── 삭제 (JPA) ── */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

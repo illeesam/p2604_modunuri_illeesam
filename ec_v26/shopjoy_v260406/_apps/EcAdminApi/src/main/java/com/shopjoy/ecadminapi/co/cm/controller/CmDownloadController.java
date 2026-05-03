@@ -35,7 +35,7 @@ public class CmDownloadController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @GetMapping("/{filePath}")
-    public ResponseEntity<?> download(@PathVariable String filePath) {
+    public ResponseEntity<?> download(@PathVariable("filePath") String filePath) {
 
         try {
             if (filePath.contains("..")) {
@@ -86,7 +86,7 @@ public class CmDownloadController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @GetMapping("/secure/{fileId}")
-    public ResponseEntity<?> downloadSecure(@PathVariable String fileId) {
+    public ResponseEntity<?> downloadSecure(@PathVariable("fileId") String fileId) {
 
         try {
             throw new CmBizException("해당 파일 정보가 없습니다. DB에서 조회 구현 필요.");

@@ -36,7 +36,7 @@ public class CmBlogFileController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmBlogFileDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<CmBlogFileDto>> getById(@PathVariable("id") String id) {
         CmBlogFileDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -52,7 +52,7 @@ public class CmBlogFileController {
     /* ── 전체 수정 (JPA) ── */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CmBlogFile>> save(
-            @PathVariable String id, @RequestBody CmBlogFile entity) {
+            @PathVariable("id") String id, @RequestBody CmBlogFile entity) {
         entity.setBlogImgId(id);
         CmBlogFile result = service.save(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -61,7 +61,7 @@ public class CmBlogFileController {
     /* ── 선택 필드 수정 (MyBatis) ── */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable String id, @RequestBody CmBlogFile entity) {
+            @PathVariable("id") String id, @RequestBody CmBlogFile entity) {
         entity.setBlogImgId(id);
         int result = service.update(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -69,7 +69,7 @@ public class CmBlogFileController {
 
     /* ── 삭제 (JPA) ── */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

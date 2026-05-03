@@ -39,7 +39,7 @@ public class BoSyCodeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyCodeDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyCodeDto>> getById(@PathVariable("id") String id) {
         SyCodeDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -57,18 +57,18 @@ public class BoSyCodeController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyCodeDto>> update(@PathVariable String id, @RequestBody SyCode body) {
+    public ResponseEntity<ApiResponse<SyCodeDto>> update(@PathVariable("id") String id, @RequestBody SyCode body) {
         SyCodeDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyCodeDto>> upsert(@PathVariable String id, @RequestBody SyCode body) {
+    public ResponseEntity<ApiResponse<SyCodeDto>> upsert(@PathVariable("id") String id, @RequestBody SyCode body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

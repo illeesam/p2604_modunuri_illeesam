@@ -34,7 +34,7 @@ public class OdCartController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdCartDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<OdCartDto>> getById(@PathVariable("id") String id) {
         OdCartDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -50,7 +50,7 @@ public class OdCartController {
     /* ── 전체 수정 (JPA) ── */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<OdCart>> save(
-            @PathVariable String id, @RequestBody OdCart entity) {
+            @PathVariable("id") String id, @RequestBody OdCart entity) {
         entity.setCartId(id);
         OdCart result = service.save(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -59,7 +59,7 @@ public class OdCartController {
     /* ── 선택 필드 수정 (MyBatis) ── */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable String id, @RequestBody OdCart entity) {
+            @PathVariable("id") String id, @RequestBody OdCart entity) {
         entity.setCartId(id);
         int result = service.update(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -67,7 +67,7 @@ public class OdCartController {
 
     /* ── 삭제 (JPA) ── */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

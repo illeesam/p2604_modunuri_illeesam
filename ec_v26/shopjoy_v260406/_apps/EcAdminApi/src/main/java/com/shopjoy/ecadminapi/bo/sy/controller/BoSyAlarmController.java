@@ -39,7 +39,7 @@ public class BoSyAlarmController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyAlarmDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyAlarmDto>> getById(@PathVariable("id") String id) {
         SyAlarmDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -51,18 +51,18 @@ public class BoSyAlarmController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyAlarmDto>> update(@PathVariable String id, @RequestBody SyAlarm body) {
+    public ResponseEntity<ApiResponse<SyAlarmDto>> update(@PathVariable("id") String id, @RequestBody SyAlarm body) {
         SyAlarmDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyAlarmDto>> upsert(@PathVariable String id, @RequestBody SyAlarm body) {
+    public ResponseEntity<ApiResponse<SyAlarmDto>> upsert(@PathVariable("id") String id, @RequestBody SyAlarm body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

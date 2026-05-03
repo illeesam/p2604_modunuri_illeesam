@@ -35,12 +35,12 @@ public class BoPdBundleController {
     }
 
     @PutMapping("/api/bo/ec/pd/prod-bundle/{id}/items")
-    public ResponseEntity<ApiResponse<Void>> updateItems(@PathVariable String id, @RequestBody Map<String, Object> body) {
+    public ResponseEntity<ApiResponse<Void>> updateItems(@PathVariable("id") String id, @RequestBody Map<String, Object> body) {
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 
     @DeleteMapping("/api/bo/ec/pd/prod-bundle/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

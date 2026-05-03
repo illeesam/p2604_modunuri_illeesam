@@ -34,7 +34,7 @@ public class DpUiAreaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpUiAreaDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<DpUiAreaDto>> getById(@PathVariable("id") String id) {
         DpUiAreaDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -50,7 +50,7 @@ public class DpUiAreaController {
     /* ── 전체 수정 (JPA) ── */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<DpUiArea>> save(
-            @PathVariable String id, @RequestBody DpUiArea entity) {
+            @PathVariable("id") String id, @RequestBody DpUiArea entity) {
         entity.setUiAreaId(id);
         DpUiArea result = service.save(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -59,7 +59,7 @@ public class DpUiAreaController {
     /* ── 선택 필드 수정 (MyBatis) ── */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable String id, @RequestBody DpUiArea entity) {
+            @PathVariable("id") String id, @RequestBody DpUiArea entity) {
         entity.setUiAreaId(id);
         int result = service.update(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -67,7 +67,7 @@ public class DpUiAreaController {
 
     /* ── 삭제 (JPA) ── */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

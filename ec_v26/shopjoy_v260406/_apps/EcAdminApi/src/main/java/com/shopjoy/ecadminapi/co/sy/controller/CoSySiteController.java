@@ -35,7 +35,7 @@ public class CoSySiteController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SySiteDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SySiteDto>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 }

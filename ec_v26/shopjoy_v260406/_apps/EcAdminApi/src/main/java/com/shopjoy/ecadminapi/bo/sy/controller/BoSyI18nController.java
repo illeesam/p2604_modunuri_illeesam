@@ -38,7 +38,7 @@ public class BoSyI18nController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyI18nDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyI18nDto>> getById(@PathVariable("id") String id) {
         SyI18nDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -50,26 +50,26 @@ public class BoSyI18nController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyI18n>> update(@PathVariable String id, @RequestBody SyI18n body) {
+    public ResponseEntity<ApiResponse<SyI18n>> update(@PathVariable("id") String id, @RequestBody SyI18n body) {
         body.setI18nId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.save(body)));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyI18n>> upsert(@PathVariable String id, @RequestBody SyI18n body) {
+    public ResponseEntity<ApiResponse<SyI18n>> upsert(@PathVariable("id") String id, @RequestBody SyI18n body) {
         body.setI18nId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.save(body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PutMapping("/{id}/msgs")
     public ResponseEntity<ApiResponse<Void>> saveMsgs(
-            @PathVariable String id, @RequestBody Map<String, Object> body) {
+            @PathVariable("id") String id, @RequestBody Map<String, Object> body) {
         @SuppressWarnings("unchecked")
         Map<String, String> msgs = (Map<String, String>) body.get("msgs");
         if (msgs == null) return ResponseEntity.ok(ApiResponse.ok(null));

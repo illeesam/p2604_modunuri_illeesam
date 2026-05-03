@@ -34,7 +34,7 @@ public class BoPdProdTabController {
 
     @GetMapping("/images")
     public ResponseEntity<ApiResponse<List<PdProdImgDto>>> images(
-            @PathVariable String prodId,
+            @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
         p.put("prodId", prodId);
         return ResponseEntity.ok(ApiResponse.ok(imgService.getList(p)));
@@ -42,7 +42,7 @@ public class BoPdProdTabController {
 
     @GetMapping("/opts")
     public ResponseEntity<ApiResponse<Map<String, Object>>> opts(
-            @PathVariable String prodId,
+            @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
         p.put("prodId", prodId);
         List<PdProdOptDto> groups = optService.getList(p);
@@ -58,7 +58,7 @@ public class BoPdProdTabController {
 
     @GetMapping("/skus")
     public ResponseEntity<ApiResponse<List<PdProdSkuDto>>> skus(
-            @PathVariable String prodId,
+            @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
         p.put("prodId", prodId);
         return ResponseEntity.ok(ApiResponse.ok(skuService.getList(p)));
@@ -66,7 +66,7 @@ public class BoPdProdTabController {
 
     @GetMapping("/contents")
     public ResponseEntity<ApiResponse<List<PdProdContentDto>>> contents(
-            @PathVariable String prodId,
+            @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
         p.put("prodId", prodId);
         return ResponseEntity.ok(ApiResponse.ok(contentService.getList(p)));
@@ -74,7 +74,7 @@ public class BoPdProdTabController {
 
     @GetMapping("/rels")
     public ResponseEntity<ApiResponse<List<PdProdRelDto>>> rels(
-            @PathVariable String prodId,
+            @PathVariable("prodId") String prodId,
             @RequestParam Map<String, Object> p) {
         p.put("prodId", prodId);
         return ResponseEntity.ok(ApiResponse.ok(relService.getList(p)));

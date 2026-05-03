@@ -39,7 +39,7 @@ public class BoSyBrandController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBrandDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyBrandDto>> getById(@PathVariable("id") String id) {
         SyBrandDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -51,18 +51,18 @@ public class BoSyBrandController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBrandDto>> update(@PathVariable String id, @RequestBody SyBrand body) {
+    public ResponseEntity<ApiResponse<SyBrandDto>> update(@PathVariable("id") String id, @RequestBody SyBrand body) {
         SyBrandDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBrandDto>> upsert(@PathVariable String id, @RequestBody SyBrand body) {
+    public ResponseEntity<ApiResponse<SyBrandDto>> upsert(@PathVariable("id") String id, @RequestBody SyBrand body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

@@ -32,7 +32,7 @@ public class BoSyUserTokenLogController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyhUserTokenLogDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyhUserTokenLogDto>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 

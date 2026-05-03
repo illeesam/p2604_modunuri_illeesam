@@ -42,7 +42,7 @@ public class FoOdCartController {
 
     @PatchMapping("/{cartId}")
     public ResponseEntity<ApiResponse<OdCart>> updateQty(
-            @PathVariable String cartId,
+            @PathVariable("cartId") String cartId,
             @RequestBody Map<String, Integer> body) {
         int qty = body.getOrDefault("qty", 1);
         OdCart result = service.updateQty(cartId, qty);
@@ -50,7 +50,7 @@ public class FoOdCartController {
     }
 
     @DeleteMapping("/{cartId}")
-    public ResponseEntity<ApiResponse<Void>> remove(@PathVariable String cartId) {
+    public ResponseEntity<ApiResponse<Void>> remove(@PathVariable("cartId") String cartId) {
         service.removeFromCart(cartId);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

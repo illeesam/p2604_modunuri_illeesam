@@ -32,7 +32,7 @@ public class BoPdTagController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdTagDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<PdTagDto>> getById(@PathVariable("id") String id) {
         PdTagDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -43,17 +43,17 @@ public class BoPdTagController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdTagDto>> update(@PathVariable String id, @RequestBody PdTag body) {
+    public ResponseEntity<ApiResponse<PdTagDto>> update(@PathVariable("id") String id, @RequestBody PdTag body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdTagDto>> upsert(@PathVariable String id, @RequestBody PdTag body) {
+    public ResponseEntity<ApiResponse<PdTagDto>> upsert(@PathVariable("id") String id, @RequestBody PdTag body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

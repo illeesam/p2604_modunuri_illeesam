@@ -33,7 +33,7 @@ public class SyhSendMsgLogController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyhSendMsgLogDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyhSendMsgLogDto>> getById(@PathVariable("id") String id) {
         SyhSendMsgLogDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));

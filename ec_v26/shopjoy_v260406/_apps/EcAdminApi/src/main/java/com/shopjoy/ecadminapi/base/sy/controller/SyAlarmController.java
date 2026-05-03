@@ -51,7 +51,7 @@ public class SyAlarmController {
 
     /* ── 단건 조회 ── */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyAlarmDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyAlarmDto>> getById(@PathVariable("id") String id) {
         SyAlarmDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -67,7 +67,7 @@ public class SyAlarmController {
     /* ── 전체 수정 (JPA) ── */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyAlarm>> save(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @RequestBody SyAlarm entity) {
         entity.setAlarmId(id);
         SyAlarm result = service.save(entity);
@@ -77,7 +77,7 @@ public class SyAlarmController {
     /* ── 선택 필드 수정 (MyBatis) ── */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @RequestBody SyAlarm entity) {
         entity.setAlarmId(id);
         int result = service.update(entity);
@@ -86,7 +86,7 @@ public class SyAlarmController {
 
     /* ── 삭제 (JPA) ── */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

@@ -34,7 +34,7 @@ public class PmSaveUsageController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmSaveUsageDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<PmSaveUsageDto>> getById(@PathVariable("id") String id) {
         PmSaveUsageDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -50,7 +50,7 @@ public class PmSaveUsageController {
     /* ── 전체 수정 (JPA) ── */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PmSaveUsage>> save(
-            @PathVariable String id, @RequestBody PmSaveUsage entity) {
+            @PathVariable("id") String id, @RequestBody PmSaveUsage entity) {
         entity.setSaveUsageId(id);
         PmSaveUsage result = service.save(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -59,7 +59,7 @@ public class PmSaveUsageController {
     /* ── 선택 필드 수정 (MyBatis) ── */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable String id, @RequestBody PmSaveUsage entity) {
+            @PathVariable("id") String id, @RequestBody PmSaveUsage entity) {
         entity.setSaveUsageId(id);
         int result = service.update(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -67,7 +67,7 @@ public class PmSaveUsageController {
 
     /* ── 삭제 (JPA) ── */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

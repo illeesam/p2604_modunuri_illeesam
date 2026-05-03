@@ -31,7 +31,7 @@ public class CmVideoPlayController {
     })
     @GetMapping("/play/{videoPath:.+}")
     public ResponseEntity<?> playVideo(
-            @PathVariable String videoPath,
+            @PathVariable("videoPath") String videoPath,
             @RequestHeader(value = HttpHeaders.RANGE, required = false) String rangeHeader) {
 
         try {
@@ -126,7 +126,7 @@ public class CmVideoPlayController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @GetMapping("/info/{videoPath:.+}")
-    public ResponseEntity<?> getVideoInfo(@PathVariable String videoPath) {
+    public ResponseEntity<?> getVideoInfo(@PathVariable("videoPath") String videoPath) {
         try {
             if (videoPath.contains("..")) {
                 throw new CmBizException("잘못된 경로입니다.");

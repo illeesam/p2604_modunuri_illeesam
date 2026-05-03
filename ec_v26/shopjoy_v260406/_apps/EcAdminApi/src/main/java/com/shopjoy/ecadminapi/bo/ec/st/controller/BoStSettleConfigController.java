@@ -32,7 +32,7 @@ public class BoStSettleConfigController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleConfigDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<StSettleConfigDto>> getById(@PathVariable("id") String id) {
         StSettleConfigDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -43,17 +43,17 @@ public class BoStSettleConfigController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleConfigDto>> update(@PathVariable String id, @RequestBody StSettleConfig body) {
+    public ResponseEntity<ApiResponse<StSettleConfigDto>> update(@PathVariable("id") String id, @RequestBody StSettleConfig body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleConfigDto>> upsert(@PathVariable String id, @RequestBody StSettleConfig body) {
+    public ResponseEntity<ApiResponse<StSettleConfigDto>> upsert(@PathVariable("id") String id, @RequestBody StSettleConfig body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

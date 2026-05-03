@@ -33,7 +33,7 @@ public class OdhOrderChgHistController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdhOrderChgHistDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<OdhOrderChgHistDto>> getById(@PathVariable("id") String id) {
         OdhOrderChgHistDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));

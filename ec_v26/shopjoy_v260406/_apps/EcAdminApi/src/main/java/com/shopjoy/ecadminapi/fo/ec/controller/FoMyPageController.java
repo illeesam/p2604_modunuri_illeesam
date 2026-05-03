@@ -70,7 +70,7 @@ public class FoMyPageController {
     }
 
     @DeleteMapping("/addr/{addrId}")
-    public ResponseEntity<ApiResponse<Void>> deleteAddr(@PathVariable String addrId) {
+    public ResponseEntity<ApiResponse<Void>> deleteAddr(@PathVariable("addrId") String addrId) {
         service.deleteAddr(addrId);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

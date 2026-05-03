@@ -33,7 +33,7 @@ public class BoSyCodeGrpController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyCodeGrpDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyCodeGrpDto>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 
@@ -43,13 +43,13 @@ public class BoSyCodeGrpController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyCodeGrp>> update(@PathVariable String id, @RequestBody SyCodeGrp body) {
+    public ResponseEntity<ApiResponse<SyCodeGrp>> update(@PathVariable("id") String id, @RequestBody SyCodeGrp body) {
         body.setCodeGrpId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.save(body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

@@ -48,7 +48,7 @@ public class MbDeviceTokenController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbDeviceTokenDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<MbDeviceTokenDto>> getById(@PathVariable("id") String id) {
         MbDeviceTokenDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -62,7 +62,7 @@ public class MbDeviceTokenController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<MbDeviceToken>> save(
-            @PathVariable String id, @RequestBody MbDeviceToken entity) {
+            @PathVariable("id") String id, @RequestBody MbDeviceToken entity) {
         entity.setDeviceTokenId(id);
         MbDeviceToken result = service.save(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -70,14 +70,14 @@ public class MbDeviceTokenController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable String id, @RequestBody MbDeviceToken entity) {
+            @PathVariable("id") String id, @RequestBody MbDeviceToken entity) {
         entity.setDeviceTokenId(id);
         int result = service.update(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

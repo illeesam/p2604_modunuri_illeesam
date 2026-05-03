@@ -39,7 +39,7 @@ public class BoSyBatchController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBatchDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyBatchDto>> getById(@PathVariable("id") String id) {
         SyBatchDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -51,18 +51,18 @@ public class BoSyBatchController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBatchDto>> update(@PathVariable String id, @RequestBody SyBatch body) {
+    public ResponseEntity<ApiResponse<SyBatchDto>> update(@PathVariable("id") String id, @RequestBody SyBatch body) {
         SyBatchDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBatchDto>> upsert(@PathVariable String id, @RequestBody SyBatch body) {
+    public ResponseEntity<ApiResponse<SyBatchDto>> upsert(@PathVariable("id") String id, @RequestBody SyBatch body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

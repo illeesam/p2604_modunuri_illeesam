@@ -34,7 +34,7 @@ public class SyI18nMsgController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyI18nMsgDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyI18nMsgDto>> getById(@PathVariable("id") String id) {
         SyI18nMsgDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -50,7 +50,7 @@ public class SyI18nMsgController {
     /* ── 전체 수정 (JPA) ── */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyI18nMsg>> save(
-            @PathVariable String id, @RequestBody SyI18nMsg entity) {
+            @PathVariable("id") String id, @RequestBody SyI18nMsg entity) {
         entity.setI18nMsgId(id);
         SyI18nMsg result = service.save(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -59,7 +59,7 @@ public class SyI18nMsgController {
     /* ── 선택 필드 수정 (MyBatis) ── */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable String id, @RequestBody SyI18nMsg entity) {
+            @PathVariable("id") String id, @RequestBody SyI18nMsg entity) {
         entity.setI18nMsgId(id);
         int result = service.update(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -67,7 +67,7 @@ public class SyI18nMsgController {
 
     /* ── 삭제 (JPA) ── */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

@@ -46,7 +46,7 @@ public class BoMbMemGroupController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberGroupDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<MbMemberGroupDto>> getById(@PathVariable("id") String id) {
         MbMemberGroupDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -58,18 +58,18 @@ public class BoMbMemGroupController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberGroupDto>> update(@PathVariable String id, @RequestBody MbMemberGroup body) {
+    public ResponseEntity<ApiResponse<MbMemberGroupDto>> update(@PathVariable("id") String id, @RequestBody MbMemberGroup body) {
         MbMemberGroupDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberGroupDto>> upsert(@PathVariable String id, @RequestBody MbMemberGroup body) {
+    public ResponseEntity<ApiResponse<MbMemberGroupDto>> upsert(@PathVariable("id") String id, @RequestBody MbMemberGroup body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

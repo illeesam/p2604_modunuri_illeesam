@@ -33,7 +33,7 @@ public class SyhAlarmSendHistController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyhAlarmSendHistDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyhAlarmSendHistDto>> getById(@PathVariable("id") String id) {
         SyhAlarmSendHistDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));

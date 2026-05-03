@@ -32,7 +32,7 @@ public class BoPdRestockNotiController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdRestockNotiDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<PdRestockNotiDto>> getById(@PathVariable("id") String id) {
         PdRestockNotiDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -43,17 +43,17 @@ public class BoPdRestockNotiController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdRestockNotiDto>> update(@PathVariable String id, @RequestBody PdRestockNoti body) {
+    public ResponseEntity<ApiResponse<PdRestockNotiDto>> update(@PathVariable("id") String id, @RequestBody PdRestockNoti body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdRestockNotiDto>> upsert(@PathVariable String id, @RequestBody PdRestockNoti body) {
+    public ResponseEntity<ApiResponse<PdRestockNotiDto>> upsert(@PathVariable("id") String id, @RequestBody PdRestockNoti body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

@@ -33,7 +33,7 @@ public class BoSyPropController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyPropDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyPropDto>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 
@@ -43,13 +43,13 @@ public class BoSyPropController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyProp>> update(@PathVariable String id, @RequestBody SyProp body) {
+    public ResponseEntity<ApiResponse<SyProp>> update(@PathVariable("id") String id, @RequestBody SyProp body) {
         body.setPropId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.save(body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

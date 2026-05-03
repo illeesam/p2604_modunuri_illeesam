@@ -33,7 +33,7 @@ public class SyhBatchLogController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyhBatchLogDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyhBatchLogDto>> getById(@PathVariable("id") String id) {
         SyhBatchLogDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));

@@ -34,7 +34,7 @@ public class SyMenuController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyMenuDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyMenuDto>> getById(@PathVariable("id") String id) {
         SyMenuDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -50,7 +50,7 @@ public class SyMenuController {
     /* ── 전체 수정 (JPA) ── */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyMenu>> save(
-            @PathVariable String id, @RequestBody SyMenu entity) {
+            @PathVariable("id") String id, @RequestBody SyMenu entity) {
         entity.setMenuId(id);
         SyMenu result = service.save(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -59,7 +59,7 @@ public class SyMenuController {
     /* ── 선택 필드 수정 (MyBatis) ── */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable String id, @RequestBody SyMenu entity) {
+            @PathVariable("id") String id, @RequestBody SyMenu entity) {
         entity.setMenuId(id);
         int result = service.update(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -67,7 +67,7 @@ public class SyMenuController {
 
     /* ── 삭제 (JPA) ── */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

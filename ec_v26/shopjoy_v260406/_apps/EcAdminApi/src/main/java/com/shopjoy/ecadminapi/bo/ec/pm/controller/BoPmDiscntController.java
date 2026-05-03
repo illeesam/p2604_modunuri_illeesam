@@ -39,7 +39,7 @@ public class BoPmDiscntController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmDiscntDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<PmDiscntDto>> getById(@PathVariable("id") String id) {
         PmDiscntDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -51,25 +51,25 @@ public class BoPmDiscntController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmDiscntDto>> update(@PathVariable String id, @RequestBody PmDiscnt body) {
+    public ResponseEntity<ApiResponse<PmDiscntDto>> update(@PathVariable("id") String id, @RequestBody PmDiscnt body) {
         PmDiscntDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmDiscntDto>> upsert(@PathVariable String id, @RequestBody PmDiscnt body) {
+    public ResponseEntity<ApiResponse<PmDiscntDto>> upsert(@PathVariable("id") String id, @RequestBody PmDiscnt body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<PmDiscntDto>> changeStatus(
-            @PathVariable String id, @RequestBody Map<String, String> body) {
+            @PathVariable("id") String id, @RequestBody Map<String, String> body) {
         PmDiscntDto result = service.changeStatus(id, body.get("statusCd"));
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

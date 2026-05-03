@@ -39,7 +39,7 @@ public class BoPmCacheController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCacheDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<PmCacheDto>> getById(@PathVariable("id") String id) {
         PmCacheDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -51,18 +51,18 @@ public class BoPmCacheController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCacheDto>> update(@PathVariable String id, @RequestBody PmCache body) {
+    public ResponseEntity<ApiResponse<PmCacheDto>> update(@PathVariable("id") String id, @RequestBody PmCache body) {
         PmCacheDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCacheDto>> upsert(@PathVariable String id, @RequestBody PmCache body) {
+    public ResponseEntity<ApiResponse<PmCacheDto>> upsert(@PathVariable("id") String id, @RequestBody PmCache body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

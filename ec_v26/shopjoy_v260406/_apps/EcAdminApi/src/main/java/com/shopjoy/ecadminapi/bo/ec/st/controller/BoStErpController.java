@@ -53,13 +53,13 @@ public class BoStErpController {
     }
 
     @PutMapping("/recon/{id}/fix")
-    public ResponseEntity<ApiResponse<Void>> reconFix(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> reconFix(@PathVariable("id") String id) {
         log.info("ERP 대사 수정 요청 - reconId={}", id);
         return ResponseEntity.ok(ApiResponse.ok(null, "수정되었습니다."));
     }
 
     @PostMapping("/resend/{id}")
-    public ResponseEntity<ApiResponse<Void>> resend(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> resend(@PathVariable("id") String id) {
         StErpVoucher entity = repository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 전표입니다: " + id));
         entity.setErpVoucherStatusCd("PENDING");

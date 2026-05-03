@@ -41,9 +41,9 @@ public class AutoRestController {
     /* ── 1. 목록 조회 ── */
     @GetMapping
     public ResponseEntity<ApiResponse<List<RowMap>>> list(
-            @PathVariable String domain,
-            @PathVariable String sub,
-            @PathVariable String table,
+            @PathVariable("domain") String domain,
+            @PathVariable("sub") String sub,
+            @PathVariable("table") String table,
             @ModelAttribute SearchReq search) {
         checkTable(table);
         List<RowMap> result = service.getList(table, search);
@@ -53,9 +53,9 @@ public class AutoRestController {
     /* ── 2. 페이지 조회 ── */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<RowMap>>> page(
-            @PathVariable String domain,
-            @PathVariable String sub,
-            @PathVariable String table,
+            @PathVariable("domain") String domain,
+            @PathVariable("sub") String sub,
+            @PathVariable("table") String table,
             @ModelAttribute SearchReq search) {
         checkTable(table);
         PageResult<RowMap> result = service.getPageData(table, search);
@@ -65,9 +65,9 @@ public class AutoRestController {
     /* ── 3. 건수 조회 ── */
     @GetMapping("/count")
     public ResponseEntity<ApiResponse<Long>> count(
-            @PathVariable String domain,
-            @PathVariable String sub,
-            @PathVariable String table,
+            @PathVariable("domain") String domain,
+            @PathVariable("sub") String sub,
+            @PathVariable("table") String table,
             @ModelAttribute SearchReq search) {
         checkTable(table);
         long result = service.count(table, search);
@@ -77,10 +77,10 @@ public class AutoRestController {
     /* ── 4. 단건 조회 ── */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<RowMap>> getById(
-            @PathVariable String domain,
-            @PathVariable String sub,
-            @PathVariable String table,
-            @PathVariable String id) {
+            @PathVariable("domain") String domain,
+            @PathVariable("sub") String sub,
+            @PathVariable("table") String table,
+            @PathVariable("id") String id) {
         checkTable(table);
         RowMap row = service.getById(table, id);
         if (row == null) return ResponseEntity.notFound().build();
@@ -90,9 +90,9 @@ public class AutoRestController {
     /* ── 5. 등록 ── */
     @PostMapping
     public ResponseEntity<ApiResponse<RowMap>> create(
-            @PathVariable String domain,
-            @PathVariable String sub,
-            @PathVariable String table,
+            @PathVariable("domain") String domain,
+            @PathVariable("sub") String sub,
+            @PathVariable("table") String table,
             @RequestBody RowMap body) {
         checkTable(table);
         RowMap result = service.create(table, body);
@@ -102,10 +102,10 @@ public class AutoRestController {
     /* ── 6. 전체 수정 ── */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<RowMap>> update(
-            @PathVariable String domain,
-            @PathVariable String sub,
-            @PathVariable String table,
-            @PathVariable String id,
+            @PathVariable("domain") String domain,
+            @PathVariable("sub") String sub,
+            @PathVariable("table") String table,
+            @PathVariable("id") String id,
             @RequestBody RowMap body) {
         checkTable(table);
         RowMap result = service.update(table, id, body);
@@ -115,10 +115,10 @@ public class AutoRestController {
     /* ── 7. 부분 수정 ── */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<RowMap>> patch(
-            @PathVariable String domain,
-            @PathVariable String sub,
-            @PathVariable String table,
-            @PathVariable String id,
+            @PathVariable("domain") String domain,
+            @PathVariable("sub") String sub,
+            @PathVariable("table") String table,
+            @PathVariable("id") String id,
             @RequestBody RowMap body) {
         checkTable(table);
         RowMap result = service.patch(table, id, body);
@@ -128,10 +128,10 @@ public class AutoRestController {
     /* ── 8. 단건 삭제 ── */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(
-            @PathVariable String domain,
-            @PathVariable String sub,
-            @PathVariable String table,
-            @PathVariable String id) {
+            @PathVariable("domain") String domain,
+            @PathVariable("sub") String sub,
+            @PathVariable("table") String table,
+            @PathVariable("id") String id) {
         checkTable(table);
         service.delete(table, id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
@@ -140,9 +140,9 @@ public class AutoRestController {
     /* ── 10. _row_status 단건 저장 ── */
     @PostMapping("/save")
     public ResponseEntity<ApiResponse<RowMap>> saveByRowStatus(
-            @PathVariable String domain,
-            @PathVariable String sub,
-            @PathVariable String table,
+            @PathVariable("domain") String domain,
+            @PathVariable("sub") String sub,
+            @PathVariable("table") String table,
             @RequestBody RowMap body) {
         checkTable(table);
         RowMap result = service.saveByRowStatus(table, body);
@@ -152,9 +152,9 @@ public class AutoRestController {
     /* ── 11. _row_status 목록 저장 ── */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<List<RowMap>>> saveListByRowStatus(
-            @PathVariable String domain,
-            @PathVariable String sub,
-            @PathVariable String table,
+            @PathVariable("domain") String domain,
+            @PathVariable("sub") String sub,
+            @PathVariable("table") String table,
             @RequestBody List<RowMap> list) {
         checkTable(table);
         List<RowMap> result = service.saveListByRowStatus(table, list);
@@ -164,9 +164,9 @@ public class AutoRestController {
     /* ── 9. 일괄 삭제 ── */
     @DeleteMapping
     public ResponseEntity<ApiResponse<Integer>> bulkDelete(
-            @PathVariable String domain,
-            @PathVariable String sub,
-            @PathVariable String table,
+            @PathVariable("domain") String domain,
+            @PathVariable("sub") String sub,
+            @PathVariable("table") String table,
             @RequestBody @Valid BulkDeleteReq req) {
         checkTable(table);
         int cnt = service.bulkDelete(table, req.getIds());

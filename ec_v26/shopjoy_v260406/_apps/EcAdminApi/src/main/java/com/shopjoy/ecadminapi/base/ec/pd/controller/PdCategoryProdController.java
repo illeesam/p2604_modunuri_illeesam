@@ -34,7 +34,7 @@ public class PdCategoryProdController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdCategoryProdDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<PdCategoryProdDto>> getById(@PathVariable("id") String id) {
         PdCategoryProdDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -50,7 +50,7 @@ public class PdCategoryProdController {
     /* ── 전체 수정 (JPA) ── */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PdCategoryProd>> save(
-            @PathVariable String id, @RequestBody PdCategoryProd entity) {
+            @PathVariable("id") String id, @RequestBody PdCategoryProd entity) {
         entity.setCategoryProdId(id);
         PdCategoryProd result = service.save(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -59,7 +59,7 @@ public class PdCategoryProdController {
     /* ── 선택 필드 수정 (MyBatis) ── */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable String id, @RequestBody PdCategoryProd entity) {
+            @PathVariable("id") String id, @RequestBody PdCategoryProd entity) {
         entity.setCategoryProdId(id);
         int result = service.update(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -67,7 +67,7 @@ public class PdCategoryProdController {
 
     /* ── 삭제 (JPA) ── */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

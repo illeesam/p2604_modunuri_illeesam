@@ -32,7 +32,7 @@ public class MbMemberRoleController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberRoleDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<MbMemberRoleDto>> getById(@PathVariable("id") String id) {
         MbMemberRoleDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -45,20 +45,20 @@ public class MbMemberRoleController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<MbMemberRole>> save(
-            @PathVariable String id, @RequestBody MbMemberRole entity) {
+            @PathVariable("id") String id, @RequestBody MbMemberRole entity) {
         entity.setMemberRoleId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable String id, @RequestBody MbMemberRole entity) {
+            @PathVariable("id") String id, @RequestBody MbMemberRole entity) {
         entity.setMemberRoleId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.update(entity)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

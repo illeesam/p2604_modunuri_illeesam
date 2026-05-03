@@ -39,7 +39,7 @@ public class BoSyContactController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyContactDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyContactDto>> getById(@PathVariable("id") String id) {
         SyContactDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -51,18 +51,18 @@ public class BoSyContactController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyContactDto>> update(@PathVariable String id, @RequestBody SyContact body) {
+    public ResponseEntity<ApiResponse<SyContactDto>> update(@PathVariable("id") String id, @RequestBody SyContact body) {
         SyContactDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyContactDto>> upsert(@PathVariable String id, @RequestBody SyContact body) {
+    public ResponseEntity<ApiResponse<SyContactDto>> upsert(@PathVariable("id") String id, @RequestBody SyContact body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

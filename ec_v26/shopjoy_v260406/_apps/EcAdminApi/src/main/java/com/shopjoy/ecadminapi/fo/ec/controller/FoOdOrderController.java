@@ -44,7 +44,7 @@ public class FoOdOrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<ApiResponse<OdOrderDto>> getById(@PathVariable String orderId) {
+    public ResponseEntity<ApiResponse<OdOrderDto>> getById(@PathVariable("orderId") String orderId) {
         OdOrderDto result = service.getById(orderId);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

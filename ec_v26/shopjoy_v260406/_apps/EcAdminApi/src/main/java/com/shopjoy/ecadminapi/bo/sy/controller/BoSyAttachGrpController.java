@@ -33,7 +33,7 @@ public class BoSyAttachGrpController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyAttachGrpDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyAttachGrpDto>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 
@@ -43,12 +43,12 @@ public class BoSyAttachGrpController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyAttachGrpDto>> update(@PathVariable String id, @RequestBody SyAttachGrp body) {
+    public ResponseEntity<ApiResponse<SyAttachGrpDto>> update(@PathVariable("id") String id, @RequestBody SyAttachGrp body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

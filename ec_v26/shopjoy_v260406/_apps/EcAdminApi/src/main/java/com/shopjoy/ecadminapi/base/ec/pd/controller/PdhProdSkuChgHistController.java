@@ -33,7 +33,7 @@ public class PdhProdSkuChgHistController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdhProdSkuChgHistDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<PdhProdSkuChgHistDto>> getById(@PathVariable("id") String id) {
         PdhProdSkuChgHistDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));

@@ -36,7 +36,7 @@ public class CoSyPathController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyPathDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyPathDto>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(service.getById(id)));
     }
 }

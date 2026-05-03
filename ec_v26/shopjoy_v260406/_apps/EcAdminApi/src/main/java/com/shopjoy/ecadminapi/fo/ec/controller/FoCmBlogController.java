@@ -48,7 +48,7 @@ public class FoCmBlogController {
     }
 
     @GetMapping("/{blogId}")
-    public ResponseEntity<ApiResponse<CmBlogDto>> getById(@PathVariable String blogId) {
+    public ResponseEntity<ApiResponse<CmBlogDto>> getById(@PathVariable("blogId") String blogId) {
         CmBlogDto result = service.getByIdAndIncrView(blogId);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -61,13 +61,13 @@ public class FoCmBlogController {
 
     @PutMapping("/{blogId}")
     public ResponseEntity<ApiResponse<CmBlog>> update(
-            @PathVariable String blogId, @RequestBody CmBlog entity) {
+            @PathVariable("blogId") String blogId, @RequestBody CmBlog entity) {
         CmBlog result = service.update(blogId, entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @DeleteMapping("/{blogId}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String blogId) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("blogId") String blogId) {
         service.delete(blogId);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

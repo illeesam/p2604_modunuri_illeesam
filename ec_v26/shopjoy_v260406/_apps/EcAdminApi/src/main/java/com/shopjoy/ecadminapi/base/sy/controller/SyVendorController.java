@@ -34,7 +34,7 @@ public class SyVendorController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyVendorDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyVendorDto>> getById(@PathVariable("id") String id) {
         SyVendorDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -50,7 +50,7 @@ public class SyVendorController {
     /* ── 전체 수정 (JPA) ── */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyVendor>> save(
-            @PathVariable String id, @RequestBody SyVendor entity) {
+            @PathVariable("id") String id, @RequestBody SyVendor entity) {
         entity.setVendorId(id);
         SyVendor result = service.save(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -59,7 +59,7 @@ public class SyVendorController {
     /* ── 선택 필드 수정 (MyBatis) ── */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable String id, @RequestBody SyVendor entity) {
+            @PathVariable("id") String id, @RequestBody SyVendor entity) {
         entity.setVendorId(id);
         int result = service.update(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -67,7 +67,7 @@ public class SyVendorController {
 
     /* ── 삭제 (JPA) ── */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

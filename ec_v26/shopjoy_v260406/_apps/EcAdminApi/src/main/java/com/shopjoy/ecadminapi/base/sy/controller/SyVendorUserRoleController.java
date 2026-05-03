@@ -32,7 +32,7 @@ public class SyVendorUserRoleController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyVendorUserRoleDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SyVendorUserRoleDto>> getById(@PathVariable("id") String id) {
         SyVendorUserRoleDto result = service.getById(id);
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -45,20 +45,20 @@ public class SyVendorUserRoleController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyVendorUserRole>> save(
-            @PathVariable String id, @RequestBody SyVendorUserRole entity) {
+            @PathVariable("id") String id, @RequestBody SyVendorUserRole entity) {
         entity.setVendorUserRoleId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Integer>> update(
-            @PathVariable String id, @RequestBody SyVendorUserRole entity) {
+            @PathVariable("id") String id, @RequestBody SyVendorUserRole entity) {
         entity.setVendorUserRoleId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.update(entity)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }

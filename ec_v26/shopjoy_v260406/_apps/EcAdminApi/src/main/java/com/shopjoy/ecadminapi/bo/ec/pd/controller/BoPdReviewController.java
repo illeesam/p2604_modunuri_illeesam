@@ -46,7 +46,7 @@ public class BoPdReviewController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdReviewDto>> getById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<PdReviewDto>> getById(@PathVariable("id") String id) {
         PdReviewDto result = service.getById(id);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -58,25 +58,25 @@ public class BoPdReviewController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdReviewDto>> update(@PathVariable String id, @RequestBody PdReview body) {
+    public ResponseEntity<ApiResponse<PdReviewDto>> update(@PathVariable("id") String id, @RequestBody PdReview body) {
         PdReviewDto result = service.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdReviewDto>> upsert(@PathVariable String id, @RequestBody PdReview body) {
+    public ResponseEntity<ApiResponse<PdReviewDto>> upsert(@PathVariable("id") String id, @RequestBody PdReview body) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         service.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
     @PutMapping("/{id}/status")
     public ResponseEntity<ApiResponse<PdReviewDto>> changeStatus(
-            @PathVariable String id, @RequestBody Map<String, String> body) {
+            @PathVariable("id") String id, @RequestBody Map<String, String> body) {
         return ResponseEntity.ok(ApiResponse.ok(service.changeStatus(id, body.get("reviewStatusCd"))));
     }
     @PostMapping("/save-list")
