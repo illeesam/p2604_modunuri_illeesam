@@ -49,11 +49,15 @@ window.SyUserLoginHist = {
     const tokenList = reactive([]);
     const tabCounts = reactive({ log:0, token:0 });
 
-    const expandedRows = reactive(new Set());
-    const toggleRow   = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
-    const isExpanded  = id => expandedRows.has(id);
-    const expandAll   = () => { const list = uiState.activeTab==='log' ? logList : tokenList; list.forEach((r,i) => expandedRows.add(r.logId||r.tokenLogId||i)); };
-    const collapseAll = () => expandedRows.clear();
+    const expandedRows    = reactive(new Set());
+    const allExpanded     = reactive({ value: false });
+    const toggleRow       = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
+    const isExpanded      = id => expandedRows.has(id);
+    const toggleExpandAll = () => {
+      const list = uiState.activeTab==='log' ? logList : tokenList;
+      if (allExpanded.value) { expandedRows.clear(); allExpanded.value = false; }
+      else { list.forEach((r,i) => expandedRows.add(r.logId||r.tokenLogId||i)); allExpanded.value = true; }
+    };
 
     // ── 검색 ─────────────────────────────────────────────────────────────
     const buildParams = () => ({
@@ -101,7 +105,7 @@ window.SyUserLoginHist = {
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleSearchList(); });
 
     // ── 이벤트 ───────────────────────────────────────────────────────────
-    const onTabChange = tab => { uiState.activeTab = tab; pager.pageNo = 1; handleSearchList(); };
+    const onTabChange = tab => { uiState.activeTab = tab; pager.pageNo = 1; allExpanded.value = false; handleSearchList(); };
     const onSearch    = () => { pager.pageNo = 1; handleSearchList(); };
     const onReset     = () => {
       Object.assign(uiState, { searchKw:'', searchResultCd:'', searchIp:'', searchUiNm:'', searchTraceId:'', dateRange:'1week', srchOpen:false });
@@ -111,12 +115,19 @@ window.SyUserLoginHist = {
     const onSizeChange = () => { pager.pageNo=1; handleSearchList(); };
 
     const handleClearLog = async () => {
-      const tabNm = uiState.activeTab==='log' ? '로그인 로그' : '토큰 이력';
-      const ok = await props.showConfirm('로그 비우기', `현재 탭(${tabNm})의 목록을 화면에서 지웁니다.\n(DB 데이터는 삭제되지 않습니다)`);
+      const tabNm = uiState.activeTab==='log' ? '사용자로그인 로그' : '사용자토큰 이력';
+      const ok = await props.showConfirm('로그 비우기', `[${tabNm}] 테이블의 모든 데이터를 삭제합니다.\n이 작업은 되돌릴 수 없습니다.`);
       if (!ok) return;
-      if (uiState.activeTab==='log') { logList.splice(0); tabCounts.log=0; }
-      else                           { tokenList.splice(0); tabCounts.token=0; }
-      pager.pageTotalCount=0; pager.pageTotalPage=1; expandedRows.clear();
+      try {
+        if (uiState.activeTab==='log') await window.boApi.delete('/base/sy/user-login-log/all', coUtil.apiHdr('사용자로그인이력', '로그비우기'));
+        else                           await window.boApi.delete('/base/sy/user-token-log/all', coUtil.apiHdr('사용자로그인이력', '로그비우기'));
+        props.showToast(`${tabNm} 전체 삭제 완료`, 'success');
+        if (uiState.activeTab==='log') { logList.splice(0); tabCounts.log=0; }
+        else                           { tokenList.splice(0); tabCounts.token=0; }
+        pager.pageTotalCount=0; pager.pageTotalPage=1; expandedRows.clear(); allExpanded.value=false;
+      } catch (err) {
+        props.showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0);
+      }
     };
 
     // ── 표시용 ───────────────────────────────────────────────────────────
@@ -130,7 +141,7 @@ window.SyUserLoginHist = {
 
     return {
       uiState, codes, pager, tabCounts, cfCurrentList,
-      expandedRows, toggleRow, isExpanded, expandAll, collapseAll,
+      expandedRows, toggleRow, isExpanded, toggleExpandAll, allExpanded,
       fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge,
       onTabChange, onDateRangeChange, onSearch, onReset, setPage, onSizeChange, handleClearLog,
     };
@@ -193,8 +204,7 @@ window.SyUserLoginHist = {
       </span>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:11px;color:#aaa;">행 클릭 시 상세정보 펼침</span>
-        <button class="btn btn-secondary btn-xs" @click="expandAll">전체펼치기</button>
-        <button class="btn btn-secondary btn-xs" @click="collapseAll">전체닫기</button>
+        <button class="btn btn-secondary btn-xs" @click="toggleExpandAll">{{ allExpanded.value ? '전체닫기' : '전체펼치기' }}</button>
         <button class="btn btn-danger btn-xs"    @click="handleClearLog">로그비우기</button>
       </div>
     </div>

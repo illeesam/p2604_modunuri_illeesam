@@ -47,4 +47,9 @@ public class MbhMemberLoginLogService {
         return result;
     }
 
+    @Transactional
+    public void deleteAll() {
+        repository.deleteAll();
+    }
+
 }

@@ -51,4 +51,9 @@ public class SyhUserLoginLogService {
         return result;
     }
 
+    @Transactional
+    public void deleteAll() {
+        repository.deleteAll();
+    }
+
 }

@@ -62,11 +62,15 @@ window.SyApiLogMng = {
     const tabCounts  = reactive({ access: 0, error: 0 });
 
     // 펼쳐진 행 ID 집합
-    const expandedRows = reactive(new Set());
-    const toggleRow    = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
-    const isExpanded   = id => expandedRows.has(id);
-    const expandAll    = () => { const list = uiState.activeTab === 'access' ? accessLogs : errorLogs; list.forEach((r, i) => expandedRows.add(r.logId || i)); };
-    const collapseAll  = () => expandedRows.clear();
+    const expandedRows  = reactive(new Set());
+    const allExpanded   = reactive({ value: false });
+    const toggleRow     = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
+    const isExpanded    = id => expandedRows.has(id);
+    const toggleExpandAll = () => {
+      const list = uiState.activeTab === 'access' ? accessLogs : errorLogs;
+      if (allExpanded.value) { expandedRows.clear(); allExpanded.value = false; }
+      else { list.forEach((r, i) => expandedRows.add(r.logId || i)); allExpanded.value = true; }
+    };
 
     const fnBuildPagerNums = () => {
       const c = pager.pageNo, l = pager.pageTotalPage;
@@ -130,15 +134,22 @@ window.SyApiLogMng = {
       handleSearchList();
     });
 
-    const onTabChange   = (tab) => { uiState.activeTab = tab; pager.pageNo = 1; handleSearchList(); };
+    const onTabChange   = (tab) => { uiState.activeTab = tab; pager.pageNo = 1; allExpanded.value = false; handleSearchList(); };
     const handleClearLog = async () => {
       const tabNm = uiState.activeTab === 'access' ? 'API요청로그' : 'API오류로그';
-      const ok = await window.boApp.showConfirm('로그 비우기', `현재 페이지의 ${tabNm} 목록을 화면에서 지웁니다.\n(DB 데이터는 삭제되지 않습니다)`);
+      const ok = await window.boApp.showConfirm('로그 비우기', `[${tabNm}] 테이블의 모든 데이터를 삭제합니다.\n이 작업은 되돌릴 수 없습니다.`);
       if (!ok) return;
-      if (uiState.activeTab === 'access') { accessLogs.splice(0); tabCounts.access = 0; }
-      else                                { errorLogs.splice(0);  tabCounts.error  = 0; }
-      pager.pageTotalCount = 0; pager.pageTotalPage = 1;
-      expandedRows.clear();
+      try {
+        if (uiState.activeTab === 'access') await window.boApi.delete('/bo/sy/access-log/all', coUtil.apiHdr('API로그조회', '로그비우기'));
+        else                                await window.boApi.delete('/bo/sy/access-error-log/all', coUtil.apiHdr('API로그조회', '로그비우기'));
+        if (showToast) showToast(`${tabNm} 전체 삭제 완료`, 'success');
+        if (uiState.activeTab === 'access') { accessLogs.splice(0); tabCounts.access = 0; }
+        else                                { errorLogs.splice(0);  tabCounts.error  = 0; }
+        pager.pageTotalCount = 0; pager.pageTotalPage = 1;
+        expandedRows.clear(); allExpanded.value = false;
+      } catch (err) {
+        if (showToast) showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0);
+      }
     };
     const onSearch     = () => { pager.pageNo = 1; handleSearchList(); };
     const onReset      = () => {
@@ -174,7 +185,7 @@ window.SyApiLogMng = {
       uiState, codes, pager, tabCounts, cfCurrentList,
       onTabChange, onDateRangeChange, onSearch, onReset, setPage, onSizeChange,
       fnMethodBadge, fnStatusBadge,
-      expandedRows, toggleRow, isExpanded, expandAll, collapseAll, handleClearLog,
+      expandedRows, toggleRow, isExpanded, toggleExpandAll, allExpanded, handleClearLog,
       showRefModal,
     };
   },
@@ -248,8 +259,7 @@ window.SyApiLogMng = {
       </span>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:11px;color:#aaa;">행 클릭 시 상세정보 펼침</span>
-        <button class="btn btn-secondary btn-xs" @click="expandAll">전체펼치기</button>
-        <button class="btn btn-secondary btn-xs" @click="collapseAll">전체닫기</button>
+        <button class="btn btn-secondary btn-xs" @click="toggleExpandAll">{{ allExpanded.value ? '전체닫기' : '전체펼치기' }}</button>
         <button class="btn btn-danger btn-xs" @click="handleClearLog">로그비우기</button>
       </div>
     </div>
@@ -357,11 +367,13 @@ window.SyApiLogMng = {
           <th>오류메시지</th>
           <th>IP</th>
           <th>사용자ID</th>
+          <th>화면 > 기능</th>
+          <th>Trace ID</th>
           <th>등록일시</th>
         </tr></thead>
         <tbody>
           <tr v-if="cfCurrentList.length===0">
-            <td colspan="9" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+            <td colspan="11" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
           </tr>
           <template v-else v-for="(r, idx) in cfCurrentList" :key="r.logId || idx">
             <tr style="cursor:pointer;" :style="isExpanded(r.logId||idx)?'background:#fff8f8;':''" @click="toggleRow(r.logId||idx)">
@@ -373,11 +385,18 @@ window.SyApiLogMng = {
               <td style="font-size:12px;color:#555;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.errorMsg">{{ r.errorMsg || '-' }}</td>
               <td style="font-family:monospace;font-size:12px;">{{ r.reqIp || '-' }}</td>
               <td style="font-size:12px;color:#555;">{{ r.userId || '-' }}</td>
+              <td style="font-size:12px;color:#555;">
+                <span v-if="r.uiNm" style="color:#e8587a;font-weight:600;">{{ r.uiNm }}</span>
+                <span v-if="r.uiNm && r.cmdNm" style="color:#aaa;"> > </span>
+                <span v-if="r.cmdNm">{{ r.cmdNm }}</span>
+                <span v-if="!r.uiNm && !r.cmdNm" style="color:#ccc;">-</span>
+              </td>
+              <td style="font-family:monospace;font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.traceId">{{ r.traceId || '-' }}</td>
               <td style="font-size:12px;white-space:nowrap;">{{ String(r.regDate || '').slice(0, 19) }}</td>
             </tr>
             <!-- 펼치기 상세 행 -->
             <tr v-if="isExpanded(r.logId||idx)">
-              <td colspan="9" style="background:#fff8f8;padding:16px 20px;border-top:none;">
+              <td colspan="11" style="background:#fff8f8;padding:16px 20px;border-top:none;">
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px;">
                   <!-- 오류 정보 -->
                   <div>

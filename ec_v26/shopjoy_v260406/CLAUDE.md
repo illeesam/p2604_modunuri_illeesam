@@ -264,8 +264,11 @@ const res = await boApiSvc.syBbs.getPage({ bbmId: '1' });
 const res = await coApiSvc.syCode.getGrpCodes('ORDER_STATUS');
 
 // ✅ 페이지 직접 선언 허용 — 변경성(POST/PUT/DELETE/PATCH) 단건 호출
+// ⚠️ boApi 모든 호출에 coUtil.apiHdr(uiNm, cmdNm) 필수 — 누락 시 X-UI-Nm/X-Cmd-Nm 검증에서 차단됨
 await boApi.put('/bo/sy/i18n/${id}/msgs', body, coUtil.apiHdr('다국어', '저장'));
 await boApi.post('/bo/sy/batch/run', {}, coUtil.apiHdr('배치', '즉시실행'));
+await boApi.delete('/bo/sy/log/all', coUtil.apiHdr('로그조회', '로그비우기'));
+// DELETE는 axios delete(url, config) 형식 → coUtil.apiHdr()를 두 번째 인자로 직접 전달
 ```
 
 ### 새 API 추가 방법
@@ -550,11 +553,11 @@ try {
   props.showToast(errMsg, 'error', 0);
 }
 
-// 삭제 (DELETE)
+// 삭제 (DELETE) — coUtil.apiHdr 필수 (X-UI-Nm, X-Cmd-Nm 누락 시 boApi가 차단)
 const ok = await props.showConfirm('삭제', '삭제하시겠습니까?');
 if (!ok) return;
 try {
-  await window.adminApi.delete(`resource/${id}`);
+  await window.boApi.delete(`resource/${id}`, coUtil.apiHdr('화면명', '삭제'));
   props.showToast('삭제되었습니다.', 'success');
 } catch (err) {
   props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);

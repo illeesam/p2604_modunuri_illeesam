@@ -38,4 +38,10 @@ public class MbhMemberTokenLogController {
         if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
+
+    @DeleteMapping("/all")
+    public ResponseEntity<ApiResponse<Void>> deleteAll() {
+        service.deleteAll();
+        return ResponseEntity.ok(ApiResponse.ok(null));
+    }
 }

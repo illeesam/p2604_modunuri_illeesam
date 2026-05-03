@@ -51,4 +51,9 @@ public class SyhUserTokenLogService {
         return result;
     }
 
+    @Transactional
+    public void deleteAll() {
+        repository.deleteAll();
+    }
+
 }

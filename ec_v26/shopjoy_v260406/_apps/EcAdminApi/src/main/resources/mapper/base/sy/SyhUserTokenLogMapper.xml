@@ -6,12 +6,16 @@
 
     <sql id="syhUserTokenLogCond">
         <where>
-            <if test="siteId != null and siteId != ''">AND l.site_id = #{siteId}</if>
-            <if test="userId != null and userId != ''">AND l.user_id = #{userId}</if>
-            <if test="actionCd != null and actionCd != ''">AND l.action_cd = #{actionCd}</if>
-            <if test="tokenTypeCd != null and tokenTypeCd != ''">AND l.token_type_cd = #{tokenTypeCd}</if>
-            <if test="dateStart != null and dateStart != ''">AND l.reg_date &gt;= #{dateStart}::DATE</if>
-            <if test="dateEnd   != null and dateEnd   != ''">AND l.reg_date &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="siteId      != null and siteId      != ''">AND l.site_id       = #{siteId}</if>
+            <if test="userId      != null and userId      != ''">AND l.user_id        = #{userId}</if>
+            <if test="actionCd    != null and actionCd    != ''">AND l.action_cd      = #{actionCd}</if>
+            <if test="tokenTypeCd != null and tokenTypeCd != ''">AND l.token_type_cd  = #{tokenTypeCd}</if>
+            <if test="dateStart   != null and dateStart   != ''">AND l.reg_date      &gt;= #{dateStart}::DATE</if>
+            <if test="dateEnd     != null and dateEnd     != ''">AND l.reg_date      &lt;  (#{dateEnd}::DATE + INTERVAL '1 day')</if>
+            <if test="ip          != null and ip          != ''">AND l.ip            LIKE '%'||#{ip}||'%'</if>
+            <if test="uiNm        != null and uiNm        != ''">AND l.ui_nm         LIKE '%'||#{uiNm}||'%'</if>
+            <if test="traceId     != null and traceId     != ''">AND l.trace_id      LIKE '%'||#{traceId}||'%'</if>
+            <if test="kw          != null and kw          != ''">AND (l.user_id LIKE '%'||#{kw}||'%' OR l.login_id LIKE '%'||#{kw}||'%')</if>
         </where>
     </sql>
 

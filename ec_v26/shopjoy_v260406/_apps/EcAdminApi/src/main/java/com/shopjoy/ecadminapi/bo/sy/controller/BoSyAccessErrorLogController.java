@@ -6,10 +6,7 @@ import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -26,5 +23,11 @@ public class BoSyAccessErrorLogController {
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<SyhAccessErrorLogDto>>> page(@RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+    }
+
+    @DeleteMapping("/all")
+    public ResponseEntity<ApiResponse<Void>> deleteAll() {
+        service.deleteAll();
+        return ResponseEntity.ok(ApiResponse.ok(null));
     }
 }

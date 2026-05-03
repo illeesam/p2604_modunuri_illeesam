@@ -47,4 +47,9 @@ public class MbhMemberTokenLogService {
         return result;
     }
 
+    @Transactional
+    public void deleteAll() {
+        repository.deleteAll();
+    }
+
 }
