@@ -16,7 +16,7 @@ import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 public class SyI18n extends BaseEntity {
 
     @Id
-    @Column(name = "i18n_id", length = 20, nullable = false)
+    @Column(name = "i18n_id", length = 21, nullable = false)
     private String i18nId;
 
     @Column(name = "site_id", length = 21)

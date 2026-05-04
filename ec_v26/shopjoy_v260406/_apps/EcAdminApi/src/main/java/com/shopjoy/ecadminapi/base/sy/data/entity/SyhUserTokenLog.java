@@ -62,10 +62,10 @@ public class SyhUserTokenLog extends BaseEntity {
     @Column(name = "access_token_exp")
     private LocalDateTime accessTokenExp;
 
-    @Column(name = "ui_nm", length = 100)
+    @Column(name = "ui_nm", length = 200)
     private String uiNm;
 
-    @Column(name = "cmd_nm", length = 100)
+    @Column(name = "cmd_nm", length = 200)
     private String cmdNm;
 
 }

@@ -16,7 +16,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate          # ← 핵심: Entity ↔ DB 컬럼/타입 검증만 수행 (DDL 변경 없음)
+      ddl-auto: none              # ← Runner 가 전수 검증을 수행하므로 Hibernate validate 비활성
     show-sql: false
     properties:
       hibernate:

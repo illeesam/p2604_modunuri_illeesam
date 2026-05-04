@@ -17,10 +17,10 @@ import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 public class SyI18nMsg extends BaseEntity {
 
     @Id
-    @Column(name = "i18n_msg_id", length = 20, nullable = false)
+    @Column(name = "i18n_msg_id", length = 21, nullable = false)
     private String i18nMsgId;
 
-    @Column(name = "i18n_id", length = 20, nullable = false)
+    @Column(name = "i18n_id", length = 21, nullable = false)
     private String i18nId;
 
     @Column(name = "lang_cd", length = 10, nullable = false)

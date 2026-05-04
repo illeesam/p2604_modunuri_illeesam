@@ -26,10 +26,10 @@ public class PdProdSku extends BaseEntity {
     @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
 
-    @Column(name = "opt_item_id_1", length = 20)
+    @Column(name = "opt_item_id_1", length = 21)
     private String optItemId1;
 
-    @Column(name = "opt_item_id_2", length = 20)
+    @Column(name = "opt_item_id_2", length = 21)
     private String optItemId2;
 
     @Column(name = "sku_code", length = 50)

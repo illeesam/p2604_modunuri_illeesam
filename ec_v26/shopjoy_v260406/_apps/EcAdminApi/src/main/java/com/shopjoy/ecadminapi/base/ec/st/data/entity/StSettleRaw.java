@@ -76,28 +76,28 @@ public class StSettleRaw extends BaseEntity {
     @Column(name = "brand_nm", length = 100)
     private String brandNm;
 
-    @Column(name = "category_id_1", length = 20)
+    @Column(name = "category_id_1", length = 21)
     private String categoryId1;
 
-    @Column(name = "category_id_2", length = 20)
+    @Column(name = "category_id_2", length = 21)
     private String categoryId2;
 
-    @Column(name = "category_id_3", length = 20)
+    @Column(name = "category_id_3", length = 21)
     private String categoryId3;
 
-    @Column(name = "category_id_4", length = 20)
+    @Column(name = "category_id_4", length = 21)
     private String categoryId4;
 
-    @Column(name = "category_id_5", length = 20)
+    @Column(name = "category_id_5", length = 21)
     private String categoryId5;
 
     @Column(name = "sku_id", length = 21)
     private String skuId;
 
-    @Column(name = "opt_item_id_1", length = 20)
+    @Column(name = "opt_item_id_1", length = 21)
     private String optItemId1;
 
-    @Column(name = "opt_item_id_2", length = 20)
+    @Column(name = "opt_item_id_2", length = 21)
     private String optItemId2;
 
     @Column(name = "md_user_id", length = 21)
