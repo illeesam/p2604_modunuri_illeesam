@@ -175,7 +175,7 @@ HTTP 요청 (Authorization: Bearer <accessToken>)
 
 ```java
 SecurityUtil.currentUserId()    // → authId ("US260424...")
-SecurityUtil.currentUserType()  // → "BO" 또는 "FO"
+SecurityUtil.currentAppType()  // → "BO" 또는 "FO"
 ```
 
 ---

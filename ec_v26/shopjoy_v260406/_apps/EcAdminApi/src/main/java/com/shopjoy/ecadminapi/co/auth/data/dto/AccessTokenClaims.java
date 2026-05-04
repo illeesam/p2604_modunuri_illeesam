@@ -20,7 +20,7 @@ public class AccessTokenClaims {
     private String authId;              // 인증 식별자 (JWT subject): BO=user_id, FO=member_id
     private String loginId;             // 로그인 ID (계정 문자열)
     private List<String> roles;         // 권한 목록
-    private String appTypeCd;          // 사용자 유형 (BO/FO/SO)
+    private String appTypeCd;          // 앱 유형 (BO/FO/SO)
     private String roleId;              // 역할 ID (BO 전용)
     private String vendorId;            // 업체 ID
     private String siteId;              // 사이트 ID

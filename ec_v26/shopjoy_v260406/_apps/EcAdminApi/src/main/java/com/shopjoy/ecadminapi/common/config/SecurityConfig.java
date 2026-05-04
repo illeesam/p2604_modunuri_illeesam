@@ -125,7 +125,7 @@ public class SecurityConfig {
                         .reqPath(mdc.getOrDefault("reqPath", uri))                       // 요청 경로
                         .reqQuery(mdc.getOrDefault("reqQuery", request.getQueryString())) // 쿼리스트링
                         .reqIp(mdc.getOrDefault("reqIp", request.getRemoteAddr()))       // 클라이언트 IP
-                        .appTypeCd(mdc.getOrDefault("appTypeCd", "-"))                 // 사용자 유형 (BO/FO/-)
+                        .appTypeCd(mdc.getOrDefault("appTypeCd", "-"))                 // 앱 유형 (BO/FO/-)
                         .userId(mdc.getOrDefault("authId", "-"))                         // 인증된 사용자 ID
                         .roleId(mdc.getOrDefault("roleId", null))                        // 권한 ID
                         .deptId(mdc.getOrDefault("deptId", null))                        // 부서 ID

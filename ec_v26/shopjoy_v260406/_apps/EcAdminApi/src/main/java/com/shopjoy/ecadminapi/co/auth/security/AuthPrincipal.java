@@ -27,7 +27,7 @@ import java.util.List;
  */
 public record AuthPrincipal(
         String authId,              // ★ 인증 식별자 (BO=sy_user.user_id, FO=ec_member.member_id), JWT subject
-        String appTypeCd,          // ★ 사용자 유형 (BO:backend사용자, FO:frontend회원, SO:판매자)
+        String appTypeCd,          // ★ 앱 유형 (BO:backend사용자, FO:frontend회원, SO:판매자)
         LocalDateTime loginTime,    // ★ 로그인 시간
         String roleId,              // ★ 권한 아이디 (sy_user.role_id, BO 전용)
         String userNm,              // ★ 사용자명 (sy_user.user_nm 또는 ec_member.member_nm)
