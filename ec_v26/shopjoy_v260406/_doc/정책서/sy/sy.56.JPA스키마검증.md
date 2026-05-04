@@ -144,6 +144,7 @@ _doc/ddlPgsql/
 
 - [ ] `*_id` 는 `VARCHAR(21)` (참조 컬럼 포함)
 - [ ] 상태 컬럼은 반드시 `_cd` 접미어 (`aprv_status` ❌ → `aprv_status_cd` ✅)
+- [ ] 모든 `*_cd` 컬럼의 `COMMENT ON COLUMN` 에 `(코드: CODE_GRP — VAL1/VAL2/...)` 명시
 - [ ] `*_by` 담당자 컬럼은 `VARCHAR(20)` 통일
 - [ ] `BaseEntity` 상속 시 DB 에 `reg_by/reg_date/upd_by/upd_date` 4컬럼 존재 확인
 - [ ] 날짜 시·분·초 필요하면 Entity `LocalDateTime` + DB `TIMESTAMP`

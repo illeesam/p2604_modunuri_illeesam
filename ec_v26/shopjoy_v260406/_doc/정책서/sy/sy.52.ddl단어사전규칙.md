@@ -36,11 +36,58 @@
 - **규칙**: `price` 단독 사용 금지, 반드시 수식어 필수
 - **예시**: `list_price` (정가), `sale_price` (판매가), `unit_price` (단가), `item_price` (소계)
 
-### 6. 코드형 컬럼
+### 6. 코드형 컬럼 ⭐
+
+**핵심 원칙**: **`sy_code_grp` / `sy_code` 테이블에 등록된 코드값을 저장하는 모든 컬럼은 `_cd` 접미어 필수.**
+
 - **규칙**: `테이블명_status_cd` 또는 `[도메인_][엔티티_]상태명_cd`
-- **형식**: `*_status_cd`, `*_type_cd`, `*_method_cd` 등
-- **예시**: `order_status_cd`, `member_status_cd`, `pay_method_cd`, `refund_method_cd`
-- **FK 참조**: `*_cd`로 끝나는 컬럼명 사용
+- **형식**: `*_status_cd`, `*_type_cd`, `*_method_cd`, `*_kind_cd`, `*_div_cd`, `*_grade_cd` 등
+- **예시**: `order_status_cd`, `member_status_cd`, `pay_method_cd`, `refund_method_cd`, `aprv_status_cd`, `member_grade_cd`
+- **FK 참조**: `sy_code` 의 코드값을 참조하는 모든 컬럼은 `*_cd`로 끝나는 이름 사용
+- **금지**: `aprv_status` (❌) → `aprv_status_cd` (✅), `member_type` (❌) → `member_type_cd` (✅)
+
+#### 판별 기준 — 어떤 컬럼이 `_cd` 대상인가?
+
+다음 중 하나라도 해당되면 **반드시 `_cd` 접미어** 사용:
+
+1. `sy_code_grp` 에 그룹이 정의되어 있고, 그 그룹의 `code_value` 를 저장한다
+2. 코드그룹 정의가 아직 없더라도 **장차 `sy_code` 에 등록 예정인 enum 성격 값**이다
+3. UI 에서 dropdown/select 로 표시될 enum 성격 값이다
+
+#### 명명 규칙
+
+- 그룹명(대문자) ↔ 컬럼명(소문자 + `_cd`) 1:1 매칭이 명확해야 한다
+  - `ORDER_STATUS` 그룹 ↔ `order_status_cd` 컬럼
+  - `SETTLE_ADJ_STATUS` 그룹 ↔ `aprv_status_cd` 컬럼 (테이블 컨텍스트로 매핑)
+- `sy.08.공통코드.md` 의 코드그룹 목록과 DDL 컬럼명이 일치하는지 항상 확인
+
+#### 컬럼 코멘트 — 코드그룹명 + 코드값 노출 필수 ⭐
+
+**모든 `*_cd` 컬럼의 `COMMENT ON COLUMN` 에는 코드그룹명과 주요 코드값을 명시한다.**
+
+```sql
+-- ✅ 표준 형식: '한글라벨 (코드: CODE_GRP — VAL1/VAL2/VAL3/...)'
+COMMENT ON COLUMN pm_save.save_issue_type_cd
+    IS '지급유형 (코드: SAVE_ISSUE_TYPE — ORDER/EVENT/REVIEW/REFERRAL/...)';
+
+COMMENT ON COLUMN st_settle_adj.aprv_status_cd
+    IS '승인상태 (코드: SETTLE_ADJ_STATUS — 대기/승인/반려)';
+
+COMMENT ON COLUMN od_order.order_status_cd
+    IS '주문상태 (코드: ORDER_STATUS — PENDING/PAID/PREPARING/SHIPPED/COMPLT)';
+
+-- ❌ 금지
+COMMENT ON COLUMN pm_save.save_issue_type_cd IS '지급유형';        -- 코드그룹/값 누락
+COMMENT ON COLUMN pm_save.save_issue_type_cd IS '코드: SAVE_ISSUE_TYPE'; -- 한글 라벨/값 누락
+```
+
+**필수 구성 요소** (괄호 내):
+1. `코드:` 라는 키워드
+2. **`sy_code_grp.code_grp`** 와 정확히 일치하는 그룹명 (영문 대문자)
+3. `—` em dash 구분자
+4. 주요 `code_value` 목록 (`/` 구분, 길면 `...` 축약 허용)
+
+상세 지침: [`sy.08.공통코드.md`](sy.08.공통코드.md) — *"DDL 컬럼 코멘트 — 코드그룹명 + 코드값 노출 필수"*
 
 ### 7. 설명 컬럼
 - **규칙**: `description` 대신 `entity_desc` 패턴 사용
@@ -70,6 +117,75 @@
 ### 12. 발신자
 - **규칙**: `sender` 대신 `sender_cd` 사용 (코드형)
 - **예시**: `sender_cd` (MEMBER/ADMIN)
+
+### 13. 컬럼 길이/타입 표준 ⭐
+
+JPA 스키마 검증(`sy.56`) 통과 기준. 신규 DDL 작성 시 반드시 따른다.
+
+#### 13-1. ID 컬럼 길이
+
+| 컬럼 패턴 | 표준 길이 | 비고 |
+|---|---|---|
+| `*_id` (PK 자체) | `VARCHAR(21)` | `prefix(1~5) + YYMMDDhhmmss(12) + rand4(4)` |
+| `*_id` (FK 참조) | `VARCHAR(21)` | PK 와 동일 길이로 통일 |
+| `category_id_1~5` | `VARCHAR(21)` | 정산 등 5단계 카테고리 참조 |
+| `opt_item_id_1~2` | `VARCHAR(21)` | 1/2단 옵션 참조 |
+| `bundle_group_id` | `VARCHAR(36)` | UUID 호환 (예외) |
+| `login_id` | `VARCHAR(50)` | 사용자 입력 로그인 식별자 |
+| `sns_user_id` | `VARCHAR(200)` | 외부 SNS 시스템 ID |
+| `pg_transaction_id`, `pg_refund_id`, `refund_pg_tid` | `VARCHAR(100)` | PG 외부 거래 ID |
+| `opt_val_code_id` | `VARCHAR(50)` | 옵션 값 코드 |
+
+> **❌ 금지**: 같은 의미의 ID 컬럼이 테이블마다 다른 길이를 가지면 안 된다. (`opt_item_id` 가 어떤 테이블은 20, 어떤 테이블은 21 → 검증 실패)
+
+#### 13-2. 감사/로그 컬럼 길이
+
+| 컬럼 패턴 | 표준 길이 | 비고 |
+|---|---|---|
+| `reg_by`, `upd_by`, `chg_by`, `*_by` | `VARCHAR(20)` | `sy_user.user_id` 와 동일 |
+| `ui_nm`, `cmd_nm` (감사 헤더) | `VARCHAR(200)` | UI/명령명 길어질 수 있음 |
+
+#### 13-3. 코드 컬럼 길이
+
+| 컬럼 패턴 | 표준 길이 |
+|---|---|
+| `*_status_cd`, `*_type_cd`, `*_method_cd` 등 모든 코드 | `VARCHAR(20)` |
+
+#### 13-4. 타입 표준
+
+| 데이터 성격 | Entity 타입 | DDL 타입 |
+|---|---|---|
+| 문자열 | `String` | `VARCHAR(N)` — `CHAR(N)` 사용 금지 |
+| 정수 | `Integer` / `Long` | `INTEGER` / `BIGINT` |
+| 금액/소수 | `BigDecimal` | `NUMERIC(precision, scale)` |
+| 날짜만 | `LocalDate` | `DATE` |
+| 날짜+시간 | `LocalDateTime` | `TIMESTAMP` |
+| 텍스트(긴 본문) | `String` + `columnDefinition = "TEXT"` | `TEXT` |
+
+> **❌ 금지**: `CHAR(1)` 사용 금지. PostgreSQL 의 `CHAR` 는 `bpchar` 로 저장되어 Hibernate `VARCHAR` 매핑과 타입 불일치 발생.  
+> **✅ 권장**: `use_yn`, `is_fixed` 등 1글자 컬럼도 `VARCHAR(1)` 사용.
+
+#### 13-5. 상태/유형/구분 컬럼은 반드시 `_cd` ⭐
+
+**`sy_code_grp` / `sy_code` 와 연관되는 모든 컬럼은 `_cd` 접미어 필수.** (§6 참조)
+
+```sql
+-- ❌ 금지
+aprv_status   VARCHAR(20)   -- _cd 누락
+member_type   VARCHAR(10)   -- _cd 누락
+order_kind    VARCHAR(20)   -- _cd 누락
+
+-- ✅ 권장
+aprv_status_cd  VARCHAR(20)
+member_type_cd  VARCHAR(10)
+order_kind_cd   VARCHAR(20)
+```
+
+**이유**:
+1. 컬럼명만 봐도 `sy_code` 와 연동되는 코드값임을 알 수 있다
+2. MyBatis Mapper / Service / Frontend 의 변수명이 일관되게 `*Cd` 로 통일된다
+3. 공통코드 그룹(`sy_code_grp.code_grp`)과 1:1 매칭되어 검색·운영 용이
+4. JPA 검증(`sy.56`)과 코드 점검 시 누락 컬럼 식별이 쉬워진다
 
 ---
 

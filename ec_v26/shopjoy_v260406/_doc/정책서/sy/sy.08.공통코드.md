@@ -13,9 +13,74 @@
 ```
 
 ## 명명 규칙
+
+### 코드그룹명 (`sy_code_grp.code_grp`)
 - 포맷: 대문자 + 언더스코어 (예: `PAY_METHOD`, `MEMBER_GRADE`)
 - 그룹명 = DDL에서 대표로 사용하는 컬럼명에서 `_cd` 제거 후 대문자화
   - 예: `order_status_cd` → `ORDER_STATUS`, `widget_type_cd` → `WIDGET_TYPE`
+
+### DDL 컬럼명 — `_cd` 접미어 필수 ⭐
+
+**`sy_code_grp` / `sy_code` 에 등록된(또는 등록될) 코드값을 저장하는 DDL 컬럼은 반드시 `_cd` 로 끝나야 한다.**
+
+```sql
+-- ❌ 금지: 코드성 값인데 _cd 누락
+CREATE TABLE st_settle_adj (
+    aprv_status   VARCHAR(20)   -- 잘못된 이름
+);
+
+-- ✅ 권장: _cd 접미어 명시
+CREATE TABLE st_settle_adj (
+    aprv_status_cd  VARCHAR(20)  -- 코드그룹: SETTLE_ADJ_STATUS
+);
+```
+
+**판별 기준** (다음 중 하나라도 해당되면 `_cd` 필수):
+1. `sy_code_grp` 에 그룹이 등록되어 있다
+2. 아직 등록되지 않았더라도 **enum 성격의 고정 값** 집합을 저장한다
+3. UI 에서 dropdown/select 로 표시되는 값이다
+
+**예외**:
+- `Y/N` 단순 플래그는 `_yn` 접미어 (예: `use_yn`, `visible_yn`) — `_cd` 아님
+- 외부 시스템 식별자는 `_id` (예: `pg_transaction_id`) — `_cd` 아님
+
+**연계 정책**:
+- DDL 명명 표준: [`sy.52.ddl단어사전규칙.md §6, §13-5`](sy.52.ddl단어사전규칙.md)
+- JPA 검증 게이트: [`sy.56.JPA스키마검증.md`](sy.56.JPA스키마검증.md)
+
+### DDL 컬럼 코멘트 — 코드그룹명 + 코드값 노출 필수 ⭐
+
+**모든 `*_cd` 컬럼의 `COMMENT ON COLUMN` 에는 반드시 코드그룹명과 주요 코드값을 명시한다.**
+
+```sql
+-- ✅ 표준 형식
+COMMENT ON COLUMN pm_save.save_issue_type_cd
+    IS '지급유형 (코드: SAVE_ISSUE_TYPE — ORDER/EVENT/REVIEW/REFERRAL/...)';
+
+COMMENT ON COLUMN st_settle_adj.aprv_status_cd
+    IS '승인상태 (코드: SETTLE_ADJ_STATUS — 대기/승인/반려)';
+
+COMMENT ON COLUMN od_order.order_status_cd
+    IS '주문상태 (코드: ORDER_STATUS — PENDING/PAID/PREPARING/SHIPPED/COMPLT)';
+
+COMMENT ON COLUMN ec_member.member_grade_cd
+    IS '회원등급 (코드: MEMBER_GRADE — BASIC/SILVER/GOLD/VIP)';
+
+-- ❌ 금지: 한글 라벨만 적고 코드그룹명 누락
+COMMENT ON COLUMN pm_save.save_issue_type_cd IS '지급유형';
+```
+
+**필수 구성 요소** (괄호 내):
+1. `코드:` 라는 키워드
+2. **`sy_code_grp.code_grp`** 와 정확히 일치하는 코드그룹명 (영문 대문자)
+3. `—` 구분자 (em dash)
+4. 주요 `code_value` 목록 (`/` 로 구분, 너무 길면 `...` 으로 축약)
+
+**이유**:
+1. ERD 도구·DBeaver 에서 컬럼 hover 시 즉시 어떤 코드그룹인지 보임
+2. SQL 작성 시 `sy_code` 조회 없이 가능한 값 추정
+3. 신규 개발자/AI 가 컨텍스트 없이도 의미 파악
+4. 정책서(`sy.08`) 의 그룹 정의와 DDL 의 컬럼이 일치하는지 즉석 검증 가능
 
 ## 코드 변경 정책
 - **SYSTEM**: 개발팀 승인 필요, 폐기만 가능

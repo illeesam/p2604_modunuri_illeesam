@@ -4,7 +4,7 @@
 
 **핵심 참조**:
 - 🚀 신규 개발: [base/CLAUDE.md](base/CLAUDE.md) → [해당도메인/CLAUDE.md](ec/pd/CLAUDE.md)
-- 🔧 기술 표준: [sy.54.네이밍규칙.md](sy/sy.54.네이밍규칙.md), [sy.55.mybatis쿼리테이블별칭정책.md](sy/sy.55.mybatis쿼리테이블별칭정책.md)
+- 🔧 기술 표준: [sy.54.네이밍규칙.md](sy/sy.54.네이밍규칙.md), [sy.55.mybatis쿼리테이블별칭정책.md](sy/sy.55.mybatis쿼리테이블별칭정책.md), [sy.56.JPA스키마검증.md](sy/sy.56.JPA스키마검증.md)
 - 📋 상태 코드: [sy.01.시스템상태표.md](sy/sy.01.시스템상태표.md), [od.01.주문상태표.md](ec/od/od.01.주문상태표(주문,클레임,결제,배송).md)
 - 🏗️ 아키텍처: [base/base.기술-api.md](base/base.기술-api.md), [base/base.기술-front.md](base/base.기술-front.md)
 
@@ -24,9 +24,9 @@
 │   ├─ dp/         전시(Display) - 7개
 │   └─ st/         정산(Settlement) - 5개
 │
-├─ sy/             시스템 도메인 정책 (23개 파일)
+├─ sy/             시스템 도메인 정책 (24개 파일)
 │   ├─ sy.01~14:   상태표, 플랫폼, 사용자, 권한, 코드, 파일, VOC (sy.07 삭제)
-│   ├─ sy.50~55:   설계정책, DDL규칙, 캐시, 네이밍, MyBatis
+│   ├─ sy.50~56:   설계정책, DDL규칙, 캐시, 네이밍, MyBatis, JPA검증
 │   └─ 운영업체/   사이트운영, 판매, CS, 배송, 프로그램관리 - 5개
 │
 └─ _design-evolution/ 설계 진화 이력 (2개 파일)
@@ -138,14 +138,15 @@
 | 13 | 에러로그 | HTTP 요청 에러 로그 |
 | 14 | 파일첨부 | 파일 업로드/저장/썸네일 |
 
-#### 개발 표준 (sy.50~55)
+#### 개발 표준 (sy.50~56)
 | # | 파일 | 내용 |
 |---|------|------|
 | 51 | 프로그램설계정책 | 프론트/어드민 컴포넌트 설계 기준 |
-| 52 | DDL단어사전규칙 | 컬럼명 표준, 도메인 프리픽스 |
+| 52 | DDL단어사전규칙 | 컬럼명 표준, 도메인 프리픽스, 길이/타입 표준 |
 | 53 | 캐시관리 | 서버·클라이언트 캐시 정책 |
 | 54 | 네이밍규칙 | Vue 3 함수·변수 접두어 (on/handle/fn/cf/sf/sv) |
 | 55 | mybatis쿼리테이블별칭정책 | PostgreSQL SQL별칭, JOIN, 컬럼 명시화 ⭐ |
+| 56 | JPA스키마검증 | validate 프로파일, Entity↔DB 전수 검증 게이트 ⭐ |
 
 #### 운영업체 (운영업체/ — 5개)
 | # | 파일 | 내용 |
@@ -240,6 +241,7 @@
 | **UI 정책** | `base/base.UX-*.md` |
 | **API 설계** | `base/base.기술-api.md`, `ec/pd/pd.10.상품상세-API설계.md` |
 | **네이밍** | `sy.54.네이밍규칙.md` (Vue), `sy.55.mybatis쿼리테이블별칭정책.md` (SQL) |
+| **JPA 검증** | `sy.56.JPA스키마검증.md` — validate 프로파일 게이트 |
 | **권한** | `base/base.권한-*.md`, `sy.07.권한.md`, `sy/운영업체/sy.*.md` |
 | **배포/설정** | `base/base.운영환경-배포설정.md` |
 
