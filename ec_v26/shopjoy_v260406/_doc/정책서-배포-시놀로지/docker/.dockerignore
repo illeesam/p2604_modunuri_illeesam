@@ -1,0 +1,55 @@
+# ═══════════════════════════════════════════════════════════
+#  Docker 빌드 컨텍스트에서 제외할 파일/폴더
+#  배치 위치: _apps/EcAdminApi/.dockerignore
+# ═══════════════════════════════════════════════════════════
+#  목적:
+#  - 이미지 빌드 시 컨텍스트 크기 축소 (전송 시간 절감)
+#  - 민감 정보 (.env 등) 이미지 포함 방지
+#  - 불필요한 파일이 캐시 무효화 일으키는 것 방지
+# ═══════════════════════════════════════════════════════════
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Gradle 빌드 캐시 및 산출물 (Dockerfile에서 다시 빌드함)
+.gradle
+build
+out
+
+# IDE
+.idea
+.vscode
+*.iml
+*.iws
+*.ipr
+
+# 로그/임시 파일
+logs
+*.log
+tmp
+temp
+
+# 환경변수 파일 (민감 정보 보호 - 컨테이너 외부에서 주입)
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 문서 (이미지에 포함 불필요)
+README.md
+*.md
+docs
+
+# 노드/프론트엔드 (혹시 같은 폴더에 있을 경우)
+node_modules
+dist
+
+# Docker 자체 파일 (컨텍스트에 포함 불필요)
+Dockerfile
+docker-compose*.yml
+.dockerignore

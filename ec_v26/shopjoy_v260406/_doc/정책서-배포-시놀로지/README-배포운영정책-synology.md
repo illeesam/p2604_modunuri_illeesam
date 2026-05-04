@@ -81,7 +81,7 @@
 | Database | `postgres` |
 | Schema | `shopjoy_2604` |
 | Username | `postgres` |
-| Password | `postgresilleesam` |
+| Password | `postgre********` |
 
 ### API 접속
 
@@ -153,7 +153,7 @@
    | Host | `illeesam.synology.me` |
    | Port | `17632` |
    | Login | `postgres` |
-   | Password | `postgresilleesam` |
+   | Password | `postgre********` |
    | Database | `postgres` |
 
 3. Session name: `ShopJoy-DB`
@@ -247,10 +247,10 @@ DB_PORT=17632
 DB_NAME=postgres
 DB_SCHEMA=shopjoy_2604
 DB_USERNAME=postgres
-DB_PASSWORD=postgresilleesam
-JWT_SECRET=c2hvcGpveTI2MDRBZG1pbkFwaVNlY3JldEtleU11c3RCZTE2MEJpdHNNaW5pbXVt
+DB_PASSWORD=postgre********
+JWT_SECRET=c2hvcGpveTI2MDRBZG1pbkFwaVNl****************************
 LICENSE_ENABLED=true
-LICENSE_SECRET=SJ2604-LicenseSecret-X9kQm#vLpNrTzWbYd
+LICENSE_SECRET=SJ2604-LicenseSecret-******************
 EOF
 
 chmod 600 /volume1/docker/ecadminapi/config/ecadminapi.env
@@ -469,7 +469,7 @@ MobaXterm 좌측 세션 목록 → `ShopJoy-DB` 더블클릭
 | Port | `17632` |
 | Database | `postgres` |
 | Username | `postgres` |
-| Password | `postgresilleesam` |
+| Password | `postgre********` |
 | Schema | `shopjoy_2604` |
 
 ### 8-3. NAS 파일 시스템 (MobaXterm SFTP)
