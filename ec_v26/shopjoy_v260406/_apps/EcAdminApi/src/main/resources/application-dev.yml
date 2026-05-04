@@ -25,9 +25,9 @@ spring:
     hibernate:
       ddl-auto: none
     show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect   # HHH90000025 경고 방지 위해 properties.hibernate.dialect 대신 사용
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         default_schema: shopjoy_2604
         format_sql: true
     open-in-view: false

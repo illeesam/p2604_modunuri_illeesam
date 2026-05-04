@@ -25,9 +25,9 @@ spring:
     hibernate:
       ddl-auto: none              # ← Runner 가 전수 검증을 수행하므로 Hibernate validate 비활성
     show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         default_schema: shopjoy_2604
         format_sql: true
         hbm2ddl:

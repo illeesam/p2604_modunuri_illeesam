@@ -1,5 +1,47 @@
 spring:
   # ────────────────────────────────────────────────────────────
+  # 부팅 시간 단축 — local 전용 (운영은 prod 에서 다시 명시)
+  # ────────────────────────────────────────────────────────────
+  main:
+    lazy-initialization: true        # 빈 지연 초기화 (실제 호출 시점에 생성)
+    banner-mode: off                 # Spring 배너 출력 생략
+    register-shutdown-hook: false    # ShutdownHook 등록 생략 (DevTools 가 어차피 재시작)
+
+  # JMX 비활성 — local 에서 불필요
+  jmx:
+    enabled: false
+
+  # 자동 설정 클래스 평가 비활성 — 컨디션 평가 리포트 생성 생략
+  output:
+    ansi:
+      enabled: never                 # ANSI 색상 코드 처리 생략 (logback 컬러는 별도)
+
+  # AOT/네이티브 컴파일 비활성 — 일반 JVM 모드만 사용
+  aot:
+    enabled: false
+
+  # 자동 설정 제외 — 사용 안 하는 모듈 제거로 부팅 단축
+  autoconfigure:
+    exclude:
+      # 메일 안 씀 (sy_alarm 은 직접 send 함)
+      - org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration
+      # 보안 OAuth2 클라이언트 안 씀
+      - org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
+      # ElasticSearch 안 씀
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
+      # Quartz 스케줄러 안 씀 (자체 스케줄러 사용)
+      - org.springframework.boot.autoconfigure.quartz.QuartzAutoConfiguration
+      # MongoDB 안 씀
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+
+  # Kotlin/Groovy 메시지 변환기 비활성
+  http:
+    converters:
+      preferred-json-mapper: jackson
+
+  # ────────────────────────────────────────────────────────────
   # DevTools — hot-reload 활성, 일괄 변경 충돌 방지 + watch 대상 최소화
   #
   # 재기동 트리거 (실질적 watch 대상):
@@ -40,22 +82,36 @@ spring:
     driver-class-name: com.p6spy.engine.spy.P6SpyDriver
     hikari:
       maximum-pool-size: 5
-      connection-timeout: 30000
+      minimum-idle: 1                # 최소 idle 1개만 부팅 시 생성 (기본=poolSize)
+      connection-timeout: 10000      # 30s → 10s (실패 빨리 감지)
       idle-timeout: 600000
       max-lifetime: 1800000
       auto-commit: true
-      connection-test-query: "SELECT 1"
+      # connection-test-query 제거 — JDBC4 isValid() 자동 사용 (RT 단축)
+      initialization-fail-timeout: -1  # 부팅 시 DB 미연결 허용 (네트워크 지연 흡수)
+      register-mbeans: false         # JMX 등록 생략
 
   jpa:
     hibernate:
       ddl-auto: none
     show-sql: false   # p6spy 사용 중 — hibernate show-sql 중복 출력 방지
+    database-platform: org.hibernate.dialect.PostgreSQLDialect   # dialect 명시 — 자동 감지 시 메타조회 발생
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         default_schema: shopjoy_2604
         format_sql: true
+        # 부팅 시간 단축 옵션 — dialect 명시했으므로 메타조회 생략 가능
+        boot:
+          allow_jdbc_metadata_access: false   # JDBC 메타데이터 조회 생략 (부팅 1~2초 단축)
+        temp:
+          use_jdbc_metadata_defaults: false   # JDBC 기본값 자동 탐지 생략
+        jdbc:
+          lob:
+            non_contextual_creation: true     # LOB 컨텍스트 검사 생략
+        query:
+          plan_cache_max_size: 1024            # 쿼리 플랜 캐시
     open-in-view: false
+    defer-datasource-initialization: false   # 데이터 초기화 sql 비활성
 
   sql:
     init:
@@ -68,6 +124,15 @@ mybatis:
 
 server:
   port: 3000
+  # Tomcat 부팅 단축
+  tomcat:
+    threads:
+      min-spare: 5                   # 시작 시 미리 생성하는 스레드 수 (기본 10 → 5)
+      max: 100                       # 최대 (기본 200 → 100, local 부하 적음)
+    accept-count: 50                 # 대기 큐 (기본 100 → 50)
+  # 압축은 local 에서 불필요 (네트워크 latency 무관)
+  compression:
+    enabled: false
 
 jwt:
   secret: ${JWT_SECRET:c2hvcGpveTI2MDRBZG1pbkFwaVNlY3JldEtleU11c3RCZTE2MEJpdHNNaW5pbXVt}
@@ -79,12 +144,17 @@ jwt:
 
 management:
   endpoints:
+    enabled-by-default: false        # local: actuator 엔드포인트 전체 비활성 (기본 활성 → 비활성)
     web:
       exposure:
-        include: health,info
+        include: ""
   health:
     redis:
       enabled: false   # app.redis.enabled=false 시 연결 없음 → 헬스체크 제외
+    db:
+      enabled: false                 # local: DB 헬스체크 끄기 (이미 부팅 시 1회 검증)
+    diskspace:
+      enabled: false                 # local: 디스크 헬스체크 무의미
 
 app:
   license:

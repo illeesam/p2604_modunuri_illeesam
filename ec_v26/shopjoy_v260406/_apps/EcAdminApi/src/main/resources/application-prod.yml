@@ -24,9 +24,9 @@ spring:
       # update   : 누락된 테이블/컬럼 자동 추가 (운영 비권장)
       ddl-auto: none
     show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         default_schema: shopjoy_2604
         format_sql: false
     open-in-view: false
