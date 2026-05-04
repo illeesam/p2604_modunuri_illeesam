@@ -38,7 +38,7 @@ public class StSettleAdj extends BaseEntity {
     @Column(name = "settle_adj_memo", columnDefinition = "TEXT")
     private String settleAdjMemo;
 
-    @Column(name = "aprv_status", length = 20)
-    private String aprvStatus;
+    @Column(name = "aprv_status_cd", length = 20)
+    private String aprvStatusCd;
 
 }

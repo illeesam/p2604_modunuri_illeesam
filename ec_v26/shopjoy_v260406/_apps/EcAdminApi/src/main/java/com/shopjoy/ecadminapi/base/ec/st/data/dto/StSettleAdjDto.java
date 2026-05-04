@@ -17,6 +17,7 @@ public class StSettleAdjDto {
     private Long adjAmt;
     private String adjReason;
     private String settleAdjMemo;
+    private String aprvStatusCd;
     private String regBy;
     private LocalDateTime regDate;
     private String updBy;

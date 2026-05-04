@@ -87,7 +87,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     });
 
     const openNew = () => {
-      Object.assign(form, { adjId: null, adjDate: new Date().toISOString().slice(0,10), vendorId: '', vendorNm: '', adjType: '매출조정', adjAmt: 0, reason: '', aprvStatus: '대기', regUserNm: '관리자' });
+      Object.assign(form, { adjId: null, adjDate: new Date().toISOString().slice(0,10), vendorId: '', vendorNm: '', adjType: '매출조정', adjAmt: 0, reason: '', aprvStatusCd: '대기', regUserNm: '관리자' });
       uiState.selectedId = '__new__'; uiState.isNew = true;
       Object.keys(errors).forEach(k => delete errors[k]);
     };
@@ -137,9 +137,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const doApprove = async (r) => {
       const ok = await showConfirm('승인', '정산조정을 승인하시겠습니까?');
       if (!ok) return;
-      r.aprvStatus = '승인';
+      r.aprvStatusCd = '승인';
       try {
-        const res = await boApiSvc.stSettleAdj.approve(r.adjId, { aprvStatus: '승인' }, '정산조정관리', '상태변경');
+        const res = await boApiSvc.stSettleAdj.approve(r.adjId, { aprvStatusCd: '승인' }, '정산조정관리', '상태변경');
         if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
         if (showToast) showToast('승인되었습니다.', 'success');
       } catch (err) {
@@ -212,10 +212,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
           <td><span class="badge" :class="fnTypeBadge(r.adjType)">{{ r.adjType }}</span></td>
           <td :style="r.adjAmt<0?'color:#e74c3c;font-weight:700':'color:#27ae60;font-weight:700'">{{ fmtW(r.adjAmt) }}</td>
           <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.reason }}</td>
-          <td><span class="badge" :class="fnAprvBadge(r.aprvStatus)">{{ r.aprvStatus }}</span></td>
+          <td><span class="badge" :class="fnAprvBadge(r.aprvStatusCd)">{{ r.aprvStatusCd }}</span></td>
           <td>{{ r.regUserNm }}</td>
           <td class="actions">
-            <button v-if="r.aprvStatus==='대기'" class="btn btn-sm btn-green" @click="doApprove(r)">승인</button>
+            <button v-if="r.aprvStatusCd==='대기'" class="btn btn-sm btn-green" @click="doApprove(r)">승인</button>
             <button class="btn btn-sm btn-primary" @click="openEdit(r)">수정</button>
             <button class="btn btn-sm btn-danger"  @click="handleDelete(r)">삭제</button>
           </td>

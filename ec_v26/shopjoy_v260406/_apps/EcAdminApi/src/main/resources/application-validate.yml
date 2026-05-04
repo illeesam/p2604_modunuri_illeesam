@@ -1,0 +1,116 @@
+spring:
+  datasource:
+    # JPA Entity ↔ DB 스키마 검증 전용 프로파일
+    # 실행: -Dspring.profiles.active=validate
+    url: jdbc:postgresql://${DB_HOST:illeesam.synology.me}:${DB_PORT:17632}/${DB_NAME:postgres}?currentSchema=${DB_SCHEMA:shopjoy_2604}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgresilleesam}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      auto-commit: true
+      connection-test-query: "SELECT 1"
+
+  jpa:
+    hibernate:
+      ddl-auto: validate          # ← 핵심: Entity ↔ DB 컬럼/타입 검증만 수행 (DDL 변경 없음)
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: shopjoy_2604
+        format_sql: true
+        hbm2ddl:
+          # validate 모드에서 누락/불일치 시 상세 로그
+          schema_validation:
+            enabled: true
+        globally_quoted_identifiers: false
+    open-in-view: false
+
+  sql:
+    init:
+      mode: never
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  config-location: classpath:mybatis/mybatis-config.xml
+  type-aliases-package: com.shopjoy.ecadminapi
+
+server:
+  port: 3000
+
+jwt:
+  secret: ${JWT_SECRET:c2hvcGpveTI2MDRBZG1pbkFwaVNlY3JldEtleU11c3RCZTE2MEJpdHNNaW5pbXVt}
+  bo-access-expiry: 900000
+  fo-access-expiry: 900000
+  bo-refresh-expiry: 7200000
+  fo-refresh-expiry: 1296000000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  health:
+    redis:
+      enabled: false
+
+app:
+  license:
+    enabled: false             # validation: 라이선스 검증 비활성
+
+  redis:
+    enabled: false             # validation: Redis 비활성 (검증 단독 실행)
+
+  scheduler:
+    enabled: false             # validation: 스케줄러 비활성 (cron 자동 실행 차단)
+    jenkins:
+      enabled: false
+      token: ""
+      url: ""
+    allowed-ips: ""
+
+  error-log:
+    db-save: false             # validation: DB 저장 끔 (스키마 검증만)
+    queue-size: 100
+  access-log:
+    db-save: false             # validation: DB 저장 끔
+    queue-size: 100
+    filter: ""
+    max-body-size: 0
+
+  file:
+    allowed-extensions: jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,mp4,avi,mov,mkv,webm,flv,wmv,m4v
+    max-file-size: 10485760
+    max-request-size: 52428800
+    max-image-size: 5242880
+    max-document-size: 20971520
+    max-video-size: 104857600
+    storage-type: LOCAL
+    local:
+      physical-root: src/main/resources/static/cdn
+      base-path: attach
+      upload-dir: uploads
+    cdn-host: http://localhost:3000/cdn
+    thumbnail-enabled: false
+    thumbnail-sizes: 200x200
+
+# ────────────────────────────────────────────
+# 로깅 — validation 프로파일
+#   목적   : Entity ↔ DB 스키마 불일치 컬럼·테이블 즉시 식별
+#   레벨   : Hibernate DDL/SQL = DEBUG, schema validator = TRACE
+# ────────────────────────────────────────────
+logging:
+  file:
+    path: logs
+  level:
+    root: INFO
+    org.hibernate.tool.hbm2ddl: DEBUG
+    org.hibernate.tool.schema: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.schema: DEBUG
+    org.hibernate.boot: INFO
+    com.shopjoy.ecadminapi: INFO

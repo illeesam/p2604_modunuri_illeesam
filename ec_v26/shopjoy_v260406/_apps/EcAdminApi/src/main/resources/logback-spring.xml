@@ -141,6 +141,58 @@
 
 
     <!-- ================================================================
+         VALIDATE  (JPA Entity ↔ DB 스키마 검증 전용)
+         - 콘솔: DEBUG+, 컬러
+         - Hibernate / 검증 러너 / 앱 패키지를 DEBUG 로 노출
+         - 파일 출력 없음 (검증은 1회성 실행이라 디스크에 누적 불필요)
+         ================================================================ -->
+    <springProfile name="validate">
+
+        <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
+
+        <!-- ─── CONSOLE: 컬러 + 디버그 풍부 ──────────────────────────── -->
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+                <layout class="ch.qos.logback.classic.PatternLayout">
+                    <pattern>%d{HH:mm:ss.SSS} %clr(%-5level){highlight} %clr(%logger{39}){cyan} : %msg%n%clr(%wex){red}</pattern>
+                </layout>
+            </encoder>
+        </appender>
+
+        <!-- ─── 로거 레벨 ─────────────────────────────────────────────── -->
+        <!-- 앱 코드: DEBUG 로 검증 러너 출력 보장 -->
+        <logger name="com.shopjoy.ecadminapi" level="DEBUG"/>
+
+        <!-- Hibernate 스키마 검증 상세 (Entity/Table/Column 매핑 추적) -->
+        <logger name="org.hibernate.tool.hbm2ddl"  level="DEBUG"/>
+        <logger name="org.hibernate.tool.schema"   level="DEBUG"/>
+        <logger name="org.hibernate.orm.schema"    level="DEBUG"/>
+        <logger name="org.hibernate.boot"          level="DEBUG"/>
+        <logger name="org.hibernate.SQL"           level="DEBUG"/>
+        <logger name="org.hibernate.type.descriptor.sql" level="WARN"/>
+
+        <!-- 그 외 Hibernate 내부 노이즈는 INFO 로 묶음 -->
+        <logger name="org.hibernate"               level="INFO"/>
+
+        <!-- 프레임워크 노이즈 억제 -->
+        <logger name="org.springframework"         level="INFO"/>
+        <logger name="org.springframework.boot.autoconfigure" level="WARN"/>
+        <logger name="org.mybatis"                 level="WARN"/>
+        <logger name="org.apache.ibatis"           level="WARN"/>
+        <logger name="com.zaxxer.hikari"           level="WARN"/>
+        <logger name="org.apache.catalina"         level="WARN"/>
+        <logger name="io.netty"                    level="WARN"/>
+        <logger name="reactor"                     level="WARN"/>
+        <logger name="p6spy"                       level="OFF"/>
+
+        <root level="DEBUG">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+
+    </springProfile>
+
+
+    <!-- ================================================================
          PROD
          - 콘솔: INFO+, 간결 (색상 없음)
          - 파일:  INFO+, 롤링(일별+100MB), 30일, 3GB, gzip 압축

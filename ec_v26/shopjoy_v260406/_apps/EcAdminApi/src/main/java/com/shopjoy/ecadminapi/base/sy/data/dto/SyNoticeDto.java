@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter @Setter @NoArgsConstructor
@@ -18,8 +17,8 @@ public class SyNoticeDto {
     private String isFixed;
     private String contentHtml;
     private String attachGrpId;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
     private String noticeStatusCd;
     private Integer viewCount;
     private String regBy;

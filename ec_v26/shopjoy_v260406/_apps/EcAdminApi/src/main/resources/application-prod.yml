@@ -12,7 +12,10 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      # validate : Entity↔DB 스키마 검증 (불일치 시 기동 실패)
+      # none     : 검증 생략 (기동 우선, 실제 SQL 실행 시 에러로 잡힘) ← 임시 사용
+      # update   : 누락된 테이블/컬럼 자동 추가 (운영 비권장)
+      ddl-auto: none
     show-sql: false
     properties:
       hibernate:

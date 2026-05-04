@@ -83,7 +83,7 @@ public class BoStSettleAdjService {
     @Transactional
     public StSettleAdjDto approve(String id, Map<String, Object> body) {
         StSettleAdj entity = repository.findById(id).orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id));
-        entity.setAprvStatus((String) body.getOrDefault("aprvStatus", "승인"));
+        entity.setAprvStatusCd((String) body.getOrDefault("aprvStatusCd", "승인"));   // 코드그룹: SETTLE_ADJ_STATUS (대기/승인/반려)
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         StSettleAdj saved = repository.save(entity);
