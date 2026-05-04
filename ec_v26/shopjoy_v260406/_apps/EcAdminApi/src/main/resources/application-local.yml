@@ -1,12 +1,33 @@
 spring:
-  # 로컬 개발 — DevTools hot-reload 활성 (코드 수정 → 자동 재기동).
-  # 일괄 변경(PowerShell 스크립트, AI 일괄 수정 등) 후 ClassLoader 충돌 시
-  # _apps/EcAdminApi/scripts/clean-rebuild.bat 실행하여 정리.
+  # ────────────────────────────────────────────────────────────
+  # DevTools — hot-reload 활성, 일괄 변경 충돌 방지 + watch 대상 최소화
+  #
+  # 재기동 트리거 (실질적 watch 대상):
+  #   • *.java              → 컴파일된 .class 변경
+  #   • *Mapper.xml         → MyBatis SQL 변경 (재로드 필수)
+  #   • application*.yml    → Spring 설정 변경
+  #
+  # 위 3종 외 모든 리소스는 재기동 무관 → exclude 로 명시 제외
+  #
+  # 안정화 튜닝:
+  #   • poll-interval / quiet-period 늘려 일괄 변경 중 단편 reload 방지
+  #   • AI/스크립트 일괄 수정 → 5초+3초 안정화 후 한 번에 재시작
+  #
+  # 충돌 시 복구: scripts/clean-rebuild.bat 실행
+  # ────────────────────────────────────────────────────────────
   devtools:
     restart:
       enabled: true
-      poll-interval: 2s
-      quiet-period: 1s
+      poll-interval: 5s              # 변경 폴링 간격 (기본 1s → 5s 로 완화)
+      quiet-period: 3s               # 변경 감지 후 안정화 대기 (기본 400ms → 3s)
+      # 재기동 무관 리소스 — watch 제외
+      additional-exclude: >
+        static/**,public/**,templates/**,
+        **/*.md,**/*.txt,**/*.html,**/*.sql,
+        **/*.json,**/*.properties,
+        logs/**,**/.gitignore
+      # 명시적 재시작 모드 (자동 재시작 부담 시 활성화 — .reloadtrigger touch 시에만 재기동)
+      # trigger-file: .reloadtrigger
     livereload:
       enabled: true
 
