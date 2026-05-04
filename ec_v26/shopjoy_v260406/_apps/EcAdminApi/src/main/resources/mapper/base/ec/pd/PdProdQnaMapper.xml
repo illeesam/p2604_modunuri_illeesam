@@ -8,7 +8,10 @@
     <sql id="pdProdQnaCond">
         <where>
             <if test="siteId != null and siteId != ''">AND q.site_id = #{siteId}</if>
+            <if test="prodId != null and prodId != ''">AND q.prod_id = #{prodId}</if>
+            <if test="memberId != null and memberId != ''">AND q.member_id = #{memberId}</if>
             <if test="typeCd != null and typeCd != ''">AND q.qna_type_cd = #{typeCd}</if>
+            <if test="answYn != null and answYn != ''">AND q.answ_yn = #{answYn}</if>
             <if test="kw != null and kw != ''">
                 AND (q.qna_title ILIKE '%' || #{kw} || '%')
             </if>

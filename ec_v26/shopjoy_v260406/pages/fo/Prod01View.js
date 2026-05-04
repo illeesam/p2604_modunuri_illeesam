@@ -24,10 +24,16 @@ window.Prod01View = {
       if (!productId) return;
       try {
         const res = await foApiSvc.pdProd.getById(productId, '상품상세', '상세조회');
-        svProduct.value = res.data?.data || res.data;
+        // Tier 1 응답 구조: { prod, images, opts, skus } — 현재는 prod 기본정보만 머지
+        // (opt1s/opt2s 등 화면 전용 필드는 mock 유지. 디자인 모델 확정 시 어댑터 추가)
+        const data = res.data?.data || {};
+        const prod = data.prod || data;
+        if (prod && (prod.prodId || prod.productId)) {
+          svProduct.value = { ...svProduct.value, ...prod };
+        }
       } catch (e) {
         console.error('[handleSearchList]', e);
-        svProduct.value = null;
+        // 실패 시 기존 svProduct(목록에서 받은 값) 유지 — null 대입 금지로 화면 보호
       }
     };
 

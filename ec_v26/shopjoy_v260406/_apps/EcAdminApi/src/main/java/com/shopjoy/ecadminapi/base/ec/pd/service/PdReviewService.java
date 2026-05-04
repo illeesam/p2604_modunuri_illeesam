@@ -51,6 +51,16 @@ public class PdReviewService {
         return PageResult.of(mapper.selectPageList(p), mapper.selectPageCount(p), PageHelper.getPageNo(), PageHelper.getPageSize(), p);
     }
 
+    /**
+     * 상품별 평점 집계 — FO 상품상세 리뷰 요약(summary) 영역용
+     * 반환: { total, avgRating, rate5, rate4, rate3, rate2, rate1 }
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> getRatingSummary(String prodId) {
+        Map<String, Object> result = mapper.selectRatingSummary(prodId);
+        return result != null ? result : new java.util.LinkedHashMap<>();
+    }
+
     @Transactional
     public int update(PdReview entity) {
         // pd_review :: update :: [orm:mybatis]

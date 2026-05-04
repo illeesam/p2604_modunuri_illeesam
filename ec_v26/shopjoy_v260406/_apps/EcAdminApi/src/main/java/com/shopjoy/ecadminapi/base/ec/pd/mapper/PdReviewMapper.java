@@ -20,4 +20,10 @@ public interface PdReviewMapper {
     long selectPageCount(Map<String, Object> p);
 
     int updateSelective(PdReview entity);
+
+    /**
+     * 상품별 평점 집계 — { total, avgRating, rate5, rate4, rate3, rate2, rate1 }
+     * FO 상품상세 리뷰 요약(summary) 영역용
+     */
+    Map<String, Object> selectRatingSummary(@Param("prodId") String prodId);
 }

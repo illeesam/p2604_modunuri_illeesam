@@ -8,7 +8,10 @@
     <sql id="pdReviewCond">
         <where>
             <if test="siteId != null and siteId != ''">AND r.site_id = #{siteId}</if>
+            <if test="prodId != null and prodId != ''">AND r.prod_id = #{prodId}</if>
+            <if test="memberId != null and memberId != ''">AND r.member_id = #{memberId}</if>
             <if test="status != null and status != ''">AND r.review_status_cd = #{status}</if>
+            <if test="rating != null">AND r.rating = #{rating}</if>
             <if test="kw != null and kw != ''">
                 AND (r.review_title ILIKE '%' || #{kw} || '%')
             </if>
@@ -112,5 +115,20 @@
         </set>
         WHERE review_id = #{reviewId}
     </update>
+
+    <!-- 상품별 평점 집계 (FO 상품상세 리뷰 요약 영역용) -->
+    <select id="selectRatingSummary" resultType="java.util.HashMap">
+        SELECT  /* base.ec.pd :: PdReview :: selectRatingSummary */
+              COUNT(r.review_id)                                        AS total
+            , COALESCE(ROUND(AVG(r.rating)::numeric, 1), 0)             AS avg_rating
+            , COUNT(CASE WHEN r.rating &gt;= 4.5 THEN 1 END)             AS rate5
+            , COUNT(CASE WHEN r.rating &gt;= 3.5 AND r.rating &lt; 4.5 THEN 1 END) AS rate4
+            , COUNT(CASE WHEN r.rating &gt;= 2.5 AND r.rating &lt; 3.5 THEN 1 END) AS rate3
+            , COUNT(CASE WHEN r.rating &gt;= 1.5 AND r.rating &lt; 2.5 THEN 1 END) AS rate2
+            , COUNT(CASE WHEN r.rating &lt;  1.5 THEN 1 END)             AS rate1
+        FROM pd_review r
+        WHERE r.prod_id = #{prodId}
+          AND COALESCE(r.review_status_cd, 'ACTIVE') = 'ACTIVE'
+    </select>
 
 </mapper>

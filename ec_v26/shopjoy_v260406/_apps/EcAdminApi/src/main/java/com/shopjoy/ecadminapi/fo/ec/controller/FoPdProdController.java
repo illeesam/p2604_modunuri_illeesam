@@ -1,6 +1,8 @@
 package com.shopjoy.ecadminapi.fo.ec.controller;
 
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdContentDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
+import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdRelDto;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.fo.ec.service.FoPdProdService;
@@ -13,9 +15,24 @@ import java.util.Map;
 
 /**
  * FO 상품 API — 사용자 화면용
- * GET  /api/fo/ec/pd/prod       — 상품 목록 (전체)
- * GET  /api/fo/ec/pd/prod/page  — 상품 목록 (페이징)
- * GET  /api/fo/ec/pd/prod/{id}  — 상품 상세
+ *
+ * 정책서: pd.10.상품상세-API설계.md §4 — 3계층 분리
+ *
+ *   목록
+ *     GET  /api/fo/ec/pd/prod          — 상품 목록 (전체)
+ *     GET  /api/fo/ec/pd/prod/page     — 상품 목록 (페이징)
+ *
+ *   Tier 1 — 첫 화면 (단일 통합)
+ *     GET  /api/fo/ec/pd/prod/{id}              — prod + images + opts + skus
+ *
+ *   Tier 2 — 스크롤/탭 lazy load
+ *     GET  /api/fo/ec/pd/prod/{id}/contents     — 상품설명
+ *     GET  /api/fo/ec/pd/prod/{id}/rels         — 연관상품
+ *     GET  /api/fo/ec/pd/prod/{id}/reviews      — 상품평 (있다면)
+ *     GET  /api/fo/ec/pd/prod/{id}/qna          — Q&A (있다면)
+ *
+ *   Tier 3 — 사용자별 동적 (프로모션 통합)
+ *     GET  /api/fo/ec/pd/prod/{id}/promotions   — 쿠폰/할인/사은품/이벤트
  *
  * 인가: GET → USER or MEMBER (SecurityConfig 전역 룰)
  */
@@ -26,23 +43,61 @@ public class FoPdProdController {
 
     private final FoPdProdService service;
 
+    /* ── 목록 ────────────────────────────────────────────────── */
+
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdProdDto>>> list(
             @RequestParam Map<String, Object> p) {
-        List<PdProdDto> result = service.getList(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(service.getList(p)));
     }
 
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<PageResult<PdProdDto>>> page(
             @RequestParam Map<String, Object> p) {
-        PageResult<PdProdDto> result = service.getPageData(p);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
     }
 
+    /* ── Tier 1: 첫 화면 통합 (prod + images + opts + skus) ─── */
+
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdProdDto>> getById(@PathVariable("id") String id) {
-        PdProdDto result = service.getById(id);
-        return ResponseEntity.ok(ApiResponse.ok(result));
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getDetail(
+            @PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getDetail(id)));
+    }
+
+    /* ── Tier 2: lazy load ──────────────────────────────────── */
+
+    @GetMapping("/{id}/contents")
+    public ResponseEntity<ApiResponse<List<PdProdContentDto>>> getContents(
+            @PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getContents(id)));
+    }
+
+    @GetMapping("/{id}/rels")
+    public ResponseEntity<ApiResponse<List<PdProdRelDto>>> getRels(
+            @PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getRels(id)));
+    }
+
+    @GetMapping("/{id}/reviews")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getReviews(
+            @PathVariable("id") String id,
+            @RequestParam Map<String, Object> p) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getReviews(id, p)));
+    }
+
+    @GetMapping("/{id}/qna")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getQna(
+            @PathVariable("id") String id,
+            @RequestParam Map<String, Object> p) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getQna(id, p)));
+    }
+
+    /* ── Tier 3: 사용자별 프로모션 (통합) ───────────────────── */
+
+    @GetMapping("/{id}/promotions")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getPromotions(
+            @PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getPromotions(id)));
     }
 }
