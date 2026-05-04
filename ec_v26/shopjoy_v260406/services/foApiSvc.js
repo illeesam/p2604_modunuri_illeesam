@@ -74,12 +74,39 @@
   };
 
   /* ── pd: 상품 ───────────────────────────────────────────────── */
+  /* 상품상세는 3계층으로 분리 호출 (정책서: pd.10 §4):
+   *   Tier 1 — getById()       : 첫 화면 (prod + images + opts + skus)
+   *   Tier 2 — getContents()   : 스크롤 시 lazy load (상품설명)
+   *           getRels()        : 스크롤 시 lazy load (연관상품)
+   *           getReviews()     : 탭 클릭 시 (있을 때)
+   *           getQna()         : 탭 클릭 시 (있을 때)
+   *   Tier 3 — getPromotions() : 사용자별 동적 (쿠폰/할인/사은품/이벤트 통합)
+   */
   foApiSvc.pdProd = {
+    /* 목록 ─────────────────────────────────────────────────── */
     getPage(params, uiNm, cmdNm) {
       return global.foApi.get('/fo/ec/pd/prod/page', { params, ...hdr(uiNm, cmdNm) });
     },
+    /* Tier 1 — 첫 화면 (단일 통합) */
     getById(_id, uiNm, cmdNm) {
       return chkId(_id, uiNm, cmdNm) || global.foApi.get(`/fo/ec/pd/prod/${_id}`, hdr(uiNm, cmdNm));
+    },
+    /* Tier 2 — 스크롤/탭 lazy load */
+    getContents(_id, uiNm, cmdNm) {
+      return chkId(_id, uiNm, cmdNm) || global.foApi.get(`/fo/ec/pd/prod/${_id}/contents`, hdr(uiNm, cmdNm));
+    },
+    getRels(_id, uiNm, cmdNm) {
+      return chkId(_id, uiNm, cmdNm) || global.foApi.get(`/fo/ec/pd/prod/${_id}/rels`, hdr(uiNm, cmdNm));
+    },
+    getReviews(_id, params, uiNm, cmdNm) {
+      return chkId(_id, uiNm, cmdNm) || global.foApi.get(`/fo/ec/pd/prod/${_id}/reviews`, { params, ...hdr(uiNm, cmdNm) });
+    },
+    getQna(_id, params, uiNm, cmdNm) {
+      return chkId(_id, uiNm, cmdNm) || global.foApi.get(`/fo/ec/pd/prod/${_id}/qna`, { params, ...hdr(uiNm, cmdNm) });
+    },
+    /* Tier 3 — 사용자별 프로모션 (통합) */
+    getPromotions(_id, uiNm, cmdNm) {
+      return chkId(_id, uiNm, cmdNm) || global.foApi.get(`/fo/ec/pd/prod/${_id}/promotions`, hdr(uiNm, cmdNm));
     },
   };
 

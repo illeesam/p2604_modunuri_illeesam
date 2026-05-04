@@ -836,33 +836,22 @@
   const activeRoleId = ref(null);
   const cfIsLoggedIn = computed(() => !!(currentAuthUser?.authId));
   const currentAuthUserRoles = reactive([]);
-  const updateCurrentUserRoles = async () => {
+  // getInitData 응답에 이미 사용자 역할 + 시스템 역할이 모두 들어있으므로
+  // 별도 API 호출 없이 store 데이터에서 사용자 역할만 매핑한다.
+  //   - 사용자 역할 ID 목록   : boAuthStore.svTempAuthInfo['authUser-roles']  (← syAuth.tempAuthInfo)
+  //   - 시스템 전체 역할 정보 : boRoleStore.svRoles                          (← syRoles)
+  const updateCurrentUserRoles = () => {
   try {
-  // 로그인 안 된 상태에서는 BO API 호출 자체를 건너뜀 (403 방지)
   if (!currentAuthUser?.authId) {
   currentAuthUserRoles.splice(0, currentAuthUserRoles.length);
   return;
   }
-  let roles = window.sfGetBoRoleStore?.()?.svRoles || [];
-  if (!roles.length) {
-  try {
-  const _roleHdr = coUtil.apiHdr('역할관리', '목록조회'); _roleHdr.headers['X-Skip-Error-Toast'] = 'true';
-  const res = await boApi.get('/bo/sy/role/page', { params: { pageNo: 1, pageSize: 10000 }, ..._roleHdr });
-  roles = res.data?.data?.list || [];
-  } catch (_) {}
-  }
-  const user = currentAuthUser || { userId: '' };
-  let userRoles = [];
-  if (user.userId) {
-  try {
-  const _hdr = coUtil.apiHdr('사용자관리', '권한조회'); _hdr.headers['X-Skip-Error-Toast'] = 'true';
-  const res = await boApi.get(`/bo/sy/user/${user.userId}/roles`, _hdr);
-  userRoles = res.data?.data || [];
-  } catch (_) {}
-  }
-  const roleMap = Object.fromEntries((roles || []).map(r => [r?.roleId, r]));
-  const result = (userRoles || []).map(ur => roleMap[ur?.roleId]).filter(Boolean);
-  currentAuthUserRoles.splice(0, currentAuthUserRoles.length, ...(result.length ? result : []));
+  const allRoles = window.sfGetBoRoleStore?.()?.svRoles || [];
+  const tempAuthInfo = window.useBoAuthStore?.()?.svTempAuthInfo || {};
+  const userRoleEntries = tempAuthInfo['authUser-roles'] || [];
+  const roleMap = Object.fromEntries(allRoles.map(r => [r?.roleId, r]));
+  const result = userRoleEntries.map(ur => roleMap[ur?.roleId]).filter(Boolean);
+  currentAuthUserRoles.splice(0, currentAuthUserRoles.length, ...result);
   } catch (e) {
   console.error('currentAuthUserRoles error:', e);
   currentAuthUserRoles.splice(0, currentAuthUserRoles.length);
@@ -870,6 +859,8 @@
   };
   updateCurrentUserRoles();
   watch(currentAuthUser, updateCurrentUserRoles);
+  // getInitData 비동기 완료 시점에도 재계산 — store 데이터 도착 후 역할 매핑
+  watch(boInitReady, (v) => { if (v) updateCurrentUserRoles(); });
   const rolePath = (r, uid) => {
   try {
   if (!r) return '';

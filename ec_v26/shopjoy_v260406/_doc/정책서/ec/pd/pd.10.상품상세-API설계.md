@@ -151,18 +151,93 @@ GET /api/bo/ec/pd/prod/{prodId}/hist/changes  — 변경 이력
 
 ---
 
-## 4. FO 상품상세 API (참고)
+## 4. FO 상품상세 API — 3계층 분리 ⭐
+
+사용자 행동 흐름과 데이터 성격에 맞춰 **3계층**으로 분리한다.
+첫 화면은 단일 호출로 즉시 표시하고, 후속 정보는 lazy load 한다.
+
+### Tier 1 — 첫 화면 (단일 통합 호출, 필수)
 
 ```
-GET /api/fo/pd/prod/{prodId}
+GET /api/fo/ec/pd/prod/{prodId}
 ```
 
-단일 호출로 아래 정보 통합 응답:
-- 기본정보 (`pd_prod`)
-- 이미지 목록 (`pd_prod_img`)
-- 옵션·SKU (`pd_prod_opt` + `pd_prod_opt_item` + `pd_prod_sku`)
-- 상품설명 (`pd_prod_content`)
-- 연관상품 (`pd_prod_rel`)
+응답:
+```json
+{
+  "prod":   { "prodId":"...", "prodNm":"...", "salePrice":..., ... },
+  "images": [ { "prodImgId":"...", "cdnImgUrl":"...", ... } ],
+  "opts":   { "groups":[ ... ], "items":[ ... ] },
+  "skus":   [ { "skuId":"...", "addPrice":..., "stock":..., ... } ]
+}
+```
+
+- 화면 첫 진입 시 즉시 호출 — 메인 사진/옵션/가격이 동시에 보여야 함
+- 옵션과 SKU 는 옵션 선택 즉시 매칭되어야 하므로 함께 묶음
+
+### Tier 2 — 스크롤 / 탭 클릭 시 lazy load
+
+| 엔드포인트 | 트리거 시점 | 응답 |
+|---|---|---|
+| `GET /api/fo/ec/pd/prod/{prodId}/contents` | 상품설명 영역 스크롤 도달 | `[ { prodContentId, contentTypeCd, contentHtml, sortOrd } ]` |
+| `GET /api/fo/ec/pd/prod/{prodId}/rels` | 연관상품 영역 도달 | `[ { prodRelId, relProdId, relProdNm, relProdImgUrl, salePrice, ... } ]` |
+| `GET /api/fo/ec/pd/prod/{prodId}/reviews` | 상품평 탭 클릭 (있다면) | `{ summary, items, total }` |
+| `GET /api/fo/ec/pd/prod/{prodId}/qna` | Q&A 탭 클릭 (있다면) | `{ items, total }` |
+
+- 첫 화면 로드 후 IntersectionObserver 또는 탭 클릭 이벤트로 호출
+- 캐시 가능 (상품 데이터는 안정적, 변경 빈도 낮음)
+- 한 번 호출 후 재호출 없이 화면 보존
+
+### Tier 3 — 사용자별 동적 (프로모션 통합)
+
+```
+GET /api/fo/ec/pd/prod/{prodId}/promotions
+```
+
+응답:
+```json
+{
+  "coupons": [ { "couponId":"...", "couponNm":"...", "discntAmt":..., "issuableYn":"Y" } ],
+  "discnts": [ { "discntId":"...", "discntNm":"...", "discntRate":..., "applyYn":"Y" } ],
+  "gifts":   [ { "giftId":"...", "giftNm":"...", "giftImgUrl":"...", "condDesc":"..." } ],
+  "events":  [ { "eventId":"...", "eventNm":"...", "endDt":"..." } ]
+}
+```
+
+- **사용자별 개인화** — 회원등급/쿠폰 보유 여부에 따라 동적 응답
+- 첫 화면 로드 직후 또는 가격 영역 옆 "받을 수 있는 쿠폰" 표시 시점 호출
+- 캐시 단위가 짧음 (5~10분) — 별도 분리로 다른 캐싱 전략 적용 가능
+- 통합 1회 호출 — coupons/discnts/gifts/events 를 묶어 처리 (백엔드 service 단순화)
+
+### 호출 흐름 예시
+
+```
+사용자 진입
+  ↓
+[즉시] GET /prod/{prodId}                    ← Tier 1
+[즉시] GET /prod/{prodId}/promotions          ← Tier 3 (가격 영역에 쿠폰 표시)
+  ↓
+사용자 스크롤 → 상품설명 영역 도달
+  ↓
+[lazy] GET /prod/{prodId}/contents            ← Tier 2
+
+사용자 스크롤 → 연관상품 영역 도달
+  ↓
+[lazy] GET /prod/{prodId}/rels                ← Tier 2
+
+사용자 → 상품평 탭 클릭
+  ↓
+[lazy] GET /prod/{prodId}/reviews             ← Tier 2 (해당 페이지에 있을 때)
+```
+
+### 분리 원칙 정리
+
+| 데이터 | 분리 사유 |
+|---|---|
+| `prod + images + opts + skus` | 첫 화면 필수, 옵션 선택과 즉시 매칭 |
+| `contents` | 화면 하단, 스크롤 시점에 표시 — 모바일에서 안 보고 떠나는 경우 많음 |
+| `rels` | 별도 도메인 (상품 본체 ≠ 관계), 화면 최하단 |
+| `promotions` | 사용자별 개인화, 캐싱 전략 다름, 별도 도메인(`pm_*`) |
 
 ---
 
