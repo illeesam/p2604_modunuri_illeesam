@@ -1,4 +1,11 @@
 spring:
+  # 서버 환경 — DevTools hot-reload 무의미 + 변경 감지 사이드이펙트만 발생. 비활성.
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
+
   datasource:
     # DB_HOST=illeesam.synology.me | DB_PORT=17632 | DB_NAME=postgres | DB_SCHEMA=shopjoy_2604
     # DB_USERNAME=postgres | DB_PASSWORD=(환경변수 필수)

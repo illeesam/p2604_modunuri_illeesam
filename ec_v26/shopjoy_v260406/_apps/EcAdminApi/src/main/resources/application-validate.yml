@@ -14,6 +14,13 @@ spring:
       auto-commit: true
       connection-test-query: "SELECT 1"
 
+  # DevTools 비활성 — validate 는 1회성 실행. hot-reload 가 ClassLoader 충돌만 유발.
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
+
   jpa:
     hibernate:
       ddl-auto: none              # ← Runner 가 전수 검증을 수행하므로 Hibernate validate 비활성

@@ -30,6 +30,30 @@
         "**/dist/**"
     ],
     "java.compile.nullAnalysis.mode": "automatic",
+
+    // ── IntelliJ ↔ VSCode 빌드 출력 충돌 방지 ──────────────────
+    // VSCode Java 익스텐션이 자기만의 bin/main 을 만들면 IntelliJ/Gradle 빌드와 stale 충돌 발생
+    // (FileNotFoundException: ...Repository.class cannot be opened 의 주범).
+    // Gradle 위임 + 자동 빌드 OFF + IntelliJ 호환 import 로 통일.
+    "java.import.gradle.enabled": true,
+    "java.import.gradle.wrapper.enabled": true,
+    "java.autobuild.enabled": false,                     // VSCode 자체 컴파일 비활성 (Gradle 만 사용)
+    "java.configuration.maven.userSettings": null,
+    "files.exclude": {
+        "**/bin": true,                                   // bin/ 은 VSCode 화면에서 숨김
+        "**/.idea": true,
+        "**/build/classes": true,
+        "**/build/generated": true
+    },
+    "java.import.exclusions": [
+        "**/node_modules/**",
+        "**/.metadata/**",
+        "**/archetype-resources/**",
+        "**/META-INF/maven/**",
+        "**/bin/**",                                      // bin/ 은 import 대상에서 제외
+        "**/out/**"
+    ],
+
     "java.jdt.ls.java.home": "C:\\Users\\illee\\.jdks\\corretto-17.0.18",
     "java.configuration.runtimes": [
         {

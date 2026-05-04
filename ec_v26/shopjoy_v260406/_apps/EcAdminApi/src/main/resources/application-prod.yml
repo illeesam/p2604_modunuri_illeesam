@@ -1,4 +1,11 @@
 spring:
+  # 운영 환경 — DevTools 는 운영에 절대 들어가면 안 됨. 명시적으로 비활성.
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
+
   datasource:
     # DB_HOST=(필수) | DB_PORT=(필수) | DB_NAME=postgres | DB_SCHEMA=shopjoy_2604
     # DB_USERNAME=(필수) | DB_PASSWORD=(필수)
