@@ -25,13 +25,13 @@ window.SyApiLogMng = {
       searchTraceId: '',
     });
 
-    const codes = reactive({ date_range_opts: [], http_methods: [], user_types: [] });
+    const codes = reactive({ date_range_opts: [], http_methods: [], app_types: [] });
 
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.date_range_opts = codeStore?.sgGetGrpCodes('DATE_RANGE_OPT') || [];
       codes.http_methods    = codeStore?.sgGetGrpCodes('HTTP_METHOD')    || [];
-      codes.user_types      = codeStore?.sgGetGrpCodes('APP_TYPE')      || [];
+      codes.app_types      = codeStore?.sgGetGrpCodes('APP_TYPE')      || [];
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
@@ -235,11 +235,11 @@ window.SyApiLogMng = {
       <input v-model="uiState.searchStatus" placeholder="상태코드 (예: 500)" style="width:150px" @keyup.enter="onSearch" />
       <select v-model="uiState.searchAppTypeCd" style="width:120px">
         <option value="">사용자유형 전체</option>
-        <option v-if="!codes.user_types.length" value="ADMIN">관리자</option>
-        <option v-if="!codes.user_types.length" value="MEMBER">회원</option>
-        <option v-if="!codes.user_types.length" value="VENDOR">업체</option>
-        <option v-if="!codes.user_types.length" value="ANON">비로그인</option>
-        <option v-for="c in codes.user_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+        <option v-if="!codes.app_types.length" value="ADMIN">관리자</option>
+        <option v-if="!codes.app_types.length" value="MEMBER">회원</option>
+        <option v-if="!codes.app_types.length" value="VENDOR">업체</option>
+        <option v-if="!codes.app_types.length" value="ANON">비로그인</option>
+        <option v-for="c in codes.app_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <span class="search-label">x-헤더</span>
       <input v-model="uiState.searchUiNm"    placeholder="화면명 (x-ui-nm)"  style="width:170px" @keyup.enter="onSearch" />

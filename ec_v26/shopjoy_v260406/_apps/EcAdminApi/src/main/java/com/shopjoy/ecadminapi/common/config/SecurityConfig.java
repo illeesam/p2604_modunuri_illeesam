@@ -78,15 +78,15 @@ public class SecurityConfig {
 
     /** BO만 허용 */
     private static final AuthorizationManager<RequestAuthorizationContext> BO_ONLY =
-        (supplier, ctx) -> new AuthorizationDecision(isUserType(supplier.get(), AuthPrincipal.BO));
+        (supplier, ctx) -> new AuthorizationDecision(isAppType(supplier.get(), AuthPrincipal.BO));
 
     /** FO만 허용 */
     private static final AuthorizationManager<RequestAuthorizationContext> FO_ONLY =
-        (supplier, ctx) -> new AuthorizationDecision(isUserType(supplier.get(), AuthPrincipal.FO));
+        (supplier, ctx) -> new AuthorizationDecision(isAppType(supplier.get(), AuthPrincipal.FO));
 
     /** EXT(외부 시스템)만 허용 */
     private static final AuthorizationManager<RequestAuthorizationContext> EXT_ONLY =
-        (supplier, ctx) -> new AuthorizationDecision(isUserType(supplier.get(), AuthPrincipal.EXT));
+        (supplier, ctx) -> new AuthorizationDecision(isAppType(supplier.get(), AuthPrincipal.EXT));
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -187,7 +187,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    private static boolean isUserType(Authentication auth, String type) {
+    private static boolean isAppType(Authentication auth, String type) {
         if (auth == null || !auth.isAuthenticated()) return false;
         if (auth.getPrincipal() instanceof AuthPrincipal p) {
             return type.equals(p.appTypeCd());

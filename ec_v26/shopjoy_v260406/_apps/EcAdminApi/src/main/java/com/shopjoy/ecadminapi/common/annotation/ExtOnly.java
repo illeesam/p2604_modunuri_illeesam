@@ -5,7 +5,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import java.lang.annotation.*;
 
 /**
- * userType = EXT(외부 시스템)만 접근 허용.
+ * AppType = EXT(외부 시스템)만 접근 허용.
  * 외부 연동 API 메서드/클래스에 사용.
  *
  * 사용 예:

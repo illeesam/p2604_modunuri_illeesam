@@ -464,7 +464,7 @@ INSERT INTO shopjoy_2604.sy_batch (
 ```
 "*"           → 전체 기록
 "BO"          → BO 관리자 전체
-"BO^FO^EXT"   → 인증된 모든 userType
+"BO^FO^EXT"   → 인증된 모든 AppType
 "admin01"     → 특정 userId만
 "admin01^BO"  → 특정 userId + BO 전체
 ```

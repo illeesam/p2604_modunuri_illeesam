@@ -14,7 +14,7 @@ import java.util.Optional;
  * FO(Front Office) 회원 세션 캐시.
  *
  * 저장 항목:
- *   - 세션 정보      : auth:session:{userId}   → Map (userId, userType, gradeId, siteId, loginAt)
+ *   - 세션 정보      : auth:session:{userId}   → Map (userId, AppType, gradeId, siteId, loginAt)
  *   - 토큰 블랙리스트 : auth:blacklist:{token}  → "1"
  *
  * TTL: app.redis.ttl.fo-auth-seconds (기본 900s)

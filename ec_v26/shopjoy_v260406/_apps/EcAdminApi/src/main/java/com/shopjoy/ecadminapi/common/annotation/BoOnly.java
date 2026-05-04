@@ -5,7 +5,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import java.lang.annotation.*;
 
 /**
- * userType = USER(관리자)만 접근 허용.
+ * AppType = USER(관리자)만 접근 허용.
  * POST / PUT / PATCH / DELETE 메서드 또는 클래스에 사용.
  *
  * 사용 예:

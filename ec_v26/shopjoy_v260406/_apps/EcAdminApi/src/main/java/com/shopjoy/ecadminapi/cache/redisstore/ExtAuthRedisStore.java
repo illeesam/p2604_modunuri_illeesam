@@ -14,7 +14,7 @@ import java.util.Optional;
  * EXT(External) 외부 시스템·API 키 세션 캐시.
  *
  * 저장 항목:
- *   - 세션 정보      : auth:session:{userId}   → Map (userId, userType, vendorId, loginAt)
+ *   - 세션 정보      : auth:session:{userId}   → Map (userId, AppType, vendorId, loginAt)
  *   - 토큰 블랙리스트 : auth:blacklist:{token}  → "1"
  *
  * TTL: app.redis.ttl.ext-auth-seconds (기본 900s)

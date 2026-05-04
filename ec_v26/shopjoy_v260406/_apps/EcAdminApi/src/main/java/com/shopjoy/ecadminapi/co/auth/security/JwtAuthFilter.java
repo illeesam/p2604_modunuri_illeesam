@@ -26,9 +26,9 @@ import java.util.List;
  * JWT 인증 필터.
  *
  * 기존 UserDetailsService.loadUserByUsername() 방식 대비 개선점:
- * - 매 요청마다 DB를 조회하지 않고 JWT 클레임(userId, userType, roles)만으로 AuthPrincipal을 구성한다.
+ * - 매 요청마다 DB를 조회하지 않고 JWT 클레임(userId, AppType, roles)만으로 AuthPrincipal을 구성한다.
  * - 두 사용자 테이블(sy_user / ec_member)을 단일 필터에서 처리할 수 있다.
- *   userType 클레임 값으로 어느 테이블 사용자인지 구분하며, 필터는 테이블을 알 필요가 없다.
+ *   AppType 클레임 값으로 어느 테이블 사용자인지 구분하며, 필터는 테이블을 알 필요가 없다.
  */
 @Slf4j
 @Component

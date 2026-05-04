@@ -14,7 +14,7 @@ import java.util.Optional;
  * BO(Back Office) 관리자 세션 캐시.
  *
  * 저장 항목:
- *   - 세션 정보      : auth:session:{userId}   → Map (userId, userType, roleId, deptId, loginAt)
+ *   - 세션 정보      : auth:session:{userId}   → Map (userId, AppType, roleId, deptId, loginAt)
  *   - 토큰 블랙리스트 : auth:blacklist:{token}  → "1"
  *
  * TTL: app.redis.ttl.bo-auth-seconds (기본 900s)

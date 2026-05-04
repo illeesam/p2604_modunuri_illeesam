@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  * API 요청/응답 액세스 로그 필터.
  *
  * - Spring Security(JwtAuthFilter)보다 먼저 실행되어 전체 체인을 감싼다.
- * - 체인 완료 후 request attribute (_authUserId, _authUserType, _authRoleId) 로 인증 정보 수집.
+ * - 체인 완료 후 request attribute (_authUserId, _authAppType, _authRoleId) 로 인증 정보 수집.
  *   (JwtAuthFilter 가 MDC를 finally 에서 clear 하므로 request attribute 방식 사용)
  * - AccessLogProperties.isMatch() 조건 통과 시에만 큐에 적재.
  */

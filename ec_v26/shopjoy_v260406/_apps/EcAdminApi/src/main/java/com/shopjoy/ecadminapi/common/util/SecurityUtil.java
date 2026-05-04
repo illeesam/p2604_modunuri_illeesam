@@ -45,7 +45,7 @@ public final class SecurityUtil {
         );
     }
 
-    /** 로그인 여부 (userType 관계없이 인증된 상태면 true) */
+    /** 로그인 여부 (AppType 관계없이 인증된 상태면 true) */
     public static boolean isLogin() {
         AuthPrincipal p = currentPrincipal();
         return p != null;
