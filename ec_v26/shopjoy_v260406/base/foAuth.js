@@ -107,7 +107,7 @@
           authId,
           memberId: authId,             // FO 전용: ec_member.member_id
           userId: null,                 // BO 전용: FO는 null
-          userTypeCd: d.userTypeCd || 'FO',
+          AppTypeCd: d.AppTypeCd || 'FO',
           loginId: d.loginId || '',
           memberNm: d.userNm || d.memberNm || '사용자',
           siteId: d.siteId || '',
@@ -169,7 +169,7 @@
           authId,
           memberId: authId,
           userId: null,
-          userTypeCd: d.userTypeCd || 'FO',
+          AppTypeCd: d.AppTypeCd || 'FO',
           loginId: d.loginId || loginId,
           memberNm: d.userNm || d.memberNm || memberNm || '사용자',
           siteId: d.siteId || '',

@@ -14,7 +14,7 @@ import java.util.List;
  *
  * 반환 값:
  * - getUserId()       : 인증된 사용자 ID, 미인증 시 "SYSTEM"
- * - getUserTypeCd()   : "BO"(관리자) | "FO"(고객) | "SO"(판매자), 미인증 시 null
+ * - getAppTypeCd()   : "BO"(관리자) | "FO"(고객) | "SO"(판매자), 미인증 시 null
  * - getRoleId()       : 관리자 역할 ID (sy_user.role_id), FO/미인증 시 null
  * - getVendorId()     : 업체 ID
  * - isBo()            : sy_user 관리자 여부
@@ -54,19 +54,19 @@ public final class SecurityUtil {
     /** sy_user 테이블 사용자 여부 */
     public static boolean isBo() {
         AuthPrincipal p = currentPrincipal();
-        return p != null && AuthPrincipal.BO.equals(p.userTypeCd());
+        return p != null && AuthPrincipal.BO.equals(p.appTypeCd());
     }
 
     /** ec_member 테이블 사용자 여부 */
     public static boolean isFo() {
         AuthPrincipal p = currentPrincipal();
-        return p != null && AuthPrincipal.FO.equals(p.userTypeCd());
+        return p != null && AuthPrincipal.FO.equals(p.appTypeCd());
     }
 
     /** So 테이블 사용자 여부 (Super Owner) */
     public static boolean isSo() {
         AuthPrincipal p = currentPrincipal();
-        return p != null && "SO".equals(p.userTypeCd());
+        return p != null && "SO".equals(p.appTypeCd());
     }
 
     /** 현재 인증된 사용자의 siteId 반환 (미인증 또는 미설정 시 "") */

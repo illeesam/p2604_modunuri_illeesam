@@ -19,7 +19,7 @@ public class SyhAccessErrorLogDto {
     private String reqIp;
     private String reqUa;
 
-    private String userTypeCd;
+    private String appTypeCd;
     private String userId;
     private String roleId;
     private String deptId;

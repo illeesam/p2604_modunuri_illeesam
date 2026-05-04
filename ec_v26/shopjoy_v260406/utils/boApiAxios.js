@@ -51,6 +51,9 @@
       if (t) {
         cfg.headers.Authorization = 'Bearer ' + t;
       }
+      /* X-App-Type-Cd — 호출 컨텍스트의 사용자 타입 (BO/FO/EXT).
+         로그인 후에는 JWT claims 와 동일한 값. 비로그인 시에도 호출 출처 추적용으로 유지. */
+      cfg.headers['X-App-Type-Cd'] = 'BO';
       /* X-Site-Type + X-Site-Id + X-Buyer-Id + X-License-Code 헤더 주입 */
       try {
         var lic = global.SHOPJOY_LICENSE_BO;

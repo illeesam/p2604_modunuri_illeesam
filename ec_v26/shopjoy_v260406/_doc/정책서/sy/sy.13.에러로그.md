@@ -19,7 +19,7 @@ HTTP 요청
     ▼
 JwtAuthFilter (OncePerRequestFilter)
     │  MDC 설정: reqMethod / reqHost / reqPath / reqQuery
-    │            reqIp / reqUa / userId / userType / roleId
+    │            reqIp / reqUa / userId / appTypeCd / roleId
     ▼
 Spring MVC 처리 (Controller → Service → ...)
     │  ERROR 발생
@@ -53,7 +53,7 @@ syh_access_error_log 테이블 INSERT
 ### 인증 정보 (MDC → JwtAuthFilter 주입)
 | 항목 | 컬럼 | 설명 |
 |---|---|---|
-| 사용자 유형 | `user_type` | USER / MEMBER / EXT / `-` |
+| 앱 유형 | `app_type_cd` | BO / FO / EXT / `-` (코드: APP_TYPE) |
 | 사용자 ID | `user_id` | sy_user.user_id 또는 ec_member.member_id |
 | 역할 ID | `role_id` | JWT 클레임의 roleId (nullable) |
 

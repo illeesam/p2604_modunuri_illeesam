@@ -790,7 +790,7 @@
   } catch(_) { return { userId: '', name: '', email: '', role: '', phone: '', dept: '' }; }
   };
   /* ── FO의 foAuth.state 패턴과 동일: Vue.reactive state + _sync() ── */
-  const _defaultBoAuthUser = () => ({ authId: '', authNm: '', userId: '', name: '', email: '', role: '', phone: '', dept: '', userTypeCd: '', roleId: '', siteId: '', profileAttachId: null });
+  const _defaultBoAuthUser = () => ({ authId: '', authNm: '', userId: '', name: '', email: '', role: '', phone: '', dept: '', AppTypeCd: '', roleId: '', siteId: '', profileAttachId: null });
   const currentAuthUser = reactive(_defaultBoAuthUser());
   // store 인스턴스를 setup() 안에서 한 번만 가져와서 고정 — Pinia 컨텍스트 보장
   const _boAuthStore = window.useBoAuthStore?.();
@@ -838,6 +838,11 @@
   const currentAuthUserRoles = reactive([]);
   const updateCurrentUserRoles = async () => {
   try {
+  // 로그인 안 된 상태에서는 BO API 호출 자체를 건너뜀 (403 방지)
+  if (!currentAuthUser?.authId) {
+  currentAuthUserRoles.splice(0, currentAuthUserRoles.length);
+  return;
+  }
   let roles = window.sfGetBoRoleStore?.()?.svRoles || [];
   if (!roles.length) {
   try {

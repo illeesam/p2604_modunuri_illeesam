@@ -20,7 +20,7 @@ public class StoreMember {
     private String memberEmail;
     private String memberNm;
     private String siteId;
-    private String userTypeCd;         // 사용자 타입 (BO, FO, SO)
+    private String appTypeCd;         // 사용자 타입 (BO, FO, SO)
     private String memberTypeCd;      // 회원 타입 (일반, VIP 등)
     private String memberHpNo;        // 휴대폰 번호
     private String memberGrade;       // 회원등급

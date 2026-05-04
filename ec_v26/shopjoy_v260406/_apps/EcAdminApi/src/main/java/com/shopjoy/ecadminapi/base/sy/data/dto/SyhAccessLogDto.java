@@ -20,7 +20,7 @@ public class SyhAccessLogDto {
     private String reqUa;
     private String reqBody;
 
-    private String userTypeCd;
+    private String appTypeCd;
     private String userId;
     private String roleId;
     private String deptId;

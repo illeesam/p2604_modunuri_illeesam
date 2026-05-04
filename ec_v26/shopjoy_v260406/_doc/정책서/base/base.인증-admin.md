@@ -154,7 +154,7 @@ setInterval(() => {
 | `loginId` | String | `"admin01"` | 로그인 아이디 |
 | `roles` | List\<String\> | `["BO_GUEST"]` | 권한 목록 |
 | `type` | String | `"access"` | 토큰 종류 |
-| `userTypeCd` | String | `"BO"` | 사용자 구분 (BO / FO) |
+| `appTypeCd` | String | `"BO"` | 사용자 구분 (BO / FO) |
 | `roleId` | String | `"ROLE_001"` | 역할 ID |
 | `userId` | String | `"US260424..."` | BO 전용: sy_user.user_id |
 | `memberId` | String | `null` | FO 전용: BO는 null |
@@ -166,7 +166,7 @@ setInterval(() => {
 HTTP 요청 (Authorization: Bearer <accessToken>)
   └─ JwtAuthFilter
        ├─ JWT 서명 검증 + 만료 확인
-       ├─ 클레임 추출: authId, userTypeCd, roles, ...
+       ├─ 클레임 추출: authId, appTypeCd, roles, ...
        ├─ AuthPrincipal 생성 (DB 조회 없음)
        └─ SecurityContextHolder에 Authentication 저장
 ```

@@ -10,7 +10,7 @@ CREATE TABLE sy_user (
     dept_id         VARCHAR(21),                            -- sy_dept.dept_id
     role_id         VARCHAR(21),                            -- sy_role.role_id
     user_status_cd  VARCHAR(20)     DEFAULT 'ACTIVE',       -- 코드: USER_STATUS
-    user_type_cd    VARCHAR(20),                              -- 코드: USER_TYPE (FO/BO/SO/DO/CO)
+    app_type_cd     VARCHAR(20),                              -- 코드: APP_TYPE (FO/BO/SO/DO/CO)
     last_login      TIMESTAMP,
     login_fail_cnt  SMALLINT        DEFAULT 0,
     user_memo       TEXT,
@@ -37,7 +37,7 @@ COMMENT ON COLUMN sy_user.user_phone       IS '연락처';
 COMMENT ON COLUMN sy_user.dept_id          IS '부서ID (sy_dept.dept_id)';
 COMMENT ON COLUMN sy_user.role_id          IS '역할ID (sy_role.role_id)';
 COMMENT ON COLUMN sy_user.user_status_cd   IS '상태 (코드: USER_STATUS)';
-COMMENT ON COLUMN sy_user.user_type_cd     IS '사용자 유형 (코드: USER_TYPE - FO:사용자, BO:관리자, SO:판매사용자, DO:배달사용자, CO:고객사용자)';
+COMMENT ON COLUMN sy_user.app_type_cd      IS '앱 유형 (코드: APP_TYPE — FO:사용자앱, BO:관리자앱, SO:판매자앱, DO:배달기사앱, CO:고객사앱)';
 COMMENT ON COLUMN sy_user.last_login       IS '최근 로그인';
 COMMENT ON COLUMN sy_user.login_fail_cnt   IS '로그인 실패 횟수';
 COMMENT ON COLUMN sy_user.user_memo        IS '메모';
@@ -52,5 +52,5 @@ COMMENT ON COLUMN sy_user.last_login_date  IS '마지막 로그인 일시';
 -- 코드값 참조
 -- ============================================================
 -- [CODES] sy_user.user_status_cd (상태) : USER_STATUS { ACTIVE:활성, INACTIVE:비활성 }
--- [CODES] sy_user.user_type_cd (사용자유형) : USER_TYPE { FO:사용자, BO:관리자, SO:판매자, DO:배달, CO:고객사용자 }
+-- [CODES] sy_user.app_type_cd (앱유형) : APP_TYPE { FO:사용자앱, BO:관리자앱, SO:판매자앱, DO:배달기사앱, CO:고객사앱 }
 -- [CODES] sy_user.auth_method_cd (인증방식) : AUTH_METHOD { MAIN:메인, SMS:SMS, OTP:OTP, AUTHENTICATOR:인증기 }

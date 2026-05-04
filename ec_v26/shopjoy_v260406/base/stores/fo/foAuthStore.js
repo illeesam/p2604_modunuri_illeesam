@@ -6,7 +6,7 @@
  *   authId      : 인증 식별자 (FO = ec_member.member_id), JWT subject와 동일
  *   memberId    : ec_member.member_id (authId와 동일값, 명시적 접근용)
  *   userId      : null (BO 전용)
- *   userTypeCd  : "FO"
+ *   AppTypeCd  : "FO"
  */
 (function () {
   if (!window.Pinia) {
@@ -19,7 +19,7 @@
     authNm: '',         // 인증 사용자명 (ec_member.member_nm)
     memberId: '',       // FO 전용: ec_member.member_id
     userId: null,       // BO 전용: FO는 null
-    userTypeCd: 'FO',
+    AppTypeCd: 'FO',
     loginId: '',
     memberNm: '',
     siteId: '',

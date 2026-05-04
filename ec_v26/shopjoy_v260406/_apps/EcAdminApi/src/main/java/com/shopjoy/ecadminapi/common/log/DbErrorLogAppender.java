@@ -57,7 +57,7 @@ public class DbErrorLogAppender extends UnsynchronizedAppenderBase<ILoggingEvent
                     .reqIp    (mdc.getOrDefault("reqIp",     "-"))
                     .reqUa    (truncate(mdc.getOrDefault("reqUa", null), 500))
                     // 인증 정보
-                    .userTypeCd (mdc.getOrDefault("userTypeCd",  "-"))
+                    .appTypeCd (mdc.getOrDefault("appTypeCd",  "-"))
                     .userId   (mdc.getOrDefault("userId",    "-"))
                     .roleId   (mdc.getOrDefault("roleId",    null))
                     .deptId   (mdc.getOrDefault("deptId",    null))

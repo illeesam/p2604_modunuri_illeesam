@@ -12,22 +12,22 @@ import java.util.List;
  * - UserDetails는 단일 사용자 저장소를 전제하므로 userType 개념이 없음.
  * - JWT 클레임에서 바로 구성해 SecurityContext에 저장하므로 DB 조회 불필요.
  *
- * userTypeCd 값:
+ * appTypeCd 값:
  * - "BO" → sy_user  (관리자, Back Office)
  * - "FO" → ec_member (고객, Front Office)
  * - "SO" → Super Owner (판매자)
  *
  * authId 규칙:
- * - userTypeCd="BO" → authId = sy_user.user_id
- * - userTypeCd="FO" → authId = ec_member.member_id
+ * - appTypeCd="BO" → authId = sy_user.user_id
+ * - appTypeCd="FO" → authId = ec_member.member_id
  * - JWT subject에 저장되는 통합 인증 식별자
  *
- * 사용: SecurityUtil.getAuthId() / getUserId() / getMemberId() / getUserTypeCd() / isBo() / isFo()
+ * 사용: SecurityUtil.getAuthId() / getUserId() / getMemberId() / getAppTypeCd() / isBo() / isFo()
  * ★ 는 인증되면 공통항목
  */
 public record AuthPrincipal(
         String authId,              // ★ 인증 식별자 (BO=sy_user.user_id, FO=ec_member.member_id), JWT subject
-        String userTypeCd,          // ★ 사용자 유형 (BO:backend사용자, FO:frontend회원, SO:판매자)
+        String appTypeCd,          // ★ 사용자 유형 (BO:backend사용자, FO:frontend회원, SO:판매자)
         LocalDateTime loginTime,    // ★ 로그인 시간
         String roleId,              // ★ 권한 아이디 (sy_user.role_id, BO 전용)
         String userNm,              // ★ 사용자명 (sy_user.user_nm 또는 ec_member.member_nm)
@@ -50,12 +50,12 @@ public record AuthPrincipal(
     public static final String EXT = "EXT";
 
     // 간단한 생성 팩토리 (최소 필드만)
-    public static AuthPrincipal of(String authId, String userTypeCd, String roleId) {
-        String userId   = BO.equals(userTypeCd) ? authId : "";
-        String memberId = FO.equals(userTypeCd) ? authId : "";
+    public static AuthPrincipal of(String authId, String appTypeCd, String roleId) {
+        String userId   = BO.equals(appTypeCd) ? authId : "";
+        String memberId = FO.equals(appTypeCd) ? authId : "";
         return new AuthPrincipal(
                 authId,                 // authId
-                userTypeCd,             // userTypeCd
+                appTypeCd,             // appTypeCd
                 LocalDateTime.now(),    // loginTime
                 roleId,                 // roleId
                 "",                     // userNm

@@ -22,7 +22,7 @@ public class Authz {
     public boolean isBo(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) return false;
         if (auth.getPrincipal() instanceof AuthPrincipal p) {
-            return AuthPrincipal.BO.equals(p.userTypeCd());
+            return AuthPrincipal.BO.equals(p.appTypeCd());
         }
         return false;
     }
@@ -30,7 +30,7 @@ public class Authz {
     public boolean isFo(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) return false;
         if (auth.getPrincipal() instanceof AuthPrincipal p) {
-            return AuthPrincipal.FO.equals(p.userTypeCd());
+            return AuthPrincipal.FO.equals(p.appTypeCd());
         }
         return false;
     }
@@ -38,7 +38,7 @@ public class Authz {
     public boolean isExt(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) return false;
         if (auth.getPrincipal() instanceof AuthPrincipal p) {
-            return AuthPrincipal.EXT.equals(p.userTypeCd());
+            return AuthPrincipal.EXT.equals(p.appTypeCd());
         }
         return false;
     }
@@ -46,7 +46,7 @@ public class Authz {
     public boolean isSo(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) return false;
         if (auth.getPrincipal() instanceof AuthPrincipal p) {
-            return AuthPrincipal.SO.equals(p.userTypeCd());
+            return AuthPrincipal.SO.equals(p.appTypeCd());
         }
         return false;
     }
@@ -54,7 +54,7 @@ public class Authz {
     public boolean isBoOrFo(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) return false;
         if (auth.getPrincipal() instanceof AuthPrincipal p) {
-            return AuthPrincipal.BO.equals(p.userTypeCd()) || AuthPrincipal.FO.equals(p.userTypeCd());
+            return AuthPrincipal.BO.equals(p.appTypeCd()) || AuthPrincipal.FO.equals(p.appTypeCd());
         }
         return false;
     }

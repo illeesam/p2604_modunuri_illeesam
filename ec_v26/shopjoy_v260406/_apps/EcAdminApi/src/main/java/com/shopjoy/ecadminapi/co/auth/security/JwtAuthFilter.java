@@ -78,7 +78,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             String token = extractToken(request);
 
-            // 로그아웃 경로는 만료된 토큰도 클레임 파싱 시도 (AccessLog에 userId/userTypeCd 기록 목적)
+            // 로그아웃 경로는 만료된 토큰도 클레임 파싱 시도 (AccessLog에 userId/appTypeCd 기록 목적)
             boolean isLogoutPath = path.equals("/api/co/bo-auth/logout") || path.equals("/api/co/fo-auth/logout");
 
             boolean tokenValid = StringUtils.hasText(token) && jwtProvider.validate(token);
@@ -92,7 +92,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                 ? jwtProvider.getClaimsAllowExpired(token)
                                 : jwtProvider.getClaims(token);
                         String authId     = claims.getSubject();        // authId: BO=user_id, FO=member_id
-                        String userTypeCd = claims.get("userTypeCd", String.class);
+                        String appTypeCd = claims.get("appTypeCd", String.class);
                         String siteId     = claims.get("siteId",     String.class);
                         String roleId     = claims.get("roleId",     String.class);
                         String deptId     = claims.get("deptId",     String.class);
@@ -111,7 +111,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                         AuthPrincipal principal = new AuthPrincipal(
                                 authId,                                 // authId
-                                userTypeCd,                             // userTypeCd
+                                appTypeCd,                             // appTypeCd
                                 LocalDateTime.now(),                    // loginTime
                                 CmUtil.nvl(roleId),                     // roleId
                                 CmUtil.nvl(userNm),                     // userNm
@@ -141,13 +141,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         // MDC — 로그에 인증 사용자 정보 삽입
                         MDC.put("siteId",   CmUtil.nvl(siteId, "-"));
                         MDC.put("authId",   authId);
-                        MDC.put("userTypeCd", CmUtil.nvl(userTypeCd, "-"));
+                        MDC.put("appTypeCd", CmUtil.nvl(appTypeCd, "-"));
                         MDC.put("roleId",   CmUtil.nvl(roleId, "-"));
                         MDC.put("deptId",   CmUtil.nvl(deptId, "-"));
                         MDC.put("vendorId", CmUtil.nvl(vendorId, "-"));
                         // request attribute — AccessLogFilter 가 체인 종료 후 읽음 (MDC는 finally 에서 clear)
                         request.setAttribute(AccessLogFilter.ATTR_USER_ID,   authId);
-                        request.setAttribute(AccessLogFilter.ATTR_USER_TYPE_CD, CmUtil.nvl(userTypeCd, "-"));
+                        request.setAttribute(AccessLogFilter.ATTR_APP_TYPE_CD, CmUtil.nvl(appTypeCd, "-"));
                         request.setAttribute(AccessLogFilter.ATTR_ROLE_ID,   CmUtil.nvl(roleId, "-"));
                         request.setAttribute(AccessLogFilter.ATTR_DEPT_ID,   deptId);
                         request.setAttribute(AccessLogFilter.ATTR_VENDOR_ID, vendorId);
@@ -184,12 +184,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static void mdcAnonymous(HttpServletRequest request) {
         MDC.put("siteId",   "-");
         MDC.put("authId",   "-");
-        MDC.put("userTypeCd", "-");
+        // 비로그인 상태에서도 X-App-Type-Cd 헤더로 호출 컨텍스트 추정 가능
+        String headerAppTypeCd = request.getHeader("X-App-Type-Cd");
+        MDC.put("appTypeCd", headerAppTypeCd != null ? headerAppTypeCd : "-");
         MDC.put("roleId",   "-");
         MDC.put("deptId",   "-");
         MDC.put("vendorId", "-");
         request.setAttribute(AccessLogFilter.ATTR_USER_ID,   "-");
-        request.setAttribute(AccessLogFilter.ATTR_USER_TYPE_CD, "-");
+        request.setAttribute(AccessLogFilter.ATTR_APP_TYPE_CD, "-");
         request.setAttribute(AccessLogFilter.ATTR_ROLE_ID,   "-");
         request.setAttribute(AccessLogFilter.ATTR_DEPT_ID,   null);
         request.setAttribute(AccessLogFilter.ATTR_VENDOR_ID, null);

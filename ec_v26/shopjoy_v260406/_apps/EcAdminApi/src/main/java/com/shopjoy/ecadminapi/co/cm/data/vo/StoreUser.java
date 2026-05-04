@@ -28,7 +28,7 @@ public class StoreUser {
     private String roleNm;            // 역할명
     private String memberGradeCd;     // 회원등급 코드
     private String userStatusCd;      // 상태 (ACTIVE, INACTIVE)
-    private String userTypeCd;        // 사용자 타입 (BO, FO, SO)
+    private String appTypeCd;        // 사용자 타입 (BO, FO, SO)
     private String isAdminYn;         // 관리자 여부 (Y/N)
     private String vendorId;          // 업체 ID
     private String vendorNm;          // 업체명

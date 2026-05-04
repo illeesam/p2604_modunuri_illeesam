@@ -17,7 +17,7 @@ CREATE TABLE shopjoy_2604.syh_access_log (
     req_body        TEXT,                           -- 요청 바디 (max-body-size 이하, nullable)
 
     -- 인증 정보
-    user_type       VARCHAR(20),                    -- BO / FO / EXT / -
+    app_type_cd     VARCHAR(20),                    -- 코드: APP_TYPE (BO/FO/EXT/-)
     user_id         VARCHAR(50),                    -- sy_user.user_id 또는 ec_member.member_id
     role_id         VARCHAR(50),                    -- 역할 ID (nullable)
     dept_id         VARCHAR(50),                    -- 부서 ID (nullable)
@@ -55,7 +55,7 @@ COMMENT ON COLUMN shopjoy_2604.syh_access_log.req_query       IS '쿼리 파라�
 COMMENT ON COLUMN shopjoy_2604.syh_access_log.req_ip          IS '클라이언트 실제 IP';
 COMMENT ON COLUMN shopjoy_2604.syh_access_log.req_ua          IS 'User-Agent';
 COMMENT ON COLUMN shopjoy_2604.syh_access_log.req_body        IS '요청 바디 (설정된 최대 크기까지)';
-COMMENT ON COLUMN shopjoy_2604.syh_access_log.user_type       IS 'BO/FO/EXT/- (JWT 클레임)';
+COMMENT ON COLUMN shopjoy_2604.syh_access_log.app_type_cd     IS '호출 앱 유형 (코드: APP_TYPE — BO/FO/EXT/-, JWT 클레임)';
 COMMENT ON COLUMN shopjoy_2604.syh_access_log.user_id         IS '인증 사용자 ID';
 COMMENT ON COLUMN shopjoy_2604.syh_access_log.role_id         IS '역할 ID';
 COMMENT ON COLUMN shopjoy_2604.syh_access_log.resp_status     IS 'HTTP 응답 상태 코드';

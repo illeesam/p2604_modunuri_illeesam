@@ -8,7 +8,7 @@
  *   authId      : 인증 식별자 (BO = sy_user.user_id), JWT subject와 동일
  *   userId      : sy_user.user_id (authId와 동일값, 명시적 접근용)
  *   memberId    : null (FO 전용)
- *   userTypeCd  : "BO"
+ *   AppTypeCd  : "BO"
  */
 (function () {
   if (!window.Pinia) {
@@ -23,7 +23,7 @@
     authNm: '',       // 인증 사용자명 (sy_user.user_nm)
     userId: '',       // BO 전용: sy_user.user_id
     memberId: null,   // FO 전용: BO는 null
-    userTypeCd: 'BO',
+    AppTypeCd: 'BO',
     name: '',
     email: '',
     role: '',
@@ -72,7 +72,7 @@
             authId,
             userId: authId,       // BO 전용
             memberId: null,       // FO 전용: BO는 null
-            userTypeCd: loginData.userTypeCd || 'BO',
+            AppTypeCd: loginData.AppTypeCd || 'BO',
             authNm: loginData.userNm || '',
             name: loginData.userNm || '',
             email: loginData.userEmail || '',

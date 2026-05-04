@@ -45,7 +45,7 @@ public class JwtProvider {
      */
     public String createAccessToken(AccessTokenClaims claims) {
         Date now = new Date();
-        long accessExpiry = "BO".equals(claims.getUserTypeCd()) ? boAccessExpiry : foAccessExpiry;
+        long accessExpiry = "BO".equals(claims.getAppTypeCd()) ? boAccessExpiry : foAccessExpiry;
         Date expiry = new Date(now.getTime() + accessExpiry);
 
         return Jwts.builder()
@@ -53,7 +53,7 @@ public class JwtProvider {
             .claim("loginId", claims.getLoginId())
             .claim("roles", claims.getRoles())
             .claim("type", "access")
-            .claim("userTypeCd", claims.getUserTypeCd())
+            .claim("appTypeCd", claims.getAppTypeCd())
             .claim("roleId", claims.getRoleId())
             .claim("vendorId", claims.getVendorId())
             .claim("siteId", claims.getSiteId())
@@ -69,18 +69,18 @@ public class JwtProvider {
     }
 
     /**
-     * Refresh Token 생성 — userTypeCd에 따라 만료시간 분리.
+     * Refresh Token 생성 — appTypeCd에 따라 만료시간 분리.
      * "BO": 2시간 (1세션, Sliding), "FO": 15일 (멀티디바이스, Sliding)
      */
-    public String createRefreshToken(String authId, String userTypeCd) {
+    public String createRefreshToken(String authId, String appTypeCd) {
         Date now = new Date();
-        long expiry = "BO".equals(userTypeCd) ? boRefreshExpiry : foRefreshExpiry;
+        long expiry = "BO".equals(appTypeCd) ? boRefreshExpiry : foRefreshExpiry;
         Date expiryDate = new Date(now.getTime() + expiry);
 
         return Jwts.builder()
             .subject(authId)
             .claim("type", "refresh")
-            .claim("userTypeCd", userTypeCd)
+            .claim("appTypeCd", appTypeCd)
             .issuedAt(now)
             .expiration(expiryDate)
             .signWith(secretKey)
@@ -144,8 +144,8 @@ public class JwtProvider {
         return getClaims(token).get("type", String.class);
     }
 
-    public String getUserTypeCd(String token) {
-        return getClaims(token).get("userTypeCd", String.class);
+    public String getAppTypeCd(String token) {
+        return getClaims(token).get("appTypeCd", String.class);
     }
 
     public String getRoleId(String token) {

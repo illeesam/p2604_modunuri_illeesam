@@ -53,7 +53,7 @@ public class FoAuthService {
     // ── login ─────────────────────────────────────────────────────────────
 
     @Transactional
-    public LoginRes login(LoginReq request, String userTypeCd) {
+    public LoginRes login(LoginReq request, String appTypeCd) {
         MbMember member;
         try {
             member = memberRepository.findByLoginId(request.getLoginId())
@@ -81,11 +81,11 @@ public class FoAuthService {
 
         String authId = member.getMemberId();
 
-        String accessToken  = buildAccessToken(member, userTypeCd);
-        String refreshToken = jwtProvider.createRefreshToken(authId, userTypeCd);
+        String accessToken  = buildAccessToken(member, appTypeCd);
+        String refreshToken = jwtProvider.createRefreshToken(authId, appTypeCd);
 
         // 멀티디바이스: 행 추가 (기존 삭제 없음)
-        saveTokenLog(authId, CmUtil.nvl(member.getSiteId()), accessToken, refreshToken, "LOGIN", userTypeCd, null, null, null);
+        saveTokenLog(authId, CmUtil.nvl(member.getSiteId()), accessToken, refreshToken, "LOGIN", appTypeCd, null, null, null);
 
         // 로그인 성공 이력 기록
         saveLoginLog(authId, CmUtil.nvl(member.getSiteId()), member.getLoginId(), "SUCCESS", accessToken, 0, null, null);
@@ -98,7 +98,7 @@ public class FoAuthService {
             .memberId(authId)
             .userNm(member.getMemberNm())
             .siteId(CmUtil.nvl(member.getSiteId()))
-            .userTypeCd(userTypeCd)
+            .appTypeCd(appTypeCd)
             .roleId("")
             .deptId("")
             .build();
@@ -107,7 +107,7 @@ public class FoAuthService {
     // ── join ──────────────────────────────────────────────────────────────
 
     @Transactional
-    public FoJoinRes join(MbMember body, String userTypeCd) {
+    public FoJoinRes join(MbMember body, String appTypeCd) {
         if (memberRepository.findByLoginId(body.getLoginId()).isPresent()) {
             throw new CmBizException("이미 사용 중인 로그인 ID입니다.");
         }
@@ -131,7 +131,7 @@ public class FoAuthService {
     // ── refresh ───────────────────────────────────────────────────────────
 
     @Transactional
-    public TokenPair refresh(String expiredAccessToken, String userTypeCd) {
+    public TokenPair refresh(String expiredAccessToken, String appTypeCd) {
         if (expiredAccessToken == null || expiredAccessToken.isBlank()) {
             throw new CmBizException("accessToken이 필요합니다.");
         }
@@ -172,8 +172,8 @@ public class FoAuthService {
         MbMember member = memberRepository.findById(authId)
             .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
 
-        String newAccessToken  = buildAccessToken(member, userTypeCd);
-        String newRefreshToken = jwtProvider.createRefreshToken(authId, userTypeCd);
+        String newAccessToken  = buildAccessToken(member, appTypeCd);
+        String newRefreshToken = jwtProvider.createRefreshToken(authId, appTypeCd);
 
         tokenLog.setPrevToken(tokenLog.getAccessToken());
         tokenLog.setAccessToken(newAccessToken);
@@ -191,7 +191,7 @@ public class FoAuthService {
     // ── changePassword ────────────────────────────────────────────────────
 
     @Transactional
-    public void changePassword(ChangePasswordReq request, String userTypeCd) {
+    public void changePassword(ChangePasswordReq request, String appTypeCd) {
         String memberId = SecurityUtil.getAuthUser().authId();
         MbMember member = memberRepository.findById(memberId)
             .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다."));
@@ -206,7 +206,7 @@ public class FoAuthService {
     // ── logout ────────────────────────────────────────────────────────────
 
     @Transactional
-    public void logout(String accessToken, String userTypeCd, HttpServletRequest request) {
+    public void logout(String accessToken, String appTypeCd, HttpServletRequest request) {
         if (accessToken == null || accessToken.isBlank()) return;
         String uiNm  = request != null ? request.getHeader("X-UI-Nm")  : null;
         String cmdNm = request != null ? request.getHeader("X-Cmd-Nm") : null;
@@ -223,7 +223,7 @@ public class FoAuthService {
                     .setParameter("accessToken", accessToken)
                     .executeUpdate();
                 // REVOKE 토큰 이력 기록
-                saveTokenLog(authId, siteId, accessToken, null, "REVOKE", userTypeCd, "LOGOUT", uiNm, cmdNm);
+                saveTokenLog(authId, siteId, accessToken, null, "REVOKE", appTypeCd, "LOGOUT", uiNm, cmdNm);
                 // LOGOUT 로그인 이력 기록
                 saveLoginLog(authId, siteId, authId, "LOGOUT", null, 0, uiNm, cmdNm);
             }
@@ -234,13 +234,13 @@ public class FoAuthService {
 
     // ── private ───────────────────────────────────────────────────────────
 
-    private String buildAccessToken(MbMember member, String userTypeCd) {
+    private String buildAccessToken(MbMember member, String appTypeCd) {
         return jwtProvider.createAccessToken(
             AccessTokenClaims.builder()
                 .authId(member.getMemberId())
                 .loginId(member.getLoginId())
                 .roles(List.of("FO_GUEST"))
-                .userTypeCd(userTypeCd)
+                .appTypeCd(appTypeCd)
                 .roleId(null)
                 .vendorId(null)
                 .siteId(CmUtil.nvl(member.getSiteId()))
@@ -256,7 +256,7 @@ public class FoAuthService {
     /** mbh_member_token_log INSERT */
     private void saveTokenLog(String authId, String siteId,
                               String accessToken, String refreshToken,
-                              String actionCd, String userTypeCd,
+                              String actionCd, String appTypeCd,
                               String revokeReason, String uiNm, String cmdNm) {
         String logId = "TL" + LocalDateTime.now().format(ID_FMT)
             + String.format("%04d", (int)(Math.random() * 10000));
@@ -267,7 +267,7 @@ public class FoAuthService {
             .authId(authId)
             .memberId(authId)
             .actionCd(actionCd)
-            .tokenTypeCd(userTypeCd)
+            .tokenTypeCd(appTypeCd)
             .accessToken(accessToken != null ? accessToken : "LOGOUT")
             .refreshToken(refreshToken)
             .accessTokenExp(accessToken != null ? now.plusMinutes(jwtProvider.getFoAccessExpiryMinutes()) : null)

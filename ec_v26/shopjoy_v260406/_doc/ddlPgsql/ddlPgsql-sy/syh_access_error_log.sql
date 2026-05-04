@@ -15,7 +15,7 @@ CREATE TABLE shopjoy_2604.syh_access_error_log (
     req_ua          VARCHAR(500),                   -- User-Agent (nullable)
 
     -- 인증 정보 (MDC)
-    user_type       VARCHAR(20),                    -- USER / MEMBER / EXT / -
+    app_type_cd     VARCHAR(20),                    -- 코드: APP_TYPE (BO/FO/EXT/-)
     user_id         VARCHAR(50),                    -- sy_user.user_id 또는 ec_member.member_id
     role_id         VARCHAR(50),                    -- 역할 ID (nullable)
     dept_id         VARCHAR(50),                    -- 부서 ID (nullable)
@@ -56,7 +56,7 @@ COMMENT ON COLUMN shopjoy_2604.syh_access_error_log.req_path       IS '요청 UR
 COMMENT ON COLUMN shopjoy_2604.syh_access_error_log.req_query      IS '쿼리 파라미터 문자열';
 COMMENT ON COLUMN shopjoy_2604.syh_access_error_log.req_ip         IS '클라이언트 실제 IP (X-Forwarded-For 우선)';
 COMMENT ON COLUMN shopjoy_2604.syh_access_error_log.req_ua         IS 'User-Agent';
-COMMENT ON COLUMN shopjoy_2604.syh_access_error_log.user_type      IS 'USER/MEMBER/EXT/- (MDC)';
+COMMENT ON COLUMN shopjoy_2604.syh_access_error_log.app_type_cd    IS '호출 앱 유형 (코드: APP_TYPE — BO/FO/EXT/-, MDC)';
 COMMENT ON COLUMN shopjoy_2604.syh_access_error_log.user_id        IS '인증 사용자 ID (MDC)';
 COMMENT ON COLUMN shopjoy_2604.syh_access_error_log.role_id        IS '역할 ID (MDC)';
 COMMENT ON COLUMN shopjoy_2604.syh_access_error_log.error_type     IS '예외 클래스 FQCN';

@@ -41,8 +41,8 @@ public class SyhAccessLog {
     private String reqBody;
 
     // ── 인증 정보 ────────────────────────────────────────
-    @Column(name = "user_type_cd", length = 20)
-    private String userTypeCd;
+    @Column(name = "app_type_cd", length = 20)
+    private String appTypeCd;
 
     @Column(name = "user_id", length = 50)
     private String userId;

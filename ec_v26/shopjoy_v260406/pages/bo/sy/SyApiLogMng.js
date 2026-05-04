@@ -20,7 +20,7 @@ window.SyApiLogMng = {
       searchMethod: '',
       searchStatus: '',
       searchPath: '',
-      searchUserTypeCd: '',
+      searchAppTypeCd: '',
       searchUiNm: '',
       searchTraceId: '',
     });
@@ -31,7 +31,7 @@ window.SyApiLogMng = {
       const codeStore = window.sfGetBoCodeStore();
       codes.date_range_opts = codeStore?.sgGetGrpCodes('DATE_RANGE_OPT') || [];
       codes.http_methods    = codeStore?.sgGetGrpCodes('HTTP_METHOD')    || [];
-      codes.user_types      = codeStore?.sgGetGrpCodes('USER_TYPE')      || [];
+      codes.user_types      = codeStore?.sgGetGrpCodes('APP_TYPE')      || [];
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = boUtil.useAppCodeReady(uiState, fnLoadCodes);
@@ -87,7 +87,7 @@ window.SyApiLogMng = {
       method:      uiState.searchMethod    || undefined,
       status:      uiState.searchStatus    || undefined,
       path:        uiState.searchPath      || undefined,
-      userTypeCd:  uiState.searchUserTypeCd || undefined,
+      appTypeCd: uiState.searchAppTypeCd || undefined,
       uiNm:        uiState.searchUiNm      || undefined,
       traceId:     uiState.searchTraceId   || undefined,
     });
@@ -155,7 +155,7 @@ window.SyApiLogMng = {
     const onReset      = () => {
       Object.assign(uiState, {
         searchKw:'', searchMethod:'', searchStatus:'', searchPath:'',
-        searchUserTypeCd:'', searchUiNm:'', searchTraceId:'',
+        searchAppTypeCd:'', searchUiNm:'', searchTraceId:'',
         dateRange:'1week', srchOpen:false,
       });
       const r = boUtil.getDateRange('1week');
@@ -233,7 +233,7 @@ window.SyApiLogMng = {
     </div>
     <div v-if="uiState.srchOpen" class="search-bar" style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;">
       <input v-model="uiState.searchStatus" placeholder="상태코드 (예: 500)" style="width:150px" @keyup.enter="onSearch" />
-      <select v-model="uiState.searchUserTypeCd" style="width:120px">
+      <select v-model="uiState.searchAppTypeCd" style="width:120px">
         <option value="">사용자유형 전체</option>
         <option v-if="!codes.user_types.length" value="ADMIN">관리자</option>
         <option v-if="!codes.user_types.length" value="MEMBER">회원</option>
@@ -339,7 +339,7 @@ window.SyApiLogMng = {
                     <div style="font-weight:700;color:#2980b9;margin-bottom:8px;border-bottom:1px solid #c0d8f0;padding-bottom:4px;">🔐 인증 · 서버</div>
                     <table style="width:100%;border-collapse:collapse;">
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">사용자ID</td><td>{{ r.userId || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">사용자유형</td><td>{{ r.userTypeCd || '-' }}</td></tr>
+                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">사용자유형</td><td>{{ r.appTypeCd || '-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">역할ID</td><td>{{ r.roleId || '-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">부서ID</td><td>{{ r.deptId || '-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">업체ID</td><td>{{ r.vendorId || '-' }}</td></tr>
@@ -408,7 +408,7 @@ window.SyApiLogMng = {
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">처리시간</td><td>{{ r.respTimeMs != null ? r.respTimeMs+'ms' : '-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">IP</td><td style="font-family:monospace;">{{ r.reqIp || '-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">사용자ID</td><td>{{ r.userId || '-' }}</td></tr>
-                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">사용자유형</td><td>{{ r.userTypeCd || '-' }}</td></tr>
+                      <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">사용자유형</td><td>{{ r.appTypeCd || '-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">오류유형</td><td style="color:#e74c3c;font-weight:600;word-break:break-all;">{{ r.errorType || '-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">오류메시지</td><td style="color:#c0392b;word-break:break-all;">{{ r.errorMsg || '-' }}</td></tr>
                       <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">서버</td><td style="font-family:monospace;font-size:11px;">{{ r.serverNm || '-' }}</td></tr>

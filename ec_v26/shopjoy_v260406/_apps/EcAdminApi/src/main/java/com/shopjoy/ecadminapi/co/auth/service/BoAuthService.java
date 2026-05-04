@@ -50,7 +50,7 @@ public class BoAuthService {
     // ── join ──────────────────────────────────────────────────────────────
 
     @Transactional
-    public BoJoinRes join(SyUser body, String userTypeCd) {
+    public BoJoinRes join(SyUser body, String appTypeCd) {
         boolean exists = em.createQuery(
                 "SELECT COUNT(u) FROM SyUser u WHERE u.loginId = :loginId", Long.class)
             .setParameter("loginId", body.getLoginId())
@@ -72,7 +72,7 @@ public class BoAuthService {
     // ── login ─────────────────────────────────────────────────────────────
 
     @Transactional
-    public LoginRes login(LoginReq request, String userTypeCd) {
+    public LoginRes login(LoginReq request, String appTypeCd) {
         SyUser user;
         try {
             user = em.createQuery(
@@ -110,11 +110,11 @@ public class BoAuthService {
             .setParameter("authId", authId)
             .executeUpdate();
 
-        String accessToken  = buildAccessToken(user, userTypeCd);
-        String refreshToken = jwtProvider.createRefreshToken(authId, userTypeCd);
+        String accessToken  = buildAccessToken(user, appTypeCd);
+        String refreshToken = jwtProvider.createRefreshToken(authId, appTypeCd);
 
         // refreshToken DB 저장
-        String tokenLogId = saveTokenLog(authId, user.getSiteId(), accessToken, refreshToken, "LOGIN", userTypeCd, null, null, null);
+        String tokenLogId = saveTokenLog(authId, user.getSiteId(), accessToken, refreshToken, "LOGIN", appTypeCd, null, null, null);
 
         // 로그인 성공 이력 기록
         saveLoginLog(authId, user.getSiteId(), user.getLoginId(), "SUCCESS", accessToken, tokenLogId, 0, null, null);
@@ -140,7 +140,7 @@ public class BoAuthService {
             .deptNm(deptNm)
             .siteId(user.getSiteId())
             .roleId(user.getRoleId())
-            .userTypeCd(userTypeCd)
+            .appTypeCd(appTypeCd)
             .deptId(user.getDeptId() != null ? user.getDeptId() : "")
             .profileAttachId(user.getProfileAttachId())
             .build();
@@ -149,7 +149,7 @@ public class BoAuthService {
     // ── refresh ───────────────────────────────────────────────────────────
 
     @Transactional
-    public TokenPair refresh(String expiredAccessToken, String userTypeCd) {
+    public TokenPair refresh(String expiredAccessToken, String appTypeCd) {
         if (expiredAccessToken == null || expiredAccessToken.isBlank()) {
             throw new CmBizException("accessToken이 필요합니다.");
         }
@@ -190,8 +190,8 @@ public class BoAuthService {
         SyUser user = em.find(SyUser.class, authId);
         if (user == null) throw new CmBizException("사용자를 찾을 수 없습니다.");
 
-        String newAccessToken  = buildAccessToken(user, userTypeCd);
-        String newRefreshToken = jwtProvider.createRefreshToken(authId, userTypeCd);
+        String newAccessToken  = buildAccessToken(user, appTypeCd);
+        String newRefreshToken = jwtProvider.createRefreshToken(authId, appTypeCd);
 
         tokenLog.setPrevToken(tokenLog.getAccessToken());
         tokenLog.setAccessToken(newAccessToken);
@@ -209,7 +209,7 @@ public class BoAuthService {
     // ── changePassword ────────────────────────────────────────────────────
 
     @Transactional
-    public void changePassword(ChangePasswordReq request, String userTypeCd) {
+    public void changePassword(ChangePasswordReq request, String appTypeCd) {
         String userId = SecurityUtil.getAuthUser().authId();
         SyUser user = em.find(SyUser.class, userId);
         if (user == null) throw new CmBizException("사용자 정보를 찾을 수 없습니다.");
@@ -224,7 +224,7 @@ public class BoAuthService {
     // ── logout ────────────────────────────────────────────────────────────
 
     @Transactional
-    public void logout(String accessToken, String userTypeCd, HttpServletRequest request) {
+    public void logout(String accessToken, String appTypeCd, HttpServletRequest request) {
         if (accessToken == null || accessToken.isBlank()) return;
         String uiNm  = request != null ? request.getHeader("X-UI-Nm")  : null;
         String cmdNm = request != null ? request.getHeader("X-Cmd-Nm") : null;
@@ -240,7 +240,7 @@ public class BoAuthService {
                     .setParameter("authId", authId)
                     .executeUpdate();
                 // REVOKE 토큰 이력 기록
-                saveTokenLog(authId, siteId, accessToken, null, "REVOKE", userTypeCd, "LOGOUT", uiNm, cmdNm);
+                saveTokenLog(authId, siteId, accessToken, null, "REVOKE", appTypeCd, "LOGOUT", uiNm, cmdNm);
                 // LOGOUT 로그인 이력 기록
                 saveLoginLog(authId, siteId, authId, "LOGOUT", null, null, 0, uiNm, cmdNm);
             }
@@ -251,13 +251,13 @@ public class BoAuthService {
 
     // ── private ───────────────────────────────────────────────────────────
 
-    private String buildAccessToken(SyUser user, String userTypeCd) {
+    private String buildAccessToken(SyUser user, String appTypeCd) {
         return jwtProvider.createAccessToken(
             AccessTokenClaims.builder()
                 .authId(user.getUserId())
                 .loginId(user.getLoginId())
                 .roles(List.of("BO_GUEST"))
-                .userTypeCd(userTypeCd)
+                .appTypeCd(appTypeCd)
                 .roleId(user.getRoleId())
                 .vendorId(null)
                 .siteId(user.getSiteId())
@@ -273,7 +273,7 @@ public class BoAuthService {
     /** syh_user_token_log INSERT, logId 반환 */
     private String saveTokenLog(String authId, String siteId,
                                 String accessToken, String refreshToken,
-                                String actionCd, String userTypeCd,
+                                String actionCd, String appTypeCd,
                                 String revokeReason, String uiNm, String cmdNm) {
         String logId = "TL" + LocalDateTime.now().format(ID_FMT)
             + String.format("%04d", (int)(Math.random() * 10000));
@@ -284,7 +284,7 @@ public class BoAuthService {
             .authId(authId)
             .userId(authId)
             .actionCd(actionCd)
-            .tokenTypeCd(userTypeCd)
+            .tokenTypeCd(appTypeCd)
             .accessToken(accessToken != null ? accessToken : "LOGOUT")
             .refreshToken(refreshToken)
             .accessTokenExp(accessToken != null ? now.plusMinutes(jwtProvider.getBoAccessExpiryMinutes()) : null)

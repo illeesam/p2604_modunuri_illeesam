@@ -9,7 +9,7 @@
 
 ## authId 규칙
 
-| userTypeCd | authId 값 | DB 컬럼 | 비고 |
+| appTypeCd | authId 값 | DB 컬럼 | 비고 |
 |---|---|---|---|
 | `BO` | `sy_user.user_id` | sy_user.user_id | 관리자 (Back Office) |
 | `FO` | `ec_member.member_id` | ec_member.member_id | 고객 (Front Office) |
@@ -26,7 +26,7 @@
 
 ```java
 String authId;      // ★ 통합 인증 식별자 (JWT subject)
-String userTypeCd;  // ★ "BO" | "FO" | "SO"
+String appTypeCd;  // ★ "BO" | "FO" | "SO"
 String userId;      // BO 전용: sy_user.user_id  (authId와 동일값)
 String memberId;    // FO 전용: ec_member.member_id (authId와 동일값)
 ```
@@ -37,7 +37,7 @@ String memberId;    // FO 전용: ec_member.member_id (authId와 동일값)
 String authId;      // JWT subject
 String userId;      // BO 전용: sy_user.user_id
 String memberId;    // FO 전용: ec_member.member_id
-String userTypeCd;
+String appTypeCd;
 ```
 
 ### Backend: `LoginRes` (로그인 API 응답)
@@ -47,7 +47,7 @@ String authId;      // 통합 식별자
 String userId;      // BO 전용 (FO는 null)
 String memberId;    // FO 전용 (BO는 null)
 String userNm;      // 사용자명
-String userTypeCd;
+String appTypeCd;
 ```
 
 ### Frontend: `boAuthStore` user 객체
@@ -57,7 +57,7 @@ String userTypeCd;
   authId: '',       // 통합 인증 식별자 (sy_user.user_id)
   userId: '',       // BO 전용: sy_user.user_id (authId와 동일)
   memberId: null,   // FO 전용: BO는 null
-  userTypeCd: 'BO',
+  appTypeCd: 'BO',
   name: '', email: '', role: '', phone: '', dept: '', siteId: '', roleId: ''
 }
 ```
@@ -69,7 +69,7 @@ String userTypeCd;
   authId: '',       // 통합 인증 식별자 (ec_member.member_id)
   memberId: '',     // FO 전용: ec_member.member_id (authId와 동일)
   userId: null,     // BO 전용: FO는 null
-  userTypeCd: 'FO',
+  appTypeCd: 'FO',
   loginId: '', memberNm: '', siteId: ''
 }
 ```
@@ -94,7 +94,7 @@ window.isFoLogin = () => !!(store.user.memberId && store.accessToken)
 subject  : authId           (BO=user_id, FO=member_id)
 userId   : sy_user.user_id  (BO 전용 claim)
 memberId : member_id        (FO 전용 claim)
-userTypeCd: "BO" | "FO"
+appTypeCd: "BO" | "FO"
 loginId  : 계정 문자열
 roles    : ["BO_GUEST"] | ["FO_GUEST"]
 siteId, roleId, vendorId, memberGrade 등

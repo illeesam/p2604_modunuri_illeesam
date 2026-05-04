@@ -28,7 +28,7 @@ public class AccessLogFilter extends OncePerRequestFilter {
 
     /** JwtAuthFilter 가 request attribute 에 설정하는 키 */
     public static final String ATTR_USER_ID   = "_authUserId";
-    public static final String ATTR_USER_TYPE_CD = "_authUserTypeCd";
+    public static final String ATTR_APP_TYPE_CD = "_authAppTypeCd";
     public static final String ATTR_ROLE_ID   = "_authRoleId";
     public static final String ATTR_DEPT_ID   = "_authDeptId";
     public static final String ATTR_VENDOR_ID = "_authVendorId";
@@ -71,12 +71,12 @@ public class AccessLogFilter extends OncePerRequestFilter {
                 long elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs);
 
                 String userId   = attr(request, ATTR_USER_ID,   "-");
-                String userTypeCd = attr(request, ATTR_USER_TYPE_CD, "-");
+                String appTypeCd = attr(request, ATTR_APP_TYPE_CD, "-");
                 String roleId   = attr(request, ATTR_ROLE_ID,   null);
                 String deptId   = attr(request, ATTR_DEPT_ID,   null);
                 String vendorId = attr(request, ATTR_VENDOR_ID, null);
 
-                if (props.isDbSave() && props.isMatch(userTypeCd, userId)) {
+                if (props.isDbSave() && props.isMatch(appTypeCd, userId)) {
                     String host  = request.getHeader("Host");
                     if (host == null) host = request.getServerName();
                     String ua    = request.getHeader("User-Agent");
@@ -99,7 +99,7 @@ public class AccessLogFilter extends OncePerRequestFilter {
                             .reqIp(resolveIp(request))
                             .reqUa(truncate(ua, 500))
                             .reqBody(captureBody ? bodyOf(reqWrap.getContentAsByteArray(),  props.getMaxBodySize()) : null)
-                            .userTypeCd(userTypeCd)
+                            .appTypeCd(appTypeCd)
                             .userId(userId)
                             .roleId(roleId)
                             .deptId(deptId)

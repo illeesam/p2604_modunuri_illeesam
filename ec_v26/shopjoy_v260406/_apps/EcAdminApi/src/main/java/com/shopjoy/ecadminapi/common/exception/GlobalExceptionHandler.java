@@ -150,14 +150,14 @@ public class GlobalExceptionHandler {
 
     /**
      * 현재 사용자·요청 정보 문자열 생성.
-     * 형태: siteId=01 | userId=xxx | userTypeCd=BO | roleId=R01 | vendorId=V01 | host=127.0.0.1
+     * 형태: siteId=01 | userId=xxx | appTypeCd=BO | roleId=R01 | vendorId=V01 | host=127.0.0.1
      *       | url=/api/... | method=POST | params=...(최대200자) | token=~xxxxxxxxxx
      */
     private String buildUserInfo(HttpServletRequest req) {
         String siteId      = "01";
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         String userId      = authUser.userId();
-        String userTypeCd  = CmUtil.nvl(authUser.userTypeCd(), "-");
+        String appTypeCd  = CmUtil.nvl(authUser.appTypeCd(), "-");
         String roleId      = CmUtil.nvl(authUser.roleId(), "-");
         String vendorId    = CmUtil.nvl(authUser.vendorId(), "-");
         String host        = CmUtil.nvl(req.getRemoteAddr(), "-");
@@ -180,8 +180,8 @@ public class GlobalExceptionHandler {
         }
 
         return String.format(
-            "siteId=%s | userId=%s | userTypeCd=%s | roleId=%s | vendorId=%s | host=%s | url=%s | method=%s | uiNm=%s | cmdNm=%s | params=%s | token=%s",
-            siteId, userId, userTypeCd, roleId, vendorId, host, url, method, uiNm, cmdNm, params, tokenTail
+            "siteId=%s | userId=%s | appTypeCd=%s | roleId=%s | vendorId=%s | host=%s | url=%s | method=%s | uiNm=%s | cmdNm=%s | params=%s | token=%s",
+            siteId, userId, appTypeCd, roleId, vendorId, host, url, method, uiNm, cmdNm, params, tokenTail
         );
     }
 }

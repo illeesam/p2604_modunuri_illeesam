@@ -11,8 +11,8 @@ import java.util.List;
  * 파라미터 개수 증가에 따른 혼동을 방지.
  *
  * authId 규칙:
- * - userTypeCd="BO" → authId = sy_user.user_id
- * - userTypeCd="FO" → authId = ec_member.member_id
+ * - appTypeCd="BO" → authId = sy_user.user_id
+ * - appTypeCd="FO" → authId = ec_member.member_id
  */
 @Getter
 @Builder
@@ -20,7 +20,7 @@ public class AccessTokenClaims {
     private String authId;              // 인증 식별자 (JWT subject): BO=user_id, FO=member_id
     private String loginId;             // 로그인 ID (계정 문자열)
     private List<String> roles;         // 권한 목록
-    private String userTypeCd;          // 사용자 유형 (BO/FO/SO)
+    private String appTypeCd;          // 사용자 유형 (BO/FO/SO)
     private String roleId;              // 역할 ID (BO 전용)
     private String vendorId;            // 업체 ID
     private String siteId;              // 사이트 ID

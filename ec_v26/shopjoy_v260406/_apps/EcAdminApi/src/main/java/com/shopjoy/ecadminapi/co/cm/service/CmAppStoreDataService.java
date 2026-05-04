@@ -61,34 +61,34 @@ public class CmAppStoreDataService {
      * 통합 인증/앱 초기화 데이터 조회 - CmStoreConst 상수값으로 선택적 반환
      *
      * @param names CmStoreConst 상수값 ('^' 구분자로 선택, 예: "syAuth^syRoles^syMenus")
-     * @param userTypeCd 사용자 타입 (BO: 관리자, FO: 회원)
+     * @param appTypeCd 사용자 타입 (BO: 관리자, FO: 회원)
      * @return 요청된 데이터만 포함된 Map
      */
-    public Map<String, Object> getAuthData(String names, String userTypeCd) {
+    public Map<String, Object> getAuthData(String names, String appTypeCd) {
         AuthPrincipal authUser = com.shopjoy.ecadminapi.common.util.SecurityUtil.getAuthUser();
         java.util.List<String> requestedItems = CmUtil.parseNames(names);
         Map<String, Object> resultMap = new java.util.HashMap<>();
 
         Map<String, Object> reqParam = new java.util.HashMap<>();
         reqParam.put("names", names);
-        reqParam.put("userTypeCd", userTypeCd);
+        reqParam.put("appTypeCd", appTypeCd);
         resultMap.put("reqParam", reqParam);
 
         if (requestedItems.contains(CmStoreConst.SY_AUTH)) {
-            StoreAuth auth = getAuth(authUser, userTypeCd);
+            StoreAuth auth = getAuth(authUser, appTypeCd);
             resultMap.put(CmStoreConst.SY_AUTH, auth != null ? auth : StoreAuth.builder().build());
         }
         if (requestedItems.contains(CmStoreConst.SY_USER)) {
             Object userData = null;
-            if (AuthPrincipal.BO.equals(userTypeCd)) {
+            if (AuthPrincipal.BO.equals(appTypeCd)) {
                 userData = getBoUser(authUser);
-            } else if (AuthPrincipal.FO.equals(userTypeCd)) {
+            } else if (AuthPrincipal.FO.equals(appTypeCd)) {
                 userData = getFoUser(authUser);
             }
             resultMap.put(CmStoreConst.SY_USER, userData != null ? userData : new java.util.HashMap<>());
         }
         if (requestedItems.contains(CmStoreConst.SY_ROLES)) {
-            List<StoreRole> roles = getRoles(authUser, userTypeCd);
+            List<StoreRole> roles = getRoles(authUser, appTypeCd);
             resultMap.put(CmStoreConst.SY_ROLES, roles != null ? roles : java.util.Collections.emptyList());
         }
         if (requestedItems.contains(CmStoreConst.SY_MENUS)) {
@@ -114,7 +114,7 @@ public class CmAppStoreDataService {
             resultMap.put(CmStoreConst.DP_DISP, dispMap);
         }
         if (requestedItems.contains(CmStoreConst.SY_APP)) {
-            StoreApp app = getApp(authUser, userTypeCd);
+            StoreApp app = getApp(authUser, appTypeCd);
             resultMap.put(CmStoreConst.SY_APP, app != null ? app : StoreApp.builder().build());
         }
         if (requestedItems.contains(CmStoreConst.SY_PATHS) || requestedItems.isEmpty()) {
@@ -133,24 +133,24 @@ public class CmAppStoreDataService {
      * 인증 정보 조회 - 토큰 정보 + 사용자 정보 반환
      * BO: StoreUser (관리자), FO: StoreMember (회원)
      */
-    private StoreAuth getAuth(AuthPrincipal authUser, String userTypeCd) {
+    private StoreAuth getAuth(AuthPrincipal authUser, String appTypeCd) {
         if (authUser == null) {
             return StoreAuth.builder().build();
         }
 
         Object authUserInfo = null;
-        if (AuthPrincipal.BO.equals(userTypeCd)) {
+        if (AuthPrincipal.BO.equals(appTypeCd)) {
             authUserInfo = getBoUser(authUser);
         } else {
             authUserInfo = getFoUser(authUser);
         }
 
         // BO 전용: sy_user 기반 역할 목록 (FO는 빈 리스트)
-        String rolesUserId = AuthPrincipal.BO.equals(userTypeCd) ? authUser.authId() : null;
+        String rolesUserId = AuthPrincipal.BO.equals(appTypeCd) ? authUser.authId() : null;
 
         Map<String, Object> tempAuthInfo = new java.util.HashMap<>();
         tempAuthInfo.put("authUser-authId", authUser.authId());
-        tempAuthInfo.put("authUser-userTypeCd", userTypeCd);
+        tempAuthInfo.put("authUser-appTypeCd", appTypeCd);
         tempAuthInfo.put("authUser-userId", authUser.userId());
         tempAuthInfo.put("authUser-roleId", authUser.roleId());
         tempAuthInfo.put("authUser-siteId", authUser.siteId());
@@ -285,7 +285,7 @@ public class CmAppStoreDataService {
                 .roleNm(roleNm) // 역할명
                 .memberGradeCd("") // 회원등급 (관리자는 해당없음)
                 .userStatusCd(CmUtil.nvl(user.getUserStatusCd(), "ACTIVE")) // 상태
-                .userTypeCd(CmUtil.nvl(authUser.userTypeCd())) // 사용자타입
+                .appTypeCd(CmUtil.nvl(authUser.appTypeCd())) // 사용자타입
                 .isAdminYn("N") // 관리자여부
                 .vendorId(CmUtil.nvl(authUser.vendorId())) // 업체ID
                 .vendorNm(vendorNm) // 업체명
@@ -315,7 +315,7 @@ public class CmAppStoreDataService {
                 .memberEmail(member.getLoginId()) // 이메일(로그인ID)
                 .memberNm(member.getMemberNm()) // 회원명
                 .siteId(CmUtil.nvl(member.getSiteId())) // 사이트ID
-                .userTypeCd(CmUtil.nvl(authUser.userTypeCd())) // 사용자타입
+                .appTypeCd(CmUtil.nvl(authUser.appTypeCd())) // 사용자타입
                 .memberTypeCd("") // 회원유형
                 .memberHpNo(CmUtil.nvl(member.getMemberPhone())) // 휴대폰
                 .memberGrade(CmUtil.nvl(member.getGradeCd())) // 회원등급
@@ -332,14 +332,14 @@ public class CmAppStoreDataService {
      * BO/SO: sy_user_role(역할ID) + sy_vendor_user(업체ID) + sy_vendor(업체명) + sy_role(역할정보)
      * FO: 빈 리스트
      */
-    private List<StoreRole> getRoles(AuthPrincipal authUser, String userTypeCd) {
+    private List<StoreRole> getRoles(AuthPrincipal authUser, String appTypeCd) {
         if (authUser == null) {
             return List.of();
         }
 
         Map<String, String> roleVendorMap = new java.util.HashMap<>();
 
-        if (AuthPrincipal.BO.equals(userTypeCd) || AuthPrincipal.SO.equals(userTypeCd)) {
+        if (AuthPrincipal.BO.equals(appTypeCd) || AuthPrincipal.SO.equals(appTypeCd)) {
             // sy_user_role :: select list :: authId
             syUserRoleRepository.findByUserId(authUser.authId()).forEach(ur ->
                 roleVendorMap.put(ur.getRoleId(), null));
@@ -496,11 +496,11 @@ public class CmAppStoreDataService {
      * 앱 정보 조회 - 버전, 사이트정보, 환경상태
      * active 값: spring.profiles.active 설정값 (dev, prod 등)
      */
-    private StoreApp getApp(AuthPrincipal authUser, String userTypeCd) {
+    private StoreApp getApp(AuthPrincipal authUser, String appTypeCd) {
         String[] activeProfiles = environment.getActiveProfiles();
         String active = (activeProfiles != null && activeProfiles.length > 0) ? activeProfiles[0] : "-";
 
-        if (AuthPrincipal.BO.equals(userTypeCd)) {
+        if (AuthPrincipal.BO.equals(appTypeCd)) {
             return StoreApp.builder()
                     .boSiteNo("01")
                     .foSiteNo("01")
